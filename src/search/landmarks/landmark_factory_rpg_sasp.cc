@@ -147,13 +147,13 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
         // ...look at all achieving operators
         const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact);
         for (int op_or_axiom_id : op_or_axiom_ids) {
-            OperatorProxy op_or_axiom = get_operator_or_axiom(task_proxy, op_or_axiom_id);
+            OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
-            if (_possibly_reaches_lm(op_or_axiom, lvl_var, bp)) {
+            if (_possibly_reaches_lm(op, lvl_var, bp)) {
                 /* TODO: When refactoring the landmarks code, find a better solution
                    for setting landmark cost types. */
-                int cost = get_adjusted_action_cost(op_or_axiom.get_cost(), get_lm_cost_type());
+                int cost = get_adjusted_action_cost(op.get_cost(), get_lm_cost_type());
                 min_cost = min(min_cost, cost);
             }
         }
@@ -275,13 +275,13 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
         const vector<int> &op_ids = lm_graph->get_operators_including_eff(lm_fact);
 
         for (int op_or_axiom_id : op_ids) {
-            OperatorProxy op_or_axiom = get_operator_or_axiom(task_proxy, op_or_axiom_id);
+            OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
             if (!init && shared_pre.empty())
                 break;
 
-            if (_possibly_reaches_lm(op_or_axiom, lvl_var, bp)) {
+            if (_possibly_reaches_lm(op, lvl_var, bp)) {
                 unordered_map<int, int> next_pre;
-                get_greedy_preconditions_for_lm(task_proxy, bp, op_or_axiom, next_pre);
+                get_greedy_preconditions_for_lm(task_proxy, bp, op, next_pre);
                 if (init) {
                     init = false;
                     shared_pre = next_pre;
@@ -379,11 +379,11 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     unordered_map<int, set<int>> used_operators;  // tells for each
     // proposition which operators use it
     for (size_t i = 0; i < op_or_axiom_ids.size(); ++i) {
-        OperatorProxy op_or_axiom = get_operator_or_axiom(task_proxy, op_or_axiom_ids[i]);
-        if (_possibly_reaches_lm(op_or_axiom, lvl_var, bp)) {
+        OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_ids[i]);
+        if (_possibly_reaches_lm(op, lvl_var, bp)) {
             ++num_ops;
             unordered_map<int, int> next_pre;
-            get_greedy_preconditions_for_lm(task_proxy, bp, op_or_axiom, next_pre);
+            get_greedy_preconditions_for_lm(task_proxy, bp, op, next_pre);
             for (const auto &pre : next_pre) {
                 int disj_class = disjunction_classes[pre.first][pre.second];
                 if (disj_class == -1) {

@@ -67,11 +67,11 @@ OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom
     }
 }
 
-int get_operator_or_axiom_id(const OperatorProxy &op_or_axiom) {
-    if (op_or_axiom.is_axiom()) {
-        return -op_or_axiom.get_id() - 1;
+int get_operator_or_axiom_id(const OperatorProxy &op) {
+    if (op.is_axiom()) {
+        return -op.get_id() - 1;
     } else {
-        return op_or_axiom.get_id();
+        return op.get_id();
     }
 }
 }

@@ -120,14 +120,14 @@ void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
     heuristic_recomputation_needed = true;
 }
 
-void Exploration::build_unary_operators(const OperatorProxy &op_or_axiom) {
+void Exploration::build_unary_operators(const OperatorProxy &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op_or_axiom.get_cost(); // Is this correct? Which costs are used?
-    EffectsProxy effects = op_or_axiom.get_effects();
+    int base_cost = op.get_cost();
+    EffectsProxy effects = op.get_effects();
     vector<ExProposition *> precondition;
     vector<FactPair> precondition_facts1;
 
-    for (FactProxy pre : op_or_axiom.get_preconditions()) {
+    for (FactProxy pre : op.get_preconditions()) {
         precondition_facts1.push_back(pre.get_pair());
     }
     for (EffectProxy effect : effects) {
@@ -145,7 +145,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op_or_axiom) {
 
         FactProxy effect_fact = effect.get_fact();
         ExProposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
-        int op_or_axiom_id = get_operator_or_axiom_id(op_or_axiom);
+        int op_or_axiom_id = get_operator_or_axiom_id(op);
         unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id, base_cost);
         precondition.clear();
         precondition_facts2.clear();
@@ -184,7 +184,7 @@ void Exploration::setup_exploration_queue(const State &state,
     for (ExUnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.precondition.size();
         if (!excluded_op_ids.empty() &&
-            (op.effect->h_add_cost == -2 || excluded_op_ids.count(op.op_id))) {
+            (op.effect->h_add_cost == -2 || excluded_op_ids.count(op.op_or_axiom_id))) {
             op.h_add_cost = -2; // operator will not be applied during relaxed exploration
             continue;
         }
@@ -194,7 +194,7 @@ void Exploration::setup_exploration_queue(const State &state,
 
         if (op.unsatisfied_preconditions == 0) {
             op.depth = 0;
-            int depth = op.is_axiom() ? 0 : 1;
+            int depth = op.is_induced_by_axiom(task_proxy) ? 0 : 1;
             enqueue_if_necessary(op.effect, op.base_cost, depth, &op, use_h_max);
         }
     }
@@ -229,7 +229,7 @@ void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
             unary_op->depth = max(unary_op->depth, prop->depth);
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
-                int depth = unary_op->is_axiom()
+                int depth = unary_op->is_induced_by_axiom(task_proxy)
                             ? unary_op->depth : unary_op->depth + 1;
                 if (use_h_max)
                     enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
@@ -302,7 +302,7 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
         if (unary_op) { // We have not yet chained back to a start node.
             for (ExProposition *pre : unary_op->precondition)
                 collect_relaxed_plan(pre, relaxed_plan, state);
-            int op_or_axiom_id = unary_op->op_id;
+            int op_or_axiom_id = unary_op->op_or_axiom_id;
             bool added_to_relaxed_plan = false;
             /* Using axioms in the relaxed plan actually improves
                performance in many domains. We should look into this. */
@@ -312,7 +312,7 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
             if (added_to_relaxed_plan
                 && unary_op->h_add_cost == unary_op->base_cost
                 && unary_op->depth == 0
-                && !unary_op->is_axiom()) {
+                && !unary_op->is_induced_by_axiom(task_proxy)) {
                 set_preferred(get_operator_or_axiom(task_proxy, op_or_axiom_id));
                 assert(is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
             }
@@ -357,11 +357,11 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
             // if op can achieve prop at time step i+1,
             // its index (for prop) is i, where the initial state is time step 0.
             const FactPair &effect = op.effect->fact;
-            assert(lvl_op[op.op_id].count(effect));
+            assert(lvl_op[op.op_or_axiom_id].count(effect));
             int new_lvl = op.h_max_cost - 1;
             // If we have found a cheaper achieving operator, adjust h_max cost of proposition.
-            if (lvl_op[op.op_id].find(effect)->second > new_lvl)
-                lvl_op[op.op_id].find(effect)->second = new_lvl;
+            if (lvl_op[op.op_or_axiom_id].find(effect)->second > new_lvl)
+                lvl_op[op.op_or_axiom_id].find(effect)->second = new_lvl;
         }
     }
     heuristic_recomputation_needed = true;
@@ -391,15 +391,15 @@ void Exploration::collect_helpful_actions(
     if (unary_op) { // We have not yet chained back to a start node.
         for (ExProposition *pre : unary_op->precondition)
             collect_helpful_actions(pre, relaxed_plan, state);
-        int op_or_axiom_id = unary_op->op_id;
+        int op_or_axiom_id = unary_op->op_or_axiom_id;
         bool added_to_relaxed_plan = false;
-        if (!unary_op->is_axiom()) {
+        if (!unary_op->is_induced_by_axiom(task_proxy)) {
             added_to_relaxed_plan = relaxed_plan.insert(op_or_axiom_id).second;
         }
         if (added_to_relaxed_plan
             && unary_op->h_add_cost == unary_op->base_cost
             && unary_op->depth == 0
-            && !unary_op->is_axiom()) {
+            && !unary_op->is_induced_by_axiom(task_proxy)) {
             exported_op_ids.push_back(op_or_axiom_id); // This is a helpful action.
             assert(is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
         }

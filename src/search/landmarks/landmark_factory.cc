@@ -173,10 +173,10 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
     return true;
 }
 
-void LandmarkFactory::add_operator_and_propositions_to_list(const OperatorProxy &op_or_axiom,
+void LandmarkFactory::add_operator_and_propositions_to_list(const OperatorProxy &op,
                                                             vector<unordered_map<FactPair, int>> &lvl_op) const {
-    int op_or_axiom_id = get_operator_or_axiom_id(op_or_axiom);
-    for (EffectProxy effect : op_or_axiom.get_effects()) {
+    int op_or_axiom_id = get_operator_or_axiom_id(op);
+    for (EffectProxy effect : op.get_effects()) {
         lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
     }
 }
@@ -808,9 +808,9 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
         compute_predecessor_information(task_proxy, exploration, lmn, lvl_var, lvl_op);
 
         for (int op_or_axom_id : lmn->possible_achievers) {
-            OperatorProxy op_or_axiom = get_operator_or_axiom(task_proxy, op_or_axom_id);
+            OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
-            if (_possibly_reaches_lm(op_or_axiom, lvl_var, lmn)) {
+            if (_possibly_reaches_lm(op, lvl_var, lmn)) {
                 lmn->first_achievers.insert(op_or_axom_id);
             }
         }
