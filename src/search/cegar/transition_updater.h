@@ -1,7 +1,7 @@
 #ifndef CEGAR_TRANSITION_UPDATER_H
 #define CEGAR_TRANSITION_UPDATER_H
 
-class FactPair;
+struct FactPair;
 class OperatorsProxy;
 
 #include <memory>
