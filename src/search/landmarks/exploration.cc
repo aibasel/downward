@@ -123,14 +123,13 @@ void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
 void Exploration::build_unary_operators(const OperatorProxy &op) {
     // Note: changed from the original to allow sorting of operator conditions
     int base_cost = op.get_cost();
-    EffectsProxy effects = op.get_effects();
     vector<ExProposition *> precondition;
     vector<FactPair> precondition_facts1;
 
     for (FactProxy pre : op.get_preconditions()) {
         precondition_facts1.push_back(pre.get_pair());
     }
-    for (EffectProxy effect : effects) {
+    for (EffectProxy effect : op.get_effects()) {
         vector<FactPair> precondition_facts2(precondition_facts1);
         EffectConditionsProxy effect_conditions = effect.get_conditions();
         for (FactProxy effect_condition : effect_conditions) {
