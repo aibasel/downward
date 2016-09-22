@@ -47,12 +47,14 @@ void release_memory(T &collection) {
 
 
 /*
-  Basic iterator support for custom collections.
+  Basic iterator support for custom collections that don't support
+  returning references to contained items, i.e., they return items by
+  value.
 
   To allow iterating over a new custom collection class C with items of
   type T, add the following methods and attribute:
 
-    const T &C::operator[](std::size_t) const;
+    T C::operator[](std::size_t) const;
     std::size_t C::size() const;
     C::ItemType; // with a public "using ItemType = T;"
 */
