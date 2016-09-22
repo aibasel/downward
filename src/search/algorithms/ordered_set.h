@@ -26,7 +26,7 @@ public:
         return ordered_items.empty();
     }
 
-    bool size() const {
+    std::size_t size() const {
         assert(unordered_items.size() == ordered_items.size());
         return ordered_items.size();
     }
