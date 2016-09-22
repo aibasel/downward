@@ -18,9 +18,6 @@ class OrderedSet {
     std::unordered_set<T> unordered_items;
 
 public:
-    // Allow iterating over OrderedSet with CollectionIterator.
-    using ItemType = T;
-
     bool empty() const {
         assert(unordered_items.size() == ordered_items.size());
         return ordered_items.empty();
@@ -72,6 +69,14 @@ public:
             std::move(ordered_items), std::move(unordered_items));
         assert(empty());
         return collections;
+    }
+
+    typename std::vector<T>::const_iterator begin() const {
+        return ordered_items.begin();
+    }
+
+    typename std::vector<T>::const_iterator end() const {
+        return ordered_items.end();
     }
 };
 }
