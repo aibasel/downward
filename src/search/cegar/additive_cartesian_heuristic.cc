@@ -23,6 +23,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     CostSaturation cost_saturation(
         subtask_generators,
         opts.get<int>("max_states"),
+        opts.get<int>("max_transitions"),
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")));
@@ -93,10 +94,16 @@ static Heuristic *_parse(OptionParser &parser) {
         "maximum sum of abstract states over all abstractions",
         "infinity",
         Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "max_transitions",
+        "maximum sum of real transitions (excluding self-loops) over "
+        " all abstractions",
+        "1000000",
+        Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_time",
         "maximum time in seconds for building abstractions",
-        "900",
+        "infinity",
         Bounds("0.0", "infinity"));
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");

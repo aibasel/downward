@@ -44,20 +44,21 @@ struct Flaw {
           the corresponding variable. The values that are in both the
           current and the desired abstract state are the "wanted" ones.
         */
-        for (FactProxy wanted_fact : concrete_state) {
-            if (!current_abstract_state->contains(wanted_fact) ||
-                !desired_abstract_state.contains(wanted_fact)) {
-                VariableProxy var = wanted_fact.get_variable();
+        for (FactProxy wanted_fact_proxy : concrete_state) {
+            FactPair fact = wanted_fact_proxy.get_pair();
+            if (!current_abstract_state->contains(fact.var, fact.value) ||
+                !desired_abstract_state.contains(fact.var, fact.value)) {
+                VariableProxy var = wanted_fact_proxy.get_variable();
+                int var_id = var.get_id();
                 vector<int> wanted;
                 for (int value = 0; value < var.get_domain_size(); ++value) {
-                    FactProxy fact = var.get_fact(value);
-                    if (current_abstract_state->contains(fact) &&
-                        desired_abstract_state.contains(fact)) {
+                    if (current_abstract_state->contains(var_id, value) &&
+                        desired_abstract_state.contains(var_id, value)) {
                         wanted.push_back(value);
                     }
                 }
                 assert(!wanted.empty());
-                splits.emplace_back(var.get_id(), move(wanted));
+                splits.emplace_back(var_id, move(wanted));
             }
         }
         assert(!splits.empty());
@@ -68,15 +69,18 @@ struct Flaw {
 Abstraction::Abstraction(
     const shared_ptr<AbstractTask> task,
     int max_states,
+    int max_non_looping_transitions,
     double max_time,
     bool use_general_costs,
     PickSplit pick,
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
+      max_non_looping_transitions(max_non_looping_transitions),
       use_general_costs(use_general_costs),
       abstract_search(get_operator_costs(task_proxy), states),
       split_selector(task, pick),
+      transition_updater(task_proxy.get_operators()),
       timer(max_time),
       init(nullptr),
       deviations(0),
@@ -86,6 +90,8 @@ Abstraction::Abstraction(
     assert(max_states >= 1);
     g_log << "Start building abstraction." << endl;
     cout << "Maximum number of states: " << max_states << endl;
+    cout << "Maximum number of transitions: "
+         << max_non_looping_transitions << endl;
     build();
     g_log << "Done building abstraction." << endl;
     cout << "Time for building abstraction: " << timer << endl;
@@ -133,6 +139,7 @@ void Abstraction::separate_facts_unreachable_before_goal() {
 void Abstraction::create_trivial_abstraction() {
     init = AbstractState::get_trivial_abstract_state(
         task_proxy, refinement_hierarchy.get_root());
+    transition_updater.add_loops_to_trivial_abstract_state(init);
     goals.insert(init);
     states.insert(init);
 }
@@ -142,6 +149,7 @@ bool Abstraction::may_keep_refining() const {
        Without doing so, the algorithm would be more deterministic. */
     return utils::extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
+           transition_updater.get_num_non_loops() < max_non_looping_transitions &&
            !timer.is_expired();
 }
 
@@ -184,6 +192,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     AbstractState *v1 = new_states.first;
     AbstractState *v2 = new_states.second;
 
+    transition_updater.rewire(state, v1, v2, var);
+
     states.erase(state);
     states.insert(v1);
     states.insert(v2);
@@ -205,8 +215,11 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     }
 
     int num_states = get_num_states();
-    if (num_states % 1000 == 0)
-        g_log << "Abstract states: " << num_states << "/" << max_states << endl;
+    if (num_states % 1000 == 0) {
+        g_log << num_states << "/" << max_states << " states, "
+              << transition_updater.get_num_non_loops() << "/"
+              << max_non_looping_transitions << " transitions" << endl;
+    }
 
     delete state;
 }
@@ -222,7 +235,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     if (debug)
         cout << "  Initial abstract state: " << *abstract_state << endl;
 
-    for (const Arc &step : solution) {
+    for (const Transition &step : solution) {
         if (!utils::extra_memory_padding_is_reserved())
             break;
         OperatorProxy op = task_proxy.get_operators()[step.op_id];
@@ -304,9 +317,9 @@ vector<int> Abstraction::get_saturated_costs() {
         if (g == INF || h == INF)
             continue;
 
-        for (const Arc &arc: state->get_outgoing_arcs()) {
-            int op_id = arc.op_id;
-            AbstractState *successor = arc.target;
+        for (const Transition &transition: state->get_outgoing_transitions()) {
+            int op_id = transition.op_id;
+            AbstractState *successor = transition.target;
             const int succ_h = successor->get_h_value();
 
             if (succ_h == INF)
@@ -328,21 +341,18 @@ vector<int> Abstraction::get_saturated_costs() {
 }
 
 void Abstraction::print_statistics() {
-    int total_incoming_arcs = 0;
-    int total_outgoing_arcs = 0;
+    int total_incoming_transitions = 0;
+    int total_outgoing_transitions = 0;
     int total_loops = 0;
     int dead_ends = 0;
     for (AbstractState *state : states) {
         if (state->get_h_value() == INF)
             ++dead_ends;
-        const Arcs &incoming_arcs = state->get_incoming_arcs();
-        const Arcs &outgoing_arcs = state->get_outgoing_arcs();
-        const Loops &loops = state->get_loops();
-        total_incoming_arcs += incoming_arcs.size();
-        total_outgoing_arcs += outgoing_arcs.size();
-        total_loops += loops.size();
+        total_incoming_transitions += state->get_incoming_transitions().size();
+        total_outgoing_transitions += state->get_outgoing_transitions().size();
+        total_loops += state->get_loops().size();
     }
-    assert(total_outgoing_arcs == total_incoming_arcs);
+    assert(total_outgoing_transitions == total_incoming_transitions);
 
     int total_cost = 0;
     for (OperatorProxy op : task_proxy.get_operators())
@@ -353,8 +363,10 @@ void Abstraction::print_statistics() {
     cout << "Dead ends: " << dead_ends << endl;
     cout << "Init h: " << get_h_value_of_initial_state() << endl;
 
-    cout << "Transitions: " << total_incoming_arcs << endl;
-    cout << "Self-loops: " << total_loops << endl;
+    assert(transition_updater.get_num_loops() == total_loops);
+    assert(transition_updater.get_num_non_loops() == total_outgoing_transitions);
+    cout << "Looping transitions: " << total_loops << endl;
+    cout << "Non-looping transitions: " << total_outgoing_transitions << endl;
 
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
