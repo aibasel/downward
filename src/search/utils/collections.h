@@ -25,7 +25,7 @@ bool in_bounds(size_t index, const T &container) {
     return index < container.size();
 }
 
-template<class T>
+template<typename T>
 T swap_and_pop_from_vector(std::vector<T> &vec, size_t pos) {
     assert(in_bounds(pos, vec));
     T element = vec[pos];
@@ -37,11 +37,6 @@ T swap_and_pop_from_vector(std::vector<T> &vec, size_t pos) {
 template<class T>
 void release_vector_memory(std::vector<T> &vec) {
     std::vector<T>().swap(vec);
-}
-
-template<class T>
-void release_memory(T &collection) {
-    T().swap(collection);
 }
 }
 

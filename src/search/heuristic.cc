@@ -29,7 +29,7 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
-    preferred_operators.add(op);
+    preferred_operators.insert(op);
 }
 
 void Heuristic::set_preferred(OperatorProxy op) {
