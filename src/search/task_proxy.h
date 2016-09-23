@@ -113,7 +113,8 @@ public:
     }
 
     bool operator==(const ProxyIterator &other) const {
-        return &collection == &other.collection && pos == other.pos;
+        assert(&collection == &other.collection);
+        return pos == other.pos;
     }
 
     bool operator!=(const ProxyIterator &other) const {

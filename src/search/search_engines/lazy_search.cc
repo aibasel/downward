@@ -81,10 +81,10 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
     if (preferred_successors_first) {
         algorithms::OrderedSet<const GlobalOperator *> successor_operators;
         for (const GlobalOperator *op : preferred_operators) {
-            successor_operators.add(op);
+            successor_operators.insert(op);
         }
         for (const GlobalOperator *op : applicable_operators) {
-            successor_operators.add(op);
+            successor_operators.insert(op);
         }
         return successor_operators.pop_as_vector();
     } else {

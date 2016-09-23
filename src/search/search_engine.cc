@@ -144,7 +144,7 @@ algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
         if (!eval_context.is_heuristic_infinite(heuristic)) {
             for (const GlobalOperator *op :
                  eval_context.get_preferred_operators(heuristic)) {
-                preferred_operators.add(op);
+                preferred_operators.insert(op);
             }
         }
     }

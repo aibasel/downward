@@ -26,18 +26,22 @@ public:
         return ordered_items.empty();
     }
 
-    std::size_t size() const {
+    int size() const {
         assert(unordered_items.size() == ordered_items.size());
         return ordered_items.size();
     }
 
     void clear() {
-        utils::release_memory(ordered_items);
-        utils::release_memory(unordered_items);
+        ordered_items.clear();
+        unordered_items.clear();
         assert(empty());
     }
 
-    void add(const T &item) {
+    /*
+      If item is not yet included in the set, append it to the end. If
+      it is included, do nothing.
+    */
+    void insert(const T &item) {
         auto result = unordered_items.insert(item);
         bool inserted = result.second;
         if (inserted) {
@@ -47,31 +51,33 @@ public:
     }
 
     bool contains(const T &item) const {
-        return static_cast<bool>(unordered_items.count(item));
+        return unordered_items.count(item) != 0;
     }
 
     void shuffle() {
         g_rng()->shuffle(ordered_items);
     }
 
-    const T &operator[](std::size_t pos) const {
+    const T &operator[](int pos) const {
         assert(utils::in_bounds(pos, ordered_items));
         return ordered_items[pos];
     }
 
-    const std::vector<T> &get_as_vector() {
+    const std::vector<T> &get_as_vector() const {
         return ordered_items;
     }
 
     std::vector<T> pop_as_vector() {
         std::vector<T> items = std::move(ordered_items);
-        clear();
+        unordered_items.clear();
+        assert(empty());
         return items;
     }
 
     std::unordered_set<T> pop_as_unordered_set() {
         std::vector<T> items = std::move(unordered_items);
-        clear();
+        ordered_items.clear();
+        assert(empty());
         return items;
     }
 

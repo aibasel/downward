@@ -119,14 +119,6 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME ALGORITHMS
-    HELP "General-purpose algorithms"
-    SOURCES
-        algorithms/ordered_set.h
-    CORE_PLUGIN
-)
-
-fast_downward_plugin(
     NAME UTILS
     HELP "System utilities"
     SOURCES
@@ -145,6 +137,14 @@ fast_downward_plugin(
         utils/system_unix.cc
         utils/system_windows.cc
         utils/timer.cc
+    CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME ORDERED_SET
+    HELP "Set of elements ordered by insertion time"
+    SOURCES
+        algorithms/ordered_set.h
     CORE_PLUGIN
 )
 
