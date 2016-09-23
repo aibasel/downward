@@ -147,13 +147,10 @@ EnforcedHillClimbingSearch::get_successor_operators(
 void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
 
-    algorithms::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
-    auto collections = ordered_preferred_operators_set.pop_collections();
-    vector<const GlobalOperator *> &ordered_preferred_operators =
-        collections.first;
-    unordered_set<const GlobalOperator *> &unordered_preferred_operators =
-        collections.second;
+    vector<const GlobalOperator *> ordered_preferred_operators =
+        preferred_operators.get_as_vector();
 
     vector<const GlobalOperator *> successor_ops = get_successor_operators(
         eval_context, ordered_preferred_operators);
@@ -162,8 +159,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
         int succ_g = node.get_g() + get_adjusted_cost(*op);
         EdgeOpenListEntry entry = make_pair(
             eval_context.get_state().get_id(), op);
-        bool preferred = static_cast<bool>(
-            unordered_preferred_operators.count(op));
+        bool preferred = static_cast<bool>(preferred_operators.contains(op));
         EvaluationContext new_eval_context(
             eval_context.get_cache(), succ_g, preferred, &statistics);
         open_list->insert(new_eval_context, entry);
