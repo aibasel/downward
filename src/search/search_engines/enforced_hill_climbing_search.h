@@ -48,7 +48,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
 
     std::vector<const GlobalOperator *> get_successor_operators(
         EvaluationContext &eval_context,
-        std::vector<const GlobalOperator *> &preferred_operators);
+        std::vector<const GlobalOperator *> &&preferred_operators);
     void expand(EvaluationContext &eval_context);
     void reach_state(
         const GlobalState &parent, const GlobalOperator &op,

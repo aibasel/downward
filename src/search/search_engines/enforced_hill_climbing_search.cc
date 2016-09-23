@@ -130,14 +130,14 @@ void EnforcedHillClimbingSearch::initialize() {
 vector<const GlobalOperator *>
 EnforcedHillClimbingSearch::get_successor_operators(
     EvaluationContext &eval_context,
-    vector<const GlobalOperator *> &preferred_operators) {
+    vector<const GlobalOperator *> &&preferred_operators) {
     vector<const GlobalOperator *> successor_operators;
     if (!use_preferred ||
         preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
         g_successor_generator->generate_applicable_ops(
             eval_context.get_state(), successor_operators);
     } else {
-        swap(successor_operators, preferred_operators);
+        successor_operators = move(preferred_operators);
     }
     statistics.inc_expanded();
     statistics.inc_generated_ops(successor_operators.size());
@@ -153,7 +153,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
         preferred_operators.get_as_vector();
 
     vector<const GlobalOperator *> successor_ops = get_successor_operators(
-        eval_context, ordered_preferred_operators);
+        eval_context, move(ordered_preferred_operators));
 
     for (const GlobalOperator *op : successor_ops) {
         int succ_g = node.get_g() + get_adjusted_cost(*op);
