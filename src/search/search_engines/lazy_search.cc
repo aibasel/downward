@@ -68,14 +68,13 @@ void LazySearch::initialize() {
 }
 
 vector<const GlobalOperator *> LazySearch::get_successor_operators(
-    algorithms::OrderedSet<const GlobalOperator *> &preferred_operators) {
+    const algorithms::OrderedSet<const GlobalOperator *> &preferred_operators) {
     vector<const GlobalOperator *> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);
 
     if (randomize_successors) {
         g_rng()->shuffle(applicable_operators);
-        preferred_operators.shuffle();
     }
 
     if (preferred_successors_first) {
@@ -96,6 +95,9 @@ void LazySearch::generate_successors() {
     algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
+    if (randomize_successors) {
+        preferred_operators.shuffle();
+    }
 
     vector<const GlobalOperator *> successor_operators =
         get_successor_operators(preferred_operators);
