@@ -159,7 +159,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
         int succ_g = node.get_g() + get_adjusted_cost(*op);
         EdgeOpenListEntry entry = make_pair(
             eval_context.get_state().get_id(), op);
-        bool preferred = static_cast<bool>(preferred_operators.contains(op));
+        bool preferred = preferred_operators.contains(op);
         EvaluationContext new_eval_context(
             eval_context.get_cache(), succ_g, preferred, &statistics);
         open_list->insert(new_eval_context, entry);
