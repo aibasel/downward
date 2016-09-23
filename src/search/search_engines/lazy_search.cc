@@ -68,14 +68,14 @@ void LazySearch::initialize() {
 }
 
 vector<const GlobalOperator *> LazySearch::get_successor_operators(
-    vector<const GlobalOperator *> &&preferred_operators) {
+    algorithms::OrderedSet<const GlobalOperator *> &preferred_operators) {
     vector<const GlobalOperator *> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);
 
     if (randomize_successors) {
         g_rng()->shuffle(applicable_operators);
-        g_rng()->shuffle(preferred_operators);
+        preferred_operators.shuffle();
     }
 
     if (preferred_successors_first) {
@@ -93,25 +93,19 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    algorithms::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
-    auto collections = ordered_preferred_operators_set.pop_collections();
-    vector<const GlobalOperator *> &ordered_preferred_operators =
-        collections.first;
-    unordered_set<const GlobalOperator *> &unordered_preferred_operators =
-        collections.second;
 
     vector<const GlobalOperator *> successor_operators =
-        get_successor_operators(move(ordered_preferred_operators));
+        get_successor_operators(preferred_operators);
 
     statistics.inc_generated(successor_operators.size());
 
     for (const GlobalOperator *op : successor_operators) {
         int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
-        bool is_preferred = static_cast<bool>(
-            unordered_preferred_operators.count(op));
+        bool is_preferred = static_cast<bool>(preferred_operators.contains(op));
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);

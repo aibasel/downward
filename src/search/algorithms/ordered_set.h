@@ -1,7 +1,10 @@
 #ifndef ALGORITHMS_ORDERED_SET_H
 #define ALGORITHMS_ORDERED_SET_H
 
+#include "../globals.h"
+
 #include "../utils/collections.h"
+#include "../utils/rng.h"
 
 #include <cassert>
 #include <unordered_set>
@@ -47,9 +50,17 @@ public:
         return static_cast<bool>(unordered_items.count(item));
     }
 
+    void shuffle() {
+        g_rng()->shuffle(ordered_items);
+    }
+
     const T &operator[](std::size_t pos) const {
         assert(utils::in_bounds(pos, ordered_items));
         return ordered_items[pos];
+    }
+
+    const std::vector<T> &get_as_vector() {
+        return ordered_items;
     }
 
     std::vector<T> pop_as_vector() {
