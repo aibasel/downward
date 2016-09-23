@@ -105,7 +105,7 @@ void LazySearch::generate_successors() {
     for (const GlobalOperator *op : successor_operators) {
         int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
-        bool is_preferred = static_cast<bool>(preferred_operators.contains(op));
+        bool is_preferred = preferred_operators.contains(op);
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);
