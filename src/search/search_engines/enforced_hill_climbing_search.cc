@@ -127,23 +127,6 @@ void EnforcedHillClimbingSearch::initialize() {
     current_phase_start_g = 0;
 }
 
-vector<const GlobalOperator *>
-EnforcedHillClimbingSearch::get_successor_operators(
-    EvaluationContext &eval_context,
-    vector<const GlobalOperator *> &&preferred_operators) {
-    vector<const GlobalOperator *> successor_operators;
-    if (!use_preferred ||
-        preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
-        g_successor_generator->generate_applicable_ops(
-            eval_context.get_state(), successor_operators);
-    } else {
-        successor_operators = move(preferred_operators);
-    }
-    statistics.inc_expanded();
-    statistics.inc_generated_ops(successor_operators.size());
-    return successor_operators;
-}
-
 void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     const EvaluationContext &eval_context,
     int parent_g,
@@ -155,24 +138,33 @@ void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     EvaluationContext new_eval_context(
         eval_context.get_cache(), succ_g, preferred, &statistics);
     open_list->insert(new_eval_context, entry);
+    statistics.inc_generated_ops();
 }
 
 void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
-        collect_preferred_operators(eval_context, preferred_operator_heuristics);
-    vector<const GlobalOperator *> ordered_preferred_operators =
-        preferred_operators.get_as_vector();
-
-    vector<const GlobalOperator *> successor_ops = get_successor_operators(
-        eval_context, move(ordered_preferred_operators));
-
     SearchNode node = search_space.get_node(eval_context.get_state());
     int node_g = node.get_g();
-    for (const GlobalOperator *op : successor_ops) {
-        insert_successor_into_open_list(
-            eval_context, node_g, op, preferred_operators.contains(op));
+
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
+        collect_preferred_operators(eval_context, preferred_operator_heuristics);
+
+    if (!use_preferred ||
+        preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
+        vector<const GlobalOperator *> successor_operators;
+        g_successor_generator->generate_applicable_ops(
+            eval_context.get_state(), successor_operators);
+        for (const GlobalOperator *op : successor_operators) {
+            insert_successor_into_open_list(
+                eval_context, node_g, op, preferred_operators.contains(op));
+        }
+    } else {
+        for (const GlobalOperator *op : preferred_operators) {
+            insert_successor_into_open_list(
+                eval_context, node_g, op, preferred_operators.contains(op));
+        }
     }
 
+    statistics.inc_expanded();
     node.close();
 }
 
