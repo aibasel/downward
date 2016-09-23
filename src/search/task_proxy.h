@@ -3,7 +3,6 @@
 
 #include "abstract_task.h"
 
-#include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
 
@@ -101,8 +100,8 @@ class ProxyIterator {
     std::size_t pos;
 public:
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
-        : collection(collection), pos(pos) {
-    }
+        : collection(collection), pos(pos) {}
+    ~ProxyIterator() = default;
 
     typename ProxyCollection::ItemType operator*() const {
         return collection[pos];
