@@ -144,9 +144,20 @@ EnforcedHillClimbingSearch::get_successor_operators(
     return successor_operators;
 }
 
-void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
-    SearchNode node = search_space.get_node(eval_context.get_state());
+void EnforcedHillClimbingSearch::insert_successor_into_open_list(
+    const EvaluationContext &eval_context,
+    int parent_g,
+    const GlobalOperator *op,
+    bool preferred) {
+    int succ_g = parent_g + get_adjusted_cost(*op);
+    EdgeOpenListEntry entry = make_pair(
+        eval_context.get_state().get_id(), op);
+    EvaluationContext new_eval_context(
+        eval_context.get_cache(), succ_g, preferred, &statistics);
+    open_list->insert(new_eval_context, entry);
+}
 
+void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
     vector<const GlobalOperator *> ordered_preferred_operators =
@@ -155,14 +166,11 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     vector<const GlobalOperator *> successor_ops = get_successor_operators(
         eval_context, move(ordered_preferred_operators));
 
+    SearchNode node = search_space.get_node(eval_context.get_state());
+    int node_g = node.get_g();
     for (const GlobalOperator *op : successor_ops) {
-        int succ_g = node.get_g() + get_adjusted_cost(*op);
-        EdgeOpenListEntry entry = make_pair(
-            eval_context.get_state().get_id(), op);
-        bool preferred = preferred_operators.contains(op);
-        EvaluationContext new_eval_context(
-            eval_context.get_cache(), succ_g, preferred, &statistics);
-        open_list->insert(new_eval_context, entry);
+        insert_successor_into_open_list(
+            eval_context, node_g, op, preferred_operators.contains(op));
     }
 
     node.close();
