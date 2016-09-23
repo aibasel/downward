@@ -75,13 +75,6 @@ public:
         return items;
     }
 
-    std::pair<std::vector<T>, std::unordered_set<T>> pop_collections() {
-        auto collections = make_pair(
-            std::move(ordered_items), std::move(unordered_items));
-        assert(empty());
-        return collections;
-    }
-
     typename std::vector<T>::const_iterator begin() const {
         return ordered_items.begin();
     }
