@@ -92,6 +92,47 @@ class VariablesProxy;
 */
 
 
+/*
+  Basic iterator support for proxy collections.
+*/
+template<class ProxyCollection>
+class ProxyIterator {
+    const ProxyCollection &collection;
+    std::size_t pos;
+public:
+    ProxyIterator(const ProxyCollection &collection, std::size_t pos)
+        : collection(collection), pos(pos) {
+    }
+
+    typename ProxyCollection::ItemType operator*() const {
+        return collection[pos];
+    }
+
+    ProxyIterator &operator++() {
+        ++pos;
+        return *this;
+    }
+
+    bool operator==(const ProxyIterator &other) const {
+        return &collection == &other.collection && pos == other.pos;
+    }
+
+    bool operator!=(const ProxyIterator &other) const {
+        return !(*this == other);
+    }
+};
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
+}
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
+
+
 class FactProxy {
     const AbstractTask *task;
     FactPair fact;
