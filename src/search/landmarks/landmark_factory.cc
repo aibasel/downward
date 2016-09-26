@@ -349,10 +349,10 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
     assert(!node_a->disjunctive && !node_b->disjunctive);
 
     VariablesProxy variables = task_proxy.get_variables();
-    for (const FactPair &lm_fact_a : node_b->facts) {
-        const FactProxy &fact_a = variables[lm_fact_a.var].get_fact(lm_fact_a.value);
-        for (const FactPair &lm_fact_b : node_a->facts) {
-            const FactProxy &fact_b = variables[lm_fact_b.var].get_fact(lm_fact_b.value);
+    for (const FactPair &lm_fact_b : node_b->facts) {
+        const FactProxy &fact_b = variables[lm_fact_b.var].get_fact(lm_fact_b.value);
+        for (const FactPair &lm_fact_a : node_a->facts) {
+            const FactProxy &fact_a = variables[lm_fact_a.var].get_fact(lm_fact_a.value);
             if (lm_fact_a == lm_fact_b) {
                 if (!node_a->conjunctive || !node_b->conjunctive)
                     return false;
