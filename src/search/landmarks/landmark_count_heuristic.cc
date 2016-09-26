@@ -70,11 +70,10 @@ LandmarkCountHeuristic::~LandmarkCountHeuristic() {
 
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &global_state) {
     // Set additional goals for FF exploration
-    LandmarkSet result;
-    const vector<bool> &reached_lms_v =
-        lm_status_manager->get_reached_landmarks(global_state);
-    convert_lms(result, reached_lms_v);
-    vector<FactPair> lm_leaves = collect_lm_leaves(ff_search_disjunctive_lms, result);
+    LandmarkSet reached_landmarks = convert_to_landmark_set(
+        lm_status_manager->get_reached_landmarks(global_state));
+    vector<FactPair> lm_leaves = collect_lm_leaves(
+        ff_search_disjunctive_lms, reached_landmarks);
     exploration.set_additional_goals(lm_leaves);
 }
 
@@ -130,9 +129,8 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     // reached within next step, helpful actions are those occuring in a plan
     // to achieve one of the LM leaves.
 
-    LandmarkSet reached_lms;
-    vector<bool> &reached_lms_v = lm_status_manager->get_reached_landmarks(global_state);
-    convert_lms(reached_lms, reached_lms_v);
+    LandmarkSet reached_lms = convert_to_landmark_set(
+        lm_status_manager->get_reached_landmarks(global_state));
 
     int num_reached = reached_lms.size();
     if (num_reached == lgraph->number_of_landmarks() ||
@@ -157,7 +155,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 vector<FactPair> LandmarkCountHeuristic::collect_lm_leaves(
-    bool disjunctive_lms, LandmarkSet &reached_lms) {
+    bool disjunctive_lms, const LandmarkSet &reached_lms) {
     vector<FactPair> leaves;
     for (const LandmarkNode *node_p : lgraph->get_nodes()) {
         if (!disjunctive_lms && node_p->disjunctive)
@@ -263,15 +261,16 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
     return dead_ends_reliable;
 }
 
-void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
-                                         const vector<bool> &lms_vec) {
-    // This function exists purely so we don't have to change all the
-    // functions in this class that use LandmarkSets for the reached LMs
-    // (HACK).
-
-    for (size_t i = 0; i < lms_vec.size(); ++i)
-        if (lms_vec[i])
-            lms_set.insert(lgraph->get_lm_for_index(i));
+// This function exists purely so we don't have to change all the
+// functions in this class that use LandmarkSets for the reached LMs
+// (HACK).
+LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
+    const vector<bool> &landmark_vector) {
+    LandmarkSet landmark_set;
+    for (size_t i = 0; i < landmark_vector.size(); ++i)
+        if (landmark_vector[i])
+            landmark_set.insert(lgraph->get_lm_for_index(i));
+    return landmark_set;
 }
 
 

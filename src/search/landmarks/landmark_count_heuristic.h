@@ -26,7 +26,7 @@ class LandmarkCountHeuristic : public Heuristic {
     int get_heuristic_value(const GlobalState &global_state);
 
     std::vector<FactPair> collect_lm_leaves(
-        bool disjunctive_lms, LandmarkSet &result);
+        bool disjunctive_lms, const LandmarkSet &result);
 
     bool check_node_orders_disobeyed(
         const LandmarkNode &node, const LandmarkSet &reached) const;
@@ -39,7 +39,8 @@ class LandmarkCountHeuristic : public Heuristic {
         const State &state, const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &global_state);
 
-    void convert_lms(LandmarkSet &lms_set, const std::vector<bool> &lms_vec);
+    LandmarkSet convert_to_landmark_set(
+        const std::vector<bool> &landmark_vector);
 protected:
     virtual int compute_heuristic(const GlobalState &state) override;
 public:
