@@ -557,8 +557,6 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
 
             bool insert = true;
             for (const FactPair &lm_fact : lmp->facts) {
-                if (!insert)
-                    break;
                 if (fact != lm_fact) {
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
@@ -572,10 +570,13 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
                             if (reach_fact[j] == reach_lm[k])
                                 intersection_empty = false;
 
-                    if (!intersection_empty)
+                    if (!intersection_empty) {
                         insert = false;
+                        break;
+                    }
                 } else {
                     insert = false;
+                    break;
                 }
             }
             if (insert)

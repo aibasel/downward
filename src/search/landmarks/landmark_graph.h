@@ -115,13 +115,13 @@ struct LandmarkNodeComparer {
     bool operator()(LandmarkNode *a, LandmarkNode *b) const {
         if (a->facts.size() != b->facts.size())
             return a->facts.size() > b->facts.size();
-        for (FactPair fact : a->facts) {
-            if (fact.var != fact.var)
-                return fact.var > fact.var;
+        for (size_t i = 0; i < a->facts.size(); ++i) {
+            if (a->facts[i].var != b->facts[i].var)
+                return a->facts[i].var > b->facts[i].var;
         }
-        for (FactPair fact : a->facts) {
-            if (fact.value != fact.value)
-                return fact.value > fact.value;
+        for (size_t i = 0; i < a->facts.size(); ++i) {
+            if (a->facts[i].value != b->facts[i].value)
+                return a->facts[i].value > b->facts[i].value;
         }
         return false;
     }
