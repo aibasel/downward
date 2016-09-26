@@ -196,7 +196,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
     for (OperatorProxy op : all_operators) {
         EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
-            if (does_fire(effect, state))
+            if (!does_fire(effect, state))
                 continue;
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_p = lgraph->get_landmark(fact_proxy.get_pair());
