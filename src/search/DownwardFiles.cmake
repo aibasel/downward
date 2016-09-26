@@ -5,12 +5,13 @@ set(PLANNER_SOURCES
 # See http://www.fast-downward.org/ForDevelopers/AddingSourceFiles
 # for general information on adding source files and CMake plugins.
 #
-# We assume that every *.cc file has a corresponding *.h file and add
-# headers to the project automatically.
-#
-# All plugins are enabled by default - it's up to the user to specify
+# All plugins are enabled by default and users can disable them by specifying
 #    -DPLUGIN_FOO_ENABLED=FALSE
-# to disable a given plugin.
+# The default behavior can be changed so all non-essential plugins are
+# disabled by default by specifying
+#    -DDISABLE_PLUGINS_BY_DEFAULT=TRUE
+# In that case, individual plugins can be enabled with
+#    -DPLUGIN_FOO_ENABLED=TRUE
 #
 # Defining a new plugin:
 #    fast_downward_plugin(
@@ -24,21 +25,25 @@ set(PLANNER_SOURCES
 #        [ CORE_PLUGIN ]
 #    )
 #
-# <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
-#                files in IDEs and for messages.
+# <DISPLAY_NAME> defaults to lower case <NAME> and is used to group files
+#   in IDEs and for messages.
 # <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
-# DEPENDS lists plugins that will be automatically enabled if this plugin
-# is enabled. If the dependency was not enabled before, this will be logged.
+# SOURCES lists the source files that are part of the plugin. For every *.cc
+#   file, there has to be a *.h file with the same name and only the *.cc
+#   file should be specified in the list. For *.h files without a *.cc file,
+#   the *.h file should be listed.
+# DEPENDS lists plugins that will be automatically enabled if this plugin is
+#   enabled. If the dependency was not enabled before, this will be logged.
 # DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
-#     hides the option to enable the plugin in cmake GUIs like ccmake.
-# CORE_PLUGIN enables the plugin and hides the option to disable it in
-#     cmake GUIs like ccmake.
+#   hides the option to enable the plugin in cmake GUIs like ccmake.
+# CORE_PLUGIN always enables the plugin (even if DISABLE_PLUGINS_BY_DEFAULT
+#   is used) and hides the option to disable it in CMake GUIs like ccmake.
 
 option(
     DISABLE_PLUGINS_BY_DEFAULT
     "If set to YES only plugins that are specifically enabled will be compiled"
     NO)
-# This option should not show up in cmake GUIs like ccmake where all
+# This option should not show up in CMake GUIs like ccmake where all
 # plugins are enabled or disabled manually.
 mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
 
