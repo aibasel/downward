@@ -84,14 +84,7 @@ fast_downward_plugin(
         task_proxy.cc
         task_tools.cc
         variable_order_finder.cc
-    DEPENDS ORDERED_SET
-    CORE_PLUGIN
-)
 
-fast_downward_plugin(
-    NAME OPEN_LISTS
-    HELP "Open lists"
-    SOURCES
         open_lists/alternation_open_list.cc
         open_lists/bucket_open_list.cc
         open_lists/epsilon_greedy_open_list.cc
@@ -101,6 +94,7 @@ fast_downward_plugin(
         open_lists/standard_scalar_open_list.cc
         open_lists/tiebreaking_open_list.cc
         open_lists/type_based_open_list.cc
+    DEPENDS ORDERED_SET
     CORE_PLUGIN
 )
 
