@@ -141,6 +141,11 @@ algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
     const vector<Heuristic *> &preferred_operator_heuristics) {
     algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
     for (Heuristic *heuristic : preferred_operator_heuristics) {
+        /*
+          Unreliable heuristics might consider solvable states as dead
+          ends. We only want preferred operators from finite-value
+          heuristics.
+        */
         if (!eval_context.is_heuristic_infinite(heuristic)) {
             for (const GlobalOperator *op :
                  eval_context.get_preferred_operators(heuristic)) {
