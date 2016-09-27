@@ -96,7 +96,7 @@ void LazySearch::generate_successors() {
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
     if (randomize_successors) {
-        preferred_operators.shuffle();
+        preferred_operators.shuffle(*g_rng());
     }
 
     vector<const GlobalOperator *> successor_operators =

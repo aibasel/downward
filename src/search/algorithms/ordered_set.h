@@ -1,8 +1,6 @@
 #ifndef ALGORITHMS_ORDERED_SET_H
 #define ALGORITHMS_ORDERED_SET_H
 
-#include "../globals.h"
-
 #include "../utils/collections.h"
 #include "../utils/rng.h"
 
@@ -54,8 +52,8 @@ public:
         return unordered_items.count(item) != 0;
     }
 
-    void shuffle() {
-        g_rng()->shuffle(ordered_items);
+    void shuffle(utils::RandomNumberGenerator &rng) {
+        rng.shuffle(ordered_items);
     }
 
     const T &operator[](int pos) const {
