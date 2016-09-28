@@ -148,8 +148,12 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
-    if (!use_preferred ||
-        preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
+    if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
+        for (const GlobalOperator *op : preferred_operators) {
+            insert_successor_into_open_list(
+                eval_context, node_g, op, preferred_operators.contains(op));
+        }
+    } else {
         vector<const GlobalOperator *> successor_operators;
         g_successor_generator->generate_applicable_ops(
             eval_context.get_state(), successor_operators);
@@ -157,11 +161,6 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
             bool preferred = use_preferred && preferred_operators.contains(op);
             insert_successor_into_open_list(
                 eval_context, node_g, op, preferred);
-        }
-    } else {
-        for (const GlobalOperator *op : preferred_operators) {
-            insert_successor_into_open_list(
-                eval_context, node_g, op, preferred_operators.contains(op));
         }
     }
 
