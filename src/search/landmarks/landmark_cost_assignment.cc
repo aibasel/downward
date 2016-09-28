@@ -15,8 +15,8 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkCostAssignment::LandmarkCostAssignment(const std::vector<int> &operator_costs,
-                                               const std::shared_ptr<LandmarkGraph> &graph)
+LandmarkCostAssignment::LandmarkCostAssignment(const vector<int> &operator_costs,
+                                               const shared_ptr<LandmarkGraph> &graph)
     : lm_graph(graph), operator_costs(operator_costs) {
 }
 
@@ -34,7 +34,7 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 // Uniform cost partioning
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    const std::vector<int> &operator_costs, const shared_ptr<LandmarkGraph> &graph, bool use_action_landmarks)
+    const vector<int> &operator_costs, const shared_ptr<LandmarkGraph> &graph, bool use_action_landmarks)
     : LandmarkCostAssignment(operator_costs, graph), use_action_landmarks(use_action_landmarks) {
 }
 
@@ -122,8 +122,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    const std::vector<int> &operator_costs,
-    const std::shared_ptr<LandmarkGraph> &graph,
+    const vector<int> &operator_costs,
+    const shared_ptr<LandmarkGraph> &graph,
     lp::LPSolverType solver_type)
     : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type) {

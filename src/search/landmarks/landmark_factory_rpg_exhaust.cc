@@ -19,7 +19,8 @@ LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
 }
 
 void LandmarkFactoryRpgExhaust::generate_landmarks(
-    const TaskProxy &task_proxy, Exploration &exploration) {
+    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    TaskProxy task_proxy(*task);
     cout << "Generating landmarks by testing all facts with RPG method" << endl;
 
     // insert goal landmarks and mark them as goals

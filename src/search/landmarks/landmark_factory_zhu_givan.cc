@@ -20,8 +20,9 @@ LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks(const TaskProxy &task_proxy,
-                                                 Exploration &exploration) {
+void LandmarkFactoryZhuGivan::generate_landmarks(
+    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    TaskProxy task_proxy(*task);
     cout << "Generating landmarks using Zhu/Givan label propagation\n";
 
     compute_triggers(task_proxy);
