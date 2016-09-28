@@ -490,7 +490,7 @@ fast_downward_plugin(
         pdbs/pattern_generator_manual.cc
         pdbs/pattern_generator.cc
         pdbs/pdb_heuristic.cc
-        pdbs/types.cc
+        pdbs/types.h
         pdbs/validation.cc
         pdbs/zero_one_pdbs.cc
         pdbs/zero_one_pdbs_heuristic.cc

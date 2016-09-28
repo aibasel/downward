@@ -13,10 +13,9 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionInformation::PatternCollectionInformation(
-    shared_ptr<AbstractTask> task,
-    shared_ptr<PatternCollection> patterns)
-    : task(task),
-      task_proxy(*task),
+    const TaskProxy &task_proxy,
+    const shared_ptr<PatternCollection> &patterns)
+    : task_proxy(task_proxy),
       patterns(patterns),
       pdbs(nullptr),
       max_additive_subsets(nullptr) {
@@ -89,13 +88,13 @@ void PatternCollectionInformation::create_max_additive_subsets_if_missing() {
     }
 }
 
-void PatternCollectionInformation::set_pdbs(shared_ptr<PDBCollection> pdbs_) {
+void PatternCollectionInformation::set_pdbs(const shared_ptr<PDBCollection> &pdbs_) {
     pdbs = pdbs_;
     assert(information_is_valid());
 }
 
 void PatternCollectionInformation::set_max_additive_subsets(
-    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets_) {
+    const shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets_) {
     max_additive_subsets = max_additive_subsets_;
     assert(information_is_valid());
 }

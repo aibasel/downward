@@ -7,15 +7,16 @@
 #include <memory>
 #include <vector>
 
-class AbstractTask;
 class GeneratorBase;
 class GlobalOperator;
 class GlobalState;
-class OperatorProxy;
-class State;
 
+/*
+  NOTE that the task proxy passed to the constructor is stored internally.
+       It is the responsibility of the owner that the task lives at least as
+       long as the successor generator does.
+*/
 class SuccessorGenerator {
-    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
 
     std::unique_ptr<GeneratorBase> root;
@@ -29,7 +30,7 @@ class SuccessorGenerator {
 
     SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
-    SuccessorGenerator(const std::shared_ptr<AbstractTask> task);
+    SuccessorGenerator(const TaskProxy &task_proxy);
     ~SuccessorGenerator();
 
     void generate_applicable_ops(
