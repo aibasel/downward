@@ -897,7 +897,9 @@ void HMLandmarks::add_lm_node(int set_index, bool goal) {
     }
 }
 
-void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &) {
+void HMLandmarks::generate_landmarks(
+    const shared_ptr<AbstractTask> &task, Exploration &) {
+    TaskProxy task_proxy(*task);
     int set_index;
     initialize(task_proxy);
     compute_h_m_landmarks(task_proxy);

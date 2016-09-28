@@ -413,8 +413,9 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     }
 }
 
-void LandmarkFactoryRpgSasp::generate_landmarks(const TaskProxy &task_proxy,
-                                                Exploration &exploration) {
+void LandmarkFactoryRpgSasp::generate_landmarks(
+    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    TaskProxy task_proxy(*task);
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
     build_dtg_successors(task_proxy);
     build_disjunction_classes(task_proxy);

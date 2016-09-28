@@ -39,7 +39,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     int min_cost_for_landmark(const TaskProxy &task_proxy,
                               LandmarkNode *bp,
                               std::vector<std::vector<int>> &lvl_var);
-    virtual void generate_landmarks(const TaskProxy &task_proxy,
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
                                     Exploration &exploration) override;
     void found_simple_lm_and_order(const FactPair &a, LandmarkNode &b,
                                    EdgeType t);

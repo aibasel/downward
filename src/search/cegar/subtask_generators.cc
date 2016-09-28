@@ -147,7 +147,7 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
     shared_ptr<landmarks::LandmarkGraph> landmark_graph =
-        get_landmark_graph(TaskProxy(*task));
+        get_landmark_graph(task);
     Facts landmark_facts = get_fact_landmarks(*landmark_graph);
     filter_and_order_facts(task, fact_order, landmark_facts);
     for (const FactPair &landmark : landmark_facts) {

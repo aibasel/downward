@@ -38,7 +38,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
            (!has_conditional_effects(task_proxy) || conditional_effects_supported))) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
-    lgraph = lm_graph_factory->compute_lm_graph(task_proxy, exploration);
+    lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 

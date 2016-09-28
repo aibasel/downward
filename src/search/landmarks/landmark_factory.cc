@@ -9,6 +9,8 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../tasks/cost_adapted_task.h"
+
 #include "../utils/memory.h"
 #include "../utils/timer.h"
 
@@ -44,15 +46,24 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   ensure that the TaskProxy used by the Exploration object is the same
   as the TaskProxy object passed to this function.
 */
-shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(const TaskProxy &task_proxy, Exploration &exploration) {
+shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
+    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     if (lm_graph)
         return lm_graph;
     utils::Timer lm_generation_timer;
-    lm_graph = make_shared<LandmarkGraph>(task_proxy);
-    generate_landmarks(task_proxy, exploration);
+
+    Options options;
+    options.set<shared_ptr<AbstractTask>>("transform", task);
+    options.set<int>("cost_type", lm_cost_type);
+    shared_ptr<AbstractTask> cost_adapted_task =
+        make_shared<tasks::CostAdaptedTask>(options);
+    TaskProxy cost_adapted_task_proxy(*cost_adapted_task);
+
+    lm_graph = make_shared<LandmarkGraph>(cost_adapted_task_proxy);
+    generate_landmarks(cost_adapted_task, exploration);
 
     // the following replaces the old "build_lm_graph"
-    generate(task_proxy, exploration);
+    generate(cost_adapted_task_proxy, exploration);
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;

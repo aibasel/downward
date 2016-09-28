@@ -33,7 +33,7 @@ public:
 
     LandmarkFactory(const LandmarkFactory &) = delete;
 
-    std::shared_ptr<LandmarkGraph> compute_lm_graph(const TaskProxy &task_proxy, Exploration &exploration);
+    std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task, Exploration &exploration);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
     bool use_reasonable_orders() const {return reasonable_orders; }
@@ -45,7 +45,7 @@ protected:
     bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
     OperatorCost get_lm_cost_type() const {return lm_cost_type; }
 
-    virtual void generate_landmarks(const TaskProxy &task_proxy, Exploration &exploration) = 0;
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task, Exploration &exploration) = 0;
     void generate(const TaskProxy &task_proxy, Exploration &exploration);
     void discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration);
     void discard_disjunctive_landmarks();

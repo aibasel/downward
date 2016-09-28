@@ -21,7 +21,7 @@ static FactPair get_fact(const LandmarkNode &node) {
     return node.facts[0];
 }
 
-shared_ptr<LandmarkGraph> get_landmark_graph(const TaskProxy &task_proxy) {
+shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {
     Options exploration_opts = Options();
     exploration_opts.set<int>("cost_type", NORMAL);
     exploration_opts.set<bool>("cache_estimates", false);
@@ -38,7 +38,7 @@ shared_ptr<LandmarkGraph> get_landmark_graph(const TaskProxy &task_proxy) {
     hm_opts.set<int>("lm_cost_type", NORMAL);
     HMLandmarks lm_graph_factory(hm_opts);
 
-    return lm_graph_factory.compute_lm_graph(task_proxy, exploration);
+    return lm_graph_factory.compute_lm_graph(task, exploration);
 }
 
 vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
