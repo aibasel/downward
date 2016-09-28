@@ -157,6 +157,8 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
                 eval_context, node_g, op, preferred_operators.contains(op));
         }
     } else {
+        /* The successor ranking implied by RANK_BY_PREFERRED is done
+           by the open list. */
         vector<const GlobalOperator *> successor_operators;
         g_successor_generator->generate_applicable_ops(
             eval_context.get_state(), successor_operators);
