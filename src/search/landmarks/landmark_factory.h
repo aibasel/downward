@@ -43,7 +43,6 @@ protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
 
     bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
-    OperatorCost get_lm_cost_type() const {return lm_cost_type; }
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task, Exploration &exploration) = 0;
     void generate(const TaskProxy &task_proxy, Exploration &exploration);

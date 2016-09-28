@@ -151,10 +151,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp)) {
-                /* TODO: When refactoring the landmarks code, find a better solution
-                   for setting landmark cost types. */
-                int cost = get_adjusted_action_cost(op.get_cost(), get_lm_cost_type());
-                min_cost = min(min_cost, cost);
+                min_cost = min(min_cost, op.get_cost());
             }
         }
     }
