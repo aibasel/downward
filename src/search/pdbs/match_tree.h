@@ -13,10 +13,12 @@ class AbstractOperator;
 
 /*
   Successor Generator for abstract operators.
-  NOTE that the task proxy passed to the constructor is stored internally.
-       It is the responsibility of the owner that the task lives at least as
-       long as the match tree does.
+
+  NOTE: MatchTree keeps a reference to the task proxy passed to the constructor.
+  Therefore, users of the class must ensure that the task lives at least as long
+  as the match tree.
 */
+
 class MatchTree {
     TaskProxy task_proxy;
     struct Node;

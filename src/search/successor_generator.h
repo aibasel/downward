@@ -12,9 +12,9 @@ class GlobalOperator;
 class GlobalState;
 
 /*
-  NOTE that the task proxy passed to the constructor is stored internally.
-       It is the responsibility of the owner that the task lives at least as
-       long as the successor generator does.
+  NOTE: SuccessorGenerator keeps a reference to the task proxy passed to the
+  constructor. Therefore, users of the class must ensure that the task lives at
+  least as long as the successor generator.
 */
 class SuccessorGenerator {
     TaskProxy task_proxy;
