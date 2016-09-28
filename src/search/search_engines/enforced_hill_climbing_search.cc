@@ -154,8 +154,9 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
         g_successor_generator->generate_applicable_ops(
             eval_context.get_state(), successor_operators);
         for (const GlobalOperator *op : successor_operators) {
+            bool preferred = use_preferred && preferred_operators.contains(op);
             insert_successor_into_open_list(
-                eval_context, node_g, op, preferred_operators.contains(op));
+                eval_context, node_g, op, preferred);
         }
     } else {
         for (const GlobalOperator *op : preferred_operators) {
