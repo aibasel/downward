@@ -2,7 +2,6 @@
 #define LANDMARKS_H_M_LANDMARKS_H
 
 #include "landmark_factory.h"
-#include "landmark_graph.h"
 
 namespace landmarks {
 using FluentSet = std::vector<FactPair>;

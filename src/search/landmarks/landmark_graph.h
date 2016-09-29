@@ -4,8 +4,6 @@
 #include "../global_state.h"
 #include "../task_proxy.h"
 
-#include "../utils/hash.h"
-
 #include <cassert>
 #include <list>
 #include <map>
