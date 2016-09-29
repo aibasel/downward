@@ -61,7 +61,7 @@ bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lv
 
 OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id) {
     if (op_or_axiom_id < 0) {
-        return task_proxy.get_axioms()[op_or_axiom_id + 1];
+        return task_proxy.get_axioms()[-op_or_axiom_id - 1];
     } else {
         return task_proxy.get_operators()[op_or_axiom_id];
     }
