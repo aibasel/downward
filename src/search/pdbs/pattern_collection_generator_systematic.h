@@ -38,15 +38,15 @@ class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
                                    const Pattern &pattern,
                                    std::vector<int> &result) const;
 
-    void build_sga_patterns(TaskProxy task_proxy, const CausalGraph &cg);
-    void build_patterns(TaskProxy task_proxy);
-    void build_patterns_naive(TaskProxy task_proxy);
+    void build_sga_patterns(const TaskProxy &task_proxy, const CausalGraph &cg);
+    void build_patterns(const TaskProxy &task_proxy);
+    void build_patterns_naive(const TaskProxy &task_proxy);
 public:
     explicit PatternCollectionGeneratorSystematic(const options::Options &opts);
     ~PatternCollectionGeneratorSystematic() = default;
 
     virtual PatternCollectionInformation generate(
-        std::shared_ptr<AbstractTask> task) override;
+        const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 

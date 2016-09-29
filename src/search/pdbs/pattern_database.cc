@@ -54,14 +54,14 @@ AbstractOperator::~AbstractOperator() {
 }
 
 void AbstractOperator::dump(const Pattern &pattern,
-                            const TaskProxy &task_proxy) const {
+                            const VariablesProxy &variables) const {
     cout << "AbstractOperator:" << endl;
     cout << "Regression preconditions:" << endl;
     for (size_t i = 0; i < regression_preconditions.size(); ++i) {
         int var_id = regression_preconditions[i].var;
         int val = regression_preconditions[i].value;
         cout << "Variable: " << var_id << " (True name: "
-             << task_proxy.get_variables()[pattern[var_id]].get_name()
+             << variables[pattern[var_id]].get_name()
              << ", Index: " << i << ") Value: " << val << endl;
     }
     cout << "Hash effect:" << hash_effect << endl;
@@ -72,8 +72,7 @@ PatternDatabase::PatternDatabase(
     const Pattern &pattern,
     bool dump,
     const vector<int> &operator_costs)
-    : task_proxy(task_proxy),
-      pattern(pattern) {
+    : pattern(pattern) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
     assert(operator_costs.empty() ||
@@ -95,7 +94,7 @@ PatternDatabase::PatternDatabase(
             utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
         }
     }
-    create_pdb(operator_costs);
+    create_pdb(task_proxy, operator_costs);
     if (dump)
         cout << "PDB construction time: " << timer << endl;
 }
@@ -105,6 +104,7 @@ void PatternDatabase::multiply_out(
     vector<FactPair> &pre_pairs,
     vector<FactPair> &eff_pairs,
     const vector<FactPair> &effects_without_pre,
+    const VariablesProxy &variables,
     vector<AbstractOperator> &operators) {
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
@@ -118,7 +118,7 @@ void PatternDatabase::multiply_out(
         // abstract operator.
         int var_id = effects_without_pre[pos].var;
         int eff = effects_without_pre[pos].value;
-        VariableProxy var = task_proxy.get_variables()[pattern[var_id]];
+        VariableProxy var = variables[pattern[var_id]];
         for (int i = 0; i < var.get_domain_size(); ++i) {
             if (i != eff) {
                 pre_pairs.emplace_back(var_id, i);
@@ -127,7 +127,7 @@ void PatternDatabase::multiply_out(
                 prev_pairs.emplace_back(var_id, i);
             }
             multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
-                         effects_without_pre, operators);
+                         effects_without_pre, variables, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
                 eff_pairs.pop_back();
@@ -141,6 +141,7 @@ void PatternDatabase::multiply_out(
 void PatternDatabase::build_abstract_operators(
     const OperatorProxy &op, int cost,
     const vector<int> &variable_to_index,
+    const VariablesProxy &variables,
     vector<AbstractOperator> &operators) {
     // All variable value pairs that are a prevail condition
     vector<FactPair> prev_pairs;
@@ -151,7 +152,7 @@ void PatternDatabase::build_abstract_operators(
     // All variable value pairs that are a precondition (value = -1)
     vector<FactPair> effects_without_pre;
 
-    size_t num_vars = task_proxy.get_variables().size();
+    size_t num_vars = variables.size();
     vector<bool> has_precond_and_effect_on_var(num_vars, false);
     vector<bool> has_precondition_on_var(num_vars, false);
 
@@ -184,12 +185,13 @@ void PatternDatabase::build_abstract_operators(
         }
     }
     multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre,
-                 operators);
+                 variables, operators);
 }
 
-void PatternDatabase::create_pdb(const vector<int> &operator_costs) {
-    VariablesProxy vars = task_proxy.get_variables();
-    vector<int> variable_to_index(vars.size(), -1);
+void PatternDatabase::create_pdb(
+    const TaskProxy &task_proxy, const vector<int> &operator_costs) {
+    VariablesProxy variables = task_proxy.get_variables();
+    vector<int> variable_to_index(variables.size(), -1);
     for (size_t i = 0; i < pattern.size(); ++i) {
         variable_to_index[pattern[i]] = i;
     }
@@ -203,7 +205,8 @@ void PatternDatabase::create_pdb(const vector<int> &operator_costs) {
         } else {
             op_cost = operator_costs[op.get_id()];
         }
-        build_abstract_operators(op, op_cost, variable_to_index, operators);
+        build_abstract_operators(
+            op, op_cost, variable_to_index, variables, operators);
     }
 
     // build the match tree
@@ -228,7 +231,7 @@ void PatternDatabase::create_pdb(const vector<int> &operator_costs) {
 
     // initialize queue
     for (size_t state_index = 0; state_index < num_states; ++state_index) {
-        if (is_goal_state(state_index, abstract_goals)) {
+        if (is_goal_state(state_index, abstract_goals, variables)) {
             pq.push(0, state_index);
             distances.push_back(0);
         } else {
@@ -261,11 +264,12 @@ void PatternDatabase::create_pdb(const vector<int> &operator_costs) {
 
 bool PatternDatabase::is_goal_state(
     const size_t state_index,
-    const vector<FactPair> &abstract_goals) const {
+    const vector<FactPair> &abstract_goals,
+    const VariablesProxy &variables) const {
     for (const FactPair &abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.var;
         int var_id = pattern[pattern_var_id];
-        VariableProxy var = task_proxy.get_variables()[var_id];
+        VariableProxy var = variables[var_id];
         int temp = state_index / hash_multipliers[pattern_var_id];
         int val = temp % var.get_domain_size();
         if (val != abstract_goal.value) {
