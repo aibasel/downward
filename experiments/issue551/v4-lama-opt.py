@@ -12,6 +12,10 @@ SUITE = suites.suite_optimal()
 
 CONFIGS = [
     IssueConfig("seq-opt-bjolp", [], driver_options=["--alias", "seq-opt-bjolp"]),
+    IssueConfig("seq-opt-bjolp-ocp", [
+        "--landmarks", "lm=lm_merged([lm_rhw(),lm_hm(m=1)])",
+        "--heuristic", "hlm=lmcount(lm,admissible=true,optimal=true)",
+        "--search",    "astar(hlm,mpd=true)"]),
 ]
 
 exp = IssueExperiment(
