@@ -89,9 +89,6 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
-ShrinkBisimulation::~ShrinkBisimulation() {
-}
-
 int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
                                           int index,
                                           vector<int> &state_to_group) const {
@@ -224,11 +221,11 @@ void ShrinkBisimulation::compute_signatures(
     ::sort(signatures.begin(), signatures.end());
 }
 
-void ShrinkBisimulation::compute_abstraction(
-    const FactoredTransitionSystem &fts,
+bool ShrinkBisimulation::shrink(
+    FactoredTransitionSystem &fts,
     int index,
     int target_size,
-    StateEquivalenceRelation &equivalence_relation) const {
+    Verbosity verbosity) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     int num_states = ts.get_size();
@@ -240,7 +237,8 @@ void ShrinkBisimulation::compute_abstraction(
     int num_groups = initialize_groups(fts, index, state_to_group);
     // cout << "number of initial groups: " << num_groups << endl;
 
-    // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
+    // TODO: We currently violate this; see issue250
+    // assert(num_groups <= target_size);
 
     int max_h = distances.get_max_h();
     assert(max_h >= 0 && max_h != INF);
@@ -335,7 +333,7 @@ void ShrinkBisimulation::compute_abstraction(
     utils::release_vector_memory(signatures);
 
     // Generate final result.
-    assert(equivalence_relation.empty());
+    StateEquivalenceRelation equivalence_relation;
     equivalence_relation.resize(num_groups);
     for (int state = 0; state < num_states; ++state) {
         int group = state_to_group[state];
@@ -344,14 +342,8 @@ void ShrinkBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
-}
 
-void ShrinkBisimulation::compute_equivalence_relation(
-    const FactoredTransitionSystem &fts,
-    int index,
-    int target,
-    StateEquivalenceRelation &equivalence_relation) const {
-    compute_abstraction(fts, index, target, equivalence_relation);
+    return shrink_fts(fts, index, equivalence_relation, verbosity);
 }
 
 string ShrinkBisimulation::name() const {

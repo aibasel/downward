@@ -27,7 +27,8 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const shared_ptr<AbstractTask> &task) {
-    VariableOrderFinder vof(task, variable_order_type);
+    TaskProxy task_proxy(*task);
+    VariableOrderFinder vof(task_proxy, variable_order_type);
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
@@ -51,18 +52,16 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     int num_ts = fts.get_size();
     vector<int> var_to_ts_index(num_vars, -1);
     vector<bool> used_ts_indices(num_ts, true);
-    for (int ts_index = 0; ts_index < num_ts; ++ts_index) {
-        if (fts.is_active(ts_index)) {
-            bool use_ts_index =
-                find(indices_subset.begin(), indices_subset.end(), ts_index) != indices_subset.end();
-            if (use_ts_index) {
-                used_ts_indices[ts_index] = false;
-            }
-            const vector<int> &vars =
-                fts.get_ts(ts_index).get_incorporated_variables();
-            for (int var : vars) {
-                var_to_ts_index[var] = ts_index;
-            }
+    for (int ts_index : fts) {
+        bool use_ts_index =
+            find(indices_subset.begin(), indices_subset.end(), ts_index) != indices_subset.end();
+        if (use_ts_index) {
+            used_ts_indices[ts_index] = false;
+        }
+        const vector<int> &vars =
+            fts.get_ts(ts_index).get_incorporated_variables();
+        for (int var : vars) {
+            var_to_ts_index[var] = ts_index;
         }
     }
 
@@ -72,7 +71,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
      skipping all indices not in indices_subset, because these have been set
      to "used" above.
     */
-    VariableOrderFinder vof(task, variable_order_type);
+    VariableOrderFinder vof(task_proxy, variable_order_type);
 
     int next_var = vof.next();
     int ts_index = var_to_ts_index[next_var];

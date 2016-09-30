@@ -56,8 +56,9 @@ void TSConstIterator::operator++() {
 }
 
 GroupAndTransitions TSConstIterator::operator*() const {
-    return GroupAndTransitions(label_equivalence_relation.get_group(current_group_id),
-                               transitions_by_group_id[current_group_id]);
+    return GroupAndTransitions(
+        label_equivalence_relation.get_group(current_group_id),
+        transitions_by_group_id[current_group_id]);
 }
 
 
@@ -104,9 +105,12 @@ TransitionSystem::~TransitionSystem() {
 unique_ptr<TransitionSystem> TransitionSystem::merge(
     const Labels &labels,
     const TransitionSystem &ts1,
-    const TransitionSystem &ts2) {
-    cout << "Merging " << ts1.get_description() << " and "
-         << ts2.get_description() << endl;
+    const TransitionSystem &ts2,
+    Verbosity verbosity) {
+    if (verbosity >= Verbosity::VERBOSE) {
+        cout << "Merging " << ts1.get_description() << " and "
+             << ts2.get_description() << endl;
+    }
 
     assert(ts1.is_solvable() && ts2.is_solvable());
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
@@ -249,17 +253,23 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 
 bool TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
-    const vector<int> &abstraction_mapping) {
+    const vector<int> &abstraction_mapping,
+    Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
 
     int new_num_states = state_equivalence_relation.size();
     if (new_num_states == get_size()) {
-        cout << tag() << "not applying abstraction (same number of states)" << endl;
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << tag()
+                 << "not applying abstraction (same number of states)" << endl;
+        }
         return false;
     }
 
-    cout << tag() << "applying abstraction (" << get_size()
-         << " to " << new_num_states << " states)" << endl;
+    if (verbosity >= Verbosity::VERBOSE) {
+        cout << tag() << "applying abstraction (" << get_size()
+             << " to " << new_num_states << " states)" << endl;
+    }
 
     vector<bool> new_goal_states(new_num_states, false);
 
@@ -308,8 +318,9 @@ bool TransitionSystem::apply_abstraction(
 
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
-    if (init_state == PRUNED_STATE)
+    if (verbosity >= Verbosity::VERBOSE && init_state == PRUNED_STATE) {
         cout << tag() << "initial state pruned; task unsolvable" << endl;
+    }
 
     assert(are_transitions_sorted_unique());
     return true;

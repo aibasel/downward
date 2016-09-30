@@ -183,8 +183,9 @@ void MatchTree::dump_recursive(Node *node) const {
     cout << "node->var_id = " << node->var_id << endl;
     cout << "Number of applicable operators at this node: "
          << node->applicable_operators.size() << endl;
+    VariablesProxy variables = task_proxy.get_variables();
     for (const AbstractOperator *op : node->applicable_operators) {
-        op->dump(pattern, task_proxy);
+        op->dump(pattern, variables);
     }
     if (node->is_leaf_node()) {
         cout << "leaf node." << endl;

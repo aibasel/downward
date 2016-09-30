@@ -38,7 +38,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "Stateless merge strategy",
         "This merge strategy has a merge selector, which computes the next "
         "merge only depending on the current state of the factored transition "
-        "system, not requireing any additional information.");
+        "system, not requiring any additional information.");
     parser.add_option<shared_ptr<MergeSelector>>(
         "merge_selector",
         "The merge selector to be used.");

@@ -141,12 +141,12 @@ def remove_universal_quantifiers(task):
         if isinstance(condition, pddl.UniversalCondition):
             axiom_condition = condition.negate()
             parameters = sorted(axiom_condition.free_variables())
-            axiom = new_axioms_by_condition.get(axiom_condition)
+            typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
+            axiom = new_axioms_by_condition.get((axiom_condition, typed_parameters))
             if not axiom:
-                typed_parameters = [pddl.TypedObject(v, type_map[v]) for v in parameters]
                 condition = recurse(axiom_condition)
-                axiom = task.add_axiom(typed_parameters, condition)
-                new_axioms_by_condition[condition] = axiom
+                axiom = task.add_axiom(list(typed_parameters), condition)
+                new_axioms_by_condition[(condition, typed_parameters)] = axiom
             return pddl.NegatedAtom(axiom.name, parameters)
         else:
             new_parts = [recurse(part) for part in condition.parts]

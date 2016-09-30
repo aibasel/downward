@@ -46,7 +46,7 @@ protected:
 
 public:
     explicit ShrinkFH(const options::Options &opts);
-    virtual ~ShrinkFH() override;
+    virtual ~ShrinkFH() override = default;
 };
 }
 

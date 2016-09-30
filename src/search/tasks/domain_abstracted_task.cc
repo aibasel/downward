@@ -53,7 +53,7 @@ int DomainAbstractedTask::get_variable_domain_size(int var) const {
     return domain_size[var];
 }
 
-const string &DomainAbstractedTask::get_fact_name(const FactPair &fact) const {
+string DomainAbstractedTask::get_fact_name(const FactPair &fact) const {
     return fact_names[fact.var][fact.value];
 }
 
