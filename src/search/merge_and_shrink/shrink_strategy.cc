@@ -10,21 +10,14 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkStrategy::ShrinkStrategy() {
-}
-
-ShrinkStrategy::~ShrinkStrategy() {
-}
-
-bool ShrinkStrategy::shrink(
+bool ShrinkStrategy::shrink_fts(
     FactoredTransitionSystem &fts,
     int index,
-    int target) {
-    StateEquivalenceRelation equivalence_relation;
-    compute_equivalence_relation(fts, index, target, equivalence_relation);
+    const StateEquivalenceRelation &equivalence_relation,
+    Verbosity verbosity) const {
     // TODO: We currently violate this; see issue250
     //assert(equivalence_relation.size() <= new_size);
-    return fts.apply_abstraction(index, equivalence_relation);
+    return fts.apply_abstraction(index, equivalence_relation, verbosity);
 }
 
 void ShrinkStrategy::dump_options() const {

@@ -54,7 +54,7 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
     parser.add_enum_option(
         "update_option",
         update_option,
-        "When the merge tree is used within another merge strategy, how"
+        "When the merge tree is used within another merge strategy, how "
         "should it be updated when a merge different to a merge from the "
         "tree is performed: choose among use_first, use_second, and "
         "use_random to choose which node of the tree should survive and "

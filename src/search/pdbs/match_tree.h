@@ -11,7 +11,14 @@
 namespace pdbs {
 class AbstractOperator;
 
-// Successor Generator for abstract operators.
+/*
+  Successor Generator for abstract operators.
+
+  NOTE: MatchTree keeps a reference to the task proxy passed to the constructor.
+  Therefore, users of the class must ensure that the task lives at least as long
+  as the match tree.
+*/
+
 class MatchTree {
     TaskProxy task_proxy;
     struct Node;

@@ -7,6 +7,8 @@
 
 #include "../utils/markup.h"
 
+#include <cmath>
+
 using namespace std;
 
 namespace operator_counting {

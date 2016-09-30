@@ -16,9 +16,6 @@ ShrinkRandom::ShrinkRandom(const Options &opts)
     : ShrinkBucketBased(opts) {
 }
 
-ShrinkRandom::~ShrinkRandom() {
-}
-
 void ShrinkRandom::partition_into_buckets(
     const FactoredTransitionSystem &fts,
     int index,
