@@ -13,6 +13,20 @@
 
 #include <memory>
 
+/*
+  The following two lines work around a bug regarding the visibility
+  of std::isnan that shows up with certain combinations of gcc version
+  and OSI version, such as gcc 5.4.0 and OSI 0.103.0. The include here
+  is intentionally not grouped with the regular includes because these
+  two lines together form the workaround. Hopefully we can remove this
+  workaround later once we have moved on to OSI versions where the
+  problem does not exist. (However, looking at
+  https://bugs.launchpad.net/ubuntu/+source/gcc-5/+bug/1617838 it is
+  not clear if the fault lies with OSI.)
+*/
+#include <cmath>
+using std::isnan;
+
 class CoinError;
 class OsiSolverInterface;
 
