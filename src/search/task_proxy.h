@@ -170,9 +170,6 @@ public:
 };
 
 
-/*
-  Allow iterating over all facts of a task, e.g. in range-based for-loops.
-*/
 class FactsProxyIterator {
     const AbstractTask *task;
     int var_id;
@@ -213,6 +210,10 @@ public:
   Proxy class for the collection of all facts of a task.
 
   We don't implement size() because it would not be constant-time.
+
+  FactsProxy supports iteration, e.g. for range-based for loops. This
+  iterates over all facts in order of increasing variable id, and in
+  order of increasing value for each variable.
 */
 class FactsProxy {
     const AbstractTask *task;
