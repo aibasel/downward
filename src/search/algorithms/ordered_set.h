@@ -72,13 +72,6 @@ public:
         return items;
     }
 
-    std::unordered_set<T> pop_as_unordered_set() {
-        std::vector<T> items = std::move(unordered_items);
-        ordered_items.clear();
-        assert(empty());
-        return items;
-    }
-
     typename std::vector<T>::const_iterator begin() const {
         return ordered_items.begin();
     }
