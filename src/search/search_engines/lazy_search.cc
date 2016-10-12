@@ -9,9 +9,7 @@
 #include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
-
 #include "../open_lists/open_list_factory.h"
-
 #include "../utils/rng.h"
 
 #include <algorithm>
