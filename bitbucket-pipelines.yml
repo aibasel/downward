@@ -4,3 +4,5 @@ pipelines:
         script:
           - gcc --version
           - python --version
+          - python build.py
+          - ./misc/run-all-tests
