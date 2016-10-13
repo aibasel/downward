@@ -1,0 +1,8 @@
+image: gcc:6.2
+
+pipelines:
+  default:
+    - step:
+        script:
+          - gcc --version
+          - python --version
