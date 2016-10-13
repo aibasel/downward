@@ -8,6 +8,5 @@ pipelines:
           - sudo pip install -U pyflakes pytest
           - gcc --version
           - python --version
-          - ./misc/tests/run-all-code-tests
           - ./misc/style/run-all-style-checks.py
           - ./misc/run-all-tests
