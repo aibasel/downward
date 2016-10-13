@@ -1,5 +1,3 @@
-image: gcc:6.2
-
 pipelines:
   default:
     - step:
