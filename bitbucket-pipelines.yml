@@ -3,7 +3,6 @@ pipelines:
     - step:
         script:
           - sudo apt-get update
-          - sudo apt-get -y upgrade
           - sudo apt-get -y install cmake g++ g++-multilib make mercurial python
           - sudo apt-get -y install uncrustify
           - sudo pip install -U pyflakes pytest
