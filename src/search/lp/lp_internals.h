@@ -14,18 +14,19 @@
 #include <memory>
 
 /*
-  The following two lines work around a bug regarding the visibility
-  of std::isnan that shows up with certain combinations of gcc version
-  and OSI version, such as gcc 5.4.0 and OSI 0.103.0. The include here
-  is intentionally not grouped with the regular includes because these
-  two lines together form the workaround. Hopefully we can remove this
-  workaround later once we have moved on to OSI versions where the
-  problem does not exist. (However, looking at
-  https://bugs.launchpad.net/ubuntu/+source/gcc-5/+bug/1617838 it is
-  not clear if the fault lies with OSI.)
+  The following block works around a bug regarding the visibility of
+  std::isnan that shows up with certain combinations of gcc version
+  and OSI version, such as gcc 5.4.0-6ubuntu1~16.04.2 and OSI 0.103.0.
+  Unfortunately the workaround breaks other gcc versions, so it is
+  only activated if a suitable option is set. For more information,
+  see https://bugs.launchpad.net/ubuntu/+source/gcc-5/+bug/1617838.
+  Hopefully we can get rid of this once we require a more recent OSI
+  version.
 */
+#ifdef DOWNWARD_USE_GCC_5_4_OSI_WORKAROUND
 #include <cmath>
 using std::isnan;
+#endif
 
 class CoinError;
 class OsiSolverInterface;
