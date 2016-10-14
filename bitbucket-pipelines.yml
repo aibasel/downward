@@ -2,11 +2,14 @@ pipelines:
   default:
     - step:
         script:
+          - ls -al
           - sudo apt-get update
           - sudo apt-get -y install cmake g++ g++-multilib make mercurial python
           - sudo apt-get -y install python-pip uncrustify
           - sudo pip install -U pyflakes pytest
           - gcc --version
           - python --version
+          - uncrustify -v
+          - ./misc/tests/run-all-code-tests
           - ./misc/style/run-all-style-checks.py
           - ./misc/run-all-tests
