@@ -8,7 +8,9 @@ pipelines:
           - sudo apt-get -y install python-pip uncrustify
           - sudo pip install -U pyflakes pytest
 
-          - ls -a
+          # Print information about environment.
+          - g++ --version
+          - python --version
           - python -c "import multiprocessing; print 'CPUs:', multiprocessing.cpu_count()"
 
           # Setup uncrustify.
@@ -20,21 +22,16 @@ pipelines:
           - ./configure
           - make -j8
           - export PATH="$(pwd)/src:$PATH"
-          - hash -r  # Clear PATH cache.
           - cd ../../
 
-          - gcc --version
-          - python --version
-          - uncrustify --version
-
           # Setup VAL.
-          - sudo apt-get -y install g++ make flex bison
+          - sudo apt-get -y install g++ git make flex bison
           - git clone https://github.com/KCL-Planning/VAL.git
           - cd VAL
+          - git checkout a5565396007eee73ac36527fbf904142b3077c74
           - make clean  # Remove old build artifacts and binaries.
           - make -j8
           - export PATH="$(pwd):$PATH"
-          - hash -r  # Clear PATH cache.
           - cd ../
 
           - ./misc/run-all-tests
