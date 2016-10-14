@@ -23,7 +23,7 @@
   Hopefully we can get rid of this once we require a more recent OSI
   version.
 */
-#ifdef DOWNWARD_USE_GCC_5_4_OSI_WORKAROUND
+#ifdef USE_ISNAN_WORKAROUND
 #include <cmath>
 using std::isnan;
 #endif
