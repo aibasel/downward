@@ -2,14 +2,43 @@ pipelines:
   default:
     - step:
         script:
-          - ls -al
+          - ls -a
+
+          # Install dependencies.
           - sudo apt-get update
           - sudo apt-get -y install cmake g++ g++-multilib make mercurial python
           - sudo apt-get -y install python-pip uncrustify
           - sudo pip install -U pyflakes pytest
+
+          # Setup uncrustify.
+          - mkdir uncrustify
+          - cd uncrustify
+          - wget http://downloads.sourceforge.net/project/uncrustify/uncrustify/uncrustify-0.61/uncrustify-0.61.tar.gz
+          - tar -xzvf uncrustify-0.61.tar.gz
+          - cd uncrustify-0.61
+          - ./configure
+          - make
+          - export PATH="$(pwd)/src:$PATH"
+          - hash -r  # Clear PATH cache.
+          - cd ../../
+
           - gcc --version
           - python --version
-          - uncrustify -v
+          - uncrustify --version
+
+          # Setup VAL.
+          - sudo apt-get -y install g++ make flex bison
+          - git clone https://github.com/KCL-Planning/VAL.git
+          - cd VAL
+          - make clean  # Remove old build artifacts and binaries.
+          - make
+          - ls
+          - export PATH="$(pwd):$PATH"
+          - hash -r  # Clear PATH cache.
+          - cd ../
+
+          - validate -h
+
           - ./misc/tests/run-all-code-tests
           - ./misc/style/run-all-style-checks.py
           - ./misc/run-all-tests
