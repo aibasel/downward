@@ -18,7 +18,7 @@ pipelines:
           - tar -xzvf uncrustify-0.61.tar.gz
           - cd uncrustify-0.61
           - ./configure
-          - make
+          - make -j8
           - export PATH="$(pwd)/src:$PATH"
           - hash -r  # Clear PATH cache.
           - cd ../../
@@ -32,7 +32,7 @@ pipelines:
           - git clone https://github.com/KCL-Planning/VAL.git
           - cd VAL
           - make clean  # Remove old build artifacts and binaries.
-          - make
+          - make -j8
           - export PATH="$(pwd):$PATH"
           - hash -r  # Clear PATH cache.
           - cd ../
