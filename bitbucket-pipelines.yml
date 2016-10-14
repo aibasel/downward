@@ -32,13 +32,10 @@ pipelines:
           - cd VAL
           - make clean  # Remove old build artifacts and binaries.
           - make
-          - ls
           - export PATH="$(pwd):$PATH"
           - hash -r  # Clear PATH cache.
           - cd ../
 
-          - validate -h
-
-          - ./misc/tests/run-all-code-tests
+          #- ./misc/tests/run-all-code-tests
           - ./misc/style/run-all-style-checks.py
-          - ./misc/run-all-tests
+          #- ./misc/run-all-tests
