@@ -15,8 +15,8 @@ def main(revisions=None):
     configs = []
 
     for osi in ['103', '107']:
-        for cplex in ['1253', '1263']:
-            if osi == '107' and cplex == '1253':
+        for cplex in ['1251', '1263']:
+            if osi == '107' and cplex == '1251':
                 # incompatible versions
                 continue
             configs += [
@@ -67,7 +67,7 @@ def main(revisions=None):
             exp.add_report(
                 RelativeScatterPlotReport(
                     attributes=[attribute],
-                    filter_config=["{}-{}_OSI103_CPLEX{}".format(revisions[0], config, cplex) for cplex in ['1253', '1263']],
+                    filter_config=["{}-{}_OSI103_CPLEX{}".format(revisions[0], config, cplex) for cplex in ['1251', '1263']],
                     get_category=lambda run1, run2: run1.get("domain"),
                 ),
                 outfile="{}-{}-{}_OSI103.png".format(exp.name, attribute, config)
