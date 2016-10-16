@@ -52,7 +52,9 @@ def main(revisions=None):
 
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
 
-    exp.add_comparison_table_step()
+    domains = suites.suite_optimal_strips()
+
+    exp.add_absolute_report_step(filter_domain=domains)
 
     for attribute in ["memory", "total_time"]:
         for config in ['astar_seq_landmarks', 'astar_diverse_potentials', 'astar_lmcount']:
@@ -60,6 +62,7 @@ def main(revisions=None):
                 RelativeScatterPlotReport(
                     attributes=[attribute],
                     filter_config=["{}-{}_OSI{}_CPLEX1263".format(revisions[0], config, osi) for osi in ['103', '107']],
+                    filter_domain=domains,
                     get_category=lambda run1, run2: run1.get("domain"),
                 ),
                 outfile="{}-{}-{}_CPLEX1263.png".format(exp.name, attribute, config)
@@ -68,6 +71,7 @@ def main(revisions=None):
                 RelativeScatterPlotReport(
                     attributes=[attribute],
                     filter_config=["{}-{}_OSI103_CPLEX{}".format(revisions[0], config, cplex) for cplex in ['1251', '1263']],
+                    filter_domain=domains,
                     get_category=lambda run1, run2: run1.get("domain"),
                 ),
                 outfile="{}-{}-{}_OSI103.png".format(exp.name, attribute, config)
