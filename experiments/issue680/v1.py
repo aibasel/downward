@@ -15,26 +15,30 @@ def main(revisions=None):
     configs = []
 
     for osi in ['103', '107']:
-        configs += [
-            IssueConfig(
-                'astar_seq_landmarks_OSI%s' % osi,
-                ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))'],
-                build_options=['issue680_OSI%s' % osi],
-                driver_options=['--build=issue680_OSI%s' % osi]
-            ),
-            IssueConfig(
-                'astar_diverse_potentials_OSI%s' % osi,
-                ['--search', 'astar(diverse_potentials())'],
-                build_options=['issue680_OSI%s' % osi],
-                driver_options=['--build=issue680_OSI%s' % osi]
-            ),
-            IssueConfig(
-                'astar_lmcount_OSI%s' % osi,
-                ['--search', 'astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true),mpd=true)'],
-                build_options=['issue680_OSI%s' % osi],
-                driver_options=['--build=issue680_OSI%s' % osi]
-            ),
-        ]
+        for cplex in ['1253', '1263']:
+            if osi == '103' and cplex == '1263':
+                # incompatible versions
+                continue
+            configs += [
+                IssueConfig(
+                    'astar_seq_landmarks_OSI%s_CPLEX%s' % (osi, cplex),
+                    ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))'],
+                    build_options=['issue680_OSI%s_CPLEX%s' % (osi, cplex)],
+                    driver_options=['--build=issue680_OSI%s_CPLEX%s' % (osi, cplex)]
+                ),
+                IssueConfig(
+                    'astar_diverse_potentials_OSI%s_CPLEX%s' % (osi, cplex),
+                    ['--search', 'astar(diverse_potentials())'],
+                    build_options=['issue680_OSI%s_CPLEX%s' % (osi, cplex)],
+                    driver_options=['--build=issue680_OSI%s_CPLEX%s' % (osi, cplex)]
+                ),
+                IssueConfig(
+                    'astar_lmcount_OSI%s_CPLEX%s' % (osi, cplex),
+                    ['--search', 'astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true),mpd=true)'],
+                    build_options=['issue680_OSI%s_CPLEX%s' % (osi, cplex)],
+                    driver_options=['--build=issue680_OSI%s_CPLEX%s' % (osi, cplex)]
+                ),
+            ]
 
     exp = IssueExperiment(
         benchmarks_dir=benchmarks_dir,
@@ -55,10 +59,18 @@ def main(revisions=None):
             exp.add_report(
                 RelativeScatterPlotReport(
                     attributes=[attribute],
-                    filter_config=["{}-{}_OSI{}".format(revisions[0], config, osi) for osi in ['103', '107']],
+                    filter_config=["{}-{}_OSI{}_CPLEX1263".format(revisions[0], config, osi) for osi in ['103', '107']],
                     get_category=lambda run1, run2: run1.get("domain"),
                 ),
-                outfile="{}-{}-{}.png".format(exp.name, attribute, config)
+                outfile="{}-{}-{}_CPLEX1263.png".format(exp.name, attribute, config)
+            )
+            exp.add_report(
+                RelativeScatterPlotReport(
+                    attributes=[attribute],
+                    filter_config=["{}-{}_OSI103_CPLEX{}".format(revisions[0], config, cplex) for cplex in ['1253', '1263']],
+                    get_category=lambda run1, run2: run1.get("domain"),
+                ),
+                outfile="{}-{}-{}_OSI103.png".format(exp.name, attribute, config)
             )
 
     exp()
