@@ -16,7 +16,7 @@ def main(revisions=None):
 
     for osi in ['103', '107']:
         for cplex in ['1253', '1263']:
-            if osi == '103' and cplex == '1263':
+            if osi == '107' and cplex == '1253':
                 # incompatible versions
                 continue
             configs += [
