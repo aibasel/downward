@@ -8,8 +8,8 @@
 #include "../plugin.h"
 #include "../successor_generator.h"
 
+#include "../algorithms/ordered_set.h"
 #include "../open_lists/open_list_factory.h"
-
 #include "../utils/rng.h"
 
 #include <algorithm>
@@ -65,61 +65,47 @@ void LazySearch::initialize() {
     }
 }
 
-void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
-    assert(ops.empty());
-
-    vector<const GlobalOperator *> all_operators;
+vector<const GlobalOperator *> LazySearch::get_successor_operators(
+    const algorithms::OrderedSet<const GlobalOperator *> &preferred_operators) const {
+    vector<const GlobalOperator *> applicable_operators;
     g_successor_generator->generate_applicable_ops(
-        current_state, all_operators);
-
-    vector<const GlobalOperator *> preferred_operators;
-    for (Heuristic *heur : preferred_operator_heuristics) {
-        if (!current_eval_context.is_heuristic_infinite(heur)) {
-            vector<const GlobalOperator *> preferred =
-                current_eval_context.get_preferred_operators(heur);
-            preferred_operators.insert(
-                preferred_operators.end(), preferred.begin(), preferred.end());
-        }
-    }
+        current_state, applicable_operators);
 
     if (randomize_successors) {
-        g_rng()->shuffle(all_operators);
-        // Note that preferred_operators can contain duplicates that are
-        // only filtered out later, which gives operators "preferred
-        // multiple times" a higher chance to be ordered early.
-        g_rng()->shuffle(preferred_operators);
+        g_rng()->shuffle(applicable_operators);
     }
 
     if (preferred_successors_first) {
+        algorithms::OrderedSet<const GlobalOperator *> successor_operators;
         for (const GlobalOperator *op : preferred_operators) {
-            if (!op->is_marked()) {
-                ops.push_back(op);
-                op->mark();
-            }
+            successor_operators.insert(op);
         }
-
-        for (const GlobalOperator *op : all_operators)
-            if (!op->is_marked())
-                ops.push_back(op);
+        for (const GlobalOperator *op : applicable_operators) {
+            successor_operators.insert(op);
+        }
+        return successor_operators.pop_as_vector();
     } else {
-        for (const GlobalOperator *op : preferred_operators)
-            if (!op->is_marked())
-                op->mark();
-        ops.swap(all_operators);
+        return applicable_operators;
     }
 }
 
 void LazySearch::generate_successors() {
-    vector<const GlobalOperator *> operators;
-    get_successor_operators(operators);
-    statistics.inc_generated(operators.size());
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
+        collect_preferred_operators(
+            current_eval_context, preferred_operator_heuristics);
+    if (randomize_successors) {
+        preferred_operators.shuffle(*g_rng());
+    }
 
-    for (const GlobalOperator *op : operators) {
+    vector<const GlobalOperator *> successor_operators =
+        get_successor_operators(preferred_operators);
+
+    statistics.inc_generated(successor_operators.size());
+
+    for (const GlobalOperator *op : successor_operators) {
         int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
-        bool is_preferred = op->is_marked();
-        if (is_preferred)
-            op->unmark();
+        bool is_preferred = preferred_operators.contains(op);
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);
