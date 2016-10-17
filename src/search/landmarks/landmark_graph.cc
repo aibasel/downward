@@ -63,7 +63,7 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     return node_p;
 }
 
-LandmarkNode *LandmarkGraph::get_lm_for_index(int i) {
+LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
     assert(ordered_nodes[i]->get_id() == i);
     return ordered_nodes[i];
 }

@@ -16,7 +16,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostAssignment::LandmarkCostAssignment(const vector<int> &operator_costs,
-                                               const shared_ptr<LandmarkGraph> &graph)
+                                               const LandmarkGraph &graph)
     : lm_graph(graph), operator_costs(operator_costs) {
 }
 
@@ -34,7 +34,7 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 // Uniform cost partioning
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    const vector<int> &operator_costs, const shared_ptr<LandmarkGraph> &graph, bool use_action_landmarks)
+    const vector<int> &operator_costs, const LandmarkGraph &graph, bool use_action_landmarks)
     : LandmarkCostAssignment(operator_costs, graph), use_action_landmarks(use_action_landmarks) {
 }
 
@@ -43,7 +43,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
     vector<bool> action_landmarks(operator_costs.size(), false);
 
-    const set<LandmarkNode *> &nodes = lm_graph->get_nodes();
+    const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
 
     double h = 0;
 
@@ -123,13 +123,13 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
     const vector<int> &operator_costs,
-    const shared_ptr<LandmarkGraph> &graph,
+    const LandmarkGraph &graph,
     lp::LPSolverType solver_type)
     : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type) {
     /* The LP has one variable (column) per landmark and one
        inequality (row) per operator. */
-    int num_cols = lm_graph->number_of_landmarks();
+    int num_cols = lm_graph.number_of_landmarks();
     int num_rows = operator_costs.size();
 
     /* We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
@@ -158,9 +158,9 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
       reached; otherwise it is [0, infinity].
       The lower bounds are set to 0 in the constructor and never change.
     */
-    int num_cols = lm_graph->number_of_landmarks();
+    int num_cols = lm_graph.number_of_landmarks();
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        const LandmarkNode *lm = lm_graph->get_lm_for_index(lm_id);
+        const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         if (lm->get_status() == lm_reached) {
             lp_variables[lm_id].upper_bound = 0;
         } else {
@@ -181,7 +181,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         constraint.clear();
     }
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        const LandmarkNode *lm = lm_graph->get_lm_for_index(lm_id);
+        const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         int lm_status = lm->get_status();
         if (lm_status != lm_reached) {
             const set<int> &achievers = get_achievers(lm_status, *lm);

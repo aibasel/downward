@@ -6,7 +6,6 @@ import platform
 import subprocess
 import sys
 
-from lab.environments import LocalEnvironment, MaiaEnvironment
 from lab.experiment import ARGPARSER
 from lab.steps import Step
 from lab import tools
@@ -15,6 +14,8 @@ from downward.experiment import FastDownwardExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import CompareConfigsReport
 from downward.reports.scatter import ScatterPlotReport
+
+from relativescatter import RelativeScatterPlotReport
 
 
 def parse_args():
@@ -111,7 +112,7 @@ class IssueConfig(object):
 class IssueExperiment(FastDownwardExperiment):
     """Subclass of FastDownwardExperiment with some convenience features."""
 
-    DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
+    DEFAULT_TEST_SUITE = ["gripper:prob01.pddl"]
 
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -152,19 +153,22 @@ class IssueExperiment(FastDownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(self, benchmarks_dir, suite, revisions=[], configs={},
-                 grid_priority=None, path=None, test_suite=None,
-                 email=None, processes=None,
-                 **kwargs):
+    def __init__(self, revisions=None, configs=None, path=None, **kwargs):
         """
-        If *revisions* is specified, it should be a non-empty
-        list of revisions, which specify which planner versions to use
-        in the experiment. The same versions are used for translator,
-        preprocessor and search. ::
+
+        You can either specify both *revisions* and *configs* or none
+        of them. If they are omitted, you will need to call
+        exp.add_algorithm() manually.
+
+        If *revisions* is given, it must be a non-empty list of
+        revision identifiers, which specify which planner versions to
+        use in the experiment. The same versions are used for
+        translator, preprocessor and search. ::
 
             IssueExperiment(revisions=["issue123", "4b3d581643"], ...)
 
-        *configs* must be a non-empty list of IssueConfig objects. ::
+        If *configs* is given, it must be a non-empty list of
+        IssueConfig objects. ::
 
             IssueExperiment(..., configs=[
                 IssueConfig("ff", ["--search", "eager_greedy(ff())"]),
@@ -172,24 +176,6 @@ class IssueExperiment(FastDownwardExperiment):
                     "lama", [],
                     driver_options=["--alias", "seq-sat-lama-2011"]),
             ])
-
-        *suite* sets the benchmarks for the experiment. It must be a
-        single string or a list of strings specifying domains or
-        tasks. The downward.suites module has many predefined
-        suites. ::
-
-            IssueExperiment(..., suite=["grid", "gripper:prob01.pddl"])
-
-            from downward import suites
-            IssueExperiment(..., suite=suites.suite_all())
-            IssueExperiment(..., suite=suites.suite_satisficing_with_ipc11())
-            IssueExperiment(..., suite=suites.suite_optimal())
-
-        Use *grid_priority* to set the job priority for cluster
-        experiments. It must be in the range [-1023, 0] where 0 is the
-        highest priority. By default the priority is 0. ::
-
-            IssueExperiment(..., grid_priority=-500)
 
         If *path* is specified, it must be the path to where the
         experiment should be built (e.g.
@@ -200,39 +186,25 @@ class IssueExperiment(FastDownwardExperiment):
             script = experiments/issue123/exp01.py -->
             path = experiments/issue123/data/issue123-exp01/
 
-        Specify *test_suite* to set the benchmarks for experiment test
-        runs. By default the first gripper task is used.
-
-            IssueExperiment(..., test_suite=["depot:pfile1", "tpp:p01.pddl"])
-
-        If *email* is specified, it should be an email address. This
-        email address will be notified upon completion of the experiments
-        if it is run on the cluster.
         """
-
-        if is_test_run():
-            kwargs["environment"] = LocalEnvironment(processes=processes)
-            suite = test_suite or self.DEFAULT_TEST_SUITE
-        elif "environment" not in kwargs:
-            kwargs["environment"] = MaiaEnvironment(
-                priority=grid_priority, email=email)
 
         path = path or get_data_dir()
 
         FastDownwardExperiment.__init__(self, path=path, **kwargs)
 
-        repo = get_repo_base()
+        if (revisions and not configs) or (not revisions and configs):
+            raise ValueError(
+                "please provide either both or none of revisions and configs")
+
         for rev in revisions:
             for config in configs:
                 self.add_algorithm(
                     get_algo_nick(rev, config.nick),
-                    repo,
+                    get_repo_base(),
                     rev,
                     config.component_options,
                     build_options=config.build_options,
                     driver_options=config.driver_options)
-
-        self.add_suite(benchmarks_dir, suite)
 
         self._revisions = revisions
         self._configs = configs
@@ -251,27 +223,26 @@ class IssueExperiment(FastDownwardExperiment):
     def add_absolute_report_step(self, **kwargs):
         """Add step that makes an absolute report.
 
-        Absolute reports are useful for experiments that don't
-        compare revisions.
+        Absolute reports are useful for experiments that don't compare
+        revisions.
 
         The report is written to the experiment evaluation directory.
 
-        All *kwargs* will be passed to the AbsoluteReport class. If
-        the keyword argument *attributes* is not specified, a
-        default list of attributes is used. ::
+        All *kwargs* will be passed to the AbsoluteReport class. If the
+        keyword argument *attributes* is not specified, a default list
+        of attributes is used. ::
 
             exp.add_absolute_report_step(attributes=["coverage"])
 
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = AbsoluteReport(**kwargs)
-        outfile = os.path.join(self.eval_dir,
-                               get_experiment_name() + "." +
-                               report.output_format)
+        outfile = os.path.join(
+            self.eval_dir,
+            get_experiment_name() + "." + report.output_format)
         self.add_report(report, outfile=outfile)
-        self.add_step(Step('publish-absolute-report',
-                           subprocess.call,
-                           ['publish', outfile]))
+        self.add_step(Step(
+            'publish-absolute-report', subprocess.call, ['publish', outfile]))
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -302,23 +273,23 @@ class IssueExperiment(FastDownwardExperiment):
                 report = CompareConfigsReport(compared_configs, **kwargs)
                 outfile = os.path.join(
                     self.eval_dir,
-                    "%s-%s-%s-compare" % (self.name, rev1, rev2)
-                    + "." + report.output_format)
+                    "%s-%s-%s-compare.%s" % (
+                        self.name, rev1, rev2, report.output_format))
                 report(self.eval_dir, outfile)
 
         def publish_comparison_tables():
             for rev1, rev2 in itertools.combinations(self._revisions, 2):
                 outfile = os.path.join(
                     self.eval_dir,
-                    "%s-%s-%s-compare" % (self.name, rev1, rev2)
-                    + ".html")
-                subprocess.call(['publish', outfile])
+                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
+                subprocess.call(["publish", outfile])
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
-        self.add_step(Step("publish-comparison-tables", publish_comparison_tables))
+        self.add_step(Step(
+            "publish-comparison-tables", publish_comparison_tables))
 
-    def add_scatter_plot_step(self, attributes=None):
-        """Add a step that creates scatter plots for all revision pairs.
+    def add_scatter_plot_step(self, relative=False, attributes=None):
+        """Add step creating (relative) scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
         configuration and revisions pair. If *attributes* is not
@@ -329,16 +300,23 @@ class IssueExperiment(FastDownwardExperiment):
             exp.add_scatter_plot_step(attributes=["expansions"])
 
         """
+        if relative:
+            report_class = RelativeScatterPlotReport
+            scatter_dir = os.path.join(self.eval_dir, "scatter-relative")
+            step_name = "make-relative-scatter-plots"
+        else:
+            report_class = ScatterPlotReport
+            scatter_dir = os.path.join(self.eval_dir, "scatter-absolute")
+            step_name = "make-absolute-scatter-plots"
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        scatter_dir = os.path.join(self.eval_dir, "scatter")
 
         def make_scatter_plot(config_nick, rev1, rev2, attribute):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
             print "Make scatter plot for", name
-            algo1 = "%s-%s" % (rev1, config_nick)
-            algo2 = "%s-%s" % (rev2, config_nick)
-            report = ScatterPlotReport(
+            algo1 = "{}-{}".format(rev1, config_nick)
+            algo2 = "{}-{}".format(rev2, config_nick)
+            report = report_class(
                 filter_config=[algo1, algo2],
                 attributes=[attribute],
                 get_category=lambda run1, run2: run1["domain"],
@@ -354,4 +332,4 @@ class IssueExperiment(FastDownwardExperiment):
                             config.nick, attributes):
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
 
-        self.add_step(Step("make-scatter-plots", make_scatter_plots))
+        self.add_step(Step(step_name, make_scatter_plots))
