@@ -14,15 +14,14 @@ pipelines:
           - python -c "import multiprocessing; print 'CPUs:', multiprocessing.cpu_count()"
 
           # Setup uncrustify.
-          - mkdir uncrustify
-          - cd uncrustify
           - wget http://downloads.sourceforge.net/project/uncrustify/uncrustify/uncrustify-0.61/uncrustify-0.61.tar.gz
           - tar -xzvf uncrustify-0.61.tar.gz
           - cd uncrustify-0.61
           - ./configure
           - make -j8
-          - export PATH="$(pwd)/src:$PATH"
-          - cd ../../
+          - mv src/uncrustify ../
+          - cd ../
+          - rm -rf uncrustify-0.61.tar.gz uncrustify-0.61
 
           # Setup VAL.
           - sudo apt-get -y install g++ git make flex bison
@@ -31,7 +30,10 @@ pipelines:
           - git checkout a5565396007eee73ac36527fbf904142b3077c74
           - make clean  # Remove old build artifacts and binaries.
           - make -j8
-          - export PATH="$(pwd):$PATH"
+          - mv validate ../
           - cd ../
+          - rm -rf VAL
+
+          - export PATH="$(pwd):$PATH"  # Add uncrustify and VAL to PATH.
 
           - ./misc/run-all-tests
