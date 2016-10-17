@@ -30,14 +30,6 @@ enum class PreferredUsage {
   the same states anyways.
 */
 class EnforcedHillClimbingSearch : public SearchEngine {
-    std::vector<const GlobalOperator *> get_successors(
-        EvaluationContext &eval_context);
-    void expand(EvaluationContext &eval_context);
-    void reach_state(
-        const GlobalState &parent, const GlobalOperator &op,
-        const GlobalState &state);
-    SearchStatus ehc();
-
     std::unique_ptr<EdgeOpenList> open_list;
 
     Heuristic *heuristic;
@@ -53,6 +45,17 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     std::map<int, std::pair<int, int>> d_counts;
     int num_ehc_phases;
     int last_num_expanded;
+
+    void insert_successor_into_open_list(
+        const EvaluationContext &eval_context,
+        int parent_g,
+        const GlobalOperator *op,
+        bool preferred);
+    void expand(EvaluationContext &eval_context);
+    void reach_state(
+        const GlobalState &parent, const GlobalOperator &op,
+        const GlobalState &state);
+    SearchStatus ehc();
 
 protected:
     virtual void initialize() override;

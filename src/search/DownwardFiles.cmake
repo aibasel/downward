@@ -5,12 +5,52 @@ set(PLANNER_SOURCES
 # See http://www.fast-downward.org/ForDevelopers/AddingSourceFiles
 # for general information on adding source files and CMake plugins.
 #
-# If you're adding a file to the codebase which *isn't* a plugin, add
-# it to the following list. We assume that every *.cc file has a
-# corresponding *.h file and add headers to the project automatically.
-# For plugin files, see below.
+# All plugins are enabled by default and users can disable them by specifying
+#    -DPLUGIN_FOO_ENABLED=FALSE
+# The default behavior can be changed so all non-essential plugins are
+# disabled by default by specifying
+#    -DDISABLE_PLUGINS_BY_DEFAULT=TRUE
+# In that case, individual plugins can be enabled with
+#    -DPLUGIN_FOO_ENABLED=TRUE
+#
+# Defining a new plugin:
+#    fast_downward_plugin(
+#        NAME <NAME>
+#        [ DISPLAY_NAME <DISPLAY_NAME> ]
+#        [ HELP <HELP> ]
+#        SOURCES
+#            <FILE_1> [ <FILE_2> ... ]
+#        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
+#        [ DEPENDENCY_ONLY ]
+#        [ CORE_PLUGIN ]
+#    )
+#
+# <DISPLAY_NAME> defaults to lower case <NAME> and is used to group files
+#   in IDEs and for messages.
+# <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
+# SOURCES lists the source files that are part of the plugin. For every *.cc
+#   file, there has to be a *.h file with the same name and only the *.cc
+#   file should be specified in the list. For *.h files without a *.cc file,
+#   the *.h file should be listed.
+# DEPENDS lists plugins that will be automatically enabled if this plugin is
+#   enabled. If the dependency was not enabled before, this will be logged.
+# DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
+#   hides the option to enable the plugin in cmake GUIs like ccmake.
+# CORE_PLUGIN always enables the plugin (even if DISABLE_PLUGINS_BY_DEFAULT
+#   is used) and hides the option to disable it in CMake GUIs like ccmake.
 
-set(CORE_SOURCES
+option(
+    DISABLE_PLUGINS_BY_DEFAULT
+    "If set to YES only plugins that are specifically enabled will be compiled"
+    NO)
+# This option should not show up in CMake GUIs like ccmake where all
+# plugins are enabled or disabled manually.
+mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
+
+fast_downward_plugin(
+    NAME CORE_SOURCES
+    HELP "Core source files"
+    SOURCES
         abstract_task.cc
         axioms.cc
         causal_graph.cc
@@ -54,47 +94,9 @@ set(CORE_SOURCES
         open_lists/standard_scalar_open_list.cc
         open_lists/tiebreaking_open_list.cc
         open_lists/type_based_open_list.cc
+    DEPENDS ORDERED_SET
+    CORE_PLUGIN
 )
-
-fast_downward_add_headers_to_sources_list(CORE_SOURCES)
-source_group(core FILES planner.cc ${CORE_SOURCES})
-list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
-
-## Details of the plugins
-#
-# For now, everything defaults to being enabled - it's up to the user to specify
-#    -DPLUGIN_FOO_ENABLED=FALSE
-# to disable a given plugin.
-#
-# Defining a new plugin:
-#    fast_downward_plugin(
-#        NAME <NAME>
-#        [ DISPLAY_NAME <DISPLAY_NAME> ]
-#        [ HELP <HELP> ]
-#        SOURCES
-#            <FILE_1> [ <FILE_2> ... ]
-#        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
-#        [ DEPENDENCY_ONLY ]
-#        [ CORE_PLUGIN ]
-#    )
-#
-# <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
-#                files in IDEs and for messages.
-# <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
-# DEPENDS lists plugins that will be automatically enabled if this plugin
-# is enabled. If the dependency was not enabled before, this will be logged.
-# DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
-#     hides the option to enable the plugin in cmake GUIs like ccmake.
-# CORE_PLUGIN enables the plugin and hides the option to disable it in
-#     cmake GUIs like ccmake.
-
-option(
-    DISABLE_PLUGINS_BY_DEFAULT
-    "If set to YES only plugins that are specifically enabled will be compiled"
-    NO)
-# This option should not show up in cmake GUIs like ccmake where all
-# plugins are enabled or disabled manually.
-mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
 
 fast_downward_plugin(
     NAME OPTIONS
@@ -138,6 +140,13 @@ fast_downward_plugin(
         utils/system_windows.cc
         utils/timer.cc
     CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME ORDERED_SET
+    HELP "Set of elements ordered by insertion time"
+    SOURCES
+        algorithms/ordered_set.h
 )
 
 fast_downward_plugin(

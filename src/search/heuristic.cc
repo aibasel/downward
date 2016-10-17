@@ -29,10 +29,7 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
-    if (!op->is_marked()) {
-        op->mark();
-        preferred_operators.push_back(op);
-    }
+    preferred_operators.insert(op);
 }
 
 void Heuristic::set_preferred(OperatorProxy op) {
@@ -95,8 +92,6 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
         if (cache_h_values) {
             heuristic_cache[state] = HEntry(heuristic, false);
         }
-        for (const GlobalOperator *preferred_operator : preferred_operators)
-            preferred_operator->unmark();
         result.set_count_evaluation(true);
     }
 
@@ -116,14 +111,15 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
 #ifndef NDEBUG
     if (heuristic != EvaluationResult::INFTY) {
-        for (size_t i = 0; i < preferred_operators.size(); ++i)
-            assert(preferred_operators[i]->is_applicable(state));
+        for (const GlobalOperator *op : preferred_operators)
+            assert(op->is_applicable(state));
     }
 #endif
 
     result.set_h_value(heuristic);
-    result.set_preferred_operators(move(preferred_operators));
+    result.set_preferred_operators(preferred_operators.pop_as_vector());
     assert(preferred_operators.empty());
+
     return result;
 }
 

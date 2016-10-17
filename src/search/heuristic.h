@@ -6,6 +6,8 @@
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
 
+#include "algorithms/ordered_set.h"
+
 #include <memory>
 #include <vector>
 
@@ -35,10 +37,11 @@ class Heuristic : public ScalarEvaluator {
       compute_heuristic return an EvaluationResult object.
 
       If we do this, we should be mindful of the cost incurred by not
-      being able to reuse a vector from one iteration to the next, but
-      this seems to be the only potential downside.
+      being able to reuse the data structure from one iteration to the
+      next, but this seems to be the only potential downside.
     */
-    std::vector<const GlobalOperator *> preferred_operators;
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+
 protected:
     /*
       Cache for saving h values
@@ -57,12 +60,16 @@ protected:
     enum {DEAD_END = -1, NO_VALUE = -2};
     // TODO: Call with State directly once all heuristics support it.
     virtual int compute_heuristic(const GlobalState &state) = 0;
-    // Usage note: It's OK to set the same operator as preferred
-    // multiple times -- it will still only appear in the list of
-    // preferred operators for this heuristic once.
+
+    /*
+      Usage note: Marking the same operator as preferred multiple times
+      is OK -- it will only appear once in the list of preferred
+      operators for this heuristic.
+    */
     // TODO: Make private once all heuristics use the TaskProxy class.
     void set_preferred(const GlobalOperator *op);
     void set_preferred(OperatorProxy op);
+
     // TODO: Remove once all heuristics use the TaskProxy class.
     int get_adjusted_cost(const GlobalOperator &op) const;
     /* TODO: Make private and use State instead of GlobalState once all
