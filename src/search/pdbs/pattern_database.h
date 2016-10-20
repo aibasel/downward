@@ -66,13 +66,11 @@ public:
     */
     int get_cost() const {return cost; }
     void dump(const Pattern &pattern,
-              const TaskProxy &task_proxy) const;
+              const VariablesProxy &variables) const;
 };
 
 // Implements a single pattern database
 class PatternDatabase {
-    TaskProxy task_proxy;
-
     Pattern pattern;
 
     // size of the PDB
@@ -100,6 +98,7 @@ class PatternDatabase {
         std::vector<FactPair> &pre_pairs,
         std::vector<FactPair> &eff_pairs,
         const std::vector<FactPair> &effects_without_pre,
+        const VariablesProxy &variables,
         std::vector<AbstractOperator> &operators);
 
     /*
@@ -111,6 +110,7 @@ class PatternDatabase {
     void build_abstract_operators(
         const OperatorProxy &op, int cost,
         const std::vector<int> &variable_to_index,
+        const VariablesProxy &variables,
         std::vector<AbstractOperator> &operators);
 
     /*
@@ -121,16 +121,7 @@ class PatternDatabase {
       cost partitioning. If left empty, default operator costs are used.
     */
     void create_pdb(
-        const std::vector<int> &operator_costs = std::vector<int>());
-
-    /*
-      Sets the pattern for the PDB and initializes hash_multipliers and
-      num_states. operator_costs can specify individual operator costs
-      for each operator for action cost partitioning. If left empty,
-      default operator costs are used.
-    */
-    void set_pattern(
-        const Pattern &pattern,
+        const TaskProxy &task_proxy,
         const std::vector<int> &operator_costs = std::vector<int>());
 
     /*
@@ -141,7 +132,8 @@ class PatternDatabase {
     */
     bool is_goal_state(
         const std::size_t state_index,
-        const std::vector<FactPair> &abstract_goals) const;
+        const std::vector<FactPair> &abstract_goals,
+        const VariablesProxy &variables) const;
 
     /*
       The given concrete state is used to calculate the index of the

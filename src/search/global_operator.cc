@@ -68,8 +68,6 @@ void GlobalOperator::read_pre_post(istream &in) {
 }
 
 GlobalOperator::GlobalOperator(istream &in, bool axiom) {
-    marked = false;
-
     is_an_axiom = axiom;
     if (!is_an_axiom) {
         check_magic(in, "begin_operator");

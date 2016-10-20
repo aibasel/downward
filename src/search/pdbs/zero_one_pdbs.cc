@@ -14,23 +14,24 @@
 using namespace std;
 
 namespace pdbs {
-ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns) {
-    vector<int> operator_costs;
+ZeroOnePDBs::ZeroOnePDBs(
+    const TaskProxy &task_proxy, const PatternCollection &patterns) {
+    vector<int> remaining_operator_costs;
     OperatorsProxy operators = task_proxy.get_operators();
-    operator_costs.reserve(operators.size());
+    remaining_operator_costs.reserve(operators.size());
     for (OperatorProxy op : operators)
-        operator_costs.push_back(op.get_cost());
+        remaining_operator_costs.push_back(op.get_cost());
 
     pattern_databases.reserve(patterns.size());
     for (const Pattern &pattern : patterns) {
         shared_ptr<PatternDatabase> pdb = make_shared<PatternDatabase>(
-            task_proxy, pattern, false, operator_costs);
+            task_proxy, pattern, false, remaining_operator_costs);
 
         /* Set cost of relevant operators to 0 for further iterations
            (action cost partitioning). */
         for (OperatorProxy op : operators) {
             if (pdb->is_operator_relevant(op))
-                operator_costs[op.get_id()] = 0;
+                remaining_operator_costs[op.get_id()] = 0;
         }
 
         pattern_databases.push_back(pdb);

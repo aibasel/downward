@@ -21,17 +21,15 @@ Heuristic::Heuristic(const Options &opts)
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_estimates")),
       task(get_task_from_options(opts)),
-      task_proxy(*task) {
+      task_proxy(*task),
+      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
 }
 
 Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
-    if (!op->is_marked()) {
-        op->mark();
-        preferred_operators.push_back(op);
-    }
+    preferred_operators.insert(op);
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
@@ -43,6 +41,10 @@ bool Heuristic::notify_state_transition(
     const GlobalOperator & /*op*/,
     const GlobalState & /*state*/) {
     return false;
+}
+
+int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
+    return get_adjusted_action_cost(op, cost_type);
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
@@ -90,8 +92,6 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
         if (cache_h_values) {
             heuristic_cache[state] = HEntry(heuristic, false);
         }
-        for (const GlobalOperator *preferred_operator : preferred_operators)
-            preferred_operator->unmark();
         result.set_count_evaluation(true);
     }
 
@@ -111,14 +111,15 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
 #ifndef NDEBUG
     if (heuristic != EvaluationResult::INFTY) {
-        for (size_t i = 0; i < preferred_operators.size(); ++i)
-            assert(preferred_operators[i]->is_applicable(state));
+        for (const GlobalOperator *op : preferred_operators)
+            assert(op->is_applicable(state));
     }
 #endif
 
     result.set_h_value(heuristic);
-    result.set_preferred_operators(move(preferred_operators));
+    result.set_preferred_operators(preferred_operators.pop_as_vector());
     assert(preferred_operators.empty());
+
     return result;
 }
 

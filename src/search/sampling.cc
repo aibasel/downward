@@ -21,7 +21,7 @@ vector<State> sample_states_with_random_walks(
     const utils::CountdownTimer *timer) {
     vector<State> samples;
 
-    const State &initial_state = task_proxy.get_initial_state();
+    const State initial_state = task_proxy.get_initial_state();
 
     int n;
     if (init_h == 0) {
