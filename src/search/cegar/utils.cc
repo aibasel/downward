@@ -92,11 +92,4 @@ vector<int> get_domain_sizes(const TaskProxy &task) {
         domain_sizes.push_back(var.get_domain_size());
     return domain_sizes;
 }
-
-vector<int> get_operator_costs(const TaskProxy &task) {
-    vector<int> costs;
-    for (OperatorProxy op : task.get_operators())
-        costs.push_back(op.get_cost());
-    return costs;
-}
 }
