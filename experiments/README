@@ -14,7 +14,7 @@ experiment directory (see issue77 for an example using an older
 configs.py) or manually specifying the configurations (see issue511).
 
 Below we list some experiments that show how certain tasks can be
-performed. All of them use lab's deprecated DownwardExperiment:
+performed. Some of them use lab's deprecated DownwardExperiment:
 
 * Test changes that affect the whole planner:
   * issue481/v1-*.py show the general setup. You will need different
@@ -46,6 +46,10 @@ performed. All of them use lab's deprecated DownwardExperiment:
 
 * Run experiment in debug mode (with assertions):
   * issue650/v2.py
+
+* Translator:
+  * issue671/v1.py runs simple configs on the entire set of suites and
+    reports also translator-specific attributes
 
 
 Microbenchmarks

@@ -3,7 +3,7 @@
 
 #include "../priority_queue.h"
 
-#include "arc.h"
+#include "transition.h"
 
 #include <deque>
 #include <unordered_set>
@@ -13,7 +13,7 @@ namespace cegar {
 class AbstractState;
 
 using AbstractStates = std::unordered_set<AbstractState *>;
-using Solution = std::deque<Arc>;
+using Solution = std::deque<Transition>;
 
 /*
   Find abstract solutions using A*. Compute g and h values for abstract

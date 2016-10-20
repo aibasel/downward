@@ -93,26 +93,10 @@ vector<int> get_domain_sizes(const TaskProxy &task) {
     return domain_sizes;
 }
 
-int get_pre(const OperatorProxy &op, int var_id) {
-    for (FactProxy precondition : op.get_preconditions()) {
-        if (precondition.get_variable().get_id() == var_id)
-            return precondition.get_value();
-    }
-    return UNDEFINED_VALUE;
-}
-
-int get_eff(const OperatorProxy &op, int var_id) {
-    for (EffectProxy effect : op.get_effects()) {
-        if (effect.get_fact().get_variable().get_id() == var_id)
-            return effect.get_fact().get_value();
-    }
-    return UNDEFINED_VALUE;
-}
-
-int get_post(const OperatorProxy &op, int var_id) {
-    int eff = get_eff(op, var_id);
-    if (eff != UNDEFINED_VALUE)
-        return eff;
-    return get_pre(op, var_id);
+vector<int> get_operator_costs(const TaskProxy &task) {
+    vector<int> costs;
+    for (OperatorProxy op : task.get_operators())
+        costs.push_back(op.get_cost());
+    return costs;
 }
 }

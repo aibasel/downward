@@ -34,16 +34,19 @@ static const int memory_padding_in_mb = 75;
 CostSaturation::CostSaturation(
     vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
     int max_states,
+    int max_non_looping_transitions,
     double max_time,
     bool use_general_costs,
     PickSplit pick_split)
     : subtask_generators(subtask_generators),
       max_states(max_states),
+      max_non_looping_transitions(max_non_looping_transitions),
       max_time(max_time),
       use_general_costs(use_general_costs),
       pick_split(pick_split),
       num_abstractions(0),
-      num_states(0) {
+      num_states(0),
+      num_non_looping_transitions(0) {
 }
 
 vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
@@ -65,6 +68,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     function<bool()> should_abort =
         [&] () {
             return num_states >= max_states ||
+                   num_non_looping_transitions >= max_non_looping_transitions ||
                    timer.is_expired() ||
                    !utils::extra_memory_padding_is_reserved() ||
                    state_is_dead_end(initial_state);
@@ -140,12 +144,15 @@ void CostSaturation::build_abstractions(
         Abstraction abstraction(
             subtask,
             max(1, (max_states - num_states) / rem_subtasks),
+            max(1, (max_non_looping_transitions - num_non_looping_transitions) /
+                rem_subtasks),
             timer.get_remaining_time() / rem_subtasks,
             use_general_costs,
             pick_split);
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();
+        num_non_looping_transitions += abstraction.get_num_non_looping_transitions();
         assert(num_states <= max_states);
         reduce_remaining_costs(abstraction.get_saturated_costs());
         int init_h = abstraction.get_h_value_of_initial_state();
@@ -168,6 +175,8 @@ void CostSaturation::print_statistics() const {
     cout << "Cartesian heuristic functions stored: "
          << heuristic_functions.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
+    cout << "Total number of non-looping transitions: "
+         << num_non_looping_transitions << endl;
     cout << endl;
 }
 }
