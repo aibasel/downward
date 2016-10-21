@@ -199,8 +199,8 @@ int FactoredTransitionSystem::merge(
     return new_index;
 }
 
-unique_ptr<MergeAndShrinkRepresentation> FactoredTransitionSystem::
-    get_final_mas_representation() {
+pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
+    FactoredTransitionSystem::get_final_entry() {
     if (final_index == -1) {
         /*
           If final_index == -1, we "regularly" finished the merge-and-shrink
@@ -220,8 +220,9 @@ unique_ptr<MergeAndShrinkRepresentation> FactoredTransitionSystem::
     } else {
         cout << "Abstract problem is unsolvable!" << endl;
     }
-    mas_representations[final_index]->set_distances(*distances[final_index]);
-    return move(mas_representations[final_index]);
+
+    return make_pair(move(mas_representations[final_index]),
+                     move(distances[final_index]));
 }
 
 void FactoredTransitionSystem::statistics(int index) const {

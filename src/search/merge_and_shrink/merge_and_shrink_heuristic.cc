@@ -1,5 +1,6 @@
 #include "merge_and_shrink_heuristic.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
 #include "fts_factory.h"
 #include "label_reduction.h"
@@ -319,12 +320,17 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
         }
     }
 
-    mas_representation = fts.get_final_mas_representation();
-    // TODO: after adopting the task interface everywhere, change this
-    // back to compute_heuristic(task_proxy.get_initial_state())
-    cout << "initial h value: "
-         << mas_representation->get_value(task_proxy.get_initial_state())
-         << endl;
+    pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
+        final_entry = fts.get_final_entry();
+    mas_representation = move(final_entry.first);
+    mas_representation->set_distances(*final_entry.second);
+    if (fts.is_solvable()) {
+        // TODO: after adopting the task interface everywhere, change this
+        // back to compute_heuristic(task_proxy.get_initial_state())
+        cout << "Initial h value: "
+             << mas_representation->get_value(task_proxy.get_initial_state())
+             << endl;
+    }
 
     shrink_strategy = nullptr;
     label_reduction = nullptr;
