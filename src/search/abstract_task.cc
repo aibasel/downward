@@ -57,6 +57,7 @@ const shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
     return task;
 }
 
+
 static PluginTypePlugin<AbstractTask> _type_plugin(
     "AbstractTask",
     // TODO: Replace empty string by synopsis for the wiki page.

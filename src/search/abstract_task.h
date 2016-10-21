@@ -35,6 +35,11 @@ struct FactPair {
         return var != other.var || value != other.value;
     }
 
+    /*
+      This special object represents "no such fact". E.g., functions
+      that search a fact can return "no_fact" when no matching fact is
+      found.
+    */
     static const FactPair no_fact;
 };
 
