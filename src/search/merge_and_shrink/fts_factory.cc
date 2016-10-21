@@ -2,9 +2,9 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "heuristic_representation.h"
 #include "label_equivalence_relation.h"
 #include "labels.h"
+#include "merge_and_shrink_representation.h"
 #include "transition_system.h"
 #include "types.h"
 
@@ -72,7 +72,7 @@ class FTSFactory {
     void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
     vector<unique_ptr<TransitionSystem>> create_transition_systems();
-    vector<unique_ptr<HeuristicRepresentation>> create_heuristic_representations();
+    vector<unique_ptr<MergeAndShrinkRepresentation>> create_mas_representations();
     vector<unique_ptr<Distances>> create_distances(
         const vector<unique_ptr<TransitionSystem>> &transition_systems);
 public:
@@ -356,19 +356,19 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
     return result;
 }
 
-vector<unique_ptr<HeuristicRepresentation>> FTSFactory::create_heuristic_representations() {
-    // Create the actual HeuristicRepresentation objects.
+vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_representations() {
+    // Create the actual MergeAndShrinkRepresentation objects.
     int num_variables = task_proxy.get_variables().size();
 
     // We reserve space for the transition systems added later by merging.
-    vector<unique_ptr<HeuristicRepresentation>> result;
+    vector<unique_ptr<MergeAndShrinkRepresentation>> result;
     assert(num_variables >= 1);
     result.reserve(num_variables * 2 - 1);
 
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         int range = task_proxy.get_variables()[var_no].get_domain_size();
         result.push_back(
-            utils::make_unique_ptr<HeuristicRepresentationLeaf>(var_no, range));
+            utils::make_unique_ptr<MergeAndShrinkRepresentationLeaf>(var_no, range));
     }
     return result;
 }
@@ -401,15 +401,15 @@ FactoredTransitionSystem FTSFactory::create(Verbosity verbosity) {
     build_transitions();
     vector<unique_ptr<TransitionSystem>> transition_systems =
         create_transition_systems();
-    vector<unique_ptr<HeuristicRepresentation>> heuristic_representations =
-        create_heuristic_representations();
+    vector<unique_ptr<MergeAndShrinkRepresentation>> mas_representations =
+        create_mas_representations();
     vector<unique_ptr<Distances>> distances =
         create_distances(transition_systems);
 
     return FactoredTransitionSystem(
         move(labels),
         move(transition_systems),
-        move(heuristic_representations),
+        move(mas_representations),
         move(distances),
         verbosity);
 }

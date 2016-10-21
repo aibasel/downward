@@ -2,7 +2,7 @@
 
 #include "distances.h"
 #include "labels.h"
-#include "heuristic_representation.h"
+#include "merge_and_shrink_representation.h"
 #include "transition_system.h"
 
 #include "../utils/memory.h"
@@ -35,12 +35,12 @@ void FTSConstIterator::operator++() {
 FactoredTransitionSystem::FactoredTransitionSystem(
     unique_ptr<Labels> labels,
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
-    vector<unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
+    vector<unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
     vector<unique_ptr<Distances>> &&distances,
     Verbosity verbosity)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
-      heuristic_representations(move(heuristic_representations)),
+      mas_representations(move(mas_representations)),
       distances(move(distances)),
       final_index(-1),
       solvable(true) {
@@ -57,7 +57,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
 FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&other)
     : labels(move(other.labels)),
       transition_systems(move(other.transition_systems)),
-      heuristic_representations(move(other.heuristic_representations)),
+      mas_representations(move(other.mas_representations)),
       distances(move(other.distances)),
       final_index(move(other.final_index)),
       solvable(move(other.solvable)) {
@@ -92,11 +92,11 @@ void FactoredTransitionSystem::discard_states(
 
 bool FactoredTransitionSystem::is_index_valid(int index) const {
     if (index >= static_cast<int>(transition_systems.size())) {
-        assert(index >= static_cast<int>(heuristic_representations.size()));
+        assert(index >= static_cast<int>(mas_representations.size()));
         assert(index >= static_cast<int>(distances.size()));
         return false;
     }
-    return transition_systems[index] && heuristic_representations[index]
+    return transition_systems[index] && mas_representations[index]
            && distances[index];
 }
 
@@ -160,7 +160,7 @@ bool FactoredTransitionSystem::apply_abstraction(
     if (shrunk) {
         distances[index]->apply_abstraction(
             state_equivalence_relation, verbosity);
-        heuristic_representations[index]->apply_abstraction_to_lookup_table(
+        mas_representations[index]->apply_abstraction_to_lookup_table(
             abstraction_mapping);
     }
     assert(is_component_valid(index));
@@ -181,12 +181,12 @@ int FactoredTransitionSystem::merge(
     distances[index2] = nullptr;
     transition_systems[index1] = nullptr;
     transition_systems[index2] = nullptr;
-    heuristic_representations.push_back(
-        utils::make_unique_ptr<HeuristicRepresentationMerge>(
-            move(heuristic_representations[index1]),
-            move(heuristic_representations[index2])));
-    heuristic_representations[index1] = nullptr;
-    heuristic_representations[index2] = nullptr;
+    mas_representations.push_back(
+        utils::make_unique_ptr<MergeAndShrinkRepresentationMerge>(
+            move(mas_representations[index1]),
+            move(mas_representations[index2])));
+    mas_representations[index1] = nullptr;
+    mas_representations[index2] = nullptr;
     const TransitionSystem &new_ts = *transition_systems.back();
     distances.push_back(utils::make_unique_ptr<Distances>(new_ts));
     int new_index = transition_systems.size() - 1;
@@ -217,8 +217,8 @@ void FactoredTransitionSystem::finalize(int index) {
         /*
           If an index is given, this means that the specific transition system
           is unsolvable. We throw away all transition systems and all distances,
-          keeping only the heuristic representation that maps everything onto
-          a "pruned state".
+          keeping only the merge-and-shrink representation that maps everything
+          onto a "pruned state".
         */
         assert(!solvable);
         final_index = index;
@@ -232,7 +232,7 @@ void FactoredTransitionSystem::finalize(int index) {
 
 int FactoredTransitionSystem::get_cost(const State &state) const {
     assert(is_finalized());
-    int abs_state = heuristic_representations[final_index]->get_abstract_state(state);
+    int abs_state = mas_representations[final_index]->get_abstract_state(state);
     if (abs_state == PRUNED_STATE) {
         return -1;
     }
@@ -254,6 +254,6 @@ void FactoredTransitionSystem::statistics(int index) const {
 void FactoredTransitionSystem::dump(int index) const {
     assert(transition_systems[index]);
     transition_systems[index]->dump_labels_and_transitions();
-    heuristic_representations[index]->dump();
+    mas_representations[index]->dump();
 }
 }
