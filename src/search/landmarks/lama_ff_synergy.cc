@@ -180,8 +180,6 @@ static Synergy *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    set_task_and_reset_cost_type(opts);
-
     /*
       It does not make sense to use the synergy without preferred
       operators, so they are always enabled. (A landmark heuristic

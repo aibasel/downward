@@ -24,9 +24,18 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
+static Options get_exploration_options(
+    const shared_ptr<AbstractTask> &task, bool cache_estimates) {
+    Options exploration_opts;
+    exploration_opts.set<shared_ptr<AbstractTask>>("transform", task);
+    exploration_opts.set<int>("cost_type", NORMAL);
+    exploration_opts.set<bool>("cache_estimates", cache_estimates);
+    return exploration_opts;
+}
+
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      exploration(opts),
+      exploration(get_exploration_options(task, cache_h_values)),
       use_preferred_operators(opts.get<bool>("pref")),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
@@ -337,8 +346,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "cache_estimates", "cache heuristic estimates", "true");
 
     Options opts = parser.parse();
-
-    set_task_and_reset_cost_type(opts);
 
     if (parser.dry_run())
         return nullptr;
