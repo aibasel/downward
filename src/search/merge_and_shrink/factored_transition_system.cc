@@ -216,16 +216,15 @@ void FactoredTransitionSystem::finalize(int index) {
     } else {
         /*
           If an index is given, this means that the specific transition system
-          is unsolvable. We throw away all transition systems and all other
-          distances.
+          is unsolvable. We throw away all transition systems and all distances,
+          keeping only the heuristic representation that maps everything onto
+          a "pruned state".
         */
         assert(!solvable);
         final_index = index;
         for (size_t i = 0; i < transition_systems.size(); ++i) {
             transition_systems[i] = nullptr;
-            if (static_cast<int>(i) != index) {
-                distances[i] = nullptr;
-            }
+            distances[i] = nullptr;
         }
     }
     transition_systems.clear();
@@ -233,11 +232,12 @@ void FactoredTransitionSystem::finalize(int index) {
 
 int FactoredTransitionSystem::get_cost(const State &state) const {
     assert(is_finalized());
-    assert(distances[final_index]->are_distances_computed());
     int abs_state = heuristic_representations[final_index]->get_abstract_state(state);
-
-    if (abs_state == PRUNED_STATE)
+    if (abs_state == PRUNED_STATE) {
         return -1;
+    }
+
+    assert(distances[final_index]->are_distances_computed());
     int cost = distances[final_index]->get_goal_distance(abs_state);
     assert(cost != INF);
     return cost;
