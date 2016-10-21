@@ -6,9 +6,6 @@
 #include <memory>
 #include <vector>
 
-class State;
-class TaskProxy;
-
 namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
@@ -98,13 +95,19 @@ public:
         const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity);
     int merge(int index1, int index2, Verbosity verbosity);
-    void finalize(int index = -1);
+    /*
+      This method may only be called either when there is only one entry left
+      in the FTS or when the FTS is unsolvable.
+
+      Write distances into the final merge-and-shrink representation and
+      return it. Note that the FTS is invalid after calling this method.
+    */
+    std::unique_ptr<MergeAndShrinkRepresentation> get_final_mas_representation();
 
     bool is_solvable() const {
         return solvable;
     }
 
-    int get_cost(const State &state) const;
     void statistics(int index) const;
     void dump(int index) const;
 

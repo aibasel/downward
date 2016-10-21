@@ -1,8 +1,11 @@
 #include "merge_and_shrink_representation.h"
 
+#include "distances.h"
 #include "types.h"
 
 #include "../task_proxy.h"
+
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <iostream>
@@ -31,6 +34,14 @@ MergeAndShrinkRepresentationLeaf::MergeAndShrinkRepresentationLeaf(
     iota(lookup_table.begin(), lookup_table.end(), 0);
 }
 
+void MergeAndShrinkRepresentationLeaf::set_distances(
+    const Distances &) {
+    cerr << "Tried to write distances intoto an atomic merge-and-shrink "
+            "representation. This should only be done for the final root "
+            "merge-and-shrink representation." << endl;
+    utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+}
+
 void MergeAndShrinkRepresentationLeaf::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
     int new_domain_size = 0;
@@ -43,7 +54,7 @@ void MergeAndShrinkRepresentationLeaf::apply_abstraction_to_lookup_table(
     domain_size = new_domain_size;
 }
 
-int MergeAndShrinkRepresentationLeaf::get_abstract_state(const State &state) const {
+int MergeAndShrinkRepresentationLeaf::get_value(const State &state) const {
     int value = state[var_id].get_value();
     return lookup_table[value];
 }
@@ -74,6 +85,17 @@ MergeAndShrinkRepresentationMerge::MergeAndShrinkRepresentationMerge(
     }
 }
 
+void MergeAndShrinkRepresentationMerge::set_distances(
+    const Distances &distances) {
+    for (vector<int> &row : lookup_table) {
+        for (int &entry : row) {
+            if (entry != PRUNED_STATE) {
+                entry = distances.get_goal_distance(entry);
+            }
+        }
+    }
+}
+
 void MergeAndShrinkRepresentationMerge::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
     int new_domain_size = 0;
@@ -88,10 +110,10 @@ void MergeAndShrinkRepresentationMerge::apply_abstraction_to_lookup_table(
     domain_size = new_domain_size;
 }
 
-int MergeAndShrinkRepresentationMerge::get_abstract_state(
+int MergeAndShrinkRepresentationMerge::get_value(
     const State &state) const {
-    int state1 = left_child->get_abstract_state(state);
-    int state2 = right_child->get_abstract_state(state);
+    int state1 = left_child->get_value(state);
+    int state2 = right_child->get_value(state);
     if (state1 == PRUNED_STATE ||
         state2 == PRUNED_STATE)
         return PRUNED_STATE;

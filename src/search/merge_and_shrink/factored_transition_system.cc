@@ -48,7 +48,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
         compute_distances_and_prune(i, verbosity);
         if (!this->transition_systems[i]->is_solvable()) {
             solvable = false;
-            finalize(i);
+            final_index = i;
             break;
         }
     }
@@ -194,53 +194,34 @@ int FactoredTransitionSystem::merge(
     assert(is_component_valid(new_index));
     if (!new_ts.is_solvable()) {
         solvable = false;
-        finalize(new_index);
+        final_index = new_index;
     }
     return new_index;
 }
 
-void FactoredTransitionSystem::finalize(int index) {
-    if (index == -1) {
+unique_ptr<MergeAndShrinkRepresentation> FactoredTransitionSystem::
+    get_final_mas_representation() {
+    if (final_index == -1) {
         /*
-          This is the case if we "regularly" finished the merge-and-shrink
+          If final_index == -1, we "regularly" finished the merge-and-shrink
           construction, i.e. we merged all transition systems and are left
-          with one. This assumes that merges are always appended at the end.
+          with one solvable transition system. This assumes that merges are
+          always appended at the end.
+
+          (Otherwise, final_index points to the unsolvable transition system.)
         */
         assert(solvable);
-        final_index = transition_systems.size() - 1;
         for (size_t i = 0; i < transition_systems.size() - 1; ++i) {
             assert(!transition_systems[i]);
-            assert(!distances[i]);
         }
-        transition_systems[final_index] = nullptr;
+        final_index = transition_systems.size() - 1;
+        cout << "Final transition system size: "
+             << transition_systems[final_index]->get_size() << endl;
     } else {
-        /*
-          If an index is given, this means that the specific transition system
-          is unsolvable. We throw away all transition systems and all distances,
-          keeping only the merge-and-shrink representation that maps everything
-          onto a "pruned state".
-        */
-        assert(!solvable);
-        final_index = index;
-        for (size_t i = 0; i < transition_systems.size(); ++i) {
-            transition_systems[i] = nullptr;
-            distances[i] = nullptr;
-        }
+        cout << "Abstract problem is unsolvable!" << endl;
     }
-    transition_systems.clear();
-}
-
-int FactoredTransitionSystem::get_cost(const State &state) const {
-    assert(is_finalized());
-    int abs_state = mas_representations[final_index]->get_abstract_state(state);
-    if (abs_state == PRUNED_STATE) {
-        return -1;
-    }
-
-    assert(distances[final_index]->are_distances_computed());
-    int cost = distances[final_index]->get_goal_distance(abs_state);
-    assert(cost != INF);
-    return cost;
+    mas_representations[final_index]->set_distances(*distances[final_index]);
+    return move(mas_representations[final_index]);
 }
 
 void FactoredTransitionSystem::statistics(int index) const {
