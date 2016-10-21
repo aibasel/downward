@@ -5,8 +5,6 @@
 
 #include "../task_proxy.h"
 
-#include "../utils/system.h"
-
 #include <algorithm>
 #include <iostream>
 #include <numeric>
@@ -35,11 +33,12 @@ MergeAndShrinkRepresentationLeaf::MergeAndShrinkRepresentationLeaf(
 }
 
 void MergeAndShrinkRepresentationLeaf::set_distances(
-    const Distances &) {
-    cerr << "Tried to write distances intoto an atomic merge-and-shrink "
-            "representation. This should only be done for the final root "
-            "merge-and-shrink representation." << endl;
-    utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+    const Distances &distances) {
+    for (int &entry : lookup_table) {
+        if (entry != PRUNED_STATE) {
+            entry = distances.get_goal_distance(entry);
+        }
+    }
 }
 
 void MergeAndShrinkRepresentationLeaf::apply_abstraction_to_lookup_table(

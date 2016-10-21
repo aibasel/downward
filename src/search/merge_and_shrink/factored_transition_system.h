@@ -99,10 +99,10 @@ public:
       This method may only be called either when there is only one entry left
       in the FTS or when the FTS is unsolvable.
 
-      Write distances into the final merge-and-shrink representation and
-      return it. Note that the FTS is invalid after calling this method.
+      Note that the FTS becomes invalid after calling this method.
     */
-    std::unique_ptr<MergeAndShrinkRepresentation> get_final_mas_representation();
+    std::pair<std::unique_ptr<MergeAndShrinkRepresentation>,
+              std::unique_ptr<Distances>> get_final_entry();
 
     bool is_solvable() const {
         return solvable;
