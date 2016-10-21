@@ -69,15 +69,15 @@ public:
     std::vector<bool> compute_distances(Verbosity verbosity);
 
     /*
-      Update distances according to the given abstraction.
-      Returns true iff the abstraction was f-preserving.
+      Update distances according to the given abstraction. If the abstraction
+      is not f-preserving, distances are directly recomputed
 
       It is OK for the abstraction to drop states, but then all
       dropped states must be unreachable or irrelevant. (Otherwise,
       the method might fail to detect that the distance information is
       out of date.)
     */
-    bool apply_abstraction(
+    void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity);
 

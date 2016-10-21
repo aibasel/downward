@@ -270,7 +270,7 @@ vector<bool> Distances::compute_distances(Verbosity verbosity) {
     return prunable_states;
 }
 
-bool Distances::apply_abstraction(
+void Distances::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     Verbosity verbosity) {
     assert(are_distances_computed());
@@ -311,13 +311,15 @@ bool Distances::apply_abstraction(
     }
 
     if (must_recompute) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << transition_system.tag()
+                 << "simplification was not f-preserving!" << endl;
+        }
         clear_distances();
         compute_distances(verbosity);
-        return false;
     } else {
         init_distances = move(new_init_distances);
         goal_distances = move(new_goal_distances);
-        return true;
     }
 }
 
