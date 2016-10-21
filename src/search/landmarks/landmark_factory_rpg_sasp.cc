@@ -291,7 +291,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
 
 static string get_predicate_for_fact(const VariablesProxy &variables,
                                      int var_no, int value) {
-    const string &fact_name = variables[var_no].get_fact(value).get_name();
+    const string fact_name = variables[var_no].get_fact(value).get_name();
     if (fact_name == "<none of those>")
         return "";
     int predicate_pos = 0;
