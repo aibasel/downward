@@ -16,7 +16,7 @@ class LandmarkCostAssignment {
     const std::set<int> empty;
 protected:
     const LandmarkGraph &lm_graph;
-    std::vector<int> operator_costs;
+    const std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(int lmn_status,
                                        const LandmarkNode &lmn) const;
