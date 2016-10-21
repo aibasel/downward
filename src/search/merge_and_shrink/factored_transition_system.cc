@@ -158,12 +158,8 @@ bool FactoredTransitionSystem::apply_abstraction(
     bool shrunk = transition_systems[index]->apply_abstraction(
         state_equivalence_relation, abstraction_mapping, verbosity);
     if (shrunk) {
-        bool f_preserving = distances[index]->apply_abstraction(
+        distances[index]->apply_abstraction(
             state_equivalence_relation, verbosity);
-        if (verbosity >= Verbosity::VERBOSE && !f_preserving) {
-            cout << transition_systems[index]->tag()
-                 << "simplification was not f-preserving!" << endl;
-        }
         heuristic_representations[index]->apply_abstraction_to_lookup_table(
             abstraction_mapping);
     }
