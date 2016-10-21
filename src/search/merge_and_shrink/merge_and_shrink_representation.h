@@ -1,5 +1,5 @@
-#ifndef MERGE_AND_SHRINK_HEURISTIC_REPRESENTATION_H
-#define MERGE_AND_SHRINK_HEURISTIC_REPRESENTATION_H
+#ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_REPRESENTATION_H
+#define MERGE_AND_SHRINK_MERGE_AND_SHRINK_REPRESENTATION_H
 
 #include <memory>
 #include <vector>
@@ -7,13 +7,13 @@
 class State;
 
 namespace merge_and_shrink {
-class HeuristicRepresentation {
+class MergeAndShrinkRepresentation {
 protected:
     int domain_size;
 
 public:
-    explicit HeuristicRepresentation(int domain_size);
-    virtual ~HeuristicRepresentation() = 0;
+    explicit MergeAndShrinkRepresentation(int domain_size);
+    virtual ~MergeAndShrinkRepresentation() = 0;
 
     int get_domain_size() const;
 
@@ -24,13 +24,13 @@ public:
 };
 
 
-class HeuristicRepresentationLeaf : public HeuristicRepresentation {
+class MergeAndShrinkRepresentationLeaf : public MergeAndShrinkRepresentation {
     const int var_id;
 
     std::vector<int> lookup_table;
 public:
-    HeuristicRepresentationLeaf(int var_id, int domain_size);
-    virtual ~HeuristicRepresentationLeaf() = default;
+    MergeAndShrinkRepresentationLeaf(int var_id, int domain_size);
+    virtual ~MergeAndShrinkRepresentationLeaf() = default;
 
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<int> &abstraction_mapping) override;
@@ -39,15 +39,15 @@ public:
 };
 
 
-class HeuristicRepresentationMerge : public HeuristicRepresentation {
-    std::unique_ptr<HeuristicRepresentation> left_child;
-    std::unique_ptr<HeuristicRepresentation> right_child;
+class MergeAndShrinkRepresentationMerge : public MergeAndShrinkRepresentation {
+    std::unique_ptr<MergeAndShrinkRepresentation> left_child;
+    std::unique_ptr<MergeAndShrinkRepresentation> right_child;
     std::vector<std::vector<int>> lookup_table;
 public:
-    HeuristicRepresentationMerge(
-        std::unique_ptr<HeuristicRepresentation> left_child,
-        std::unique_ptr<HeuristicRepresentation> right_child);
-    virtual ~HeuristicRepresentationMerge() = default;
+    MergeAndShrinkRepresentationMerge(
+        std::unique_ptr<MergeAndShrinkRepresentation> left_child,
+        std::unique_ptr<MergeAndShrinkRepresentation> right_child);
+    virtual ~MergeAndShrinkRepresentationMerge() = default;
 
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<int> &abstraction_mapping) override;

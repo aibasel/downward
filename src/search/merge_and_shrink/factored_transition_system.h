@@ -12,7 +12,7 @@ class TaskProxy;
 namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
-class HeuristicRepresentation;
+class MergeAndShrinkRepresentation;
 class Labels;
 class TransitionSystem;
 
@@ -47,7 +47,7 @@ class FactoredTransitionSystem {
     std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
     std::vector<std::unique_ptr<TransitionSystem>> transition_systems;
-    std::vector<std::unique_ptr<HeuristicRepresentation>> heuristic_representations;
+    std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;
     std::vector<std::unique_ptr<Distances>> distances;
     int final_index;
     bool solvable;
@@ -70,7 +70,7 @@ public:
     FactoredTransitionSystem(
         std::unique_ptr<Labels> labels,
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
-        std::vector<std::unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
+        std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
         Verbosity verbosity);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
