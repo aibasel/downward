@@ -102,6 +102,4 @@ public:
 extern const std::shared_ptr<AbstractTask> get_task_from_options(
     const options::Options &opts);
 
-extern void set_task_and_reset_cost_type(options::Options &opts);
-
 #endif
