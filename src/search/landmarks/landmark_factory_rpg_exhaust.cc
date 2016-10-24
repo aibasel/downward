@@ -2,9 +2,9 @@
 
 #include "landmark_graph.h"
 
-#include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_proxy.h"
 
 #include <vector>
 using namespace std;
@@ -18,22 +18,25 @@ LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
     : LandmarkFactory(opts) {
 }
 
-void LandmarkFactoryRpgExhaust::generate_landmarks(Exploration &exploration) {
+void LandmarkFactoryRpgExhaust::generate_landmarks(
+    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    TaskProxy task_proxy(*task);
     cout << "Generating landmarks by testing all facts with RPG method" << endl;
 
     // insert goal landmarks and mark them as goals
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        LandmarkNode *lmp = &lm_graph->landmark_add_simple(g_goal[i]);
-        lmp->in_goal = true;
+    for (FactProxy goal : task_proxy.get_goals()) {
+        LandmarkNode &lmp = lm_graph->landmark_add_simple(goal.get_pair());
+        lmp.in_goal = true;
     }
     // test all other possible facts
-    const GlobalState &initial_state = hacked_initial_state();
-    for (size_t i = 0; i < g_variable_name.size(); ++i) {
-        for (int j = 0; j < g_variable_domain[i]; ++j) {
-            const pair<int, int> lm = make_pair(i, j);
+    State initial_state = task_proxy.get_initial_state();
+    for (VariableProxy var : task_proxy.get_variables()) {
+        for (int value = 0; value < var.get_domain_size(); ++value) {
+            const FactPair lm(var.get_id(), value);
             if (!lm_graph->simple_landmark_exists(lm)) {
                 LandmarkNode *new_lm = &lm_graph->landmark_add_simple(lm);
-                if (initial_state[lm.first] != lm.second && relaxed_task_solvable(exploration, true, new_lm)) {
+                if (initial_state[lm.var].get_value() != lm.value &&
+                    relaxed_task_solvable(task_proxy, exploration, true, new_lm)) {
                     assert(lm_graph->landmark_exists(lm));
                     LandmarkNode *node;
                     if (lm_graph->simple_landmark_exists(lm))
