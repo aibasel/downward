@@ -1,8 +1,10 @@
 #include "landmark_cost_assignment.h"
 
 #include "landmark_graph.h"
+#include "util.h"
 
 #include "../utils/collections.h"
+#include "../utils/language.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -13,15 +15,10 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkCostAssignment::LandmarkCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type_)
-    : lm_graph(graph), cost_type(cost_type_) {
+LandmarkCostAssignment::LandmarkCostAssignment(const vector<int> &operator_costs,
+                                               const LandmarkGraph &graph)
+    : lm_graph(graph), operator_costs(operator_costs) {
 }
-
-
-LandmarkCostAssignment::~LandmarkCostAssignment() {
-}
-
 
 const set<int> &LandmarkCostAssignment::get_achievers(
     int lmn_status, const LandmarkNode &lmn) const {
@@ -37,49 +34,38 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 // Uniform cost partioning
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    LandmarkGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_)
-    : LandmarkCostAssignment(graph, cost_type_), use_action_landmarks(use_action_landmarks_) {
-}
-
-
-LandmarkUniformSharedCostAssignment::~LandmarkUniformSharedCostAssignment() {
+    const vector<int> &operator_costs, const LandmarkGraph &graph, bool use_action_landmarks)
+    : LandmarkCostAssignment(operator_costs, graph), use_action_landmarks(use_action_landmarks) {
 }
 
 
 double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
-    vector<int> achieved_lms_by_op(g_operators.size(), 0);
-    vector<bool> action_landmarks(g_operators.size(), false);
+    vector<int> achieved_lms_by_op(operator_costs.size(), 0);
+    vector<bool> action_landmarks(operator_costs.size(), false);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
-    set<LandmarkNode *>::iterator node_it;
 
     double h = 0;
 
     /* First pass:
        compute which op achieves how many landmarks. Along the way,
        mark action landmarks and add their cost to h. */
-    for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
-        LandmarkNode &node = **node_it;
-        int lmn_status = node.get_status();
+    for (const LandmarkNode *node : nodes) {
+        int lmn_status = node->get_status();
         if (lmn_status != lm_reached) {
-            const set<int> &achievers = get_achievers(lmn_status, node);
+            const set<int> &achievers = get_achievers(lmn_status, *node);
             assert(!achievers.empty());
             if (use_action_landmarks && achievers.size() == 1) {
                 // We have found an action landmark for this state.
                 int op_id = *achievers.begin();
-                assert(utils::in_bounds(op_id, g_operators));
                 if (!action_landmarks[op_id]) {
                     action_landmarks[op_id] = true;
-                    const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
-                        op_id);
-                    h += get_adjusted_action_cost(op, cost_type);
+                    assert(utils::in_bounds(op_id, operator_costs));
+                    h += operator_costs[op_id];
                 }
             } else {
-                set<int>::const_iterator ach_it;
-                for (ach_it = achievers.begin(); ach_it != achievers.end();
-                     ++ach_it) {
-                    int op_id = *ach_it;
-                    assert(utils::in_bounds(op_id, g_operators));
+                for (int op_id : achievers) {
+                    assert(utils::in_bounds(op_id, achieved_lms_by_op));
                     ++achieved_lms_by_op[op_id];
                 }
             }
@@ -92,52 +78,41 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
        remove landmarks from consideration that are covered by
        an action landmark; decrease the counters accordingly
        so that no unnecessary cost is assigned to these landmarks. */
-    for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
-        LandmarkNode &node = **node_it;
-        int lmn_status = node.get_status();
+    for (LandmarkNode *node : nodes) {
+        int lmn_status = node->get_status();
         if (lmn_status != lm_reached) {
-            const set<int> &achievers = get_achievers(lmn_status, node);
-            set<int>::const_iterator ach_it;
+            const set<int> &achievers = get_achievers(lmn_status, *node);
             bool covered_by_action_lm = false;
-            for (ach_it = achievers.begin(); ach_it != achievers.end();
-                 ++ach_it) {
-                int op_id = *ach_it;
-                assert(utils::in_bounds(op_id, g_operators));
+            for (int op_id : achievers) {
+                assert(utils::in_bounds(op_id, action_landmarks));
                 if (action_landmarks[op_id]) {
                     covered_by_action_lm = true;
                     break;
                 }
             }
             if (covered_by_action_lm) {
-                for (ach_it = achievers.begin(); ach_it != achievers.end();
-                     ++ach_it) {
-                    int op_id = *ach_it;
-                    assert(utils::in_bounds(op_id, g_operators));
+                for (int op_id : achievers) {
+                    assert(utils::in_bounds(op_id, achieved_lms_by_op));
                     --achieved_lms_by_op[op_id];
                 }
             } else {
-                relevant_lms.push_back(&node);
+                relevant_lms.push_back(node);
             }
         }
     }
 
     /* Third pass:
        count shared costs for the remaining landmarks. */
-    for (size_t i = 0; i < relevant_lms.size(); ++i) {
-        LandmarkNode &node = *relevant_lms[i];
-        int lmn_status = node.get_status();
-        const set<int> &achievers = get_achievers(lmn_status, node);
-        set<int>::const_iterator ach_it;
+    for (const LandmarkNode *node : relevant_lms) {
+        int lmn_status = node->get_status();
+        const set<int> &achievers = get_achievers(lmn_status, *node);
         double min_cost = numeric_limits<double>::max();
-        for (ach_it = achievers.begin(); ach_it != achievers.end();
-             ++ach_it) {
-            int op_id = *ach_it;
-            assert(utils::in_bounds(op_id, g_operators));
-            const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
-                op_id);
+        for (int op_id : achievers) {
+            assert(utils::in_bounds(op_id, achieved_lms_by_op));
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);
-            double shared_cost = double(get_adjusted_action_cost(op, cost_type)) / num_achieved;
+            assert(utils::in_bounds(op_id, operator_costs));
+            double shared_cost = static_cast<double>(operator_costs[op_id]) / num_achieved;
             min_cost = min(min_cost, shared_cost);
         }
         h += min_cost;
@@ -147,13 +122,15 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type, lp::LPSolverType solver_type)
-    : LandmarkCostAssignment(graph, cost_type),
+    const vector<int> &operator_costs,
+    const LandmarkGraph &graph,
+    lp::LPSolverType solver_type)
+    : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type) {
     /* The LP has one variable (column) per landmark and one
        inequality (row) per operator. */
     int num_cols = lm_graph.number_of_landmarks();
-    int num_rows = g_operators.size();
+    int num_rows = operator_costs.size();
 
     /* We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
        so the coefficients are all 1.
@@ -164,15 +141,12 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
        These simply say that the operator's total cost must fall
        between 0 and the real operator cost. */
     lp_constraints.resize(num_rows, lp::LPConstraint(0.0, 0.0));
-    for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
-        const GlobalOperator &op = g_operators[op_id];
+    for (size_t op_id = 0; op_id < operator_costs.size(); ++op_id) {
         lp_constraints[op_id].set_lower_bound(0);
-        lp_constraints[op_id].set_upper_bound(get_adjusted_action_cost(op, cost_type));
+        lp_constraints[op_id].set_upper_bound(operator_costs[op_id]);
     }
 }
 
-LandmarkEfficientOptimalSharedCostAssignment::~LandmarkEfficientOptimalSharedCostAssignment() {
-}
 
 double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     /* TODO: We could also do the same thing with action landmarks we
@@ -213,7 +187,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             const set<int> &achievers = get_achievers(lm_status, *lm);
             assert(!achievers.empty());
             for (int op_id : achievers) {
-                assert(utils::in_bounds(op_id, g_operators));
+                assert(utils::in_bounds(op_id, lp_constraints));
                 lp_constraints[op_id].insert(lm_id, 1.0);
             }
         }

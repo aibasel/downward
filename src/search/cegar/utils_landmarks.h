@@ -5,7 +5,9 @@
 #include <unordered_map>
 #include <vector>
 
+class AbstractTask;
 struct FactPair;
+class TaskProxy;
 
 namespace landmarks {
 class LandmarkGraph;
@@ -14,7 +16,8 @@ class LandmarkGraph;
 namespace cegar {
 using VarToValues = std::unordered_map<int, std::vector<int>>;
 
-extern std::shared_ptr<landmarks::LandmarkGraph> get_landmark_graph();
+extern std::shared_ptr<landmarks::LandmarkGraph> get_landmark_graph(
+    const std::shared_ptr<AbstractTask> &task);
 extern std::vector<FactPair> get_fact_landmarks(
     const landmarks::LandmarkGraph &graph);
 

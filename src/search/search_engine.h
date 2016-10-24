@@ -17,6 +17,11 @@ class OptionParser;
 class Options;
 }
 
+namespace algorithms {
+template <typename T>
+class OrderedSet;
+}
+
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
@@ -59,6 +64,10 @@ public:
 /*
   Print heuristic values of all heuristics evaluated in the evaluation context.
 */
-void print_initial_h_values(const EvaluationContext &eval_context);
+extern void print_initial_h_values(const EvaluationContext &eval_context);
+
+extern algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+    EvaluationContext &eval_context,
+    const std::vector<Heuristic *> &preferred_operator_heuristics);
 
 #endif

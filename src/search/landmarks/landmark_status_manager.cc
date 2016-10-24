@@ -1,27 +1,26 @@
 #include "landmark_status_manager.h"
 
+#include "landmark_graph.h"
+
 using namespace std;
 
 namespace landmarks {
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    : lm_graph(graph) {
-    do_intersection = true;
+    : lm_graph(graph),
+      do_intersection(true) {
 }
 
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
     return reached_lms[state];
 }
 
-
 void LandmarkStatusManager::set_landmarks_for_initial_state(
     const GlobalState &initial_state) {
     vector<bool> &reached = get_reached_landmarks(initial_state);
     reached.resize(lm_graph.number_of_landmarks());
-    //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
 
     int inserted = 0;
     int num_goal_lms = 0;
-    // opt: initial_state_landmarks.resize(lm_graph->number_of_landmarks());
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
         LandmarkNode *node_p = *it;
@@ -34,8 +33,8 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
         }
         if (node_p->conjunctive) {
             bool lm_true = true;
-            for (size_t i = 0; i < node_p->vals.size(); ++i) {
-                if (initial_state[node_p->vars[i]] != node_p->vals[i]) {
+            for (const FactPair &fact : node_p->facts) {
+                if (initial_state[fact.var] != fact.value) {
                     lm_true = false;
                     break;
                 }
@@ -45,8 +44,8 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                 ++inserted;
             }
         } else {
-            for (size_t i = 0; i < node_p->vals.size(); ++i) {
-                if (initial_state[node_p->vars[i]] == node_p->vals[i]) {
+            for (const FactPair &fact : node_p->facts) {
+                if (initial_state[fact.var] == fact.value) {
                     reached[node_p->get_id()] = true;
                     ++inserted;
                     break;
@@ -59,14 +58,14 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 }
 
 
-bool LandmarkStatusManager::update_reached_lms(
-    const GlobalState &parent_state, const GlobalOperator &, const GlobalState &state) {
-    vector<bool> &parent_reached = get_reached_landmarks(parent_state);
-    vector<bool> &reached = get_reached_landmarks(state);
-
+bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
+                                               const GlobalOperator &,
+                                               const GlobalState &global_state) {
+    vector<bool> &parent_reached = get_reached_landmarks(parent_global_state);
+    vector<bool> &reached = get_reached_landmarks(global_state);
 
     if (&parent_reached == &reached) {
-        assert(state.get_id() == parent_state.get_id());
+        assert(global_state.get_id() == parent_global_state.get_id());
         // This can happen, e.g., in Satellite-01.
         return false;
     }
@@ -82,8 +81,6 @@ bool LandmarkStatusManager::update_reached_lms(
 
     reached = parent_reached;
 
-
-
     int num_landmarks = lm_graph.number_of_landmarks();
     assert(static_cast<int>(reached.size()) == num_landmarks);
     assert(static_cast<int>(parent_reached.size()) == num_landmarks);
@@ -94,52 +91,40 @@ bool LandmarkStatusManager::update_reached_lms(
             reached[id] = false;
         } else if (!reached[id]) {
             LandmarkNode *node = lm_graph.get_lm_for_index(id);
-            if (node->is_true_in_state(state)) {
-                // cout << "New LM reached: id " << id << " ";
-                // lm_graph.dump_node(node);
+            if (node->is_true_in_state(global_state)) {
                 if (landmark_is_leaf(*node, reached)) {
-                    //      cout << "inserting new LM into reached. (2)" << endl;
                     reached[id] = true;
                 }
-                /*
-                   else {
-                   cout << "non-leaf, not inserting." << endl;
-                   }
-                 */
             }
         }
     }
 
-
     return true;
 }
 
-bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
-    vector<bool> &reached = get_reached_landmarks(state);
+bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
+    vector<bool> &reached = get_reached_landmarks(global_state);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
-    set<LandmarkNode *>::iterator lit;
-    for (lit = nodes.begin(); lit != nodes.end(); ++lit) {
-        LandmarkNode &node = **lit;
-        node.status = lm_not_reached;
-        if (reached[node.get_id()]) {
-            node.status = lm_reached;
+    for (LandmarkNode *node : nodes) {
+        node->status = lm_not_reached;
+        if (reached[node->get_id()]) {
+            node->status = lm_reached;
         }
     }
 
     bool dead_end_found = false;
 
     // mark reached and find needed again landmarks
-    for (lit = nodes.begin(); lit != nodes.end(); ++lit) {
-        LandmarkNode &node = **lit;
-        if (node.status == lm_reached) {
-            if (!node.is_true_in_state(state)) {
-                if (node.is_goal()) {
-                    node.status = lm_needed_again;
+    for (LandmarkNode *node : nodes) {
+        if (node->status == lm_reached) {
+            if (!node->is_true_in_state(global_state)) {
+                if (node->is_goal()) {
+                    node->status = lm_needed_again;
                 } else {
-                    if (check_lost_landmark_children_needed_again(node)) {
-                        node.status = lm_needed_again;
+                    if (check_lost_landmark_children_needed_again(*node)) {
+                        node->status = lm_needed_again;
                     }
                 }
             }
@@ -154,13 +139,13 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
         // A (possibly) more effective option would be to test reachability of the landmark
         // from the current state.
 
-        if (!node.is_derived) {
-            if ((node.status == lm_not_reached) &&
-                (node.first_achievers.size() == 0)) {
+        if (!node->is_derived) {
+            if ((node->status == lm_not_reached) &&
+                (node->first_achievers.size() == 0)) {
                 dead_end_found = true;
             }
-            if ((node.status == lm_needed_again) &&
-                (node.possible_achievers.size() == 0)) {
+            if ((node->status == lm_needed_again) &&
+                (node->possible_achievers.size() == 0)) {
                 dead_end_found = true;
             }
         }
@@ -181,19 +166,15 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
 
 bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
                                              const vector<bool> &reached) const {
-//Note: this is the same as !check_node_orders_disobeyed
+    //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
         if (true) // Note: no condition on edge type here
             if (!reached[parent_node->get_id()]) {
-                //cout << "parent is not in reached: ";
-                //cout << parent_p << " ";
-                //lm_graph.dump_node(parent_p);
                 return false;
             }
 
     }
-    //cout << "all parents are in reached" << endl;
     return true;
 }
 }
