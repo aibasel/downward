@@ -14,6 +14,8 @@
 using namespace std;
 using utils::ExitCode;
 
+const FactPair FactPair::no_fact = FactPair(-1, -1);
+
 ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     os << fact_pair.var << "=" << fact_pair.value;
     return os;
@@ -21,6 +23,10 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
 
 const shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
     /*
+      Note: Repeated calls to get_task_from_options() for the same
+      Options object return different tasks if "cost_type", but not
+      "transform" is present.
+
       TODO: This code is only intended for the transitional period while we
       still support the "old style" of adjusting costs (via the cost_type
       parameter) in parallel with the "new style" (via task transformations).
