@@ -233,10 +233,6 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
 }
 
 void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer) {
-    // TODO: We're leaking memory here in various ways. Fix this.
-    //       Don't forget that build_atomic_transition_systems also
-    //       allocates memory.
-
     FactoredTransitionSystem fts =
         create_factored_transition_system(task_proxy, verbosity);
     print_time(timer, "after computation of atomic transition systems");
@@ -247,8 +243,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             merge_strategy_factory->compute_merge_strategy(task, fts);
         merge_strategy_factory = nullptr;
 
-        int number_of_merges = task_proxy.get_variables().size() - 1;
-        for (int i = 0; i < number_of_merges; ++i) {
+        while (fts.is_solvable() && fts.get_num_active_entries() > 1) {
             // Choose next transition systems to merge
             pair<int, int> merge_indices = merge_strategy->get_next();
             int merge_index1 = merge_indices.first;
