@@ -6,6 +6,8 @@
 #include "option_parser.h"
 #include "plugin.h"
 
+#include "algorithms/ordered_set.h"
+
 #include "utils/countdown_timer.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -132,3 +134,24 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
     "SearchEngine",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
+
+
+algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+    EvaluationContext &eval_context,
+    const vector<Heuristic *> &preferred_operator_heuristics) {
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    for (Heuristic *heuristic : preferred_operator_heuristics) {
+        /*
+          Unreliable heuristics might consider solvable states as dead
+          ends. We only want preferred operators from finite-value
+          heuristics.
+        */
+        if (!eval_context.is_heuristic_infinite(heuristic)) {
+            for (const GlobalOperator *op :
+                 eval_context.get_preferred_operators(heuristic)) {
+                preferred_operators.insert(op);
+            }
+        }
+    }
+    return preferred_operators;
+}
