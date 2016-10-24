@@ -46,9 +46,8 @@ class FactoredTransitionSystem {
     std::vector<std::unique_ptr<TransitionSystem>> transition_systems;
     std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;
     std::vector<std::unique_ptr<Distances>> distances;
-    int final_index;
-    bool solvable;
-    // TODO: add something like "current_index"? for shrink classes e.g.
+    int unsolvable_index; // -1 if solvable, index of an unsolvable entry otw.
+    int num_active_entries; // number of (active) entries
 
     void compute_distances_and_prune(
         int index,
@@ -61,7 +60,7 @@ class FactoredTransitionSystem {
     bool is_index_valid(int index) const;
     bool is_component_valid(int index) const;
     bool is_finalized() const {
-        return final_index != -1;
+        return unsolvable_index != -1;
     }
 public:
     FactoredTransitionSystem(
@@ -105,7 +104,7 @@ public:
               std::unique_ptr<Distances>> get_final_entry();
 
     bool is_solvable() const {
-        return solvable;
+        return unsolvable_index == -1;
     }
 
     void statistics(int index) const;
@@ -131,6 +130,10 @@ public:
 
     bool is_active(int index) const {
         return is_index_valid(index);
+    }
+
+    int get_num_active_entries() const {
+        return num_active_entries;
     }
 };
 }

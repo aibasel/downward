@@ -42,13 +42,12 @@ FactoredTransitionSystem::FactoredTransitionSystem(
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
       distances(move(distances)),
-      final_index(-1),
-      solvable(true) {
+      unsolvable_index(-1),
+      num_active_entries(this->transition_systems.size()) {
     for (size_t i = 0; i < this->transition_systems.size(); ++i) {
         compute_distances_and_prune(i, verbosity);
         if (!this->transition_systems[i]->is_solvable()) {
-            solvable = false;
-            final_index = i;
+            unsolvable_index = i;
             break;
         }
     }
@@ -59,8 +58,8 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
       transition_systems(move(other.transition_systems)),
       mas_representations(move(other.mas_representations)),
       distances(move(other.distances)),
-      final_index(move(other.final_index)),
-      solvable(move(other.solvable)) {
+      unsolvable_index(move(other.unsolvable_index)),
+      num_active_entries(move(other.num_active_entries)) {
     /*
       This is just a default move constructor. Unfortunately Visual
       Studio does not support "= default" for move construction or
@@ -193,36 +192,37 @@ int FactoredTransitionSystem::merge(
     compute_distances_and_prune(new_index, verbosity);
     assert(is_component_valid(new_index));
     if (!new_ts.is_solvable()) {
-        solvable = false;
-        final_index = new_index;
+        unsolvable_index = new_index;
     }
+    --num_active_entries;
     return new_index;
 }
 
 pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
     FactoredTransitionSystem::get_final_entry() {
-    if (final_index == -1) {
+    if (unsolvable_index == -1) {
         /*
           If final_index == -1, we "regularly" finished the merge-and-shrink
           construction, i.e. we merged all transition systems and are left
           with one solvable transition system. This assumes that merges are
           always appended at the end.
 
-          (Otherwise, final_index points to the unsolvable transition system.)
+          (Otherwise, unsolvable_index points to the unsolvable transition
+          system.)
         */
-        assert(solvable);
         for (size_t i = 0; i < transition_systems.size() - 1; ++i) {
             assert(!transition_systems[i]);
         }
-        final_index = transition_systems.size() - 1;
+        unsolvable_index = transition_systems.size() - 1;
+        assert(transition_systems[unsolvable_index]->is_solvable());
         cout << "Final transition system size: "
-             << transition_systems[final_index]->get_size() << endl;
+             << transition_systems[unsolvable_index]->get_size() << endl;
     } else {
         cout << "Abstract problem is unsolvable!" << endl;
     }
 
-    return make_pair(move(mas_representations[final_index]),
-                     move(distances[final_index]));
+    return make_pair(move(mas_representations[unsolvable_index]),
+                     move(distances[unsolvable_index]));
 }
 
 void FactoredTransitionSystem::statistics(int index) const {
