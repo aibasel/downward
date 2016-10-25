@@ -340,6 +340,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
     assert(num_variables >= 1);
     result.reserve(num_variables * 2 - 1);
 
+    const bool compute_label_equivalence_relation = true;
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         TransitionSystemData &ts_data = transition_system_data_by_var[var_no];
         result.push_back(utils::make_unique_ptr<TransitionSystem>(
@@ -350,7 +351,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
                              ts_data.num_states,
                              move(ts_data.goal_states),
                              ts_data.init_state,
-                             true
+                             compute_label_equivalence_relation
                              ));
     }
     return result;
