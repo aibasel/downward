@@ -59,9 +59,6 @@ class FactoredTransitionSystem {
 
     bool is_index_valid(int index) const;
     bool is_component_valid(int index) const;
-    bool is_finalized() const {
-        return unsolvable_index != -1;
-    }
 public:
     FactoredTransitionSystem(
         std::unique_ptr<Labels> labels,
