@@ -77,14 +77,6 @@ public:
     FactoredTransitionSystem &operator=(
         const FactoredTransitionSystem &) = delete;
 
-    const TransitionSystem &get_ts(int index) const {
-        return *transition_systems[index];
-    }
-
-    const Distances &get_dist(int index) const {
-        return *distances[index];
-    }
-
     // Methods for MergeAndShrinkHeuristic
     void apply_label_reduction(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
@@ -103,12 +95,24 @@ public:
     std::pair<std::unique_ptr<MergeAndShrinkRepresentation>,
               std::unique_ptr<Distances>> get_final_entry();
 
+    void statistics(int index) const;
+    void dump(int index) const;
+
+    const TransitionSystem &get_ts(int index) const {
+        return *transition_systems[index];
+    }
+
+    const Distances &get_dist(int index) const {
+        return *distances[index];
+    }
+
     bool is_solvable() const {
         return unsolvable_index == -1;
     }
 
-    void statistics(int index) const;
-    void dump(int index) const;
+    int get_num_active_entries() const {
+        return num_active_entries;
+    }
 
     // Used by LabelReduction and MergeScoringFunctionDFP
     const Labels &get_labels() const {
@@ -130,10 +134,6 @@ public:
 
     bool is_active(int index) const {
         return is_index_valid(index);
-    }
-
-    int get_num_active_entries() const {
-        return num_active_entries;
     }
 };
 }
