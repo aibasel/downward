@@ -65,7 +65,8 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     cout << endl;
 
     build_transition_system(timer);
-    report_peak_memory_delta(true);
+    const bool final = true;
+    report_peak_memory_delta(final);
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl;
     cout << endl;
