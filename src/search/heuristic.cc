@@ -32,7 +32,7 @@ void Heuristic::set_preferred(const GlobalOperator *op) {
     preferred_operators.insert(op);
 }
 
-void Heuristic::set_preferred(OperatorProxy op) {
+void Heuristic::set_preferred(const OperatorProxy &op) {
     set_preferred(op.get_global_operator());
 }
 
