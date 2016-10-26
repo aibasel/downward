@@ -47,13 +47,11 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
-    ::add_cost_type_option_to_parser(parser);
-    // TODO: When the cost_type option is gone, use "no_transform" as default.
     parser.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
-        OptionParser::NONE);
+        "no_transform");
     parser.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
@@ -62,7 +60,6 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 Options Heuristic::default_options() {
     Options opts = Options();
     opts.set<shared_ptr<AbstractTask>>("transform", g_root_task());
-    opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_estimates", false);
     return opts;
 }
