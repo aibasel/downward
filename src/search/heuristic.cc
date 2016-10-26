@@ -5,7 +5,6 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "option_parser.h"
-#include "operator_cost.h"
 #include "plugin.h"
 
 #include "tasks/cost_adapted_task.h"
@@ -21,8 +20,7 @@ Heuristic::Heuristic(const Options &opts)
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_estimates")),
       task(get_task_from_options(opts)),
-      task_proxy(*task),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+      task_proxy(*task) {
 }
 
 Heuristic::~Heuristic() {
@@ -41,10 +39,6 @@ bool Heuristic::notify_state_transition(
     const GlobalOperator & /*op*/,
     const GlobalState & /*state*/) {
     return false;
-}
-
-int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
-    return get_adjusted_action_cost(op, cost_type);
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
