@@ -1,7 +1,6 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
-#include "operator_cost.h"
 #include "per_state_information.h"
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
@@ -56,8 +55,9 @@ protected:
     const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
-    OperatorCost cost_type;
+
     enum {DEAD_END = -1, NO_VALUE = -2};
+
     // TODO: Call with State directly once all heuristics support it.
     virtual int compute_heuristic(const GlobalState &state) = 0;
 
@@ -70,8 +70,6 @@ protected:
     void set_preferred(const GlobalOperator *op);
     void set_preferred(const OperatorProxy &op);
 
-    // TODO: Remove once all heuristics use the TaskProxy class.
-    int get_adjusted_cost(const GlobalOperator &op) const;
     /* TODO: Make private and use State instead of GlobalState once all
        heuristics use the TaskProxy class. */
     State convert_global_state(const GlobalState &global_state) const;
@@ -90,8 +88,6 @@ public:
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
         hset.insert(this);
     }
-
-    OperatorCost get_cost_type() const {return cost_type; }
 
     static void add_options_to_parser(options::OptionParser &parser);
     static options::Options default_options();
