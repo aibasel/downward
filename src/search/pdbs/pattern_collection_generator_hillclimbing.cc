@@ -514,11 +514,10 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
 
     shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
         make_shared<PatternCollectionGeneratorHillclimbing>(opts);
-    shared_ptr<AbstractTask> task = get_task_from_options(opts);
 
     Options heuristic_opts;
     heuristic_opts.set<shared_ptr<AbstractTask>>(
-        "transform", task);
+        "transform", opts.get<shared_ptr<AbstractTask>>("transform"));
     heuristic_opts.set<int>(
         "cost_type", NORMAL);
     heuristic_opts.set<bool>(
