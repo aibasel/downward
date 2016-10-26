@@ -127,8 +127,8 @@ ALIASES["seq-sat-lama-2011"] = [
 
 ALIASES["lama-first"] = [
     "--heuristic",
-    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                         lm_cost_type=one),cost_type=one)",
+    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=one),"
+    "                  transform=adapt_costs(cost_type=one))",
     "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                cost_type=one,reopen_closed=false)"""]
 
