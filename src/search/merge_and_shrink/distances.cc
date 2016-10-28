@@ -200,8 +200,6 @@ vector<bool> Distances::compute_distances(Verbosity verbosity) {
       - Return a vector<bool> that indicates which states can be pruned
         because the are unreachable (abstract g is infinite) or
         irrelevant (abstract h is infinite).
-      - Display statistics on max_f, max_g and max_h and on unreachable
-        and irrelevant states.
     */
 
     if (verbosity >= Verbosity::VERBOSE) {
