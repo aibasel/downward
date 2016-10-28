@@ -450,16 +450,16 @@ fast_downward_plugin(
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
         landmarks/exploration.cc
-        landmarks/h_m_landmarks.cc
         landmarks/lama_ff_synergy.cc
         landmarks/landmark_cost_assignment.cc
         landmarks/landmark_count_heuristic.cc
         landmarks/landmark_factory.cc
+        landmarks/landmark_factory_h_m.cc
+        landmarks/landmark_factory_merged.cc
         landmarks/landmark_factory_rpg_exhaust.cc
         landmarks/landmark_factory_rpg_sasp.cc
         landmarks/landmark_factory_zhu_givan.cc
         landmarks/landmark_graph.cc
-        landmarks/landmark_graph_merged.cc
         landmarks/landmark_status_manager.cc
         landmarks/util.cc
     DEPENDS LP_SOLVER
