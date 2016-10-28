@@ -320,13 +320,6 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
         final_entry = fts.get_final_entry();
     mas_representation = move(final_entry.first);
     mas_representation->set_distances(*final_entry.second);
-    // TODO: after adopting the task interface everywhere, change this
-    // back to compute_heuristic(task_proxy.get_initial_state())
-    int init_h = mas_representation->get_value(task_proxy.get_initial_state());
-    if (init_h != PRUNED_STATE) {
-        cout << "Initial h value: " << init_h << endl;
-    }
-
     shrink_strategy = nullptr;
     label_reduction = nullptr;
 }
