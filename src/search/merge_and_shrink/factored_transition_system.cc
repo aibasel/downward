@@ -200,29 +200,30 @@ int FactoredTransitionSystem::merge(
 
 pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
     FactoredTransitionSystem::get_final_entry() {
+    int final_index;
     if (unsolvable_index == -1) {
         /*
-          If final_index == -1, we "regularly" finished the merge-and-shrink
-          construction, i.e. we merged all transition systems and are left
-          with one solvable transition system. This assumes that merges are
-          always appended at the end.
-
-          (Otherwise, unsolvable_index points to the unsolvable transition
-          system.)
+          If unsolvable_index == -1, we "regularly" finished the merge-and-
+          shrink construction, i.e. we merged all transition systems and are
+          left with one solvable transition system. This assumes that merges
+          are always appended at the end.
         */
         for (size_t i = 0; i < transition_systems.size() - 1; ++i) {
             assert(!transition_systems[i]);
         }
-        unsolvable_index = transition_systems.size() - 1;
-        assert(transition_systems[unsolvable_index]->is_solvable());
+        final_index = transition_systems.size() - 1;
+        assert(transition_systems[final_index]->is_solvable());
         cout << "Final transition system size: "
-             << transition_systems[unsolvable_index]->get_size() << endl;
+             << transition_systems[final_index]->get_size() << endl;
     } else {
+        // unsolvable_index points to an unsolvable transition system which
+        // we use as return value.
+        final_index = unsolvable_index;
         cout << "Abstract problem is unsolvable!" << endl;
     }
 
-    return make_pair(move(mas_representations[unsolvable_index]),
-                     move(distances[unsolvable_index]));
+    return make_pair(move(mas_representations[final_index]),
+                     move(distances[final_index]));
 }
 
 void FactoredTransitionSystem::statistics(int index) const {
