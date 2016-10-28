@@ -50,7 +50,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
     explicit MergeAndShrinkHeuristic(const options::Options &opts);
-    ~MergeAndShrinkHeuristic() = default;
+    virtual ~MergeAndShrinkHeuristic() override = default;
     static void add_shrink_limit_options_to_parser(options::OptionParser &parser);
     static void handle_shrink_limit_options_defaults(options::Options &opts);
 };

@@ -199,7 +199,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
 
     if (fts.is_solvable()) { // All atomic transition system are solvable.
         unique_ptr<MergeStrategy> merge_strategy =
-            merge_strategy_factory->compute_merge_strategy(task, fts);
+            merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
         merge_strategy_factory = nullptr;
 
         while (fts.is_solvable() && fts.get_num_active_entries() > 1) {

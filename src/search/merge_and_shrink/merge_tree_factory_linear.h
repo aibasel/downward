@@ -15,9 +15,9 @@ public:
     explicit MergeTreeFactoryLinear(const options::Options &options);
     virtual ~MergeTreeFactoryLinear() override = default;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
-        const std::shared_ptr<AbstractTask> &task) override;
+        const TaskProxy &task_proxy) override;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
-        const std::shared_ptr<AbstractTask> &task,
+        const TaskProxy &task_proxy,
         FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset) override;
     static void add_options_to_parser(options::OptionParser &parser);
