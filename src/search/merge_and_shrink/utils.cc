@@ -60,7 +60,7 @@ bool shrink_transition_system(
     int index,
     int new_size,
     int shrink_threshold_before_merge,
-    const shared_ptr<ShrinkStrategy> &shrink_strategy,
+    const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity) {
     const TransitionSystem &ts = fts.get_ts(index);
     assert(ts.is_solvable());
@@ -74,7 +74,7 @@ bool shrink_transition_system(
                 cout << " (shrink threshold: " << shrink_threshold_before_merge;
             cout << ")" << endl;
         }
-        return shrink_strategy->shrink(fts, index, new_size, verbosity);
+        return shrink_strategy.shrink(fts, index, new_size, verbosity);
     }
     return false;
 }
