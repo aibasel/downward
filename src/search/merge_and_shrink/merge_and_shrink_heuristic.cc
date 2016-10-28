@@ -181,13 +181,15 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
         index1,
         new_sizes.first,
         shrink_threshold_before_merge,
-        shrink_strategy, verbosity);
+        *shrink_strategy,
+        verbosity);
     bool shrunk2 = shrink_transition_system(
         fts,
         index2,
         new_sizes.second,
         shrink_threshold_before_merge,
-        shrink_strategy, verbosity);
+        *shrink_strategy,
+        verbosity);
     return make_pair(shrunk1, shrunk2);
 }
 

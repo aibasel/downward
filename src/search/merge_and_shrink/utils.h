@@ -1,7 +1,6 @@
 #ifndef MERGE_AND_SHRINK_UTILS_H
 #define MERGE_AND_SHRINK_UTILS_H
 
-#include <memory>
 #include <vector>
 
 namespace merge_and_shrink {
@@ -40,7 +39,7 @@ extern bool shrink_transition_system(
     int index,
     int new_size,
     int shrink_threshold_before_merge,
-    const std::shared_ptr<ShrinkStrategy> &shrink_strategy,
+    const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity);
 }
 
