@@ -70,7 +70,7 @@ public:
 
     /*
       Update distances according to the given abstraction. If the abstraction
-      is not f-preserving, distances are directly recomputed
+      is not f-preserving, distances are directly recomputed.
 
       It is OK for the abstraction to drop states, but then all
       dropped states must be unreachable or irrelevant. (Otherwise,

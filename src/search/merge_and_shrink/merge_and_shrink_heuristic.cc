@@ -64,7 +64,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     warn_on_unusual_options();
     cout << endl;
 
-    build_transition_system(timer);
+    build(timer);
     const bool final = true;
     report_peak_memory_delta(final);
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
@@ -233,7 +233,7 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
     return make_pair(shrunk1, shrunk2);
 }
 
-void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer) {
+void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     FactoredTransitionSystem fts =
         create_factored_transition_system(task_proxy, verbosity);
     print_time(timer, "after computation of atomic transition systems");

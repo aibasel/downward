@@ -41,7 +41,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     long starting_peak_memory;
     std::unique_ptr<MergeAndShrinkRepresentation> mas_representation;
 
-    void build_transition_system(const utils::Timer &timer);
+    void build(const utils::Timer &timer);
 
     /*
       If any of size1 and size2 is larger than max_states_before_merge or
