@@ -443,6 +443,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
         merge_and_shrink/types.cc
+        merge_and_shrink/utils.cc
 )
 
 fast_downward_plugin(
