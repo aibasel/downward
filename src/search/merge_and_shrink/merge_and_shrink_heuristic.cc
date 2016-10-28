@@ -33,7 +33,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-void print_time(const utils::Timer &timer, string text) {
+static void print_time(const utils::Timer &timer, string text) {
     cout << "t=" << timer << " (" << text << ")" << endl;
 }
 
