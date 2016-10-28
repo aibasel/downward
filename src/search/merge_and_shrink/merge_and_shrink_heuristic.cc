@@ -323,7 +323,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
     // TODO: after adopting the task interface everywhere, change this
     // back to compute_heuristic(task_proxy.get_initial_state())
     int init_h = mas_representation->get_value(task_proxy.get_initial_state());
-    if (init_h != -1) {
+    if (init_h != PRUNED_STATE) {
         cout << "Initial h value: " << init_h << endl;
     }
 
@@ -334,7 +334,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
     int cost = mas_representation->get_value(state);
-    if (cost == -1)
+    if (cost == PRUNED_STATE)
         return DEAD_END;
     return cost;
 }
