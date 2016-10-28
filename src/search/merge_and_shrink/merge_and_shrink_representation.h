@@ -20,7 +20,7 @@ public:
     virtual void set_distances(const Distances &) = 0;
     int get_domain_size() const;
 
-    // Return abstract state values or distances, depending on whether
+    // Return the abstract state or the goal distance, depending on whether
     // set_distances has been used or not.
     virtual int get_value(const State &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
