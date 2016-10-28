@@ -102,8 +102,8 @@ static bool contains(list<T> &alist, const T &val) {
 // find partial variable assignments with size m or less
 // (look at all the variables in the problem)
 void LandmarkFactoryHM::get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
-                              FluentSet &current,
-                              vector<FluentSet> &subsets) {
+                                    FluentSet &current,
+                                    vector<FluentSet> &subsets) {
     int num_variables = variables.size();
     if (num_included == m) {
         subsets.push_back(current);
@@ -138,11 +138,11 @@ void LandmarkFactoryHM::get_m_sets_(const VariablesProxy &variables, int m, int 
 
 // find all size m or less subsets of superset
 void LandmarkFactoryHM::get_m_sets_of_set(const VariablesProxy &variables,
-                                    int m, int num_included,
-                                    int current_var_index,
-                                    FluentSet &current,
-                                    vector<FluentSet> &subsets,
-                                    const FluentSet &superset) {
+                                          int m, int num_included,
+                                          int current_var_index,
+                                          FluentSet &current,
+                                          vector<FluentSet> &subsets,
+                                          const FluentSet &superset) {
     if (num_included == m) {
         subsets.push_back(current);
         return;
@@ -262,8 +262,8 @@ void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m, vecto
 
 // get subsets of superset with size <= m
 void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
-                             int m, vector<FluentSet> &subsets,
-                             const FluentSet &superset) {
+                                   int m, vector<FluentSet> &subsets,
+                                   const FluentSet &superset) {
     FluentSet c;
     get_m_sets_of_set(variables, m, 0, 0, c, subsets, superset);
 }
@@ -281,8 +281,8 @@ void LandmarkFactoryHM::get_split_m_sets(
 
 // get subsets of state with size <= m
 void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m,
-                             vector<FluentSet> &subsets,
-                             const State &state) {
+                                   vector<FluentSet> &subsets,
+                                   const State &state) {
     FluentSet state_fluents;
     for (FactProxy fact : state) {
         state_fluents.push_back(fact.get_pair());
@@ -415,8 +415,8 @@ void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const F
 // check whether fs2 is a possible noop set for action with fs1 as effect
 // sets cannot be 1) defined on same variable, 2) otherwise mutex
 bool LandmarkFactoryHM::possible_noop_set(const VariablesProxy &variables,
-                                    const FluentSet &fs1,
-                                    const FluentSet &fs2) {
+                                          const FluentSet &fs1,
+                                          const FluentSet &fs2) {
     FluentSet::const_iterator fs1it = fs1.begin(), fs2it = fs2.begin();
 
     while (fs1it != fs1.end() && fs2it != fs2.end()) {
@@ -553,7 +553,7 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
 }
 
 bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
-                              const FactPair &fact1, const FactPair &fact2) const {
+                                    const FactPair &fact1, const FactPair &fact2) const {
     // mutexes can always be safely pruned
     return !variables[fact1.var].get_fact(fact1.value).is_mutex(
         variables[fact2.var].get_fact(fact2.value));
@@ -655,7 +655,7 @@ void LandmarkFactoryHM::free_unneeded_memory() {
 // to trigger required actions at next level
 // newly_discovered = first time fact becomes reachable
 void LandmarkFactoryHM::propagate_pm_fact(int factindex, bool newly_discovered,
-                                    TriggerSet &trigger) {
+                                          TriggerSet &trigger) {
     // for each action/noop for which fact is a pc
     for (const FactPair &info : h_m_table_[factindex].pc_for) {
         // a pc for the action itself
