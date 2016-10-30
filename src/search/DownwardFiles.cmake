@@ -414,11 +414,11 @@ fast_downward_plugin(
         merge_and_shrink/distances.cc
         merge_and_shrink/factored_transition_system.cc
         merge_and_shrink/fts_factory.cc
-        merge_and_shrink/heuristic_representation.cc
         merge_and_shrink/label_equivalence_relation.cc
         merge_and_shrink/label_reduction.cc
         merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
+        merge_and_shrink/merge_and_shrink_representation.cc
         merge_and_shrink/merge_scoring_function.cc
         merge_and_shrink/merge_scoring_function_dfp.cc
         merge_and_shrink/merge_scoring_function_goal_relevance.cc
@@ -443,6 +443,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
         merge_and_shrink/types.cc
+        merge_and_shrink/utils.cc
 )
 
 fast_downward_plugin(

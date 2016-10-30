@@ -3,6 +3,8 @@
 
 #include "merge_scoring_function.h"
 
+#include <memory>
+
 namespace options {
 class OptionParser;
 class Options;
@@ -39,7 +41,7 @@ public:
     virtual std::vector<double> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
-    virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
+    virtual void initialize(const TaskProxy &task_proxy) override;
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

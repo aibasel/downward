@@ -1,14 +1,17 @@
 #include "merge_and_shrink_heuristic.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
 #include "fts_factory.h"
 #include "label_reduction.h"
 #include "labels.h"
+#include "merge_and_shrink_representation.h"
 #include "merge_strategy.h"
 #include "merge_strategy_factory.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
 #include "types.h"
+#include "utils.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -30,7 +33,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-void print_time(const utils::Timer &timer, string text) {
+static void print_time(const utils::Timer &timer, string text) {
     cout << "t=" << timer << " (" << text << ")" << endl;
 }
 
@@ -44,7 +47,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
       verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))),
       starting_peak_memory(-1),
-      fts(nullptr) {
+      mas_representation(nullptr) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
     assert(shrink_threshold_before_merge <= max_states_before_merge);
@@ -62,8 +65,9 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     warn_on_unusual_options();
     cout << endl;
 
-    build_transition_system(timer);
-    report_peak_memory_delta(true);
+    build(timer);
+    const bool final = true;
+    report_peak_memory_delta(final);
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl;
     cout << endl;
@@ -153,72 +157,17 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-pair<int, int> MergeAndShrinkHeuristic::compute_shrink_sizes(
-    int size1, int size2) const {
-    // Bound both sizes by max allowed size before merge.
-    int new_size1 = min(size1, max_states_before_merge);
-    int new_size2 = min(size2, max_states_before_merge);
-
-    if (!utils::is_product_within_limit(new_size1, new_size2, max_states)) {
-        int balanced_size = int(sqrt(max_states));
-
-        if (new_size1 <= balanced_size) {
-            // Size of the first transition system is small enough. Use whatever
-            // is left for the second transition system.
-            new_size2 = max_states / new_size1;
-        } else if (new_size2 <= balanced_size) {
-            // Inverted case as before.
-            new_size1 = max_states / new_size2;
-        } else {
-            // Both transition systems are too big. We set both target sizes
-            // to balanced_size. An alternative would be to set one to
-            // N1 = balanced_size and the other to N2 = max_states /
-            // balanced_size, to get closer to the allowed maximum.
-            // However, this would make little difference (N2 would
-            // always be N1, N1 + 1 or N1 + 2), and our solution has the
-            // advantage of treating the transition systems symmetrically.
-            new_size1 = balanced_size;
-            new_size2 = balanced_size;
-        }
-    }
-    assert(new_size1 <= size1 && new_size2 <= size2);
-    assert(new_size1 <= max_states_before_merge);
-    assert(new_size2 <= max_states_before_merge);
-    assert(new_size1 * new_size2 <= max_states);
-    return make_pair(new_size1, new_size2);
-}
-
-bool MergeAndShrinkHeuristic::shrink_transition_system(
-    int index, int new_size) {
-    assert(fts);
-    const TransitionSystem &ts = fts->get_ts(index);
-    assert(ts.is_solvable());
-    int num_states = ts.get_size();
-    if (num_states > min(new_size, shrink_threshold_before_merge)) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << ts.tag() << "current size: " << num_states;
-            if (new_size < num_states)
-                cout << " (new size limit: " << new_size;
-            else
-                cout << " (shrink threshold: " << shrink_threshold_before_merge;
-            cout << ")" << endl;
-        }
-        return shrink_strategy->shrink(*fts, index, new_size, verbosity);
-    }
-    return false;
-}
-
 pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
-    int index1, int index2) {
-    assert(fts);
-    const TransitionSystem &ts1 = fts->get_ts(index1);
-    const TransitionSystem &ts2 = fts->get_ts(index2);
+    FactoredTransitionSystem &fts, int index1, int index2) {
     /*
       Compute the size limit for both transition systems as imposed by
       max_states and max_states_before_merge.
     */
     pair<int, int> new_sizes = compute_shrink_sizes(
-        ts1.get_size(), ts2.get_size());
+        fts.get_ts(index1).get_size(),
+        fts.get_ts(index2).get_size(),
+        max_states_before_merge,
+        max_states);
 
     /*
       For both transition systems, possibly compute and apply an
@@ -227,29 +176,35 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
       for the second shrinking if the first shrinking was larger than
       required.
     */
-    bool shrunk1 = shrink_transition_system(index1, new_sizes.first);
-    bool shrunk2 = shrink_transition_system(index2, new_sizes.second);
+    bool shrunk1 = shrink_transition_system(
+        fts,
+        index1,
+        new_sizes.first,
+        shrink_threshold_before_merge,
+        *shrink_strategy,
+        verbosity);
+    bool shrunk2 = shrink_transition_system(
+        fts,
+        index2,
+        new_sizes.second,
+        shrink_threshold_before_merge,
+        *shrink_strategy,
+        verbosity);
     return make_pair(shrunk1, shrunk2);
 }
 
-void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer) {
-    // TODO: We're leaking memory here in various ways. Fix this.
-    //       Don't forget that build_atomic_transition_systems also
-    //       allocates memory.
-
-    fts = utils::make_unique_ptr<FactoredTransitionSystem>(
-        create_factored_transition_system(task_proxy, verbosity));
+void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
+    FactoredTransitionSystem fts =
+        create_factored_transition_system(task_proxy, verbosity);
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
 
-    unique_ptr<MergeStrategy> merge_strategy =
-        merge_strategy_factory->compute_merge_strategy(task, *fts);
-    merge_strategy_factory = nullptr;
+    if (fts.is_solvable()) { // All atomic transition system are solvable.
+        unique_ptr<MergeStrategy> merge_strategy =
+            merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
+        merge_strategy_factory = nullptr;
 
-    int final_index = -1; // TODO: get rid of this
-    if (fts->is_solvable()) { // All atomic transition system are solvable.
-        int number_of_merges = task_proxy.get_variables().size() - 1;
-        for (int i = 0; i < number_of_merges; ++i) {
+        while (fts.is_solvable() && fts.get_num_active_entries() > 1) {
             // Choose next transition systems to merge
             pair<int, int> merge_indices = merge_strategy->get_next();
             int merge_index1 = merge_indices.first;
@@ -259,8 +214,8 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
                 cout << "Next pair of indices: ("
                      << merge_index1 << ", " << merge_index2 << ")" << endl;
                 if (verbosity >= Verbosity::VERBOSE) {
-                    fts->statistics(merge_index1);
-                    fts->statistics(merge_index2);
+                    fts.statistics(merge_index1);
+                    fts.statistics(merge_index2);
                 }
                 print_time(timer, "after computation of next merge");
             }
@@ -268,7 +223,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             // Label reduction (before shrinking)
             if (label_reduction && label_reduction->reduce_before_shrinking()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, *fts, verbosity);
+                    label_reduction->reduce(merge_indices, fts, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
@@ -276,15 +231,15 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
 
             // Shrinking
             pair<bool, bool> shrunk = shrink_before_merge(
-                merge_index1, merge_index2);
+                fts, merge_index1, merge_index2);
             if (verbosity >= Verbosity::NORMAL &&
                 (shrunk.first || shrunk.second)) {
                 if (verbosity >= Verbosity::VERBOSE) {
                     if (shrunk.first) {
-                        fts->statistics(merge_index1);
+                        fts.statistics(merge_index1);
                     }
                     if (shrunk.second) {
-                        fts->statistics(merge_index2);
+                        fts.statistics(merge_index2);
                     }
                 }
                 print_time(timer, "after shrinking");
@@ -293,24 +248,24 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             // Label reduction (before merging)
             if (label_reduction && label_reduction->reduce_before_merging()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, *fts, verbosity);
+                    label_reduction->reduce(merge_indices, fts, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
             }
 
             // Merging
-            final_index = fts->merge(merge_index1, merge_index2, verbosity);
+            int merged_index = fts.merge(merge_index1, merge_index2, verbosity);
             /*
               NOTE: both the shrinking strategy classes and the construction of
               the composite require input transition systems to be solvable.
             */
-            if (!fts->is_solvable()) {
+            if (!fts.is_solvable()) {
                 break;
             }
             if (verbosity >= Verbosity::NORMAL) {
                 if (verbosity >= Verbosity::VERBOSE) {
-                    fts->statistics(final_index);
+                    fts.statistics(merged_index);
                 }
                 print_time(timer, "after merging");
                 if (verbosity >= Verbosity::VERBOSE) {
@@ -321,28 +276,18 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
         }
     }
 
-    if (fts->is_solvable()) {
-        cout << "Final transition system size: "
-             << fts->get_ts(final_index).get_size() << endl;
-        // need to finalize before calling "get_cost"
-        fts->finalize();
-        // TODO: after adopting the task interface everywhere, change this
-        // back to compute_heuristic(task_proxy.get_initial_state())
-        cout << "initial h value: "
-             << fts->get_cost(task_proxy.get_initial_state())
-             << endl;
-    } else {
-        cout << "Abstract problem is unsolvable!" << endl;
-    }
-
+    pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
+    final_entry = fts.get_final_entry();
+    mas_representation = move(final_entry.first);
+    mas_representation->set_distances(*final_entry.second);
     shrink_strategy = nullptr;
     label_reduction = nullptr;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
-    int cost = fts->get_cost(state);
-    if (cost == -1)
+    int cost = mas_representation->get_value(state);
+    if (cost == PRUNED_STATE)
         return DEAD_END;
     return cost;
 }
