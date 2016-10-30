@@ -47,7 +47,7 @@ class FactoredTransitionSystem {
     std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;
     std::vector<std::unique_ptr<Distances>> distances;
     int unsolvable_index; // -1 if solvable, index of an unsolvable entry otw.
-    int num_active_entries; // number of (active) entries
+    int num_active_entries;
 
     void compute_distances_and_prune(
         int index,
