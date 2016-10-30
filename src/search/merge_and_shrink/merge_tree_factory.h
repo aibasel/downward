@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-class AbstractTask;
+class TaskProxy;
 
 namespace options {
 class OptionParser;
@@ -32,11 +32,11 @@ public:
     void dump_options() const;
     // Compute a merge tree for the given entire task
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
-        const std::shared_ptr<AbstractTask> &task) = 0;
+        const TaskProxy &task_proxy) = 0;
     /* Compute a merge tree for the given current factored transition,
        system, possibly for a sbuset of indices. */
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
-        const std::shared_ptr<AbstractTask> &task,
+        const TaskProxy &task_proxy,
         FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset);
     // Inheriting classes must call this method in their parsing methods.

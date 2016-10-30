@@ -1,10 +1,10 @@
 #ifndef MERGE_AND_SHRINK_MERGE_SCORING_FUNCTION_H
 #define MERGE_AND_SHRINK_MERGE_SCORING_FUNCTION_H
 
-#include <memory>
+#include <string>
 #include <vector>
 
-class AbstractTask;
+class TaskProxy;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
@@ -20,7 +20,7 @@ public:
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) = 0;
     // Overriding methods must set initialized to true.
-    virtual void initialize(const std::shared_ptr<AbstractTask> &) {
+    virtual void initialize(const TaskProxy &) {
         initialized = true;
     }
     void dump_options() const;
