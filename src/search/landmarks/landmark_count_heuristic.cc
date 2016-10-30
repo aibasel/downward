@@ -336,15 +336,7 @@ static Heuristic *_parse(OptionParser &parser) {
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
     lp::add_lp_solver_option_to_parser(parser);
-    /*
-      Since the search always uses the root task, path-dependent
-      heuristics can't work on general task transformations. We
-      therefore don't add the "transform" option here.
-    */
-    ::add_cost_type_option_to_parser(parser);
-    parser.add_option<bool>(
-        "cache_estimates", "cache heuristic estimates", "true");
-
+    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     if (parser.dry_run())

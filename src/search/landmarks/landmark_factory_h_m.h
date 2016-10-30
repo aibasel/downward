@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_H_M_LANDMARKS_H
-#define LANDMARKS_H_M_LANDMARKS_H
+#ifndef LANDMARKS_LANDMARK_FACTORY_H_M_H
+#define LANDMARKS_LANDMARK_FACTORY_H_M_H
 
 #include "landmark_factory.h"
 
@@ -56,7 +56,7 @@ struct HMEntry {
 
 using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
 
-class HMLandmarks : public LandmarkFactory {
+class LandmarkFactoryHM : public LandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::set<int>>;
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
@@ -132,7 +132,7 @@ class HMLandmarks : public LandmarkFactory {
     void print_proposition(const VariablesProxy &variables, const FactPair &fluent) const;
 
 public:
-    explicit HMLandmarks(const options::Options &opts);
+    explicit LandmarkFactoryHM(const options::Options &opts);
 
     virtual bool supports_conditional_effects() const override;
 };
