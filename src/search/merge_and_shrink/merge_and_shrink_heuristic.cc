@@ -277,7 +277,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     }
 
     pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
-        final_entry = fts.get_final_entry();
+    final_entry = fts.get_final_entry();
     mas_representation = move(final_entry.first);
     mas_representation->set_distances(*final_entry.second);
     shrink_strategy = nullptr;

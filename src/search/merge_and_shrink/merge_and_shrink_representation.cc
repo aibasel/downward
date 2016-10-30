@@ -70,7 +70,7 @@ MergeAndShrinkRepresentationMerge::MergeAndShrinkRepresentationMerge(
     unique_ptr<MergeAndShrinkRepresentation> left_child_,
     unique_ptr<MergeAndShrinkRepresentation> right_child_)
     : MergeAndShrinkRepresentation(left_child_->get_domain_size() *
-                              right_child_->get_domain_size()),
+                                   right_child_->get_domain_size()),
       left_child(move(left_child_)),
       right_child(move(right_child_)),
       lookup_table(left_child->get_domain_size(),

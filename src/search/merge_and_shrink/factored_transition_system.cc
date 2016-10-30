@@ -199,7 +199,7 @@ int FactoredTransitionSystem::merge(
 }
 
 pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
-    FactoredTransitionSystem::get_final_entry() {
+FactoredTransitionSystem::get_final_entry() {
     int final_index;
     if (unsolvable_index == -1) {
         /*

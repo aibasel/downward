@@ -26,7 +26,7 @@ pair<int, int> compute_shrink_sizes(
     int new_size2 = min(size2, max_states_before_merge);
 
     if (!utils::is_product_within_limit(
-        new_size1, new_size2, max_states_after_merge)) {
+            new_size1, new_size2, max_states_after_merge)) {
         int balanced_size = int(sqrt(max_states_after_merge));
 
         if (new_size1 <= balanced_size) {
