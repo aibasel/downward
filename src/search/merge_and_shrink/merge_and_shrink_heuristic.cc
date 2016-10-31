@@ -194,8 +194,12 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
 }
 
 void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
+    const bool finalize_if_unsolvable = true;
     FactoredTransitionSystem fts =
-        create_factored_transition_system(task_proxy, verbosity);
+        create_factored_transition_system(
+            task_proxy,
+            verbosity,
+            finalize_if_unsolvable);
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
 
@@ -255,7 +259,8 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             }
 
             // Merging
-            int merged_index = fts.merge(merge_index1, merge_index2, verbosity);
+            int merged_index = fts.merge(
+                merge_index1, merge_index2, verbosity, finalize_if_unsolvable);
             /*
               NOTE: both the shrinking strategy classes and the construction of
               the composite require input transition systems to be solvable.
