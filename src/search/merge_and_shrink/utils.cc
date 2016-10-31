@@ -78,4 +78,14 @@ bool shrink_transition_system(
     }
     return false;
 }
+
+bool is_goal_relevant(const TransitionSystem &ts) {
+    int num_states = ts.get_size();
+    for (int state = 0; state < num_states; ++state) {
+        if (!ts.is_goal_state(state)) {
+            return true;
+        }
+    }
+    return false;
+}
 }
