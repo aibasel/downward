@@ -1,10 +1,10 @@
 #ifndef MERGE_AND_SHRINK_MERGE_SELECTOR_H
 #define MERGE_AND_SHRINK_MERGE_SELECTOR_H
 
-#include <memory>
+#include <string>
 #include <vector>
 
-class AbstractTask;
+class TaskProxy;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
@@ -21,7 +21,7 @@ public:
     virtual std::pair<int, int> select_merge(
         FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset = std::vector<int>()) const = 0;
-    virtual void initialize(const std::shared_ptr<AbstractTask> &task) = 0;
+    virtual void initialize(const TaskProxy &task_proxy) = 0;
     void dump_options() const;
 };
 }

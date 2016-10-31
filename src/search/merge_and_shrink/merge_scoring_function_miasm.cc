@@ -31,7 +31,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         int ts_index2 = merge_candidate.second;
 
         int merge_index = shrink_and_merge_temporarily(
-            fts, ts_index1, ts_index2, shrink_stratey, max_states,
+            fts, ts_index1, ts_index2, *shrink_stratey, max_states,
             max_states_before_merge, shrink_threshold_before_merge);
 
         // return 0 if the merge is unsolvable (i.e. empty transition system)

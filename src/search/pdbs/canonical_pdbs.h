@@ -12,8 +12,8 @@ class CanonicalPDBs {
     std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
 
 public:
-    CanonicalPDBs(std::shared_ptr<PDBCollection> pattern_databases,
-                  std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets,
+    CanonicalPDBs(const std::shared_ptr<PDBCollection> &pattern_databases,
+                  const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets,
                   bool dominance_pruning);
     ~CanonicalPDBs() = default;
 

@@ -11,6 +11,8 @@
 #include "../open_lists/standard_scalar_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 
+#include "../algorithms/ordered_set.h"
+
 #include "../utils/system.h"
 
 using namespace std;
@@ -125,55 +127,49 @@ void EnforcedHillClimbingSearch::initialize() {
     current_phase_start_g = 0;
 }
 
-vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
-    EvaluationContext &eval_context) {
-    vector<const GlobalOperator *> ops;
-    if (!use_preferred || preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
-        g_successor_generator->generate_applicable_ops(eval_context.get_state(), ops);
-
-        // Mark preferred operators.
-        if (use_preferred &&
-            preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
-            for (const GlobalOperator *op : ops) {
-                op->unmark();
-            }
-            for (Heuristic *pref_heuristic : preferred_operator_heuristics) {
-                const vector<const GlobalOperator *> &pref_ops =
-                    eval_context.get_preferred_operators(pref_heuristic);
-                for (const GlobalOperator *op : pref_ops) {
-                    op->mark();
-                }
-            }
-        }
-    } else {
-        for (Heuristic *pref_heuristic : preferred_operator_heuristics) {
-            const vector<const GlobalOperator *> &pref_ops =
-                eval_context.get_preferred_operators(pref_heuristic);
-            for (const GlobalOperator *op : pref_ops) {
-                if (!op->is_marked()) {
-                    op->mark();
-                    ops.push_back(op);
-                }
-            }
-        }
-    }
-    statistics.inc_expanded();
-    statistics.inc_generated_ops(ops.size());
-    return ops;
+void EnforcedHillClimbingSearch::insert_successor_into_open_list(
+    const EvaluationContext &eval_context,
+    int parent_g,
+    const GlobalOperator *op,
+    bool preferred) {
+    int succ_g = parent_g + get_adjusted_cost(*op);
+    EdgeOpenListEntry entry = make_pair(
+        eval_context.get_state().get_id(), op);
+    EvaluationContext new_eval_context(
+        eval_context.get_cache(), succ_g, preferred, &statistics);
+    open_list->insert(new_eval_context, entry);
+    statistics.inc_generated_ops();
 }
 
 void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
-    for (const GlobalOperator *op : get_successors(eval_context)) {
-        int succ_g = node.get_g() + get_adjusted_cost(*op);
-        EdgeOpenListEntry entry = make_pair(
-            eval_context.get_state().get_id(), op);
-        EvaluationContext new_eval_context(
-            eval_context.get_cache(), succ_g, op->is_marked(), &statistics);
-        open_list->insert(new_eval_context, entry);
-        op->unmark();
+    int node_g = node.get_g();
+
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    if (use_preferred) {
+        preferred_operators = collect_preferred_operators(
+            eval_context, preferred_operator_heuristics);
     }
 
+    if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
+        for (const GlobalOperator *op : preferred_operators) {
+            insert_successor_into_open_list(
+                eval_context, node_g, op, preferred_operators.contains(op));
+        }
+    } else {
+        /* The successor ranking implied by RANK_BY_PREFERRED is done
+           by the open list. */
+        vector<const GlobalOperator *> successor_operators;
+        g_successor_generator->generate_applicable_ops(
+            eval_context.get_state(), successor_operators);
+        for (const GlobalOperator *op : successor_operators) {
+            bool preferred = use_preferred && preferred_operators.contains(op);
+            insert_successor_into_open_list(
+                eval_context, node_g, op, preferred);
+        }
+    }
+
+    statistics.inc_expanded();
     node.close();
 }
 

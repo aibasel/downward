@@ -1,9 +1,8 @@
 #include "landmark_graph.h"
 
-#include "../abstract_task.h"
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../globals.h"
+#include "util.h"
+
+#include "../task_proxy.h"
 
 #include <cassert>
 #include <list>
@@ -15,24 +14,35 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkGraph::LandmarkGraph()
+LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
     : landmarks_count(0), conj_lms(0) {
-    generate_operators_lookups();
+    generate_operators_lookups(task_proxy);
 }
 
-void LandmarkGraph::generate_operators_lookups() {
+void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
     /* Build datastructures for efficient landmark computation. Map propositions
     to the operators that achieve them or have them as preconditions */
 
-    operators_eff_lookup.resize(g_variable_domain.size());
-    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-        operators_eff_lookup[i].resize(g_variable_domain[i]);
+    VariablesProxy variables = task_proxy.get_variables();
+    operators_eff_lookup.resize(variables.size());
+    for (VariableProxy var : variables) {
+        operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
     }
-    for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
-        const GlobalOperator &op = get_operator_for_lookup_index(i);
-        const vector<GlobalEffect> &effects = op.get_effects();
-        for (size_t j = 0; j < effects.size(); ++j) {
-            operators_eff_lookup[effects[j].var][effects[j].val].push_back(i);
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
+        const EffectsProxy effects = op.get_effects();
+        for (EffectProxy effect : effects) {
+            const FactProxy effect_fact = effect.get_fact();
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(op));
+        }
+    }
+    for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        const EffectsProxy effects = axiom.get_effects();
+        for (EffectProxy effect : effects) {
+            const FactProxy effect_fact = effect.get_fact();
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(axiom));
         }
     }
 }
@@ -41,21 +51,19 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact, or 0 if no such
      landmark exists.
      */
-    LandmarkNode *node_p = 0;
-    // TODO(issue635): Use FactPair struct for landmarks.
-    pair<int, int> prop(fact.var, fact.value);
-    auto it = simple_lms_to_nodes.find(prop);
+    LandmarkNode *node_p = nullptr;
+    auto it = simple_lms_to_nodes.find(fact);
     if (it != simple_lms_to_nodes.end())
         node_p = it->second;
     else {
-        auto it2 = disj_lms_to_nodes.find(prop);
+        auto it2 = disj_lms_to_nodes.find(fact);
         if (it2 != disj_lms_to_nodes.end())
             node_p = it2->second;
     }
     return node_p;
 }
 
-LandmarkNode *LandmarkGraph::get_lm_for_index(int i) {
+LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
     assert(ordered_nodes[i]->get_id() == i);
     return ordered_nodes[i];
 }
@@ -90,34 +98,34 @@ void LandmarkGraph::count_costs() {
     }
 }
 
-bool LandmarkGraph::simple_landmark_exists(const pair<int, int> &lm) const {
+bool LandmarkGraph::simple_landmark_exists(const FactPair &lm) const {
     auto it = simple_lms_to_nodes.find(lm);
     assert(it == simple_lms_to_nodes.end() || !it->second->disjunctive);
     return it != simple_lms_to_nodes.end();
 }
 
-bool LandmarkGraph::landmark_exists(const pair<int, int> &lm) const {
+bool LandmarkGraph::landmark_exists(const FactPair &lm) const {
     // Note: this only checks for one fact whether it's part of a landmark, hence only
     // simple and disjunctive landmarks are checked.
-    set<pair<int, int>> lm_set;
+    set<FactPair> lm_set;
     lm_set.insert(lm);
     return simple_landmark_exists(lm) || disj_landmark_exists(lm_set);
 }
 
-bool LandmarkGraph::disj_landmark_exists(const set<pair<int, int>> &lm) const {
+bool LandmarkGraph::disj_landmark_exists(const set<FactPair> &lm) const {
     // Test whether ONE of the facts in lm is present in some disj. LM
-    for (const auto &prop : lm) {
-        if (disj_lms_to_nodes.count(prop) == 1)
+    for (const FactPair &lm_fact : lm) {
+        if (disj_lms_to_nodes.count(lm_fact) == 1)
             return true;
     }
     return false;
 }
 
-bool LandmarkGraph::exact_same_disj_landmark_exists(const set<pair<int, int>> &lm) const {
+bool LandmarkGraph::exact_same_disj_landmark_exists(const set<FactPair> &lm) const {
     // Test whether a disj. LM exists which consists EXACTLY of those facts in lm
     LandmarkNode *lmn = NULL;
-    for (const auto &prop : lm) {
-        auto it2 = disj_lms_to_nodes.find(prop);
+    for (const FactPair &lm_fact : lm) {
+        auto it2 = disj_lms_to_nodes.find(lm_fact);
         if (it2 == disj_lms_to_nodes.end())
             return false;
         else {
@@ -130,45 +138,39 @@ bool LandmarkGraph::exact_same_disj_landmark_exists(const set<pair<int, int>> &l
     return true;
 }
 
-LandmarkNode &LandmarkGraph::landmark_add_simple(const pair<int, int> &lm) {
+LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
     assert(!landmark_exists(lm));
-    vector<int> vars;
-    vector<int> vals;
-    vars.push_back(lm.first);
-    vals.push_back(lm.second);
-    LandmarkNode *new_node_p = new LandmarkNode(vars, vals, false);
+    vector<FactPair> facts;
+    facts.push_back(lm);
+    LandmarkNode *new_node_p = new LandmarkNode(facts, false);
     nodes.insert(new_node_p);
-    simple_lms_to_nodes.insert(make_pair(lm, new_node_p));
+    simple_lms_to_nodes.emplace(lm, new_node_p);
     ++landmarks_count;
     return *new_node_p;
 }
 
-LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<pair<int, int>> &lm) {
-    vector<int> vars;
-    vector<int> vals;
-    for (set<pair<int, int>>::iterator it = lm.begin(); it != lm.end(); ++it) {
-        vars.push_back(it->first);
-        vals.push_back(it->second);
-        assert(!landmark_exists(*it));
+LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
+    vector<FactPair> facts;
+    for (const FactPair &lm_fact : lm) {
+        facts.push_back(lm_fact);
+        assert(!landmark_exists(lm_fact));
     }
-    LandmarkNode *new_node_p = new LandmarkNode(vars, vals, true);
+    LandmarkNode *new_node_p = new LandmarkNode(facts, true);
     nodes.insert(new_node_p);
-    for (set<pair<int, int>>::iterator it = lm.begin(); it != lm.end(); ++it) {
-        disj_lms_to_nodes.insert(make_pair(*it, new_node_p));
+    for (const FactPair &lm_fact : lm) {
+        disj_lms_to_nodes.emplace(lm_fact, new_node_p);
     }
     ++landmarks_count;
     return *new_node_p;
 }
 
-LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int>> &lm) {
-    vector<int> vars;
-    vector<int> vals;
-    for (set<pair<int, int>>::iterator it = lm.begin(); it != lm.end(); ++it) {
-        vars.push_back(it->first);
-        vals.push_back(it->second);
-        assert(!landmark_exists(*it));
+LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
+    vector<FactPair> facts;
+    for (const FactPair &lm_fact : lm) {
+        facts.push_back(lm_fact);
+        assert(!landmark_exists(lm_fact));
     }
-    LandmarkNode *new_node_p = new LandmarkNode(vars, vals, false, true);
+    LandmarkNode *new_node_p = new LandmarkNode(facts, false, true);
     nodes.insert(new_node_p);
     ++landmarks_count;
     ++conj_lms;
@@ -187,54 +189,51 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
         assert(child_node.parents.find(node) == child_node.parents.end());
     }
     if (node->disjunctive) {
-        for (size_t i = 0; i < node->vars.size(); ++i) {
-            pair<int, int> lm = make_pair(node->vars[i], node->vals[i]);
-            disj_lms_to_nodes.erase(lm);
+        for (const FactPair &lm_fact : node->facts) {
+            disj_lms_to_nodes.erase(lm_fact);
         }
     } else if (node->conjunctive) {
         --conj_lms;
     } else {
-        pair<int, int> lm = make_pair(node->vars[0], node->vals[0]);
-        simple_lms_to_nodes.erase(lm);
+        simple_lms_to_nodes.erase(node->facts[0]);
     }
     nodes.erase(node);
     --landmarks_count;
     assert(nodes.find(node) == nodes.end());
 }
 
-LandmarkNode &LandmarkGraph::make_disj_node_simple(pair<int, int> lm) {
+LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
     LandmarkNode &node = get_disj_lm_node(lm);
     node.disjunctive = false;
-    for (size_t i = 0; i < node.vars.size(); ++i)
-        disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
-    simple_lms_to_nodes.insert(make_pair(lm, &node));
+    for (const FactPair &lm_fact : node.facts)
+        disj_lms_to_nodes.erase(lm_fact);
+    simple_lms_to_nodes.emplace(lm, &node);
     return node;
 }
 
 void LandmarkGraph::set_landmark_ids() {
     ordered_nodes.resize(landmarks_count);
     int id = 0;
-    for (set<LandmarkNode *>::iterator node_it =
-             nodes.begin(); node_it != nodes.end(); ++node_it) {
-        LandmarkNode *lmn = *node_it;
+    for (LandmarkNode *lmn : nodes) {
         lmn->assign_id(id);
         ordered_nodes[id] = lmn;
         ++id;
     }
 }
 
-void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
+void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const {
     cout << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
         cout << "disj {";
     else if (node_p->conjunctive)
         cout << "conj {";
-    for (size_t i = 0; i < node_p->vars.size(); ++i) {
-        int var_no = node_p->vars[i], value = node_p->vals[i];
-        cout << g_fact_names[var_no][value] << " ("
-             << g_variable_name[var_no] << "(" << var_no << ")"
-             << "->" << value << ")";
-        if (i < node_p->vars.size() - 1)
+    size_t i = 0;
+    for (const FactPair &lm_fact : node_p->facts) {
+        VariableProxy var = variables[lm_fact.var];
+        cout << var.get_fact(lm_fact.value).get_name() << " ("
+             << var.get_name() << "(" << lm_fact.var << ")"
+             << "->" << lm_fact.value << ")";
+        if (i++ < node_p->facts.size() - 1)
             cout << ", ";
     }
     if (node_p->disjunctive || node_p->conjunctive)
@@ -245,12 +244,12 @@ void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
     cout << endl;
 }
 
-void LandmarkGraph::dump() const {
+void LandmarkGraph::dump(const VariablesProxy &variables) const {
     cout << "Landmark graph: " << endl;
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 
     for (const LandmarkNode *node_p : nodes2) {
-        dump_node(node_p);
+        dump_node(variables, node_p);
         for (const auto &parent : node_p->parents) {
             const LandmarkNode *parent_node = parent.first;
             const EdgeType &edge = parent.second;
@@ -272,7 +271,7 @@ void LandmarkGraph::dump() const {
                 cout << "o_r ";
                 break;
             }
-            dump_node(parent_node);
+            dump_node(variables, parent_node);
         }
         for (const auto &child : node_p->children) {
             const LandmarkNode *child_node = child.first;
@@ -295,7 +294,7 @@ void LandmarkGraph::dump() const {
                 cout << "o_r ";
                 break;
             }
-            dump_node(child_node);
+            dump_node(variables, child_node);
         }
         cout << endl;
     }
