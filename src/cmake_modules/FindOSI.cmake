@@ -30,7 +30,7 @@
 #   DOWNWARD_COIN_ROOT_RELEASE64
 #   DOWNWARD_COIN_ROOT_DEBUG32
 #   DOWNWARD_COIN_ROOT_DEBUG64
-# More specific paths are prefered over less specific ones when searching
+# More specific paths are preferred over less specific ones when searching
 # for libraries.
 #
 # Note that the standard FIND_PACKAGE features are supported

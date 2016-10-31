@@ -273,7 +273,8 @@ void read_everything(istream &in) {
          << endl;
 
     cout << "Building successor generator..." << flush;
-    g_successor_generator = new SuccessorGenerator(g_root_task());
+    TaskProxy task_proxy(*g_root_task());
+    g_successor_generator = new SuccessorGenerator(task_proxy);
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
     cout << "done initalizing global data [t=" << utils::g_timer << "]" << endl;

@@ -9,6 +9,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../lp/lp_solver.h"
+
 #include "../utils/system.h"
 
 using namespace std;

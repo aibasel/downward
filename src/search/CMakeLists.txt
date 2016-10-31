@@ -72,3 +72,19 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
         )
     endif()
 endif()
+
+if ($ENV{DOWNWARD_USE_ISNAN_WORKAROUND})
+    set(USE_ISNAN_WORKAROUND_DEFAULT_VALUE TRUE)
+else()
+    set(USE_ISNAN_WORKAROUND_DEFAULT_VALUE FALSE)
+endif()
+
+option(
+  USE_ISNAN_WORKAROUND
+  "With some compilers this workaround fixes compilation errors involving the isnan stdlib function."
+  ${USE_ISNAN_WORKAROUND_DEFAULT_VALUE})
+
+message("USE_ISNAN_WORKAROUND: ${USE_ISNAN_WORKAROUND}")
+if(USE_ISNAN_WORKAROUND)
+    add_definitions("-D USE_ISNAN_WORKAROUND")
+endif()

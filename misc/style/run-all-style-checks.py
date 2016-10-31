@@ -61,6 +61,9 @@ def check_include_guard_convention():
 
 
 def check_cc_files():
+    """
+    Currently, we only check that there is no "std::" in .cc files.
+    """
     search_dir = os.path.join(SRC_DIR, "search")
     cc_files = (
         glob.glob(os.path.join(search_dir, "*.cc")) +
@@ -68,18 +71,34 @@ def check_cc_files():
     return subprocess.call(["./check-cc-file.py"] + cc_files, cwd=DIR) == 0
 
 
-def check_preprocessor_and_search_style():
-    output = subprocess.check_output(["hg", "uncrustify"])
-    if output:
-        print('Run "hg uncrustify -m" to fix the style in the following files:')
-        print(output.rstrip())
-    return not output
+def check_cplusplus_style():
+    """
+    Calling the uncrustify mercurial extension doesn't work for
+    bitbucket pipelines (the local .hg/hgrc file is untrusted and
+    ignored by mercurial). We therefore find the source files manually
+    and call uncrustify directly.
+    """
+    src_files = []
+    for root, dirs, files in os.walk(REPO):
+        src_files.extend([
+            os.path.join(root, file)
+            for file in files if file.endswith((".h", ".cc"))])
+    config_file = os.path.join(REPO, ".uncrustify.cfg")
+    returncode = subprocess.call(
+        ["uncrustify", "-q", "-c", config_file, "--check"] + src_files,
+        cwd=DIR, stdout=subprocess.PIPE)
+    if returncode != 0:
+        print(
+            'Run "hg uncrustify" to fix the coding style in the above '
+            'mentioned files.')
+    return returncode == 0
 
 
 def main():
-    tests = [test for test_name, test in globals().items()
+    tests = [test for test_name, test in sorted(globals().items())
              if test_name.startswith("check_")]
-    if all(test() for test in tests):
+    results = [test() for test in tests]
+    if all(results):
         print("All style checks passed")
     else:
         sys.exit(1)
