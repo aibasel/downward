@@ -259,7 +259,8 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             }
 
             // Merging
-            int merged_index = fts.merge(merge_index1, merge_index2, verbosity);
+            int merged_index = fts.merge(
+                merge_index1, merge_index2, verbosity, finalize_if_unsolvable);
             /*
               NOTE: both the shrinking strategy classes and the construction of
               the composite require input transition systems to be solvable.

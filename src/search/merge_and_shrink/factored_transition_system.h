@@ -87,7 +87,7 @@ public:
         int index1,
         int index2,
         Verbosity verbosity,
-        bool finalize_if_unsolvable = true);
+        bool finalize_if_unsolvable);
     /*
       This method may only be called either when there is only one entry left
       in the FTS or when the FTS is unsolvable.
