@@ -57,10 +57,8 @@ vector<double> MergeScoringFunctionTotalOrder::compute_scores(
     return scores;
 }
 
-void MergeScoringFunctionTotalOrder::initialize(
-    const shared_ptr<AbstractTask> &task) {
+void MergeScoringFunctionTotalOrder::initialize(const TaskProxy &task_proxy) {
     initialized = true;
-    TaskProxy task_proxy(*task);
     int num_variables = task_proxy.get_variables().size();
     int max_transition_system_count = num_variables * 2 - 1;
     vector<int> transition_system_order;

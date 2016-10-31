@@ -15,13 +15,13 @@ using namespace std;
 namespace merge_and_shrink {
 MergeSCCs::MergeSCCs(
     FactoredTransitionSystem &fts,
-    const shared_ptr<AbstractTask> &task,
+    const TaskProxy &task_proxy,
     const shared_ptr<MergeTreeFactory> &merge_tree_factory,
     const shared_ptr<MergeSelector> &merge_selector,
     vector<vector<int>> non_singleton_cg_sccs,
     vector<int> indices_of_merged_sccs)
     : MergeStrategy(fts),
-      task(task),
+      task_proxy(task_proxy),
       merge_tree_factory(merge_tree_factory),
       merge_selector(merge_selector),
       non_singleton_cg_sccs(move(non_singleton_cg_sccs)),
@@ -50,7 +50,7 @@ pair<int, int> MergeSCCs::get_next() {
         // If using a merge tree factory, compute a merge tree for this set
         if (merge_tree_factory) {
             current_merge_tree = merge_tree_factory->compute_merge_tree(
-                task, fts, current_ts_indices);
+                task_proxy, fts, current_ts_indices);
         }
     } else {
         // Add the most recent merge to the current indices set

@@ -2,17 +2,16 @@
 
 #include "landmark_graph.h"
 
-#include "../global_operator.h"
+#include "../task_proxy.h"
 
 #include <limits>
 
 using namespace std;
 
 namespace landmarks {
-bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int>> &lvl_var) {
-    for (size_t i = 0; i < conditions.size(); ++i)
-        if (lvl_var[conditions[i].var][conditions[i].val] ==
-            numeric_limits<int>::max())
+bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vector<int>> &lvl_var) {
+    for (FactProxy cond : conditions)
+        if (lvl_var[cond.get_variable().get_id()][cond.get_value()] == numeric_limits<int>::max())
             return false;
     return true;
 }
@@ -29,7 +28,7 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     return result;
 }
 
-bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int>> &lvl_var, const LandmarkNode *lmp) {
+bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lvl_var, const LandmarkNode *lmp) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in lvl_var) */
 
@@ -37,20 +36,20 @@ bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int>> &lv
 
     // Test whether all preconditions of o can be reached
     // Otherwise, operator is not applicable
-    const vector<GlobalCondition> &preconditions = o.get_preconditions();
-    for (size_t i = 0; i < preconditions.size(); ++i)
-        if (lvl_var[preconditions[i].var][preconditions[i].val] ==
+    PreconditionsProxy preconditions = op.get_preconditions();
+    for (FactProxy pre : preconditions)
+        if (lvl_var[pre.get_variable().get_id()][pre.get_value()] ==
             numeric_limits<int>::max())
             return false;
 
     // Go through all effects of o and check whether one can reach a
     // proposition in lmp
-    const vector<GlobalEffect> &effects = o.get_effects();
-    for (size_t i = 0; i < effects.size(); ++i) {
-        assert(!lvl_var[effects[i].var].empty());
-        for (size_t j = 0; j < lmp->vars.size(); ++j) {
-            if (effects[i].var == lmp->vars[j] && effects[i].val == lmp->vals[j]) {
-                if (_possibly_fires(effects[i].conditions, lvl_var))
+    for (EffectProxy effect: op.get_effects()) {
+        FactProxy effect_fact = effect.get_fact();
+        assert(!lvl_var[effect_fact.get_variable().get_id()].empty());
+        for (const FactPair &fact : lmp->facts) {
+            if (effect_fact.get_pair() == fact) {
+                if (_possibly_fires(effect.get_conditions(), lvl_var))
                     return true;
                 break;
             }
@@ -58,5 +57,21 @@ bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int>> &lv
     }
 
     return false;
+}
+
+OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id) {
+    if (op_or_axiom_id < 0) {
+        return task_proxy.get_axioms()[-op_or_axiom_id - 1];
+    } else {
+        return task_proxy.get_operators()[op_or_axiom_id];
+    }
+}
+
+int get_operator_or_axiom_id(const OperatorProxy &op) {
+    if (op.is_axiom()) {
+        return -op.get_id() - 1;
+    } else {
+        return op.get_id();
+    }
 }
 }

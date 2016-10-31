@@ -20,7 +20,8 @@ protected:
     bool shrink_fts(
         FactoredTransitionSystem &fts,
         int index,
-        const StateEquivalenceRelation &equivalence_relation) const;
+        const StateEquivalenceRelation &equivalence_relation,
+        Verbosity verbosity) const;
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
@@ -36,7 +37,11 @@ public:
       system. However, it may attempt to e.g. shrink the transition system in
       an information preserving way.
     */
-    virtual bool shrink(FactoredTransitionSystem &fts, int index, int target) const = 0;
+    virtual bool shrink(
+        FactoredTransitionSystem &fts,
+        int index,
+        int target,
+        Verbosity verbosity) const = 0;
 
     void dump_options() const;
     std::string get_name() const;
