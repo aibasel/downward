@@ -37,7 +37,8 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
     vector<unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
     vector<unique_ptr<Distances>> &&distances,
-    Verbosity verbosity)
+    Verbosity verbosity,
+    bool finalize_if_unsolvable)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
@@ -46,7 +47,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
       num_active_entries(this->transition_systems.size()) {
     for (size_t i = 0; i < this->transition_systems.size(); ++i) {
         compute_distances_and_prune(i, verbosity);
-        if (!this->transition_systems[i]->is_solvable()) {
+        if (finalize_if_unsolvable && !this->transition_systems[i]->is_solvable()) {
             unsolvable_index = i;
             break;
         }
@@ -167,7 +168,10 @@ bool FactoredTransitionSystem::apply_abstraction(
 }
 
 int FactoredTransitionSystem::merge(
-    int index1, int index2, Verbosity verbosity) {
+    int index1,
+    int index2,
+    Verbosity verbosity,
+    bool finalize_if_unsolvable) {
     assert(is_index_valid(index1));
     assert(is_index_valid(index2));
     transition_systems.push_back(
@@ -191,7 +195,7 @@ int FactoredTransitionSystem::merge(
     int new_index = transition_systems.size() - 1;
     compute_distances_and_prune(new_index, verbosity);
     assert(is_component_valid(new_index));
-    if (!new_ts.is_solvable()) {
+    if (finalize_if_unsolvable && !new_ts.is_solvable()) {
         unsolvable_index = new_index;
     }
     --num_active_entries;
