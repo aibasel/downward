@@ -9,9 +9,9 @@
 
 #include "../utils/math.h"
 
+#include <algorithm>
 #include <cassert>
-#include <math.h>
-#include <unordered_map>
+#include <cmath>
 
 using namespace std;
 
