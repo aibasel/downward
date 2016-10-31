@@ -1,9 +1,6 @@
 #include "utils.h"
 
-#include "distances.h"
 #include "factored_transition_system.h"
-#include "label_equivalence_relation.h"
-#include "labels.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
