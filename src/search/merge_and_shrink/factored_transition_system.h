@@ -65,7 +65,8 @@ public:
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
-        Verbosity verbosity);
+        Verbosity verbosity,
+        bool finalize_if_unsolvable);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
@@ -82,7 +83,11 @@ public:
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity);
-    int merge(int index1, int index2, Verbosity verbosity);
+    int merge(
+        int index1,
+        int index2,
+        Verbosity verbosity,
+        bool finalize_if_unsolvable = true);
     /*
       This method may only be called either when there is only one entry left
       in the FTS or when the FTS is unsolvable.
