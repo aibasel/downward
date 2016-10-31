@@ -1,12 +1,12 @@
 #ifndef MERGE_AND_SHRINK_UTILS_H
 #define MERGE_AND_SHRINK_UTILS_H
 
-#include <memory>
 #include <vector>
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class ShrinkStrategy;
+class TransitionSystem;
 enum class Verbosity;
 
 /*
@@ -42,6 +42,8 @@ extern bool shrink_transition_system(
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity);
+
+extern bool is_goal_relevant(const TransitionSystem &ts);
 
 /*
   This method copies the entries given via ts_index1 and ts_index2, shrinks

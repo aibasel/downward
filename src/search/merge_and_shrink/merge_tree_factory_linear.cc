@@ -43,7 +43,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const vector<int> &indices_subset) {
     /*
       Compute a mapping from state variables to transition system indices
-      that contain those variables. Also set all indices not contained
+      that contain those variables. Also set all indices not contained in
       indices_subset to "used".
     */
     int num_vars = task_proxy.get_variables().size();
