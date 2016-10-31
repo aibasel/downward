@@ -15,6 +15,7 @@
 #include "../options/plugin.h"
 
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -84,7 +85,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
       SCCs have been merged.
     */
     int index = num_vars - 1;
-    cout << "found CG SCCs:" << endl;
+    cout << "SCCs of the causal graph:" << endl;
     vector<vector<int>> non_singleton_cg_sccs;
     vector<int> indices_of_merged_sccs;
     indices_of_merged_sccs.reserve(sccs.size());
@@ -96,7 +97,6 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         } else {
             index += scc_size - 1;
             indices_of_merged_sccs.push_back(index);
-            // only store non-singleton sccs for internal merging
             non_singleton_cg_sccs.push_back(vector<int>(scc.begin(), scc.end()));
         }
     }
@@ -112,7 +112,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         merge_selector->initialize(task_proxy);
     }
 
-    return utils::make_unique_ptr<MergeSCCs>(
+    return utils::make_unique_ptr<MergeStrategySCCs>(
         fts,
         task_proxy,
         merge_tree_factory,
@@ -153,6 +153,24 @@ string MergeStrategyFactorySCCs::name() const {
 }
 
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
+    parser.document_synopsis(
+        "Merge strategy SSCs",
+        "This merge strategy implements the algorithm described in the paper "
+        + utils::format_paper_reference(
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+            "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "Proceedings of the xxth Internation Conference on Planning and "
+            "Scheduling (ICAPS 2016)",
+            "2358-2366",
+            "AAAI Press 2016") +
+        "In a nutshel, it computes the maximal SCCs of the causal graph, "
+        "obtaining a partitioning of the task's variables. Every such "
+        "partition is then merged individually, using the specified fallback"
+        "merge strategy, considering the SCCs in a configurable order. "
+        "Afterwards, all resulting composite abstractions are merged to form"
+        "the final abstraction, again using the specified fallback merge"
+        "strategy and the configurable order of the SCCs.");
     vector<string> order_of_sccs;
     order_of_sccs.push_back("topological");
     order_of_sccs.push_back("reverse_topological");

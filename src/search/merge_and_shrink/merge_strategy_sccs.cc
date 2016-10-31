@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeSCCs::MergeSCCs(
+MergeStrategySCCs::MergeStrategySCCs(
     FactoredTransitionSystem &fts,
     const TaskProxy &task_proxy,
     const shared_ptr<MergeTreeFactory> &merge_tree_factory,
@@ -29,10 +29,10 @@ MergeSCCs::MergeSCCs(
       current_merge_tree(nullptr) {
 }
 
-MergeSCCs::~MergeSCCs() {
+MergeStrategySCCs::~MergeStrategySCCs() {
 }
 
-pair<int, int> MergeSCCs::get_next() {
+pair<int, int> MergeStrategySCCs::get_next() {
     // We did not already start merging an SCC/all finished SCCs, so we
     // do not have a current set of indices we want to finish merging.
     if (current_ts_indices.empty()) {
