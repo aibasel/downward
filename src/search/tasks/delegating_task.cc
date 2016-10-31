@@ -11,7 +11,7 @@ int DelegatingTask::get_num_variables() const {
     return parent->get_num_variables();
 }
 
-const string &DelegatingTask::get_variable_name(int var) const {
+string DelegatingTask::get_variable_name(int var) const {
     return parent->get_variable_name(var);
 }
 
@@ -27,7 +27,7 @@ int DelegatingTask::get_variable_default_axiom_value(int var) const {
     return parent->get_variable_default_axiom_value(var);
 }
 
-const string &DelegatingTask::get_fact_name(const FactPair &fact) const {
+string DelegatingTask::get_fact_name(const FactPair &fact) const {
     return parent->get_fact_name(fact);
 }
 
@@ -39,7 +39,7 @@ int DelegatingTask::get_operator_cost(int index, bool is_axiom) const {
     return parent->get_operator_cost(index, is_axiom);
 }
 
-const string &DelegatingTask::get_operator_name(int index, bool is_axiom) const {
+string DelegatingTask::get_operator_name(int index, bool is_axiom) const {
     return parent->get_operator_name(index, is_axiom);
 }
 

@@ -10,6 +10,8 @@
 #include "../pruning_method.h"
 #include "../successor_generator.h"
 
+#include "../algorithms/ordered_set.h"
+
 #include "../open_lists/open_list_factory.h"
 
 #include <cassert>
@@ -108,8 +110,6 @@ SearchStatus EagerSearch::step() {
         return SOLVED;
 
     vector<const GlobalOperator *> applicable_ops;
-    set<const GlobalOperator *> preferred_ops;
-
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
 
     /*
@@ -120,17 +120,8 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    for (Heuristic *heur : preferred_operator_heuristics) {
-        /* In an alternation search with unreliable heuristics, it is
-           possible that this heuristic considers the state a dead
-           end. We only want to ask for preferred operators for
-           finite-value heuristics. */
-        if (!eval_context.is_heuristic_infinite(heur)) {
-            vector<const GlobalOperator *> preferred =
-                eval_context.get_preferred_operators(heur);
-            preferred_ops.insert(preferred.begin(), preferred.end());
-        }
-    }
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
+        collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (const GlobalOperator *op : applicable_ops) {
         if ((node.get_real_g() + op->get_cost()) >= bound)
@@ -138,7 +129,7 @@ SearchStatus EagerSearch::step() {
 
         GlobalState succ_state = state_registry.get_successor_state(s, *op);
         statistics.inc_generated();
-        bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
+        bool is_preferred = preferred_operators.contains(op);
 
         SearchNode succ_node = search_space.get_node(succ_state);
 

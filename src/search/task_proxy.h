@@ -91,8 +91,9 @@ class VariablesProxy;
 */
 
 
-// Basic iterator support for proxy classes.
-
+/*
+  Basic iterator support for proxy collections.
+*/
 template<class ProxyCollection>
 class ProxyIterator {
     const ProxyCollection &collection;
@@ -112,6 +113,7 @@ public:
     }
 
     bool operator==(const ProxyIterator &other) const {
+        assert(&collection == &other.collection);
         return pos == other.pos;
     }
 
@@ -149,7 +151,7 @@ public:
         return fact;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_fact_name(fact);
     }
 
@@ -208,6 +210,10 @@ public:
   Proxy class for the collection of all facts of a task.
 
   We don't implement size() because it would not be constant-time.
+
+  FactsProxy supports iteration, e.g. for range-based for loops. This
+  iterates over all facts in order of increasing variable id, and in
+  order of increasing value for each variable.
 */
 class FactsProxy {
     const AbstractTask *task;
@@ -265,7 +271,7 @@ public:
         return id;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_variable_name(id);
     }
 
@@ -442,7 +448,7 @@ public:
         return is_an_axiom;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_operator_name(index, is_an_axiom);
     }
 

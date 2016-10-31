@@ -224,7 +224,8 @@ void ShrinkBisimulation::compute_signatures(
 bool ShrinkBisimulation::shrink(
     FactoredTransitionSystem &fts,
     int index,
-    int target_size) const {
+    int target_size,
+    Verbosity verbosity) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     int num_states = ts.get_size();
@@ -236,7 +237,8 @@ bool ShrinkBisimulation::shrink(
     int num_groups = initialize_groups(fts, index, state_to_group);
     // cout << "number of initial groups: " << num_groups << endl;
 
-    // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
+    // TODO: We currently violate this; see issue250
+    // assert(num_groups <= target_size);
 
     int max_h = distances.get_max_h();
     assert(max_h >= 0 && max_h != INF);
@@ -341,7 +343,7 @@ bool ShrinkBisimulation::shrink(
         }
     }
 
-    return shrink_fts(fts, index, equivalence_relation);
+    return shrink_fts(fts, index, equivalence_relation, verbosity);
 }
 
 string ShrinkBisimulation::name() const {

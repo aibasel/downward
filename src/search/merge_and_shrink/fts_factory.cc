@@ -2,10 +2,11 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "heuristic_representation.h"
 #include "label_equivalence_relation.h"
 #include "labels.h"
+#include "merge_and_shrink_representation.h"
 #include "transition_system.h"
+#include "types.h"
 
 #include "../task_proxy.h"
 
@@ -71,7 +72,7 @@ class FTSFactory {
     void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
     vector<unique_ptr<TransitionSystem>> create_transition_systems();
-    vector<unique_ptr<HeuristicRepresentation>> create_heuristic_representations();
+    vector<unique_ptr<MergeAndShrinkRepresentation>> create_mas_representations();
     vector<unique_ptr<Distances>> create_distances(
         const vector<unique_ptr<TransitionSystem>> &transition_systems);
 public:
@@ -82,7 +83,7 @@ public:
       Note: create() may only be called once. We don't worry about
       misuse because the class is only used internally in this file.
     */
-    FactoredTransitionSystem create();
+    FactoredTransitionSystem create(Verbosity verbosity);
 };
 
 
@@ -339,6 +340,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
     assert(num_variables >= 1);
     result.reserve(num_variables * 2 - 1);
 
+    const bool compute_label_equivalence_relation = true;
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         TransitionSystemData &ts_data = transition_system_data_by_var[var_no];
         result.push_back(utils::make_unique_ptr<TransitionSystem>(
@@ -349,25 +351,25 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
                              ts_data.num_states,
                              move(ts_data.goal_states),
                              ts_data.init_state,
-                             true
+                             compute_label_equivalence_relation
                              ));
     }
     return result;
 }
 
-vector<unique_ptr<HeuristicRepresentation>> FTSFactory::create_heuristic_representations() {
-    // Create the actual HeuristicRepresentation objects.
+vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_representations() {
+    // Create the actual MergeAndShrinkRepresentation objects.
     int num_variables = task_proxy.get_variables().size();
 
     // We reserve space for the transition systems added later by merging.
-    vector<unique_ptr<HeuristicRepresentation>> result;
+    vector<unique_ptr<MergeAndShrinkRepresentation>> result;
     assert(num_variables >= 1);
     result.reserve(num_variables * 2 - 1);
 
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         int range = task_proxy.get_variables()[var_no].get_domain_size();
         result.push_back(
-            utils::make_unique_ptr<HeuristicRepresentationLeaf>(var_no, range));
+            utils::make_unique_ptr<MergeAndShrinkRepresentationLeaf>(var_no, range));
     }
     return result;
 }
@@ -389,8 +391,10 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
     return result;
 }
 
-FactoredTransitionSystem FTSFactory::create() {
-    cout << "Building atomic transition systems... " << endl;
+FactoredTransitionSystem FTSFactory::create(Verbosity verbosity) {
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << "Building atomic transition systems... " << endl;
+    }
 
     unique_ptr<Labels> labels = utils::make_unique_ptr<Labels>(create_labels());
 
@@ -398,20 +402,22 @@ FactoredTransitionSystem FTSFactory::create() {
     build_transitions();
     vector<unique_ptr<TransitionSystem>> transition_systems =
         create_transition_systems();
-    vector<unique_ptr<HeuristicRepresentation>> heuristic_representations =
-        create_heuristic_representations();
+    vector<unique_ptr<MergeAndShrinkRepresentation>> mas_representations =
+        create_mas_representations();
     vector<unique_ptr<Distances>> distances =
         create_distances(transition_systems);
 
     return FactoredTransitionSystem(
         move(labels),
         move(transition_systems),
-        move(heuristic_representations),
-        move(distances));
+        move(mas_representations),
+        move(distances),
+        verbosity);
 }
 
 FactoredTransitionSystem create_factored_transition_system(
-    const TaskProxy &task_proxy) {
-    return FTSFactory(task_proxy).create();
+    const TaskProxy &task_proxy,
+    Verbosity verbosity) {
+    return FTSFactory(task_proxy).create(verbosity);
 }
 }
