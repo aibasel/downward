@@ -23,6 +23,7 @@
 
 #ifdef COIN_HAS_CPX
 #include <OsiCpxSolverInterface.hpp>
+#include <cplex.h>
 #endif
 
 #ifdef COIN_HAS_GRB
@@ -98,6 +99,10 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
 #ifdef COIN_HAS_CPX
         lp_solver = new OsiCpxSolverInterface;
         lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
+        {
+            OsiCpxSolverInterface *cpx_solver = dynamic_cast<OsiCpxSolverInterface *>(lp_solver);
+            CPXsetintparam(cpx_solver->getEnvironmentPtr(), CPX_PARAM_THREADS, 1);
+        }
 #else
         missing_symbol = "COIN_HAS_CPX";
 #endif
