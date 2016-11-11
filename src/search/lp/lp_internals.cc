@@ -11,6 +11,7 @@
 #pragma GCC diagnostic ignored "-Woverflow"
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #endif
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wconstant-conversion"
