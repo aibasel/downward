@@ -34,7 +34,7 @@ public:
     ~SuccessorGenerator();
 
     void generate_applicable_ops(
-        const State &state, std::vector<OperatorProxy> &applicable_ops) const;
+        const State &state, std::vector<int> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     void generate_applicable_ops(
         const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) const;

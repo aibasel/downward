@@ -34,7 +34,7 @@ class GeneratorBase {
 public:
     virtual ~GeneratorBase() = default;
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorProxy> &applicable_ops) const = 0;
+        const State &state, vector<int> &applicable_ops) const = 0;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const = 0;
@@ -52,7 +52,7 @@ public:
                     const vector<GeneratorBase *> &&generator_for_value,
                     GeneratorBase *default_generator);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorProxy> &applicable_ops) const;
+        const State &state, vector<int> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
@@ -63,7 +63,7 @@ class GeneratorLeaf : public GeneratorBase {
 public:
     GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorProxy> &applicable_ops) const;
+        const State &state, vector<int> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
@@ -72,7 +72,7 @@ public:
 class GeneratorEmpty : public GeneratorBase {
 public:
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorProxy> &applicable_ops) const;
+        const State &state, vector<int> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
@@ -95,10 +95,13 @@ GeneratorSwitch::~GeneratorSwitch() {
 }
 
 void GeneratorSwitch::generate_applicable_ops(
-    const State &state, vector<OperatorProxy> &applicable_ops) const {
-    applicable_ops.insert(applicable_ops.end(),
+    const State &state, vector<int> &applicable_ops) const {
+    /*applicable_ops.insert(applicable_ops.end(),
                           immediate_operators.begin(),
-                          immediate_operators.end());
+                          immediate_operators.end());*/
+    for (OperatorProxy op : immediate_operators) {
+        applicable_ops.push_back(op.get_id());
+    }
     int val = state[switch_var].get_value();
     generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
     default_generator->generate_applicable_ops(state, applicable_ops);
@@ -119,10 +122,13 @@ GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
 }
 
 void GeneratorLeaf::generate_applicable_ops(
-    const State &, vector<OperatorProxy> &applicable_ops) const {
-    applicable_ops.insert(applicable_ops.end(),
+    const State &, vector<int> &applicable_ops) const {
+    /*applicable_ops.insert(applicable_ops.end(),
                           applicable_operators.begin(),
-                          applicable_operators.end());
+                          applicable_operators.end());*/
+    for (OperatorProxy op : applicable_operators) {
+        applicable_ops.push_back(op.get_id());
+    }
 }
 
 void GeneratorLeaf::generate_applicable_ops(
@@ -133,7 +139,7 @@ void GeneratorLeaf::generate_applicable_ops(
 }
 
 void GeneratorEmpty::generate_applicable_ops(
-    const State &, vector<OperatorProxy> &) const {
+    const State &, vector<int> &) const {
 }
 
 void GeneratorEmpty::generate_applicable_ops(
@@ -241,7 +247,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
 }
 
 void SuccessorGenerator::generate_applicable_ops(
-    const State &state, vector<OperatorProxy> &applicable_ops) const {
+    const State &state, vector<int> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
 }
 
