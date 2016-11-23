@@ -8,7 +8,7 @@ using namespace std;
 
 static PluginTypePlugin<PruningMethod> _type_plugin(
     "PruningMethod",
-        "Prune or reorder applicable operators.");
+    "Prune or reorder applicable operators.");
 
 
 void PruningMethod::prune_operators(const GlobalState &state, std::vector<int> &op_ids) {
@@ -27,5 +27,4 @@ void PruningMethod::prune_operators(const GlobalState &state, std::vector<int> &
         }
         op_ids.swap(pruned_op_ids);
     }
-
 }

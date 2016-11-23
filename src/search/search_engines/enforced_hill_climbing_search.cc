@@ -165,7 +165,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
             eval_context.get_state(), successor_operators);
         for (int op_id : successor_operators) {
             bool preferred = use_preferred &&
-                preferred_operators.contains(op_id);
+                             preferred_operators.contains(op_id);
             insert_successor_into_open_list(
                 eval_context, node_g, &g_operators[op_id], preferred);
         }
