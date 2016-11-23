@@ -106,9 +106,9 @@ void GeneratorSwitch::generate_applicable_ops(
 
 void GeneratorSwitch::generate_applicable_ops(
     const GlobalState &state, vector<int> &applicable_ops) const {
-    for (int op : immediate_operators) {
-        applicable_ops.push_back(op);
-    }
+    applicable_ops.insert(applicable_ops.end(),
+                          immediate_operators.begin(),
+                          immediate_operators.end());
     int val = state[switch_var.get_id()];
     generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
     default_generator->generate_applicable_ops(state, applicable_ops);
@@ -127,9 +127,9 @@ void GeneratorLeaf::generate_applicable_ops(
 
 void GeneratorLeaf::generate_applicable_ops(
     const GlobalState &, vector<int> &applicable_ops) const {
-    for (int op : applicable_operators) {
-        applicable_ops.push_back(op);
-    }
+    applicable_ops.insert(applicable_ops.end(),
+                          applicable_operators.begin(),
+                          applicable_operators.end());
 }
 
 void GeneratorEmpty::generate_applicable_ops(
