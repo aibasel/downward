@@ -11,7 +11,7 @@ static PluginTypePlugin<PruningMethod> _type_plugin(
     "Prune or reorder applicable operators.");
 
 
-void PruningMethod::prune_operators(const GlobalState &state, std::vector<int> &op_ids) {
+void PruningMethod::prune_operators(const GlobalState &state, vector<int> &op_ids) {
     vector<const GlobalOperator *> operators;
     operators.reserve(op_ids.size());
     for (int op_id : op_ids) {
