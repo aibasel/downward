@@ -125,7 +125,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 return
 
             if exitcode == returncodes.EXIT_PLAN_FOUND:
-                configs_next_round.append(args)
+                configs_next_round.append((relative_time, args))
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
                     print("Switch to real costs and repeat last run.")
