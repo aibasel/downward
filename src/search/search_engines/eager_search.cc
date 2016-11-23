@@ -120,7 +120,7 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
+    algorithms::OrderedSet<int> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (const GlobalOperator *op : applicable_ops) {
@@ -129,7 +129,7 @@ SearchStatus EagerSearch::step() {
 
         GlobalState succ_state = state_registry.get_successor_state(s, *op);
         statistics.inc_generated();
-        bool is_preferred = preferred_operators.contains(op);
+        bool is_preferred = preferred_operators.contains(get_op_index_hacked(op));
 
         SearchNode succ_node = search_space.get_node(succ_state);
 

@@ -6,7 +6,6 @@
 
 #include <unordered_map>
 
-class GlobalOperator;
 class GlobalState;
 class ScalarEvaluator;
 class SearchStatistics;
@@ -110,8 +109,7 @@ public:
     bool is_heuristic_infinite(ScalarEvaluator *heur);
     int get_heuristic_value(ScalarEvaluator *heur);
     int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
-    const std::vector<const GlobalOperator *> &get_preferred_operators(
-        ScalarEvaluator *heur);
+    const std::vector<int> &get_preferred_operators(ScalarEvaluator *heur);
     bool get_calculate_preferred() const;
 };
 

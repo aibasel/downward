@@ -78,8 +78,8 @@ int EvaluationContext::get_heuristic_value_or_infinity(ScalarEvaluator *heur) {
     return get_result(heur).get_h_value();
 }
 
-const vector<const GlobalOperator *> &
-EvaluationContext::get_preferred_operators(ScalarEvaluator *heur) {
+const vector<int> &EvaluationContext::get_preferred_operators(
+    ScalarEvaluator *heur) {
     return get_result(heur).get_preferred_operators();
 }
 
