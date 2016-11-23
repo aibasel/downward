@@ -75,5 +75,4 @@ public:
 
 extern int get_op_index_hacked(const GlobalOperator *op);
 
-
 #endif

@@ -14,6 +14,9 @@ public:
     virtual void prune_operators(const GlobalState &state,
                                  std::vector<const GlobalOperator *> &ops) = 0;
     virtual void print_statistics() const = 0;
+
+    // TODO: Remove once issue629 is merged.
+    void prune_operators(const GlobalState &state, std::vector<int> &op_ids);
 };
 
 #endif

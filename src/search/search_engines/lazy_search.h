@@ -49,7 +49,7 @@ protected:
 
     void reward_progress();
 
-    std::vector<const GlobalOperator *> get_successor_operators(
+    std::vector<int> get_successor_operators(
         const algorithms::OrderedSet<int> &preferred_operators) const;
 
     // TODO: Move into SearchEngine?
