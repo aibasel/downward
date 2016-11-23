@@ -109,7 +109,7 @@ SearchStatus EagerSearch::step() {
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
-    vector<const GlobalOperator *> applicable_ops;
+    vector<int> applicable_ops;
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
 
     /*
@@ -123,13 +123,14 @@ SearchStatus EagerSearch::step() {
     algorithms::OrderedSet<int> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
-    for (const GlobalOperator *op : applicable_ops) {
+    for (int op_id : applicable_ops) {
+        const GlobalOperator *op = &g_operators[op_id];
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
         GlobalState succ_state = state_registry.get_successor_state(s, *op);
         statistics.inc_generated();
-        bool is_preferred = preferred_operators.contains(get_op_index_hacked(op));
+        bool is_preferred = preferred_operators.contains(op_id);
 
         SearchNode succ_node = search_space.get_node(succ_state);
 

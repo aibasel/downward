@@ -160,14 +160,14 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     } else {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
            by the open list. */
-        vector<const GlobalOperator *> successor_operators;
+        vector<int> successor_operators;
         g_successor_generator->generate_applicable_ops(
             eval_context.get_state(), successor_operators);
-        for (const GlobalOperator *op : successor_operators) {
+        for (int op_id : successor_operators) {
             bool preferred = use_preferred &&
-                preferred_operators.contains(get_op_index_hacked(op));
+                preferred_operators.contains(op_id);
             insert_successor_into_open_list(
-                eval_context, node_g, op, preferred);
+                eval_context, node_g, &g_operators[op_id], preferred);
         }
     }
 
