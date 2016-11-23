@@ -40,7 +40,7 @@ class Heuristic : public ScalarEvaluator {
       being able to reuse the data structure from one iteration to the
       next, but this seems to be the only potential downside.
     */
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    algorithms::OrderedSet<int> preferred_operators;
 
 protected:
     /*
@@ -66,8 +66,6 @@ protected:
       is OK -- it will only appear once in the list of preferred
       operators for this heuristic.
     */
-    // TODO: Make private once all heuristics use the TaskProxy class.
-    void set_preferred(const GlobalOperator *op);
     void set_preferred(const OperatorProxy &op);
 
     // TODO: Remove once all heuristics use the TaskProxy class.

@@ -7,6 +7,7 @@
 #include "option_parser.h"
 #include "operator_cost.h"
 #include "plugin.h"
+#include "task_tools.h"
 
 #include "tasks/cost_adapted_task.h"
 
@@ -28,12 +29,8 @@ Heuristic::Heuristic(const Options &opts)
 Heuristic::~Heuristic() {
 }
 
-void Heuristic::set_preferred(const GlobalOperator *op) {
-    preferred_operators.insert(op);
-}
-
 void Heuristic::set_preferred(const OperatorProxy &op) {
-    set_preferred(op.get_global_operator());
+    preferred_operators.insert(op.get_id());
 }
 
 bool Heuristic::notify_state_transition(
@@ -111,8 +108,9 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
 #ifndef NDEBUG
     if (heuristic != EvaluationResult::INFTY) {
-        for (const GlobalOperator *op : preferred_operators)
-            assert(op->is_applicable(state));
+        for (int op_id : preferred_operators)
+            assert(is_applicable(task_proxy.get_operators()[op_id],
+                                 convert_global_state(state)));
     }
 #endif
 
