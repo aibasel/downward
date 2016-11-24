@@ -13,10 +13,10 @@ ALIASES = {}
 
 ALIASES["seq-sat-fd-autotune-1"] = [
     "--heuristic", "hff=ff(transform=adapt_costs(one))",
-    "--heuristic", "hcea=cea(transform=adapt_costs(normal))",
+    "--heuristic", "hcea=cea()",
     "--heuristic", "hcg=cg(transform=adapt_costs(plusone))",
-    "--heuristic", "hgc=goalcount(transform=adapt_costs(normal))",
-    "--heuristic", "hAdd=add(transform=adapt_costs(normal))",
+    "--heuristic", "hgc=goalcount()",
+    "--heuristic", "hAdd=add()",
     "--search", """iterated([
 lazy(alt([single(sum([g(),weight(hff,10)])),
           single(sum([g(),weight(hff,10)]),pref_only=true)],
@@ -58,7 +58,7 @@ ALIASES["seq-sat-fd-autotune-2"] = [
     "--heuristic", "hcea=cea(transform=adapt_costs(plusone))",
     "--heuristic", "hcg=cg(transform=adapt_costs(one))",
     "--heuristic", "hgc=goalcount(transform=adapt_costs(plusone))",
-    "--heuristic", "hff=ff(transform=adapt_costs(normal))",
+    "--heuristic", "hff=ff()",
     "--search", """iterated([
 ehc(hcea,preferred=hcea,preferred_usage=0,cost_type=normal),
 lazy(alt([single(sum([weight(g(),2),weight(hff,3)])),
