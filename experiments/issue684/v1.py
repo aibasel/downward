@@ -12,7 +12,7 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue684-base", "issue684-v1"]
 CONFIGS = [
     IssueConfig(
-        alias, [], driver_options=["--alias", alias, "--search-time", "60s"])
+        alias, [], driver_options=["--alias", alias, "--search-time-limit", "60s"])
     for alias in [
         "seq-sat-fd-autotune-1", "seq-sat-fd-autotune-2",
         "seq-sat-fdss-1", "seq-sat-fdss-2", "seq-sat-fdss-2014",
