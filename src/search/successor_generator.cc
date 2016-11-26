@@ -191,28 +191,28 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
         bool var_is_interesting = false;
 
         while (!operator_queue.empty()) {
-            int op_id = operator_queue.front();
+            int op = operator_queue.front();
             operator_queue.pop_front();
-            assert(utils::in_bounds(op_id, next_condition_by_op));
-            Condition::const_iterator &cond_iter = next_condition_by_op[op_id];
-            assert(cond_iter - conditions[op_id].begin() >= 0);
-            assert(cond_iter - conditions[op_id].begin()
-                   <= (int)conditions[op_id].size());
-            if (cond_iter == conditions[op_id].end()) {
+            assert(utils::in_bounds(op, next_condition_by_op));
+            Condition::const_iterator &cond_iter = next_condition_by_op[op];
+            assert(cond_iter - conditions[op].begin() >= 0);
+            assert(cond_iter - conditions[op].begin()
+                   <= (int)conditions[op].size());
+            if (cond_iter == conditions[op].end()) {
                 var_is_interesting = true;
-                applicable_operators.push_back(op_id);
+                applicable_operators.push_back(op);
             } else {
                 all_ops_are_immediate = false;
                 FactProxy fact = *cond_iter;
                 if (fact.get_variable() == switch_var) {
                     var_is_interesting = true;
-                    while (cond_iter != conditions[op_id].end() &&
+                    while (cond_iter != conditions[op].end() &&
                            cond_iter->get_variable() == switch_var) {
                         ++cond_iter;
                     }
-                    operators_for_val[fact.get_value()].push_back(op_id);
+                    operators_for_val[fact.get_value()].push_back(op);
                 } else {
-                    default_operators.push_back(op_id);
+                    default_operators.push_back(op);
                 }
             }
         }

@@ -1,7 +1,7 @@
 #include "pruning_method.h"
 
-#include "global_operator.h" // TODO: Remove.
-#include "globals.h" // TODO: Remove.
+#include "global_operator.h" // TODO: Remove once issue629 is merged.
+#include "globals.h" // TODO: Remove once issue629 is merged.
 #include "plugin.h"
 
 using namespace std;
