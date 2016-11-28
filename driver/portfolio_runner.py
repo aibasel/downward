@@ -35,7 +35,7 @@ DEFAULT_TIMEOUT = 1800
 
 def adapt_heuristic_cost_type(arg, cost_type):
     if cost_type == "normal":
-        transform = "no_transform"
+        transform = "no_transform()"
     else:
         transform = "adapt_costs({})".format(cost_type)
     return arg.replace("H_COST_TRANSFORM", transform)
