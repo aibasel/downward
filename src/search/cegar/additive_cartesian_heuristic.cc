@@ -27,7 +27,8 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")));
-    return cost_saturation.generate_heuristic_functions(get_task_from_options(opts));
+    return cost_saturation.generate_heuristic_functions(
+        opts.get<shared_ptr<AbstractTask>>("transform"));
 }
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(

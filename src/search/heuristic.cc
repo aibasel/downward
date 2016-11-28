@@ -5,7 +5,6 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "option_parser.h"
-#include "operator_cost.h"
 #include "plugin.h"
 
 #include "tasks/cost_adapted_task.h"
@@ -20,9 +19,8 @@ Heuristic::Heuristic(const Options &opts)
     : description(opts.get_unparsed_config()),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_estimates")),
-      task(get_task_from_options(opts)),
-      task_proxy(*task),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+      task(opts.get<shared_ptr<AbstractTask>>("transform")),
+      task_proxy(*task) {
 }
 
 Heuristic::~Heuristic() {
@@ -43,23 +41,17 @@ bool Heuristic::notify_state_transition(
     return false;
 }
 
-int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
-    return get_adjusted_action_cost(op, cost_type);
-}
-
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
     State state(*g_root_task(), global_state.get_values());
     return task_proxy.convert_ancestor_state(state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
-    ::add_cost_type_option_to_parser(parser);
-    // TODO: When the cost_type option is gone, use "no_transform" as default.
     parser.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
-        OptionParser::NONE);
+        "no_transform");
     parser.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
@@ -68,7 +60,6 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 Options Heuristic::default_options() {
     Options opts = Options();
     opts.set<shared_ptr<AbstractTask>>("transform", g_root_task());
-    opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_estimates", false);
     return opts;
 }
