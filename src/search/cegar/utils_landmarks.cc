@@ -3,7 +3,7 @@
 #include "../option_parser.h"
 
 #include "../landmarks/exploration.h"
-#include "../landmarks/h_m_landmarks.h"
+#include "../landmarks/landmark_factory_h_m.h"
 #include "../landmarks/landmark_graph.h"
 
 #include "../utils/memory.h"
@@ -37,7 +37,7 @@ shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &tas
     hm_opts.set<bool>("conjunctive_landmarks", false);
     hm_opts.set<bool>("no_orders", false);
     hm_opts.set<int>("lm_cost_type", NORMAL);
-    HMLandmarks lm_graph_factory(hm_opts);
+    LandmarkFactoryHM lm_graph_factory(hm_opts);
 
     return lm_graph_factory.compute_lm_graph(task, exploration);
 }

@@ -2,6 +2,7 @@
 
 #include "factored_transition_system.h"
 #include "transition_system.h"
+#include "utils.h"
 
 #include "../options/option_parser.h"
 #include "../options/plugin.h"
@@ -9,16 +10,6 @@
 using namespace std;
 
 namespace merge_and_shrink {
-bool is_goal_relevant(const TransitionSystem &ts) {
-    int num_states = ts.get_size();
-    for (int state = 0; state < num_states; ++state) {
-        if (!ts.is_goal_state(state)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {

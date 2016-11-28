@@ -414,11 +414,11 @@ fast_downward_plugin(
         merge_and_shrink/distances.cc
         merge_and_shrink/factored_transition_system.cc
         merge_and_shrink/fts_factory.cc
-        merge_and_shrink/heuristic_representation.cc
         merge_and_shrink/label_equivalence_relation.cc
         merge_and_shrink/label_reduction.cc
         merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
+        merge_and_shrink/merge_and_shrink_representation.cc
         merge_and_shrink/merge_scoring_function.cc
         merge_and_shrink/merge_scoring_function_dfp.cc
         merge_and_shrink/merge_scoring_function_goal_relevance.cc
@@ -443,6 +443,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
         merge_and_shrink/types.cc
+        merge_and_shrink/utils.cc
 )
 
 fast_downward_plugin(
@@ -450,16 +451,16 @@ fast_downward_plugin(
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
         landmarks/exploration.cc
-        landmarks/h_m_landmarks.cc
         landmarks/lama_ff_synergy.cc
         landmarks/landmark_cost_assignment.cc
         landmarks/landmark_count_heuristic.cc
         landmarks/landmark_factory.cc
+        landmarks/landmark_factory_h_m.cc
+        landmarks/landmark_factory_merged.cc
         landmarks/landmark_factory_rpg_exhaust.cc
         landmarks/landmark_factory_rpg_sasp.cc
         landmarks/landmark_factory_zhu_givan.cc
         landmarks/landmark_graph.cc
-        landmarks/landmark_graph_merged.cc
         landmarks/landmark_status_manager.cc
         landmarks/util.cc
     DEPENDS LP_SOLVER

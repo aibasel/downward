@@ -26,8 +26,7 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
-    const shared_ptr<AbstractTask> &task) {
-    TaskProxy task_proxy(*task);
+    const TaskProxy &task_proxy) {
     VariableOrderFinder vof(task_proxy, variable_order_type);
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
@@ -39,22 +38,22 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
-    const shared_ptr<AbstractTask> &task,
+    const TaskProxy &task_proxy,
     FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) {
     /*
       Compute a mapping from state variables to transition system indices
-      that contain those variables. Also set all indices not contained
+      that contain those variables. Also set all indices not contained in
       indices_subset to "used".
     */
-    TaskProxy task_proxy(*task);
     int num_vars = task_proxy.get_variables().size();
     int num_ts = fts.get_size();
     vector<int> var_to_ts_index(num_vars, -1);
     vector<bool> used_ts_indices(num_ts, true);
     for (int ts_index : fts) {
         bool use_ts_index =
-            find(indices_subset.begin(), indices_subset.end(), ts_index) != indices_subset.end();
+            find(indices_subset.begin(), indices_subset.end(),
+                 ts_index) != indices_subset.end();
         if (use_ts_index) {
             used_ts_indices[ts_index] = false;
         }
