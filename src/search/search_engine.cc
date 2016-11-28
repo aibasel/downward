@@ -2,7 +2,6 @@
 
 #include "evaluation_context.h"
 #include "globals.h"
-#include "operator_cost.h"
 #include "option_parser.h"
 #include "plugin.h"
 
