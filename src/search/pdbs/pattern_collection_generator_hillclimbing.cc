@@ -6,7 +6,6 @@
 #include "validation.h"
 
 #include "../causal_graph.h"
-#include "../operator_cost.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../sampling.h"
@@ -514,13 +513,10 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
 
     shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
         make_shared<PatternCollectionGeneratorHillclimbing>(opts);
-    shared_ptr<AbstractTask> task = get_task_from_options(opts);
 
     Options heuristic_opts;
     heuristic_opts.set<shared_ptr<AbstractTask>>(
-        "transform", task);
-    heuristic_opts.set<int>(
-        "cost_type", NORMAL);
+        "transform", opts.get<shared_ptr<AbstractTask>>("transform"));
     heuristic_opts.set<bool>(
         "cache_estimates", opts.get<bool>("cache_estimates"));
     heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>(

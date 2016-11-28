@@ -21,7 +21,7 @@ static int get_undefined_value(VariableProxy var) {
 }
 
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
-    : task(get_task_from_options(opts)),
+    : task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task),
       lp_solver(lp::LPSolverType(opts.get_enum("lpsolver"))),
       max_potential(opts.get<double>("max_potential")),

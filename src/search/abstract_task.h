@@ -104,7 +104,4 @@ public:
         const AbstractTask *ancestor_task) const = 0;
 };
 
-extern const std::shared_ptr<AbstractTask> get_task_from_options(
-    const options::Options &opts);
-
 #endif

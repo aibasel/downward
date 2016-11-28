@@ -24,7 +24,6 @@ static FactPair get_fact(const LandmarkNode &node) {
 shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {
     Options exploration_opts;
     exploration_opts.set<shared_ptr<AbstractTask>>("transform", task);
-    exploration_opts.set<int>("cost_type", NORMAL);
     exploration_opts.set<bool>("cache_estimates", false);
     Exploration exploration(exploration_opts);
 
