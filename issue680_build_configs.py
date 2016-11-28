@@ -1,3 +1,0 @@
-issue680_OSI103_CPLEX1251 = ["-DCMAKE_BUILD_TYPE=Release", "-DDOWNWARD_CPLEX_ROOT32=/infai/pommeren/local/opt/ibm/ILOG/CPLEX_Studio1251/cplex/", "-DDOWNWARD_COIN_ROOT32=/infai/pommeren/local/opt/coin-0.103.0-32-cplex1251"]
-issue680_OSI103_CPLEX1263 = ["-DCMAKE_BUILD_TYPE=Release", "-DDOWNWARD_CPLEX_ROOT32=/infai/pommeren/local/opt/ibm/ILOG/CPLEX_Studio1263-32/cplex/", "-DDOWNWARD_COIN_ROOT32=/infai/pommeren/local/opt/coin-0.103.0-32"]
-issue680_OSI107_CPLEX1263 = ["-DCMAKE_BUILD_TYPE=Release", "-DDOWNWARD_CPLEX_ROOT32=/infai/pommeren/local/opt/ibm/ILOG/CPLEX_Studio1263-32/cplex/", "-DDOWNWARD_COIN_ROOT32=/infai/pommeren/local/opt/coin-0.107.8-32"]
