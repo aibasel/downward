@@ -100,11 +100,11 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         break;
     case LPSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
-        lp_solver = new OsiCpxSolverInterface;
-        lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
         {
-            OsiCpxSolverInterface *cpx_solver = dynamic_cast<OsiCpxSolverInterface *>(lp_solver);
+            OsiCpxSolverInterface *cpx_solver = new OsiCpxSolverInterface;
             CPXsetintparam(cpx_solver->getEnvironmentPtr(), CPX_PARAM_THREADS, 1);
+            cpx_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
+            lp_solver = cpx_solver;
         }
 #else
         missing_symbol = "COIN_HAS_CPX";
