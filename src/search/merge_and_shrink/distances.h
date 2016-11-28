@@ -8,7 +8,6 @@
 /*
   TODO: Possible interface improvements for this class:
 
-  - Get rid of please_let_me_mess_with_... methods.
   - Rather than have compute_distances() return a vector<bool>,
     store it inside as an attribute (just like init_distances and
     goal_distances).
@@ -27,8 +26,7 @@
     deduced from init_distances and goal_distances anyway. Not clear
     which of these options would be better.
   - We currently try to keep the distance information after shrinking
-    (going quite far to avoid recomputation; see the caller of the
-    please_let_me_mess_with_... methods). Does this really serve a
+    (going quite far to avoid recomputation). Does this really serve a
     purpose? *After* shrinking, why are we interested in the distances
     in the first place? The main point of the distances is to inform
     the shrink strategies. (OK, I guess some merge strategies care
@@ -69,15 +67,15 @@ public:
     std::vector<bool> compute_distances(Verbosity verbosity);
 
     /*
-      Update distances according to the given abstraction.
-      Returns true iff the abstraction was f-preserving.
+      Update distances according to the given abstraction. If the abstraction
+      is not f-preserving, distances are directly recomputed.
 
       It is OK for the abstraction to drop states, but then all
       dropped states must be unreachable or irrelevant. (Otherwise,
       the method might fail to detect that the distance information is
       out of date.)
     */
-    bool apply_abstraction(
+    void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity);
 
