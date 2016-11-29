@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import itertools
 import os
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
@@ -12,7 +13,7 @@ from common_setup import IssueConfig, IssueExperiment
 
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue213-base"]
+REVISION = "issue213-base"
 BUILDS = ["release32", "release64"]
 SEARCHES = [
     ("bjolp", "astar(lmcount(lm_merged([lm_rhw(), lm_hm(m=1)]), admissible=true), mpd=true)"),
@@ -45,7 +46,7 @@ if common_setup.is_test_run():
     ENVIRONMENT = LocalEnvironment(processes=1)
 
 exp = IssueExperiment(
-    revisions=REVISIONS,
+    revisions=[REVISION],
     configs=CONFIGS,
     environment=ENVIRONMENT,
 )
@@ -54,8 +55,17 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_absolute_report_step()
 
 algorithm_pairs = []
-exp.add_report(ComparativeReport(algorithm_pairs))
+for build1, build2 in itertools.combinations(BUILDS, 2):
+    for config_nick, search in SEARCHES:
+        algorithm_pairs.append(
+            ("{REVISION}-{config_nick}-{build1}".format(**locals()),
+             "{REVISION}-{config_nick}-{build2}".format(**locals()),
+             "Diff ({})".format(config_nick)))
+exp.add_report(
+    ComparativeReport(
+        algorithm_pairs,
+        attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES),
+    name="issue213-opt-comparison")
 #exp.add_scatter_plot_step(attributes=["total_time", "memory"])
-exp.add_absolute_report_step()
 
 exp()
