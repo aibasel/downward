@@ -127,3 +127,9 @@ void GlobalOperator::dump() const {
     }
     cout << endl;
 }
+
+int get_op_index_hacked(const GlobalOperator *op) {
+    int op_index = op - &*g_operators.begin();
+    assert(op_index >= 0 && op_index < static_cast<int>(g_operators.size()));
+    return op_index;
+}
