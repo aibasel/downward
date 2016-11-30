@@ -25,6 +25,7 @@ class Heuristic : public ScalarEvaluator {
         bool dirty : 1;
         HEntry(int h, bool dirty) : h(h), dirty(dirty) {}
     };
+    static_assert(sizeof(HEntry) == 4, "HEntry has wrong size.");
 
     std::string description;
 
