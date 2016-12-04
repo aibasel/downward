@@ -2,6 +2,7 @@
 #define ALGORITHMS_INT_HASH_SET_H
 
 #include "../utils/collections.h"
+#include "../utils/language.h"
 
 #include <algorithm>
 #include <cassert>
@@ -231,6 +232,7 @@ public:
             std::cout << "capacity: " << buckets.size() << std::endl;
         }
         assert(num_entries == num_entries_before);
+        utils::unused_variable(num_entries_before);
     }
 
     void dump() const {
