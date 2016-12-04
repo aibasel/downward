@@ -1,5 +1,5 @@
-#ifndef ALGORITHMS_HASH_SET_H
-#define ALGORITHMS_HASH_SET_H
+#ifndef ALGORITHMS_INT_HASH_SET_H
+#define ALGORITHMS_INT_HASH_SET_H
 
 #include "../utils/collections.h"
 
