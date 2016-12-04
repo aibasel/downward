@@ -105,3 +105,27 @@ void StateRegistry::print_statistics() const {
     cout << "Number of registered states: " << size() << endl;
     registered_states.print_statistics();
 }
+
+/*
+  Hash function from https://en.wikipedia.org/wiki/Jenkins_hash_function.
+*/
+static uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length) {
+  size_t i = 0;
+  uint32_t hash = 0;
+  while (i != length) {
+      hash += key[i++];
+      hash += hash << 10;
+      hash ^= hash >> 6;
+  }
+  hash += hash << 3;
+  hash ^= hash >> 11;
+  hash += hash << 15;
+  return hash;
+}
+
+size_t StateRegistry::StateIDSemanticHash::operator()(int id) const {
+    // TODO: Use hash function operating on ints instead of bytes.
+    return jenkins_one_at_a_time_hash(
+        reinterpret_cast<const u_int8_t *>(state_data_pool[id]),
+        state_size * 4);
+}

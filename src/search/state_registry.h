@@ -112,9 +112,7 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        size_t operator()(int id) const {
-            return utils::hash_sequence(state_data_pool[id], state_size);
-        }
+        size_t operator()(int id) const;
     };
 
     struct StateIDSemanticEqual {
