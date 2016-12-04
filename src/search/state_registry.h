@@ -8,6 +8,7 @@
 #include "segmented_vector.h"
 #include "state_id.h"
 
+#include "algorithms/int_hash_set.h"
 #include "utils/hash.h"
 
 #include <set>
@@ -111,9 +112,8 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        size_t operator()(StateID id) const {
-            return utils::hash_sequence(state_data_pool[id.value],
-                                        state_size);
+        size_t operator()(int id) const {
+            return utils::hash_sequence(state_data_pool[id], state_size);
         }
     };
 
@@ -127,9 +127,9 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        bool operator()(StateID lhs, StateID rhs) const {
-            const PackedStateBin *lhs_data = state_data_pool[lhs.value];
-            const PackedStateBin *rhs_data = state_data_pool[rhs.value];
+        bool operator()(int lhs, int rhs) const {
+            const PackedStateBin *lhs_data = state_data_pool[lhs];
+            const PackedStateBin *rhs_data = state_data_pool[rhs];
             return std::equal(lhs_data, lhs_data + state_size, rhs_data);
         }
     };
@@ -139,9 +139,7 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    typedef std::unordered_set<StateID,
-                               StateIDSemanticHash,
-                               StateIDSemanticEqual> StateIDSet;
+    using StateIDSet = algorithms::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */

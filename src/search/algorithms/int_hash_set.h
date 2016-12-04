@@ -12,8 +12,8 @@ namespace algorithms {
   Hash set using a single vector for storing integer keys.
 
   During key insertion we use ideas from hopscotch hashing to ensure
-  that each key is at most H buckets away from its ideal bucket. This
-  ensures constant lookup times.
+  that each key is at most "max_distance" buckets away from its ideal
+  bucket. This ensures constant lookup times.
 
   The hash set allows storing only non-negative integers.
 */
@@ -22,14 +22,16 @@ class IntHashSet {
     using KeyType = int;
     using HashType = unsigned int;
 
-    class Bucket {
-        static const KeyType empty_bucket = -1;
-public:
+    // Max distance from the ideal bucket to the actual bucket for each key.
+    static const int max_distance = 32;
+
+    struct Bucket {
+        static const KeyType empty_bucket_key = -1;
         KeyType key;
         HashType hash;
 
         Bucket()
-            : key(empty_bucket),
+            : key(empty_bucket_key),
               hash(0) {
         }
 
@@ -39,7 +41,7 @@ public:
         }
 
         bool empty() const {
-            return key == empty_bucket;
+            return key == empty_bucket_key;
         }
     };
 
@@ -47,7 +49,6 @@ public:
     Equal equal;
     std::vector<Bucket> buckets;
     int num_entries;
-    int max_distance;
 
     void enlarge() {
         reserve(buckets.size() * 2);
@@ -88,13 +89,25 @@ public:
         }
     }
 
+    KeyType find_equal_key(const KeyType &key) const {
+        HashType hash = hasher(key);
+        int ideal_index = wrap_unsigned(hash);
+        for (int i = 0; i < max_distance; ++i) {
+            int index = wrap_signed(ideal_index + i);
+            const Bucket &bucket = buckets[index];
+            if (!bucket.empty() && bucket.hash == hash && equal(bucket.key, key)) {
+                return bucket.key;
+            }
+        }
+        return Bucket::empty_bucket_key;
+    }
+
 public:
-    IntHashSet(int capacity = 1, int max_distance = 32)
-        : buckets(capacity),
-          num_entries(0),
-          max_distance(max_distance) {
-        assert(capacity >= 1);
-        assert(max_distance >= 0);
+    IntHashSet(const Hasher &hasher, const Equal &equal)
+        : hasher(hasher),
+          equal(equal),
+          buckets(1),
+          num_entries(0) {
     }
 
     int size() const {
@@ -102,14 +115,20 @@ public:
     }
 
     /*
+      Return a pair whose first item is a key that is already contained
+      in the hash set and that is equivalent to the given key. The
+      second item in the pair is a bool indicating whether a new
+      element was inserted into the hash set.
+
       Ensure that each key is at most H buckets away from its ideal
       bucket by moving the closest free bucket towards the ideal
       bucket. If this can't be achieved, we resize the vector, reinsert
       the old keys and try inserting the new key again.
     */
-    bool insert(const KeyType &key) {
-        if (contains(key)) {
-            return false;
+    std::pair<KeyType, bool> insert(const KeyType &key) {
+        KeyType equal_key = find_equal_key(key);
+        if (equal_key != Bucket::empty_bucket_key) {
+            return {equal_key, false};
         }
 
         assert(num_entries <= buckets.size());
@@ -159,20 +178,11 @@ public:
         assert(buckets[free_index].empty());
         buckets[free_index] = Bucket(key, hash);
         ++num_entries;
-        return true;
+        return {key, true};
     }
 
     bool contains(const KeyType &key) const {
-        HashType hash = hasher(key);
-        int ideal_index = wrap_unsigned(hash);
-        for (int i = 0; i < max_distance; ++i) {
-            int index = wrap_signed(ideal_index + i);
-            const Bucket &bucket = buckets[index];
-            if (!bucket.empty() && bucket.hash == hash && equal(bucket.key, key)) {
-                return true;
-            }
-        }
-        return false;
+        return find_equal_key(key) != Bucket::empty_bucket_key;
     }
 
     void reserve(int new_capacity) {
