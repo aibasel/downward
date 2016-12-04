@@ -197,6 +197,7 @@ public:
     }
 
     void reserve(int new_capacity) {
+        int num_entries_before = num_entries;
         if (debug) {
             std::cout << "before reserve: ";
             dump();
@@ -206,17 +207,21 @@ public:
         num_entries = 0;
         buckets.resize(new_capacity);
         /* Sort old buckets by decreasing ideal positions to obtain a
-           better layout while reinserting them. */
+           better layout while reinserting them. Move empty buckets to
+           the end to be able to abort early. */
         sort(old_buckets.begin(), old_buckets.end(),
              [this](const Bucket &b1, const Bucket &b2) {
-                return wrap_unsigned(b1.hash) > wrap_unsigned(b2.hash);
+                int index1 = wrap_unsigned(b1.hash);
+                int index2 = wrap_unsigned(b2.hash);
+                return index1 > index2 || (!b1.empty() && b2.empty());
             });
         for (Bucket &bucket : old_buckets) {
             if (debug)
-                std::cout << "old: " << bucket.key
-                          << " hash: " << wrap_unsigned(bucket.hash)
-                          << std::endl;
-            if (!bucket.empty()) {
+                std::cout << "old key: " << bucket.key << std::endl;
+            if (bucket.empty()) {
+                // There are no full buckets after the first empty bucket.
+                break;
+            } else {
                 insert(bucket.key);
             }
         }
@@ -225,6 +230,7 @@ public:
             dump();
             std::cout << "capacity: " << buckets.size() << std::endl;
         }
+        assert(num_entries == num_entries_before);
     }
 
     void dump() const {
