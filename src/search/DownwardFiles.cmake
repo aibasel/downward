@@ -143,6 +143,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME HASH_SET
+    HELP "Hash set storing non-negative integers"
+    SOURCES
+        algorithms/int_hash_set.h
+)
+
+fast_downward_plugin(
     NAME ORDERED_SET
     HELP "Set of elements ordered by insertion time"
     SOURCES
