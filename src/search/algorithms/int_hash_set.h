@@ -49,6 +49,7 @@ class IntHashSet {
     Equal equal;
     std::vector<Bucket> buckets;
     int num_entries;
+    bool debug;
 
     void enlarge() {
         reserve(buckets.size() * 2);
@@ -103,11 +104,12 @@ class IntHashSet {
     }
 
 public:
-    IntHashSet(const Hasher &hasher, const Equal &equal)
+    IntHashSet(const Hasher &hasher, const Equal &equal, bool debug = false)
         : hasher(hasher),
           equal(equal),
           buckets(1),
-          num_entries(0) {
+          num_entries(0),
+          debug(debug) {
     }
 
     int size() const {
@@ -139,12 +141,14 @@ public:
 
         HashType hash = hasher(key);
         int ideal_index = wrap_unsigned(hash);
-        std::cout << "hash(" << key << ") = " << hash
-                  << " -> ideal index: " << ideal_index << std::endl;
+        if (debug)
+            std::cout << "hash(" << key << ") = " << hash
+                      << " -> ideal index: " << ideal_index << std::endl;
 
         // Find next free bucket.
         int free_index = find_next_free_bucket_index(ideal_index);
-        std::cout << "free index: " << free_index << std::endl;
+        if (debug)
+            std::cout << "free index: " << free_index << std::endl;
 
         // Move the free bucket towards the ideal index.
         while (get_distance(ideal_index, free_index) >= max_distance) {
@@ -153,15 +157,17 @@ public:
                 int candidate_index = wrap_signed(free_index - offset);
                 HashType candidate_hash = buckets[candidate_index].hash;
                 int candidate_ideal_index = wrap_unsigned(candidate_hash);
-                std::cout << "candidate index: " << candidate_index
-                          << ", ideal index: " << candidate_ideal_index
-                          << ", dist: " << get_distance(candidate_ideal_index, free_index)
-                          << std::endl;
+                if (debug)
+                    std::cout << "candidate index: " << candidate_index
+                              << ", ideal index: " << candidate_ideal_index
+                              << ", dist: " << get_distance(candidate_ideal_index, free_index)
+                              << std::endl;
                 if (get_distance(candidate_ideal_index, free_index) < max_distance) {
                     // Candidate can be swapped.
                     std::swap(buckets[candidate_index], buckets[free_index]);
                     free_index = candidate_index;
-                    std::cout << "free index: " << free_index << std::endl;
+                    if (debug)
+                        std::cout << "free index: " << free_index << std::endl;
                     swapped = true;
                     break;
                 }
@@ -173,7 +179,8 @@ public:
                 return insert(key);
             }
         }
-        std::cout << "used index: " << free_index << std::endl;
+        if (debug)
+            std::cout << "used index: " << free_index << std::endl;
         assert(utils::in_bounds(free_index, buckets));
         assert(buckets[free_index].empty());
         buckets[free_index] = Bucket(key, hash);
@@ -186,8 +193,10 @@ public:
     }
 
     void reserve(int new_capacity) {
-        std::cout << "before reserve: ";
-        dump();
+        if (debug) {
+            std::cout << "before reserve: ";
+            dump();
+        }
         std::vector<Bucket> old_buckets = std::move(buckets);
         assert(buckets.empty());
         num_entries = 0;
@@ -199,15 +208,19 @@ public:
                 return wrap_unsigned(b1.hash) > wrap_unsigned(b2.hash);
             });
         for (Bucket &bucket : old_buckets) {
-            std::cout << "old: " << bucket.key
-                      << " hash: " << wrap_unsigned(bucket.hash) << std::endl;
+            if (debug)
+                std::cout << "old: " << bucket.key
+                          << " hash: " << wrap_unsigned(bucket.hash)
+                          << std::endl;
             if (!bucket.empty()) {
                 insert(bucket.key);
             }
         }
-        std::cout << "after reserve: ";
-        dump();
-        std::cout << "capacity: " << buckets.size() << std::endl;
+        if (debug) {
+            std::cout << "after reserve: ";
+            dump();
+            std::cout << "capacity: " << buckets.size() << std::endl;
+        }
     }
 
     void dump() const {
