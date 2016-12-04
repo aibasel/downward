@@ -100,3 +100,8 @@ void StateRegistry::subscribe(PerStateInformationBase *psi) const {
 void StateRegistry::unsubscribe(PerStateInformationBase *const psi) const {
     subscribers.erase(psi);
 }
+
+void StateRegistry::print_statistics() const {
+    cout << "Number of registered states: " << size() << endl;
+    registered_states.print_statistics();
+}

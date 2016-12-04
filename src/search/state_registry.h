@@ -218,6 +218,8 @@ public:
     */
     void subscribe(PerStateInformationBase *psi) const;
     void unsubscribe(PerStateInformationBase *psi) const;
+
+    void print_statistics() const;
 };
 
 #endif

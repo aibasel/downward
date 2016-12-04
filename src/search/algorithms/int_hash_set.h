@@ -58,7 +58,7 @@ class IntHashSet {
     int wrap_unsigned(HashType hash) const {
         /* Note: If we restricted the number of buckets to powers of 2,
            we could use "i % 2^n = i & (2^n – 1)" to speed this up. */
-        assert(buckets.size() != 0);
+        assert(!buckets.empty());
         return hash % buckets.size();
     }
 
@@ -130,7 +130,9 @@ public:
     std::pair<KeyType, bool> insert(const KeyType &key) {
         KeyType equal_key = find_equal_key(key);
         if (equal_key != Bucket::empty_bucket_key) {
-            return {equal_key, false};
+            return {
+                       equal_key, false
+            };
         }
 
         assert(num_entries <= buckets.size());
@@ -185,7 +187,9 @@ public:
         assert(buckets[free_index].empty());
         buckets[free_index] = Bucket(key, hash);
         ++num_entries;
-        return {key, true};
+        return {
+                   key, true
+        };
     }
 
     bool contains(const KeyType &key) const {
@@ -237,6 +241,16 @@ public:
             }
         }
         std::cout << "]" << std::endl;
+    }
+
+    void print_statistics() const {
+        assert(!buckets.empty());
+        int capacity = buckets.size();
+        assert(capacity != 0);
+        std::cout << "Hash set load factor: " << num_entries << "/"
+                  << capacity << " = "
+                  << static_cast<double>(num_entries) / capacity
+                  << std::endl;
     }
 };
 }
