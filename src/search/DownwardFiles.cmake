@@ -127,7 +127,7 @@ fast_downward_plugin(
         utils/collections.h
         utils/countdown_timer.cc
         utils/dynamic_bitset.h
-        utils/hash.h
+        utils/hash.cc
         utils/language.h
         utils/logging.cc
         utils/markup.cc
