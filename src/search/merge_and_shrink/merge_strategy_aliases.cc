@@ -46,9 +46,10 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
         "systems are considered in an arbitrary order. This renders all other "
         "ordering options void.",
         "false");
-    cerr << "Warning: this command line option has been deprecated. Please"
-        "consult fast-downward.org for equivalent new command line options."
-         << endl;
+    if (parser.dry_run() && !parser.help_mode())
+        cerr << "Warning: this command line option has been deprecated. Please "
+            "consult fast-downward.org for equivalent new command line options."
+             << endl;
 
     options::Options options = parser.parse();
     if (parser.dry_run())
@@ -104,9 +105,10 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
         "Using this command line option is deprecated, please use the "
         "equivalent configuration\n"
         "{{{\nmerge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))\n}}}");
-    cerr << "Warning: this command line option has been deprecated. Please"
-        "consult fast-downward.org for equivalent new command line options."
-         << endl;
+    if (parser.dry_run() && !parser.help_mode())
+        cerr << "Warning: this command line option has been deprecated. Please "
+            "consult fast-downward.org for equivalent new command line options."
+             << endl;
 
     options::Options opts = parser.parse();
     if (parser.dry_run())
