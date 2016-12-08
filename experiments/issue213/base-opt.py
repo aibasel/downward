@@ -68,4 +68,4 @@ exp.add_report(
     name="issue213-opt-comparison")
 #exp.add_scatter_plot_step(attributes=["total_time", "memory"])
 
-exp()
+exp.run_steps()
