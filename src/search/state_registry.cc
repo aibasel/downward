@@ -105,7 +105,3 @@ void StateRegistry::print_statistics() const {
     cout << "Number of registered states: " << size() << endl;
     registered_states.print_statistics();
 }
-
-size_t StateRegistry::StateIDSemanticHash::operator()(int id) const {
-    return utils::hash_unsigned_int_sequence(state_data_pool[id], state_size);
-}
