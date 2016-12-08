@@ -50,7 +50,6 @@ class IntHashSet {
     Equal equal;
     std::vector<Bucket> buckets;
     int num_entries;
-    bool debug;
 
     void enlarge() {
         reserve(buckets.size() * 2);
@@ -105,12 +104,11 @@ class IntHashSet {
     }
 
 public:
-    IntHashSet(const Hasher &hasher, const Equal &equal, bool debug = false)
+    IntHashSet(const Hasher &hasher, const Equal &equal)
         : hasher(hasher),
           equal(equal),
           buckets(1),
-          num_entries(0),
-          debug(debug) {
+          num_entries(0) {
     }
 
     int size() const {
@@ -144,14 +142,9 @@ public:
 
         HashType hash = hasher(key);
         int ideal_index = wrap_unsigned(hash);
-        if (debug)
-            std::cout << "hash(" << key << ") = " << hash
-                      << " -> ideal index: " << ideal_index << std::endl;
 
         // Find next free bucket.
         int free_index = find_next_free_bucket_index(ideal_index);
-        if (debug)
-            std::cout << "free index: " << free_index << std::endl;
 
         // Move the free bucket towards the ideal index.
         while (get_distance(ideal_index, free_index) >= max_distance) {
@@ -160,17 +153,10 @@ public:
                 int candidate_index = wrap_signed(free_index - offset);
                 HashType candidate_hash = buckets[candidate_index].hash;
                 int candidate_ideal_index = wrap_unsigned(candidate_hash);
-                if (debug)
-                    std::cout << "candidate index: " << candidate_index
-                              << ", ideal index: " << candidate_ideal_index
-                              << ", dist: " << get_distance(candidate_ideal_index, free_index)
-                              << std::endl;
                 if (get_distance(candidate_ideal_index, free_index) < max_distance) {
                     // Candidate can be swapped.
                     std::swap(buckets[candidate_index], buckets[free_index]);
                     free_index = candidate_index;
-                    if (debug)
-                        std::cout << "free index: " << free_index << std::endl;
                     swapped = true;
                     break;
                 }
@@ -182,8 +168,6 @@ public:
                 return insert(key);
             }
         }
-        if (debug)
-            std::cout << "used index: " << free_index << std::endl;
         assert(utils::in_bounds(free_index, buckets));
         assert(buckets[free_index].empty());
         buckets[free_index] = Bucket(key, hash);
@@ -199,10 +183,6 @@ public:
 
     void reserve(int new_capacity) {
         int num_entries_before = num_entries;
-        if (debug) {
-            std::cout << "before reserve: ";
-            dump();
-        }
         std::vector<Bucket> old_buckets = std::move(buckets);
         assert(buckets.empty());
         num_entries = 0;
@@ -217,19 +197,12 @@ public:
                 return index1 > index2 || (!b1.empty() && b2.empty());
             });
         for (Bucket &bucket : old_buckets) {
-            if (debug)
-                std::cout << "old key: " << bucket.key << std::endl;
             if (bucket.empty()) {
                 // There are no full buckets after the first empty bucket.
                 break;
             } else {
                 insert(bucket.key);
             }
-        }
-        if (debug) {
-            std::cout << "after reserve: ";
-            dump();
-            std::cout << "capacity: " << buckets.size() << std::endl;
         }
         assert(num_entries == num_entries_before);
         utils::unused_variable(num_entries_before);
