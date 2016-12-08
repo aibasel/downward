@@ -93,8 +93,8 @@ class IntHashSet {
         }
     }
 
-    KeyType find_equal_key(const KeyType &key) const {
-        HashType hash = hasher(key);
+    KeyType find_equal_key(const KeyType &key, const HashType &hash) const {
+        assert(hasher(key) == hash);
         int ideal_index = wrap_unsigned(hash);
         for (int i = 0; i < max_distance; ++i) {
             int index = wrap_signed(ideal_index + i);
@@ -115,7 +115,9 @@ class IntHashSet {
       For the return type, see the public insert() method.
     */
     std::pair<KeyType, bool> insert(const KeyType &key, const HashType &hash) {
-        KeyType equal_key = find_equal_key(key);
+        assert(hasher(key) == hash);
+
+        KeyType equal_key = find_equal_key(key, hash);
         if (equal_key != Bucket::empty_bucket_key) {
             return {
                        equal_key, false
@@ -184,10 +186,6 @@ public:
     */
     std::pair<KeyType, bool> insert(const KeyType &key) {
         return insert(key, hasher(key));
-    }
-
-    bool contains(const KeyType &key) const {
-        return find_equal_key(key) != Bucket::empty_bucket_key;
     }
 
     void reserve(int new_capacity) {
