@@ -12,7 +12,6 @@
 #include "utils/hash.h"
 
 #include <set>
-#include <unordered_set>
 
 /*
   Overview of classes relevant to storing and working with registered states.
@@ -112,7 +111,10 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        size_t operator()(int id) const;
+        size_t operator()(int id) const {
+            return utils::hash_unsigned_int_sequence(
+                state_data_pool[id], state_size);
+        }
     };
 
     struct StateIDSemanticEqual {
