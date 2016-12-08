@@ -106,30 +106,15 @@ class IntHashSet {
         return Bucket::empty_bucket_key;
     }
 
-public:
-    IntHashSet(const Hasher &hasher, const Equal &equal)
-        : hasher(hasher),
-          equal(equal),
-          buckets(1),
-          num_entries(0) {
-    }
-
-    int size() const {
-        return num_entries;
-    }
-
     /*
-      Return a pair whose first item is the given key, or an equivalent
-      key already contained in the hash set. The second item in the
-      pair is a bool indicating whether a new key was inserted into the
-      hash set.
-
       Ensure that each key is at most "max_distance" buckets away from
       its ideal bucket by moving the closest free bucket towards the
       ideal bucket. If this can't be achieved, we resize the vector,
       reinsert the old keys and try inserting the new key again.
+
+      For the return type, see the public insert() method.
     */
-    std::pair<KeyType, bool> insert(const KeyType &key) {
+    std::pair<KeyType, bool> insert(const KeyType &key, const HashType &hash) {
         KeyType equal_key = find_equal_key(key);
         if (equal_key != Bucket::empty_bucket_key) {
             return {
@@ -143,7 +128,6 @@ public:
         }
         assert(num_entries < buckets.size());
 
-        HashType hash = hasher(key);
         int ideal_index = wrap_unsigned(hash);
 
         // Find next free bucket.
@@ -168,7 +152,7 @@ public:
                 /* Free bucket could not be moved close enough.
                    -> Enlarge and try inserting again. */
                 enlarge();
-                return insert(key);
+                return insert(key, hash);
             }
         }
         assert(utils::in_bounds(free_index, buckets));
@@ -178,6 +162,28 @@ public:
         return {
                    key, true
         };
+    }
+
+public:
+    IntHashSet(const Hasher &hasher, const Equal &equal)
+        : hasher(hasher),
+          equal(equal),
+          buckets(1),
+          num_entries(0) {
+    }
+
+    int size() const {
+        return num_entries;
+    }
+
+    /*
+      Return a pair whose first item is the given key, or an equivalent
+      key already contained in the hash set. The second item in the
+      pair is a bool indicating whether a new key was inserted into the
+      hash set.
+    */
+    std::pair<KeyType, bool> insert(const KeyType &key) {
+        return insert(key, hasher(key));
     }
 
     bool contains(const KeyType &key) const {
@@ -203,7 +209,7 @@ public:
         for (int i = 0; i < num_entries_before; ++i) {
             const Bucket &bucket = old_buckets[i];
             assert(bucket.full());
-            insert(bucket.key);
+            insert(bucket.key, bucket.hash);
         }
         assert(num_entries == num_entries_before);
     }
