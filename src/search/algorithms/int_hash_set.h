@@ -44,6 +44,10 @@ class IntHashSet {
         bool empty() const {
             return key == empty_bucket_key;
         }
+
+        bool full() const {
+            return key != empty_bucket_key;
+        }
     };
 
     Hasher hasher;
@@ -96,7 +100,7 @@ class IntHashSet {
         for (int i = 0; i < max_distance; ++i) {
             int index = wrap_signed(ideal_index + i);
             const Bucket &bucket = buckets[index];
-            if (!bucket.empty() && bucket.hash == hash && equal(bucket.key, key)) {
+            if (bucket.full() && bucket.hash == hash && equal(bucket.key, key)) {
                 return bucket.key;
             }
         }
@@ -194,14 +198,14 @@ public:
              [this](const Bucket &b1, const Bucket &b2) {
                 int index1 = wrap_unsigned(b1.hash);
                 int index2 = wrap_unsigned(b2.hash);
-                return index1 > index2 || (!b1.empty() && b2.empty());
+                return index1 > index2 || (b1.full() && b2.empty());
             });
         for (Bucket &bucket : old_buckets) {
-            if (bucket.empty()) {
+            if (bucket.full()) {
+                insert(bucket.key);
+            } else {
                 // There are no full buckets after the first empty bucket.
                 break;
-            } else {
-                insert(bucket.key);
             }
         }
         assert(num_entries == num_entries_before);
@@ -212,10 +216,10 @@ public:
         std::cout << "[";
         for (int i = 0; i < buckets.size(); ++i) {
             const Bucket &bucket = buckets[i];
-            if (bucket.empty()) {
-                std::cout << "_";
-            } else {
+            if (bucket.full()) {
                 std::cout << bucket.key;
+            } else {
+                std::cout << "_";
             }
             if (i < buckets.size() - 1) {
                 std::cout << ", ";
