@@ -116,15 +116,15 @@ public:
     }
 
     /*
-      Return a pair whose first item is a key that is already contained
-      in the hash set and that is equivalent to the given key. The
-      second item in the pair is a bool indicating whether a new
-      element was inserted into the hash set.
+      Return a pair whose first item is the given key, or an equivalent
+      key already contained in the hash set. The second item in the
+      pair is a bool indicating whether a new key was inserted into the
+      hash set.
 
-      Ensure that each key is at most H buckets away from its ideal
-      bucket by moving the closest free bucket towards the ideal
-      bucket. If this can't be achieved, we resize the vector, reinsert
-      the old keys and try inserting the new key again.
+      Ensure that each key is at most "max_distance" buckets away from
+      its ideal bucket by moving the closest free bucket towards the
+      ideal bucket. If this can't be achieved, we resize the vector,
+      reinsert the old keys and try inserting the new key again.
     */
     std::pair<KeyType, bool> insert(const KeyType &key) {
         KeyType equal_key = find_equal_key(key);
@@ -146,7 +146,7 @@ public:
         // Find next free bucket.
         int free_index = find_next_free_bucket_index(ideal_index);
 
-        // Move the free bucket towards the ideal index.
+        // Move the free bucket towards the ideal bucket.
         while (get_distance(ideal_index, free_index) >= max_distance) {
             bool swapped = false;
             for (int offset = max_distance - 1; offset >= 1; --offset) {
