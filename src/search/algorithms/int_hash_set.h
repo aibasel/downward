@@ -2,7 +2,6 @@
 #define ALGORITHMS_INT_HASH_SET_H
 
 #include "../utils/collections.h"
-#include "../utils/language.h"
 
 #include <algorithm>
 #include <cassert>
@@ -193,23 +192,20 @@ public:
         buckets.resize(new_capacity);
         /* Sort old buckets by decreasing ideal positions to obtain a
            better layout while reinserting them. Move empty buckets to
-           the end to be able to abort early. */
+           the end to be able to only loop over full buckets later. */
         sort(old_buckets.begin(), old_buckets.end(),
              [this](const Bucket &b1, const Bucket &b2) {
                 int index1 = wrap_unsigned(b1.hash);
                 int index2 = wrap_unsigned(b2.hash);
                 return index1 > index2 || (b1.full() && b2.empty());
             });
-        for (Bucket &bucket : old_buckets) {
-            if (bucket.full()) {
-                insert(bucket.key);
-            } else {
-                // There are no full buckets after the first empty bucket.
-                break;
-            }
+        // Only loop over full buckets.
+        for (int i = 0; i < num_entries_before; ++i) {
+            const Bucket &bucket = old_buckets[i];
+            assert(bucket.full());
+            insert(bucket.key);
         }
         assert(num_entries == num_entries_before);
-        utils::unused_variable(num_entries_before);
     }
 
     void dump() const {
