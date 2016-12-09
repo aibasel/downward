@@ -171,7 +171,7 @@ class IssueExperiment(FastDownwardExperiment):
         "error",
         "evaluations",
         "expansions",
-        "expanded_until_last_jump",
+        "expansions_until_last_jump",
         "generated",
         "memory",
         "quality",
