@@ -44,4 +44,18 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_absolute_report_step()
 
+algorithm_pairs = []
+revision1, revision2 = REVISIONS
+for build in BUILDS:
+    for config_nick, search in SEARCHES:
+            algorithm_pairs.append(
+                ("{revision1}-{config_nick}-{build}".format(**locals()),
+                 "{revision2}-{config_nick}-{build}".format(**locals()),
+                 "Diff ({config_nick}-{build})".format(**locals())))
+exp.add_report(
+    ComparativeReport(
+        algorithm_pairs,
+        attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES),
+    name="issue213-v2-vs-v3-blind")
+
 exp.run_steps()
