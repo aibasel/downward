@@ -52,4 +52,51 @@ exp = IssueExperiment(
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_absolute_report_step()
+
+attributes = [
+    "coverage", "error", "expansions_until_last_jump", "memory",
+    "score_memory", "total_time", "score_total_time"]
+
+# Compare revisions.
+# lmcut-base-32 vs. lmcut-v1-32 vs. lmcut-v3-32
+# lmcut-base-64 vs. lmcut-v1-64 vs. lmcut-v3-64
+for build in BUILDS:
+    for rev1, rev2 in itertools.combinations(REVISIONS, 2):
+        algorithm_pairs = [
+            ("{rev1}-{config_nick}-{build}".format(**locals()),
+             "{rev2}-{config_nick}-{build}".format(**locals()),
+             "Diff ({config_nick}-{build})".format(**locals()))
+            for config_nick, search in SEARCHES]
+        exp.add_report(
+            ComparativeReport(algorithm_pairs, attributes=attributes),
+            name="issue213-{rev1}-vs-{rev2}-{build}".format(**locals()))
+
+# Compaire builds.
+# lmcut-base-32 vs. lmcut-base-64
+# lmcut-v1-32 vs. lmcut-v1-64
+# lmcut-v3-32 vs. lmcut v3-64
+for build1, build2 in itertools.combinations(BUILDS, 2):
+    for rev in REVISIONS:
+        algorithm_pairs = [
+            ("{rev}-{config_nick}-{build1}".format(**locals()),
+             "{rev}-{config_nick}-{build2}".format(**locals()),
+             "Diff ({config_nick}-{rev})".format(**locals()))
+            for config_nick, search in SEARCHES]
+        exp.add_report(
+            ComparativeReport(algorithm_pairs, attributes=attributes),
+            name="issue213-{build1}-vs-{build2}-{rev}".format(**locals()))
+
+# Compare across revisions and builds.
+# lmcut-base-32 vs. lmcut-v3-64
+build1, build2 = BUILDS
+rev1, rev2 = "issue213-base", "issue213-v3"
+algorithm_pairs = [
+    ("{rev1}-{config_nick}-{build1}".format(**locals()),
+     "{rev2}-{config_nick}-{build2}".format(**locals()),
+     "Diff ({config_nick})".format(**locals()))
+    for config_nick, search in SEARCHES]
+exp.add_report(
+    ComparativeReport(algorithm_pairs, attributes=attributes),
+    name="issue213-before-vs-after")
+
 exp.run_steps()
