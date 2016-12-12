@@ -53,6 +53,7 @@ class IntHashSet {
     Equal equal;
     std::vector<Bucket> buckets;
     int num_entries;
+    int num_resizes;
 
     void enlarge() {
         reserve(buckets.size() * 2);
@@ -171,7 +172,8 @@ public:
         : hasher(hasher),
           equal(equal),
           buckets(1),
-          num_entries(0) {
+          num_entries(0),
+          num_resizes(0) {
     }
 
     int size() const {
@@ -210,6 +212,7 @@ public:
             insert(bucket.key, bucket.hash);
         }
         assert(num_entries == num_entries_before);
+        ++num_resizes;
     }
 
     void dump() const {
@@ -236,6 +239,7 @@ public:
                   << capacity << " = "
                   << static_cast<double>(num_entries) / capacity
                   << std::endl;
+        std::cout << "Hash set resizings: " << num_resizes << std::endl;
     }
 };
 }
