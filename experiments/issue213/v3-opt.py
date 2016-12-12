@@ -9,7 +9,7 @@ from lab.environments import LocalEnvironment, MaiaEnvironment
 from downward.reports.compare import ComparativeReport
 
 import common_setup
-from common_setup import IssueConfig, IssueExperiment
+from common_setup import IssueConfig, IssueExperiment, RelativeScatterPlotReport
 
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
@@ -98,5 +98,12 @@ algorithm_pairs = [
 exp.add_report(
     ComparativeReport(algorithm_pairs, attributes=attributes),
     name="issue213-before-vs-after")
+
+for attribute in ["total_time", "memory"]:
+    exp.add_report(
+        RelativeScatterPlotReport(
+            attributes=[attribute],
+            filter_algorithm=["issue213-v1-blind-release32", "issue213-v3-blind-release32"]),
+        name="issue213-relative-scatter-blind-m32-v1-vs-v3-{}".format(attribute))
 
 exp.run_steps()

@@ -50,9 +50,10 @@ class RelativeScatterMatplotlib(Matplotlib):
 
 class RelativeScatterPlotReport(ScatterPlotReport):
     """
-    Generate a scatter plot that shows how a specific attribute in two
-    configurations. The attribute value in config 1 is shown on the
-    x-axis and the relation to the value in config 2 on the y-axis.
+    Generate a scatter plot that shows a relative comparison of two
+    algorithms with regard to the given attribute. The attribute value
+    of algorithm 1 is shown on the x-axis and the relation to the value
+    of algorithm 2 on the y-axis.
     """
 
     def __init__(self, show_missing=True, get_category=None, **kwargs):
@@ -73,15 +74,15 @@ class RelativeScatterPlotReport(ScatterPlotReport):
             if len(runs) != 2:
                 continue
             run1, run2 = runs
-            assert (run1['config'] == self.configs[0] and
-                    run2['config'] == self.configs[1])
+            assert (run1['algorithm'] == self.algorithms[0] and
+                    run2['algorithm'] == self.algorithms[1])
             val1 = run1.get(self.attribute)
             val2 = run2.get(self.attribute)
             if val1 is None or val2 is None:
                 continue
             category = self.get_category(run1, run2)
-            assert val1 > 0, (domain, problem, self.configs[0], val1)
-            assert val2 > 0, (domain, problem, self.configs[1], val2)
+            assert val1 > 0, (domain, problem, self.algorithms[0], val1)
+            assert val2 > 0, (domain, problem, self.algorithms[1], val2)
             x = val1
             y = val2 / float(val1)
 
@@ -99,8 +100,6 @@ class RelativeScatterPlotReport(ScatterPlotReport):
         return categories
 
     def _set_scales(self, xscale, yscale):
-        # ScatterPlots use log-scaling on the x-axis by default.
-        default_xscale = 'log'
-        if self.attribute and self.attribute in self.LINEAR:
-            default_xscale = 'linear'
-        PlotReport._set_scales(self, xscale or default_xscale, 'log')
+        # ScatterPlot uses log-scaling on the x-axis by default.
+        PlotReport._set_scales(
+            self, xscale or self.attribute.scale or 'log', 'log')
