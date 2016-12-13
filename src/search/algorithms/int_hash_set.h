@@ -87,12 +87,10 @@ class IntHashSet {
     int find_next_free_bucket_index(int index) const {
         assert(num_entries < buckets.size());
         assert(utils::in_bounds(index, buckets));
-        while (true) {
-            if (buckets[index].empty()) {
-                return index;
-            }
-            index = wrap_signed(++index);
+        while (buckets[index].full()) {
+            index = wrap_signed(index + 1);
         }
+        return index;
     }
 
     KeyType find_equal_key(const KeyType &key, const HashType &hash) const {
