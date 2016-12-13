@@ -12,8 +12,9 @@ import common_setup
 from common_setup import IssueConfig, IssueExperiment, RelativeScatterPlotReport
 
 
+DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue213-v1", "issue213-v3", "issue213-v4"]
+REVISIONS = ["issue213-v1", "issue213-v4", "issue213-v5"]
 BUILDS = ["release32", "release64"]
 SEARCHES = [
     ("blind", "astar(blind())"),
@@ -27,7 +28,7 @@ CONFIGS = [
     for nick, search in SEARCHES
     for build in BUILDS
 ]
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+SUITE = ["pegsol-opt11-strips"]  # common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = MaiaEnvironment(
     priority=0, email="jendrik.seipp@unibas.ch")
 
@@ -41,6 +42,7 @@ exp = IssueExperiment(
     environment=ENVIRONMENT,
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
+exp.add_command('run-custom-parser', [os.path.join(DIR, 'custom-parser.py')])
 exp.add_absolute_report_step()
 
 attributes = [
