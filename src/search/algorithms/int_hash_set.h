@@ -242,7 +242,7 @@ public:
 };
 
 template <typename Hasher, typename Equal>
-const int IntHashSet<Hasher, Equal>::max_distance = 32;
+const int IntHashSet<Hasher, Equal>::max_distance = 64;
 }
 
 #endif
