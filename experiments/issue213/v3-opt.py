@@ -71,7 +71,7 @@ for build in BUILDS:
             ComparativeReport(algorithm_pairs, attributes=attributes),
             name="issue213-{rev1}-vs-{rev2}-{build}".format(**locals()))
 
-# Compaire builds.
+# Compare builds.
 # lmcut-base-32 vs. lmcut-base-64
 # lmcut-v1-32 vs. lmcut-v1-64
 # lmcut-v3-32 vs. lmcut v3-64
