@@ -24,7 +24,7 @@ class IntHashSet {
     using HashType = unsigned int;
 
     // Max distance from the ideal bucket to the actual bucket for each key.
-    static const int max_distance = 32;
+    static const int max_distance;
 
     struct Bucket {
         static const KeyType empty_bucket_key = -1;
@@ -57,7 +57,7 @@ class IntHashSet {
     int num_resizes;
 
     void enlarge() {
-        reserve(buckets.size() * 2);
+        reserve(get_capacity() * 2);
     }
 
     int wrap_unsigned(HashType hash) const {
@@ -67,11 +67,9 @@ class IntHashSet {
         return hash % buckets.size();
     }
 
-    int wrap_signed(int i) const {
-        if (i < 0) {
-            i += buckets.size();
-        }
-        return wrap_unsigned(i);
+    int wrap_signed(int n) const {
+        assert(n >= 0);
+        return wrap_unsigned(n);
     }
 
     int get_distance(int left_index, int right_index) const {
@@ -80,12 +78,12 @@ class IntHashSet {
         if (right_index >= left_index) {
             return right_index - left_index;
         } else {
-            return buckets.size() - left_index + right_index;
+            return get_capacity() - left_index + right_index;
         }
     }
 
     int find_next_free_bucket_index(int index) const {
-        assert(num_entries < buckets.size());
+        assert(num_entries < get_capacity());
         assert(utils::in_bounds(index, buckets));
         while (buckets[index].full()) {
             index = wrap_signed(index + 1);
@@ -124,11 +122,11 @@ class IntHashSet {
             };
         }
 
-        assert(num_entries <= buckets.size());
-        if (num_entries == buckets.size()) {
+        assert(num_entries <= get_capacity());
+        if (num_entries == get_capacity()) {
             enlarge();
         }
-        assert(num_entries < buckets.size());
+        assert(num_entries < get_capacity());
 
         int ideal_index = wrap_unsigned(hash);
 
@@ -138,8 +136,12 @@ class IntHashSet {
         // Move the free bucket towards the ideal bucket.
         while (get_distance(ideal_index, free_index) >= max_distance) {
             bool swapped = false;
-            for (int offset = max_distance - 1; offset >= 1; --offset) {
-                int candidate_index = wrap_signed(free_index - offset);
+            int capacity = get_capacity();
+            int max_offset = std::min(max_distance, capacity) - 1;
+            for (int offset = max_offset; offset >= 1; --offset) {
+                // Add capacity to ensure the index remains non-negative.
+                assert(offset < capacity);
+                int candidate_index = wrap_signed(free_index + capacity - offset);
                 HashType candidate_hash = buckets[candidate_index].hash;
                 int candidate_ideal_index = wrap_unsigned(candidate_hash);
                 if (get_distance(candidate_ideal_index, free_index) < max_distance) {
@@ -179,6 +181,10 @@ public:
         return num_entries;
     }
 
+    int get_capacity() const {
+        return buckets.size();
+    }
+
     /*
       Return a pair whose first item is the given key, or an equivalent
       key already contained in the hash set. The second item in the
@@ -207,15 +213,16 @@ public:
     }
 
     void dump() const {
+        int capacity = get_capacity();
         std::cout << "[";
-        for (int i = 0; i < buckets.size(); ++i) {
+        for (int i = 0; i < capacity; ++i) {
             const Bucket &bucket = buckets[i];
             if (bucket.full()) {
                 std::cout << bucket.key;
             } else {
                 std::cout << "_";
             }
-            if (i < buckets.size() - 1) {
+            if (i < capacity - 1) {
                 std::cout << ", ";
             }
         }
@@ -224,7 +231,7 @@ public:
 
     void print_statistics() const {
         assert(!buckets.empty());
-        int capacity = buckets.size();
+        int capacity = get_capacity();
         assert(capacity != 0);
         std::cout << "Hash set load factor: " << num_entries << "/"
                   << capacity << " = "
@@ -233,6 +240,9 @@ public:
         std::cout << "Hash set resizings: " << num_resizes << std::endl;
     }
 };
+
+template <typename Hasher, typename Equal>
+const int IntHashSet<Hasher, Equal>::max_distance = 32;
 }
 
 #endif
