@@ -13,7 +13,7 @@ namespace utils {
 /*
   Circular rotation.
 */
-inline unsigned int rot(unsigned int x, unsigned int k) {
+static inline unsigned int rot(unsigned int x, unsigned int k) {
     return (x << k) | (x >> (32 - k));
 }
 
@@ -23,7 +23,7 @@ inline unsigned int rot(unsigned int x, unsigned int k) {
   Any information in (a,b,c) before mix() is still in (a,b,c) after
   mix().
 */
-inline void mix(unsigned int &a, unsigned int &b, unsigned int &c) {
+static inline void mix(unsigned int &a, unsigned int &b, unsigned int &c) {
     a -= c; a ^= rot(c, 4); c += b;
     b -= a; b ^= rot(a, 6); a += c;
     c -= b; c ^= rot(b, 8); b += a;
@@ -38,7 +38,7 @@ inline void mix(unsigned int &a, unsigned int &b, unsigned int &c) {
   Pairs of (a,b,c) values differing in only a few bits will usually
   produce values of c that look totally different.
 */
-inline void final(unsigned int &a, unsigned int &b, unsigned int &c) {
+static inline void final(unsigned int &a, unsigned int &b, unsigned int &c) {
     c ^= b; c -= rot(b, 14);
     a ^= c; a -= rot(c, 11);
     b ^= a; b -= rot(a, 25);
