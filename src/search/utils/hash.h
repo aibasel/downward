@@ -40,9 +40,9 @@ size_t hash_sequence(const Sequence &data, size_t length) {
   in the key. "initval" can be the previous hash or an arbitrary value.
 */
 extern unsigned int hash_unsigned_int_sequence(
-    const unsigned int *k,
+    const unsigned int *key,
     unsigned int length,
-    unsigned int initval = 2016);
+    unsigned int initial_value = 2016);
 }
 
 namespace std {
