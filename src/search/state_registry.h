@@ -112,8 +112,8 @@ class StateRegistry {
         }
 
         size_t operator()(StateID id) const {
-            return utils::hash_sequence(state_data_pool[id.value],
-                                        state_size);
+            return utils::hash_unsigned_int_sequence(
+                state_data_pool[id.value], state_size);
         }
     };
 
