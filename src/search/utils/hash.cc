@@ -11,15 +11,17 @@ namespace utils {
   in lookup3.c.
 */
 
+static_assert(sizeof(unsigned int) == 4, "unsigned int has unexpected size");
+
 /*
-  Circular rotation.
+  Circular rotation (http://stackoverflow.com/a/31488147/224132).
 */
 static inline unsigned int rotate(unsigned int value, unsigned int offset) {
     return (value << offset) | (value >> (32 - offset));
 }
 
 /*
-  mix 3 32-bit values reversibly.
+  Mix 3 32-bit values bijectively.
 
   Any information in (a, b, c) before mix() is still in (a, b, c) after
   mix().
@@ -46,7 +48,7 @@ static inline void mix(unsigned int &a, unsigned int &b, unsigned int &c) {
 }
 
 /*
-  final mixing of 3 32-bit values (a, b, c) into c.
+  Final mixing of 3 32-bit values (a, b, c) into c.
 
   Pairs of (a,b,c) values differing in only a few bits will usually
   produce values of c that look totally different.
@@ -69,11 +71,11 @@ static inline void final_mix(unsigned int &a, unsigned int &b, unsigned int &c) 
 }
 
 unsigned int hash_unsigned_int_sequence(
-    const unsigned int *key, unsigned int length, unsigned int initial_value) {
-    unsigned int a, b, c;
-
+    const unsigned int *key, unsigned int length) {
     // Set up the internal state.
-    a = b = c = 0xdeadbeef + (length << 2) + initial_value;
+    unsigned int a = 0xdeadbeef + (length << 2);
+    unsigned int b = a;
+    unsigned int c = a;
 
     // Handle most of the key.
     while (length > 3) {
@@ -85,18 +87,14 @@ unsigned int hash_unsigned_int_sequence(
         key += 3;
     }
 
-    // Handle the last 3 unsigned ints. All case statements fall through.
-    switch (length) {
-    case 3:
+    // Handle the last 3 unsigned ints.
+    if (length == 3)
         c += key[2];
-    case 2:
-        b += key[1];
-    case 1:
-        a += key[0];
-        final_mix(a, b, c);
-    // case 0: nothing left to add.
-    case 0:
-        break;
+    if (length >= 2)
+       b += key[1];
+    if (length >= 1) {
+       a += key[0];
+       final_mix(a, b, c);
     }
 
     return c;
