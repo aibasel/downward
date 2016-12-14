@@ -50,7 +50,7 @@ static inline void mix(unsigned int &a, unsigned int &b, unsigned int &c) {
 /*
   Final mixing of 3 32-bit values (a, b, c) into c.
 
-  Pairs of (a,b,c) values differing in only a few bits will usually
+  Pairs of (a, b, c) values differing in only a few bits will usually
   produce values of c that look totally different.
 */
 static inline void final_mix(unsigned int &a, unsigned int &b, unsigned int &c) {
@@ -91,10 +91,10 @@ unsigned int hash_unsigned_int_sequence(
     if (length == 3)
         c += key[2];
     if (length >= 2)
-       b += key[1];
+        b += key[1];
     if (length >= 1) {
-       a += key[0];
-       final_mix(a, b, c);
+        a += key[0];
+        final_mix(a, b, c);
     }
 
     return c;
