@@ -55,7 +55,7 @@ void SearchNode::open_initial() {
     info.g = 0;
     info.real_g = 0;
     info.parent_state_id = StateID::no_state;
-    info.creating_operator = 0;
+    info.creating_operator = -1;
 }
 
 void SearchNode::open(const SearchNode &parent_node,
@@ -65,7 +65,7 @@ void SearchNode::open(const SearchNode &parent_node,
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state_id = parent_node.get_state_id();
-    info.creating_operator = parent_op;
+    info.creating_operator = get_op_index_hacked(parent_op);
 }
 
 void SearchNode::reopen(const SearchNode &parent_node,
@@ -79,7 +79,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state_id = parent_node.get_state_id();
-    info.creating_operator = parent_op;
+    info.creating_operator = get_op_index_hacked(parent_op);
 }
 
 // like reopen, except doesn't change status
@@ -92,7 +92,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state_id = parent_node.get_state_id();
-    info.creating_operator = parent_op;
+    info.creating_operator = get_op_index_hacked(parent_op);
 }
 
 void SearchNode::close() {
@@ -107,8 +107,8 @@ void SearchNode::mark_as_dead_end() {
 void SearchNode::dump() const {
     cout << state_id << ": ";
     get_state().dump_fdr();
-    if (info.creating_operator) {
-        cout << " created by " << info.creating_operator->get_name()
+    if (info.creating_operator != -1) {
+        cout << " created by " << g_operators[info.creating_operator].get_name()
              << " from " << info.parent_state_id << endl;
     } else {
         cout << " no parent" << endl;
@@ -131,11 +131,12 @@ void SearchSpace::trace_path(const GlobalState &goal_state,
     assert(path.empty());
     for (;;) {
         const SearchNodeInfo &info = search_node_infos[current_state];
-        const GlobalOperator *op = info.creating_operator;
-        if (op == 0) {
+        if (info.creating_operator == -1) {
             assert(info.parent_state_id == StateID::no_state);
             break;
         }
+        assert(utils::in_bounds(info.creating_operator, g_operators));
+        const GlobalOperator *op = &g_operators[info.creating_operator];
         path.push_back(op);
         current_state = state_registry.lookup_state(info.parent_state_id);
     }
@@ -147,12 +148,13 @@ void SearchSpace::dump() const {
              search_node_infos.begin(&state_registry);
          it != search_node_infos.end(&state_registry); ++it) {
         StateID id = *it;
-        GlobalState s = state_registry.lookup_state(id);
-        const SearchNodeInfo &node_info = search_node_infos[s];
+        GlobalState state = state_registry.lookup_state(id);
+        const SearchNodeInfo &node_info = search_node_infos[state];
         cout << id << ": ";
-        s.dump_fdr();
-        if (node_info.creating_operator && node_info.parent_state_id != StateID::no_state) {
-            cout << " created by " << node_info.creating_operator->get_name()
+        state.dump_fdr();
+        if (node_info.creating_operator != -1 &&
+            node_info.parent_state_id != StateID::no_state) {
+            cout << " created by " << g_operators[node_info.creating_operator].get_name()
                  << " from " << node_info.parent_state_id << endl;
         } else {
             cout << "has no parent" << endl;
