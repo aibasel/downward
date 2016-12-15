@@ -12,11 +12,11 @@ ALIASES = {}
 
 
 ALIASES["seq-sat-fd-autotune-1"] = [
-    "--heuristic", "hff=ff(cost_type=one)",
-    "--heuristic", "hcea=cea(cost_type=normal)",
-    "--heuristic", "hcg=cg(cost_type=plusone)",
-    "--heuristic", "hgc=goalcount(cost_type=normal)",
-    "--heuristic", "hAdd=add(cost_type=normal)",
+    "--heuristic", "hff=ff(transform=adapt_costs(one))",
+    "--heuristic", "hcea=cea()",
+    "--heuristic", "hcg=cg(transform=adapt_costs(plusone))",
+    "--heuristic", "hgc=goalcount()",
+    "--heuristic", "hAdd=add()",
     "--search", """iterated([
 lazy(alt([single(sum([g(),weight(hff,10)])),
           single(sum([g(),weight(hff,10)]),pref_only=true)],
@@ -55,10 +55,10 @@ eager(alt([tiebreaking([sum([g(),weight(hAdd,10)]),hAdd]),
 ],repeat_last=true,continue_on_fail=true)"""]
 
 ALIASES["seq-sat-fd-autotune-2"] = [
-    "--heuristic", "hcea=cea(cost_type=plusone)",
-    "--heuristic", "hcg=cg(cost_type=one)",
-    "--heuristic", "hgc=goalcount(cost_type=plusone)",
-    "--heuristic", "hff=ff(cost_type=normal)",
+    "--heuristic", "hcea=cea(transform=adapt_costs(plusone))",
+    "--heuristic", "hcg=cg(transform=adapt_costs(one))",
+    "--heuristic", "hgc=goalcount(transform=adapt_costs(plusone))",
+    "--heuristic", "hff=ff()",
     "--search", """iterated([
 ehc(hcea,preferred=hcea,preferred_usage=0,cost_type=normal),
 lazy(alt([single(sum([weight(g(),2),weight(hff,3)])),
@@ -107,10 +107,10 @@ ALIASES["seq-sat-lama-2011"] = [
     "--if-non-unit-cost",
     "--heuristic",
     "hlm1,hff1=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=one),cost_type=one)",
+    "                           lm_cost_type=one),transform=adapt_costs(one))",
     "--heuristic",
     "hlm2,hff2=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=plusone),cost_type=plusone)",
+    "                           lm_cost_type=plusone),transform=adapt_costs(plusone))",
     "--search", """iterated([
                      lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
                                  cost_type=one,reopen_closed=false),
@@ -127,8 +127,8 @@ ALIASES["seq-sat-lama-2011"] = [
 
 ALIASES["lama-first"] = [
     "--heuristic",
-    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                         lm_cost_type=one),cost_type=one)",
+    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=one),"
+    "                  transform=adapt_costs(one))",
     "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                cost_type=one,reopen_closed=false)"""]
 
