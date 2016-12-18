@@ -845,13 +845,8 @@ void _add_options_to_parser(OptionParser &parser) {
                             "discard all orderings",
                             "false");
 
-    /* TODO: The following lines overlap strongly with
-       ::add_cost_type_option_to_parser, but the option name is
-       different, so the method cannot be used directly. We could make
-       the option name in ::add_cost_type_option_to_parser settable by
-       the caller, but this doesn't seem worth it since this option
-       should go away anyway once the landmark code is properly
-       cleaned up. */
+    /* TODO: This option should go away anyway once the landmark code
+       is properly cleaned up. */
     vector<string> cost_types;
     cost_types.push_back("NORMAL");
     cost_types.push_back("ONE");

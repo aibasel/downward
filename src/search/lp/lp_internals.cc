@@ -11,6 +11,9 @@
 #pragma GCC diagnostic ignored "-Woverflow"
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#if __GNUC__ >= 6
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#endif
 #endif
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wconstant-conversion"
@@ -23,6 +26,7 @@
 
 #ifdef COIN_HAS_CPX
 #include <OsiCpxSolverInterface.hpp>
+#include <cplex.h>
 #endif
 
 #ifdef COIN_HAS_GRB
@@ -96,8 +100,12 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         break;
     case LPSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
-        lp_solver = new OsiCpxSolverInterface;
-        lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
+        {
+            OsiCpxSolverInterface *cpx_solver = new OsiCpxSolverInterface;
+            CPXsetintparam(cpx_solver->getEnvironmentPtr(), CPX_PARAM_THREADS, 1);
+            cpx_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
+            lp_solver = cpx_solver;
+        }
 #else
         missing_symbol = "COIN_HAS_CPX";
 #endif
