@@ -50,28 +50,11 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
     vector<pair<int, int>> merge_candidates =
         compute_merge_candidates(fts, indices_subset);
 
-    for (size_t i = 0; i < merge_scoring_functions.size(); ++i) {
-        const shared_ptr<MergeScoringFunction> &scoring_function =
-            merge_scoring_functions[i];
+    for (const shared_ptr<MergeScoringFunction> &scoring_function :
+         merge_scoring_functions) {
         vector<double> scores = scoring_function->compute_scores(
             fts, merge_candidates);
-        int old_size = merge_candidates.size();
         merge_candidates = get_remaining_candidates(merge_candidates, scores);
-        int new_size = merge_candidates.size();
-        if (new_size - old_size == 0 &&
-            i != merge_scoring_functions.size() - 1 &&
-            scoring_function->get_name() == "goal relevance" &&
-            merge_scoring_functions[i + 1]->get_name() == "dfp" &&
-            scores.front() == INF) {
-            /*
-              "skip" computation of dfp if no goal relevance pair has been
-              found (which is the case if no candidates have been filtered,
-              because all scores are identical, and the scores must be
-              infinity) to mimic previous MergeDFP behavior.
-            */
-            ++i;
-            continue;
-        }
         if (merge_candidates.size() == 1) {
             break;
         }
