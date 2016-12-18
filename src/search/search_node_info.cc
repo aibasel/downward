@@ -1,7 +1,7 @@
 #include "search_node_info.h"
 
 static const int pointer_bytes = sizeof(void *);
-static const int info_bytes = 2 * sizeof(int) + sizeof(StateID) + pointer_bytes;
+static const int info_bytes = 3 * sizeof(int) + sizeof(StateID);
 static const int padding_bytes = info_bytes % pointer_bytes;
 
 static_assert(

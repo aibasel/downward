@@ -4,35 +4,35 @@ OPTIMAL = False
 
 CONFIGS = [
     # eager_greedy_ff
-    (330, ["--heuristic", "h=ff(cost_type=H_COST_TYPE)",
+    (330, ["--heuristic", "h=ff(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_ff
-    (411, ["--heuristic", "h=ff(cost_type=H_COST_TYPE)",
+    (411, ["--heuristic", "h=ff(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # eager_greedy_cea
-    (213, ["--heuristic", "h=cea(cost_type=H_COST_TYPE)",
+    (213, ["--heuristic", "h=cea(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_cea
-    (57, ["--heuristic", "h=cea(cost_type=H_COST_TYPE)",
+    (57, ["--heuristic", "h=cea(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # eager_greedy_add
-    (204, ["--heuristic", "h=add(cost_type=H_COST_TYPE)",
+    (204, ["--heuristic", "h=add(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # eager_greedy_cg
-    (208, ["--heuristic", "h=cg(cost_type=H_COST_TYPE)",
+    (208, ["--heuristic", "h=cg(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_cg
-    (109, ["--heuristic", "h=cg(cost_type=H_COST_TYPE)",
+    (109, ["--heuristic", "h=cg(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_add
-    (63, ["--heuristic", "h=add(cost_type=H_COST_TYPE)",
+    (63, ["--heuristic", "h=add(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
      ]

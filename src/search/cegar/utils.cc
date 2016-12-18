@@ -1,6 +1,5 @@
 #include "utils.h"
 
-#include "../operator_cost.h"
 #include "../option_parser.h"
 #include "../task_proxy.h"
 #include "../task_tools.h"
@@ -20,7 +19,6 @@ unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
     const shared_ptr<AbstractTask> &task) {
     Options opts;
     opts.set<shared_ptr<AbstractTask>>("transform", task);
-    opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_estimates", false);
     return utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(opts);
 }
