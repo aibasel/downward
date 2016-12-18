@@ -95,8 +95,8 @@ int shrink_and_merge_temporarily(
     int max_states_before_merge,
     int shrink_threshold_before_merge) {
     // Copy the transition systems (distances etc)
-    int copy_ts_index1 = fts.copy(ts_index1);
-    int copy_ts_index2 = fts.copy(ts_index2);
+    int copy_ts_index1 = fts.copy_without_representation(ts_index1);
+    int copy_ts_index2 = fts.copy_without_representation(ts_index2);
     pair<int, int> shrink_sizes =
         compute_shrink_sizes(fts.get_ts(copy_ts_index1).get_size(),
                              fts.get_ts(copy_ts_index2).get_size(),

@@ -48,7 +48,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         scores.push_back(score);
 
         // delete the merge and reset
-        fts.release_copies();
+        fts.delete_last_three_entries();
     }
     return scores;
 }
