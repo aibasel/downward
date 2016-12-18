@@ -24,6 +24,9 @@ public:
         initialized = true;
     }
     void dump_options() const;
+    std::string get_name() const {
+        return name();
+    }
 };
 }
 
