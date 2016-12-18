@@ -80,6 +80,9 @@ def check_cplusplus_style():
     """
     src_files = []
     for root, dirs, files in os.walk(REPO):
+        for ignore_dir in ["builds", "data"]:
+            if ignore_dir in dirs:
+                dirs.remove(ignore_dir)
         src_files.extend([
             os.path.join(root, file)
             for file in files if file.endswith((".h", ".cc"))])

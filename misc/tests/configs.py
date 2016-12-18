@@ -198,13 +198,9 @@ def task_transformation_test_configs():
         "root_task": [
             "--search", "lazy_greedy(ff())"],
         "root_task_no_transform": [
-            "--search", "lazy_greedy(ff(transform=no_transform))"],
+            "--search", "lazy_greedy(ff(transform=no_transform()))"],
         "adapt_costs": [
             "--search", "lazy_greedy(ff(transform=adapt_costs(cost_type=plusone)))"],
-        "adapt_adapted_costs": [
-            "--search",
-            "lazy_greedy(ff(transform=adapt_costs(cost_type=plusone,"
-                           "transform=adapt_costs(cost_type=plusone))))"],
     }
 
 def regression_test_configs():
