@@ -5,8 +5,6 @@
 
 #include "../task_proxy.h"
 
-#include "../utils/memory.h"
-
 #include <algorithm>
 #include <iostream>
 #include <numeric>
@@ -32,12 +30,6 @@ MergeAndShrinkRepresentationLeaf::MergeAndShrinkRepresentationLeaf(
       var_id(var_id),
       lookup_table(domain_size) {
     iota(lookup_table.begin(), lookup_table.end(), 0);
-}
-
-MergeAndShrinkRepresentationLeaf::MergeAndShrinkRepresentationLeaf(const MergeAndShrinkRepresentationLeaf *other)
-    : MergeAndShrinkRepresentation(other->domain_size),
-      var_id(other->var_id),
-      lookup_table(other->lookup_table) {
 }
 
 void MergeAndShrinkRepresentationLeaf::set_distances(
@@ -100,26 +92,6 @@ void MergeAndShrinkRepresentationMerge::set_distances(
                 entry = distances.get_goal_distance(entry);
             }
         }
-    }
-}
-
-
-MergeAndShrinkRepresentationMerge::MergeAndShrinkRepresentationMerge(const MergeAndShrinkRepresentationMerge *other)
-    : MergeAndShrinkRepresentation(other->domain_size),
-      lookup_table(other->lookup_table) {
-    if (dynamic_cast<MergeAndShrinkRepresentationLeaf *>(other->left_child.get())) {
-        left_child = utils::make_unique_ptr<MergeAndShrinkRepresentationLeaf>(
-            dynamic_cast<MergeAndShrinkRepresentationLeaf *>(other->left_child.get()));
-    } else {
-        left_child = utils::make_unique_ptr<MergeAndShrinkRepresentationMerge>(
-            dynamic_cast<MergeAndShrinkRepresentationMerge *>(other->left_child.get()));
-    }
-    if (dynamic_cast<MergeAndShrinkRepresentationLeaf *>(other->right_child.get())) {
-        right_child = utils::make_unique_ptr<MergeAndShrinkRepresentationLeaf>(
-            dynamic_cast<MergeAndShrinkRepresentationLeaf *>(other->right_child.get()));
-    } else {
-        right_child = utils::make_unique_ptr<MergeAndShrinkRepresentationMerge>(
-            dynamic_cast<MergeAndShrinkRepresentationMerge *>(other->right_child.get()));
     }
 }
 
