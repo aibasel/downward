@@ -245,6 +245,9 @@ void read_everything(istream &in) {
     read_operators(in);
     read_axioms(in);
 
+    /* TODO: We should be stricter here and verify that we
+       have reached the end of "in". */
+
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
     cout << "packing state variables..." << flush;
