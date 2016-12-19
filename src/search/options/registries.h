@@ -54,7 +54,7 @@ private:
 
 /*
   The plugin type info class contains meta-information for a given
-  type of plugins (e.g. "SearchEngine" or "MergeStrategy").
+  type of plugins (e.g. "SearchEngine" or "MergeStrategyFactory").
 */
 class PluginTypeInfo {
     std::type_index type;

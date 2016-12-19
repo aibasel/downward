@@ -11,6 +11,8 @@
 #include "../open_lists/standard_scalar_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 
+#include "../algorithms/ordered_set.h"
+
 #include "../utils/system.h"
 
 using namespace std;
@@ -68,13 +70,17 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       heuristic(opts.get<Heuristic *>("h")),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      current_eval_context(g_initial_state(), &statistics),
+      current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
     heuristics.insert(preferred_operator_heuristics.begin(),
                       preferred_operator_heuristics.end());
     heuristics.insert(heuristic);
+    const GlobalState &initial_state = state_registry.get_initial_state();
+    for (Heuristic *heuristic : heuristics) {
+        heuristic->notify_initial_state(initial_state);
+    }
     use_preferred = find(preferred_operator_heuristics.begin(),
                          preferred_operator_heuristics.end(), heuristic) !=
                     preferred_operator_heuristics.end();
@@ -89,7 +95,7 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 void EnforcedHillClimbingSearch::reach_state(
     const GlobalState &parent, const GlobalOperator &op, const GlobalState &state) {
     for (Heuristic *heur : heuristics) {
-        heur->reach_state(parent, op, state);
+        heur->notify_state_transition(parent, op, state);
     }
 }
 
@@ -121,55 +127,49 @@ void EnforcedHillClimbingSearch::initialize() {
     current_phase_start_g = 0;
 }
 
-vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
-    EvaluationContext &eval_context) {
-    vector<const GlobalOperator *> ops;
-    if (!use_preferred || preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
-        g_successor_generator->generate_applicable_ops(eval_context.get_state(), ops);
-
-        // Mark preferred operators.
-        if (use_preferred &&
-            preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
-            for (const GlobalOperator *op : ops) {
-                op->unmark();
-            }
-            for (Heuristic *pref_heuristic : preferred_operator_heuristics) {
-                const vector<const GlobalOperator *> &pref_ops =
-                    eval_context.get_preferred_operators(pref_heuristic);
-                for (const GlobalOperator *op : pref_ops) {
-                    op->mark();
-                }
-            }
-        }
-    } else {
-        for (Heuristic *pref_heuristic : preferred_operator_heuristics) {
-            const vector<const GlobalOperator *> &pref_ops =
-                eval_context.get_preferred_operators(pref_heuristic);
-            for (const GlobalOperator *op : pref_ops) {
-                if (!op->is_marked()) {
-                    op->mark();
-                    ops.push_back(op);
-                }
-            }
-        }
-    }
-    statistics.inc_expanded();
-    statistics.inc_generated_ops(ops.size());
-    return ops;
+void EnforcedHillClimbingSearch::insert_successor_into_open_list(
+    const EvaluationContext &eval_context,
+    int parent_g,
+    const GlobalOperator *op,
+    bool preferred) {
+    int succ_g = parent_g + get_adjusted_cost(*op);
+    EdgeOpenListEntry entry = make_pair(
+        eval_context.get_state().get_id(), op);
+    EvaluationContext new_eval_context(
+        eval_context.get_cache(), succ_g, preferred, &statistics);
+    open_list->insert(new_eval_context, entry);
+    statistics.inc_generated_ops();
 }
 
 void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
-    for (const GlobalOperator *op : get_successors(eval_context)) {
-        int succ_g = node.get_g() + get_adjusted_cost(*op);
-        EdgeOpenListEntry entry = make_pair(
-            eval_context.get_state().get_id(), op);
-        EvaluationContext new_eval_context(
-            eval_context.get_cache(), succ_g, op->is_marked(), &statistics);
-        open_list->insert(new_eval_context, entry);
-        op->unmark();
+    int node_g = node.get_g();
+
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    if (use_preferred) {
+        preferred_operators = collect_preferred_operators(
+            eval_context, preferred_operator_heuristics);
     }
 
+    if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
+        for (const GlobalOperator *op : preferred_operators) {
+            insert_successor_into_open_list(
+                eval_context, node_g, op, preferred_operators.contains(op));
+        }
+    } else {
+        /* The successor ranking implied by RANK_BY_PREFERRED is done
+           by the open list. */
+        vector<const GlobalOperator *> successor_operators;
+        g_successor_generator->generate_applicable_ops(
+            eval_context.get_state(), successor_operators);
+        for (const GlobalOperator *op : successor_operators) {
+            bool preferred = use_preferred && preferred_operators.contains(op);
+            insert_successor_into_open_list(
+                eval_context, node_g, op, preferred);
+        }
+    }
+
+    statistics.inc_expanded();
     node.close();
 }
 
@@ -191,7 +191,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         StateID parent_state_id = entry.first;
         const GlobalOperator *last_op = entry.second;
 
-        GlobalState parent_state = g_state_registry->lookup_state(parent_state_id);
+        GlobalState parent_state = state_registry.lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         // d: distance from initial node in this EHC phase
@@ -201,7 +201,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         if (parent_node.get_real_g() + last_op->get_cost() >= bound)
             continue;
 
-        GlobalState state = g_state_registry->get_successor_state(parent_state, *last_op);
+        GlobalState state = state_registry.get_successor_state(parent_state, *last_op);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state);

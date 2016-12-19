@@ -40,7 +40,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
 }
 
 void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
-    TaskProxy task_proxy, const PatternDatabase &pdb,
+    const TaskProxy &task_proxy, const PatternDatabase &pdb,
     PatternCollection &candidate_patterns) {
     const CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const Pattern &pattern = pdb.get_pattern();
@@ -73,7 +73,7 @@ void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
 }
 
 size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
-    TaskProxy task_proxy, set<Pattern> &generated_patterns,
+    const TaskProxy &task_proxy, set<Pattern> &generated_patterns,
     PatternCollection &new_candidates, PDBCollection &candidate_pdbs) const {
     /*
       For the new candidate patterns check whether they already have been
@@ -94,7 +94,7 @@ size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
 }
 
 void PatternCollectionGeneratorHillclimbing::sample_states(
-    TaskProxy task_proxy, const SuccessorGenerator &successor_generator,
+    const TaskProxy &task_proxy, const SuccessorGenerator &successor_generator,
     vector<State> &samples, double average_operator_cost) {
     int init_h = current_pdbs->get_value(
         task_proxy.get_initial_state());
@@ -112,7 +112,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
     }
 }
 
-std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
+pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
     vector<State> &samples, PDBCollection &candidate_pdbs) {
     /*
       TODO: The original implementation by Haslum et al. uses A* to compute
@@ -212,7 +212,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
 }
 
 void PatternCollectionGeneratorHillclimbing::hill_climbing(
-    TaskProxy task_proxy,
+    const TaskProxy &task_proxy,
     const SuccessorGenerator &successor_generator,
     double average_operator_cost,
     PatternCollection &initial_candidate_patterns) {
@@ -298,9 +298,10 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     hill_climbing_timer = nullptr;
 }
 
-PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(shared_ptr<AbstractTask> task) {
+PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
-    SuccessorGenerator successor_generator(task);
+    SuccessorGenerator successor_generator(task_proxy);
 
     utils::Timer timer;
     double average_operator_cost = get_average_operator_cost(task_proxy);
@@ -313,7 +314,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }
     current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
-        task, initial_pattern_collection);
+        task_proxy, initial_pattern_collection);
 
     State initial_state = task_proxy.get_initial_state();
     if (!current_pdbs->is_dead_end(initial_state)) {
@@ -512,13 +513,10 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
 
     shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
         make_shared<PatternCollectionGeneratorHillclimbing>(opts);
-    shared_ptr<AbstractTask> task = get_task_from_options(opts);
 
     Options heuristic_opts;
     heuristic_opts.set<shared_ptr<AbstractTask>>(
-        "transform", task);
-    heuristic_opts.set<int>(
-        "cost_type", NORMAL);
+        "transform", opts.get<shared_ptr<AbstractTask>>("transform"));
     heuristic_opts.set<bool>(
         "cache_estimates", opts.get<bool>("cache_estimates"));
     heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>(

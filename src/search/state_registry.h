@@ -1,8 +1,9 @@
 #ifndef STATE_REGISTRY_H
 #define STATE_REGISTRY_H
 
+#include "abstract_task.h"
+#include "axioms.h"
 #include "global_state.h"
-#include "globals.h"
 #include "int_packer.h"
 #include "segmented_vector.h"
 #include "state_id.h"
@@ -102,26 +103,34 @@ class PerStateInformationBase;
 class StateRegistry {
     struct StateIDSemanticHash {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
-        StateIDSemanticHash(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool(state_data_pool_) {
+        int state_size;
+        StateIDSemanticHash(
+            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            int state_size)
+            : state_data_pool(state_data_pool),
+              state_size(state_size) {
         }
+
         size_t operator()(StateID id) const {
             return utils::hash_sequence(state_data_pool[id.value],
-                                        g_state_packer->get_num_bins());
+                                        state_size);
         }
     };
 
     struct StateIDSemanticEqual {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
-        StateIDSemanticEqual(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool(state_data_pool_) {
+        int state_size;
+        StateIDSemanticEqual(
+            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            int state_size)
+            : state_data_pool(state_data_pool),
+              state_size(state_size) {
         }
 
         bool operator()(StateID lhs, StateID rhs) const {
-            size_t size = g_state_packer->get_num_bins();
             const PackedStateBin *lhs_data = state_data_pool[lhs.value];
             const PackedStateBin *rhs_data = state_data_pool[rhs.value];
-            return std::equal(lhs_data, lhs_data + size, rhs_data);
+            return std::equal(lhs_data, lhs_data + state_size, rhs_data);
         }
     };
 
@@ -134,14 +143,46 @@ class StateRegistry {
                                StateIDSemanticHash,
                                StateIDSemanticEqual> StateIDSet;
 
+    /* TODO: The state registry still doesn't use the task interface completely.
+             Fixing this is part of issue509. */
+    /* TODO: AbstractTask is an implementation detail that is not supposed to
+             leak. In the long run, we should store a TaskProxy here. */
+    const AbstractTask &task;
+
+    /* TODO: When we switch StateRegistry to the task interface, the next three
+             members should come from the task. */
+    const IntPacker &state_packer;
+    AxiomEvaluator &axiom_evaluator;
+    const std::vector<int> &initial_state_data;
+    const int num_variables;
+
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
+
     GlobalState *cached_initial_state;
     mutable std::set<PerStateInformationBase *> subscribers;
+
     StateID insert_id_or_pop_state();
+    int get_bins_per_state() const;
 public:
-    StateRegistry();
+    StateRegistry(
+        const AbstractTask &task, const IntPacker &state_packer,
+        AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
     ~StateRegistry();
+
+    /* TODO: Ideally, this should return a TaskProxy. (See comment above the
+             declaration of task.) */
+    const AbstractTask &get_task() const {
+        return task;
+    }
+
+    int get_num_variables() const {
+        return num_variables;
+    }
+
+    int get_state_value(const PackedStateBin *buffer, int var) const {
+        return state_packer.get(buffer, var);
+    }
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
@@ -168,6 +209,8 @@ public:
     size_t size() const {
         return registered_states.size();
     }
+
+    int get_state_size_in_bytes() const;
 
     /*
       Remembers the given PerStateInformation. If this StateRegistry is

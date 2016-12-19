@@ -50,10 +50,6 @@ RefinementHierarchy::RefinementHierarchy()
     : root(new Node()) {
 }
 
-RefinementHierarchy::RefinementHierarchy(RefinementHierarchy &&other)
-    : root(move(other.root)) {
-}
-
 Node *RefinementHierarchy::get_node(const State &state) const {
     assert(root);
     Node *current = root.get();

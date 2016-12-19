@@ -15,10 +15,9 @@ using namespace std;
 using utils::ExitCode;
 
 
-VariableOrderFinder::VariableOrderFinder(const shared_ptr<AbstractTask> task,
+VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
                                          VariableOrderType variable_order_type)
-    : task(task),
-      task_proxy(*task),
+    : task_proxy(task_proxy),
       variable_order_type(variable_order_type) {
     int var_count = task_proxy.get_variables().size();
     if (variable_order_type == REVERSE_LEVEL) {
@@ -101,7 +100,7 @@ int VariableOrderFinder::next() {
     utils::exit_with(ExitCode::INPUT_ERROR);
 }
 
-void VariableOrderFinder::dump() const {
+void dump_variable_order_type(VariableOrderType variable_order_type) {
     cout << "Variable order type: ";
     switch (variable_order_type) {
     case CG_GOAL_LEVEL:

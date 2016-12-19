@@ -1,10 +1,11 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
-#include "operator_cost.h"
 #include "per_state_information.h"
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
+
+#include "algorithms/ordered_set.h"
 
 #include <memory>
 #include <vector>
@@ -20,13 +21,18 @@ class Options;
 
 class Heuristic : public ScalarEvaluator {
     struct HEntry {
+        /* dirty is conceptually a bool, but Visual C++ does not support
+           packing ints and bools together in a bitfield. */
         int h : 31;
-        bool dirty : 1;
-        HEntry(int h, bool dirty) : h(h), dirty(dirty) {}
+        unsigned int dirty : 1;
+
+        HEntry(int h, bool dirty)
+            : h(h), dirty(dirty) {
+        }
     };
+    static_assert(sizeof(HEntry) == 4, "HEntry has unexpected size.");
 
     std::string description;
-    bool initialized;
 
     /*
       TODO: We might want to get rid of the preferred_operators
@@ -36,10 +42,11 @@ class Heuristic : public ScalarEvaluator {
       compute_heuristic return an EvaluationResult object.
 
       If we do this, we should be mindful of the cost incurred by not
-      being able to reuse a vector from one iteration to the next, but
-      this seems to be the only potential downside.
+      being able to reuse the data structure from one iteration to the
+      next, but this seems to be the only potential downside.
     */
-    std::vector<const GlobalOperator *> preferred_operators;
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+
 protected:
     /*
       Cache for saving h values
@@ -54,36 +61,39 @@ protected:
     const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
-    OperatorCost cost_type;
+
     enum {DEAD_END = -1, NO_VALUE = -2};
-    virtual void initialize() {}
-    bool is_initialized() const {return initialized; }
+
     // TODO: Call with State directly once all heuristics support it.
     virtual int compute_heuristic(const GlobalState &state) = 0;
-    // Usage note: It's OK to set the same operator as preferred
-    // multiple times -- it will still only appear in the list of
-    // preferred operators for this heuristic once.
+
+    /*
+      Usage note: Marking the same operator as preferred multiple times
+      is OK -- it will only appear once in the list of preferred
+      operators for this heuristic.
+    */
     // TODO: Make private once all heuristics use the TaskProxy class.
     void set_preferred(const GlobalOperator *op);
-    void set_preferred(OperatorProxy op);
-    // TODO: Remove once all heuristics use the TaskProxy class.
-    int get_adjusted_cost(const GlobalOperator &op) const;
-    // TODO: Make private once all heuristics use the TaskProxy class.
+    void set_preferred(const OperatorProxy &op);
+
+    /* TODO: Make private and use State instead of GlobalState once all
+       heuristics use the TaskProxy class. */
     State convert_global_state(const GlobalState &global_state) const;
 
 public:
-    Heuristic(const options::Options &options);
+    explicit Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
-    virtual bool reach_state(
+    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
+    }
+
+    virtual bool notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state);
 
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
         hset.insert(this);
     }
-
-    OperatorCost get_cost_type() const {return cost_type; }
 
     static void add_options_to_parser(options::OptionParser &parser);
     static options::Options default_options();

@@ -10,7 +10,7 @@ namespace cegar {
 using Bitset = utils::DynamicBitset<unsigned short>;
 
 /*
-  For each variable store a subset of values.
+  Represent a Cartesian set: for each variable store a subset of values.
 
   The underlying data structure is a vector of bitsets.
 */
@@ -19,7 +19,6 @@ class Domains {
 
 public:
     explicit Domains(const std::vector<int> &domain_sizes);
-    ~Domains() = default;
 
     void add(int var, int value);
     void set_single_value(int var, int value);

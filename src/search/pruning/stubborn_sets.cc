@@ -10,7 +10,7 @@ using namespace std;
 
 namespace stubborn_sets {
 struct SortFactsByVariable {
-    bool operator()(const Fact &lhs, const Fact &rhs) {
+    bool operator()(const FactPair &lhs, const FactPair &rhs) {
         return lhs.var < rhs.var;
     }
 };
@@ -24,8 +24,8 @@ static inline int get_op_index(const GlobalOperator *op) {
 }
 
 // Relies on both fact sets being sorted by variable.
-bool contain_conflicting_fact(const vector<Fact> &facts1,
-                              const vector<Fact> &facts2) {
+bool contain_conflicting_fact(const vector<FactPair> &facts1,
+                              const vector<FactPair> &facts2) {
     auto facts1_it = facts1.begin();
     auto facts2_it = facts2.begin();
     while (facts1_it != facts1.end() && facts2_it != facts2.end()) {
@@ -44,8 +44,8 @@ bool contain_conflicting_fact(const vector<Fact> &facts1,
 }
 
 template<typename T>
-vector<Fact> get_sorted_fact_set(const vector<T> &facts) {
-    vector<Fact> result;
+vector<FactPair> get_sorted_fact_set(const vector<T> &facts) {
+    vector<FactPair> result;
     for (const T &fact : facts) {
         result.emplace_back(fact.var, fact.val);
     }

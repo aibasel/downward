@@ -9,7 +9,6 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
-#include <utility>
 #include <vector>
 
 
@@ -43,13 +42,12 @@ class VariablesProxy;
 
   Example code for creating a new task object and accessing its operators:
 
-      TaskProxy task = new TaskProxy(new RootTask());
+      TaskProxy task_proxy(*g_root_task());
       for (OperatorProxy op : task->get_operators())
           cout << op.get_name() << endl;
 
-  Since proxy classes only store a reference to the AbstractTask and some
-  indices, they can be copied cheaply and be passed by value instead of
-  by reference.
+  Since proxy classes only store a reference to the AbstractTask and
+  some indices, they can be copied cheaply.
 
   In addition to the lightweight proxy classes, the task interface
   consists of the State class, which is used to hold state information
@@ -57,18 +55,20 @@ class VariablesProxy;
   proxy classes, but since State objects own the state data they should
   be passed by reference.
 
-  For now, only the heuristics work with the TaskProxy classes and hence
-  potentially on a transformed view of the original task. The search
-  algorithms keep working on the original unmodified task using the
-  GlobalState, GlobalOperator etc. classes. We therefore need to do two
-  conversions: converting GlobalStates to State objects for the heuristic
-  computation and converting OperatorProxy objects used by the heuristic
-  to GlobalOperators for reporting preferred operators. These conversions
-  are done by the Heuristic base class. Until all heuristics use the new
-  task interface, heuristics can use Heuristic::convert_global_state() to
-  convert GlobalStates to States. Afterwards, the heuristics are passed a
-  State object directly. To mark operators as preferred, heuristics can
-  use Heuristic::set_preferred() which currently works for both
+  For now, only the heuristics work with the TaskProxy classes and
+  hence potentially on a transformed view of the original task. The
+  search algorithms keep working on the original unmodified task using
+  the GlobalState, GlobalOperator etc. classes. We therefore need to do
+  two conversions between the search and the heuristics: converting
+  GlobalStates to State objects for the heuristic computation and
+  converting OperatorProxy objects used by the heuristic to
+  GlobalOperators for reporting preferred operators. These conversions
+  are done by the Heuristic base class. Until all heuristics use the
+  new task interface, heuristics can use
+  Heuristic::convert_global_state() to convert GlobalStates to States.
+  Afterwards, the heuristics are passed a State object directly. To
+  mark operators as preferred, heuristics can use
+  Heuristic::set_preferred() which currently works for both
   OperatorProxy and GlobalOperator objects.
 
       int FantasyHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -80,13 +80,20 @@ class VariablesProxy;
           return sum;
       }
 
+  There is one additional conversion: heuristics may need to convert
+  states between different tasks. For this they can use
+  TaskProxy::convert_ancestor_state() which takes a state of the
+  ancestor task and returns the corresponding state of the descendent
+  task.
+
   For helper functions that work on task related objects, please see the
   task_tools.h module.
 */
 
 
-// Basic iterator support for proxy classes.
-
+/*
+  Basic iterator support for proxy collections.
+*/
 template<class ProxyCollection>
 class ProxyIterator {
     const ProxyCollection &collection;
@@ -106,6 +113,7 @@ public:
     }
 
     bool operator==(const ProxyIterator &other) const {
+        assert(&collection == &other.collection);
         return pos == other.pos;
     }
 
@@ -127,10 +135,10 @@ inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
 
 class FactProxy {
     const AbstractTask *task;
-    Fact fact;
+    FactPair fact;
 public:
     FactProxy(const AbstractTask &task, int var_id, int value);
-    FactProxy(const AbstractTask &task, const Fact &fact);
+    FactProxy(const AbstractTask &task, const FactPair &fact);
     ~FactProxy() = default;
 
     VariableProxy get_variable() const;
@@ -139,7 +147,11 @@ public:
         return fact.value;
     }
 
-    const std::string &get_name() const {
+    FactPair get_pair() const {
+        return fact;
+    }
+
+    std::string get_name() const {
         return task->get_fact_name(fact);
     }
 
@@ -198,6 +210,10 @@ public:
   Proxy class for the collection of all facts of a task.
 
   We don't implement size() because it would not be constant-time.
+
+  FactsProxy supports iteration, e.g. for range-based for loops. This
+  iterates over all facts in order of increasing variable id, and in
+  order of increasing value for each variable.
 */
 class FactsProxy {
     const AbstractTask *task;
@@ -255,7 +271,7 @@ public:
         return id;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_variable_name(id);
     }
 
@@ -266,6 +282,27 @@ public:
     FactProxy get_fact(int index) const {
         assert(index < get_domain_size());
         return FactProxy(*task, id, index);
+    }
+
+    bool is_derived() const {
+        int axiom_layer = task->get_variable_axiom_layer(id);
+        return axiom_layer != -1;
+    }
+
+    int get_axiom_layer() const {
+        int axiom_layer = task->get_variable_axiom_layer(id);
+        /*
+          This should only be called for derived variables.
+          Non-derived variables have axiom_layer == -1.
+          Use var.is_derived() to check.
+        */
+        assert(axiom_layer >= 0);
+        return axiom_layer;
+    }
+
+    int get_default_axiom_value() const {
+        assert(is_derived());
+        return task->get_variable_default_axiom_value(id);
     }
 };
 
@@ -411,7 +448,7 @@ public:
         return is_an_axiom;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_operator_name(index, is_an_axiom);
     }
 
@@ -542,6 +579,12 @@ public:
         return (*this)[var.get_id()];
     }
 
+    inline TaskProxy get_task() const;
+
+    const std::vector<int> &get_values() const {
+        return values;
+    }
+
     State get_successor(OperatorProxy op) const {
         if (task->get_num_axioms() > 0) {
             ABORT("State::apply currently does not support axioms.");
@@ -557,6 +600,9 @@ public:
         }
         return State(*task, std::move(new_values));
     }
+
+    void dump_pddl() const;
+    void dump_fdr() const;
 };
 
 
@@ -597,27 +643,42 @@ public:
         return State(*task, task->get_initial_state_values());
     }
 
-    State convert_global_state(const GlobalState &global_state) const {
-        return State(*task, task->get_state_values(global_state));
+    /*
+      Convert a state from an ancestor task into a state of this task.
+      The given state has to belong to a task that is an ancestor of
+      this task in the sense that this task is the result of a sequence
+      of task transformations on the ancestor task. If this is not the
+      case, the function aborts.
+    */
+    State convert_ancestor_state(const State &ancestor_state) const {
+        TaskProxy ancestor_task_proxy = ancestor_state.get_task();
+        // Create a copy of the state values for the new state.
+        std::vector<int> state_values = ancestor_state.get_values();
+        task->convert_state_values(state_values, ancestor_task_proxy.task);
+        return State(*task, std::move(state_values));
     }
 
     const CausalGraph &get_causal_graph() const;
 };
 
 
-inline FactProxy::FactProxy(const AbstractTask &task, const Fact &fact)
+inline FactProxy::FactProxy(const AbstractTask &task, const FactPair &fact)
     : task(&task), fact(fact) {
     assert(fact.var >= 0 && fact.var < task.get_num_variables());
     assert(fact.value >= 0 && fact.value < get_variable().get_domain_size());
 }
 
 inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
-    : FactProxy(task, Fact(var_id, value)) {
+    : FactProxy(task, FactPair(var_id, value)) {
 }
 
 
 inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, fact.var);
+}
+
+inline TaskProxy State::get_task() const {
+    return TaskProxy(*task);
 }
 
 inline bool does_fire(EffectProxy effect, const State &state) {

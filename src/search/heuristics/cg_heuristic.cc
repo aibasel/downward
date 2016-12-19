@@ -21,11 +21,19 @@ namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
       cache(new CGCache(task_proxy)), cache_hits(0), cache_misses(0),
-      helpful_transition_extraction_counter(0) {
+      helpful_transition_extraction_counter(0),
+      min_action_cost(get_min_operator_cost(task_proxy)) {
+    cout << "Initializing causal graph heuristic..." << endl;
+
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
     for (size_t i = 0; i < num_vars; ++i)
         prio_queues.push_back(new AdaptiveQueue<ValueNode *>);
+
+    function<bool(int, int)> pruning_condition =
+        [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
+    DTGFactory factory(task_proxy, false, pruning_condition);
+    transition_graphs = factory.build_dtgs();
 }
 
 CGHeuristic::~CGHeuristic() {
@@ -37,19 +45,6 @@ CGHeuristic::~CGHeuristic() {
 
 bool CGHeuristic::dead_ends_are_reliable() const {
     return false;
-}
-
-void CGHeuristic::initialize() {
-    cout << "Initializing causal graph heuristic..." << endl;
-    function<bool(int, int)> pruning_condition =
-        [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
-    DTGFactory factory(task_proxy, false, pruning_condition);
-    transition_graphs = factory.build_dtgs();
-
-    min_action_cost = numeric_limits<int>::max();
-    for (OperatorProxy op : task_proxy.get_operators())
-        if (min_action_cost > op.get_cost())
-            min_action_cost = op.get_cost();
 }
 
 int CGHeuristic::compute_heuristic(const GlobalState &g_state) {
@@ -114,8 +109,8 @@ int CGHeuristic::get_transition_cost(const State &state,
         start->reached_by = 0;
         start->children_state.resize(dtg->local_to_global_child.size());
         for (size_t i = 0; i < dtg->local_to_global_child.size(); ++i) {
-            int start_val = state[dtg->local_to_global_child[i]].get_value();
-            start->children_state[i] = start_val;
+            start->children_state[i] =
+                state[dtg->local_to_global_child[i]].get_value();
         }
 
         // Initialize Heap for Dijkstra's algorithm.

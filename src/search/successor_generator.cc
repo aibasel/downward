@@ -140,9 +140,8 @@ void GeneratorEmpty::generate_applicable_ops(
     const GlobalState &, vector<const GlobalOperator *> &) const {
 }
 
-SuccessorGenerator::SuccessorGenerator(const shared_ptr<AbstractTask> task)
-    : task(task),
-      task_proxy(*task) {
+SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
+    : task_proxy(task_proxy) {
     OperatorsProxy operators = task_proxy.get_operators();
     // We need the iterators to conditions to be stable:
     conditions.reserve(operators.size());
@@ -248,6 +247,6 @@ void SuccessorGenerator::generate_applicable_ops(
 
 
 void SuccessorGenerator::generate_applicable_ops(
-    const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) const {
+    const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
 }

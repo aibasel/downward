@@ -33,11 +33,6 @@ extern std::unordered_set<FactProxy> get_relaxed_possible_before(
     const TaskProxy &task, const FactProxy &fact);
 
 extern std::vector<int> get_domain_sizes(const TaskProxy &task);
-extern std::vector<int> get_operator_costs(const TaskProxy &task);
-
-extern int get_pre(const OperatorProxy &op, int var_id);
-extern int get_eff(const OperatorProxy &op, int var_id);
-extern int get_post(const OperatorProxy &op, int var_id);
 }
 
 /*
@@ -49,10 +44,8 @@ namespace std {
 template<>
 struct hash<FactProxy> {
     size_t operator()(const FactProxy &fact) const {
-        std::pair<int, int> raw_fact = make_pair(
-            fact.get_variable().get_id(), fact.get_value());
-        std::hash<std::pair<int, int>> hasher;
-        return hasher(raw_fact);
+        std::hash<FactPair> hasher;
+        return hasher(fact.get_pair());
     }
 };
 }
