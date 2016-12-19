@@ -99,7 +99,6 @@ inline FactPair find_unsatisfied_condition(
     }
     return FactPair::no_fact;
 }
-
 }
 
 #endif
