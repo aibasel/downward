@@ -82,7 +82,7 @@ void PatternCollectionGeneratorSystematic::compute_connection_points(
 
       A variable is a connection point if it satisfies the following criteria:
       1. We can get from the pattern to the connection point via
-         an (eff, pre) or (eff, eff) arc in the causal graph.
+         an (pre, eff) or (eff, eff) arc in the causal graph.
       2. It is not part of pattern.
       3. We *cannot* get from the pattern to the connection point
          via an (eff, pre) arc.
@@ -95,8 +95,8 @@ void PatternCollectionGeneratorSystematic::compute_connection_points(
 
     // Handle rule 1.
     for (int var : pattern) {
-        const vector<int> &pred = cg.get_predecessors(var);
-        candidates.insert(pred.begin(), pred.end());
+        const vector<int> &succ = cg.get_successors(var);
+        candidates.insert(succ.begin(), succ.end());
     }
 
     // Handle rules 2 and 3.
