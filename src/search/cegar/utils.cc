@@ -19,7 +19,6 @@ unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
     const shared_ptr<AbstractTask> &task) {
     Options opts;
     opts.set<shared_ptr<AbstractTask>>("transform", task);
-    opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_estimates", false);
     return utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(opts);
 }
@@ -90,35 +89,5 @@ vector<int> get_domain_sizes(const TaskProxy &task) {
     for (VariableProxy var : task.get_variables())
         domain_sizes.push_back(var.get_domain_size());
     return domain_sizes;
-}
-
-vector<int> get_operator_costs(const TaskProxy &task) {
-    vector<int> costs;
-    for (OperatorProxy op : task.get_operators())
-        costs.push_back(op.get_cost());
-    return costs;
-}
-
-int get_pre(const OperatorProxy &op, int var_id) {
-    for (FactProxy precondition : op.get_preconditions()) {
-        if (precondition.get_variable().get_id() == var_id)
-            return precondition.get_value();
-    }
-    return UNDEFINED_VALUE;
-}
-
-int get_eff(const OperatorProxy &op, int var_id) {
-    for (EffectProxy effect : op.get_effects()) {
-        if (effect.get_fact().get_variable().get_id() == var_id)
-            return effect.get_fact().get_value();
-    }
-    return UNDEFINED_VALUE;
-}
-
-int get_post(const OperatorProxy &op, int var_id) {
-    int eff = get_eff(op, var_id);
-    if (eff != UNDEFINED_VALUE)
-        return eff;
-    return get_pre(op, var_id);
 }
 }

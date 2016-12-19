@@ -68,8 +68,6 @@ void GlobalOperator::read_pre_post(istream &in) {
 }
 
 GlobalOperator::GlobalOperator(istream &in, bool axiom) {
-    marked = false;
-
     is_an_axiom = axiom;
     if (!is_an_axiom) {
         check_magic(in, "begin_operator");
@@ -128,4 +126,10 @@ void GlobalOperator::dump() const {
         cout << "]";
     }
     cout << endl;
+}
+
+int get_op_index_hacked(const GlobalOperator *op) {
+    int op_index = op - &*g_operators.begin();
+    assert(op_index >= 0 && op_index < static_cast<int>(g_operators.size()));
+    return op_index;
 }

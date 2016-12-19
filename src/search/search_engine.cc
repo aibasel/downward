@@ -2,9 +2,10 @@
 
 #include "evaluation_context.h"
 #include "globals.h"
-#include "operator_cost.h"
 #include "option_parser.h"
 #include "plugin.h"
+
+#include "algorithms/ordered_set.h"
 
 #include "utils/countdown_timer.h"
 #include "utils/system.h"
@@ -21,8 +22,11 @@ using utils::ExitCode;
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
-      search_space(OperatorCost(opts.get_enum("cost_type"))),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))),
+      state_registry(
+          *g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
+      search_space(state_registry,
+                   static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
@@ -35,6 +39,8 @@ SearchEngine::~SearchEngine() {
 }
 
 void SearchEngine::print_statistics() const {
+    cout << "Bytes per state: "
+         << state_registry.get_state_size_in_bytes() << endl;
 }
 
 bool SearchEngine::found_solution() const {
@@ -66,6 +72,7 @@ void SearchEngine::search() {
             break;
         }
     }
+    // TODO: Revise when and which search times are logged.
     cout << "Actual search time: " << timer
          << " [t=" << utils::g_timer << "]" << endl;
 }
@@ -126,3 +133,24 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
     "SearchEngine",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
+
+
+algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+    EvaluationContext &eval_context,
+    const vector<Heuristic *> &preferred_operator_heuristics) {
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    for (Heuristic *heuristic : preferred_operator_heuristics) {
+        /*
+          Unreliable heuristics might consider solvable states as dead
+          ends. We only want preferred operators from finite-value
+          heuristics.
+        */
+        if (!eval_context.is_heuristic_infinite(heuristic)) {
+            for (const GlobalOperator *op :
+                 eval_context.get_preferred_operators(heuristic)) {
+                preferred_operators.insert(op);
+            }
+        }
+    }
+    return preferred_operators;
+}

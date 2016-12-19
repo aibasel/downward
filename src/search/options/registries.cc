@@ -13,14 +13,19 @@ PluginTypeRegistry *PluginTypeRegistry::instance() {
 
 void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
     if (registry.count(info.get_type())) {
-        std::cerr << "duplicate type in registry: "
-                  << info.get_type().name() << std::endl;
+        cerr << "duplicate type in registry: "
+             << info.get_type().name() << endl;
         utils::exit_with(ExitCode::CRITICAL_ERROR);
     }
     registry.insert(make_pair(info.get_type(), info));
 }
 
 const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
+    if (!registry.count(type)) {
+        cerr << "attempt to retrieve non-existing type info from registry: "
+             << type.name() << endl;
+        utils::exit_with(ExitCode::CRITICAL_ERROR);
+    }
     return registry.at(type);
 }
 }

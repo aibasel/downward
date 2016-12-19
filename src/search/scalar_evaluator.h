@@ -28,7 +28,7 @@ public:
 
       TODO: We wanted to get rid of this at some point, and perhaps we
       still should try to do that. Currently, the only legitimate use
-      for this seems to be to call "reach_state" on all heuristics.
+      for this seems to be to call "notify_state_transition" on all heuristics.
       (There is also one "illegitimate" use, the remaining reference
       to heuristics[0] in EagerSearch.)
     */

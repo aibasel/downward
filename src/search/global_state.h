@@ -11,7 +11,7 @@
 class GlobalOperator;
 class StateRegistry;
 
-typedef IntPacker::Bin PackedStateBin;
+using PackedStateBin = IntPacker::Bin;
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
@@ -19,14 +19,17 @@ class GlobalState {
     friend class StateRegistry;
     template<typename Entry>
     friend class PerStateInformation;
+
     // Values for vars are maintained in a packed state and accessed on demand.
     const PackedStateBin *buffer;
+
     // registry isn't a reference because we want to support operator=
     const StateRegistry *registry;
     StateID id;
+
     // Only used by the state registry.
-    GlobalState(const PackedStateBin *buffer_, const StateRegistry &registry_,
-                StateID id_);
+    GlobalState(
+        const PackedStateBin *buffer, const StateRegistry &registry, StateID id);
 
     const PackedStateBin *get_packed_buffer() const {
         return buffer;
@@ -35,20 +38,20 @@ class GlobalState {
     const StateRegistry &get_registry() const {
         return *registry;
     }
-
-    // No implementation to prevent default construction
-    GlobalState();
 public:
-    ~GlobalState();
+    ~GlobalState() = default;
 
     StateID get_id() const {
         return id;
     }
 
-    int operator[](std::size_t index) const;
+    int operator[](int var) const;
+
+    std::vector<int> get_values() const;
 
     void dump_pddl() const;
     void dump_fdr() const;
 };
+
 
 #endif

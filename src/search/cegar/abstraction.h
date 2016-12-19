@@ -4,6 +4,7 @@
 #include "abstract_search.h"
 #include "refinement_hierarchy.h"
 #include "split_selector.h"
+#include "transition_updater.h"
 
 #include "../task_proxy.h"
 
@@ -24,13 +25,21 @@ namespace cegar {
 class AbstractState;
 struct Flaw;
 
+/*
+  Store the set of AbstractStates, use AbstractSearch to find abstract
+  solutions, find flaws, use SplitSelector to select splits in case of
+  ambiguities, break spurious solutions and maintain the
+  RefinementHierarchy.
+*/
 class Abstraction {
     const TaskProxy task_proxy;
     const int max_states;
+    const int max_non_looping_transitions;
     const bool use_general_costs;
 
     AbstractSearch abstract_search;
     SplitSelector split_selector;
+    TransitionUpdater transition_updater;
 
     // Limit the time for building the abstraction.
     utils::CountdownTimer timer;
@@ -97,9 +106,10 @@ class Abstraction {
     void print_statistics();
 
 public:
-    explicit Abstraction(
+    Abstraction(
         const std::shared_ptr<AbstractTask> task,
         int max_states,
+        int max_non_looping_transitions,
         double max_time,
         bool use_general_costs,
         PickSplit pick,
@@ -107,14 +117,18 @@ public:
     ~Abstraction();
 
     Abstraction(const Abstraction &) = delete;
-    Abstraction &operator=(const Abstraction &) = delete;
 
-    RefinementHierarchy && get_refinement_hierarchy() {
+    RefinementHierarchy extract_refinement_hierarchy() {
+        assert(refinement_hierarchy.get_root());
         return std::move(refinement_hierarchy);
     }
 
     int get_num_states() const {
         return states.size();
+    }
+
+    int get_num_non_looping_transitions() const {
+        return transition_updater.get_num_non_loops();
     }
 
     /*

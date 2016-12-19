@@ -21,7 +21,7 @@ static int get_undefined_value(VariableProxy var) {
 }
 
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
-    : task(get_task_from_options(opts)),
+    : task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task),
       lp_solver(lp::LPSolverType(opts.get_enum("lpsolver"))),
       max_potential(opts.get<double>("max_potential")),
@@ -90,7 +90,7 @@ void PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
     solve_and_extract();
 }
 
-const std::shared_ptr<AbstractTask> PotentialOptimizer::get_task() const {
+const shared_ptr<AbstractTask> PotentialOptimizer::get_task() const {
     return task;
 }
 

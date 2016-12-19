@@ -3,10 +3,11 @@
 
 #include <memory>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
-struct Fact;
+class AbstractTask;
+struct FactPair;
+class TaskProxy;
 
 namespace landmarks {
 class LandmarkGraph;
@@ -15,8 +16,9 @@ class LandmarkGraph;
 namespace cegar {
 using VarToValues = std::unordered_map<int, std::vector<int>>;
 
-extern std::unique_ptr<landmarks::LandmarkGraph> get_landmark_graph();
-extern std::vector<Fact> get_fact_landmarks(
+extern std::shared_ptr<landmarks::LandmarkGraph> get_landmark_graph(
+    const std::shared_ptr<AbstractTask> &task);
+extern std::vector<FactPair> get_fact_landmarks(
     const landmarks::LandmarkGraph &graph);
 
 /*
@@ -26,7 +28,7 @@ extern std::vector<Fact> get_fact_landmarks(
   can be true for the first time.
 */
 extern VarToValues get_prev_landmarks(
-    const landmarks::LandmarkGraph &graph, const Fact &fact);
+    const landmarks::LandmarkGraph &graph, const FactPair &fact);
 }
 
 #endif

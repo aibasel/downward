@@ -52,7 +52,6 @@ class GlobalOperator {
     std::string name;
     int cost;
 
-    mutable bool marked; // Used for short-term marking of preferred operators
     void read_pre_post(std::istream &in);
 public:
     explicit GlobalOperator(std::istream &in, bool is_axiom);
@@ -71,17 +70,9 @@ public:
         return true;
     }
 
-    bool is_marked() const {
-        return marked;
-    }
-    void mark() const {
-        marked = true;
-    }
-    void unmark() const {
-        marked = false;
-    }
-
     int get_cost() const {return cost; }
 };
+
+extern int get_op_index_hacked(const GlobalOperator *op);
 
 #endif

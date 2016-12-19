@@ -9,6 +9,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../lp/lp_solver.h"
+
 #include "../utils/system.h"
 
 using namespace std;
@@ -57,10 +59,14 @@ public:
         return synergy->lama_result;
     }
 
-    virtual bool reach_state(
+    virtual void notify_initial_state(const GlobalState &initial_state) override {
+        synergy->lama_notify_initial_state(initial_state);
+    }
+
+    virtual bool notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state) override {
-        if (synergy->lama_reach_state(parent_state, op, state)) {
+        if (synergy->lama_notify_state_transition(parent_state, op, state)) {
             if (cache_h_values) {
                 heuristic_cache[state].dirty = true;
             }
@@ -109,8 +115,7 @@ LamaFFSynergy::LamaFFSynergy(const Options &opts)
     : lama_master_heuristic(new LamaMasterHeuristic(this)),
       ff_slave_heuristic(new FFSlaveHeuristic(
                              this, lama_master_heuristic.get())),
-      lama_heuristic(new LandmarkCountHeuristic(opts)),
-      exploration(lama_heuristic->get_exploration()) {
+      lama_heuristic(new LandmarkCountHeuristic(opts)) {
     cout << "Initializing LAMA-FF synergy object" << endl;
 }
 
@@ -123,15 +128,19 @@ void LamaFFSynergy::compute_heuristics(EvaluationContext &eval_context) {
       together.
     */
 
-    exploration->set_recompute_heuristic();
+    lama_heuristic->exploration.set_recompute_heuristic();
     lama_result = lama_heuristic->compute_result(eval_context);
-    ff_result = exploration->compute_result(eval_context);
+    ff_result = lama_heuristic->exploration.compute_result(eval_context);
 }
 
-bool LamaFFSynergy::lama_reach_state(
+void LamaFFSynergy::lama_notify_initial_state(const GlobalState &initial_state) {
+    lama_heuristic->notify_initial_state(initial_state);
+}
+
+bool LamaFFSynergy::lama_notify_state_transition(
     const GlobalState &parent_state, const GlobalOperator &op,
     const GlobalState &state) {
-    return lama_heuristic->reach_state(parent_state, op, state);
+    return lama_heuristic->notify_state_transition(parent_state, op, state);
 }
 
 Heuristic *LamaFFSynergy::get_lama_heuristic_proxy() const {
@@ -153,7 +162,7 @@ static Synergy *_parse(OptionParser &parser) {
         "This synergy can only be used via Predefinition "
         "(see OptionSyntax#Predefinitions), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
-    parser.add_option<LandmarkGraph *>("lm_graph");
+    parser.add_option<LandmarkFactory *>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");

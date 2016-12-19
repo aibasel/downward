@@ -2,7 +2,9 @@
 
 #include "../utils/system.h"
 
+#include <algorithm>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 using utils::ExitCode;
@@ -54,6 +56,15 @@ void verify_no_conditional_effects(TaskProxy task) {
     }
 }
 
+vector<int> get_operator_costs(const TaskProxy &task_proxy) {
+    vector<int> costs;
+    OperatorsProxy operators = task_proxy.get_operators();
+    costs.reserve(operators.size());
+    for (OperatorProxy op : operators)
+        costs.push_back(op.get_cost());
+    return costs;
+}
+
 double get_average_operator_cost(TaskProxy task_proxy) {
     double average_operator_cost = 0;
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -61,4 +72,12 @@ double get_average_operator_cost(TaskProxy task_proxy) {
     }
     average_operator_cost /= task_proxy.get_operators().size();
     return average_operator_cost;
+}
+
+int get_min_operator_cost(TaskProxy task_proxy) {
+    int min_cost = numeric_limits<int>::max();
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        min_cost = min(min_cost, op.get_cost());
+    }
+    return min_cost;
 }

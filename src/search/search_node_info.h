@@ -1,7 +1,6 @@
 #ifndef SEARCH_NODE_INFO_H
 #define SEARCH_NODE_INFO_H
 
-#include "global_operator.h"
 #include "state_id.h"
 
 // For documentation on classes relevant to storing and working with registered
@@ -13,21 +12,13 @@ struct SearchNodeInfo {
     unsigned int status : 2;
     int g : 30;
     StateID parent_state_id;
-    const GlobalOperator *creating_operator;
+    int creating_operator;
     int real_g;
 
     SearchNodeInfo()
         : status(NEW), g(-1), parent_state_id(StateID::no_state),
-          creating_operator(0), real_g(-1) {
+          creating_operator(-1), real_g(-1) {
     }
 };
-
-/*
-  TODO: The C++ standard does not guarantee that bitfields with mixed
-  types (unsigned int, int, bool) are stored in the compact way we
-  desire. g++-4.8 and clang++-3.5 store the data compactly, but MSVC
-  does not. If we decide to do something about this, we could use a
-  static assertion to verify that SearchNodeInfo has the desired size.
-*/
 
 #endif

@@ -25,7 +25,7 @@ class AbstractOperator {
       Preconditions for the regression search, corresponds to normal
       effects and prevail of concrete operators.
     */
-    std::vector<std::pair<int, int>> regression_preconditions;
+    std::vector<FactPair> regression_preconditions;
 
     /*
       Effect of the operator during regression search on a given
@@ -39,9 +39,9 @@ public:
       meaning prevail, preconditions and effects are all related to
       progression search.
     */
-    AbstractOperator(const std::vector<std::pair<int, int>> &prevail,
-                     const std::vector<std::pair<int, int>> &preconditions,
-                     const std::vector<std::pair<int, int>> &effects,
+    AbstractOperator(const std::vector<FactPair> &prevail,
+                     const std::vector<FactPair> &preconditions,
+                     const std::vector<FactPair> &effects,
                      int cost,
                      const std::vector<std::size_t> &hash_multipliers);
     ~AbstractOperator();
@@ -50,7 +50,7 @@ public:
       Returns variable value pairs which represent the preconditions of
       the abstract operator in a regression search
     */
-    const std::vector<std::pair<int, int>> &get_regression_preconditions() const {
+    const std::vector<FactPair> &get_regression_preconditions() const {
         return regression_preconditions;
     }
 
@@ -66,13 +66,11 @@ public:
     */
     int get_cost() const {return cost; }
     void dump(const Pattern &pattern,
-              const TaskProxy &task_proxy) const;
+              const VariablesProxy &variables) const;
 };
 
 // Implements a single pattern database
 class PatternDatabase {
-    TaskProxy task_proxy;
-
     Pattern pattern;
 
     // size of the PDB
@@ -96,10 +94,11 @@ class PatternDatabase {
     */
     void multiply_out(
         int pos, int cost,
-        std::vector<std::pair<int, int>> &prev_pairs,
-        std::vector<std::pair<int, int>> &pre_pairs,
-        std::vector<std::pair<int, int>> &eff_pairs,
-        const std::vector<std::pair<int, int>> &effects_without_pre,
+        std::vector<FactPair> &prev_pairs,
+        std::vector<FactPair> &pre_pairs,
+        std::vector<FactPair> &eff_pairs,
+        const std::vector<FactPair> &effects_without_pre,
+        const VariablesProxy &variables,
         std::vector<AbstractOperator> &operators);
 
     /*
@@ -111,6 +110,7 @@ class PatternDatabase {
     void build_abstract_operators(
         const OperatorProxy &op, int cost,
         const std::vector<int> &variable_to_index,
+        const VariablesProxy &variables,
         std::vector<AbstractOperator> &operators);
 
     /*
@@ -121,16 +121,7 @@ class PatternDatabase {
       cost partitioning. If left empty, default operator costs are used.
     */
     void create_pdb(
-        const std::vector<int> &operator_costs = std::vector<int>());
-
-    /*
-      Sets the pattern for the PDB and initializes hash_multipliers and
-      num_states. operator_costs can specify individual operator costs
-      for each operator for action cost partitioning. If left empty,
-      default operator costs are used.
-    */
-    void set_pattern(
-        const Pattern &pattern,
+        const TaskProxy &task_proxy,
         const std::vector<int> &operator_costs = std::vector<int>());
 
     /*
@@ -141,7 +132,8 @@ class PatternDatabase {
     */
     bool is_goal_state(
         const std::size_t state_index,
-        const std::vector<std::pair<int, int>> &abstract_goals) const;
+        const std::vector<FactPair> &abstract_goals,
+        const VariablesProxy &variables) const;
 
     /*
       The given concrete state is used to calculate the index of the

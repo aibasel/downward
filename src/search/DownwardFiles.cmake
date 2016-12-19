@@ -5,12 +5,52 @@ set(PLANNER_SOURCES
 # See http://www.fast-downward.org/ForDevelopers/AddingSourceFiles
 # for general information on adding source files and CMake plugins.
 #
-# If you're adding a file to the codebase which *isn't* a plugin, add
-# it to the following list. We assume that every *.cc file has a
-# corresponding *.h file and add headers to the project automatically.
-# For plugin files, see below.
+# All plugins are enabled by default and users can disable them by specifying
+#    -DPLUGIN_FOO_ENABLED=FALSE
+# The default behavior can be changed so all non-essential plugins are
+# disabled by default by specifying
+#    -DDISABLE_PLUGINS_BY_DEFAULT=TRUE
+# In that case, individual plugins can be enabled with
+#    -DPLUGIN_FOO_ENABLED=TRUE
+#
+# Defining a new plugin:
+#    fast_downward_plugin(
+#        NAME <NAME>
+#        [ DISPLAY_NAME <DISPLAY_NAME> ]
+#        [ HELP <HELP> ]
+#        SOURCES
+#            <FILE_1> [ <FILE_2> ... ]
+#        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
+#        [ DEPENDENCY_ONLY ]
+#        [ CORE_PLUGIN ]
+#    )
+#
+# <DISPLAY_NAME> defaults to lower case <NAME> and is used to group files
+#   in IDEs and for messages.
+# <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
+# SOURCES lists the source files that are part of the plugin. For every *.cc
+#   file, there has to be a *.h file with the same name and only the *.cc
+#   file should be specified in the list. For *.h files without a *.cc file,
+#   the *.h file should be listed.
+# DEPENDS lists plugins that will be automatically enabled if this plugin is
+#   enabled. If the dependency was not enabled before, this will be logged.
+# DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
+#   hides the option to enable the plugin in cmake GUIs like ccmake.
+# CORE_PLUGIN always enables the plugin (even if DISABLE_PLUGINS_BY_DEFAULT
+#   is used) and hides the option to disable it in CMake GUIs like ccmake.
 
-set(CORE_SOURCES
+option(
+    DISABLE_PLUGINS_BY_DEFAULT
+    "If set to YES only plugins that are specifically enabled will be compiled"
+    NO)
+# This option should not show up in CMake GUIs like ccmake where all
+# plugins are enabled or disabled manually.
+mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
+
+fast_downward_plugin(
+    NAME CORE_SOURCES
+    HELP "Core source files"
+    SOURCES
         abstract_task.cc
         axioms.cc
         causal_graph.cc
@@ -54,47 +94,9 @@ set(CORE_SOURCES
         open_lists/standard_scalar_open_list.cc
         open_lists/tiebreaking_open_list.cc
         open_lists/type_based_open_list.cc
+    DEPENDS ORDERED_SET
+    CORE_PLUGIN
 )
-
-fast_downward_add_headers_to_sources_list(CORE_SOURCES)
-source_group(core FILES planner.cc ${CORE_SOURCES})
-list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
-
-## Details of the plugins
-#
-# For now, everything defaults to being enabled - it's up to the user to specify
-#    -DPLUGIN_FOO_ENABLED=FALSE
-# to disable a given plugin.
-#
-# Defining a new plugin:
-#    fast_downward_plugin(
-#        NAME <NAME>
-#        [ DISPLAY_NAME <DISPLAY_NAME> ]
-#        [ HELP <HELP> ]
-#        SOURCES
-#            <FILE_1> [ <FILE_2> ... ]
-#        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
-#        [ DEPENDENCY_ONLY ]
-#        [ CORE_PLUGIN ]
-#    )
-#
-# <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
-#                files in IDEs and for messages.
-# <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
-# DEPENDS lists plugins that will be automatically enabled if this plugin
-# is enabled. If the dependency was not enabled before, this will be logged.
-# DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
-#     hides the option to enable the plugin in cmake GUIs like ccmake.
-# CORE_PLUGIN enables the plugin and hides the option to disable it in
-#     cmake GUIs like ccmake.
-
-option(
-    DISABLE_PLUGINS_BY_DEFAULT
-    "If set to YES only plugins that are specifically enabled will be compiled"
-    NO)
-# This option should not show up in cmake GUIs like ccmake where all
-# plugins are enabled or disabled manually.
-mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
 
 fast_downward_plugin(
     NAME OPTIONS
@@ -138,6 +140,13 @@ fast_downward_plugin(
         utils/system_windows.cc
         utils/timer.cc
     CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME ORDERED_SET
+    HELP "Set of elements ordered by insertion time"
+    SOURCES
+        algorithms/ordered_set.h
 )
 
 fast_downward_plugin(
@@ -385,12 +394,14 @@ fast_downward_plugin(
         cegar/abstract_search.cc
         cegar/abstract_state.cc
         cegar/additive_cartesian_heuristic.cc
-        cegar/arc.cc
-        cegar/cartesian_heuristic.cc
+        cegar/cartesian_heuristic_function.cc
+        cegar/cost_saturation.cc
         cegar/domains.cc
         cegar/refinement_hierarchy.cc
         cegar/split_selector.cc
         cegar/subtask_generators.cc
+        cegar/transition.cc
+        cegar/transition_updater.cc
         cegar/utils.cc
         cegar/utils_landmarks.cc
     DEPENDS ADDITIVE_HEURISTIC EXTRA_TASKS LANDMARKS
@@ -403,14 +414,28 @@ fast_downward_plugin(
         merge_and_shrink/distances.cc
         merge_and_shrink/factored_transition_system.cc
         merge_and_shrink/fts_factory.cc
-        merge_and_shrink/heuristic_representation.cc
         merge_and_shrink/label_equivalence_relation.cc
         merge_and_shrink/label_reduction.cc
         merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
-        merge_and_shrink/merge_dfp.cc
-        merge_and_shrink/merge_linear.cc
+        merge_and_shrink/merge_and_shrink_representation.cc
+        merge_and_shrink/merge_scoring_function.cc
+        merge_and_shrink/merge_scoring_function_dfp.cc
+        merge_and_shrink/merge_scoring_function_goal_relevance.cc
+        merge_and_shrink/merge_scoring_function_single_random.cc
+        merge_and_shrink/merge_scoring_function_total_order.cc
+        merge_and_shrink/merge_selector.cc
+        merge_and_shrink/merge_selector_score_based_filtering.cc
         merge_and_shrink/merge_strategy.cc
+        merge_and_shrink/merge_strategy_aliases.cc
+        merge_and_shrink/merge_strategy_factory.cc
+        merge_and_shrink/merge_strategy_factory_precomputed.cc
+        merge_and_shrink/merge_strategy_factory_stateless.cc
+        merge_and_shrink/merge_strategy_precomputed.cc
+        merge_and_shrink/merge_strategy_stateless.cc
+        merge_and_shrink/merge_tree.cc
+        merge_and_shrink/merge_tree_factory.cc
+        merge_and_shrink/merge_tree_factory_linear.cc
         merge_and_shrink/shrink_bisimulation.cc
         merge_and_shrink/shrink_bucket_based.cc
         merge_and_shrink/shrink_fh.cc
@@ -418,6 +443,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
         merge_and_shrink/types.cc
+        merge_and_shrink/utils.cc
 )
 
 fast_downward_plugin(
@@ -425,16 +451,16 @@ fast_downward_plugin(
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
         landmarks/exploration.cc
-        landmarks/h_m_landmarks.cc
         landmarks/lama_ff_synergy.cc
         landmarks/landmark_cost_assignment.cc
         landmarks/landmark_count_heuristic.cc
         landmarks/landmark_factory.cc
+        landmarks/landmark_factory_h_m.cc
+        landmarks/landmark_factory_merged.cc
         landmarks/landmark_factory_rpg_exhaust.cc
         landmarks/landmark_factory_rpg_sasp.cc
         landmarks/landmark_factory_zhu_givan.cc
         landmarks/landmark_graph.cc
-        landmarks/landmark_graph_merged.cc
         landmarks/landmark_status_manager.cc
         landmarks/util.cc
     DEPENDS LP_SOLVER
@@ -474,7 +500,7 @@ fast_downward_plugin(
         pdbs/pattern_generator_manual.cc
         pdbs/pattern_generator.cc
         pdbs/pdb_heuristic.cc
-        pdbs/types.cc
+        pdbs/types.h
         pdbs/validation.cc
         pdbs/zero_one_pdbs.cc
         pdbs/zero_one_pdbs_heuristic.cc

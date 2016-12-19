@@ -33,12 +33,12 @@ class LamaFFSynergy {
     std::unique_ptr<FFSlaveHeuristic> ff_slave_heuristic;
 
     std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
-    Exploration *exploration;
 
     EvaluationResult lama_result;
     EvaluationResult ff_result;
 
-    bool lama_reach_state(
+    void lama_notify_initial_state(const GlobalState &initial_state);
+    bool lama_notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state);
 
@@ -46,7 +46,7 @@ class LamaFFSynergy {
 
 public:
     explicit LamaFFSynergy(const options::Options &opts);
-    ~LamaFFSynergy() = default;
+    virtual ~LamaFFSynergy() = default;
 
     Heuristic *get_lama_heuristic_proxy() const;
     Heuristic *get_ff_heuristic_proxy() const;
