@@ -2,7 +2,6 @@
 
 #include "open_list.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -10,6 +9,7 @@
 #include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <memory>
 #include <unordered_map>
@@ -20,6 +20,7 @@ using namespace std;
 
 template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
     vector<ScalarEvaluator *> evaluators;
 
     using Key = vector<int>;
@@ -67,12 +68,13 @@ void TypeBasedOpenList<Entry>::do_insertion(
 
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
-    : evaluators(opts.get_list<ScalarEvaluator *>("evaluators")) {
+    : rng(utils::parse_rng_from_options(opts)),
+      evaluators(opts.get_list<ScalarEvaluator *>("evaluators")) {
 }
 
 template<class Entry>
 Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
-    size_t bucket_id = (*g_rng())(keys_and_buckets.size());
+    size_t bucket_id = (*rng)(keys_and_buckets.size());
     auto &key_and_bucket = keys_and_buckets[bucket_id];
     const Key &min_key = key_and_bucket.first;
     Bucket &bucket = key_and_bucket.second;
@@ -82,7 +84,7 @@ Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
         *key = min_key;
     }
 
-    int pos = (*g_rng())(bucket.size());
+    int pos = (*rng)(bucket.size());
     Entry result = utils::swap_and_pop_from_vector(bucket, pos);
 
     if (bucket.empty()) {
@@ -173,6 +175,8 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>(
         "evaluators",
         "Evaluators used to determine the bucket for each entry.");
+
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
     opts.verify_list_non_empty<ScalarEvaluator *>("evaluators");

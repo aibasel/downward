@@ -8,6 +8,7 @@
 
 #include "../utils/memory.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <cassert>
 #include <deque>
@@ -21,6 +22,8 @@ using namespace std;
 
 template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
+
     typedef deque<Entry> Bucket;
     typedef vector<int> KeyType;
     typedef unordered_map<KeyType, Bucket> BucketMap;
@@ -59,6 +62,7 @@ public:
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
+      rng(utils::parse_rng_from_options(opts)),
       state_uniform_selection(opts.get<bool>("state_uniform_selection")),
       evaluators(opts.get_list<ScalarEvaluator *>("evals")) {
 }
@@ -164,7 +168,7 @@ Entry ParetoOpenList<Entry>::remove_min(vector<int> *key) {
         else
             numerator = 1;
         seen += numerator;
-        if ((*g_rng())(seen) < numerator)
+        if ((*rng)(seen) < numerator)
             selected = it;
     }
     if (key) {
@@ -253,6 +257,8 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "uniformly from the non-dominated buckets; if the option is true, "
         "we weight the buckets with the number of entries.",
         "false");
+
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())
