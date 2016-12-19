@@ -7,6 +7,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/rng.h"
+#include "../utils/rng_options.h"
 #include "../utils/timer.h"
 
 #include <unordered_set>
@@ -17,7 +19,8 @@ namespace potentials {
 DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
-      num_samples(opts.get<int>("num_samples")) {
+      num_samples(opts.get<int>("num_samples")),
+      rng(utils::parse_rng_from_options(opts)) {
 }
 
 SamplesToFunctionsMap
@@ -114,7 +117,7 @@ DiversePotentialHeuristics::find_functions() {
 
     // Sample states.
     vector<State> samples = sample_without_dead_end_detection(
-        optimizer, num_samples);
+        optimizer, num_samples, *rng);
 
     // Filter dead end samples.
     SamplesToFunctionsMap samples_to_functions =
@@ -144,6 +147,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "infinity",
         Bounds("0", "infinity"));
     prepare_parser_for_admissible_potentials(parser);
+    utils::add_rng_options(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
