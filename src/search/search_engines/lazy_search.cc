@@ -2,7 +2,6 @@
 
 #include "search_common.h"
 
-#include "../globals.h"
 #include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -11,6 +10,7 @@
 #include "../algorithms/ordered_set.h"
 #include "../open_lists/open_list_factory.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <algorithm>
 #include <limits>
@@ -28,6 +28,7 @@ LazySearch::LazySearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       randomize_successors(opts.get<bool>("randomize_successors")),
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
+      rng(utils::parse_rng_from_options(opts)),
       current_state(state_registry.get_initial_state()),
       current_predecessor_id(StateID::no_state),
       current_operator(nullptr),
@@ -72,7 +73,7 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
         current_state, applicable_operators);
 
     if (randomize_successors) {
-        g_rng()->shuffle(applicable_operators);
+        rng->shuffle(applicable_operators);
     }
 
     if (preferred_successors_first) {
@@ -94,7 +95,7 @@ void LazySearch::generate_successors() {
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
     if (randomize_successors) {
-        preferred_operators.shuffle(*g_rng());
+        preferred_operators.shuffle(*rng);
     }
 
     vector<const GlobalOperator *> successor_operators =
@@ -385,6 +386,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_option<int>("w", "heuristic weight", "1");
     _add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);
+    utils::add_rng_options(parser);
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
