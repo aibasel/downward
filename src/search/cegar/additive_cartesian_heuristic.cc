@@ -9,6 +9,8 @@
 
 #include "../utils/logging.h"
 #include "../utils/markup.h"
+#include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <cassert>
 
@@ -26,7 +28,8 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<int>("max_transitions"),
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),
-        static_cast<PickSplit>(opts.get<int>("pick")));
+        static_cast<PickSplit>(opts.get<int>("pick")),
+        utils::parse_rng_from_options(opts));
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }
@@ -121,6 +124,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "allow negative costs in cost partitioning",
         "true");
     Heuristic::add_options_to_parser(parser);
+    utils::add_rng_options(parser);
     Options opts = parser.parse();
 
     if (parser.dry_run())
