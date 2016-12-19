@@ -140,7 +140,7 @@ def _split_off_filenames(planner_args):
 
 def _split_planner_args(parser, args):
     """Partition args.planner_args, the list of arguments for the
-    planner components, into args.filenames, args.translate_options,
+    planner components, into args.filenames, args.translate_options
     and args.search_options. Modifies args directly and removes the original
     args.planner_args list."""
 
@@ -191,8 +191,8 @@ def _set_components_automatically(parser, args):
 
 
 def _set_components_and_inputs(parser, args):
-    """Set args.components to the planner components to be run
-    and set args.translate_inputs and args.search_input to the correct input
+    """Set args.components to the planner components to be run and set
+    args.translate_inputs and args.search_input to the correct input
     filenames.
 
     Rules:
