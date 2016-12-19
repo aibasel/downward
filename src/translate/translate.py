@@ -576,6 +576,7 @@ def pddl_to_sas(task):
             variable_order.find_and_apply_variable_order(
                 sas_task, options.reorder_variables,
                 options.filter_unimportant_vars)
+
     return sas_task
 
 
