@@ -1,5 +1,3 @@
-#include "sample_based_potential_heuristics.h"
-
 #include "potential_function.h"
 #include "potential_max_heuristic.h"
 #include "potential_optimizer.h"
