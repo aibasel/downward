@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict, deque
@@ -7,26 +6,28 @@ import heapq
 
 DEBUG = False
 
-class CausalGraph:
+class CausalGraph(object):
     """Weighted causal graph used for defining a variable order.
 
-       The variable order is defined such that removing all edges v->v' with
-       v>v' induces an acyclic subgraph of the causal graph. This corresponds to
-       the pruning of the causal graph as described in the JAIR 2006 Fast
-       Downward paper for the causal graph heuristic. The greedy method is based
-       on weighing the edges of the causal graph. In this implementation these
-       weights slightly differ from the description in the JAIR paper to
-       reproduce the behaviour of the original implementation in the
-       preprocessor component of the planner.
+    The variable order is defined such that removing all edges v->v'
+    with v>v' induces an acyclic subgraph of the causal graph. This
+    corresponds to the pruning of the causal graph as described in the
+    JAIR 2006 Fast Downward paper for the causal graph heuristic. The
+    greedy method is based on weighting the edges of the causal graph.
+    In this implementation these weights slightly differ from the
+    description in the JAIR paper to reproduce the behaviour of the
+    original implementation in the preprocessor component of the
+    planner.
     """
+
     def __init__(self, sas_task):
         self.weighted_graph = defaultdict(lambda: defaultdict(int))
         ## var_no -> (var_no -> number)
         self.predecessor_graph = defaultdict(set)
         self.ordering = []
 
-        self.weigh_graph_from_ops(sas_task.operators)
-        self.weigh_graph_from_axioms(sas_task.axioms)
+        self.weight_graph_from_ops(sas_task.operators)
+        self.weight_graph_from_axioms(sas_task.axioms)
 
         self.num_variables = len(sas_task.variables.ranges)
         self.goal_map = dict(sas_task.goal.pairs)
@@ -37,25 +38,25 @@ class CausalGraph:
             self.calculate_topological_pseudo_sort(sccs)
         return self.ordering
 
-    def weigh_graph_from_ops(self, operators):
-        ### A source variable can be processed several times. This was probably
-        ### not intended originally but in experiments (cg. issue26) it
-        ### performed better than the (clearer) weighing described in the Fast
-        ### Downward paper (which would require a more complicated
-        ### implementation).
+    def weight_graph_from_ops(self, operators):
+        ### A source variable can be processed several times. This was
+        ### probably not intended originally but in experiments (cf.
+        ### issue26) it performed better than the (clearer) weighting
+        ### described in the Fast Downward paper (which would require
+        ### a more complicated implementation).
         for op in operators:
             source_vars = [var for (var, value) in op.prevail]
             for var, pre, _, _ in op.pre_post:
                 if pre != -1:
                     source_vars.append(var)
-            
+
             for target, _, _, cond in op.pre_post:
                 for source in chain(source_vars, (var for var, _ in cond)):
                     if source != target:
                         self.weighted_graph[source][target] += 1
                         self.predecessor_graph[target].add(source)
 
-    def weigh_graph_from_axioms(self, axioms):
+    def weight_graph_from_axioms(self, axioms):
         for ax in axioms:
             target = ax.effect[0]
             for source, _ in ax.condition:
@@ -75,7 +76,7 @@ class CausalGraph:
         for scc in sccs:
             if len(scc) > 1:
                 # component needs to be turned into acyclic subgraph
-                
+
                 # Compute subgraph induced by scc
                 subgraph = defaultdict(list)
                 for var in scc:
@@ -93,6 +94,8 @@ class CausalGraph:
                 self.ordering.append(scc[0])
 
     def calculate_important_vars(self, goal):
+        # Note for future refactoring: it is perhaps more idiomatic
+        # and efficient to use a set rather than a defaultdict(bool).
         necessary = defaultdict(bool)
         for var, _ in goal.pairs:
             if not necessary[var]:
@@ -109,21 +112,21 @@ class CausalGraph:
                 stack.extend(pred for pred in self.predecessor_graph[n])
 
 
-class SCC:
+class SCC(object):
     """Tarjan's algorithm for maximal strongly connected components.
-   
-    Since the original recursive version exceeds python's maximal recursion
-    depth on some planning instances, this is an iterative version with an
-    explicit recursion stack (iter_stack).
 
-    Note that the derived graph where each SCC is a single "supernode" is
-    necessarily acyclic. The SCCs returned by get_result() are in a topological
-    sort order with regard to this derived DAG.
+    Since the original recursive version exceeds python's maximal
+    recursion depth on some planning instances, this is an iterative
+    version with an explicit recursion stack (iter_stack).
+
+    Note that the derived graph where each SCC is a single "supernode"
+    is necessarily acyclic. The SCCs returned by get_result() are in a
+    topological sort order with respect to this derived DAG.
     """
 
     def __init__(self, unweighted_graph):
         self.graph = unweighted_graph
-        self.BEGIN, self.CONTINUE, self.RETURN  = 0, 1, 2 # "recursion" handling
+        self.BEGIN, self.CONTINUE, self.RETURN = 0, 1, 2 # "recursion" handling
 
     def get_result(self):
         self.indices = dict()
@@ -141,11 +144,11 @@ class SCC:
     def visit(self, vertex):
         iter_stack = [(vertex, None, None, self.BEGIN)]
         while iter_stack:
-            v, w, succ_index, state = iter_stack.pop() 
-                
+            v, w, succ_index, state = iter_stack.pop()
+
             if state == self.BEGIN:
                 self.current_index += 1
-                self.indices[v] = self.current_index 
+                self.indices[v] = self.current_index
                 self.lowlinks[v] = self.current_index
                 self.stack_indices[v] = len(self.stack)
                 self.stack.append(v)
@@ -170,25 +173,28 @@ class SCC:
                         if w in self.stack_indices:
                             self.lowlinks[v] = min(self.lowlinks[v],
                                                    self.indices[w])
-                        iter_stack.append((v, None, succ_index+1, self.CONTINUE))
+                        iter_stack.append(
+                            (v, None, succ_index + 1, self.CONTINUE))
             elif state == self.RETURN:
                 self.lowlinks[v] = min(self.lowlinks[v], self.lowlinks[w])
-                iter_stack.append((v, None, succ_index+1, self.CONTINUE))
+                iter_stack.append((v, None, succ_index + 1, self.CONTINUE))
 
 
-class MaxDAG:
-    """Defines a variable ordering for a SCC of the (weighted) causal graph.
- 
-       Conceptually, the greedy algorithm successively picks a node with minimal
-       cummulated weight of incoming arcs and removes its incident edges from
-       the graph until only a single node remains (cf. computation of total
-       order of vertices when pruning the causal graph in the Fast Downward JAIR
-       2006 paper).
+class MaxDAG(object):
+    """Defines a variable ordering for a SCC of the (weighted) causal
+    graph.
+
+    Conceptually, the greedy algorithm successively picks a node with
+    minimal cummulated weight of incoming arcs and removes its
+    incident edges from the graph until only a single node remains
+    (cf. computation of total order of vertices when pruning the
+    causal graph in the Fast Downward JAIR 2006 paper).
     """
+
     def __init__(self, graph, input_order):
         self.weighted_graph = graph
-        # input_order is only used to get the same tiebreaking as with the old
-        # preprocessor
+        # input_order is only used to get the same tie-breaking as
+        # with the old preprocessor
         self.input_order = input_order
 
     def get_result(self):
@@ -196,7 +202,7 @@ class MaxDAG:
         for weighted_edges in self.weighted_graph.values():
             for target, weight in weighted_edges:
                 incoming_weights[target] += weight
-       
+
         weight_to_nodes = defaultdict(deque)
         for node in self.input_order:
             weight = incoming_weights[node]
@@ -204,28 +210,31 @@ class MaxDAG:
         weights = list(weight_to_nodes.keys())
         heapq.heapify(weights)
 
+        # Note for future refactoring: it is perhaps more idiomatic
+        # and efficient to use a set rather than a defaultdict(bool).
         done = defaultdict(bool)
         result = []
         while weights:
             min_key = weights[0]
             min_elem = None
             entries = weight_to_nodes[min_key]
-            while (entries and 
-                (min_elem is None or done[min_elem] or 
+            while (entries and
+                (min_elem is None or done[min_elem] or
                 min_key > incoming_weights[min_elem])):
                 min_elem = entries.popleft()
             if not entries:
                 del weight_to_nodes[min_key]
                 heapq.heappop(weights) # remove min_key from heap
             if min_elem is None or done[min_elem]:
-                # since we use lazy deletion from the heap weights, there can be
-                # weights without an undone entry in weight_to_nodes
+                # since we use lazy deletion from the heap weights,
+                # there can be weights with a "done" entry in
+                # weight_to_nodes
                 continue
             done[min_elem] = True
             result.append(min_elem)
             for target, weight in self.weighted_graph[min_elem]:
                 if not done[target]:
-                    weight = weight%100000
+                    weight = weight % 100000
                     if weight == 0:
                         continue
                     old_in_weight = incoming_weights[target]
@@ -236,19 +245,19 @@ class MaxDAG:
                     if new_in_weight not in weight_to_nodes:
                         heapq.heappush(weights, new_in_weight)
                     weight_to_nodes[new_in_weight].append(target)
-        return result 
+        return result
 
 
-class VariableOrder:
-    """Applies a given variable order to a SAS task."""
+class VariableOrder(object):
+    """Apply a given variable order to a SAS task."""
     def __init__(self, ordering):
         """Ordering is a list of variable numbers in the desired order.
-        
-        If a variable does not occur in the ordering, it will be removed from
-        the task.
+
+        If a variable does not occur in the ordering, it is removed
+        from the task.
         """
-        self.ordering = ordering 
-        self.new_var = dict((v, i) for i,v in enumerate(ordering))
+        self.ordering = ordering
+        self.new_var = dict((v, i) for i, v in enumerate(ordering))
 
     def apply_to_task(self, sas_task):
         self._apply_to_variables(sas_task.variables)
@@ -259,9 +268,11 @@ class VariableOrder:
         self._apply_to_axioms(sas_task.axioms)
         if DEBUG:
             sas_task.validate()
-    
+
     def _apply_to_variables(self, variables):
-        ranges, layers, names = [], [], []
+        ranges = []
+        layers = []
+        names = []
         for index, var in enumerate(self.ordering):
             ranges.append(variables.ranges[var])
             layers.append(variables.axiom_layers[var])
@@ -300,8 +311,9 @@ class VariableOrder:
                 if eff_var in self.new_var:
                     new_cond = list((self.new_var[var], val)
                                     for var, val in cond
-                                    if var in self.new_var) 
-                    pre_post.append((self.new_var[eff_var], pre, post, new_cond))
+                                    if var in self.new_var)
+                    pre_post.append(
+                        (self.new_var[eff_var], pre, post, new_cond))
             if not pre_post:
                 num_removed += 1
             else:
@@ -315,10 +327,10 @@ class VariableOrder:
     def _apply_to_axioms(self, axioms):
         new_axioms = []
         num_removed = 0
-        for ax in axioms: 
+        for ax in axioms:
             eff_var, eff_val = ax.effect
             if eff_var not in self.new_var:
-                num_removed += 1 
+                num_removed += 1
             else:
                 ax.condition = [(self.new_var[var], val)
                                 for var, val in ax.condition
