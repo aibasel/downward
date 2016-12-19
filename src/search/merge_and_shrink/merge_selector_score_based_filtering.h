@@ -5,6 +5,7 @@
 
 #include "merge_scoring_function.h"
 
+#include <memory>
 #include <vector>
 
 namespace options {
@@ -30,7 +31,7 @@ public:
     virtual std::pair<int, int> select_merge(
         FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset = std::vector<int>()) const override;
-    virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
+    virtual void initialize(const TaskProxy &task_proxy) override;
 };
 }
 

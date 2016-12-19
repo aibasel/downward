@@ -1,4 +1,4 @@
-#include "h_m_landmarks.h"
+#include "landmark_factory_h_m.h"
 
 #include "../abstract_task.h"
 #include "../option_parser.h"
@@ -101,9 +101,9 @@ static bool contains(list<T> &alist, const T &val) {
 
 // find partial variable assignments with size m or less
 // (look at all the variables in the problem)
-void HMLandmarks::get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
-                              FluentSet &current,
-                              vector<FluentSet> &subsets) {
+void LandmarkFactoryHM::get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
+                                    FluentSet &current,
+                                    vector<FluentSet> &subsets) {
     int num_variables = variables.size();
     if (num_included == m) {
         subsets.push_back(current);
@@ -137,12 +137,12 @@ void HMLandmarks::get_m_sets_(const VariablesProxy &variables, int m, int num_in
 }
 
 // find all size m or less subsets of superset
-void HMLandmarks::get_m_sets_of_set(const VariablesProxy &variables,
-                                    int m, int num_included,
-                                    int current_var_index,
-                                    FluentSet &current,
-                                    vector<FluentSet> &subsets,
-                                    const FluentSet &superset) {
+void LandmarkFactoryHM::get_m_sets_of_set(const VariablesProxy &variables,
+                                          int m, int num_included,
+                                          int current_var_index,
+                                          FluentSet &current,
+                                          vector<FluentSet> &subsets,
+                                          const FluentSet &superset) {
     if (num_included == m) {
         subsets.push_back(current);
         return;
@@ -176,7 +176,7 @@ void HMLandmarks::get_m_sets_of_set(const VariablesProxy &variables,
 
 // get subsets of superset1 \cup superset2 with size m or less,
 // such that they have >= 1 elements from each set.
-void HMLandmarks::get_split_m_sets(
+void LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables,
     int m, int ss1_num_included, int ss2_num_included,
     int ss1_var_index, int ss2_var_index,
@@ -255,15 +255,15 @@ void HMLandmarks::get_split_m_sets(
 // e.g. we don't want to represent (truck1-loc x, truck2-loc y) type stuff
 
 // get partial assignments of size <= m in the problem
-void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m, vector<FluentSet> &subsets) {
+void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m, vector<FluentSet> &subsets) {
     FluentSet c;
     get_m_sets_(variables, m, 0, 0, c, subsets);
 }
 
 // get subsets of superset with size <= m
-void HMLandmarks::get_m_sets(const VariablesProxy &variables,
-                             int m, vector<FluentSet> &subsets,
-                             const FluentSet &superset) {
+void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
+                                   int m, vector<FluentSet> &subsets,
+                                   const FluentSet &superset) {
     FluentSet c;
     get_m_sets_of_set(variables, m, 0, 0, c, subsets, superset);
 }
@@ -271,7 +271,7 @@ void HMLandmarks::get_m_sets(const VariablesProxy &variables,
 // second function to get subsets of size at most m that
 // have at least one element in ss1 and same in ss2
 // assume disjoint
-void HMLandmarks::get_split_m_sets(
+void LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables,
     int m, vector<FluentSet> &subsets,
     const FluentSet &superset1, const FluentSet &superset2) {
@@ -280,9 +280,9 @@ void HMLandmarks::get_split_m_sets(
 }
 
 // get subsets of state with size <= m
-void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m,
-                             vector<FluentSet> &subsets,
-                             const State &state) {
+void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m,
+                                   vector<FluentSet> &subsets,
+                                   const State &state) {
     FluentSet state_fluents;
     for (FactProxy fact : state) {
         state_fluents.push_back(fact.get_pair());
@@ -290,7 +290,7 @@ void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m,
     get_m_sets(variables, m, subsets, state_fluents);
 }
 
-void HMLandmarks::print_proposition(const VariablesProxy &variables, const FactPair &fluent) const {
+void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &fluent) const {
     VariableProxy var = variables[fluent.var];
     FactProxy fact = var.get_fact(fluent.value);
     cout << fact.get_name()
@@ -327,7 +327,7 @@ static FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &o
 }
 
 
-void HMLandmarks::print_pm_op(const VariablesProxy &variables, const PMOp &op) {
+void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp &op) {
     set<FactPair> pcs, effs, cond_pc, cond_eff;
     vector<pair<set<FactPair>, set<FactPair>>> conds;
 
@@ -403,7 +403,7 @@ void HMLandmarks::print_pm_op(const VariablesProxy &variables, const PMOp &op) {
     }
 }
 
-void HMLandmarks::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) {
+void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) {
     cout << "( ";
     for (const FactPair &fact : fs) {
         print_proposition(variables, fact);
@@ -414,9 +414,9 @@ void HMLandmarks::print_fluentset(const VariablesProxy &variables, const FluentS
 
 // check whether fs2 is a possible noop set for action with fs1 as effect
 // sets cannot be 1) defined on same variable, 2) otherwise mutex
-bool HMLandmarks::possible_noop_set(const VariablesProxy &variables,
-                                    const FluentSet &fs1,
-                                    const FluentSet &fs2) {
+bool LandmarkFactoryHM::possible_noop_set(const VariablesProxy &variables,
+                                          const FluentSet &fs1,
+                                          const FluentSet &fs2) {
     FluentSet::const_iterator fs1it = fs1.begin(), fs2it = fs2.begin();
 
     while (fs1it != fs1.end() && fs2it != fs2.end()) {
@@ -443,7 +443,7 @@ bool HMLandmarks::possible_noop_set(const VariablesProxy &variables,
 
 
 // make the operators of the P_m problem
-void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
+void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
     FluentSet pc, eff;
     vector<FluentSet> pc_subsets, eff_subsets, noop_pc_subsets, noop_eff_subsets;
 
@@ -552,19 +552,19 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
     }
 }
 
-bool HMLandmarks::interesting(const VariablesProxy &variables,
-                              const FactPair &fact1, const FactPair &fact2) const {
+bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
+                                    const FactPair &fact1, const FactPair &fact2) const {
     // mutexes can always be safely pruned
     return !variables[fact1.var].get_fact(fact1.value).is_mutex(
         variables[fact2.var].get_fact(fact2.value));
 }
 
-HMLandmarks::HMLandmarks(const options::Options &opts)
+LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
     : LandmarkFactory(opts),
       m_(opts.get<int>("m")) {
 }
 
-void HMLandmarks::initialize(const TaskProxy &task_proxy) {
+void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     cout << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
@@ -585,7 +585,7 @@ void HMLandmarks::initialize(const TaskProxy &task_proxy) {
     build_pm_ops(task_proxy);
 }
 
-void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
+void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
     cout << "Calculating achievers." << endl;
 
     OperatorsProxy operators = task_proxy.get_operators();
@@ -642,7 +642,7 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
     }
 }
 
-void HMLandmarks::free_unneeded_memory() {
+void LandmarkFactoryHM::free_unneeded_memory() {
     utils::release_vector_memory(h_m_table_);
     utils::release_vector_memory(pm_ops_);
     utils::release_vector_memory(unsat_pc_count_);
@@ -654,8 +654,8 @@ void HMLandmarks::free_unneeded_memory() {
 // called when a fact is discovered or its landmarks change
 // to trigger required actions at next level
 // newly_discovered = first time fact becomes reachable
-void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
-                                    TriggerSet &trigger) {
+void LandmarkFactoryHM::propagate_pm_fact(int factindex, bool newly_discovered,
+                                          TriggerSet &trigger) {
     // for each action/noop for which fact is a pc
     for (const FactPair &info : h_m_table_[factindex].pc_for) {
         // a pc for the action itself
@@ -688,7 +688,7 @@ void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
     }
 }
 
-void HMLandmarks::compute_h_m_landmarks(const TaskProxy &task_proxy) {
+void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
     // get subsets of initial state
     vector<FluentSet> init_subsets;
     get_m_sets(task_proxy.get_variables(), m_, init_subsets, task_proxy.get_initial_state());
@@ -809,7 +809,7 @@ void HMLandmarks::compute_h_m_landmarks(const TaskProxy &task_proxy) {
     cout << "h^m landmarks computed." << endl;
 }
 
-void HMLandmarks::compute_noop_landmarks(
+void LandmarkFactoryHM::compute_noop_landmarks(
     int op_index, int noop_index,
     list<int> const &local_landmarks,
     list<int> const &local_necessary,
@@ -875,7 +875,7 @@ void HMLandmarks::compute_noop_landmarks(
     }
 }
 
-void HMLandmarks::add_lm_node(int set_index, bool goal) {
+void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
     set<FactPair> lm;
 
     map<int, LandmarkNode *>::iterator it = lm_node_table_.find(set_index);
@@ -897,7 +897,7 @@ void HMLandmarks::add_lm_node(int set_index, bool goal) {
     }
 }
 
-void HMLandmarks::generate_landmarks(
+void LandmarkFactoryHM::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &) {
     TaskProxy task_proxy(*task);
     int set_index;
@@ -968,7 +968,7 @@ void HMLandmarks::generate_landmarks(
     free_unneeded_memory();
 }
 
-bool HMLandmarks::supports_conditional_effects() const {
+bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }
 
@@ -993,7 +993,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     } else {
-        return new HMLandmarks(opts);
+        return new LandmarkFactoryHM(opts);
     }
 }
 
