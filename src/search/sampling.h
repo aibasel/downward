@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <functional>
+#include <memory>
 #include <vector>
 
 class State;
@@ -11,6 +12,7 @@ class TaskProxy;
 
 namespace utils {
 class CountdownTimer;
+class RandomNumberGenerator;
 }
 
 
@@ -25,12 +27,12 @@ struct SamplingTimeout : public std::exception {};
   sampling procedure will run for at most the specified time limit and
   possibly return less than 'num_samples' states.
 */
-std::vector<State> sample_states_with_random_walks(
-    TaskProxy task_proxy,
+std::vector<State> sample_states_with_random_walks(TaskProxy task_proxy,
     const SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,
+    utils::RandomNumberGenerator &rng,
     std::function<bool(State)> is_dead_end = [] (const State &) {
                                                  return false;
                                              },
