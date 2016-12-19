@@ -70,10 +70,10 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
     return merge_candidates.front();
 }
 
-void MergeSelectorScoreBasedFiltering::initialize(const shared_ptr<AbstractTask> &task) {
+void MergeSelectorScoreBasedFiltering::initialize(const TaskProxy &task_proxy) {
     for (shared_ptr<MergeScoringFunction> &scoring_function
          : merge_scoring_functions) {
-        scoring_function->initialize(task);
+        scoring_function->initialize(task_proxy);
     }
 }
 

@@ -1,4 +1,4 @@
-#include "landmark_graph_merged.h"
+#include "landmark_factory_merged.h"
 
 #include "landmark_graph.h"
 
@@ -15,12 +15,12 @@ using utils::ExitCode;
 namespace landmarks {
 class LandmarkNode;
 
-LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
+LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
     : LandmarkFactory(opts),
       lm_factories(opts.get_list<LandmarkFactory *>("lm_factories")) {
 }
 
-LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
+LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &lm) const {
     if (!lm.disjunctive && !lm.conjunctive) {
         const FactPair &lm_fact = lm.facts[0];
         if (lm_graph->simple_landmark_exists(lm_fact))
@@ -40,7 +40,7 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
     return 0;
 }
 
-void LandmarkGraphMerged::generate_landmarks(
+void LandmarkFactoryMerged::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
 
@@ -112,7 +112,7 @@ void LandmarkGraphMerged::generate_landmarks(
     }
 }
 
-bool LandmarkGraphMerged::supports_conditional_effects() const {
+bool LandmarkFactoryMerged::supports_conditional_effects() const {
     for (const LandmarkFactory *lm_factory : lm_factories) {
         if (!lm_factory->supports_conditional_effects()) {
             return false;
@@ -148,7 +148,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     } else {
-        return new LandmarkGraphMerged(opts);
+        return new LandmarkFactoryMerged(opts);
     }
 }
 

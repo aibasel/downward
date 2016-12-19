@@ -3,6 +3,8 @@
 
 #include "merge_scoring_function.h"
 
+#include <memory>
+
 namespace options {
 class Options;
 }

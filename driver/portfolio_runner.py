@@ -33,6 +33,14 @@ from . import util
 DEFAULT_TIMEOUT = 1800
 
 
+def adapt_heuristic_cost_type(arg, cost_type):
+    if cost_type == "normal":
+        transform = "no_transform()"
+    else:
+        transform = "adapt_costs({})".format(cost_type)
+    return arg.replace("H_COST_TRANSFORM", transform)
+
+
 def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
     g_bound = plan_manager.get_best_plan_cost()
     plan_counter = plan_manager.get_plan_counter()
@@ -42,7 +50,7 @@ def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
     for index, arg in enumerate(args):
         if arg == "--heuristic":
             heuristic = args[index + 1]
-            heuristic = heuristic.replace("H_COST_TYPE", heuristic_cost_type)
+            heuristic = adapt_heuristic_cost_type(heuristic, heuristic_cost_type)
             args[index + 1] = heuristic
         elif arg == "--search":
             search = args[index + 1]
@@ -53,9 +61,9 @@ def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
                     "See the FDSS portfolios for examples.")
             for name, value in [
                     ("BOUND", g_bound),
-                    ("H_COST_TYPE", heuristic_cost_type),
                     ("S_COST_TYPE", search_cost_type)]:
                 search = search.replace(name, str(value))
+            search = adapt_heuristic_cost_type(search, heuristic_cost_type)
             args[index + 1] = search
             break
 
@@ -105,7 +113,7 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
 
 def run_sat(configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory):
-    # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
+    # If the configuration contains S_COST_TYPE or H_COST_TRANSFORM and the task
     # has non-unit costs, we start by treating all costs as one. When we find
     # a solution, we rerun the successful config with real costs.
     heuristic_cost_type = "one"
@@ -125,7 +133,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 return
 
             if exitcode == returncodes.EXIT_PLAN_FOUND:
-                configs_next_round.append(args)
+                configs_next_round.append((relative_time, args))
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
                     print("Switch to real costs and repeat last run.")
@@ -174,7 +182,7 @@ def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
 
 
 def can_change_cost_type(args):
-    return any("S_COST_TYPE" in part or "H_COST_TYPE" in part for part in args)
+    return any("S_COST_TYPE" in part or "H_COST_TRANSFORM" in part for part in args)
 
 
 def get_portfolio_attributes(portfolio):
