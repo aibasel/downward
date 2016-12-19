@@ -21,6 +21,10 @@ namespace AdditiveHeuristic {
 class AdditiveHeuristic;
 }
 
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace cegar {
 class AbstractState;
 struct Flaw;
@@ -87,7 +91,7 @@ class Abstraction {
     bool may_keep_refining() const;
 
     // Build abstraction.
-    void build();
+    void build(utils::RandomNumberGenerator &rng);
 
     bool is_goal(AbstractState *state) const;
 
@@ -106,13 +110,13 @@ class Abstraction {
     void print_statistics();
 
 public:
-    Abstraction(
-        const std::shared_ptr<AbstractTask> task,
+    Abstraction(const std::shared_ptr<AbstractTask> task,
         int max_states,
         int max_non_looping_transitions,
         double max_time,
         bool use_general_costs,
         PickSplit pick,
+        utils::RandomNumberGenerator &rng,
         bool debug = false);
     ~Abstraction();
 

@@ -10,6 +10,10 @@ namespace additive_heuristic {
 class AdditiveHeuristic;
 }
 
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace cegar {
 class AbstractState;
 
@@ -62,7 +66,8 @@ public:
 
     const Split &pick_split(
         const AbstractState &state,
-        const std::vector<Split> &splits) const;
+        const std::vector<Split> &splits,
+        utils::RandomNumberGenerator &rng) const;
 };
 }
 
