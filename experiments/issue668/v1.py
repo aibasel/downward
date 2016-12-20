@@ -81,7 +81,7 @@ def main(revisions=None):
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
 
-    exp.add_absolute_report_step(name='-abp',filter_config=[
+    exp.add_absolute_report_step(name='issue668-v1-abp',filter_config=[
         '%s-sbf-miasm-rl-otn-abp-b50k' % 'issue668-v1',
         '%s-sbf-miasm-rl-nto-abp-b50k' % 'issue668-v1',
         '%s-sbf-miasm-rl-rnd-abp-b50k' % 'issue668-v1',
@@ -92,7 +92,7 @@ def main(revisions=None):
         '%s-sbf-miasm-rnd-nto-abp-b50k' % 'issue668-v1',
         '%s-sbf-miasm-rnd-rnd-abp-b50k' % 'issue668-v1',
     ])
-    exp.add_absolute_report_step(name='-bpa',filter_config=[
+    exp.add_absolute_report_step(name='issue668-v1-pba',filter_config=[
         '%s-sbf-miasm-rl-otn-pba-b50k' % 'issue668-v1',
         '%s-sbf-miasm-rl-nto-pba-b50k' % 'issue668-v1',
         '%s-sbf-miasm-rl-rnd-pba-b50k' % 'issue668-v1',
@@ -103,7 +103,7 @@ def main(revisions=None):
         '%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v1',
         '%s-sbf-miasm-rnd-rnd-pba-b50k' % 'issue668-v1',
     ])
-    exp.add_absolute_report_step(name='-paper',filter_config=[
+    exp.add_absolute_report_step(name='issue668-v1-paper',filter_config=[
         '%s-sbf-miasm-rl-nto-abp-b50k' % 'issue668-v1',
         '%s-sbf-miasm-l-nto-abp-b50k' % 'issue668-v1',
         '%s-sbf-miasm-rnd-nto-abp-b50k' % 'issue668-v1',
