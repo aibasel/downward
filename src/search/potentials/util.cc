@@ -17,7 +17,9 @@ using namespace std;
 
 namespace potentials {
 vector<State> sample_without_dead_end_detection(
-    PotentialOptimizer &optimizer, int num_samples) {
+    PotentialOptimizer &optimizer,
+    int num_samples,
+    utils::RandomNumberGenerator &rng) {
     const shared_ptr<AbstractTask> task = optimizer.get_task();
     const TaskProxy task_proxy(*task);
     State initial_state = task_proxy.get_initial_state();
@@ -26,7 +28,7 @@ vector<State> sample_without_dead_end_detection(
     int init_h = optimizer.get_potential_function()->get_value(initial_state);
     return sample_states_with_random_walks(
         task_proxy, successor_generator, num_samples, init_h,
-        get_average_operator_cost(task_proxy));
+        get_average_operator_cost(task_proxy), rng);
 }
 
 string get_admissible_potentials_reference() {
