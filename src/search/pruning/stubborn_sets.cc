@@ -128,8 +128,9 @@ void StubbornSets::prune_operators(
     vector<int> remaining_op_ids;
     remaining_op_ids.reserve(op_ids.size());
     for (int op_id : op_ids) {
-        if (stubborn[op_id])
+        if (stubborn[op_id]) {
             remaining_op_ids.push_back(op_id);
+        }
     }
     if (remaining_op_ids.size() != op_ids.size()) {
         op_ids.swap(remaining_op_ids);
