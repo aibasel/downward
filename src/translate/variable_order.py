@@ -8,7 +8,7 @@ DEBUG = False
 
 class CausalGraph(object):
     """Weighted causal graph used for defining a variable order.
-   
+
     The causal graph only contains pre->eff edges (in contrast to the
     variant that also has eff<->eff edges).
 
@@ -348,7 +348,7 @@ def find_and_apply_variable_order(sas_task, reorder_vars=True,
             order = list(range(len(sas_task.variables.ranges)))
         if filter_unimportant_vars:
             necessary = cg.calculate_important_vars(sas_task.goal)
-            print("%s variables of %s necessary." % (len(necessary),
+            print("%s of %s variables necessary." % (len(necessary),
                                                      len(order)))
             order = [var for var in order if necessary[var]]
         VariableOrder(order).apply_to_task(sas_task)
