@@ -50,21 +50,7 @@ extern bool g_use_metric;
 extern int g_min_action_cost;
 extern int g_max_action_cost;
 
-// TODO: The following five belong into a new Variable class.
-extern std::vector<std::string> g_variable_name;
-extern std::vector<int> g_variable_domain;
-extern std::vector<std::vector<std::string>> g_fact_names;
-extern std::vector<int> g_axiom_layers;
-extern std::vector<int> g_default_axiom_values;
-
 extern IntPacker *g_state_packer;
-// This vector holds the initial values *before* the axioms have been evaluated.
-// Use a state registry to obtain the real initial state.
-extern std::vector<int> g_initial_state_data;
-extern std::vector<std::pair<int, int>> g_goal;
-
-extern std::vector<GlobalOperator> g_operators;
-extern std::vector<GlobalOperator> g_axioms;
 extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern std::string g_plan_filename;
@@ -74,5 +60,27 @@ extern bool g_is_part_of_anytime_portfolio;
 extern const std::shared_ptr<AbstractTask> g_root_task();
 
 extern utils::Log g_log;
+
+
+// TODO: the following variables are deprecated and will be removed soon.
+
+// still needed by GlobalOperator::dump
+extern std::vector<std::string> g_variable_name;
+// still used in pruning and to check FactPair validity in GlobalOperator
+extern std::vector<int> g_variable_domain;
+
+/*
+  This vector holds the initial values *before* the axioms have been evaluated.
+  Use a state registry to obtain the real initial state.
+*/
+// still needed by the search engine to create a registry (should come from the task)
+extern std::vector<int> g_initial_state_data;
+// still needed by the pruning code
+extern std::vector<std::pair<int, int>> g_goal;
+// still needed by the pruning code, root task, get_op_index_hacked, and search space
+extern std::vector<GlobalOperator> g_operators;
+// still needed by root task
+extern std::vector<GlobalOperator> g_axioms;
+
 
 #endif

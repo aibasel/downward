@@ -38,6 +38,10 @@ static const int PRE_FILE_VERSION = 3;
 
 static vector<vector<set<FactPair>>> g_inconsistent_facts;
 
+static vector<vector<string>> g_fact_names;
+static vector<int> g_axiom_layers;
+static vector<int> g_default_axiom_values;
+
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
         if (state[g_goal[i].first] != g_goal[i].second) {
@@ -369,9 +373,6 @@ int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
 vector<string> g_variable_name;
 vector<int> g_variable_domain;
-vector<vector<string>> g_fact_names;
-vector<int> g_axiom_layers;
-vector<int> g_default_axiom_values;
 IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int>> g_goal;
