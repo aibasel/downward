@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
+import os, sys
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
 
@@ -16,15 +16,13 @@ CONFIGS = [
         "cpdbs(patterns=systematic(2), dominance_pruning=true)",
         "operatorcounting([pho_constraints(patterns=systematic(2))])"]
 ]
-SUITE = [
-    'barman-opt14-strips', 'cavediving-14-adl', 'childsnack-opt14-strips',
-    'citycar-opt14-adl', 'floortile-opt14-strips', 'ged-opt14-strips',
-    'hiking-opt14-strips', 'maintenance-opt14-adl',
-    'openstacks-opt14-strips', 'parking-opt14-strips',
-    'tetris-opt14-strips', 'tidybot-opt14-strips', 'transport-opt14-strips',
-    'visitall-opt14-strips']
+
+sys.path.append(os.path.dirname(BENCHMARKS_DIR))
+from benchmarks import suites
+
+SUITE = suites.suite_optimal_strips()
 ENVIRONMENT = MaiaEnvironment(
-    priority=-100, email="florian.pommerening@unibas.ch")
+    priority=0, email="florian.pommerening@unibas.ch")
 
 if is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
