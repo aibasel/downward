@@ -300,6 +300,8 @@ class VariableOrder(object):
             else:
                 group.facts = facts
                 new_mutexes.append(group)
+        print("%s of %s mutex groups necessary." % (len(new_mutexes),
+                                                    len(mutexes)))
         mutexes[:] = new_mutexes
 
     def _apply_to_operators(self, operators):
@@ -322,6 +324,8 @@ class VariableOrder(object):
                               for var, val in op.prevail
                               if var in self.new_var]
                 new_ops.append(op)
+        print("%s of %s operators necessary." % (len(new_ops),
+                                                 len(operators)))
         operators[:] = new_ops
 
     def _apply_to_axioms(self, axioms):
@@ -337,6 +341,8 @@ class VariableOrder(object):
                                 if var in self.new_var]
                 ax.effect = (self.new_var[eff_var], eff_val)
                 new_axioms.append(ax)
+        print("%s of %s axiom rules necessary." % (len(new_axioms),
+                                                   len(axioms)))
         axioms[:] = new_axioms
 
 
@@ -350,5 +356,7 @@ def find_and_apply_variable_order(sas_task, reorder_vars=True,
             order = list(range(len(sas_task.variables.ranges)))
         if filter_unimportant_vars:
             necessary = cg.calculate_important_vars(sas_task.goal)
+            print("%s variables of %s necessary." % (len(necessary),
+                                                     len(order)))
             order = [var for var in order if necessary[var]]
         VariableOrder(order).apply_to_task(sas_task)
