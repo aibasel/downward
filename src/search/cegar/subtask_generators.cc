@@ -191,6 +191,7 @@ static void add_fact_order_option(OptionParser &parser) {
         fact_orders,
         "ordering of goal or landmark facts",
         "HADD_DOWN");
+    utils::add_rng_options(parser);
 }
 
 static shared_ptr<SubtaskGenerator> _parse_goals(OptionParser &parser) {

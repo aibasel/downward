@@ -238,6 +238,7 @@ static void _add_succ_order_options(OptionParser &parser) {
         "When using randomize_successors=true and "
         "preferred_successors_first=true, randomization happens before "
         "preferred operators are moved to the front.");
+    utils::add_rng_options(parser);
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
@@ -386,7 +387,6 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_option<int>("w", "heuristic weight", "1");
     _add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);
-    utils::add_rng_options(parser);
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
