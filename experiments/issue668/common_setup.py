@@ -248,13 +248,17 @@ class IssueExperiment(FastDownwardExperiment):
                     if attr in cls.PORTFOLIO_ATTRIBUTES]
         return attributes
 
-    def add_absolute_report_step(self, **kwargs):
+    def add_absolute_report_step(self, name='', **kwargs):
         """Add step that makes an absolute report.
 
         Absolute reports are useful for experiments that don't
         compare revisions.
 
         The report is written to the experiment evaluation directory.
+
+        *name* is an additional identifier for the report that will be used
+        between the experiment's name and the format suffix, e.g. passing
+        name = '-foobar' will result in the name <exp-name><isssue>-foobar.html.
 
         All *kwargs* will be passed to the AbsoluteReport class. If
         the keyword argument *attributes* is not specified, a
@@ -266,7 +270,7 @@ class IssueExperiment(FastDownwardExperiment):
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = AbsoluteReport(**kwargs)
         outfile = os.path.join(self.eval_dir,
-                               get_experiment_name() + "." +
+                               get_experiment_name() + name + "." +
                                report.output_format)
         self.add_report(report, outfile=outfile)
         self.add_step(Step('publish-absolute-report',
