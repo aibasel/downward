@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
+import os, sys
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
 
@@ -13,7 +13,7 @@ REVISIONS = ["issue698-base", "issue698-v1"]
 CONFIGS = [
     IssueConfig(
         "blind",
-        ["--search", "astar(blind())"]
+        ["--search", "astar(blind())"],
         driver_options=["--search-time-limit", "60s"]
     )
 ]
@@ -35,7 +35,7 @@ exp = IssueExperiment(
     environment=ENVIRONMENT,
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
-exp.add_search_parser("custom-parser.py")
+exp.add_command("parser", ["custom-parser.py"])
 
 exp.add_comparison_table_step(
     attributes=exp.DEFAULT_TABLE_ATTRIBUTES +
