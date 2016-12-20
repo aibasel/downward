@@ -38,7 +38,7 @@ CostSaturation::CostSaturation(
     double max_time,
     bool use_general_costs,
     PickSplit pick_split,
-    shared_ptr<utils::RandomNumberGenerator> rng)
+    utils::RandomNumberGenerator &rng)
     : subtask_generators(subtask_generators),
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
@@ -151,7 +151,7 @@ void CostSaturation::build_abstractions(
             timer.get_remaining_time() / rem_subtasks,
             use_general_costs,
             pick_split,
-            *rng);
+            rng);
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();

@@ -22,6 +22,8 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     g_log << "Initializing additive Cartesian heuristic..." << endl;
     vector<shared_ptr<SubtaskGenerator>> subtask_generators =
         opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks");
+    shared_ptr<utils::RandomNumberGenerator> rng =
+        utils::parse_rng_from_options(opts);
     CostSaturation cost_saturation(
         subtask_generators,
         opts.get<int>("max_states"),
@@ -29,7 +31,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")),
-        utils::parse_rng_from_options(opts));
+        *rng);
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }

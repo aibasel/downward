@@ -29,7 +29,7 @@ class CostSaturation {
     const double max_time;
     const bool use_general_costs;
     const PickSplit pick_split;
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
+    utils::RandomNumberGenerator &rng;
 
     std::vector<CartesianHeuristicFunction> heuristic_functions;
     std::vector<int> remaining_costs;
@@ -56,7 +56,7 @@ public:
         double max_time,
         bool use_general_costs,
         PickSplit pick_split,
-        std::shared_ptr<utils::RandomNumberGenerator> rng);
+        utils::RandomNumberGenerator &rng);
 
     std::vector<CartesianHeuristicFunction> generate_heuristic_functions(
         const std::shared_ptr<AbstractTask> &task);
