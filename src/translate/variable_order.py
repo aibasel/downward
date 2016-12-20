@@ -210,30 +210,28 @@ class MaxDAG(object):
         weights = list(weight_to_nodes.keys())
         heapq.heapify(weights)
 
-        # Note for future refactoring: it is perhaps more idiomatic
-        # and efficient to use a set rather than a defaultdict(bool).
-        done = defaultdict(bool)
+        done = set()
         result = []
         while weights:
             min_key = weights[0]
             min_elem = None
             entries = weight_to_nodes[min_key]
             while (entries and
-                (min_elem is None or done[min_elem] or
+                (min_elem is None or min_elem in done or
                 min_key > incoming_weights[min_elem])):
                 min_elem = entries.popleft()
             if not entries:
                 del weight_to_nodes[min_key]
                 heapq.heappop(weights) # remove min_key from heap
-            if min_elem is None or done[min_elem]:
+            if min_elem is None or min_elem in done:
                 # since we use lazy deletion from the heap weights,
                 # there can be weights with a "done" entry in
                 # weight_to_nodes
                 continue
-            done[min_elem] = True
+            done.add(min_elem)
             result.append(min_elem)
             for target, weight in self.weighted_graph[min_elem]:
-                if not done[target]:
+                if target not in done:
                     weight = weight % 100000
                     if weight == 0:
                         continue
