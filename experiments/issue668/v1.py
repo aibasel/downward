@@ -72,7 +72,7 @@ def main(revisions=None):
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
 
-    exp.add_absolute_report_step()
+    exp.add_absolute_report_step(name='-abp')
 
     #if matplotlib:
         #for attribute in ["memory", "total_time"]:
