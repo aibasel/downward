@@ -1,8 +1,8 @@
 #ifndef POTENTIALS_UTIL_H
 #define POTENTIALS_UTIL_H
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 class State;

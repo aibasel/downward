@@ -110,7 +110,8 @@ class Abstraction {
     void print_statistics();
 
 public:
-    Abstraction(const std::shared_ptr<AbstractTask> task,
+    Abstraction(
+        const std::shared_ptr<AbstractTask> task,
         int max_states,
         int max_non_looping_transitions,
         double max_time,
