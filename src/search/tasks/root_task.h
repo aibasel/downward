@@ -1,45 +1,44 @@
 #ifndef TASKS_ROOT_TASK_H
 #define TASKS_ROOT_TASK_H
 
-#include "../abstract_task.h"
+#include "explicit_task.h"
 
 namespace tasks {
-class RootTask : public AbstractTask {
+class RootTask : public ExplicitTask {
 public:
-    virtual int get_num_variables() const override;
-    virtual std::string get_variable_name(int var) const override;
-    virtual int get_variable_domain_size(int var) const override;
-    virtual int get_variable_axiom_layer(int var) const override;
-    virtual int get_variable_default_axiom_value(int var) const override;
-    virtual std::string get_fact_name(const FactPair &fact) const override;
-    virtual bool are_facts_mutex(
-        const FactPair &fact1, const FactPair &fact2) const override;
+    RootTask(
+        const std::shared_ptr<AbstractTask> &parent,
+        std::vector<ExplicitVariable> &&variables,
+        std::vector<std::vector<std::set<FactPair>>> &&mutexes,
+        std::vector<ExplicitOperator> &&operators,
+        std::vector<ExplicitOperator> &&axioms,
+        std::vector<int> &&initial_state_values,
+        std::vector<FactPair> &&goals);
 
-    virtual int get_operator_cost(int index, bool is_axiom) const override;
-    virtual std::string get_operator_name(int index, bool is_axiom) const override;
-    virtual int get_num_operators() const override;
-    virtual int get_num_operator_preconditions(int index, bool is_axiom) const override;
-    virtual FactPair get_operator_precondition(
-        int op_index, int fact_index, bool is_axiom) const override;
-    virtual int get_num_operator_effects(int op_index, bool is_axiom) const override;
-    virtual int get_num_operator_effect_conditions(
-        int op_index, int eff_index, bool is_axiom) const override;
-    virtual FactPair get_operator_effect_condition(
-        int op_index, int eff_index, int cond_index, bool is_axiom) const override;
-    virtual FactPair get_operator_effect(
-        int op_index, int eff_index, bool is_axiom) const override;
     virtual const GlobalOperator *get_global_operator(int index, bool is_axiom) const override;
-
-    virtual int get_num_axioms() const override;
-
-    virtual int get_num_goals() const override;
-    virtual FactPair get_goal_fact(int index) const override;
-
-    virtual std::vector<int> get_initial_state_values() const override;
-    virtual void convert_state_values(
-        std::vector<int> &values,
-        const AbstractTask *ancestor_task) const override;
+    virtual void convert_state_values_from_parent(std::vector<int> &values) const override;
 };
+
+/*
+  Eventually, this should parse the task from a stream.
+  this is currently done by the methods read_* in globals.
+  We have to keep them as long as there is still code that
+  accesses the global variables that store the task. For
+  now, we let those methods do the parsing and access the
+  parsed task here.
+*/
+std::shared_ptr<RootTask> create_root_task(
+        const std::vector<std::string> &variable_name,
+        const std::vector<int> &variable_domain,
+        const std::vector<std::vector<std::string>> &fact_names,
+        const std::vector<int> &axiom_layers,
+        const std::vector<int> &default_axiom_values,
+        const std::vector<std::vector<std::set<FactPair>>> &inconsistent_facts,
+        const std::vector<int> &initial_state_data,
+        const std::vector<std::pair<int, int>> &goal,
+        const std::vector<GlobalOperator> &operators,
+        const std::vector<GlobalOperator> &axioms
+);
 }
 
 #endif
