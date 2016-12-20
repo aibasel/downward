@@ -27,6 +27,15 @@ def main(revisions=None):
         IssueConfig('sccs-top-dfp-rnd-otn-abp-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=random,product_ts_order=old_to_new,atomic_before_product=true)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
         IssueConfig('sccs-top-dfp-rnd-nto-abp-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=random,product_ts_order=new_to_old,atomic_before_product=true)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
         IssueConfig('sccs-top-dfp-rnd-rnd-abp-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=random,product_ts_order=random,atomic_before_product=true)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-rl-otn-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=reverse_level,product_ts_order=old_to_new,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-rl-nto-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=reverse_level,product_ts_order=new_to_old,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-rl-rnd-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=reverse_level,product_ts_order=random,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-l-otn-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=level,product_ts_order=old_to_new,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-l-nto-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=level,product_ts_order=new_to_old,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-l-rnd-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=level,product_ts_order=random,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-rnd-otn-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=random,product_ts_order=old_to_new,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-rnd-nto-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=random,product_ts_order=new_to_old,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
+        IssueConfig('sccs-top-dfp-rnd-rnd-pba-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=random,product_ts_order=random,atomic_before_product=false)])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
         IssueConfig('sccs-top-dfp-allrnd-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,single_random])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),
     }
 
@@ -72,29 +81,99 @@ def main(revisions=None):
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
 
-    exp.add_absolute_report_step(filter_config=[
-        'issue667-v1-sccs-top-dfp-rl-otn-abp-b50k',
-        'issue667-v1-sccs-top-dfp-rl-nto-abp-b50k',
-        'issue667-v1-sccs-top-dfp-rl-rnd-abp-b50k',
-        'issue667-v1-sccs-top-dfp-l-otn-abp-b50k',
-        'issue667-v1-sccs-top-dfp-l-nto-abp-b50k',
-        'issue667-v1-sccs-top-dfp-l-rnd-abp-b50k',
-        'issue667-v1-sccs-top-dfp-rnd-otn-abp-b50k',
-        'issue667-v1-sccs-top-dfp-rnd-nto-abp-b50k',
-        'issue667-v1-sccs-top-dfp-rnd-rnd-abp-b50k',
+    exp.add_absolute_report_step(name='issue667-v1-abp',filter_config=[
+        '%s-sccs-top-dfp-rl-otn-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rl-rnd-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-otn-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-rnd-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-otn-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-rnd-abp-b50k' % 'issue667-v1',
     ])
-    exp.add_absolute_report_step(filter_config=[
-        'issue667-v2-sccs-top-dfp-rl-otn-abp-b50k',
-        'issue667-v2-sccs-top-dfp-rl-nto-abp-b50k',
-        'issue667-v2-sccs-top-dfp-rl-rnd-abp-b50k',
-        'issue667-v2-sccs-top-dfp-l-otn-abp-b50k',
-        'issue667-v2-sccs-top-dfp-l-nto-abp-b50k',
-        'issue667-v2-sccs-top-dfp-l-rnd-abp-b50k',
-        'issue667-v2-sccs-top-dfp-rnd-otn-abp-b50k',
-        'issue667-v2-sccs-top-dfp-rnd-nto-abp-b50k',
-        'issue667-v2-sccs-top-dfp-rnd-rnd-abp-b50k',
+    exp.add_absolute_report_step(name='issue667-v1-pba',filter_config=[
+        '%s-sccs-top-dfp-rl-otn-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rl-rnd-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-otn-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-rnd-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-otn-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-rnd-pba-b50k' % 'issue667-v1',
     ])
-    exp.add_comparison_table_step()
+    exp.add_absolute_report_step(name='issue667-v2-abp',filter_config=[
+        '%s-sccs-top-dfp-rl-otn-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rl-rnd-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-otn-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-rnd-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-otn-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-rnd-abp-b50k' % 'issue667-v2',
+    ])
+    exp.add_absolute_report_step(name='issue667-v2-pba',filter_config=[
+        '%s-sccs-top-dfp-rl-otn-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rl-rnd-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-otn-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-rnd-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-otn-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-rnd-pba-b50k' % 'issue667-v2',
+    ])
+    exp.add_custom_comparison_table_step(name='issue667-compare-v1-v2-abp',compared_configs=[
+        ('%s-sccs-top-dfp-rl-otn-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-otn-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rl-rnd-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-rnd-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-otn-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-otn-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-rnd-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-rnd-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-otn-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-otn-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-rnd-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-rnd-abp-b50k' % 'issue667-v2'),
+    ])
+    exp.add_custom_comparison_table_step(name='issue667-compare-v1-v2-pba',compared_configs=[
+        ('%s-sccs-top-dfp-rl-otn-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-otn-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rl-rnd-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-rnd-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-otn-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-otn-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-rnd-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-rnd-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-otn-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-otn-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-rnd-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-rnd-pba-b50k' % 'issue667-v2'),
+    ])
+    exp.add_absolute_report_step(name='issue667-v1-paper',filter_config=[
+        '%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v1',
+        '%s-sccs-top-dfp-allrnd-b50k' % 'issue667-v1',
+    ])
+    exp.add_absolute_report_step(name='issue667-v2-paper',filter_config=[
+        '%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v2',
+        '%s-sccs-top-dfp-allrnd-b50k' % 'issue667-v2',
+    ])
+    exp.add_custom_comparison_table_step(name='issue667-compare-v1-v2-paper',compared_configs=[
+        ('%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-nto-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-nto-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-nto-abp-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rl-nto-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-l-nto-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v1', '%s-sccs-top-dfp-rnd-nto-pba-b50k' % 'issue667-v2'),
+        ('%s-sccs-top-dfp-allrnd-b50k' % 'issue667-v1', '%s-sccs-top-dfp-allrnd-b50k' % 'issue667-v2'),
+    ])
 
     #if matplotlib:
         #for attribute in ["memory", "total_time"]:
