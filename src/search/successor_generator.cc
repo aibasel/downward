@@ -196,8 +196,8 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
             assert(utils::in_bounds(op, next_condition_by_op));
             Condition::const_iterator &cond_iter = next_condition_by_op[op];
             assert(cond_iter - conditions[op].begin() >= 0);
-            assert(cond_iter - conditions[op].begin()
-                   <= (int)conditions[op].size());
+            assert(cond_iter - conditions[op].begin() <=
+                   static_cast<int>(conditions[op].size()));
             if (cond_iter == conditions[op].end()) {
                 var_is_interesting = true;
                 applicable_operators.push_back(op);
