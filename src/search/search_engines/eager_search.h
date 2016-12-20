@@ -2,6 +2,7 @@
 #define SEARCH_ENGINES_EAGER_SEARCH_H
 
 #include "../search_engine.h"
+#include "../per_state_array_information.h"
 
 #include "../open_lists/open_list.h"
 
@@ -29,6 +30,9 @@ class EagerSearch : public SearchEngine {
     std::vector<Heuristic *> preferred_operator_heuristics;
 
     std::shared_ptr<PruningMethod> pruning_method;
+
+    PerStateArrayInformation<int> values;
+    std::vector<StateID> non_dead_end_states;
 
     std::pair<SearchNode, bool> fetch_next_node();
     void start_f_value_statistics(EvaluationContext &eval_context);
