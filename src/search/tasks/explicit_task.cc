@@ -1,5 +1,8 @@
 #include "explicit_task.h"
 
+#include "../globals.h"
+#include "../state_registry.h"
+
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -32,7 +35,8 @@ ExplicitTask::ExplicitTask(
       operators(move(operators)),
       axioms(move(axioms)),
       initial_state_values(move(initial_state_values)),
-      goals(move(goals)) {
+      goals(move(goals)),
+      evaluated_axioms_on_initial_state(false) {
     assert(run_sanity_check());
 }
 
@@ -149,7 +153,21 @@ FactPair ExplicitTask::get_goal_fact(int index) const {
 }
 
 vector<int> ExplicitTask::get_initial_state_values() const {
+    if (!evaluated_axioms_on_initial_state) {
+        evaluate_axioms_on_initial_state();
+    }
     return initial_state_values;
+}
+
+void ExplicitTask::evaluate_axioms_on_initial_state() const {
+    if (!axioms.empty()) {
+        // HACK this should not have to go through a state registry.
+        // HACK on top of the HACK above: this should not use globals.
+        StateRegistry state_registry(
+            *this, *g_state_packer, *g_axiom_evaluator, initial_state_values);
+        initial_state_values = state_registry.get_initial_state().get_values();
+    }
+    evaluated_axioms_on_initial_state = true;
 }
 
 

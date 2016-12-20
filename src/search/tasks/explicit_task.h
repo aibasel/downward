@@ -36,12 +36,14 @@ protected:
     const std::vector<std::vector<std::set<FactPair>>> mutexes;
     const std::vector<ExplicitOperator> operators;
     const std::vector<ExplicitOperator> axioms;
-    const std::vector<int> initial_state_values;
+    mutable std::vector<int> initial_state_values;
     const std::vector<FactPair> goals;
+    mutable bool evaluated_axioms_on_initial_state;
 
     const ExplicitVariable &get_variable(int var) const;
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
     const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
+    void evaluate_axioms_on_initial_state() const;
 
 public:
     ExplicitTask(

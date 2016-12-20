@@ -357,7 +357,10 @@ bool are_mutex(const FactPair &a, const FactPair &b) {
 }
 
 const shared_ptr<AbstractTask> g_root_task() {
-    static shared_ptr<AbstractTask> root_task = make_shared<tasks::RootTask>();
+    static shared_ptr<AbstractTask> root_task = tasks::create_root_task(
+        g_variable_name, g_variable_domain, g_fact_names, g_axiom_layers,
+        g_default_axiom_values, g_inconsistent_facts, g_initial_state_data,
+        g_goal, g_operators, g_axioms);
     return root_task;
 }
 
