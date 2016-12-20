@@ -16,6 +16,10 @@ namespace options {
 class Options;
 }
 
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace cegar {
 using Facts = std::vector<FactPair>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
@@ -58,6 +62,7 @@ public:
 */
 class GoalDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 public:
     explicit GoalDecomposition(const options::Options &options);
@@ -74,6 +79,7 @@ public:
 class LandmarkDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
     bool combine_facts;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     /* Perform domain abstraction by combining facts that have to be
        achieved before a given landmark can be made true. */
