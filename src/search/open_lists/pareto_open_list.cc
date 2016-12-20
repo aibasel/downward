@@ -22,7 +22,7 @@ using namespace std;
 
 template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
+    shared_ptr<utils::RandomNumberGenerator> rng;
 
     typedef deque<Entry> Bucket;
     typedef vector<int> KeyType;
