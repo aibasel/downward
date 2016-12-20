@@ -8,6 +8,9 @@ DEBUG = False
 
 class CausalGraph(object):
     """Weighted causal graph used for defining a variable order.
+   
+    The causal graph only contains pre->eff edges (in contrast to the
+    variant that also has eff<->eff edges).
 
     The variable order is defined such that removing all edges v->v'
     with v>v' induces an acyclic subgraph of the causal graph. This
