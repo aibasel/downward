@@ -256,9 +256,7 @@ class IssueExperiment(FastDownwardExperiment):
 
         The report is written to the experiment evaluation directory.
 
-        *name* is an additional identifier for the report that will be used
-        between the experiment's name and the format suffix, e.g. passing
-        name = '-foobar' will result in the name <exp-name><isssue>-foobar.html.
+        *name* is a custom name for the report.
 
         All *kwargs* will be passed to the AbsoluteReport class. If
         the keyword argument *attributes* is not specified, a
@@ -268,9 +266,11 @@ class IssueExperiment(FastDownwardExperiment):
 
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
+        if name == '':
+            name = get_experiment_name()
         report = AbsoluteReport(**kwargs)
         outfile = os.path.join(self.eval_dir,
-                               get_experiment_name() + name + "." +
+                               name + "." +
                                report.output_format)
         self.add_report(report, outfile=outfile)
         self.add_step(Step('publish-absolute-report',
@@ -320,6 +320,31 @@ class IssueExperiment(FastDownwardExperiment):
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
         self.add_step(Step("publish-comparison-tables", publish_comparison_tables))
+
+    def add_custom_comparison_table_step(self, name, **kwargs):
+        """Add a step that compares the configurations given in
+        *compared_configs*.
+
+        *compared_configs* must be specified. See CompareConfigsReport class.
+
+        *name* is a custom name for the report.
+
+        All *kwargs* will be passed to the CompareConfigsReport class.
+        If the keyword argument *attributes* is not specified, a
+        default list of attributes is used. ::
+
+            exp.add_comparison_table_step(attributes=["coverage"])
+
+        """
+        kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
+        report = CompareConfigsReport(**kwargs)
+        outfile = os.path.join(
+            self.eval_dir,
+            name + "." + report.output_format)
+        self.add_report(report, outfile=outfile)
+        self.add_step(Step('publish-custom-comparison-report',
+                           subprocess.call,
+                           ['publish', outfile]))
 
     def add_scatter_plot_step(self, attributes=None):
         """Add a step that creates scatter plots for all revision pairs.
