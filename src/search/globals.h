@@ -70,7 +70,6 @@ extern SuccessorGenerator *g_successor_generator;
 extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
 extern bool g_is_part_of_anytime_portfolio;
-extern std::shared_ptr<utils::RandomNumberGenerator> g_rng();
 
 extern const std::shared_ptr<AbstractTask> g_root_task();
 
