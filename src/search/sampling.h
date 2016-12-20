@@ -27,7 +27,8 @@ struct SamplingTimeout : public std::exception {};
   sampling procedure will run for at most the specified time limit and
   possibly return less than 'num_samples' states.
 */
-std::vector<State> sample_states_with_random_walks(TaskProxy task_proxy,
+std::vector<State> sample_states_with_random_walks(
+    TaskProxy task_proxy,
     const SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
