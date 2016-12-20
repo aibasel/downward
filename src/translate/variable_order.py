@@ -291,13 +291,10 @@ class VariableOrder(object):
 
     def _apply_to_mutexes(self, mutexes):
         new_mutexes = []
-        num_removed = 0
         for group in mutexes:
             facts = [(self.new_var[var], val) for var, val in group.facts
                      if var in self.new_var]
-            if not facts or len(set(var for var, _ in facts)) == 1:
-                num_removed += 1
-            else:
+            if facts and len(set(var for var, _ in facts)) > 1:
                 group.facts = facts
                 new_mutexes.append(group)
         print("%s of %s mutex groups necessary." % (len(new_mutexes),
@@ -306,7 +303,6 @@ class VariableOrder(object):
 
     def _apply_to_operators(self, operators):
         new_ops = []
-        num_removed = 0
         for op in operators:
             pre_post = []
             for eff_var, pre, post, cond in op.pre_post:
@@ -316,9 +312,7 @@ class VariableOrder(object):
                                     if var in self.new_var)
                     pre_post.append(
                         (self.new_var[eff_var], pre, post, new_cond))
-            if not pre_post:
-                num_removed += 1
-            else:
+            if pre_post:
                 op.pre_post = pre_post
                 op.prevail = [(self.new_var[var], val)
                               for var, val in op.prevail
@@ -330,12 +324,9 @@ class VariableOrder(object):
 
     def _apply_to_axioms(self, axioms):
         new_axioms = []
-        num_removed = 0
         for ax in axioms:
             eff_var, eff_val = ax.effect
-            if eff_var not in self.new_var:
-                num_removed += 1
-            else:
+            if eff_var in self.new_var:
                 ax.condition = [(self.new_var[var], val)
                                 for var, val in ax.condition
                                 if var in self.new_var]
