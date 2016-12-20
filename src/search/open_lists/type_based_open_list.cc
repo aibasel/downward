@@ -20,7 +20,7 @@ using namespace std;
 
 template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
+    shared_ptr<utils::RandomNumberGenerator> rng;
     vector<ScalarEvaluator *> evaluators;
 
     using Key = vector<int>;

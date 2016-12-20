@@ -20,7 +20,7 @@ using namespace std;
 
 template<class Entry>
 class EpsilonGreedyOpenList : public OpenList<Entry> {
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
+    shared_ptr<utils::RandomNumberGenerator> rng;
 
     struct HeapNode {
         int id;
