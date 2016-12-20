@@ -47,7 +47,7 @@ protected:
       Return the first unsatified goal pair,
       or FactPair::no_fact if there is none.
 
-      NOTE that we use a sorted list of goals here intentionally.
+      Note that we use a sorted list of goals here intentionally.
       (See comment on find_unsatisfied_precondition.)
     */
     FactPair find_unsatisfied_goal(const State &state) {
@@ -58,7 +58,7 @@ protected:
       Return the first unsatified precondition,
       or FactPair::no_fact if there is none.
 
-      NOTE that we use a sorted list of preconditions here intentionally.
+      Note that we use a sorted list of preconditions here intentionally.
       The ICAPS paper "Efficient Stubborn Sets: Generalized Algorithms and
       Selection Strategies" (Wehrle and Helmert, 2014) contains a limited study
       of this (see section "Strategies for Choosing Unsatisfied Conditions" and
