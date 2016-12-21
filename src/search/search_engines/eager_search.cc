@@ -86,6 +86,7 @@ void EagerSearch::initialize() {
         values[initial_state][0] = 0;
         values[initial_state][1] = h_value;
         values[initial_state][2] = 0 + h_value;
+        values[initial_state][3] = 42;
         non_dead_end_states.push_back(initial_state.get_id());
     }
 
@@ -122,6 +123,10 @@ SearchStatus EagerSearch::step() {
                 || values[state][1] != h_value
                 || values[state][2] != node.get_g() + h_value) {
                 cout << "PerStateArrayInformation returns wrong element." << endl;
+                cout << "values: " << values[state][0] << " " << values[state][1] << " "
+                     << values[state][2] << " " << endl;
+                cout << "expected: " << node.get_g() << " " << h_value << " "
+                     << node.get_g() + h_value << endl;
                 break;
             }
         }
@@ -189,11 +194,10 @@ SearchStatus EagerSearch::step() {
             }
             succ_node.open(node, op);
 
-            int g_value = values[s][0] + get_adjusted_cost(*op);
             int h_value = eval_context.get_heuristic_value(heuristics[0]);
-            values[succ_state][0] = g_value;
+            values[succ_state][0] = succ_node.get_g();
             values[succ_state][1] = h_value;
-            values[succ_state][2] = succ_g + h_value;
+            values[succ_state][2] = succ_node.get_g() + h_value;
             non_dead_end_states.push_back(succ_state.get_id());
 
             open_list->insert(eval_context, succ_state.get_id());
@@ -237,15 +241,20 @@ SearchStatus EagerSearch::step() {
                   from scratch.
                 */
                 open_list->insert(eval_context, succ_state.get_id());
-                int g_value = values[s][0] + get_adjusted_cost(*op);
-                values[succ_state][0] = g_value;
-                values[succ_state][2] = g_value + values[s][1];
+                values[succ_state][0] = succ_node.get_g();
+                values[succ_state][1] = eval_context.get_heuristic_value(heuristics[0]);
+                values[succ_state][2] = succ_node.get_g() + eval_context.get_heuristic_value(heuristics[0]);
 
             } else {
                 // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back.
                 succ_node.update_parent(node, op);
+                EvaluationContext eval_context(
+                    succ_state, succ_node.get_g(), is_preferred, &statistics);
+                values[succ_state][0] = succ_node.get_g();
+                values[succ_state][1] = eval_context.get_heuristic_value(heuristics[0]);
+                values[succ_state][2] = succ_node.get_g() + eval_context.get_heuristic_value(heuristics[0]);
             }
         }
     }

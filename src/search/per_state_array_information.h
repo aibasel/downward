@@ -16,33 +16,34 @@
 
 template<class T>
 class ArrayView {
-    // TODO: should these two member variables be const/immutable?
-    // the assigning semantics is that the data gets copied in the array
-    // where p is pointing; we never change the pointer nor the size
-    T *p;
-    size_t size;
+    T *const p;
+    const size_t array_size;
 public:
     // we might want to make the constructor private and
     // PerStateArraInformation a friend class in the future
-    ArrayView(T *p, size_t size) : p(p), size(size) {}
+    ArrayView(T *p, size_t size) : p(p), array_size(size) {}
+    // TODO: is return *this correct?
     ArrayView<T> &operator=(const std::vector<T> &data) {
-        assert(data.size() == size);
+        assert(data.size() == array_size);
         for(size_t i = 0; i < data.size; ++i) {
             p[i] = data[i];
         }
+        return *this;
     }
     ArrayView<T> &operator=(const ArrayView<T> &data) {
-        assert(data.size == size);
-        for(size_t i = 0; i < size; ++i) {
+        assert(data.array_size == array_size);
+        for(size_t i = 0; i < array_size; ++i) {
             p[i] = data.p[i];
         }
+        return *this;
     }
 
     std::vector<T> get_vector() {
-        std::vector<T> ret(size);
-        for(size_t i = 0; i < size; ++i) {
+        std::vector<T> ret(array_size);
+        for(size_t i = 0; i < array_size; ++i) {
             ret[i] = p[i];
         }
+        // TODO: move correct here?
         return std::move(ret);
     }
 
@@ -52,6 +53,10 @@ public:
 
     const T &operator[](int index) const {
         return p[index];
+    }
+
+    size_t size() const {
+        return array_size;
     }
 };
 
