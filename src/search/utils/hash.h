@@ -153,10 +153,27 @@ inline void feed(HashState &hash_state, uint64_t value) {
     hash_state.feed(static_cast<uint32_t>(value));
 }
 
+template<typename T>
+void feed(HashState &hash_state, const T *p) {
+    feed(hash_state, p);
+}
+
 template<typename T1, typename T2>
 void feed(HashState &hash_state, const std::pair<T1, T2> &p) {
     feed(hash_state, p.first);
     feed(hash_state, p.second);
+}
+
+template<typename T>
+void feed(HashState &hash_state, const std::vector<T> &vec) {
+    /*
+      Feed vector size to ensure that no two different vectors have the same
+      prefix of feed() calls.
+    */
+    feed(hash_state, vec.size());
+    for (const T &item : vec) {
+        feed(hash_state, item);
+    }
 }
 
 
@@ -211,19 +228,9 @@ size_t hash_sequence(const Sequence &data, size_t length) {
 
 namespace std {
 template<typename T>
-struct hash<std::vector<T>> {
-    size_t operator()(const std::vector<T> &vec) const {
-        return utils::hash_sequence(vec, vec.size());
-    }
-};
-
-template<typename TA, typename TB>
-struct hash<std::pair<TA, TB>> {
-    size_t operator()(const std::pair<TA, TB> &pair) const {
-        size_t hash = 0;
-        utils::hash_combine(hash, pair.first);
-        utils::hash_combine(hash, pair.second);
-        return hash;
+struct hash {
+    size_t operator()(const T &object) const {
+        return utils::get_hash(object);
     }
 };
 }
