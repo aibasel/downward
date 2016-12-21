@@ -55,14 +55,15 @@ EXAMPLES = [
      ["./fast-downward.py", "misc/tests/benchmarks/gripper/prob01.pddl",
       "--search", '"astar(lmcut())"']),
     ("Translate and run no search:",
-     ["./fast-downward.py", "--translate", 
+     ["./fast-downward.py", "--translate",
       "misc/tests/benchmarks/gripper/prob01.pddl"]),
     ("Run predefined configuration (LAMA-2011) on translated task:",
      ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output.sas"]),
     ("Run a portfolio on a translated task:",
      ["./fast-downward.py", "--portfolio", EXAMPLE_PORTFOLIO,
       "--search-time-limit", "30m", "output.sas"]),
-    ("Run the search component in debug mode (with assertions enabled):",
+    ("Run the search component in debug mode (with assertions enabled) "
+     "and validate the resulting plan:",
      ["./fast-downward.py", "--debug", "output.sas", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
      ["./fast-downward.py", "misc/tests/benchmarks/gripper/prob01.pddl",
@@ -308,7 +309,7 @@ def parse_args():
             "script creates them by default.")
     driver_other.add_argument(
         "--debug", action="store_true",
-        help="alias for --build=debug32")
+        help="alias for --build=debug32 --validate")
     driver_other.add_argument(
         "--validate", action="store_true",
         help='validate plans (implied by --debug); needs "validate" (VAL) on PATH')
@@ -343,8 +344,8 @@ def parse_args():
     args = parser.parse_args()
 
     if args.build and args.debug:
-        parser.error("The option --debug is an alias for --build=debug32. "
-                     "Do no specify both --debug and --build.")
+        parser.error("The option --debug is an alias for --build=debug32 "
+                     "--validate. Do no specify both --debug and --build.")
     if not args.build:
         if args.debug:
             args.build = "debug32"
