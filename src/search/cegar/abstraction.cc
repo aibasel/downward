@@ -73,6 +73,7 @@ Abstraction::Abstraction(
     double max_time,
     bool use_general_costs,
     PickSplit pick,
+    utils::RandomNumberGenerator &rng,
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
@@ -92,7 +93,7 @@ Abstraction::Abstraction(
     cout << "Maximum number of states: " << max_states << endl;
     cout << "Maximum number of transitions: "
          << max_non_looping_transitions << endl;
-    build();
+    build(rng);
     g_log << "Done building abstraction." << endl;
     cout << "Time for building abstraction: " << timer << endl;
 
@@ -153,7 +154,7 @@ bool Abstraction::may_keep_refining() const {
            !timer.is_expired();
 }
 
-void Abstraction::build() {
+void Abstraction::build(utils::RandomNumberGenerator &rng) {
     create_trivial_abstraction();
     /*
       For landmark tasks we have to map all states in which the
@@ -179,7 +180,7 @@ void Abstraction::build() {
         }
         AbstractState *abstract_state = flaw->current_abstract_state;
         vector<Split> splits = flaw->get_possible_splits();
-        const Split &split = split_selector.pick_split(*abstract_state, splits);
+        const Split &split = split_selector.pick_split(*abstract_state, splits, rng);
         refine(abstract_state, split.var_id, split.values);
     }
     cout << "Concrete solution found: " << found_concrete_solution << endl;

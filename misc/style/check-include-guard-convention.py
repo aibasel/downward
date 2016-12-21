@@ -35,7 +35,6 @@ def check_header_files(component):
 
 def main():
     errors = []
-    errors.extend(check_header_files("preprocess"))
     errors.extend(check_header_files("search"))
     for error in errors:
         print(error)

@@ -76,20 +76,20 @@ macro(fast_downward_set_linker_flags)
     else()
         # Any libs we build should be static.
         set(BUILD_SHARED_LIBS FALSE)
-    
+
         # Any libraries that are implicitly added to the end of the linker
         # command should be linked statically.
         set(LINK_SEARCH_END_STATIC TRUE)
-    
+
         # Do not add "-rdynamic" flag.
         set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-    
+
         # Only look for static libraries (Windows does not support this).
         if(UNIX)
             set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
         endif()
-    
+
         # Set linker flags to link statically.
         if(CMAKE_COMPILER_IS_GNUCXX)
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libgcc")
@@ -176,7 +176,7 @@ macro(fast_downward_check_64_bit_option)
     endif()
 endmacro()
 
-function(fast_downward_add_headers_to_sources_list _SOURCES_LIST_VAR)
+function(fast_downward_add_existing_sources_to_list _SOURCES_LIST_VAR)
     set(_ALL_FILES)
     foreach(SOURCE_FILE ${${_SOURCES_LIST_VAR}})
         get_filename_component(_SOURCE_FILE_DIR ${SOURCE_FILE} PATH)
@@ -185,9 +185,11 @@ function(fast_downward_add_headers_to_sources_list _SOURCES_LIST_VAR)
         if (_SOURCE_FILE_DIR)
             set(_SOURCE_FILE_DIR "${_SOURCE_FILE_DIR}/")
         endif()
-        list(APPEND _ALL_FILES "${SOURCE_FILE}")
-        if (${_SOURCE_FILE_EXT} STREQUAL ".cc")
+        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_SOURCE_FILE_DIR}${_SOURCE_FILE_NAME}.h")
             list(APPEND _ALL_FILES "${_SOURCE_FILE_DIR}${_SOURCE_FILE_NAME}.h")
+        endif()
+        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_SOURCE_FILE_DIR}${_SOURCE_FILE_NAME}.cc")
+            list(APPEND _ALL_FILES "${_SOURCE_FILE_DIR}${_SOURCE_FILE_NAME}.cc")
         endif()
     endforeach()
     set(${_SOURCES_LIST_VAR} ${_ALL_FILES} PARENT_SCOPE)
@@ -205,7 +207,7 @@ function(fast_downward_plugin)
     if(NOT _PLUGIN_SOURCES)
         message(FATAL_ERROR "fast_downward_plugin: 'SOURCES' argument required.")
     endif()
-    fast_downward_add_headers_to_sources_list(_PLUGIN_SOURCES)
+    fast_downward_add_existing_sources_to_list(_PLUGIN_SOURCES)
     # Check optional arguments.
     if(NOT _PLUGIN_DISPLAY_NAME)
         string(TOLOWER ${_PLUGIN_NAME} _PLUGIN_DISPLAY_NAME)
