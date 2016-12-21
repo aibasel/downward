@@ -100,9 +100,15 @@
 
 class PerStateInformationBase;
 
+// Wrapper that can be passed to the hash function.
 struct PackedStateWrapper {
     const unsigned int *data;
     int length;
+
+    PackedStateWrapper(const unsigned int *data, int length)
+        : data(data),
+          length(length) {
+    }
 };
 
 namespace utils {
@@ -125,8 +131,8 @@ class StateRegistry {
         }
 
         unsigned int operator()(StateID id) const {
-            return utils::hash_unsigned_int_sequence(
-                state_data_pool[id.value], state_size);
+            return utils::get_hash(
+                PackedStateWrapper(state_data_pool[id.value], state_size));
         }
     };
 
