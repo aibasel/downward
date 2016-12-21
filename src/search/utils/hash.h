@@ -2,7 +2,8 @@
 #define UTILS_HASH_H
 
 #include <cassert>
-#include <functional>
+#include <cstddef>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -198,31 +199,6 @@ uint64_t get_hash64(const T &value) {
 template<typename T>
 size_t get_hash(const T &value) {
     return static_cast<size_t>(get_hash64(value));
-}
-
-/*
-  Hash a new value and combine it with an existing hash.
-
-  This function should only be called from within this module.
-*/
-template<typename T>
-inline void hash_combine(size_t &hash, const T &value) {
-    std::hash<T> hasher;
-    /*
-      The combination of hash values is based on issue 6.18 in
-      http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf.
-      Boost combines hash values in the same way.
-    */
-    hash ^= hasher(value) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-}
-
-template<typename Sequence>
-size_t hash_sequence(const Sequence &data, size_t length) {
-    size_t hash = 0;
-    for (size_t i = 0; i < length; ++i) {
-        hash_combine(hash, data[i]);
-    }
-    return hash;
 }
 }
 
