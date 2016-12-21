@@ -157,6 +157,7 @@ inline void feed(HashState &hash_state, uint64_t value) {
 
 template<typename T>
 void feed(HashState &hash_state, const T *p) {
+    // This is wasteful in 32-bit mode, but we plan to switch to 64-bit soon anyway.
     feed(hash_state, reinterpret_cast<uint64_t>(p));
 }
 
