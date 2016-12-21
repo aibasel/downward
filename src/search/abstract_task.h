@@ -45,15 +45,10 @@ struct FactPair {
 
 std::ostream &operator<<(std::ostream &os, const FactPair &fact_pair);
 
-namespace std {
-template<>
-struct hash<FactPair> {
-    size_t operator()(const FactPair &fact) const {
-        std::pair<int, int> raw_fact(fact.var, fact.value);
-        std::hash<std::pair<int, int>> hasher;
-        return hasher(raw_fact);
-    }
-};
+namespace utils {
+inline void feed(HashState &hash_state, const FactPair &fact) {
+    return feed(hash_state, std::make_pair(fact.var, fact.value));
+}
 }
 
 class AbstractTask {
