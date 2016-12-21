@@ -19,58 +19,8 @@ static_assert(sizeof(unsigned int) == 4, "unsigned int has unexpected size");
 /*
   Circular rotation (http://stackoverflow.com/a/31488147/224132).
 */
-static inline unsigned int rotate(unsigned int value, unsigned int offset) {
+inline unsigned int rotate(unsigned int value, unsigned int offset) {
     return (value << offset) | (value >> (32 - offset));
-}
-
-/*
-  Mix 3 32-bit values bijectively.
-
-  Any information in (a, b, c) before mix() is still in (a, b, c) after
-  mix().
-*/
-static inline void mix(unsigned int &a, unsigned int &b, unsigned int &c) {
-    a -= c;
-    a ^= rotate(c, 4);
-    c += b;
-    b -= a;
-    b ^= rotate(a, 6);
-    a += c;
-    c -= b;
-    c ^= rotate(b, 8);
-    b += a;
-    a -= c;
-    a ^= rotate(c, 16);
-    c += b;
-    b -= a;
-    b ^= rotate(a, 19);
-    a += c;
-    c -= b;
-    c ^= rotate(b, 4);
-    b += a;
-}
-
-/*
-  Final mixing of 3 32-bit values (a, b, c) into c.
-
-  Triples of (a, b, c) differing in only a few bits will usually produce values
-  of c that look totally different.
-*/
-static inline void final_mix(unsigned int &a, unsigned int &b, unsigned int &c) {
-    c ^= b;
-    c -= rotate(b, 14);
-    a ^= c;
-    a -= rotate(c, 11);
-    b ^= a;
-    b -= rotate(a, 25);
-    c ^= b;
-    c -= rotate(b, 16);
-    a ^= c;
-    a -= rotate(c, 4);
-    b ^= a;
-    b -= rotate(a, 14);
-    c ^= b;
-    c -= rotate(b, 24);
 }
 
 /*
@@ -78,8 +28,58 @@ static inline void final_mix(unsigned int &a, unsigned int &b, unsigned int &c) 
   instantiated by functions in this file.
 */
 class HashState {
-    unsigned int a, b, c;
+    uint32_t a, b, c;
     int pending_values;
+
+    /*
+      Mix the three 32-bit values bijectively.
+
+      Any information in (a, b, c) before mix() is still in (a, b, c) after
+      mix().
+    */
+    void mix() {
+        a -= c;
+        a ^= rotate(c, 4);
+        c += b;
+        b -= a;
+        b ^= rotate(a, 6);
+        a += c;
+        c -= b;
+        c ^= rotate(b, 8);
+        b += a;
+        a -= c;
+        a ^= rotate(c, 16);
+        c += b;
+        b -= a;
+        b ^= rotate(a, 19);
+        a += c;
+        c -= b;
+        c ^= rotate(b, 4);
+        b += a;
+    }
+
+    /*
+      Final mixing of the three 32-bit values (a, b, c) into c.
+
+      Triples of (a, b, c) differing in only a few bits will usually produce
+      values of c that look totally different.
+    */
+    void final_mix() {
+        c ^= b;
+        c -= rotate(b, 14);
+        a ^= c;
+        a -= rotate(c, 11);
+        b ^= a;
+        b -= rotate(a, 25);
+        c ^= b;
+        c -= rotate(b, 16);
+        a ^= c;
+        a -= rotate(c, 4);
+        b ^= a;
+        b -= rotate(a, 14);
+        c ^= b;
+        c -= rotate(b, 24);
+    }
 
 public:
     HashState()
@@ -92,7 +92,7 @@ public:
     void feed(unsigned int value) {
         assert(pending_values != -1);
         if (pending_values == 3) {
-            mix(a, b, c);
+            mix();
             pending_values = 0;
         }
         if (pending_values == 0) {
@@ -107,27 +107,27 @@ public:
         }
     }
 
-    unsigned int get_hash_value32() {
+    uint32_t get_hash32() {
         assert(pending_values != -1);
         if (pending_values) {
             /*
                pending_values == 0 can only hold if we never called
                feed(), i.e., if we are hashing an empty sequence.
             */
-            final_mix(a, b, c);
+            final_mix();
         }
         pending_values = -1;
         return c;
     }
 
-    uint64_t get_hash_value64() {
+    uint64_t get_hash64() {
         assert(pending_values != -1);
         if (pending_values) {
             /*
                pending_values == 0 can only hold if we never called
                feed(), i.e., if we are hashing an empty sequence.
             */
-            final_mix(a, b, c);
+            final_mix();
         }
         pending_values = -1;
         return (static_cast<uint64_t>(b) << 32) | c;
@@ -142,7 +142,7 @@ public:
   for your type in the "util" namespace.
 */
 inline void feed(HashState &hash_state, int value) {
-    hash_state.feed(static_cast<unsigned int>(value));
+    hash_state.feed(static_cast<uint32_t>(value));
 }
 
 inline void feed(HashState &hash_state, unsigned int value) {
@@ -170,8 +170,8 @@ void feed(HashState &hash_state, const std::pair<T1, T2> &p) {
 template<typename T>
 void feed(HashState &hash_state, const std::vector<T> &vec) {
     /*
-      Feed vector size to ensure that no two different vectors have the same
-      prefix of feed() calls.
+      Feed vector size to ensure that no two different vectors of the same type
+      have the same prefix of feed() calls.
     */
     feed(hash_state, vec.size());
     for (const T &item : vec) {
@@ -184,7 +184,7 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
   Public hash functions.
 
   get_hash() is called by stdlib containers if no custom Hasher type is
-  provided. You can call get_hash32(), get_hash64() or get_hash() manually, if
+  provided. You can call get_hash32(), get_hash64() or get_hash() manually if
   you need hashes for other use cases.
 
   By providing a suitable feed() function in the "util" namespace, you can add
@@ -194,14 +194,14 @@ template<typename T>
 uint32_t get_hash32(const T &value) {
     HashState hash_state;
     feed(hash_state, value);
-    return hash_state.get_hash_value32();
+    return hash_state.get_hash32();
 }
 
 template<typename T>
 uint64_t get_hash64(const T &value) {
     HashState hash_state;
     feed(hash_state, value);
-    return hash_state.get_hash_value64();
+    return hash_state.get_hash64();
 }
 
 template<typename T>

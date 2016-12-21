@@ -47,7 +47,8 @@ std::ostream &operator<<(std::ostream &os, const FactPair &fact_pair);
 
 namespace utils {
 inline void feed(HashState &hash_state, const FactPair &fact) {
-    return feed(hash_state, std::make_pair(fact.var, fact.value));
+    feed(hash_state, fact.var);
+    feed(hash_state, fact.value);
 }
 }
 
