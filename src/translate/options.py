@@ -40,6 +40,15 @@ def parse_args():
         dest="filter_unreachable_facts", action="store_false",
         help="keep facts that can't be reached from the initial state")
     argparser.add_argument(
+        "--skip-variable-reordering",
+        dest="reorder_variables", action="store_false",
+        help="do not reorder variables based on the causal graph. Do not use "
+        "this option with the causal graph heuristic!")
+    argparser.add_argument(
+        "--keep-unimportant-variables",
+        dest="filter_unimportant_vars", action="store_false",
+        help="keep variables that do not influence the goal in the causal graph")
+    argparser.add_argument(
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
     return argparser.parse_args()
