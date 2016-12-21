@@ -100,6 +100,19 @@
 
 class PerStateInformationBase;
 
+struct PackedStateWrapper {
+    const unsigned int *data;
+    int length;
+};
+
+namespace utils {
+    inline void feed(HashState &hash_state, const PackedStateWrapper &wrapper) {
+        for (int i = 0; i < wrapper.length; ++i) {
+            hash_state.feed(wrapper.data[i]);
+        }
+    }
+}
+
 class StateRegistry {
     struct StateIDSemanticHash {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
