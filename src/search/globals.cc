@@ -245,14 +245,8 @@ void read_everything(istream &in) {
     read_operators(in);
     read_axioms(in);
 
-    // Ignore successor generator from preprocessor output.
-    check_magic(in, "begin_SG");
-    string dummy_string = "";
-    while (dummy_string != "end_SG") {
-        getline(in, dummy_string);
-    }
-
-    check_magic(in, "begin_DTG"); // ignore everything from here
+    /* TODO: We should be stricter here and verify that we
+       have reached the end of "in". */
 
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
