@@ -43,6 +43,7 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const override;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
+    virtual int get_global_operator_id(int index, bool is_axiom) const override;
 
     virtual int get_num_axioms() const override;
 

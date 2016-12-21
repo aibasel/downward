@@ -28,7 +28,7 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
-    preferred_operators.insert(op.get_id());
+    preferred_operators.insert(op.get_global_operator_id());
 }
 
 bool Heuristic::notify_state_transition(
@@ -100,8 +100,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 #ifndef NDEBUG
     if (heuristic != EvaluationResult::INFTY) {
         for (int op_id : preferred_operators)
-            assert(is_applicable(task_proxy.get_operators()[op_id],
-                                 convert_global_state(state)));
+            assert(is_applicable(g_root_task().get_operators()[op_id], state));
     }
 #endif
 

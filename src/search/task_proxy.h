@@ -455,6 +455,10 @@ public:
     int get_id() const {
         return index;
     }
+
+    int get_global_operator_id() const {
+        return task->get_global_operator_id(index, is_an_axiom);
+    }
 };
 
 
