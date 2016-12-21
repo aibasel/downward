@@ -74,7 +74,8 @@ static inline void final_mix(unsigned int &a, unsigned int &b, unsigned int &c) 
 }
 
 /*
-  Internal class storing the state of the hashing process.
+  Internal class storing the state of the hashing process. It should only be
+  instantiated by functions in this file.
 */
 class HashState {
     unsigned int a, b, c;
@@ -156,7 +157,7 @@ inline void feed(HashState &hash_state, uint64_t value) {
 
 template<typename T>
 void feed(HashState &hash_state, const T *p) {
-    feed(hash_state, p);
+    feed(hash_state, reinterpret_cast<uint64_t>(p));
 }
 
 template<typename T1, typename T2>
@@ -179,8 +180,14 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
 
 
 /*
-  Public hash functions. By providing a suitable feed() function in the "util"
-  namespace, you can add support for custom types.
+  Public hash functions.
+
+  get_hash() is called by stdlib containers if no custom Hasher type is
+  provided. You can call get_hash32(), get_hash64() or get_hash() manually, if
+  you need hashes for other use cases.
+
+  By providing a suitable feed() function in the "util" namespace, you can add
+  support for custom types.
 */
 template<typename T>
 uint32_t get_hash32(const T &value) {
