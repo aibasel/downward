@@ -154,8 +154,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
         for (int op_id : preferred_operators) {
             insert_successor_into_open_list(
-                eval_context, node_g, &g_operators[op_id],
-                preferred_operators.contains(op_id));
+                eval_context, node_g, &g_operators[op_id], true);
         }
     } else {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
