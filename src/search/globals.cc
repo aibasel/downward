@@ -245,14 +245,8 @@ void read_everything(istream &in) {
     read_operators(in);
     read_axioms(in);
 
-    // Ignore successor generator from preprocessor output.
-    check_magic(in, "begin_SG");
-    string dummy_string = "";
-    while (dummy_string != "end_SG") {
-        getline(in, dummy_string);
-    }
-
-    check_magic(in, "begin_DTG"); // ignore everything from here
+    /* TODO: We should be stricter here and verify that we
+       have reached the end of "in". */
 
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
@@ -359,13 +353,6 @@ bool are_mutex(const FactPair &a, const FactPair &b) {
 const shared_ptr<AbstractTask> g_root_task() {
     static shared_ptr<AbstractTask> root_task = make_shared<tasks::RootTask>();
     return root_task;
-}
-
-shared_ptr<utils::RandomNumberGenerator> g_rng() {
-    // Use an arbitrary default seed.
-    static shared_ptr<utils::RandomNumberGenerator> rng =
-        make_shared<utils::RandomNumberGenerator>(2011);
-    return rng;
 }
 
 bool g_use_metric;
