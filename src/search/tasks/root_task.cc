@@ -13,7 +13,6 @@
 using namespace std;
 
 namespace tasks {
-
 RootTask::RootTask(
     const shared_ptr<AbstractTask> &parent,
     vector<ExplicitVariable> &&variables,
@@ -64,21 +63,20 @@ ExplicitOperator explicit_operator_from_global_operator(const GlobalOperator &op
         move(effects),
         op.get_cost(),
         op.get_name(),
-        is_axiom
-    );
+        is_axiom);
 }
 
 shared_ptr<RootTask> create_root_task(
-        const vector<string> &variable_name,
-        const vector<int> &variable_domain,
-        const vector<vector<string>> &fact_names,
-        const vector<int> &axiom_layers,
-        const vector<int> &default_axiom_values,
-        const vector<vector<set<FactPair>>> &inconsistent_facts,
-        const vector<int> &initial_state_data,
-        const vector<pair<int, int>> &goal,
-        const vector<GlobalOperator> &global_operators,
-        const vector<GlobalOperator> &global_axioms) {
+    const vector<string> &variable_name,
+    const vector<int> &variable_domain,
+    const vector<vector<string>> &fact_names,
+    const vector<int> &axiom_layers,
+    const vector<int> &default_axiom_values,
+    const vector<vector<set<FactPair>>> &inconsistent_facts,
+    const vector<int> &initial_state_data,
+    const vector<pair<int, int>> &goal,
+    const vector<GlobalOperator> &global_operators,
+    const vector<GlobalOperator> &global_axioms) {
     const shared_ptr<AbstractTask> parent = nullptr;
 
     vector<ExplicitVariable> variables;
@@ -91,8 +89,7 @@ shared_ptr<RootTask> create_root_task(
             move(name),
             move(var_fact_names),
             axiom_layers[i],
-            default_axiom_values[i]
-        );
+            default_axiom_values[i]);
     }
 
     vector<vector<set<FactPair>>> mutexes = inconsistent_facts;
@@ -125,8 +122,7 @@ shared_ptr<RootTask> create_root_task(
         move(operators),
         move(axioms),
         move(initial_state_values),
-        move(goals)
-    );
+        move(goals));
 }
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
