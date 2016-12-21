@@ -28,17 +28,16 @@ public:
   parsed task here.
 */
 std::shared_ptr<RootTask> create_root_task(
-        const std::vector<std::string> &variable_name,
-        const std::vector<int> &variable_domain,
-        const std::vector<std::vector<std::string>> &fact_names,
-        const std::vector<int> &axiom_layers,
-        const std::vector<int> &default_axiom_values,
-        const std::vector<std::vector<std::set<FactPair>>> &inconsistent_facts,
-        const std::vector<int> &initial_state_data,
-        const std::vector<std::pair<int, int>> &goal,
-        const std::vector<GlobalOperator> &operators,
-        const std::vector<GlobalOperator> &axioms
-);
+    const std::vector<std::string> &variable_name,
+    const std::vector<int> &variable_domain,
+    const std::vector<std::vector<std::string>> &fact_names,
+    const std::vector<int> &axiom_layers,
+    const std::vector<int> &default_axiom_values,
+    const std::vector<std::vector<std::set<FactPair>>> &inconsistent_facts,
+    const std::vector<int> &initial_state_data,
+    const std::vector<std::pair<int, int>> &goal,
+    const std::vector<GlobalOperator> &operators,
+    const std::vector<GlobalOperator> &axioms);
 }
 
 #endif
