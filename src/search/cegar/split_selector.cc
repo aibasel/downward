@@ -3,8 +3,6 @@
 #include "abstract_state.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../heuristics/additive_heuristic.h"
 
 #include "../utils/logging.h"
@@ -111,7 +109,8 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
 }
 
 const Split &SplitSelector::pick_split(const AbstractState &state,
-                                       const vector<Split> &splits) const {
+                                       const vector<Split> &splits,
+                                       utils::RandomNumberGenerator &rng) const {
     assert(!splits.empty());
 
     if (splits.size() == 1) {
@@ -119,7 +118,7 @@ const Split &SplitSelector::pick_split(const AbstractState &state,
     }
 
     if (pick == PickSplit::RANDOM) {
-        return *g_rng()->choose(splits);
+        return *rng.choose(splits);
     }
 
     double max_rating = numeric_limits<double>::lowest();
