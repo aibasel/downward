@@ -10,6 +10,7 @@
 #include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <functional>
 #include <memory>
@@ -19,6 +20,8 @@ using namespace std;
 
 template<class Entry>
 class EpsilonGreedyOpenList : public OpenList<Entry> {
+    shared_ptr<utils::RandomNumberGenerator> rng;
+
     struct HeapNode {
         int id;
         int h;
@@ -82,6 +85,7 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 template<class Entry>
 EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
+      rng(utils::parse_rng_from_options(opts)),
       evaluator(opts.get<ScalarEvaluator *>("eval")),
       epsilon(opts.get<double>("epsilon")),
       size(0),
@@ -91,8 +95,8 @@ EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const Options &opts)
 template<class Entry>
 Entry EpsilonGreedyOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
-    if ((*g_rng())() < epsilon) {
-        int pos = (*g_rng())(size);
+    if ((*rng)() < epsilon) {
+        int pos = (*rng)(size);
         heap[pos].h = numeric_limits<int>::min();
         adjust_heap_up(heap, pos);
     }
@@ -175,6 +179,8 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "probability for choosing the next entry randomly",
         "0.2",
         Bounds("0.0", "1.0"));
+
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run()) {
