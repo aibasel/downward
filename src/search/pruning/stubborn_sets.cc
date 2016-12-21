@@ -60,7 +60,11 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
     assert(sorted_op_preconditions.empty());
     assert(sorted_op_effects.empty());
 
-    for (const OperatorProxy op : task_proxy.get_operators()) {
+    OperatorsProxy operators = task_proxy.get_operators();
+    sorted_op_preconditions.reserve(operators.size());
+    sorted_op_effects.reserve(operators.size());
+
+    for (const OperatorProxy op : operators) {
         PreconditionsProxy preconditions = op.get_preconditions();
         vector<FactPair> sorted_preconditions;
         sorted_preconditions.reserve(preconditions.size());
