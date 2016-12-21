@@ -44,7 +44,7 @@
 template<class Element>
 class PerStateArrayInformation : public PerStateInformationBase {
     size_t array_size;
-    const Element default_value;
+    const std::vector<Element> default_array;
     typedef std::unordered_map<const StateRegistry *,
                                SegmentedArrayVector<Element> * > EntryArrayVectorMap;
     EntryArrayVectorMap entry_arrays_by_registry;
@@ -153,16 +153,17 @@ public:
 
     PerStateArrayInformation(size_t array_size_)
         : array_size(array_size_),
-          default_value(),
+          default_array(std::vector<Element>(array_size_)),
           cached_registry(0),
           cached_entries(0) {
     }
 
-    explicit PerStateArrayInformation(size_t array_size_, const Element &default_value_)
+    explicit PerStateArrayInformation(size_t array_size_, const std::vector<Element> &default_array_)
         : array_size(array_size_),
-          default_value(default_value_),
+          default_array(default_array_),
           cached_registry(0),
           cached_entries(0) {
+        assert(default_array.size() == array_size);
     }
 
     ~PerStateArrayInformation() {
@@ -180,7 +181,6 @@ public:
         size_t virtual_size = registry->size();
         assert(utils::in_bounds(state_id, *registry));
         if (entries->size() < virtual_size) {
-            std::vector<Element> default_array(array_size, default_value);
             entries->push_back(&default_array[0]);
         }
         return (*cached_entries)[state_id];
