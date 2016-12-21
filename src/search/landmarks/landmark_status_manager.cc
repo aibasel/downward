@@ -6,18 +6,20 @@ using namespace std;
 
 namespace landmarks {
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    : lm_graph(graph),
+    : reached_lms(graph.number_of_landmarks(),
+                  vector<int>(graph.number_of_landmarks(), 1)),
+      lm_graph(graph),
       do_intersection(true) {
 }
 
-vector<bool> &LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
-    return reached_lms[state];
+vector<int> LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
+    ArrayView<int> bla = reached_lms[state];
+    return bla.get_vector();
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
     const GlobalState &initial_state) {
-    vector<bool> &reached = get_reached_landmarks(initial_state);
-    reached.resize(lm_graph.number_of_landmarks());
+    ArrayView<int> reached = reached_lms[initial_state];
 
     int inserted = 0;
     int num_goal_lms = 0;
@@ -61,35 +63,49 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
                                                const GlobalOperator &,
                                                const GlobalState &global_state) {
-    vector<bool> &parent_reached = get_reached_landmarks(parent_global_state);
-    vector<bool> &reached = get_reached_landmarks(global_state);
+    ArrayView<int> parent_reached = reached_lms[parent_global_state];
+    ArrayView<int> reached = reached_lms[global_state];
 
-    if (&parent_reached == &reached) {
-        assert(global_state.get_id() == parent_global_state.get_id());
+    if (global_state.get_id() == parent_global_state.get_id()) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }
 
-    bool intersect = (do_intersection && !reached.empty());
-    vector<bool> old_reached;
-    if (intersect) {
-        // Save old reached landmarks for this state.
-        // Swapping is faster than old_reached = reached, and we assign
-        // a new value to reached next anyway.
-        old_reached.swap(reached);
-    }
-
-    reached = parent_reached;
-
     int num_landmarks = lm_graph.number_of_landmarks();
     assert(static_cast<int>(reached.size()) == num_landmarks);
     assert(static_cast<int>(parent_reached.size()) == num_landmarks);
-    assert(!intersect || static_cast<int>(old_reached.size()) == num_landmarks);
 
+    if (do_intersection) {
+        /*
+           Set all landmarks not reached by this parent as "not reached".
+           Over multiple paths, this has the effect of computing the intersection
+           of "reached" for the parents. It is important here that upon first visit,
+           all elements in "reached" are true because true is the neutral element
+           of intersection.
+
+           In the case where the landmark we are setting to false here is actually
+           achieved right now, it is set to "true" again below.
+        */
+        for (int id = 0; id < num_landmarks; ++id) {
+            if (!parent_reached[id]) {
+                reached[id] = false;
+            }
+        }
+    } else {
+        /*
+           Copy "reached" information of the parent. This means that if a state
+           is visited on multiple paths, we always keep track of the *last* path
+           we explored. This is probably an implementation accident. In the long
+           run, we might want to consider getting rid of do_intersection (i.e.,
+           always having it "true"), as there is probably no good reason to
+           ignore landmark information from previous paths.
+        */
+        reached = parent_reached;
+    }
+
+    // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
-        if (intersect && !old_reached[id]) {
-            reached[id] = false;
-        } else if (!reached[id]) {
+        if (!reached[id]) {
             LandmarkNode *node = lm_graph.get_lm_for_index(id);
             if (node->is_true_in_state(global_state)) {
                 if (landmark_is_leaf(*node, reached)) {
@@ -103,7 +119,7 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
 }
 
 bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    vector<bool> &reached = get_reached_landmarks(global_state);
+    ArrayView<int> reached = reached_lms[global_state];
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
@@ -165,7 +181,7 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
 }
 
 bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
-                                             const vector<bool> &reached) const {
+                                             const ArrayView<int> &reached) const {
     //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
