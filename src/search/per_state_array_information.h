@@ -14,6 +14,45 @@
 #include <iterator>
 #include <unordered_map>
 
+template<class T>
+class ArrayView {
+    T *p;
+    size_t size;
+public:
+    // we might want to make the constructor private and
+    // PerStateArraInformation a friend class in the future
+    ArrayView(T *p, size_t size) : p(p), size(size) {}
+    ArrayView<T> &operator=(const std::vector<T> &data) {
+        assert(data.size() == size);
+        for(T &e : data) {
+            *p = e;
+            p++;
+        }
+    }
+    ArrayView<T> &operator=(const ArrayView<T> &data) {
+        assert(data.size == size);
+        for(size_t i = 0; i < size; ++i) {
+            p[i] = data.p[i];
+        }
+    }
+
+    std::vector<T> get_vector() {
+        std::vector<T> ret(size);
+        for(size_t i = 0; i < size; ++i) {
+            ret[i] = p[i];
+        }
+        return std::move(ret);
+    }
+
+    T &operator[](int index) {
+        return p[index];
+    }
+
+    const T &operator[](int index) const {
+        return p[index];
+    }
+};
+
 /*
   PerStateInformation is used to associate information with states.
   PerStateInformation<Entry> logically behaves somewhat like an unordered map
@@ -174,7 +213,7 @@ public:
         }
     }
 
-    Element *operator[](const GlobalState &state) {
+    ArrayView<Element> operator[](const GlobalState &state) {
         const StateRegistry *registry = &state.get_registry();
         SegmentedArrayVector<Element> *entries = get_entries(registry);
         int state_id = state.get_id().value;
@@ -183,10 +222,11 @@ public:
         if (entries->size() < virtual_size) {
             entries->push_back(&default_array[0]);
         }
-        return (*cached_entries)[state_id];
+        // TODO: is this effiecient? is move better?
+        return ArrayView<Element>((*cached_entries)[state_id], array_size);
     }
 
-    const Element *operator[](const GlobalState &state) const {
+    const ArrayView<Element> operator[](const GlobalState &state) const {
         const StateRegistry *registry = &state.get_registry();
         const SegmentedArrayVector<Element> *entries = get_entries(registry);
         if (!entries) {
@@ -198,7 +238,8 @@ public:
         if (state_id >= num_entries) {
             return nullptr;
         }
-        return (*entries)[state_id];
+        // TODO: is this effiecient? is move better?
+        return ArrayView<Element>((*cached_entries)[state_id], array_size);
     }
 
     void remove_state_registry(StateRegistry *registry) {
