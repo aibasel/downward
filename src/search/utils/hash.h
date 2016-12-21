@@ -207,17 +207,6 @@ size_t hash_sequence(const Sequence &data, size_t length) {
     }
     return hash;
 }
-
-/*
-  Hash an array of unsigned ints starting at "key" with length
-  "length".
-
-  This is the hashword() function from
-  http://www.burtleburtle.net/bob/c/lookup3.c (public domain).
-*/
-extern unsigned int hash_unsigned_int_sequence(
-    const unsigned int *key,
-    unsigned int length);
 }
 
 namespace std {
