@@ -16,6 +16,9 @@
 
 template<class T>
 class ArrayView {
+    // TODO: should these two member variables be const/immutable?
+    // the assigning semantics is that the data gets copied in the array
+    // where p is pointing; we never change the pointer nor the size
     T *p;
     size_t size;
 public:
@@ -24,9 +27,8 @@ public:
     ArrayView(T *p, size_t size) : p(p), size(size) {}
     ArrayView<T> &operator=(const std::vector<T> &data) {
         assert(data.size() == size);
-        for(T &e : data) {
-            *p = e;
-            p++;
+        for(size_t i = 0; i < data.size; ++i) {
+            p[i] = data[i];
         }
     }
     ArrayView<T> &operator=(const ArrayView<T> &data) {
