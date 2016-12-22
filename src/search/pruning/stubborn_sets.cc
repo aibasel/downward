@@ -46,13 +46,13 @@ void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
 }
 
 // Relies on op_preconds and op_effects being sorted by variable.
-bool StubbornSets::can_disable(int op1_no, int op2_no) {
+bool StubbornSets::can_disable(int op1_no, int op2_no) const {
     return contain_conflicting_fact(sorted_op_effects[op1_no],
                                     sorted_op_preconditions[op2_no]);
 }
 
 // Relies on op_effect being sorted by variable.
-bool StubbornSets::can_conflict(int op1_no, int op2_no) {
+bool StubbornSets::can_conflict(int op1_no, int op2_no) const {
     return contain_conflicting_fact(sorted_op_effects[op1_no],
                                     sorted_op_effects[op2_no]);
 }

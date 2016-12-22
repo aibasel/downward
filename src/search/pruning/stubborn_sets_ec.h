@@ -14,9 +14,9 @@ private:
     std::vector<bool> written_vars;
     std::vector<std::vector<bool>> nes_computed;
 
-    bool is_applicable(int op_no, const State &state);
+    bool is_applicable(int op_no, const State &state) const;
     void get_disabled_vars(int op1_no, int op2_no,
-                           std::vector<int> &disabled_vars);
+                           std::vector<int> &disabled_vars) const;
     void build_reachability_map(const TaskProxy &task_proxy);
     void compute_operator_preconditions(const TaskProxy &task_proxy);
     void compute_conflicts_and_disabling();
