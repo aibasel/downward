@@ -59,7 +59,8 @@ vector<StubbornDTG> build_dtgs(TaskProxy task_proxy) {
 
             StubbornDTG &dtg = dtgs[var_id];
             if (pre_val == -1) {
-                for (int value = 0; value < var.get_domain_size(); ++value) {
+                int num_values = var.get_domain_size();
+                for (int value = 0; value < num_values; ++value) {
                     dtg[value].push_back(eff_val);
                 }
             } else {
