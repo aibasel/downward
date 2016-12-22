@@ -69,7 +69,8 @@ protected:
       every time ("dynamic orders/random" in Table 1).
 
       The code also intentionally uses the "causal graph order" of variables
-      rather than an arbitrary variable order.
+      rather than an arbitrary variable order. (However, so far, there is no
+      experimental evidence that this is a particularly good order.)
     */
     FactPair find_unsatisfied_precondition(int op_no, const State &state) const {
         return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
