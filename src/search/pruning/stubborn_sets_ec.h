@@ -19,7 +19,7 @@ private:
                            std::vector<int> &disabled_vars);
     void build_reachability_map(const TaskProxy &task_proxy);
     void compute_operator_preconditions(const TaskProxy &task_proxy);
-    void compute_conflicts_and_disabling(int num_operators);
+    void compute_conflicts_and_disabling();
     void add_conflicting_and_disabling(int op_no, const State &state);
     void compute_active_operators(const State &state);
     void mark_as_stubborn_and_remember_written_vars(int op_no, const State &state);
