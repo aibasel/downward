@@ -20,7 +20,7 @@ public:
 
     virtual void initialize(const std::shared_ptr<AbstractTask> &task);
 
-    /* This method should never be called for goal states. This can be checked
+    /* This method must not be called for goal states. This can be checked
        with assertions in derived classes. */
     virtual void prune_operators(const State &state,
                                  std::vector<int> &op_ids) = 0;
