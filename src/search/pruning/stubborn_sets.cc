@@ -102,7 +102,6 @@ void StubbornSets::prune_operators(
     num_unpruned_successors_generated += op_ids.size();
 
     // Clear stubborn set from previous call.
-    stubborn.clear();
     stubborn.assign(num_operators, false);
     assert(stubborn_queue.empty());
 
