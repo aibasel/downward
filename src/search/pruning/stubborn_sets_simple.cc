@@ -11,13 +11,12 @@ using namespace std;
 namespace stubborn_sets_simple {
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
-    TaskProxy task_proxy(*task);
-    compute_interference_relation(task_proxy.get_operators().size());
+    compute_interference_relation();
     cout << "pruning method: stubborn sets simple" << endl;
 }
 
 
-void StubbornSetsSimple::compute_interference_relation(int num_operators) {
+void StubbornSetsSimple::compute_interference_relation() {
     interference_relation.resize(num_operators);
 
     /*

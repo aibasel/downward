@@ -19,7 +19,7 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
                can_conflict(op1_no, op2_no) ||
                can_disable(op2_no, op1_no);
     }
-    void compute_interference_relation(int num_operators);
+    void compute_interference_relation();
 protected:
     virtual void initialize_stubborn_set(const State &state) override;
     virtual void handle_stubborn_operator(const State &state,
