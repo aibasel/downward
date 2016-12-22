@@ -238,7 +238,7 @@ void StubbornSetsEC::get_disabled_vars(
 void StubbornSetsEC::apply_s5(int op_no, const State &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
     for (const FactPair &pre : sorted_op_preconditions[op_no]) {
-        if (state[pre.var].get_pair() != pre && written_vars[pre.var]) {
+        if (state[pre.var].get_value() != pre.value && written_vars[pre.var]) {
             if (!nes_computed[pre.var][pre.value]) {
                 add_nes_for_fact(pre, state);
             }
