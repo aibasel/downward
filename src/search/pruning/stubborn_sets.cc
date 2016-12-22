@@ -39,7 +39,7 @@ void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
     num_operators = task_proxy.get_operators().size();
     num_unpruned_successors_generated = 0;
     num_pruned_successors_generated = 0;
-    goals = get_fact_pairs(task_proxy.get_goals());
+    sorted_goals = utils::sorted<FactPair>(get_fact_pairs(task_proxy.get_goals()));
 
     compute_sorted_operators(task_proxy);
     compute_achievers(task_proxy);

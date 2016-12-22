@@ -35,7 +35,7 @@ protected:
     int num_operators;
     std::vector<std::vector<FactPair>> sorted_op_preconditions;
     std::vector<std::vector<FactPair>> sorted_op_effects;
-    std::vector<FactPair> goals;
+    std::vector<FactPair> sorted_goals;
 
     /* achievers[var][value] contains all operator indices of
        operators that achieve the fact (var, value). */
@@ -52,7 +52,7 @@ protected:
       (See comment on find_unsatisfied_precondition.)
     */
     FactPair find_unsatisfied_goal(const State &state) {
-        return find_unsatisfied_condition(goals, state);
+        return find_unsatisfied_condition(sorted_goals, state);
     }
 
     /*
