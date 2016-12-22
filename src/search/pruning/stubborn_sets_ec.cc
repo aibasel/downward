@@ -113,10 +113,9 @@ void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
         variables, [](const VariableProxy &var) {
             return vector<bool>(var.get_domain_size(), false);
         });
-    OperatorsProxy operators = task_proxy.get_operators();
-    active_ops.assign(operators.size(), false);
+    active_ops.assign(num_operators, false);
     compute_operator_preconditions(task_proxy);
-    compute_conflicts_and_disabling(operators.size());
+    compute_conflicts_and_disabling();
     build_reachability_map(task_proxy);
     cout << "pruning method: stubborn sets ec" << endl;
 }
@@ -153,7 +152,6 @@ void StubbornSetsEC::build_reachability_map(const TaskProxy &task_proxy) {
 void StubbornSetsEC::compute_active_operators(const State &state) {
     active_ops.assign(active_ops.size(), false);
 
-    int num_operators = sorted_op_preconditions.size();
     for (int op_no = 0; op_no < num_operators; ++op_no) {
         bool all_preconditions_are_active = true;
 
@@ -174,7 +172,7 @@ void StubbornSetsEC::compute_active_operators(const State &state) {
     }
 }
 
-void StubbornSetsEC::compute_conflicts_and_disabling(int num_operators) {
+void StubbornSetsEC::compute_conflicts_and_disabling() {
     conflicting_and_disabling.resize(num_operators);
     disabled.resize(num_operators);
 

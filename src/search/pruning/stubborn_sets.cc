@@ -35,11 +35,14 @@ void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
-    compute_sorted_operators(task_proxy);
-    goals = get_fact_pairs(task_proxy.get_goals());
-    compute_achievers(task_proxy);
+
+    num_operators = task_proxy.get_operators().size();
     num_unpruned_successors_generated = 0;
     num_pruned_successors_generated = 0;
+    goals = get_fact_pairs(task_proxy.get_goals());
+
+    compute_sorted_operators(task_proxy);
+    compute_achievers(task_proxy);
 }
 
 // Relies on op_preconds and op_effects being sorted by variable.
@@ -100,7 +103,6 @@ void StubbornSets::prune_operators(
 
     // Clear stubborn set from previous call.
     stubborn.clear();
-    int num_operators = sorted_op_effects.size();
     stubborn.assign(num_operators, false);
     assert(stubborn_queue.empty());
 
