@@ -2,6 +2,8 @@
 
 #include "../task_tools.h"
 
+#include "../utils/collections.h"
+
 #include <algorithm>
 #include <cassert>
 
@@ -34,11 +36,7 @@ void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
     compute_sorted_operators(task_proxy);
-    GoalsProxy task_goals = task_proxy.get_goals();
-    goals.reserve(task_goals.size());
-    for (FactProxy goal : task_goals) {
-        goals.push_back(goal.get_pair());
-    }
+    goals = get_fact_pairs(task_proxy.get_goals());
     compute_achievers(task_proxy);
     num_unpruned_successors_generated = 0;
     num_pruned_successors_generated = 0;
@@ -57,40 +55,27 @@ bool StubbornSets::can_conflict(int op1_no, int op2_no) {
 }
 
 void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
-    assert(sorted_op_preconditions.empty());
-    assert(sorted_op_effects.empty());
-
     OperatorsProxy operators = task_proxy.get_operators();
-    sorted_op_preconditions.reserve(operators.size());
-    sorted_op_effects.reserve(operators.size());
 
-    for (const OperatorProxy op : operators) {
-        PreconditionsProxy preconditions = op.get_preconditions();
-        vector<FactPair> sorted_preconditions;
-        sorted_preconditions.reserve(preconditions.size());
-        for (const FactProxy pre : preconditions) {
-            sorted_preconditions.push_back(pre.get_pair());
-        }
-        sort(sorted_preconditions.begin(), sorted_preconditions.end());
-        sorted_op_preconditions.push_back(sorted_preconditions);
+    sorted_op_preconditions = utils::map_vector<vector<FactPair>>(
+        operators, [](const OperatorProxy &op) {
+            return utils::sorted<FactPair>(get_fact_pairs(op.get_preconditions()));
+        });
 
-        EffectsProxy effects = op.get_effects();
-        vector<FactPair> sorted_effects;
-        sorted_effects.reserve(effects.size());
-        for (const EffectProxy eff : effects) {
-            sorted_effects.push_back(eff.get_fact().get_pair());
-        }
-        sort(sorted_effects.begin(), sorted_effects.end());
-        sorted_op_effects.push_back(sorted_effects);
-    }
+    sorted_op_effects = utils::map_vector<vector<FactPair>>(
+        operators, [](const OperatorProxy &op) {
+            return utils::sorted<FactPair>(
+                utils::map_vector<FactPair>(
+                    op.get_effects(),
+                    [](const EffectProxy &eff) {return eff.get_fact().get_pair(); }));
+        });
 }
 
 void StubbornSets::compute_achievers(const TaskProxy &task_proxy) {
-    VariablesProxy vars = task_proxy.get_variables();
-    achievers.reserve(vars.size());
-    for (const VariableProxy var : vars) {
-        achievers.push_back(vector<vector<int>>(var.get_domain_size()));
-    }
+    achievers = utils::map_vector<vector<vector<int>>>(
+        task_proxy.get_variables(), [](const VariableProxy &var) {
+            return vector<vector<int>>(var.get_domain_size());
+        });
 
     for (const OperatorProxy op : task_proxy.get_operators()) {
         for (const EffectProxy effect : op.get_effects()) {

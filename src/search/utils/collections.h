@@ -1,8 +1,10 @@
 #ifndef UTILS_COLLECTIONS_H
 #define UTILS_COLLECTIONS_H
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <functional>
 #include <unordered_map>
 #include <vector>
 
@@ -50,6 +52,22 @@ ValueType get_value_or_default(
         return it->second;
     }
     return default_value;
+}
+
+template<typename ElemTo, typename Collection, typename MapFunc>
+std::vector<ElemTo> map_vector(const Collection &collection, MapFunc map_func) {
+    std::vector<ElemTo> transformed;
+    transformed.reserve(collection.size());
+    std::transform(begin(collection), end(collection),
+                   back_inserter(transformed), map_func);
+    return transformed;
+}
+
+template<typename T, typename Collection>
+std::vector<T> sorted(Collection &&collection) {
+    std::vector<T> vec(std::forward<Collection>(collection));
+    std::sort(vec.begin(), vec.end());
+    return vec;
 }
 }
 

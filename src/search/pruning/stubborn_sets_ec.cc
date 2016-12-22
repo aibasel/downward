@@ -39,10 +39,10 @@ vector<StubbornDTG> build_dtgs(TaskProxy task_proxy) {
      */
 
     // Create the empty DTG nodes.
-    vector<StubbornDTG> dtgs;
-    for (VariableProxy var : task_proxy.get_variables()) {
-        dtgs.emplace_back(var.get_domain_size());
-    }
+    vector<StubbornDTG> dtgs = utils::map_vector<StubbornDTG>(
+        task_proxy.get_variables(), [](const VariableProxy &var) {
+            return StubbornDTG(var.get_domain_size());
+        });
 
     // Add DTG arcs.
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -109,10 +109,10 @@ void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     VariablesProxy variables = task_proxy.get_variables();
     written_vars.assign(variables.size(), false);
-    nes_computed.resize(variables.size());
-    for (VariableProxy var : variables) {
-        nes_computed[var.get_id()].assign(var.get_domain_size(), false);
-    }
+    nes_computed = utils::map_vector<vector<bool>>(
+        variables, [](const VariableProxy &var) {
+            return vector<bool>(var.get_domain_size(), false);
+        });
     OperatorsProxy operators = task_proxy.get_operators();
     active_ops.assign(operators.size(), false);
     compute_operator_preconditions(task_proxy);
@@ -122,34 +122,32 @@ void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
 }
 
 void StubbornSetsEC::compute_operator_preconditions(const TaskProxy &task_proxy) {
-    OperatorsProxy operators = task_proxy.get_operators();
     int num_variables = task_proxy.get_variables().size();
-    op_preconditions_on_var.resize(operators.size());
-    for (OperatorProxy op : operators) {
-        op_preconditions_on_var[op.get_id()].resize(num_variables, -1);
-        for (FactProxy precondition : op.get_preconditions()) {
-            int var_id = precondition.get_variable().get_id();
-            int value = precondition.get_value();
-            op_preconditions_on_var[op.get_id()][var_id] = value;
-        }
-    }
+    op_preconditions_on_var = utils::map_vector<vector<int>>(
+        task_proxy.get_operators(), [&](const OperatorProxy &op) {
+            vector<int> preconditions_on_var(num_variables, -1);
+            for (FactProxy precondition : op.get_preconditions()) {
+                FactPair fact = precondition.get_pair();
+                preconditions_on_var[fact.var] = fact.value;
+            }
+            return preconditions_on_var;
+        });
 }
 
 void StubbornSetsEC::build_reachability_map(const TaskProxy &task_proxy) {
     vector<StubbornDTG> dtgs = build_dtgs(task_proxy);
-    VariablesProxy variables = task_proxy.get_variables();
-    reachability_map.resize(variables.size());
-    for (VariableProxy var : variables) {
-        int var_id = var.get_id();
-        StubbornDTG &dtg = dtgs[var_id];
-        int num_values = var.get_domain_size();
-        reachability_map[var_id].resize(num_values);
-        for (int start_value = 0; start_value < num_values; ++start_value) {
-            vector<bool> &reachable = reachability_map[var_id][start_value];
-            reachable.assign(num_values, false);
-            recurse_forwards(dtg, start_value, start_value, reachable);
-        }
-    }
+    reachability_map = utils::map_vector<vector<vector<bool>>>(
+        task_proxy.get_variables(), [&](const VariableProxy &var) {
+            StubbornDTG &dtg = dtgs[var.get_id()];
+            int num_values = var.get_domain_size();
+            vector<vector<bool>> var_reachability_map(num_values);
+            for (int start_value = 0; start_value < num_values; ++start_value) {
+                vector<bool> &reachable = var_reachability_map[start_value];
+                reachable.assign(num_values, false);
+                recurse_forwards(dtg, start_value, start_value, reachable);
+            }
+            return var_reachability_map;
+        });
 }
 
 void StubbornSetsEC::compute_active_operators(const State &state) {
