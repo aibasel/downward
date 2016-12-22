@@ -41,8 +41,8 @@ protected:
        operators that achieve the fact (var, value). */
     std::vector<std::vector<std::vector<int>>> achievers;
 
-    bool can_disable(int op1_no, int op2_no);
-    bool can_conflict(int op1_no, int op2_no);
+    bool can_disable(int op1_no, int op2_no) const;
+    bool can_conflict(int op1_no, int op2_no) const;
 
     /*
       Return the first unsatified goal pair,
@@ -51,7 +51,7 @@ protected:
       Note that we use a sorted list of goals here intentionally.
       (See comment on find_unsatisfied_precondition.)
     */
-    FactPair find_unsatisfied_goal(const State &state) {
+    FactPair find_unsatisfied_goal(const State &state) const {
         return find_unsatisfied_condition(sorted_goals, state);
     }
 
@@ -71,7 +71,7 @@ protected:
       The code also intentionally uses the "causal graph order" of variables
       rather than an arbitrary variable order.
     */
-    FactPair find_unsatisfied_precondition(int op_no, const State &state) {
+    FactPair find_unsatisfied_precondition(int op_no, const State &state) const {
         return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
     }
 

@@ -192,7 +192,7 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
     }
 }
 
-bool StubbornSetsEC::is_applicable(int op_no, const State &state) {
+bool StubbornSetsEC::is_applicable(int op_no, const State &state) const {
     return find_unsatisfied_precondition(op_no, state) == FactPair::no_fact;
 }
 
@@ -229,7 +229,7 @@ void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
 
 // Relies on op_effects and op_preconditions being sorted by variable.
 void StubbornSetsEC::get_disabled_vars(
-    int op1_no, int op2_no, vector<int> &disabled_vars) {
+    int op1_no, int op2_no, vector<int> &disabled_vars) const {
     get_conflicting_vars(sorted_op_effects[op1_no],
                          sorted_op_preconditions[op2_no],
                          disabled_vars);
