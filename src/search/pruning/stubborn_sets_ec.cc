@@ -4,8 +4,8 @@
 #include "../plugin.h"
 #include "../task_tools.h"
 
-#include "../utils/markup.h"
 #include "../utils/collections.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 #include <unordered_map>
