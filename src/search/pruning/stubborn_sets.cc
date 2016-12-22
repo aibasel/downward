@@ -122,9 +122,7 @@ void StubbornSets::prune_operators(
             remaining_op_ids.push_back(op_id);
         }
     }
-    if (remaining_op_ids.size() != op_ids.size()) {
-        op_ids.swap(remaining_op_ids);
-    }
+    op_ids.swap(remaining_op_ids);
 
     num_pruned_successors_generated += op_ids.size();
 }
