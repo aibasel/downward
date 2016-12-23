@@ -134,7 +134,7 @@ void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     bool preferred) {
     int succ_g = parent_g + get_adjusted_cost(*op);
     EdgeOpenListEntry entry = make_pair(
-        eval_context.get_state().get_id(), op);
+        eval_context.get_state().get_id(), get_op_index_hacked(op));
     EvaluationContext new_eval_context(
         eval_context.get_cache(), succ_g, preferred, &statistics);
     open_list->insert(new_eval_context, entry);
@@ -189,7 +189,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         EdgeOpenListEntry entry = open_list->remove_min();
         StateID parent_state_id = entry.first;
-        const GlobalOperator *last_op = entry.second;
+        const GlobalOperator *last_op = &g_operators[entry.second];
 
         GlobalState parent_state = state_registry.lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);

@@ -135,7 +135,7 @@ public:
 
 
 using StateOpenListEntry = StateID;
-using EdgeOpenListEntry = std::pair<StateID, const GlobalOperator *>;
+using EdgeOpenListEntry = std::pair<StateID, int>;
 
 using StateOpenList = OpenList<StateOpenListEntry>;
 using EdgeOpenList = OpenList<EdgeOpenListEntry>;
