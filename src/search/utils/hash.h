@@ -8,7 +8,6 @@
 #include <vector>
 
 namespace utils {
-
 /*
   We provide a family of hash functions that are supposedly higher
   quality than what is guaranteed by the standard library. Changing a
