@@ -8,10 +8,72 @@
 #include <vector>
 
 namespace utils {
+
 /*
-  Ideas and code for our hash functions have been taken and adapted from
-  lookup3.c, by Bob Jenkins, May 2006, Public Domain.
-  (http://www.burtleburtle.net/bob/c/lookup3.c)
+  We provide a family of hash functions that are supposedly higher
+  quality than what is guaranteed by the standard library. Changing a
+  single bit in the input should typically change around half of the
+  bits in the final hash value. The hash functions we previously used
+  turned out to cluster when we tried hash tables with open addressing
+  for state registries.
+
+  The low-level hash functions are based on lookup3.c by Bob Jenkins,
+  May 2006, public domain. See http://www.burtleburtle.net/bob/c/lookup3.c.
+
+  To hash an object x , it is represented as a sequence of 32-bit
+  pieces (called the "code" for x, written code(x) in the following)
+  that are "fed" to the main hashing function (implemented in class
+  HashState) one by one. This allows a compositional approach to
+  hashing. For example, the code for a pair p is the concatenation of
+  code(x.first) and code(x.second).
+
+  A simpler compositional approach to hashing would first hash the
+  components of an object and then combine the hash values, and this
+  is what a previous version of our code did. The approach with an
+  explicit HashState object is stronger because the internal hash
+  state is larger (96 bits) than the final hash value and hence pairs
+  <x, y> and <x', y> where x and x' have the same hash value don't
+  necessarily collide. Another advantage of our approach is that we
+  can use the same overall hashing approach to generate hash values of
+  different types (e.g. 32-bit vs. 64-bit unsigned integers).
+
+  To extend the hashing mechanism to further classes, provide a
+  template specialization for the "feed" function. This must satisfy
+  the following requirements:
+
+  A) If x and y are objects of the same type, they should have code(x)
+     = code(y) iff x = y. That is, the code sequence should uniquely
+     describe each logically distinct object.
+
+     This requirement avoids unnecessary hash collisions. Of course,
+     there will still be "necessary" hash collisions because different
+     code sequences can collide in the low-level hash function.
+
+  B) To play nicely with composition, we additionally that feed
+     implements a prefix code, i.e., for objects x != y of the same
+     type, code(x) must not be a prefix of code(y).
+
+     This requirement makes it much easier to define non-colliding
+     code sequences for composite objects such as pairs via
+     concatenation: if <a, b> != <a', b'>, then code(a) != code(a')
+     and code(b) != code(b') is *not* sufficient for concat(code(a),
+     code(b)) != concat(code(a'), code(b')). However, if we require a
+     prefix code, it *is* sufficient and the resulting code will again
+     be a prefix code.
+
+  Note that objects "of the same type" is meant as "logical type"
+  rather than C++ type.
+
+  For example, for objects such as vectors where we expect
+  different-length vectors to be combined in the same containers (=
+  have the same logical type), we include the length of the vector as
+  the first element in the code to ensure the prefix code property.
+
+  In contrast, for integer arrays encoding states, we *do not* include
+  the length as a prefix because states of different sizes are
+  considered to be different logical types and should not be mixed in
+  the same container, even though they are represented by the same C++
+  type.
 */
 
 static_assert(sizeof(unsigned int) == 4, "unsigned int has unexpected size");
@@ -113,6 +175,8 @@ public:
             /*
                pending_values == 0 can only hold if we never called
                feed(), i.e., if we are hashing an empty sequence.
+               In this case we don't call final_mix for compatibility
+               with the original hash function by Jenkins.
             */
             final_mix();
         }
@@ -123,10 +187,7 @@ public:
     uint64_t get_hash64() {
         assert(pending_values != -1);
         if (pending_values) {
-            /*
-               pending_values == 0 can only hold if we never called
-               feed(), i.e., if we are hashing an empty sequence.
-            */
+            // See comment for get_hash32.
             final_mix();
         }
         pending_values = -1;
@@ -138,8 +199,8 @@ public:
 /*
   These functions add a new object to an existing HashState object.
 
-  You can add hashing support for your own type by providing such a function
-  for your type in the "util" namespace.
+  To add hashing support for a user type X, provide an override
+  for utils::feed(HashState &hash_state, const X &value).
 */
 inline void feed(HashState &hash_state, int value) {
     hash_state.feed(static_cast<uint32_t>(value));
@@ -171,7 +232,7 @@ template<typename T>
 void feed(HashState &hash_state, const std::vector<T> &vec) {
     /*
       Feed vector size to ensure that no two different vectors of the same type
-      have the same prefix of feed() calls.
+      have the same code prefix.
     */
     feed(hash_state, vec.size());
     for (const T &item : vec) {
