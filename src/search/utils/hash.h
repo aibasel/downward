@@ -150,7 +150,7 @@ public:
           pending_values(0) {
     }
 
-    void feed(unsigned int value) {
+    void feed(uint32_t value) {
         assert(pending_values != -1);
         if (pending_values == 3) {
             mix();
@@ -201,12 +201,18 @@ public:
   To add hashing support for a user type X, provide an override
   for utils::feed(HashState &hash_state, const X &value).
 */
+static_assert(
+    sizeof(int) == sizeof(uint32_t),
+    "int and uint32_t have different sizes");
 inline void feed(HashState &hash_state, int value) {
     hash_state.feed(static_cast<uint32_t>(value));
 }
 
+static_assert(
+    sizeof(unsigned int) == sizeof(uint32_t),
+    "unsigned int and uint32_t have different sizes");
 inline void feed(HashState &hash_state, unsigned int value) {
-    hash_state.feed(value);
+    hash_state.feed(static_cast<uint32_t>(value));
 }
 
 inline void feed(HashState &hash_state, uint64_t value) {
@@ -217,7 +223,7 @@ inline void feed(HashState &hash_state, uint64_t value) {
 
 template<typename T>
 void feed(HashState &hash_state, const T *p) {
-    // This is wasteful in 32-bit mode, but we plan to switch to 64-bit soon anyway.
+    // This is wasteful in 32-bit mode, but we plan to discontinue 32-bit compiles anyway.
     feed(hash_state, reinterpret_cast<uint64_t>(p));
 }
 
