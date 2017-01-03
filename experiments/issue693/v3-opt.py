@@ -49,4 +49,22 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 
+attributes = [
+    "coverage", "error", "expansions_until_last_jump", "memory",
+    "score_memory", "total_time", "score_total_time"]
+
+# Compare revisions.
+# lmcut-base-32 vs. lmcut-v1-32 vs. lmcut-v3-32
+# lmcut-base-64 vs. lmcut-v1-64 vs. lmcut-v3-64
+for build in BUILDS:
+    for rev1, rev2 in itertools.combinations(REVISIONS, 2):
+        algorithm_pairs = [
+            ("{rev1}-{config_nick}-{build}".format(**locals()),
+             "{rev2}-{config_nick}-{build}".format(**locals()),
+             "Diff ({config_nick}-{build})".format(**locals()))
+            for config_nick, search in SEARCHES]
+        exp.add_report(
+            ComparativeReport(algorithm_pairs, attributes=attributes),
+            name="issue693-opt-{rev1}-vs-{rev2}-{build}".format(**locals()))
+
 exp.run_steps()
