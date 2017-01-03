@@ -19,7 +19,7 @@ namespace utils {
   The low-level hash functions are based on lookup3.c by Bob Jenkins,
   May 2006, public domain. See http://www.burtleburtle.net/bob/c/lookup3.c.
 
-  To hash an object x , it is represented as a sequence of 32-bit
+  To hash an object x, it is represented as a sequence of 32-bit
   pieces (called the "code" for x, written code(x) in the following)
   that are "fed" to the main hashing function (implemented in class
   HashState) one by one. This allows a compositional approach to
@@ -48,7 +48,7 @@ namespace utils {
      there will still be "necessary" hash collisions because different
      code sequences can collide in the low-level hash function.
 
-  B) To play nicely with composition, we additionally that feed
+  B) To play nicely with composition, we additionally require that feed
      implements a prefix code, i.e., for objects x != y of the same
      type, code(x) must not be a prefix of code(y).
 
