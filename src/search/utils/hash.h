@@ -4,6 +4,8 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -274,6 +276,29 @@ template<typename T>
 size_t get_hash(const T &value) {
     return static_cast<size_t>(get_hash64(value));
 }
+
+
+template <typename T>
+struct Hash {
+    std::size_t operator()(const T& val) const {
+        return get_hash(val);
+    }
+};
+
+/*
+  Public aliases allowing to use shorter hash set and hash map declarations.
+
+  E.g., we can write "utils::HashSet<std::vector<int>> s;" instead of
+  "std::unordered_set<std::vector<int>, utils::Hash<std::vector<int>>> s;".
+
+  By providing a suitable feed() function in the "util" namespace, you can add
+  support for custom types.
+*/
+template <typename T1, typename T2>
+using HashMap = std::unordered_map<T1, T2, Hash<T1>>;
+
+template <typename T>
+using HashSet = std::unordered_set<T, Hash<T>>;
 }
 
 namespace std {
