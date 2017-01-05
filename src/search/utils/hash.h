@@ -251,8 +251,8 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
 /*
   Public hash functions.
 
-  get_hash() is called by stdlib containers if no custom Hasher type is
-  provided. You can call get_hash32(), get_hash64() or get_hash() manually if
+  get_hash() is called by the HashMap and HashSet classes below (via the Hash
+  struct). You can call get_hash32(), get_hash64() or get_hash() manually if
   you need hashes for other use cases.
 
   By providing a suitable feed() function in the "util" namespace, you can add
