@@ -7,11 +7,10 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/hash.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
-
-#include <unordered_set>
 
 using namespace std;
 
@@ -27,7 +26,7 @@ SamplesToFunctionsMap
 DiversePotentialHeuristics::filter_samples_and_compute_functions(
     const vector<State> &samples) {
     utils::Timer filtering_timer;
-    unordered_set<State> dead_ends;
+    utils::HashSet<State> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
     SamplesToFunctionsMap samples_to_functions;

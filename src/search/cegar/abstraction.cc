@@ -118,7 +118,7 @@ void Abstraction::separate_facts_unreachable_before_goal() {
     assert(states.size() == 1);
     assert(task_proxy.get_goals().size() == 1);
     FactProxy goal = task_proxy.get_goals()[0];
-    unordered_set<FactProxy> reachable_facts = get_relaxed_possible_before(
+    utils::HashSet<FactProxy> reachable_facts = get_relaxed_possible_before(
         task_proxy, goal);
     for (VariableProxy var : task_proxy.get_variables()) {
         if (!may_keep_refining())

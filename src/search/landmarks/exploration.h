@@ -104,11 +104,11 @@ class Exploration : public Heuristic {
 
     void setup_exploration_queue(const State &state,
                                  const std::vector<FactPair> &excluded_props,
-                                 const std::unordered_set<int> &excluded_op_ids,
+                                 const utils::HashSet<int> &excluded_op_ids,
                                  bool use_h_max);
     void setup_exploration_queue(const State &state, bool h_max) {
         std::vector<FactPair> excluded_props;
-        std::unordered_set<int> excluded_op_ids;
+        utils::HashSet<int> excluded_op_ids;
         setup_exploration_queue(state, excluded_props, excluded_op_ids, h_max);
     }
     void relaxed_exploration(bool use_h_max, bool level_out);
@@ -133,10 +133,10 @@ public:
     void set_additional_goals(const std::vector<FactPair> &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
-                                            std::vector<std::unordered_map<FactPair, int>> &lvl_op,
+                                            std::vector<utils::HashMap<FactPair, int>> &lvl_op,
                                             bool level_out,
                                             const std::vector<FactPair> &excluded_props,
-                                            const std::unordered_set<int> &excluded_op_ids,
+                                            const utils::HashSet<int> &excluded_op_ids,
                                             bool compute_lvl_ops);
     // Only needed for computing helpful actions for landmark count heuristic.
     std::vector<int> exported_op_ids;

@@ -3,12 +3,13 @@
 
 #include "landmark_factory.h"
 
-#include <unordered_set>
+#include "../utils/hash.h"
+
 #include <utility>
 #include <vector>
 
 namespace landmarks {
-using lm_set = std::unordered_set<FactPair>;
+using lm_set = utils::HashSet<FactPair>;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactory {
     class plan_graph_node {

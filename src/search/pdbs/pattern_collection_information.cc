@@ -4,9 +4,10 @@
 #include "max_additive_pdb_sets.h"
 #include "validation.h"
 
+#include "../utils/hash.h"
+
 #include <algorithm>
 #include <cassert>
-#include <unordered_set>
 #include <utility>
 
 using namespace std;
@@ -39,23 +40,23 @@ bool PatternCollectionInformation::information_is_valid() const {
         }
     }
     if (max_additive_subsets) {
-        unordered_set<PatternDatabase *> pdbs_in_union;
+        utils::HashSet<PatternDatabase *> pdbs_in_union;
         for (const PDBCollection &additive_subset : *max_additive_subsets) {
             for (const shared_ptr<PatternDatabase> &pdb : additive_subset) {
                 pdbs_in_union.insert(pdb.get());
             }
         }
-        unordered_set<Pattern> patterns_in_union;
+        utils::HashSet<Pattern> patterns_in_union;
         for (PatternDatabase *pdb : pdbs_in_union) {
             patterns_in_union.insert(pdb->get_pattern());
         }
-        unordered_set<Pattern> patterns_in_list(patterns->begin(),
+        utils::HashSet<Pattern> patterns_in_list(patterns->begin(),
                                                 patterns->end());
         if (patterns_in_list != patterns_in_union) {
             return false;
         }
         if (pdbs) {
-            unordered_set<PatternDatabase *> pdbs_in_list;
+            utils::HashSet<PatternDatabase *> pdbs_in_list;
             for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
                 pdbs_in_list.insert(pdb.get());
             }
