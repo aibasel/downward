@@ -278,6 +278,11 @@ size_t get_hash(const T &value) {
 }
 
 
+/*
+  Public hash struct.
+
+  Use this struct only when you cannot use HashMap or HashSet (see below).
+*/
 template <typename T>
 struct Hash {
     std::size_t operator()(const T& val) const {
@@ -299,15 +304,6 @@ using HashMap = std::unordered_map<T1, T2, Hash<T1>>;
 
 template <typename T>
 using HashSet = std::unordered_set<T, Hash<T>>;
-}
-
-namespace std {
-template<typename T>
-struct hash {
-    size_t operator()(const T &object) const {
-        return utils::get_hash(object);
-    }
-};
 }
 
 #endif

@@ -6,6 +6,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/hash.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -26,7 +27,7 @@ class ParetoOpenList : public OpenList<Entry> {
 
     typedef deque<Entry> Bucket;
     typedef vector<int> KeyType;
-    typedef unordered_map<KeyType, Bucket> BucketMap;
+    typedef utils::HashMap<KeyType, Bucket> BucketMap;
     typedef set<KeyType> KeySet;
 
     BucketMap buckets;

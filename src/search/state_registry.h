@@ -131,7 +131,7 @@ class StateRegistry {
         }
 
         unsigned int operator()(StateID id) const {
-            return std::hash<PackedStateWrapper>()(
+            return utils::Hash<PackedStateWrapper>()(
                 PackedStateWrapper(state_data_pool[id.value], state_size));
         }
     };
@@ -161,6 +161,7 @@ class StateRegistry {
     typedef std::unordered_set<StateID,
                                StateIDSemanticHash,
                                StateIDSemanticEqual> StateIDSet;
+
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */
