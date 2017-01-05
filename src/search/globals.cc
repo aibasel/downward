@@ -175,12 +175,12 @@ void read_mutexes(istream &in) {
                        don't mark a fact as mutex with itself
                        (important for correctness) and don't include
                        redundant mutexes (important to conserve
-                       memory). Note that the preprocessor removes
-                       mutex groups that contain *only* redundant
-                       mutexes, but it can of course generate mutex
-                       groups which lead to *some* redundant mutexes,
-                       where some but not all facts talk about the
-                       same variable. */
+                       memory). Note that the translator (at least
+                       with default settings) removes mutex groups
+                       that contain *only* redundant mutexes, but it
+                       can of course generate mutex groups which lead
+                       to *some* redundant mutexes, where some but not
+                       all facts talk about the same variable. */
                     g_inconsistent_facts[fact1.var][fact1.value].insert(fact2);
                 }
             }
@@ -245,14 +245,8 @@ void read_everything(istream &in) {
     read_operators(in);
     read_axioms(in);
 
-    // Ignore successor generator from preprocessor output.
-    check_magic(in, "begin_SG");
-    string dummy_string = "";
-    while (dummy_string != "end_SG") {
-        getline(in, dummy_string);
-    }
-
-    check_magic(in, "begin_DTG"); // ignore everything from here
+    /* TODO: We should be stricter here and verify that we
+       have reached the end of "in". */
 
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 

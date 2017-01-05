@@ -10,16 +10,15 @@ from . import util
 
 DESCRIPTION = """Fast Downward driver script.
 
-Input files can be either a PDDL problem file (with an optional PDDL
-domain file), in which case the driver runs all three planner
-components, or a SAS+ preprocessor output file, in which case the
-driver runs just the search component. You can override this default
-behaviour by selecting components manually with the flags below. The
-first component to be run determines the required input files:
+Input files can be either a PDDL problem file (with an optional PDDL domain
+file), in which case the driver runs both planner components (translate and
+search), or a SAS+ translator output file, in which case the driver runs just
+the search component. You can override this default behaviour by selecting
+components manually with the flags below. The first component to be run
+determines the required input files:
 
 --translate: [DOMAIN] PROBLEM
---preprocess: TRANSLATE_OUTPUT
---search: PREPROCESS_OUTPUT
+--search: TRANSLATE_OUTPUT
 
 Arguments given before the specified input files are interpreted by the driver
 script ("driver options"). Arguments given after the input files are passed on
@@ -30,9 +29,9 @@ separate driver options from input files and also to separate input files from
 component options.
 
 By default, component options are passed to the search component. Use
-"--translate-options", "--preprocess-options" or "--search-options"
-within the component options to override the default for the following
-options, until overridden again. (See below for examples.)"""
+"--translate-options" or "--search-options" within the component options to
+override the default for the following options, until overridden again. (See
+below for examples.)"""
 
 LIMITS_HELP = """You can limit the time or memory for individual components
 or the whole planner. The effective limit for each component is the minimum
@@ -52,19 +51,20 @@ EXAMPLE_PORTFOLIO = os.path.relpath(
     aliases.PORTFOLIOS["seq-opt-fdss-1"], start=util.REPO_ROOT_DIR)
 
 EXAMPLES = [
-    ("Translate and preprocess, then find a plan with A* + LM-Cut:",
+    ("Translate and find a plan with A* + LM-Cut:",
      ["./fast-downward.py", "misc/tests/benchmarks/gripper/prob01.pddl",
       "--search", '"astar(lmcut())"']),
-    ("Translate and preprocess, run no search:",
-     ["./fast-downward.py", "--translate", "--preprocess",
+    ("Translate and run no search:",
+     ["./fast-downward.py", "--translate",
       "misc/tests/benchmarks/gripper/prob01.pddl"]),
-    ("Run predefined configuration (LAMA-2011) on preprocessed task:",
-     ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output"]),
-    ("Run a portfolio on a preprocessed task:",
+    ("Run predefined configuration (LAMA-2011) on translated task:",
+     ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output.sas"]),
+    ("Run a portfolio on a translated task:",
      ["./fast-downward.py", "--portfolio", EXAMPLE_PORTFOLIO,
-      "--search-time-limit", "30m", "output"]),
-    ("Run the search component in debug mode (with assertions enabled):",
-     ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
+      "--search-time-limit", "30m", "output.sas"]),
+    ("Run the search component in debug mode (with assertions enabled) "
+     "and validate the resulting plan:",
+     ["./fast-downward.py", "--debug", "output.sas", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
      ["./fast-downward.py", "misc/tests/benchmarks/gripper/prob01.pddl",
       "--translate-options", "--full-encoding",
@@ -77,7 +77,6 @@ EXAMPLES = [
 
 EPILOG = """component options:
   --translate-options OPTION1 OPTION2 ...
-  --preprocess-options OPTION1 OPTION2 ...
   --search-options OPTION1 OPTION2 ...
                         pass OPTION1 OPTION2 ... to specified planner component
                         (default: pass component options to search)
@@ -87,7 +86,7 @@ Examples:
 %s
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
-COMPONENTS_PLUS_OVERALL = ["translate", "preprocess", "search", "overall"]
+COMPONENTS_PLUS_OVERALL = ["translate", "search", "overall"]
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
@@ -142,22 +141,19 @@ def _split_off_filenames(planner_args):
 
 def _split_planner_args(parser, args):
     """Partition args.planner_args, the list of arguments for the
-    planner components, into args.filenames, args.translate_options,
-    arge.preprocess_options and args.search_options. Modifies args
-    directly and removes the original args.planner_args list."""
+    planner components, into args.filenames, args.translate_options
+    and args.search_options. Modifies args directly and removes the original
+    args.planner_args list."""
 
     args.filenames, options = _split_off_filenames(args.planner_args)
 
     args.translate_options = []
-    args.preprocess_options = []
     args.search_options = []
 
     curr_options = args.search_options
     for option in options:
         if option == "--translate-options":
             curr_options = args.translate_options
-        elif option == "--preprocess-options":
-            curr_options = args.preprocess_options
         elif option == "--search-options":
             curr_options = args.search_options
         else:
@@ -175,9 +171,6 @@ def _check_mutex_args(parser, args, required=False):
 
 
 def _looks_like_search_input(filename):
-    # We don't currently have a good way to distinguish preprocess and
-    # search inputs without going through most of the file, so we
-    # don't even try.
     with open(filename) as input_file:
         first_line = next(input_file, "").rstrip()
     return first_line == "begin_version"
@@ -195,45 +188,37 @@ def _set_components_automatically(parser, args):
     if len(args.filenames) == 1 and _looks_like_search_input(args.filenames[0]):
         args.components = ["search"]
     else:
-        args.components = ["translate", "preprocess", "search"]
+        args.components = ["translate", "search"]
 
 
 def _set_components_and_inputs(parser, args):
-    """Set args.components to the planner components to be run
-    and set args.translate_inputs, args.preprocess_input and
-    args.search_input to the correct input filenames.
+    """Set args.components to the planner components to be run and set
+    args.translate_inputs and args.search_input to the correct input
+    filenames.
 
     Rules:
     1. If any --run-xxx option is specified, then the union
        of the specified components is run.
-    2. It is an error to specify running the translator and
-       search, but not the preprocessor.
-    3. If nothing is specified, use automatic rules. See
+    2. If nothing is specified, use automatic rules. See
        separate function."""
 
     args.components = []
     if args.translate or args.run_all:
         args.components.append("translate")
-    if args.preprocess or args.run_all:
-        args.components.append("preprocess")
     if args.search or args.run_all:
         args.components.append("search")
-
-    if args.components == ["translate", "search"]:
-        parser.error("cannot run translator and search without preprocessor")
 
     if not args.components:
         _set_components_automatically(parser, args)
 
     # We implicitly activate validation in debug mode. However, for
-    # validation we need the PDDL input files and a plan, therefore all
-    # three components must be active.
-    if args.validate or (args.debug and len(args.components) == 3):
+    # validation we need the PDDL input files and a plan, therefore both
+    # components must be active.
+    if args.validate or (args.debug and len(args.components) == 2):
         args.components.append("validate")
 
     args.translate_inputs = []
-    args.preprocess_input = "output.sas"
-    args.search_input = "output"
+    args.search_input = "output.sas"
 
     assert args.components
     first = args.components[0]
@@ -253,13 +238,6 @@ def _set_components_and_inputs(parser, args):
             args.translate_inputs = args.filenames
         else:
             parser.error("translator needs one or two input files")
-    elif first == "preprocess":
-        if "--help" in args.preprocess_options:
-            args.preprocess_input = None
-        elif num_files == 1:
-            args.preprocess_input, = args.filenames
-        else:
-            parser.error("preprocessor needs exactly one input file")
     elif first == "search":
         if "--help" in args.search_options:
             args.search_input = None
@@ -306,9 +284,6 @@ def parse_args():
         "--translate", action="store_true",
         help="run translator component")
     components.add_argument(
-        "--preprocess", action="store_true",
-        help="run preprocessor component")
-    components.add_argument(
         "--search", action="store_true",
         help="run search component")
 
@@ -334,7 +309,7 @@ def parse_args():
             "script creates them by default.")
     driver_other.add_argument(
         "--debug", action="store_true",
-        help="alias for --build=debug32")
+        help="alias for --build=debug32 --validate")
     driver_other.add_argument(
         "--validate", action="store_true",
         help='validate plans (implied by --debug); needs "validate" (VAL) on PATH')
@@ -352,7 +327,7 @@ def parse_args():
 
     driver_other.add_argument(
         "--cleanup", action="store_true",
-        help="clean up temporary files (output, output.sas, sas_plan, sas_plan.*) and exit")
+        help="clean up temporary files (output.sas, sas_plan, sas_plan.*) and exit")
 
 
     parser.add_argument(
@@ -369,8 +344,8 @@ def parse_args():
     args = parser.parse_args()
 
     if args.build and args.debug:
-        parser.error("The option --debug is an alias for --build=debug32. "
-                     "Do no specify both --debug and --build.")
+        parser.error("The option --debug is an alias for --build=debug32 "
+                     "--validate. Do no specify both --debug and --build.")
     if not args.build:
         if args.debug:
             args.build = "debug32"
