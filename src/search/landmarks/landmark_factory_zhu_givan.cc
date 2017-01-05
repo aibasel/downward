@@ -10,7 +10,6 @@
 #include "../utils/language.h"
 
 #include <iostream>
-#include <unordered_map>
 #include <utility>
 
 using namespace std;
@@ -97,7 +96,7 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
     assert(!triggers.empty());
 
     PropositionLayer current_prop_layer;
-    unordered_set<int> triggered(task_proxy.get_operators().size() + task_proxy.get_axioms().size());
+    utils::HashSet<int> triggered(task_proxy.get_operators().size() + task_proxy.get_axioms().size());
 
     // set initial layer
     State initial_state = task_proxy.get_initial_state();
@@ -122,7 +121,7 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
     bool changes = true;
     while (changes) {
         PropositionLayer next_prop_layer(current_prop_layer);
-        unordered_set<int> next_triggered;
+        utils::HashSet<int> next_triggered;
         changes = false;
         for (int op_or_axiom_id : triggered) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);

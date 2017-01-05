@@ -1,10 +1,11 @@
 #ifndef EQUIVALENCE_RELATION_H
 #define EQUIVALENCE_RELATION_H
 
+#include "utils/hash.h"
+
 #include <algorithm>
 #include <cmath>
 #include <list>
-#include <unordered_map>
 #include <vector>
 
 class Block;
@@ -52,8 +53,8 @@ class EquivalenceRelation {
       contains the element and element_it is an iterator from the list in this
       block and points to the element within it.
     */
-    typedef std::pair<BlockListIter, ElementListIter> ElementPosition;
-    typedef std::unordered_map<int, ElementPosition> ElementPositionMap;
+    using ElementPosition = std::pair<BlockListIter, ElementListIter>;
+    using ElementPositionMap = utils::HashMap<int, ElementPosition>;
     ElementPositionMap element_positions;
 
     /*

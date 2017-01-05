@@ -12,7 +12,7 @@
 
   The original implementation uses a std::map for storing and looking
   up buckets. Our implementation stores the buckets in a std::vector
-  and uses a std::unordered_map for looking up indexes in the vector.
+  and uses a utils::HashMap for looking up indexes in the vector.
 
   In the table below we list the amortized worst-case time complexities
   for the original implementation and the version below.

@@ -169,7 +169,7 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
 
         // collect operator precondition
         OperatorProxy op = get_op_for_label(label);
-        unordered_map<int, int> pre_map;
+        utils::HashMap<int, int> pre_map;
         for (FactProxy pre : op.get_preconditions())
             pre_map[pre.get_variable().get_id()] = pre.get_value();
 
@@ -229,12 +229,12 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
     // Remove labels with duplicate or dominated conditions.
 
     /*
-      Algorithm: Put all transitions into an unordered_map
+      Algorithm: Put all transitions into a hash map
       (key: condition, value: index in label list).
       This already gets rid of transitions with identical conditions.
 
-      Then go through the unordered_map, checking for each element if
-      none of the subset conditions are part of the unordered_map.
+      Then go through the hash map, checking for each element if
+      none of the subset conditions are part of the hash map.
       Put the element into the new labels list iff this is the case.
      */
 

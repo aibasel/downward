@@ -4,8 +4,6 @@
 #include "evaluation_result.h"
 #include "heuristic_cache.h"
 
-#include <unordered_map>
-
 class GlobalOperator;
 class GlobalState;
 class ScalarEvaluator;

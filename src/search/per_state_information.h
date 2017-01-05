@@ -8,10 +8,10 @@
 #include "state_registry.h"
 
 #include "utils/collections.h"
+#include "../utils/hash.h"
 
 #include <cassert>
 #include <iterator>
-#include <unordered_map>
 
 class PerStateInformationBase {
     friend class StateRegistry;
@@ -51,8 +51,8 @@ public:
 template<class Entry>
 class PerStateInformation : public PerStateInformationBase {
     const Entry default_value;
-    typedef std::unordered_map<const StateRegistry *,
-                               SegmentedVector<Entry> * > EntryVectorMap;
+    using EntryVectorMap =
+              utils::HashMap<const StateRegistry *, SegmentedVector<Entry> *>;
     EntryVectorMap entries_by_registry;
 
     mutable const StateRegistry *cached_registry;

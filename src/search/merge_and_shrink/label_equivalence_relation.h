@@ -3,8 +3,9 @@
 
 #include "types.h"
 
+#include "../utils/hash.h"
+
 #include <list>
-#include <unordered_set>
 #include <vector>
 
 namespace merge_and_shrink {
@@ -94,7 +95,7 @@ public:
     */
     void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-        const std::unordered_set<int> *affected_group_ids = nullptr);
+        const utils::HashSet<int> *affected_group_ids = nullptr);
     // Moves all labels from one goup into the other
     void move_group_into_group(int from_group_id, int to_group_id);
     int add_label_group(const std::vector<int> &new_labels);

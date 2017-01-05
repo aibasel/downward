@@ -1,18 +1,19 @@
 #ifndef CEGAR_ABSTRACT_SEARCH_H
 #define CEGAR_ABSTRACT_SEARCH_H
 
-#include "../priority_queue.h"
-
 #include "transition.h"
 
+#include "../priority_queue.h"
+
+#include "../utils/hash.h"
+
 #include <deque>
-#include <unordered_set>
 #include <vector>
 
 namespace cegar {
 class AbstractState;
 
-using AbstractStates = std::unordered_set<AbstractState *>;
+using AbstractStates = utils::HashSet<AbstractState *>;
 using Solution = std::deque<Transition>;
 
 /*

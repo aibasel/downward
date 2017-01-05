@@ -8,6 +8,7 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
@@ -17,7 +18,6 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -91,8 +91,8 @@ void PatternCollectionGeneratorGenetic::remove_irrelevant_variables(
     Pattern &pattern) const {
     TaskProxy task_proxy(*task);
 
-    unordered_set<int> in_original_pattern(pattern.begin(), pattern.end());
-    unordered_set<int> in_pruned_pattern;
+    utils::HashSet<int> in_original_pattern(pattern.begin(), pattern.end());
+    utils::HashSet<int> in_pruned_pattern;
 
     vector<int> vars_to_check;
     for (FactProxy goal : task_proxy.get_goals()) {

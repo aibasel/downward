@@ -11,7 +11,6 @@
 #include "utils/hash.h"
 
 #include <set>
-#include <unordered_set>
 
 /*
   Overview of classes relevant to storing and working with registered states.
@@ -158,9 +157,7 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    typedef std::unordered_set<StateID,
-                               StateIDSemanticHash,
-                               StateIDSemanticEqual> StateIDSet;
+    using StateIDSet = std::unordered_set<StateID, StateIDSemanticHash, StateIDSemanticEqual>;
 
 
     /* TODO: The state registry still doesn't use the task interface completely.

@@ -9,6 +9,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -16,7 +17,6 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
-#include <unordered_map>
 
 using namespace std;
 
@@ -104,7 +104,7 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
 
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
-    typedef unordered_map<int, int> GroupMap;
+    typedef utils::HashMap<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < ts.get_size(); ++state) {

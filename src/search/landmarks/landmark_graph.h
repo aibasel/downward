@@ -10,7 +10,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
 namespace landmarks {
@@ -43,8 +42,8 @@ public:
     std::vector<FactPair> facts;
     bool disjunctive;
     bool conjunctive;
-    std::unordered_map<LandmarkNode *, EdgeType> parents;
-    std::unordered_map<LandmarkNode *, EdgeType> children;
+    utils::HashMap<LandmarkNode *, EdgeType> parents;
+    utils::HashMap<LandmarkNode *, EdgeType> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;

@@ -1,7 +1,8 @@
 #ifndef LANDMARKS_UTIL_H
 #define LANDMARKS_UTIL_H
 
-#include <unordered_map>
+#include "../utils/hash.h"
+
 #include <vector>
 
 class OperatorProxy;
@@ -10,9 +11,9 @@ class TaskProxy;
 namespace landmarks {
 class LandmarkNode;
 
-std::unordered_map<int, int> _intersect(
-    const std::unordered_map<int, int> &a,
-    const std::unordered_map<int, int> &b);
+utils::HashMap<int, int> _intersect(
+    const utils::HashMap<int, int> &a,
+    const utils::HashMap<int, int> &b);
 
 bool _possibly_reaches_lm(const OperatorProxy &op,
                           const std::vector<std::vector<int>> &lvl_var,
