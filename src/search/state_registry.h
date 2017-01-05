@@ -131,7 +131,7 @@ class StateRegistry {
         }
 
         unsigned int operator()(StateID id) const {
-            return utils::Hash<PackedStateWrapper>()(
+            return utils::get_hash32(
                 PackedStateWrapper(state_data_pool[id.value], state_size));
         }
     };

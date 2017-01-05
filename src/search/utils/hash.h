@@ -275,11 +275,7 @@ std::size_t get_hash(const T &value) {
 }
 
 
-/*
-  Public hash struct.
-
-  Use this struct only when you cannot use HashMap or HashSet (see below).
-*/
+// This struct should only be used by HashMap and HashSet below.
 template <typename T>
 struct Hash {
     std::size_t operator()(const T &val) const {
