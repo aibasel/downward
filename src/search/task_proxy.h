@@ -454,6 +454,8 @@ public:
         return task->get_operator_name(index, is_an_axiom);
     }
 
+    /* Deprecated. We will replace uses with get_action_id,
+       then remove get_id and rename get_action_id to get_id. */
     int get_id() const {
         return index;
     }
