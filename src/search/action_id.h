@@ -17,7 +17,7 @@ class ActionID {
 
 public:
     explicit ActionID(int value, bool is_axiom = false)
-        : value(is_axiom? -1 - value : value) {
+        : value(is_axiom ? -1 - value : value) {
     }
 
     bool is_axiom() {
