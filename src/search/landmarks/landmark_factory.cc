@@ -381,7 +381,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             if (node_a->conjunctive)
                 continue;
 
-            unordered_map<int, int> shared_eff;
+            utils::HashMap<int, int> shared_eff;
             bool init = true;
             const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact_a);
             // Intersect operators that achieve a one by one
@@ -399,7 +399,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 set<FactPair> trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(variables, effects,
                                                                                trivially_conditioned_effects);
-                unordered_map<int, int> next_eff;
+                utils::HashMap<int, int> next_eff;
                 for (EffectProxy effect : effects) {
                     FactPair effect_fact = effect.get_fact().get_pair();
                     if (effect.get_conditions().empty() &&
@@ -414,7 +414,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 if (init)
                     swap(shared_eff, next_eff);
                 else {
-                    unordered_map<int, int> result;
+                    utils::HashMap<int, int> result;
                     for (const auto &eff1 : shared_eff) {
                         auto it2 = next_eff.find(eff1.first);
                         if (it2 != next_eff.end() && it2->second == eff1.second)
@@ -489,7 +489,7 @@ void LandmarkFactory::approximate_reasonable_orders(
         } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
-            unordered_set<LandmarkNode *> interesting_nodes(variables_size);
+            utils::HashSet<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2 = *child.first;
                 const EdgeType &edge2 = child.second;
@@ -526,14 +526,14 @@ void LandmarkFactory::approximate_reasonable_orders(
 }
 
 void LandmarkFactory::collect_ancestors(
-    unordered_set<LandmarkNode *> &result,
+    utils::HashSet<LandmarkNode *> &result,
     LandmarkNode &node,
     bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
 
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;
-    unordered_set<LandmarkNode *> closed_nodes;
+    utils::HashSet<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
         const EdgeType &edge = p.second;
@@ -682,7 +682,7 @@ void LandmarkFactory::discard_all_orderings() {
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
-    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
+    utils::HashSet<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
     for (LandmarkNode *node : lm_graph->get_nodes()) {
         if (acyclic_node_set.find(node) == acyclic_node_set.end())
@@ -726,12 +726,13 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     return true;
 }
 
-int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
-                                        unordered_set<LandmarkNode *> &acyclic_node_set) {
+int LandmarkFactory::loop_acyclic_graph(
+    LandmarkNode &lmn, utils::HashSet<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, EdgeType>> path;
-    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
+    utils::HashSet<LandmarkNode *> visited =
+        utils::HashSet<LandmarkNode *>(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());

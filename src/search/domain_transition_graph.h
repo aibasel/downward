@@ -3,9 +3,11 @@
 
 #include "task_proxy.h"
 
+#include "../utils/hash.h"
+
 #include <cassert>
-#include <unordered_map>
 #include <vector>
+
 using namespace std;
 
 namespace cg_heuristic {

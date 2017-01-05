@@ -1,8 +1,9 @@
 #ifndef TASKS_DOMAIN_ABSTRACTED_TASK_FACTORY_H
 #define TASKS_DOMAIN_ABSTRACTED_TASK_FACTORY_H
 
+#include "../utils/hash.h"
+
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 class AbstractTask;
@@ -11,7 +12,7 @@ class AbstractTask;
 namespace extra_tasks {
 using ValueGroup = std::vector<int>;
 using ValueGroups = std::vector<ValueGroup>;
-using VarToGroups = std::unordered_map<int, ValueGroups>;
+using VarToGroups = utils::HashMap<int, ValueGroups>;
 
 /*
   Factory for creating domain abstractions.

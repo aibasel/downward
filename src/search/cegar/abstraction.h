@@ -13,7 +13,6 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -52,8 +51,8 @@ class Abstraction {
       Set of all (as of yet unsplit) abstract states.
 
       TODO: Store states as unique_ptrs. C++11 doesn't really support
-      unordered_sets of unique_ptrs, so we should probably use an
-      unordered_map<AbstractState *, unique_ptr<AbstractState>> to
+      utils::HashSets of unique_ptrs, so we should probably use an
+      utils::HashMap<AbstractState *, unique_ptr<AbstractState>> to
       allow for removing elements (see
       https://stackoverflow.com/questions/18939882).
     */

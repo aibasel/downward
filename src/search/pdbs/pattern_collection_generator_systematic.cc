@@ -7,6 +7,7 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/hash.h"
 #include "../utils/markup.h"
 
 #include <algorithm>
@@ -56,7 +57,7 @@ void PatternCollectionGeneratorSystematic::compute_eff_pre_neighbors(
       Compute all variables that are reachable from pattern by an
       (eff, pre) arc and are not already contained in the pattern.
     */
-    unordered_set<int> candidates;
+    utils::HashSet<int> candidates;
 
     // Compute neighbors.
     for (int var : pattern) {
@@ -91,7 +92,7 @@ void PatternCollectionGeneratorSystematic::compute_connection_points(
       optimizations that help reduce the number of candidates to
       consider.
     */
-    unordered_set<int> candidates;
+    utils::HashSet<int> candidates;
 
     // Handle rule 1.
     for (int var : pattern) {

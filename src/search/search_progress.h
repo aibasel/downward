@@ -1,7 +1,7 @@
 #ifndef SEARCH_PROGRESS_H
 #define SEARCH_PROGRESS_H
 
-#include <unordered_map>
+#include "../utils/hash.h"
 
 class EvaluationContext;
 class Heuristic;
@@ -16,7 +16,7 @@ class Heuristic;
 
 
 class SearchProgress {
-    std::unordered_map<const Heuristic *, int> best_heuristic_values;
+    utils::HashMap<const Heuristic *, int> best_heuristic_values;
 
     bool process_heuristic_value(const Heuristic *heuristic, int h);
 

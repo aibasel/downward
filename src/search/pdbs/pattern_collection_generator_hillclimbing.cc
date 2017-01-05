@@ -198,7 +198,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
         int h_subset = 0;
         for (const shared_ptr<PatternDatabase> &additive_pdb : subset) {
             /* Experiments showed that it is faster to recompute the
-               h values than to cache them in an unordered_map. */
+               h values than to cache them in a utils::HashMap. */
             int h = additive_pdb->get_value(sample);
             if (h == numeric_limits<int>::max())
                 return false;

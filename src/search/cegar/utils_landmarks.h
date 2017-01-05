@@ -1,8 +1,9 @@
 #ifndef CEGAR_UTILS_LANDMARKS_H
 #define CEGAR_UTILS_LANDMARKS_H
 
+#include "../utils/hash.h"
+
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 class AbstractTask;
@@ -14,7 +15,7 @@ class LandmarkGraph;
 }
 
 namespace cegar {
-using VarToValues = std::unordered_map<int, std::vector<int>>;
+using VarToValues = utils::HashMap<int, std::vector<int>>;
 
 extern std::shared_ptr<landmarks::LandmarkGraph> get_landmark_graph(
     const std::shared_ptr<AbstractTask> &task);

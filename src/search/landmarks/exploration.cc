@@ -407,7 +407,7 @@ void Exploration::collect_helpful_actions(
 
 // TODO: this should be in landmark class
 static bool is_landmark(vector<FactPair> &landmarks, const FactPair &fact) {
-    // TODO: change landmarks to set or unordered_set
+    // TODO: change landmarks to set or utils::HashSet
     return find(landmarks.begin(), landmarks.end(), fact) != landmarks.end();
 }
 

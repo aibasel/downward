@@ -3,8 +3,9 @@
 
 #include "potential_optimizer.h"
 
+#include "../utils/hash.h"
+
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 namespace utils {
@@ -12,8 +13,7 @@ class RandomNumberGenerator;
 }
 
 namespace potentials {
-using SamplesToFunctionsMap =
-          utils::HashMap<State, std::unique_ptr<PotentialFunction>>;
+using SamplesToFunctionsMap = utils::HashMap<State, std::unique_ptr<PotentialFunction>>;
 
 /*
   Factory class that finds diverse potential functions.

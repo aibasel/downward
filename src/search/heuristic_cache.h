@@ -5,11 +5,11 @@
 #include "global_state.h"
 #include "heuristic.h"
 
-#include <unordered_map>
+#include "../utils/hash.h"
 
 class ScalarEvaluator;
 
-using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
+using EvaluationResults = utils::HashMap<ScalarEvaluator *, EvaluationResult>;
 
 /*
   Store a state and evaluation results for this state.

@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "task_proxy.h"
 
+#include "../utils/hash.h"
 #include "utils/logging.h"
 #include "utils/memory.h"
 #include "utils/timer.h"
@@ -11,8 +12,6 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <unordered_map>
-#include <unordered_set>
 
 using namespace std;
 
@@ -28,8 +27,8 @@ using namespace std;
   (causal graphs, successor generators and axiom evlauators, DTGs, ...) and can
   maybe deal with all of them in the same way.
 */
-static unordered_map<const AbstractTask *,
-                     unique_ptr<CausalGraph>> causal_graph_cache;
+static utils::HashMap<const AbstractTask *,
+                      unique_ptr<CausalGraph>> causal_graph_cache;
 
 /*
   An IntRelationBuilder constructs an IntRelation by adding one pair
@@ -49,7 +48,7 @@ static unordered_map<const AbstractTask *,
 */
 
 class IntRelationBuilder {
-    typedef unordered_set<int> IntSet;
+    typedef utils::HashSet<int> IntSet;
     vector<IntSet> int_sets;
 
     int get_range() const;

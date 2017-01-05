@@ -12,6 +12,7 @@
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
+#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -20,7 +21,6 @@
 #include <cassert>
 #include <iostream>
 #include <string>
-#include <unordered_map>
 
 using namespace std;
 using utils::ExitCode;
@@ -70,7 +70,7 @@ void LabelReduction::compute_label_mapping(
     for (BlockListConstIter group_it = relation->begin();
          group_it != relation->end(); ++group_it) {
         const Block &block = *group_it;
-        unordered_map<int, vector<int>> equivalent_label_nos;
+        utils::HashMap<int, vector<int>> equivalent_label_nos;
         for (ElementListConstIter label_it = block.begin();
              label_it != block.end(); ++label_it) {
             assert(*label_it < next_new_label_no);

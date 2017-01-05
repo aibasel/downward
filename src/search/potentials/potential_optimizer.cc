@@ -6,11 +6,11 @@
 #include "../task_tools.h"
 
 #include "../utils/collections.h"
+#include "../utils/hash.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <limits>
-#include <unordered_map>
 
 using namespace std;
 using utils::ExitCode;
@@ -112,7 +112,7 @@ void PotentialOptimizer::construct_lp() {
     for (OperatorProxy op : task_proxy.get_operators()) {
         // Create constraint:
         // Sum_{V in vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)
-        unordered_map<int, int> var_to_precondition;
+        utils::HashMap<int, int> var_to_precondition;
         for (FactProxy pre : op.get_preconditions()) {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }

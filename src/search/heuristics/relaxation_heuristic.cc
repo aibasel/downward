@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <unordered_map>
 #include <vector>
 
 using namespace std;
