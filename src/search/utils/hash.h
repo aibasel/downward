@@ -285,7 +285,7 @@ size_t get_hash(const T &value) {
 */
 template <typename T>
 struct Hash {
-    std::size_t operator()(const T& val) const {
+    std::size_t operator()(const T &val) const {
         return get_hash(val);
     }
 };
