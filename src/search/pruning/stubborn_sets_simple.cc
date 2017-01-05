@@ -25,12 +25,10 @@ void StubbornSetsSimple::compute_interference_relation() {
        method that looks up (i, j) if i < j and (j, i) otherwise.
     */
     for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
-        ActionID op1_id(op1_no);
-        vector<ActionID> &interfere_op1 = interference_relation[op1_no];
+        vector<int> &interfere_op1 = interference_relation[op1_no];
         for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
-            ActionID op2_id(op2_no);
-            if (op1_id != op2_id && interfere(op1_id, op2_id)) {
-                interfere_op1.push_back(op2_id);
+            if (op1_no != op2_no && interfere(op1_no, op2_no)) {
+                interfere_op1.push_back(op2_no);
             }
         }
     }
@@ -38,15 +36,15 @@ void StubbornSetsSimple::compute_interference_relation() {
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
 void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
-    for (ActionID op_no : achievers[fact.var][fact.value]) {
+    for (int op_no : achievers[fact.var][fact.value]) {
         mark_as_stubborn(op_no);
     }
 }
 
 // Add all operators that interfere with op.
-void StubbornSetsSimple::add_interfering(ActionID op_id) {
-    for (ActionID interferer_id : interference_relation[op_id.get_index()]) {
-        mark_as_stubborn(interferer_id);
+void StubbornSetsSimple::add_interfering(int op_no) {
+    for (int interferer_no : interference_relation[op_no]) {
+        mark_as_stubborn(interferer_no);
     }
 }
 
@@ -58,13 +56,13 @@ void StubbornSetsSimple::initialize_stubborn_set(const State &state) {
 }
 
 void StubbornSetsSimple::handle_stubborn_operator(const State &state,
-                                                  ActionID op_id) {
-    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op_id, state);
+                                                  int op_no) {
+    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op_no, state);
     if (unsatisfied_precondition == FactPair::no_fact) {
         /* no unsatisfied precondition found
            => operator is applicable
            => add all interfering operators */
-        add_interfering(op_id);
+        add_interfering(op_no);
     } else {
         /* unsatisfied precondition found
            => add a necessary enabling set for it */

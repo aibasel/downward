@@ -22,7 +22,7 @@ class StubbornSets : public PruningMethod {
       (i.e. more operators might need to be added to stubborn because
       of the operators in the queue).
     */
-    std::vector<ActionID> stubborn_queue;
+    std::vector<int> stubborn_queue;
 
     void compute_sorted_operators(const TaskProxy &task_proxy);
     void compute_achievers(const TaskProxy &task_proxy);
@@ -39,10 +39,10 @@ protected:
 
     /* achievers[var][value] contains all operator indices of
        operators that achieve the fact (var, value). */
-    std::vector<std::vector<std::vector<ActionID>>> achievers;
+    std::vector<std::vector<std::vector<int>>> achievers;
 
-    bool can_disable(ActionID op1_id, ActionID op2_id) const;
-    bool can_conflict(ActionID op1_id, ActionID op2_id) const;
+    bool can_disable(int op1_no, int op2_no) const;
+    bool can_conflict(int op1_no, int op2_no) const;
 
     /*
       Return the first unsatified goal pair,
@@ -72,15 +72,15 @@ protected:
       rather than an arbitrary variable order. (However, so far, there is no
       experimental evidence that this is a particularly good order.)
     */
-    FactPair find_unsatisfied_precondition(ActionID op_id, const State &state) const {
-        return find_unsatisfied_condition(sorted_op_preconditions[op_id.get_index()], state);
+    FactPair find_unsatisfied_precondition(int op_no, const State &state) const {
+        return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
     }
 
     // Returns true iff the operators was enqueued.
     // TODO: rename to enqueue_stubborn_operator?
-    bool mark_as_stubborn(ActionID op_id);
+    bool mark_as_stubborn(int op_no);
     virtual void initialize_stubborn_set(const State &state) = 0;
-    virtual void handle_stubborn_operator(const State &state, ActionID op_id) = 0;
+    virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 
