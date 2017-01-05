@@ -17,10 +17,10 @@ namespace stubborn_sets_ec {
 using StubbornDTG = vector<vector<int>>;
 
 static inline bool is_v_applicable(int var,
-                                   ActionID op_id,
+                                   int op_no,
                                    const State &state,
                                    vector<vector<int>> &preconditions) {
-    int precondition_on_var = preconditions[op_id.get_index()][var];
+    int precondition_on_var = preconditions[op_no][var];
     return precondition_on_var == -1 || precondition_on_var == state[var].get_value();
 }
 
@@ -178,33 +178,31 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
     disabled.resize(num_operators);
 
     for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
-        ActionID op1_id(op1_no);
         for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
-            ActionID op2_id(op2_no);
-            if (op1_id != op2_id) {
-                bool conflict = can_conflict(op1_id, op2_id);
-                bool disable = can_disable(op2_id, op1_id);
+            if (op1_no != op2_no) {
+                bool conflict = can_conflict(op1_no, op2_no);
+                bool disable = can_disable(op2_no, op1_no);
                 if (conflict || disable) {
-                    conflicting_and_disabling[op1_no].push_back(op2_id);
+                    conflicting_and_disabling[op1_no].push_back(op2_no);
                 }
                 if (disable) {
-                    disabled[op2_no].push_back(op1_id);
+                    disabled[op2_no].push_back(op1_no);
                 }
             }
         }
     }
 }
 
-bool StubbornSetsEC::is_applicable(ActionID op_id, const State &state) const {
-    return find_unsatisfied_precondition(op_id, state) == FactPair::no_fact;
+bool StubbornSetsEC::is_applicable(int op_no, const State &state) const {
+    return find_unsatisfied_precondition(op_no, state) == FactPair::no_fact;
 }
 
 // TODO: find a better name.
 void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
-    ActionID op_id, const State &state) {
-    if (mark_as_stubborn(op_id)) {
-        if (is_applicable(op_id, state)) {
-            for (const FactPair &effect : sorted_op_effects[op_id.get_index()])
+    int op_no, const State &state) {
+    if (mark_as_stubborn(op_no)) {
+        if (is_applicable(op_no, state)) {
+            for (const FactPair &effect : sorted_op_effects[op_no])
                 written_vars[effect.var] = true;
         }
     }
@@ -213,8 +211,8 @@ void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
 /* TODO: think about a better name, which distinguishes this method
    better from the corresponding method for simple stubborn sets */
 void StubbornSetsEC::add_nes_for_fact(const FactPair &fact, const State &state) {
-    for (ActionID achiever : achievers[fact.var][fact.value]) {
-        if (active_ops[achiever.get_index()]) {
+    for (int achiever : achievers[fact.var][fact.value]) {
+        if (active_ops[achiever]) {
             mark_as_stubborn_and_remember_written_vars(achiever, state);
         }
     }
@@ -222,25 +220,25 @@ void StubbornSetsEC::add_nes_for_fact(const FactPair &fact, const State &state) 
     nes_computed[fact.var][fact.value] = true;
 }
 
-void StubbornSetsEC::add_conflicting_and_disabling(ActionID op_id,
+void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
                                                    const State &state) {
-    for (ActionID conflict : conflicting_and_disabling[op_id.get_index()]) {
-        if (active_ops[conflict.get_index()])
+    for (int conflict : conflicting_and_disabling[op_no]) {
+        if (active_ops[conflict])
             mark_as_stubborn_and_remember_written_vars(conflict, state);
     }
 }
 
 // Relies on op_effects and op_preconditions being sorted by variable.
 void StubbornSetsEC::get_disabled_vars(
-    ActionID op1_id, ActionID op2_id, vector<int> &disabled_vars) const {
-    get_conflicting_vars(sorted_op_effects[op1_id.get_index()],
-                         sorted_op_preconditions[op2_id.get_index()],
+    int op1_no, int op2_no, vector<int> &disabled_vars) const {
+    get_conflicting_vars(sorted_op_effects[op1_no],
+                         sorted_op_preconditions[op2_no],
                          disabled_vars);
 }
 
-void StubbornSetsEC::apply_s5(ActionID op_id, const State &state) {
+void StubbornSetsEC::apply_s5(int op_no, const State &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
-    for (const FactPair &pre : sorted_op_preconditions[op_id.get_index()]) {
+    for (const FactPair &pre : sorted_op_preconditions[op_no]) {
         if (state[pre.var].get_value() != pre.value && written_vars[pre.var]) {
             if (!nes_computed[pre.var][pre.value]) {
                 add_nes_for_fact(pre, state);
@@ -249,7 +247,7 @@ void StubbornSetsEC::apply_s5(ActionID op_id, const State &state) {
         }
     }
 
-    FactPair violated_precondition = find_unsatisfied_precondition(op_id, state);
+    FactPair violated_precondition = find_unsatisfied_precondition(op_no, state);
     assert(violated_precondition != FactPair::no_fact);
     if (!nes_computed[violated_precondition.var][violated_precondition.value]) {
         add_nes_for_fact(violated_precondition, state);
@@ -270,25 +268,25 @@ void StubbornSetsEC::initialize_stubborn_set(const State &state) {
     add_nes_for_fact(unsatisfied_goal, state);     // active operators used
 }
 
-void StubbornSetsEC::handle_stubborn_operator(const State &state, ActionID op_id) {
-    if (is_applicable(op_id, state)) {
+void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
+    if (is_applicable(op_no, state)) {
         //Rule S2 & S3
-        add_conflicting_and_disabling(op_id, state);     // active operators used
+        add_conflicting_and_disabling(op_no, state);     // active operators used
         //Rule S4'
         vector<int> disabled_vars;
-        for (ActionID disabled_op_id : disabled[op_id.get_index()]) {
-            if (active_ops[disabled_op_id.get_index()]) {
-                get_disabled_vars(op_id, disabled_op_id, disabled_vars);
+        for (int disabled_op_no : disabled[op_no]) {
+            if (active_ops[disabled_op_no]) {
+                get_disabled_vars(op_no, disabled_op_no, disabled_vars);
                 if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
                     bool v_applicable_op_found = false;
                     for (int disabled_var : disabled_vars) {
                         //First case: add o'
                         if (is_v_applicable(disabled_var,
-                                            disabled_op_id,
+                                            disabled_op_no,
                                             state,
                                             op_preconditions_on_var)) {
                             mark_as_stubborn_and_remember_written_vars(
-                                disabled_op_id, state);
+                                disabled_op_no, state);
                             v_applicable_op_found = true;
                             break;
                         }
@@ -296,14 +294,14 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state, ActionID op_id
 
                     //Second case: add a necessary enabling set for o' following S5
                     if (!v_applicable_op_found) {
-                        apply_s5(disabled_op_id, state);
+                        apply_s5(disabled_op_no, state);
                     }
                 }
             }
         }
     } else {     // op is inapplicable
         //S5
-        apply_s5(op_id, state);
+        apply_s5(op_no, state);
     }
 }
 
