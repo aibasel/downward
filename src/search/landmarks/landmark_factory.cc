@@ -731,8 +731,7 @@ int LandmarkFactory::loop_acyclic_graph(
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, EdgeType>> path;
-    utils::HashSet<LandmarkNode *> visited =
-        utils::HashSet<LandmarkNode *>(lm_graph->number_of_landmarks());
+    utils::HashSet<LandmarkNode *> visited(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
