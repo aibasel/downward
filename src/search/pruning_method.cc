@@ -1,30 +1,31 @@
 #include "pruning_method.h"
 
-#include "global_operator.h" // TODO: Remove once issue629 is merged.
-#include "globals.h" // TODO: Remove once issue629 is merged.
+#include "global_state.h"
 #include "plugin.h"
 
+#include <cassert>
+
 using namespace std;
+
+PruningMethod::PruningMethod()
+    : task(nullptr) {
+}
+
+void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
+    assert(!task);
+    task = task_;
+}
+
+// TODO remove this overload once the search uses the task interface.
+void PruningMethod::prune_operators(const GlobalState &global_state, vector<int> &op_ids) {
+    assert(task);
+    /* Note that if the pruning method would use a different task than
+       the search, we would have to convert the state before using it. */
+    State state(*task, global_state.get_values());
+
+    prune_operators(state, op_ids);
+}
 
 static PluginTypePlugin<PruningMethod> _type_plugin(
     "PruningMethod",
     "Prune or reorder applicable operators.");
-
-
-void PruningMethod::prune_operators(const GlobalState &state, vector<int> &op_ids) {
-    vector<const GlobalOperator *> operators;
-    operators.reserve(op_ids.size());
-    for (int op_id : op_ids) {
-        operators.push_back(&g_operators[op_id]);
-    }
-
-    prune_operators(state, operators);
-
-    if (operators.size() < op_ids.size()) {
-        vector<int> pruned_op_ids;
-        for (const GlobalOperator *op : operators) {
-            pruned_op_ids.push_back(get_op_index_hacked(op));
-        }
-        op_ids.swap(pruned_op_ids);
-    }
-}
