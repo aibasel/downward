@@ -184,12 +184,6 @@ def configs_satisficing_extended():
             "--search",
             "eager(pareto([sum([g(), h]), h]), reopen_closed=true,"
             "f_eval=sum([g(), h]))"],
-        # bucket-based open list
-        "bucket_lmcut": [
-            "--heuristic",
-            "h=lmcut()",
-            "--search",
-            "eager(single_buckets(h), reopen_closed=true)"],
     }
 
 
