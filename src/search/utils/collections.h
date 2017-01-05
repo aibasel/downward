@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <unordered_map>
 #include <vector>
 
@@ -59,7 +60,7 @@ std::vector<ElemTo> map_vector(const Collection &collection, MapFunc map_func) {
     std::vector<ElemTo> transformed;
     transformed.reserve(collection.size());
     std::transform(begin(collection), end(collection),
-                   back_inserter(transformed), map_func);
+                   std::back_inserter(transformed), map_func);
     return transformed;
 }
 
