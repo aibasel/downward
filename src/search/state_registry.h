@@ -10,6 +10,7 @@
 
 #include "utils/hash.h"
 
+#include <unordered_set>
 #include <set>
 
 /*

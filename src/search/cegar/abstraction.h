@@ -50,11 +50,7 @@ class Abstraction {
     /*
       Set of all (as of yet unsplit) abstract states.
 
-      TODO: Store states as unique_ptrs. C++11 doesn't really support
-      utils::HashSets of unique_ptrs, so we should probably use an
-      utils::HashMap<AbstractState *, unique_ptr<AbstractState>> to
-      allow for removing elements (see
-      https://stackoverflow.com/questions/18939882).
+      TODO: Store states as unique_ptrs.
     */
     AbstractStates states;
 

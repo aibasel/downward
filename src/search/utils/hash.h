@@ -91,7 +91,7 @@ inline unsigned int rotate(unsigned int value, unsigned int offset) {
   instantiated by functions in this file.
 */
 class HashState {
-    uint32_t a, b, c;
+    std::uint32_t a, b, c;
     int pending_values;
 
     /*
@@ -152,7 +152,7 @@ public:
           pending_values(0) {
     }
 
-    void feed(uint32_t value) {
+    void feed(std::uint32_t value) {
         assert(pending_values != -1);
         if (pending_values == 3) {
             mix();
@@ -170,7 +170,7 @@ public:
         }
     }
 
-    uint32_t get_hash32() {
+    std::uint32_t get_hash32() {
         assert(pending_values != -1);
         if (pending_values) {
             /*
@@ -185,14 +185,14 @@ public:
         return c;
     }
 
-    uint64_t get_hash64() {
+    std::uint64_t get_hash64() {
         assert(pending_values != -1);
         if (pending_values) {
             // See comment for get_hash32.
             final_mix();
         }
         pending_values = -1;
-        return (static_cast<uint64_t>(b) << 32) | c;
+        return (static_cast<std::uint64_t>(b) << 32) | c;
     }
 };
 
@@ -204,29 +204,29 @@ public:
   for utils::feed(HashState &hash_state, const X &value).
 */
 static_assert(
-    sizeof(int) == sizeof(uint32_t),
+    sizeof(int) == sizeof(std::uint32_t),
     "int and uint32_t have different sizes");
 inline void feed(HashState &hash_state, int value) {
-    hash_state.feed(static_cast<uint32_t>(value));
+    hash_state.feed(static_cast<std::uint32_t>(value));
 }
 
 static_assert(
-    sizeof(unsigned int) == sizeof(uint32_t),
+    sizeof(unsigned int) == sizeof(std::uint32_t),
     "unsigned int and uint32_t have different sizes");
 inline void feed(HashState &hash_state, unsigned int value) {
-    hash_state.feed(static_cast<uint32_t>(value));
+    hash_state.feed(static_cast<std::uint32_t>(value));
 }
 
-inline void feed(HashState &hash_state, uint64_t value) {
-    hash_state.feed(static_cast<uint32_t>(value));
+inline void feed(HashState &hash_state, std::uint64_t value) {
+    hash_state.feed(static_cast<std::uint32_t>(value));
     value >>= 32;
-    hash_state.feed(static_cast<uint32_t>(value));
+    hash_state.feed(static_cast<std::uint32_t>(value));
 }
 
 template<typename T>
 void feed(HashState &hash_state, const T *p) {
     // This is wasteful in 32-bit mode, but we plan to discontinue 32-bit compiles anyway.
-    feed(hash_state, reinterpret_cast<uint64_t>(p));
+    feed(hash_state, reinterpret_cast<std::uint64_t>(p));
 }
 
 template<typename T1, typename T2>
@@ -251,30 +251,27 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
 /*
   Public hash functions.
 
-  get_hash() is called by the HashMap and HashSet classes below (via the Hash
-  struct). You can call get_hash32(), get_hash64() or get_hash() manually if
-  you need hashes for other use cases.
-
-  By providing a suitable feed() function in the "util" namespace, you can add
-  support for custom types.
+  get_hash() is used internally by the HashMap and HashSet classes below. In
+  more exotic use cases, such as implementing a custom hash table, you can also
+  use `get_hash32()`, `get_hash64()` and `get_hash()` directly.
 */
 template<typename T>
-uint32_t get_hash32(const T &value) {
+std::uint32_t get_hash32(const T &value) {
     HashState hash_state;
     feed(hash_state, value);
     return hash_state.get_hash32();
 }
 
 template<typename T>
-uint64_t get_hash64(const T &value) {
+std::uint64_t get_hash64(const T &value) {
     HashState hash_state;
     feed(hash_state, value);
     return hash_state.get_hash64();
 }
 
 template<typename T>
-size_t get_hash(const T &value) {
-    return static_cast<size_t>(get_hash64(value));
+std::size_t get_hash(const T &value) {
+    return static_cast<std::size_t>(get_hash64(value));
 }
 
 
@@ -291,13 +288,11 @@ struct Hash {
 };
 
 /*
-  Public aliases allowing to use shorter hash set and hash map declarations.
+  Aliases for hash sets and hash maps in user code. All user code should use
+  utils::HashSet and utils::HashMap instead of std::unordered_set and
+  std::unordered_map.
 
-  E.g., we can write "utils::HashSet<std::vector<int>> s;" instead of
-  "std::unordered_set<std::vector<int>, utils::Hash<std::vector<int>>> s;".
-
-  By providing a suitable feed() function in the "util" namespace, you can add
-  support for custom types.
+  To hash types that are not supported out of the box, implement utils::feed.
 */
 template <typename T1, typename T2>
 using HashMap = std::unordered_map<T1, T2, Hash<T1>>;
