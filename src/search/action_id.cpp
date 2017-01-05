@@ -5,10 +5,10 @@
 using namespace std;
 
 ostream &operator<<(ostream &os, ActionID id) {
-    if (id.value >= 0) {
-        os << "op" << id.value;
+    if (id.is_axiom()) {
+        os << "axiom" << id.get_index();
     } else {
-        os << "axiom" << -1 - id.value;
+        os << "op" << id.get_index();
     }
     return os;
 }

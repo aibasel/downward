@@ -19,7 +19,7 @@ int EvaluationResult::get_h_value() const {
     return h_value;
 }
 
-const vector<int> &EvaluationResult::get_preferred_operators() const {
+const vector<ActionID> &EvaluationResult::get_preferred_operators() const {
     return preferred_operators;
 }
 
@@ -32,7 +32,7 @@ void EvaluationResult::set_h_value(int value) {
 }
 
 void EvaluationResult::set_preferred_operators(
-    vector<int> &&preferred_ops) {
+    vector<ActionID> &&preferred_ops) {
     preferred_operators = move(preferred_ops);
 }
 

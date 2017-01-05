@@ -11,9 +11,9 @@ class NullPruningMethod : public PruningMethod {
 public:
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
     virtual void prune_operators(const State &,
-                                 std::vector<int> &) override {}
+                                 std::vector<ActionID> &) override {}
     virtual void prune_operators(const GlobalState &,
-                                 std::vector<int> &) override {}
+                                 std::vector<ActionID> &) override {}
     virtual void print_statistics() const override {}
 };
 }
