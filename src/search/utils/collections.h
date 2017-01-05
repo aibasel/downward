@@ -1,8 +1,11 @@
 #ifndef UTILS_COLLECTIONS_H
 #define UTILS_COLLECTIONS_H
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <functional>
+#include <unordered_map>
 #include <vector>
 
 namespace utils {
@@ -37,6 +40,34 @@ T swap_and_pop_from_vector(std::vector<T> &vec, size_t pos) {
 template<class T>
 void release_vector_memory(std::vector<T> &vec) {
     std::vector<T>().swap(vec);
+}
+
+template<class KeyType, class ValueType>
+ValueType get_value_or_default(
+    const std::unordered_map<KeyType, ValueType> &dict,
+    const KeyType &key,
+    const ValueType &default_value) {
+    auto it = dict.find(key);
+    if (it != dict.end()) {
+        return it->second;
+    }
+    return default_value;
+}
+
+template<typename ElemTo, typename Collection, typename MapFunc>
+std::vector<ElemTo> map_vector(const Collection &collection, MapFunc map_func) {
+    std::vector<ElemTo> transformed;
+    transformed.reserve(collection.size());
+    std::transform(begin(collection), end(collection),
+                   back_inserter(transformed), map_func);
+    return transformed;
+}
+
+template<typename T, typename Collection>
+std::vector<T> sorted(Collection &&collection) {
+    std::vector<T> vec(std::forward<Collection>(collection));
+    std::sort(vec.begin(), vec.end());
+    return vec;
 }
 }
 

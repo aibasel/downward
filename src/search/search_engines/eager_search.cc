@@ -84,6 +84,8 @@ void EagerSearch::initialize() {
     }
 
     print_initial_h_values(eval_context);
+
+    pruning_method->initialize(g_root_task());
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
