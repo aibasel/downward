@@ -194,12 +194,12 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
      disjunctive landmarks */
-    vector<int> applicable_operators;
+    vector<ActionID> applicable_operators;
     successor_generator.generate_applicable_ops(state, applicable_operators);
-    vector<int> ha_simple;
-    vector<int> ha_disj;
+    vector<ActionID> ha_simple;
+    vector<ActionID> ha_disj;
 
-    for (int op_id : applicable_operators) {
+    for (ActionID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
         EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
@@ -209,9 +209,9 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
             LandmarkNode *lm_p = lgraph->get_landmark(fact_proxy.get_pair());
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
-                    ha_disj.push_back(op.get_id());
+                    ha_disj.push_back(op_id);
                 } else {
-                    ha_simple.push_back(op.get_id());
+                    ha_simple.push_back(op_id);
                 }
             }
         }
@@ -221,11 +221,11 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
 
     OperatorsProxy operators = task_proxy.get_operators();
     if (ha_simple.empty()) {
-        for (int op_id : ha_disj) {
+        for (ActionID op_id : ha_disj) {
             set_preferred(operators[op_id]);
         }
     } else {
-        for (int op_id : ha_simple) {
+        for (ActionID op_id : ha_simple) {
             set_preferred(operators[op_id]);
         }
     }

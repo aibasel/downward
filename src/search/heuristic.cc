@@ -102,7 +102,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     State global_state(*g_root_task(), state.get_values());
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
-        for (int op_id : preferred_operators)
+        for (ActionID op_id : preferred_operators)
             assert(is_applicable(global_operators[op_id], global_state));
     }
 #endif

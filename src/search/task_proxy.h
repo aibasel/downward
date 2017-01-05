@@ -2,7 +2,9 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
+#include "action_id.h"
 
+#include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
 
@@ -456,7 +458,11 @@ public:
         return index;
     }
 
-    int get_global_operator_id() const {
+    ActionID get_action_id() const {
+        return ActionID(index, is_an_axiom);
+    }
+
+    ActionID get_global_operator_id() const {
         return task->get_global_operator_id(index, is_an_axiom);
     }
 };
@@ -482,6 +488,12 @@ public:
         assert(index < size());
         return OperatorProxy(*task, index, false);
     }
+
+    OperatorProxy operator[](ActionID id) const {
+        assert(!id.is_axiom());
+        assert(utils::in_bounds(id.get_index(), *this));
+        return OperatorProxy(*task, id.get_index(), false);
+    }
 };
 
 
@@ -504,6 +516,12 @@ public:
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
         return OperatorProxy(*task, index, true);
+    }
+
+    OperatorProxy operator[](ActionID id) const {
+        assert(id.is_axiom());
+        assert(utils::in_bounds(id.get_index(), *this));
+        return OperatorProxy(*task, id.get_index(), true);
     }
 };
 

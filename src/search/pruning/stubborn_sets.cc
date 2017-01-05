@@ -98,7 +98,7 @@ bool StubbornSets::mark_as_stubborn(int op_no) {
 }
 
 void StubbornSets::prune_operators(
-    const State &state, vector<int> &op_ids) {
+    const State &state, vector<ActionID> &op_ids) {
     num_unpruned_successors_generated += op_ids.size();
 
     // Clear stubborn set from previous call.
@@ -115,11 +115,11 @@ void StubbornSets::prune_operators(
     }
 
     // Now check which applicable operators are in the stubborn set.
-    vector<int> remaining_op_ids;
+    vector<ActionID> remaining_op_ids;
     remaining_op_ids.reserve(op_ids.size());
-    for (int op_id : op_ids) {
-        if (stubborn[op_id]) {
-            remaining_op_ids.push_back(op_id);
+    for (ActionID op_id : op_ids) {
+        if (stubborn[op_id.get_index()]) {
+            remaining_op_ids.emplace_back(op_id);
         }
     }
     op_ids.swap(remaining_op_ids);

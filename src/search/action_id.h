@@ -9,18 +9,28 @@
   ids from different tasks.
 */
 class ActionID {
-    friend std::ostream &operator<<(std::ostream &os, ActionID id);
-
     /*
       A non-negative value v identifies operator v.
       A negative value v identifies axiom (-1 - v).
     */
     int value;
+
+public:
     explicit ActionID(int value, bool is_axiom = false)
         : value(is_axiom? -1 - value : value) {
     }
-public:
-    ActionID() = delete;
+
+    bool is_axiom() {
+        return value < 0;
+    }
+
+    int get_index() {
+        if (is_axiom()) {
+            return -1 - value;
+        } else {
+            return value;
+        }
+    }
 
     bool operator==(const ActionID &other) const {
         return value == other.value;
