@@ -117,8 +117,8 @@ public:
     }
 
     value_type operator++(int) {
-        value_type value(operator*());
-        operator++();
+        value_type value(**this);
+        ++(*this);
         return value;
     }
 
