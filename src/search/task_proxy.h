@@ -96,27 +96,28 @@ class VariablesProxy;
   Basic iterator support for proxy collections.
 */
 template<typename ProxyCollection>
-class ProxyIterator
-    : public std::iterator<std::input_iterator_tag,
-                           typename ProxyCollection::ItemType,
-                           int,
-                           const typename ProxyCollection::ItemType *,
-                           typename ProxyCollection::ItemType> {
+class ProxyIterator {
     /* We store a pointer to collection instead of a reference,
        because iterators have to be copy assignable. */
     const ProxyCollection *collection;
     std::size_t pos;
 public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = typename ProxyCollection::ItemType;
+    using difference_type = int;
+    using pointer = const value_type*;
+    using reference = value_type;
+
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
         : collection(&collection), pos(pos) {
     }
 
-    typename ProxyCollection::ItemType operator*() const {
+    reference operator*() const {
         return (*collection)[pos];
     }
 
-    typename ProxyCollection::ItemType operator++(int) {
-        typename ProxyCollection::ItemType value(operator*());
+    value_type operator++(int) {
+        value_type value(operator*());
         operator++();
         return value;
     }
