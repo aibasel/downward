@@ -492,9 +492,8 @@ public:
     }
 
     OperatorProxy operator[](ActionID id) const {
-        assert(!id.is_axiom());
-        assert(utils::in_bounds(id.get_index(), *this));
-        return OperatorProxy(*task, id.get_index(), false);
+        assert(!id.is_axiom());\
+        return (*this)[id.get_index()];
     }
 };
 
@@ -522,8 +521,7 @@ public:
 
     OperatorProxy operator[](ActionID id) const {
         assert(id.is_axiom());
-        assert(utils::in_bounds(id.get_index(), *this));
-        return OperatorProxy(*task, id.get_index(), true);
+        return (*this)[id.get_index()];
     }
 };
 
