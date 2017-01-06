@@ -105,7 +105,7 @@ public:
     using iterator_category = std::input_iterator_tag;
     using value_type = typename ProxyCollection::ItemType;
     using difference_type = int;
-    using pointer = const value_type*;
+    using pointer = const value_type *;
     using reference = value_type;
 
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
