@@ -97,7 +97,7 @@ class VariablesProxy;
 */
 template<typename ProxyCollection>
 class ProxyIterator {
-    /* We store a pointer to collection instead of a reference,
+    /* We store a pointer to collection instead of a reference
        because iterators have to be copy assignable. */
     const ProxyCollection *collection;
     std::size_t pos;
