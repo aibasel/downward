@@ -96,9 +96,9 @@ GeneratorSwitch::~GeneratorSwitch() {
 
 void GeneratorSwitch::generate_applicable_ops(
     const State &state, vector<ActionID> &applicable_ops) const {
-    applicable_ops.insert(applicable_ops.end(),
-                          immediate_operators.begin(),
-                          immediate_operators.end());
+    for (ActionID id : immediate_operators) {
+        applicable_ops.push_back(id);
+    }
     int val = state[switch_var].get_value();
     generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
     default_generator->generate_applicable_ops(state, applicable_ops);
@@ -106,9 +106,9 @@ void GeneratorSwitch::generate_applicable_ops(
 
 void GeneratorSwitch::generate_applicable_ops(
     const GlobalState &state, vector<ActionID> &applicable_ops) const {
-    applicable_ops.insert(applicable_ops.end(),
-                          immediate_operators.begin(),
-                          immediate_operators.end());
+    for (ActionID id : immediate_operators) {
+        applicable_ops.push_back(id);
+    }
     int val = state[switch_var.get_id()];
     generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
     default_generator->generate_applicable_ops(state, applicable_ops);
@@ -120,16 +120,16 @@ GeneratorLeaf::GeneratorLeaf(list<ActionID> &&applicable_operators)
 
 void GeneratorLeaf::generate_applicable_ops(
     const State &, vector<ActionID> &applicable_ops) const {
-    applicable_ops.insert(applicable_ops.end(),
-                          applicable_operators.begin(),
-                          applicable_operators.end());
+    for (ActionID id : applicable_operators) {
+        applicable_ops.push_back(id);
+    }
 }
 
 void GeneratorLeaf::generate_applicable_ops(
     const GlobalState &, vector<ActionID> &applicable_ops) const {
-    applicable_ops.insert(applicable_ops.end(),
-                          applicable_operators.begin(),
-                          applicable_operators.end());
+    for (ActionID id : applicable_operators) {
+        applicable_ops.push_back(id);
+    }
 }
 
 void GeneratorEmpty::generate_applicable_ops(
