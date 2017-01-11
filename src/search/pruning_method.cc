@@ -17,7 +17,8 @@ void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
 }
 
 // TODO remove this overload once the search uses the task interface.
-void PruningMethod::prune_operators(const GlobalState &global_state, vector<ActionID> &op_ids) {
+void PruningMethod::prune_operators(const GlobalState &global_state,
+                                    vector<OperatorID> &op_ids) {
     assert(task);
     /* Note that if the pruning method would use a different task than
        the search, we would have to convert the state before using it. */

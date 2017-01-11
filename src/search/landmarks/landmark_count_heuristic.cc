@@ -194,12 +194,12 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
      disjunctive landmarks */
-    vector<ActionID> applicable_operators;
+    vector<OperatorID> applicable_operators;
     successor_generator.generate_applicable_ops(state, applicable_operators);
-    vector<ActionID> ha_simple;
-    vector<ActionID> ha_disj;
+    vector<OperatorID> ha_simple;
+    vector<OperatorID> ha_disj;
 
-    for (ActionID op_id : applicable_operators) {
+    for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
         EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
@@ -221,11 +221,11 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
 
     OperatorsProxy operators = task_proxy.get_operators();
     if (ha_simple.empty()) {
-        for (ActionID op_id : ha_disj) {
+        for (OperatorID op_id : ha_disj) {
             set_preferred(operators[op_id]);
         }
     } else {
-        for (ActionID op_id : ha_simple) {
+        for (OperatorID op_id : ha_simple) {
             set_preferred(operators[op_id]);
         }
     }

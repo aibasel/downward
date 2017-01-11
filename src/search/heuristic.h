@@ -1,7 +1,7 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
-#include "action_id.h"
+#include "operator_id.h"
 #include "per_state_information.h"
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
@@ -46,7 +46,7 @@ class Heuristic : public ScalarEvaluator {
       being able to reuse the data structure from one iteration to the
       next, but this seems to be the only potential downside.
     */
-    algorithms::OrderedSet<ActionID> preferred_operators;
+    algorithms::OrderedSet<OperatorID> preferred_operators;
 
 protected:
     /*

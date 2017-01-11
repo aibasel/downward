@@ -78,7 +78,7 @@ int EvaluationContext::get_heuristic_value_or_infinity(ScalarEvaluator *heur) {
     return get_result(heur).get_h_value();
 }
 
-const vector<ActionID> &EvaluationContext::get_preferred_operators(
+const vector<OperatorID> &EvaluationContext::get_preferred_operators(
     ScalarEvaluator *heur) {
     return get_result(heur).get_preferred_operators();
 }

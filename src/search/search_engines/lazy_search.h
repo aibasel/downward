@@ -50,8 +50,8 @@ protected:
 
     void reward_progress();
 
-    std::vector<ActionID> get_successor_operators(
-        const algorithms::OrderedSet<ActionID> &preferred_operators) const;
+    std::vector<OperatorID> get_successor_operators(
+        const algorithms::OrderedSet<OperatorID> &preferred_operators) const;
 
     // TODO: Move into SearchEngine?
     void print_checkpoint_line(int g) const;
