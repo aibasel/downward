@@ -62,6 +62,7 @@ fast_downward_plugin(
         heuristic
         int_packer
         operator_cost
+        operator_id
         option_parser
         option_parser_util
         per_state_information

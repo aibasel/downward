@@ -1,11 +1,13 @@
 #ifndef ACTION_ID_H
 #define ACTION_ID_H
 
+#include "operator_id.h"
+
 #include <iostream>
 
 /*
   Action ids identify operators or axioms. The task they refer to
-  is not stored, so it is the users responsibility to avoid mixing
+  is not stored, so it is the user's responsibility to avoid mixing
   ids from different tasks.
 */
 class ActionID {
@@ -18,6 +20,10 @@ class ActionID {
 public:
     explicit ActionID(int value, bool is_axiom = false)
         : value(is_axiom ? -1 - value : value) {
+    }
+
+    explicit ActionID(OperatorID id)
+        : ActionID(id.get_index()) {
     }
 
     bool is_axiom() {
