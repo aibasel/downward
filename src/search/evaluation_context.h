@@ -1,9 +1,9 @@
 #ifndef EVALUATION_CONTEXT_H
 #define EVALUATION_CONTEXT_H
 
-#include "action_id.h"
 #include "evaluation_result.h"
 #include "heuristic_cache.h"
+#include "operator_id.h"
 
 #include <unordered_map>
 
@@ -110,7 +110,7 @@ public:
     bool is_heuristic_infinite(ScalarEvaluator *heur);
     int get_heuristic_value(ScalarEvaluator *heur);
     int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
-    const std::vector<ActionID> &get_preferred_operators(ScalarEvaluator *heur);
+    const std::vector<OperatorID> &get_preferred_operators(ScalarEvaluator *heur);
     bool get_calculate_preferred() const;
 };
 

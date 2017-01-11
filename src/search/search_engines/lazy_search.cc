@@ -66,9 +66,9 @@ void LazySearch::initialize() {
     }
 }
 
-vector<ActionID> LazySearch::get_successor_operators(
-    const algorithms::OrderedSet<ActionID> &preferred_operators) const {
-    vector<ActionID> applicable_operators;
+vector<OperatorID> LazySearch::get_successor_operators(
+    const algorithms::OrderedSet<OperatorID> &preferred_operators) const {
+    vector<OperatorID> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);
 
@@ -77,11 +77,11 @@ vector<ActionID> LazySearch::get_successor_operators(
     }
 
     if (preferred_successors_first) {
-        algorithms::OrderedSet<ActionID> successor_operators;
-        for (ActionID op_id : preferred_operators) {
+        algorithms::OrderedSet<OperatorID> successor_operators;
+        for (OperatorID op_id : preferred_operators) {
             successor_operators.insert(op_id);
         }
-        for (ActionID op_id : applicable_operators) {
+        for (OperatorID op_id : applicable_operators) {
             successor_operators.insert(op_id);
         }
         return successor_operators.pop_as_vector();
@@ -91,19 +91,19 @@ vector<ActionID> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    algorithms::OrderedSet<ActionID> preferred_operators =
+    algorithms::OrderedSet<OperatorID> preferred_operators =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
     if (randomize_successors) {
         preferred_operators.shuffle(*rng);
     }
 
-    vector<ActionID> successor_operators =
+    vector<OperatorID> successor_operators =
         get_successor_operators(preferred_operators);
 
     statistics.inc_generated(successor_operators.size());
 
-    for (ActionID op_id : successor_operators) {
+    for (OperatorID op_id : successor_operators) {
         const GlobalOperator *op = &g_operators[op_id.get_index()];
         int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();

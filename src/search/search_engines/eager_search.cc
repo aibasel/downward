@@ -111,7 +111,7 @@ SearchStatus EagerSearch::step() {
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
-    vector<ActionID> applicable_ops;
+    vector<OperatorID> applicable_ops;
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
 
     /*
@@ -122,10 +122,10 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    algorithms::OrderedSet<ActionID> preferred_operators =
+    algorithms::OrderedSet<OperatorID> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
-    for (ActionID op_id : applicable_ops) {
+    for (OperatorID op_id : applicable_ops) {
         const GlobalOperator *op = &g_operators[op_id.get_index()];
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;

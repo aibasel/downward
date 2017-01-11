@@ -34,52 +34,52 @@ class GeneratorBase {
 public:
     virtual ~GeneratorBase() = default;
     virtual void generate_applicable_ops(
-        const State &state, vector<ActionID> &applicable_ops) const = 0;
+        const State &state, vector<OperatorID> &applicable_ops) const = 0;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<ActionID> &applicable_ops) const = 0;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const = 0;
 };
 
 class GeneratorSwitch : public GeneratorBase {
     VariableProxy switch_var;
-    list<ActionID> immediate_operators;
+    list<OperatorID> immediate_operators;
     vector<GeneratorBase *> generator_for_value;
     GeneratorBase *default_generator;
 public:
     ~GeneratorSwitch();
     GeneratorSwitch(const VariableProxy &switch_var,
-                    list<ActionID> &&immediate_operators,
+                    list<OperatorID> &&immediate_operators,
                     const vector<GeneratorBase *> &&generator_for_value,
                     GeneratorBase *default_generator);
     virtual void generate_applicable_ops(
-        const State &state, vector<ActionID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<ActionID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
 };
 
 class GeneratorLeaf : public GeneratorBase {
-    list<ActionID> applicable_operators;
+    list<OperatorID> applicable_operators;
 public:
-    GeneratorLeaf(list<ActionID> &&applicable_operators);
+    GeneratorLeaf(list<OperatorID> &&applicable_operators);
     virtual void generate_applicable_ops(
-        const State &state, vector<ActionID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<ActionID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
 };
 
 class GeneratorEmpty : public GeneratorBase {
 public:
     virtual void generate_applicable_ops(
-        const State &state, vector<ActionID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<ActionID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
 };
 
 GeneratorSwitch::GeneratorSwitch(
-    const VariableProxy &switch_var, list<ActionID> &&immediate_operators,
+    const VariableProxy &switch_var, list<OperatorID> &&immediate_operators,
     const vector<GeneratorBase *> &&generator_for_value,
     GeneratorBase *default_generator)
     : switch_var(switch_var),
@@ -95,8 +95,8 @@ GeneratorSwitch::~GeneratorSwitch() {
 }
 
 void GeneratorSwitch::generate_applicable_ops(
-    const State &state, vector<ActionID> &applicable_ops) const {
-    for (ActionID id : immediate_operators) {
+    const State &state, vector<OperatorID> &applicable_ops) const {
+    for (OperatorID id : immediate_operators) {
         applicable_ops.push_back(id);
     }
     int val = state[switch_var].get_value();
@@ -105,8 +105,8 @@ void GeneratorSwitch::generate_applicable_ops(
 }
 
 void GeneratorSwitch::generate_applicable_ops(
-    const GlobalState &state, vector<ActionID> &applicable_ops) const {
-    for (ActionID id : immediate_operators) {
+    const GlobalState &state, vector<OperatorID> &applicable_ops) const {
+    for (OperatorID id : immediate_operators) {
         applicable_ops.push_back(id);
     }
     int val = state[switch_var.get_id()];
@@ -114,30 +114,30 @@ void GeneratorSwitch::generate_applicable_ops(
     default_generator->generate_applicable_ops(state, applicable_ops);
 }
 
-GeneratorLeaf::GeneratorLeaf(list<ActionID> &&applicable_operators)
+GeneratorLeaf::GeneratorLeaf(list<OperatorID> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
 
 void GeneratorLeaf::generate_applicable_ops(
-    const State &, vector<ActionID> &applicable_ops) const {
-    for (ActionID id : applicable_operators) {
+    const State &, vector<OperatorID> &applicable_ops) const {
+    for (OperatorID id : applicable_operators) {
         applicable_ops.push_back(id);
     }
 }
 
 void GeneratorLeaf::generate_applicable_ops(
-    const GlobalState &, vector<ActionID> &applicable_ops) const {
-    for (ActionID id : applicable_operators) {
+    const GlobalState &, vector<OperatorID> &applicable_ops) const {
+    for (OperatorID id : applicable_operators) {
         applicable_ops.push_back(id);
     }
 }
 
 void GeneratorEmpty::generate_applicable_ops(
-    const State &, vector<ActionID> &) const {
+    const State &, vector<OperatorID> &) const {
 }
 
 void GeneratorEmpty::generate_applicable_ops(
-    const GlobalState &, vector<ActionID> &) const {
+    const GlobalState &, vector<OperatorID> &) const {
 }
 
 SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
@@ -145,7 +145,7 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
     OperatorsProxy operators = task_proxy.get_operators();
     // We need the iterators to conditions to be stable:
     conditions.reserve(operators.size());
-    list<ActionID> all_operators;
+    list<OperatorID> all_operators;
     for (OperatorProxy op : operators) {
         Condition cond;
         cond.reserve(op.get_preconditions().size());
@@ -154,7 +154,7 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
         }
         // Conditions must be ordered by variable id.
         sort(cond.begin(), cond.end(), smaller_variable_id);
-        all_operators.push_back(op.get_action_id());
+        all_operators.push_back(OperatorID(op.get_id()));
         conditions.push_back(cond);
         next_condition_by_op.push_back(conditions.back().begin());
     }
@@ -168,7 +168,7 @@ SuccessorGenerator::~SuccessorGenerator() {
 }
 
 GeneratorBase *SuccessorGenerator::construct_recursive(
-    int switch_var_id, list<ActionID> &&operator_queue) {
+    int switch_var_id, list<OperatorID> &&operator_queue) {
     if (operator_queue.empty())
         return new GeneratorEmpty;
 
@@ -183,15 +183,15 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
         VariableProxy switch_var = variables[switch_var_id];
         int number_of_children = switch_var.get_domain_size();
 
-        vector<list<ActionID>> operators_for_val(number_of_children);
-        list<ActionID> default_operators;
-        list<ActionID> applicable_operators;
+        vector<list<OperatorID>> operators_for_val(number_of_children);
+        list<OperatorID> default_operators;
+        list<OperatorID> applicable_operators;
 
         bool all_ops_are_immediate = true;
         bool var_is_interesting = false;
 
         while (!operator_queue.empty()) {
-            ActionID op_id = operator_queue.front();
+            OperatorID op_id = operator_queue.front();
             int op_index = op_id.get_index();
             operator_queue.pop_front();
             assert(utils::in_bounds(op_index, next_condition_by_op));
@@ -222,7 +222,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
             return new GeneratorLeaf(move(applicable_operators));
         } else if (var_is_interesting) {
             vector<GeneratorBase *> generator_for_val;
-            for (list<ActionID> &ops : operators_for_val) {
+            for (list<OperatorID> &ops : operators_for_val) {
                 generator_for_val.push_back(
                     construct_recursive(switch_var_id + 1, move(ops)));
             }
@@ -241,12 +241,12 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
 }
 
 void SuccessorGenerator::generate_applicable_ops(
-    const State &state, vector<ActionID> &applicable_ops) const {
+    const State &state, vector<OperatorID> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
 }
 
 
 void SuccessorGenerator::generate_applicable_ops(
-    const GlobalState &state, vector<ActionID> &applicable_ops) const {
+    const GlobalState &state, vector<OperatorID> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
 }

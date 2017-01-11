@@ -1,7 +1,7 @@
 #ifndef EVALUATION_RESULT_H
 #define EVALUATION_RESULT_H
 
-#include "action_id.h"
+#include "operator_id.h"
 
 #include <limits>
 #include <vector>
@@ -10,7 +10,7 @@ class EvaluationResult {
     static const int UNINITIALIZED = -2;
 
     int h_value;
-    std::vector<ActionID> preferred_operators;
+    std::vector<OperatorID> preferred_operators;
     bool count_evaluation;
 public:
     // "INFINITY" is an ISO C99 macro and "INFINITE" is a macro in windows.h.
@@ -42,10 +42,10 @@ public:
     bool is_infinite() const;
     int get_h_value() const;
     bool get_count_evaluation() const;
-    const std::vector<ActionID> &get_preferred_operators() const;
+    const std::vector<OperatorID> &get_preferred_operators() const;
 
     void set_h_value(int value);
-    void set_preferred_operators(std::vector<ActionID> &&preferred_operators);
+    void set_preferred_operators(std::vector<OperatorID> &&preferred_operators);
     void set_count_evaluation(bool count_eval);
 };
 

@@ -145,24 +145,24 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
     int node_g = node.get_g();
 
-    algorithms::OrderedSet<ActionID> preferred_operators;
+    algorithms::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
         preferred_operators = collect_preferred_operators(
             eval_context, preferred_operator_heuristics);
     }
 
     if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
-        for (ActionID op_id : preferred_operators) {
+        for (OperatorID op_id : preferred_operators) {
             insert_successor_into_open_list(
                 eval_context, node_g, &g_operators[op_id.get_index()], true);
         }
     } else {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
            by the open list. */
-        vector<ActionID> successor_operators;
+        vector<OperatorID> successor_operators;
         g_successor_generator->generate_applicable_ops(
             eval_context.get_state(), successor_operators);
-        for (ActionID op_id : successor_operators) {
+        for (OperatorID op_id : successor_operators) {
             bool preferred = use_preferred &&
                              preferred_operators.contains(op_id);
             insert_successor_into_open_list(

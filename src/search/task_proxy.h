@@ -464,8 +464,9 @@ public:
         return ActionID(index, is_an_axiom);
     }
 
-    ActionID get_global_operator_id() const {
-        return task->get_global_operator_id(index, is_an_axiom);
+    OperatorID get_global_operator_id() const {
+        assert(!is_an_axiom);
+        return task->get_global_operator_id(OperatorID(index));
     }
 };
 
@@ -491,8 +492,7 @@ public:
         return OperatorProxy(*task, index, false);
     }
 
-    OperatorProxy operator[](ActionID id) const {
-        assert(!id.is_axiom());
+    OperatorProxy operator[](OperatorID id) const {
         return (*this)[id.get_index()];
     }
 };

@@ -80,7 +80,7 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const = 0;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const = 0;
-    virtual ActionID get_global_operator_id(int index, bool is_axiom) const = 0;
+    virtual OperatorID get_global_operator_id(OperatorID id) const = 0;
 
     virtual int get_num_axioms() const = 0;
 
