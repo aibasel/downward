@@ -43,7 +43,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           admissible ||
           (!has_axioms(task_proxy) &&
            (!has_conditional_effects(task_proxy) || conditional_effects_supported))),
-      successor_generator(task_proxy) {
+      successor_generator(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
@@ -70,6 +70,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         }
     } else {
         lm_cost_assignment = nullptr;
+    }
+
+    if (use_preferred_operators) {
+        successor_generator = utils::make_unique_ptr<SuccessorGenerator>(task_proxy);
     }
 }
 
@@ -194,8 +198,9 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
      disjunctive landmarks */
+    assert(successor_generator);
     vector<OperatorID> applicable_operators;
-    successor_generator.generate_applicable_ops(state, applicable_operators);
+    successor_generator->generate_applicable_ops(state, applicable_operators);
     vector<OperatorID> ha_simple;
     vector<OperatorID> ha_disj;
 

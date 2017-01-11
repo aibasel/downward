@@ -23,7 +23,7 @@ class LandmarkCountHeuristic : public Heuristic {
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
-    SuccessorGenerator successor_generator;
+    std::unique_ptr<SuccessorGenerator> successor_generator;
 
     int get_heuristic_value(const GlobalState &global_state);
 
