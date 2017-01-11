@@ -2,7 +2,7 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
-#include "action_id.h"
+#include "operator_id.h"
 
 #include "utils/collections.h"
 #include "utils/hash.h"
@@ -454,14 +454,8 @@ public:
         return task->get_operator_name(index, is_an_axiom);
     }
 
-    /* Deprecated. We will replace uses with get_action_id,
-       then remove get_id and rename get_action_id to get_id. */
     int get_id() const {
         return index;
-    }
-
-    ActionID get_action_id() const {
-        return ActionID(index, is_an_axiom);
     }
 
     OperatorID get_global_operator_id() const {
@@ -517,11 +511,6 @@ public:
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
         return OperatorProxy(*task, index, true);
-    }
-
-    OperatorProxy operator[](ActionID id) const {
-        assert(id.is_axiom());
-        return (*this)[id.get_index()];
     }
 };
 

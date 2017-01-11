@@ -49,7 +49,6 @@ fast_downward_plugin(
         planner
 
         abstract_task
-        action_id
         axioms
         causal_graph
         equivalence_relation
