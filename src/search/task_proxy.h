@@ -492,7 +492,7 @@ public:
     }
 
     OperatorProxy operator[](ActionID id) const {
-        assert(!id.is_axiom());\
+        assert(!id.is_axiom());
         return (*this)[id.get_index()];
     }
 };
