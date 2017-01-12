@@ -10,13 +10,13 @@
 
 namespace algorithms {
 /*
-  Combine vector and utils::HashSet to store a set of elements, ordered
-  by insertion time.
+  Combine a vector and a hash set to store a set of elements, ordered by
+  insertion time.
 */
 template <typename T>
 class OrderedSet {
     std::vector<T> ordered_items;
-    utils::HashSet<T> unordered_items;
+    utils::UnorderedSet<T> unordered_items;
 
 public:
     bool empty() const {

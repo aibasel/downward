@@ -16,10 +16,10 @@ bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vecto
     return true;
 }
 
-utils::HashMap<int, int> _intersect(const utils::HashMap<int, int> &a, const utils::HashMap<int, int> &b) {
+utils::UnorderedMap<int, int> _intersect(const utils::UnorderedMap<int, int> &a, const utils::UnorderedMap<int, int> &b) {
     if (a.size() > b.size())
         return _intersect(b, a);
-    utils::HashMap<int, int> result;
+    utils::UnorderedMap<int, int> result;
     for (const auto &pair_a : a) {
         const auto it_b = b.find(pair_a.first);
         if (it_b != b.end() && it_b->second == pair_a.second)

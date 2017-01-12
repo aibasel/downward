@@ -42,8 +42,8 @@ public:
     std::vector<FactPair> facts;
     bool disjunctive;
     bool conjunctive;
-    utils::HashMap<LandmarkNode *, EdgeType> parents;
-    utils::HashMap<LandmarkNode *, EdgeType> children;
+    utils::UnorderedMap<LandmarkNode *, EdgeType> parents;
+    utils::UnorderedMap<LandmarkNode *, EdgeType> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;
@@ -51,7 +51,7 @@ public:
     landmark_status status;
     bool is_derived;
 
-    utils::HashSet<FactPair> forward_orders;
+    utils::UnorderedSet<FactPair> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
@@ -126,7 +126,7 @@ struct LandmarkNodeComparer {
 };
 
 
-using LandmarkSet = utils::HashSet<const LandmarkNode *>;
+using LandmarkSet = utils::UnorderedSet<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:
@@ -200,8 +200,8 @@ private:
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
-    utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
-    utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
+    utils::UnorderedMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
+    utils::UnorderedMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
     std::set<LandmarkNode *> nodes;
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;

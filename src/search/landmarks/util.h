@@ -11,9 +11,9 @@ class TaskProxy;
 namespace landmarks {
 class LandmarkNode;
 
-utils::HashMap<int, int> _intersect(
-    const utils::HashMap<int, int> &a,
-    const utils::HashMap<int, int> &b);
+utils::UnorderedMap<int, int> _intersect(
+    const utils::UnorderedMap<int, int> &a,
+    const utils::UnorderedMap<int, int> &b);
 
 bool _possibly_reaches_lm(const OperatorProxy &op,
                           const std::vector<std::vector<int>> &lvl_var,

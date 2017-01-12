@@ -95,7 +95,7 @@ public:
     */
     void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-        const utils::HashSet<int> *affected_group_ids = nullptr);
+        const utils::UnorderedSet<int> *affected_group_ids = nullptr);
     // Moves all labels from one goup into the other
     void move_group_into_group(int from_group_id, int to_group_id);
     int add_label_group(const std::vector<int> &new_labels);

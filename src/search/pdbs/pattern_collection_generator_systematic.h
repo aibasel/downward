@@ -22,7 +22,7 @@ class CanonicalPDBsHeuristic;
 
 // Invariant: patterns are always sorted.
 class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
-    using PatternSet = utils::HashSet<Pattern>;
+    using PatternSet = utils::UnorderedSet<Pattern>;
 
     const size_t max_pattern_size;
     const bool only_interesting_patterns;

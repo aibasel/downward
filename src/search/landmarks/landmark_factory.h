@@ -53,7 +53,7 @@ protected:
                                       const LandmarkNode *exclude,
                                       bool compute_lvl_op = false) const {
         std::vector<std::vector<int>> lvl_var;
-        std::vector<utils::HashMap<FactPair, int>> lvl_op;
+        std::vector<utils::UnorderedMap<FactPair, int>> lvl_op;
         return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
@@ -61,7 +61,7 @@ protected:
                                          Exploration &exploration,
                                          LandmarkNode *bp,
                                          std::vector<std::vector<int>> &lvl_var,
-                                         std::vector<utils::HashMap<FactPair, int>> &lvl_op);
+                                         std::vector<utils::UnorderedMap<FactPair, int>> &lvl_op);
 
     // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const OperatorProxy &o, const LandmarkNode *lmp) const;
@@ -85,21 +85,21 @@ private:
         const TaskProxy &task_proxy, bool obedient_orders);
     void mk_acyclic_graph();
     int loop_acyclic_graph(LandmarkNode &lmn,
-                           utils::HashSet<LandmarkNode *> &acyclic_node_set);
+                           utils::UnorderedSet<LandmarkNode *> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
                                          std::list<std::pair<LandmarkNode *, EdgeType>> &path,
                                          std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
     int calculate_lms_cost() const;
-    void collect_ancestors(utils::HashSet<LandmarkNode *> &result, LandmarkNode &node,
+    void collect_ancestors(utils::UnorderedSet<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                std::vector<std::vector<int>> &lvl_var,
-                               std::vector<utils::HashMap<FactPair, int>> &lvl_op,
+                               std::vector<utils::UnorderedMap<FactPair, int>> &lvl_op,
                                bool level_out,
                                const LandmarkNode *exclude,
                                bool compute_lvl_op = false) const;
     void add_operator_and_propositions_to_list(
-        const OperatorProxy &op, std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
+        const OperatorProxy &op, std::vector<utils::UnorderedMap<FactPair, int>> &lvl_op) const;
     bool is_causal_landmark(const TaskProxy &task_proxy, Exploration &exploration, const LandmarkNode &landmark) const;
     virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration); // keep this virtual because HMLandmarks overrides it!
 };
