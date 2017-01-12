@@ -81,7 +81,7 @@ macro(fast_downward_set_linker_flags)
     elseif(${FORCE_DYNAMIC_BUILD})
         message(STATUS "Dynamic build.")
         # Any libraries that are implicitly added to the end of the linker
-        # command should be linked statically.
+        # command should be linked dynamically.
         set(LINK_SEARCH_END_STATIC FALSE)
 
         # Add "-rdynamic" flag.
