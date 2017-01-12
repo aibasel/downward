@@ -74,11 +74,10 @@ macro(fast_downward_set_linker_flags)
     # -DFORCE_DYNAMIC_BUILD=YES to cmake. We do not introduce an option for
     # this because it cannot be changed after the first cmake run.
 
-    if(APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+    if(APPLE OR FORCE_DYNAMIC_BUILD)
         # Static linking is not supported by Apple.
         # https://developer.apple.com/library/mac/qa/qa1118/_index.html
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
-    elseif(${FORCE_DYNAMIC_BUILD})
         message(STATUS "Dynamic build.")
         # Any libraries that are implicitly added to the end of the linker
         # command should be linked dynamically.
@@ -94,11 +93,7 @@ macro(fast_downward_set_linker_flags)
         endif()
 
         # Set linker flags to link dynamically.
-        if(CMAKE_COMPILER_IS_GNUCXX)
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -dynamic -shared-libgcc")
-        elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -dynamic -shared-libstdc++")
-        endif()
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -dynamic")
     else()
         message(STATUS "Static build.")
         # Any libraries that are implicitly added to the end of the linker
@@ -116,9 +111,9 @@ macro(fast_downward_set_linker_flags)
 
         # Set linker flags to link statically.
         if(CMAKE_COMPILER_IS_GNUCXX)
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libgcc")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc")
         elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libstdc++")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libstdc++")
         endif()
     endif()
 endmacro()
