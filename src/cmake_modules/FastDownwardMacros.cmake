@@ -74,7 +74,6 @@ macro(fast_downward_set_linker_flags)
     # -DFORCE_DYNAMIC_BUILD=YES to cmake. We do not introduce an option for
     # this because it cannot be changed after the first cmake run.
 
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
     if(APPLE OR FORCE_DYNAMIC_BUILD)
         # Static linking is not supported by Apple.
         # https://developer.apple.com/library/mac/qa/qa1118/_index.html
@@ -115,6 +114,10 @@ macro(fast_downward_set_linker_flags)
         elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libstdc++")
         endif()
+    endif()
+
+    if(APPLE OR UNIX)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
     endif()
 endmacro()
 
