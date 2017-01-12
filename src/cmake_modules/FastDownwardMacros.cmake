@@ -70,7 +70,7 @@ macro(fast_downward_set_linker_flags)
     # dynamically linked code is about 10% slower on Linux (see issue67)
     # but we offer the option to force a dynamic build for debugging
     # purposes (for example, valgrind's memcheck requires a dynamic build).
-    # To force a dynamic build, set FORCE_DYNAMIC_BUILD to true, by passing
+    # To force a dynamic build, set FORCE_DYNAMIC_BUILD to true by passing
     # -DFORCE_DYNAMIC_BUILD=YES to cmake. We do not introduce an option for
     # this because it cannot be changed after the first cmake run.
 
