@@ -133,7 +133,7 @@ void DTGFactory::revert_new_local_vars(DomainTransitionGraph *dtg,
 
 ValueTransition *DTGFactory::get_transition(int origin, int target,
                                             DomainTransitionGraph *dtg) {
-    utils::HashMap<pair<int, int>, int> &trans_map = transition_index[dtg->var];
+    utils::UnorderedMap<pair<int, int>, int> &trans_map = transition_index[dtg->var];
     pair<int, int> arc = make_pair(origin, target);
     ValueNode &origin_node = dtg->nodes[origin];
     // create new transition if necessary
@@ -156,7 +156,7 @@ void DTGFactory::collect_all_side_effects(vector<DomainTransitionGraph *> &dtgs)
 void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
                                       vector<ValueTransitionLabel> &labels) {
     const vector<int> &loc_to_glob = dtg->local_to_global_child;
-    const utils::HashMap<int, int> &glob_to_loc = global_to_local_var[dtg->var];
+    const utils::UnorderedMap<int, int> &glob_to_loc = global_to_local_var[dtg->var];
 
     for (auto &label : labels) {
         // create global condition for label
@@ -169,7 +169,7 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
 
         // collect operator precondition
         OperatorProxy op = get_op_for_label(label);
-        utils::HashMap<int, int> pre_map;
+        utils::UnorderedMap<int, int> pre_map;
         for (FactProxy pre : op.get_preconditions())
             pre_map[pre.get_variable().get_id()] = pre.get_value();
 
@@ -239,7 +239,7 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
      */
 
     using HashKey = vector<FactPair>;
-    utils::HashMap<HashKey, int> label_index;
+    utils::UnorderedMap<HashKey, int> label_index;
     label_index.reserve(labels.size());
 
     for (size_t i = 0; i < labels.size(); ++i) {

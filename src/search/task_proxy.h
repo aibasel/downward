@@ -607,6 +607,16 @@ inline void feed(HashState &hash_state, const State &state) {
 }
 }
 
+namespace std {
+template<>
+struct hash<State> {
+    size_t operator()(const State &state) const {
+        std::hash<std::vector<int>> hasher;
+        return hasher(state.get_values());
+    }
+};
+}
+
 
 class TaskProxy {
     const AbstractTask *task;

@@ -134,7 +134,7 @@ bool LandmarkFactory::is_landmark_precondition(const OperatorProxy &op,
 bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
                                             Exploration &exploration,
                                             vector<vector<int>> &lvl_var,
-                                            vector<utils::HashMap<FactPair, int>> &lvl_op,
+                                            vector<utils::UnorderedMap<FactPair, int>> &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
@@ -161,7 +161,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
                                      numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
-    utils::HashSet<int> exclude_op_ids;
+    utils::UnorderedSet<int> exclude_op_ids;
     vector<FactPair> exclude_props;
     if (exclude) {
         for (OperatorProxy op : operators) {
@@ -185,7 +185,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
 }
 
 void LandmarkFactory::add_operator_and_propositions_to_list(
-    const OperatorProxy &op, vector<utils::HashMap<FactPair, int>> &lvl_op) const {
+    const OperatorProxy &op, vector<utils::UnorderedMap<FactPair, int>> &lvl_op) const {
     int op_or_axiom_id = get_operator_or_axiom_id(op);
     for (EffectProxy effect : op.get_effects()) {
         lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
@@ -202,7 +202,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
     if (landmark.in_goal)
         return true;
     vector<vector<int>> lvl_var;
-    vector<utils::HashMap<FactPair, int>> lvl_op;
+    vector<utils::UnorderedMap<FactPair, int>> lvl_op;
     // Initialize lvl_var to numeric_limits<int>::max()
     VariablesProxy variables = task_proxy.get_variables();
     lvl_var.resize(variables.size());
@@ -210,7 +210,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
         lvl_var[var.get_id()].resize(var.get_domain_size(),
                                      numeric_limits<int>::max());
     }
-    utils::HashSet<int> exclude_op_ids;
+    utils::UnorderedSet<int> exclude_op_ids;
     vector<FactPair> exclude_props;
     for (OperatorProxy op : task_proxy.get_operators()) {
         if (is_landmark_precondition(op, &landmark)) {
@@ -381,7 +381,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             if (node_a->conjunctive)
                 continue;
 
-            utils::HashMap<int, int> shared_eff;
+            utils::UnorderedMap<int, int> shared_eff;
             bool init = true;
             const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact_a);
             // Intersect operators that achieve a one by one
@@ -399,7 +399,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 set<FactPair> trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(variables, effects,
                                                                                trivially_conditioned_effects);
-                utils::HashMap<int, int> next_eff;
+                utils::UnorderedMap<int, int> next_eff;
                 for (EffectProxy effect : effects) {
                     FactPair effect_fact = effect.get_fact().get_pair();
                     if (effect.get_conditions().empty() &&
@@ -414,7 +414,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 if (init)
                     swap(shared_eff, next_eff);
                 else {
-                    utils::HashMap<int, int> result;
+                    utils::UnorderedMap<int, int> result;
                     for (const auto &eff1 : shared_eff) {
                         auto it2 = next_eff.find(eff1.first);
                         if (it2 != next_eff.end() && it2->second == eff1.second)
@@ -489,7 +489,7 @@ void LandmarkFactory::approximate_reasonable_orders(
         } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
-            utils::HashSet<LandmarkNode *> interesting_nodes(variables_size);
+            utils::UnorderedSet<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2 = *child.first;
                 const EdgeType &edge2 = child.second;
@@ -526,14 +526,14 @@ void LandmarkFactory::approximate_reasonable_orders(
 }
 
 void LandmarkFactory::collect_ancestors(
-    utils::HashSet<LandmarkNode *> &result,
+    utils::UnorderedSet<LandmarkNode *> &result,
     LandmarkNode &node,
     bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
 
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;
-    utils::HashSet<LandmarkNode *> closed_nodes;
+    utils::UnorderedSet<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
         const EdgeType &edge = p.second;
@@ -682,7 +682,7 @@ void LandmarkFactory::discard_all_orderings() {
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
-    utils::HashSet<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
+    utils::UnorderedSet<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
     for (LandmarkNode *node : lm_graph->get_nodes()) {
         if (acyclic_node_set.find(node) == acyclic_node_set.end())
@@ -727,11 +727,11 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
 }
 
 int LandmarkFactory::loop_acyclic_graph(
-    LandmarkNode &lmn, utils::HashSet<LandmarkNode *> &acyclic_node_set) {
+    LandmarkNode &lmn, utils::UnorderedSet<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, EdgeType>> path;
-    utils::HashSet<LandmarkNode *> visited(lm_graph->number_of_landmarks());
+    utils::UnorderedSet<LandmarkNode *> visited(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
@@ -795,7 +795,7 @@ void LandmarkFactory::compute_predecessor_information(
     Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
-    vector<utils::HashMap<FactPair, int>> &lvl_op) {
+    vector<utils::UnorderedMap<FactPair, int>> &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
@@ -815,7 +815,7 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
         }
 
         vector<vector<int>> lvl_var;
-        vector<utils::HashMap<FactPair, int>> lvl_op;
+        vector<utils::UnorderedMap<FactPair, int>> lvl_op;
         compute_predecessor_information(task_proxy, exploration, lmn, lvl_var, lvl_op);
 
         for (int op_or_axom_id : lmn->possible_achievers) {

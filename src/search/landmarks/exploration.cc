@@ -154,7 +154,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 // heuristic computation
 void Exploration::setup_exploration_queue(const State &state,
                                           const vector<FactPair> &excluded_props,
-                                          const utils::HashSet<int> &excluded_op_ids,
+                                          const utils::UnorderedSet<int> &excluded_op_ids,
                                           bool use_h_max) {
     prop_queue.clear();
 
@@ -320,10 +320,10 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
-                                                     vector<utils::HashMap<FactPair, int>> &lvl_op,
+                                                     vector<utils::UnorderedMap<FactPair, int>> &lvl_op,
                                                      bool level_out,
                                                      const vector<FactPair> &excluded_props,
-                                                     const utils::HashSet<int> &excluded_op_ids,
+                                                     const utils::UnorderedSet<int> &excluded_op_ids,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids, true);
@@ -407,7 +407,7 @@ void Exploration::collect_helpful_actions(
 
 // TODO: this should be in landmark class
 static bool is_landmark(vector<FactPair> &landmarks, const FactPair &fact) {
-    // TODO: change landmarks to set or utils::HashSet
+    // TODO: change landmarks to set or utils::UnorderedSet
     return find(landmarks.begin(), landmarks.end(), fact) != landmarks.end();
 }
 

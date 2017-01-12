@@ -48,4 +48,13 @@ inline void feed(HashState &hash_state, StateID id) {
 }
 }
 
+namespace std {
+template<>
+struct hash<StateID> {
+    size_t operator()(StateID id) const {
+        return id.hash();
+    }
+};
+}
+
 #endif

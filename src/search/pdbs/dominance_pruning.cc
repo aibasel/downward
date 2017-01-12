@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace pdbs {
-using PDBRelation = utils::HashSet<pair<PatternDatabase *, PatternDatabase *>>;
+using PDBRelation = utils::UnorderedSet<pair<PatternDatabase *, PatternDatabase *>>;
 
 PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {
     PDBRelation superset_relation;
@@ -107,7 +107,7 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     cout << "Pruned " << num_additive_subsets - nondominated_subsets->size() <<
         " of " << num_additive_subsets << " maximal additive subsets" << endl;
 
-    utils::HashSet<PatternDatabase *> remaining_pdbs;
+    utils::UnorderedSet<PatternDatabase *> remaining_pdbs;
     for (const PDBCollection &collection : *nondominated_subsets) {
         for (const shared_ptr<PatternDatabase> &pdb : collection) {
             remaining_pdbs.insert(pdb.get());

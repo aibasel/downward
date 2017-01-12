@@ -105,7 +105,7 @@ string DomainAbstractedTaskFactory::get_combined_fact_name(
 
 void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &groups) {
     vector<string> combined_fact_names;
-    utils::HashSet<int> groups_union;
+    utils::UnorderedSet<int> groups_union;
     int num_merged_values = 0;
     for (const ValueGroup &group : groups) {
         combined_fact_names.push_back(get_combined_fact_name(var, group));

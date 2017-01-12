@@ -91,8 +91,8 @@ void PatternCollectionGeneratorGenetic::remove_irrelevant_variables(
     Pattern &pattern) const {
     TaskProxy task_proxy(*task);
 
-    utils::HashSet<int> in_original_pattern(pattern.begin(), pattern.end());
-    utils::HashSet<int> in_pruned_pattern;
+    utils::UnorderedSet<int> in_original_pattern(pattern.begin(), pattern.end());
+    utils::UnorderedSet<int> in_pruned_pattern;
 
     vector<int> vars_to_check;
     for (FactProxy goal : task_proxy.get_goals()) {

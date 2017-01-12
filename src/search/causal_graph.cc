@@ -27,7 +27,7 @@ using namespace std;
   (causal graphs, successor generators and axiom evlauators, DTGs, ...) and can
   maybe deal with all of them in the same way.
 */
-static utils::HashMap<const AbstractTask *,
+static utils::UnorderedMap<const AbstractTask *,
                       unique_ptr<CausalGraph>> causal_graph_cache;
 
 /*
@@ -48,7 +48,7 @@ static utils::HashMap<const AbstractTask *,
 */
 
 class IntRelationBuilder {
-    typedef utils::HashSet<int> IntSet;
+    typedef utils::UnorderedSet<int> IntSet;
     vector<IntSet> int_sets;
 
     int get_range() const;

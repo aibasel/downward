@@ -28,7 +28,7 @@ create_additive_heuristic(const std::shared_ptr<AbstractTask> &task);
   can be reached in the delete-relaxation before 'fact' is reached the first
   time, plus 'fact' itself.
 */
-extern utils::HashSet<FactProxy> get_relaxed_possible_before(
+extern utils::UnorderedSet<FactProxy> get_relaxed_possible_before(
     const TaskProxy &task, const FactProxy &fact);
 
 extern std::vector<int> get_domain_sizes(const TaskProxy &task);
@@ -43,6 +43,16 @@ namespace utils {
 inline void feed(HashState &hash_state, const FactProxy &fact) {
     feed(hash_state, fact.get_pair());
 }
+}
+
+namespace std {
+template<>
+struct hash<FactProxy> {
+    size_t operator()(const FactProxy &fact) const {
+        std::hash<FactPair> hasher;
+        return hasher(fact.get_pair());
+    }
+};
 }
 
 #endif

@@ -9,7 +9,7 @@
 
 class ScalarEvaluator;
 
-using EvaluationResults = utils::HashMap<ScalarEvaluator *, EvaluationResult>;
+using EvaluationResults = utils::UnorderedMap<ScalarEvaluator *, EvaluationResult>;
 
 /*
   Store a state and evaluation results for this state.

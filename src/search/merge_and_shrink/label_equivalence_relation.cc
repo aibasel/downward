@@ -25,7 +25,7 @@ void LabelEquivalenceRelation::add_label_to_group(int group_id,
 
 void LabelEquivalenceRelation::apply_label_mapping(
     const vector<pair<int, vector<int>>> &label_mapping,
-    const utils::HashSet<int> *affected_group_ids) {
+    const utils::UnorderedSet<int> *affected_group_ids) {
     for (const pair<int, vector<int>> &mapping : label_mapping) {
         int new_label_no = mapping.first;
         const vector<int> &old_label_nos = mapping.second;
@@ -50,7 +50,7 @@ void LabelEquivalenceRelation::apply_label_mapping(
 
     if (affected_group_ids) {
         // Recompute the cost of all affected label groups.
-        const utils::HashSet<int> &group_ids = *affected_group_ids;
+        const utils::UnorderedSet<int> &group_ids = *affected_group_ids;
         for (int group_id : group_ids) {
             LabelGroup &label_group = grouped_labels[group_id];
             // Setting cost to infinity for empty groups does not hurt.

@@ -56,7 +56,7 @@ VarToValues get_prev_landmarks(const LandmarkGraph &graph, const FactPair &fact)
     LandmarkNode *node = graph.get_landmark(fact);
     assert(node);
     vector<const LandmarkNode *> open;
-    utils::HashSet<const LandmarkNode *> closed;
+    utils::UnorderedSet<const LandmarkNode *> closed;
     for (const auto &parent_and_edge : node->parents) {
         const LandmarkNode *parent = parent_and_edge.first;
         open.push_back(parent);

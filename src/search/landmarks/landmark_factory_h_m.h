@@ -57,7 +57,7 @@ struct HMEntry {
 using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
 
 class LandmarkFactoryHM : public LandmarkFactory {
-    using TriggerSet = utils::HashMap<int, std::set<int>>;
+    using TriggerSet = utils::UnorderedMap<int, std::set<int>>;
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
                                     Exploration &exploration) override;

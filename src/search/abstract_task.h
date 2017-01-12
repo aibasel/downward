@@ -52,6 +52,17 @@ inline void feed(HashState &hash_state, const FactPair &fact) {
 }
 }
 
+namespace std {
+template<>
+struct hash<FactPair> {
+    size_t operator()(const FactPair &fact) const {
+        std::pair<int, int> raw_fact(fact.var, fact.value);
+        std::hash<std::pair<int, int>> hasher;
+        return hasher(raw_fact);
+    }
+};
+}
+
 class AbstractTask {
 public:
     AbstractTask() = default;

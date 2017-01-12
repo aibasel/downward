@@ -26,7 +26,7 @@ SamplesToFunctionsMap
 DiversePotentialHeuristics::filter_samples_and_compute_functions(
     const vector<State> &samples) {
     utils::Timer filtering_timer;
-    utils::HashSet<State> dead_ends;
+    utils::UnorderedSet<State> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
     SamplesToFunctionsMap samples_to_functions;

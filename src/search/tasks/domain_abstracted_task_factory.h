@@ -12,7 +12,7 @@ class AbstractTask;
 namespace extra_tasks {
 using ValueGroup = std::vector<int>;
 using ValueGroups = std::vector<ValueGroup>;
-using VarToGroups = utils::HashMap<int, ValueGroups>;
+using VarToGroups = utils::UnorderedMap<int, ValueGroups>;
 
 /*
   Factory for creating domain abstractions.
