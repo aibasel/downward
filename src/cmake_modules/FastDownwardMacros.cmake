@@ -66,14 +66,44 @@ macro(fast_downward_set_compiler_flags)
 endmacro()
 
 macro(fast_downward_set_linker_flags)
-    # We try to force linking to be static because the dynamically linked code is
-    # about 10% slower on Linux (see issue67).
+    # By default, we try to force linking to be static because the
+    # dynamically linked code is about 10% slower on Linux (see issue67)
+    # but we offer the option to force a dynamic build for debugging
+    # purposes (for example, valgrind's memcheck requires a dynamic build).
+    # To force a dynamic build, set FORCE_DYNAMIC_BUILD to true, by passing
+    # -DFORCE_DYNAMIC_BUILD=YES to cmake. We do not introduce an option for
+    # this because it cannot be changed after the first cmake run.
 
     if(APPLE)
         # Static linking is not supported by Apple.
         # https://developer.apple.com/library/mac/qa/qa1118/_index.html
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+    elseif(${FORCE_DYNAMIC_BUILD})
+        message(STATUS "Dynamic build.")
+        # Any libs we build should be dynamic.
+        set(BUILD_SHARED_LIBS TRUE)
+
+        # Any libraries that are implicitly added to the end of the linker
+        # command should be linked statically.
+        set(LINK_SEARCH_END_STATIC FALSE)
+
+        # Add "-rdynamic" flag.
+        set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-rdynamic")
+        set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-rdynamic")
+
+        # Only look for dynamic libraries (Windows does not support this).
+        if(UNIX)
+            set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
+        endif()
+
+        # Set linker flags to link dynamically.
+        if(CMAKE_COMPILER_IS_GNUCXX)
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -dynamic -shared-libgcc")
+        elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -dynamic -shared-libstdc++")
+        endif()
     else()
+        message(STATUS "Static build.")
         # Any libs we build should be static.
         set(BUILD_SHARED_LIBS FALSE)
 
