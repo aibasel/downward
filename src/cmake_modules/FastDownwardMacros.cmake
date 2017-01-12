@@ -70,6 +70,16 @@ macro(fast_downward_set_linker_flags)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
     endif()
 
+    # Fixing the linking to static or dynamic is only supported on Unix.
+    # We don't support the option on MacOS because static linking is
+    # not supported by Apple: https://developer.apple.com/library/mac/qa/qa1118/_index.html
+    # We don't support it on Windows because we don't have a use case
+    # and it's not possible to distinguish static and dynamic libraries
+    # by their file name.
+    if(FORCE_DYNAMIC_BUILD AND NOT UNIX)
+        message(FATAL_ERROR "Forcing dynamic builds is only supported on Unix.")
+    endif()
+
     if(UNIX)
         # By default, we try to force linking to be static because the
         # dynamically linked code is about 10% slower on Linux (see issue67)
@@ -104,16 +114,6 @@ macro(fast_downward_set_linker_flags)
                 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libstdc++")
             endif()
         endif()
-    endif()
-
-    # Fixing the linking to static or dynamic is only supported on Unix.
-    # We don't support the option on MacOS because static linking is
-    # not supported by Apple: https://developer.apple.com/library/mac/qa/qa1118/_index.html
-    # We don't support it on Windows because we don't have a use case
-    # and it's not possible to distinguish static and dynamic libraries
-    # by their file name.
-    if(FORCE_DYNAMIC_BUILD AND NOT UNIX)
-        message(FATAL_ERROR "Forcing dynamic builds is only supported on Unix.")
     endif()
 endmacro()
 
