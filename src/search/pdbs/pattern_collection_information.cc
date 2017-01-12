@@ -51,7 +51,7 @@ bool PatternCollectionInformation::information_is_valid() const {
             patterns_in_union.insert(pdb->get_pattern());
         }
         utils::UnorderedSet<Pattern> patterns_in_list(patterns->begin(),
-                                                 patterns->end());
+                                                      patterns->end());
         if (patterns_in_list != patterns_in_union) {
             return false;
         }
