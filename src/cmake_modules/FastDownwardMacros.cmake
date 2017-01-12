@@ -90,9 +90,6 @@ macro(fast_downward_set_linker_flags)
         if(UNIX)
             set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
         endif()
-
-        # Set linker flags to link dynamically.
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -dynamic")
     else()
         message(STATUS "Static build.")
         # Any libraries that are implicitly added to the end of the linker
