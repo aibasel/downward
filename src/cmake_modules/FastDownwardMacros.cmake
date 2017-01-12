@@ -80,9 +80,6 @@ macro(fast_downward_set_linker_flags)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
     elseif(${FORCE_DYNAMIC_BUILD})
         message(STATUS "Dynamic build.")
-        # Any libs we build should be dynamic.
-        set(BUILD_SHARED_LIBS TRUE)
-
         # Any libraries that are implicitly added to the end of the linker
         # command should be linked statically.
         set(LINK_SEARCH_END_STATIC FALSE)
@@ -104,9 +101,6 @@ macro(fast_downward_set_linker_flags)
         endif()
     else()
         message(STATUS "Static build.")
-        # Any libs we build should be static.
-        set(BUILD_SHARED_LIBS FALSE)
-
         # Any libraries that are implicitly added to the end of the linker
         # command should be linked statically.
         set(LINK_SEARCH_END_STATIC TRUE)
