@@ -66,7 +66,7 @@ macro(fast_downward_set_compiler_flags)
 endmacro()
 
 macro(fast_downward_set_linker_flags)
-    if(APPLE OR UNIX)
+    if(UNIX)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
     endif()
 
@@ -80,7 +80,7 @@ macro(fast_downward_set_linker_flags)
         message(FATAL_ERROR "Forcing dynamic builds is only supported on Unix.")
     endif()
 
-    if(UNIX)
+    if(UNIX AND NOT APPLE)
         # By default, we try to force linking to be static because the
         # dynamically linked code is about 10% slower on Linux (see issue67)
         # but we offer the option to force a dynamic build for debugging
