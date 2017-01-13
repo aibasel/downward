@@ -20,13 +20,13 @@ CONFIGS = [
         'astar-lmcut-static',
         ['--search', 'astar(lmcut())'],
         build_options=["release32"],
-        driver_options=["--build=release32"]
+        driver_options=["--build=release32", "--search-time-limit", "60s"]
     ),
     IssueConfig(
         'astar-lmcut-dynamic',
         ['--search', 'astar(lmcut())'],
         build_options=["release32dynamic"],
-        driver_options=["--build=release32dynamic"]
+        driver_options=["--build=release32dynamic", "--search-time-limit", "60s"]
     )
 ]
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
