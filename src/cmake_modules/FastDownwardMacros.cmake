@@ -112,6 +112,10 @@ macro(fast_downward_set_linker_flags)
                 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc")
             elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
                 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libstdc++")
+
+                # Do not add "-rdynamic" flag.
+                set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+                set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
             endif()
         endif()
     endif()
