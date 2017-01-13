@@ -113,7 +113,10 @@ macro(fast_downward_set_linker_flags)
             elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
                 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libstdc++")
 
-                # Do not add "-rdynamic" flag.
+                # CMake automatically adds the -rdynamic flag to the
+                # following two variables, which causes an error in our
+                # static builds with clang. Therefore we explicitly
+                # clear the variables.
                 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
                 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
             endif()
