@@ -65,7 +65,8 @@ for build in BUILDS:
                 exp.add_report(
                     RelativeScatterPlotReport(
                         attributes=[attribute],
-                        filter_algorithm=algorithms),
+                        filter_algorithm=algorithms,
+                        get_category=lambda run1, run2: run1["domain"]),
                     name="issue693-relative-scatter-{config_nick}-{build}-{rev1}-vs-{rev2}-{attribute}".format(**locals()))
 
 exp.run_steps()
