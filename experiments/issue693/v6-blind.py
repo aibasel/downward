@@ -57,4 +57,15 @@ for build in BUILDS:
                 attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES),
             name="issue693-opt-{rev1}-vs-{rev2}-{build}".format(**locals()))
 
+        for config_nick, search in SEARCHES:
+            algorithms = [
+                "{rev1}-{config_nick}-{build}".format(**locals()),
+                "{rev2}-{config_nick}-{build}".format(**locals())]
+            for attribute in ["total_time", "memory"]:
+                exp.add_report(
+                    RelativeScatterPlotReport(
+                        attributes=[attribute],
+                        filter_algorithm=algorithms),
+                    name="issue693-relative-scatter-{config_nick}-{build}-{rev1}-vs-{rev2}-{attribute}".format(**locals()))
+
 exp.run_steps()
