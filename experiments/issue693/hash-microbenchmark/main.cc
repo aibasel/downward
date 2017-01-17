@@ -11,7 +11,7 @@ using namespace std;
 
 
 static void benchmark(const string &desc, int num_calls,
-               const function<void()> &func) {
+                      const function<void()> &func) {
     cout << "Running " << desc << " " << num_calls << " times:" << flush;
     const int REPETITIONS = 10;
     for (int i = 0; i < REPETITIONS; ++i) {
@@ -69,11 +69,12 @@ int main(int, char **) {
     });
     cout << endl;
 
-    for (int length : {1, 10, 100, 101}) {
+    for (int length : {1, 10, 100, 101}
+         ) {
         benchmark(
             "insert vector<int> of size " + to_string(length) +
             " into std::unordered_set", NUM_ITERATIONS,
-                  [&]() {
+            [&]() {
             unordered_set<vector<int>> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 vector<int> v;
@@ -87,7 +88,7 @@ int main(int, char **) {
         benchmark(
             "insert vector<int> of size " + to_string(length) +
             " into utils::HashSet", NUM_ITERATIONS,
-                  [&]() {
+            [&]() {
             utils::HashSet<vector<int>> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 vector<int> v;
