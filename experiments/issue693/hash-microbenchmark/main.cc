@@ -29,55 +29,55 @@ int main(int, char **) {
     benchmark("nothing", NUM_ITERATIONS, [] () {});
     cout << endl;
     benchmark("insert int into std::unordered_set", NUM_ITERATIONS,
-        [&]() {
-            unordered_set<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(i);
-            }
-        });
+              [&]() {
+        unordered_set<int> s;
+        for (int i = 0; i < NUM_INSERTIONS; ++i) {
+            s.insert(i);
+        }
+    });
     benchmark("insert int into utils::HashSet", NUM_ITERATIONS,
-        [&]() {
-            utils::HashSet<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(i);
-            }
-        });
+              [&]() {
+        utils::HashSet<int> s;
+        for (int i = 0; i < NUM_INSERTIONS; ++i) {
+            s.insert(i);
+        }
+    });
     cout << endl;
 
     benchmark("insert pair<int, int> into std::unordered_set", NUM_ITERATIONS,
-        [&]() {
-            unordered_set<pair<int, int>> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(make_pair(i, i + 1));
-            }
-        });
+              [&]() {
+        unordered_set<pair<int, int>> s;
+        for (int i = 0; i < NUM_INSERTIONS; ++i) {
+            s.insert(make_pair(i, i + 1));
+        }
+    });
     benchmark("insert pair<int, int> into utils::HashSet", NUM_ITERATIONS,
-        [&]() {
-            utils::HashSet<pair<int, int>> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(make_pair(i, i + 1));
-            }
-        });
+              [&]() {
+        utils::HashSet<pair<int, int>> s;
+        for (int i = 0; i < NUM_INSERTIONS; ++i) {
+            s.insert(make_pair(i, i + 1));
+        }
+    });
     cout << endl;
 
     benchmark("insert vector<int> into std::unordered_set", NUM_ITERATIONS,
-        [&]() {
-            unordered_set<vector<int>> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                vector<int> v(i);
-                iota(v.begin(), v.end(), 0);
-                s.insert(v);
-            }
-        });
+              [&]() {
+        unordered_set<vector<int>> s;
+        for (int i = 0; i < NUM_INSERTIONS; ++i) {
+            vector<int> v(i);
+            iota(v.begin(), v.end(), 0);
+            s.insert(v);
+        }
+    });
     benchmark("insert vector<int> into utils::HashSet", NUM_ITERATIONS,
-        [&]() {
-            utils::HashSet<vector<int>> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                vector<int> v(i);
-                iota(v.begin(), v.end(), 0);
-                s.insert(v);
-            }
-        });
+              [&]() {
+        utils::HashSet<vector<int>> s;
+        for (int i = 0; i < NUM_INSERTIONS; ++i) {
+            vector<int> v(i);
+            iota(v.begin(), v.end(), 0);
+            s.insert(v);
+        }
+    });
     cout << endl;
 
     return 0;
