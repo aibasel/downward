@@ -18,7 +18,7 @@ class Options;
 }
 
 namespace algorithms {
-template <typename T>
+template<typename T>
 class OrderedSet;
 }
 

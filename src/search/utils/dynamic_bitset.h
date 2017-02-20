@@ -10,7 +10,7 @@
 */
 
 namespace utils {
-template <typename Block = unsigned int>
+template<typename Block = unsigned int>
 class DynamicBitset {
     static_assert(
         !std::numeric_limits<Block>::is_signed,
@@ -125,10 +125,10 @@ public:
     }
 };
 
-template <typename Block>
+template<typename Block>
 const Block DynamicBitset<Block>::zeros = Block(0);
 
-template <typename Block>
+template<typename Block>
 // MSVC's bitwise negation always returns int.
 const Block DynamicBitset<Block>::ones = Block(~Block(0));
 }

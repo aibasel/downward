@@ -1,8 +1,8 @@
 #include "option_parser.h"
 #include "search_engine.h"
 
-#include "utils/timer.h"
 #include "utils/system.h"
+#include "utils/timer.h"
 
 #include <iostream>
 
