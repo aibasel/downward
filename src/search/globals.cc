@@ -175,12 +175,12 @@ void read_mutexes(istream &in) {
                        don't mark a fact as mutex with itself
                        (important for correctness) and don't include
                        redundant mutexes (important to conserve
-                       memory). Note that the preprocessor removes
-                       mutex groups that contain *only* redundant
-                       mutexes, but it can of course generate mutex
-                       groups which lead to *some* redundant mutexes,
-                       where some but not all facts talk about the
-                       same variable. */
+                       memory). Note that the translator (at least
+                       with default settings) removes mutex groups
+                       that contain *only* redundant mutexes, but it
+                       can of course generate mutex groups which lead
+                       to *some* redundant mutexes, where some but not
+                       all facts talk about the same variable. */
                     g_inconsistent_facts[fact1.var][fact1.value].insert(fact2);
                 }
             }

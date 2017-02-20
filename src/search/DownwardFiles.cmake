@@ -83,7 +83,6 @@ fast_downward_plugin(
         variable_order_finder
 
         open_lists/alternation_open_list
-        open_lists/bucket_open_list
         open_lists/epsilon_greedy_open_list
         open_lists/open_list
         open_lists/open_list_factory
