@@ -251,28 +251,20 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     }
 }
 
-bool TransitionSystem::apply_abstraction(
+void TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
     Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
 
     int new_num_states = state_equivalence_relation.size();
-    if (new_num_states == get_size()) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << tag()
-                 << "not applying abstraction (same number of states)" << endl;
-        }
-        return false;
-    }
-
+    assert(new_num_states < num_states);
     if (verbosity >= Verbosity::VERBOSE) {
         cout << tag() << "applying abstraction (" << get_size()
              << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
-
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
         const StateEquivalenceClass &state_equivalence_class =
             state_equivalence_relation[new_state];
@@ -285,7 +277,6 @@ bool TransitionSystem::apply_abstraction(
             }
         }
     }
-
     goal_states = move(new_goal_states);
 
     // Update all transitions.
@@ -323,7 +314,6 @@ bool TransitionSystem::apply_abstraction(
     }
 
     assert(are_transitions_sorted_unique());
-    return true;
 }
 
 void TransitionSystem::apply_label_reduction(

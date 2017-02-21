@@ -122,9 +122,9 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
 void FactoredTransitionSystem::compute_distances_and_prune(
     int index, Verbosity verbosity) {
     /*
-      This method does all that compute_distances does and
-      additionally prunes all states that are unreachable (abstract g
-      is infinite) or irrelevant (abstract h is infinite).
+      This method does all that compute_distances does and additionally
+      possibly prunes states that are unreachable (abstract g is infinite) or
+      irrelevant (abstract h is infinite), depending on the chosen option.
     */
     assert(is_index_valid(index));
     distances[index]->compute_distances(verbosity, pruning);
@@ -153,6 +153,17 @@ bool FactoredTransitionSystem::apply_abstraction(
     Verbosity verbosity) {
     assert(is_index_valid(index));
 
+    int new_num_states = state_equivalence_relation.size();
+    if (new_num_states == transition_systems[index]->get_size()) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << transition_systems[index]->tag()
+                 << "not applying abstraction (same number of states)" << endl;
+        }
+        return false;
+    }
+
+    /* Compute the abstraction mapping based on the given state equivalence
+       relation. */
     vector<int> abstraction_mapping(
         transition_systems[index]->get_size(), PRUNED_STATE);
     for (size_t class_no = 0; class_no < state_equivalence_relation.size(); ++class_no) {
@@ -166,16 +177,17 @@ bool FactoredTransitionSystem::apply_abstraction(
         }
     }
 
-    bool shrunk = transition_systems[index]->apply_abstraction(
+    transition_systems[index]->apply_abstraction(
         state_equivalence_relation, abstraction_mapping, verbosity);
-    if (shrunk) {
-        distances[index]->apply_abstraction(
-            state_equivalence_relation, verbosity, pruning);
-        mas_representations[index]->apply_abstraction_to_lookup_table(
-            abstraction_mapping);
-    }
+    distances[index]->apply_abstraction(
+        state_equivalence_relation, verbosity, pruning);
+    mas_representations[index]->apply_abstraction_to_lookup_table(
+        abstraction_mapping);
+
+    /* Shrinking can not give rise to pruning opportunities, and if distances
+       need to be recomputed, this already happened in the Distances object. */
     assert(is_component_valid(index));
-    return shrunk;
+    return true;
 }
 
 int FactoredTransitionSystem::merge(

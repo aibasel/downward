@@ -81,6 +81,11 @@ public:
     void apply_label_reduction(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         int combinable_index);
+    /*
+      Apply the given abstraction to the component at index. Return true
+      iff the abstraction was actually applied and false if the abstraction
+      does not reduce the number of abstract states.
+    */
     bool apply_abstraction(
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
