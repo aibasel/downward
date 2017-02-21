@@ -27,6 +27,7 @@ void Distances::clear_distances() {
     max_h = DISTANCE_UNKNOWN;
     init_distances.clear();
     goal_distances.clear();
+    prunable_states.clear();
 }
 
 int Distances::get_num_states() const {
@@ -185,12 +186,14 @@ bool Distances::are_distances_computed() const {
         assert(max_g == DISTANCE_UNKNOWN);
         assert(init_distances.empty());
         assert(goal_distances.empty());
+        assert(prunable_states.empty());
         return false;
     }
     return true;
 }
 
-vector<bool> Distances::compute_distances(Verbosity verbosity) {
+void Distances::compute_distances(
+    Verbosity verbosity, Pruning pruning) {
     /*
       This method does the following:
       - Computes the distances of abstract states from the abstract
@@ -215,7 +218,7 @@ vector<bool> Distances::compute_distances(Verbosity verbosity) {
             cout << "empty transition system, no distances to compute" << endl;
         }
         max_f = max_g = max_h = INF;
-        return vector<bool>();
+        return;
     }
 
     init_distances.resize(num_states, INF);
@@ -239,19 +242,23 @@ vector<bool> Distances::compute_distances(Verbosity verbosity) {
     max_h = 0;
 
     int unreachable_count = 0, irrelevant_count = 0;
-    vector<bool> prunable_states(num_states, false);
+    prunable_states.resize(num_states, false);
     for (int i = 0; i < num_states; ++i) {
         int g = init_distances[i];
         int h = goal_distances[i];
-        // States that are both unreachable and irrelevant are counted
-        // as unreachable, not irrelevant. (Doesn't really matter, of
-        // course.)
-        if (g == INF) {
-            ++unreachable_count;
-            prunable_states[i] = true;
-        } else if (h == INF) {
-            ++irrelevant_count;
-            prunable_states[i] = true;
+        /* If pruning both unreachable and irrelevant states, a state which is
+           both is counted twice! */
+        if (g == INF || h == INF) {
+            if (g == INF && (pruning == Pruning::UNREACHABLE ||
+                             pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
+                ++unreachable_count;
+                prunable_states[i] = true;
+            }
+            if (h == INF && (pruning == Pruning::IRRELEVANT||
+                             pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
+                ++irrelevant_count;
+                prunable_states[i] = true;
+            }
         } else {
             max_f = max(max_f, g + h);
             max_g = max(max_g, g);
@@ -265,12 +272,12 @@ vector<bool> Distances::compute_distances(Verbosity verbosity) {
              << "irrelevant: " << irrelevant_count << " states" << endl;
     }
     assert(are_distances_computed());
-    return prunable_states;
 }
 
 void Distances::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
-    Verbosity verbosity) {
+    Verbosity verbosity,
+    Pruning pruning) {
     assert(are_distances_computed());
     assert(state_equivalence_relation.size() < init_distances.size());
     assert(state_equivalence_relation.size() < goal_distances.size());
@@ -314,7 +321,7 @@ void Distances::apply_abstraction(
                  << "simplification was not f-preserving!" << endl;
         }
         clear_distances();
-        compute_distances(verbosity);
+        compute_distances(verbosity, pruning);
     } else {
         init_distances = move(new_init_distances);
         goal_distances = move(new_goal_distances);

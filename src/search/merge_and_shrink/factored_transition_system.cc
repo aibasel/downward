@@ -5,6 +5,7 @@
 #include "merge_and_shrink_representation.h"
 #include "transition_system.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -38,13 +39,15 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     vector<unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
     vector<unique_ptr<Distances>> &&distances,
     Verbosity verbosity,
+    Pruning pruning,
     bool finalize_if_unsolvable)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
       distances(move(distances)),
       unsolvable_index(-1),
-      num_active_entries(this->transition_systems.size()) {
+      num_active_entries(this->transition_systems.size()),
+      pruning(pruning) {
     for (size_t i = 0; i < this->transition_systems.size(); ++i) {
         compute_distances_and_prune(i, verbosity);
         if (finalize_if_unsolvable && !this->transition_systems[i]->is_solvable()) {
@@ -60,7 +63,8 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
       mas_representations(move(other.mas_representations)),
       distances(move(other.distances)),
       unsolvable_index(move(other.unsolvable_index)),
-      num_active_entries(move(other.num_active_entries)) {
+      num_active_entries(move(other.num_active_entries)),
+      pruning(move(other.pruning)) {
     /*
       This is just a default move constructor. Unfortunately Visual
       Studio does not support "= default" for move construction or
@@ -71,17 +75,26 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
 FactoredTransitionSystem::~FactoredTransitionSystem() {
 }
 
-void FactoredTransitionSystem::discard_states(
+void FactoredTransitionSystem::prune_states(
     int index,
-    const vector<bool> &to_be_pruned_states,
     Verbosity verbosity) {
     assert(is_index_valid(index));
     int num_states = transition_systems[index]->get_size();
-    assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
     StateEquivalenceRelation state_equivalence_relation;
     state_equivalence_relation.reserve(num_states);
     for (int state = 0; state < num_states; ++state) {
-        if (!to_be_pruned_states[state]) {
+//        bool prune_state = false;
+//        if (distances[index]->get_init_distance(state) == INF &&
+//                (pruning == Pruning::UNREACHABLE ||
+//                 pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
+//            prune_state = true;
+//        }
+//        if (distances[index]->get_goal_distance(state) == INF &&
+//                (pruning == Pruning::IRRELEVANT ||
+//                 pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
+//            prune_state = true;
+//        }
+        if (!distances[index]->is_state_prunable(state)) {
             StateEquivalenceClass state_equivalence_class;
             state_equivalence_class.push_front(state);
             state_equivalence_relation.push_back(state_equivalence_class);
@@ -114,10 +127,8 @@ void FactoredTransitionSystem::compute_distances_and_prune(
       is infinite) or irrelevant (abstract h is infinite).
     */
     assert(is_index_valid(index));
-    discard_states(
-        index,
-        distances[index]->compute_distances(verbosity),
-        verbosity);
+    distances[index]->compute_distances(verbosity, pruning);
+    prune_states(index, verbosity);
     assert(is_component_valid(index));
 }
 
@@ -159,7 +170,7 @@ bool FactoredTransitionSystem::apply_abstraction(
         state_equivalence_relation, abstraction_mapping, verbosity);
     if (shrunk) {
         distances[index]->apply_abstraction(
-            state_equivalence_relation, verbosity);
+            state_equivalence_relation, verbosity, pruning);
         mas_representations[index]->apply_abstraction_to_lookup_table(
             abstraction_mapping);
     }
