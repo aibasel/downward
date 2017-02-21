@@ -100,9 +100,6 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
        unreachable states are pruned before we shrink and we never
        perform the shrinking if that pruning shows that the problem is
        unsolvable.
-
-       It is also important that irrelevant states have been pruned, because
-       h = INF is used as end sentinel for successor signatures.
     */
 
     const TransitionSystem &ts = fts.get_ts(index);
@@ -112,7 +109,8 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
-        assert(h >= 0 && h != INF);
+        // We allow h = INF
+        assert(h >= 0);
 
         if (ts.is_goal_state(state)) {
             assert(h == 0);
@@ -143,13 +141,14 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
-        assert(h >= 0 && h <= distances.get_max_h());
         Signature signature(h, ts.is_goal_state(state),
                             state_to_group[state], SuccessorSignature(),
                             state);
         signatures.push_back(signature);
     }
-    signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
+    /* The end sentinel uses h=INF and group=INF, assuming that we never
+       require INF many groups. */
+    signatures.push_back(Signature(INF, false, INF, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
     int label_group_counter = 0;
@@ -230,7 +229,6 @@ bool ShrinkBisimulation::shrink(
     int target_size,
     Verbosity verbosity) const {
     const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
@@ -243,9 +241,6 @@ bool ShrinkBisimulation::shrink(
     // TODO: We currently violate this; see issue250
     // assert(num_groups <= target_size);
 
-    int max_h = distances.get_max_h();
-    assert(max_h >= 0 && max_h != INF);
-
     bool stable = false;
     bool stop_requested = false;
     while (!stable && !stop_requested && num_groups < target_size) {
@@ -257,14 +252,13 @@ bool ShrinkBisimulation::shrink(
         // Verify size of signatures and presence of sentinels.
         assert(static_cast<int>(signatures.size()) == num_states + 2);
         assert(signatures[0].h_and_goal == -2);
-        assert(signatures[num_states + 1].h_and_goal == INF);
+        assert(signatures[num_states + 1].h_and_goal == INF && signatures[num_states + 1].group == INF);
 
         int sig_start = 1; // Skip over initial sentinel.
         while (true) {
             int h_and_goal = signatures[sig_start].h_and_goal;
-            if (h_and_goal > max_h) {
+            if (h_and_goal == INF && signatures[sig_start].group == INF) {
                 // We have hit the end sentinel.
-                assert(h_and_goal == INF);
                 assert(sig_start + 1 == static_cast<int>(signatures.size()));
                 break;
             }
