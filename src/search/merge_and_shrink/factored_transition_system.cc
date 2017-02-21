@@ -75,6 +75,19 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
 FactoredTransitionSystem::~FactoredTransitionSystem() {
 }
 
+void FactoredTransitionSystem::compute_distances_and_prune(
+    int index, Verbosity verbosity) {
+    /*
+      This method does all that compute_distances does and additionally
+      possibly prunes states that are unreachable (abstract g is infinite) or
+      irrelevant (abstract h is infinite), depending on the chosen option.
+    */
+    assert(is_index_valid(index));
+    distances[index]->compute_distances(verbosity, pruning);
+    prune_states(index, verbosity);
+    assert(is_component_valid(index));
+}
+
 void FactoredTransitionSystem::prune_states(
     int index,
     Verbosity verbosity) {
@@ -117,19 +130,6 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
     assert(is_index_valid(index));
     return distances[index]->are_distances_computed()
            && transition_systems[index]->are_transitions_sorted_unique();
-}
-
-void FactoredTransitionSystem::compute_distances_and_prune(
-    int index, Verbosity verbosity) {
-    /*
-      This method does all that compute_distances does and additionally
-      possibly prunes states that are unreachable (abstract g is infinite) or
-      irrelevant (abstract h is infinite), depending on the chosen option.
-    */
-    assert(is_index_valid(index));
-    distances[index]->compute_distances(verbosity, pruning);
-    prune_states(index, verbosity);
-    assert(is_component_valid(index));
 }
 
 void FactoredTransitionSystem::apply_label_reduction(
