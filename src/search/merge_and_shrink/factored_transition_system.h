@@ -9,6 +9,7 @@
 namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
+enum class Pruning;
 class MergeAndShrinkRepresentation;
 class Labels;
 class TransitionSystem;
@@ -48,13 +49,13 @@ class FactoredTransitionSystem {
     std::vector<std::unique_ptr<Distances>> distances;
     int unsolvable_index; // -1 if solvable, index of an unsolvable entry otw.
     int num_active_entries;
+    Pruning pruning;
 
     void compute_distances_and_prune(
         int index,
         Verbosity verbosity);
-    void discard_states(
+    void prune_states(
         int index,
-        const std::vector<bool> &to_be_pruned_states,
         Verbosity verbosity);
 
     bool is_index_valid(int index) const;
@@ -66,6 +67,7 @@ public:
         std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
         Verbosity verbosity,
+        Pruning pruning,
         bool finalize_if_unsolvable);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();

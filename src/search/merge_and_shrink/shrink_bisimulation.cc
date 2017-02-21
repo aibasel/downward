@@ -100,6 +100,9 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
        unreachable states are pruned before we shrink and we never
        perform the shrinking if that pruning shows that the problem is
        unsolvable.
+
+       It is also important that irrelevant states have been pruned, because
+       h = INF is used as end sentinel for successor signatures.
     */
 
     const TransitionSystem &ts = fts.get_ts(index);

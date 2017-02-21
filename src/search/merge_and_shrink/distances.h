@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+#include "../utils/collections.h"
+
+#include <cassert>
 #include <vector>
 
 /*
@@ -39,6 +42,13 @@
 namespace merge_and_shrink {
 class TransitionSystem;
 
+enum class Pruning {
+    NONE,
+    UNREACHABLE,
+    IRRELEVANT,
+    UNREACHABLE_AND_IRRELEVANT
+};
+
 class Distances {
     static const int DISTANCE_UNKNOWN = -1;
 
@@ -46,6 +56,7 @@ class Distances {
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
+    std::vector<bool> prunable_states;
 
     int max_f;
     int max_g;
@@ -64,7 +75,7 @@ public:
     ~Distances();
 
     bool are_distances_computed() const;
-    std::vector<bool> compute_distances(Verbosity verbosity);
+    void compute_distances(Verbosity verbosity, Pruning pruning);
 
     /*
       Update distances according to the given abstraction. If the abstraction
@@ -77,7 +88,14 @@ public:
     */
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity);
+        Verbosity verbosity,
+        Pruning pruning);
+
+    bool is_state_prunable(int index) const {
+        assert(are_distances_computed());
+        assert(utils::in_bounds(index, prunable_states));
+        return prunable_states[index];
+    }
 
     int get_max_f() const { // used by shrink_fh
         return max_f;

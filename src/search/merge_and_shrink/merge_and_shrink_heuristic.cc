@@ -47,6 +47,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
       verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))),
       starting_peak_memory(-1),
+      pruning(static_cast<Pruning>(opts.get_enum("pruning"))),
       mas_representation(nullptr) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
@@ -199,6 +200,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
         create_factored_transition_system(
             task_proxy,
             verbosity,
+            pruning,
             finalize_if_unsolvable);
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
@@ -292,8 +294,10 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
     int cost = mas_representation->get_value(state);
-    if (cost == PRUNED_STATE)
+    if (cost == PRUNED_STATE) {
+        // If state is unreachable or irrelevant, we encountered a dead end.
         return DEAD_END;
+    }
     return cost;
 }
 
@@ -463,6 +467,19 @@ static Heuristic *_parse(OptionParser &parser) {
         "one 'option' to use label_reduction. Also note the interaction "
         "with shrink strategies.",
         OptionParser::NONE);
+
+    // General merge-and-shrink options.
+    vector<string> pruning;
+    pruning.push_back("none");
+    pruning.push_back("unreachable");
+    pruning.push_back("irrelevant");
+    pruning.push_back("unreachable_and_irrelevant");
+    parser.add_enum_option(
+        "pruning",
+        pruning,
+        "Option to specify whether only unreachable, only irrelevant, or"
+        "both kinds of states should be pruned.",
+        "unreachable_and_irrelevant");
 
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
