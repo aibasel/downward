@@ -204,9 +204,13 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
 
 void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     const bool compute_init_distances =
-        shrink_strategy->requires_init_distances() || prune_unreachable_states;
+        shrink_strategy->requires_init_distances() ||
+        merge_strategy_factory->requires_init_distances() ||
+        prune_unreachable_states;
     const bool compute_goal_distances =
-        shrink_strategy->requires_goal_distances() || prune_irrelevant_states;
+        shrink_strategy->requires_goal_distances() ||
+        merge_strategy_factory->requires_goal_distances() ||
+        prune_irrelevant_states;
     const bool finalize_if_unsolvable = true;
     FactoredTransitionSystem fts =
         create_factored_transition_system(
