@@ -42,6 +42,8 @@ public:
         int index,
         int target,
         Verbosity verbosity) const = 0;
+    virtual bool requires_init_distances() const = 0;
+    virtual bool requires_goal_distances() const = 0;
 
     void dump_options() const;
     std::string get_name() const;

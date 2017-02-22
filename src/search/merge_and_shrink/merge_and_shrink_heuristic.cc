@@ -128,7 +128,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     string dashes(79, '=');
     if (!label_reduction) {
         cerr << dashes << endl
-             << "WARNING! You did not enable label reduction. This may "
+             << "WARNING! You did not enable label reduction. \nThis may "
             "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
@@ -143,7 +143,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
             cerr << dashes << endl
-                 << "WARNING! Bucket-based shrink strategies such as "
+                 << "WARNING! Bucket-based shrink strategies such as\n"
                 "f-preserving random perform best if used with label\n"
                 "reduction before merging, not before shrinking!"
                  << endl << dashes << endl;
@@ -151,11 +151,18 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
         if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
             cerr << dashes << endl
-                 << "WARNING! Shrinking based on bisimulation performs best "
+                 << "WARNING! Shrinking based on bisimulation performs best\n"
                 "if used with label reduction before shrinking, not\n"
                 "before merging!"
                  << endl << dashes << endl;
         }
+    }
+
+    if (!prune_unreachable_states || !prune_irrelevant_states) {
+        cerr << dashes << endl
+             << "WARNING! Pruning is (partially) turned off! \nThis may "
+                "drastically reduce the performance of merge-and-shrink!"
+             << endl << dashes << endl;
     }
 }
 
@@ -196,12 +203,16 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
 }
 
 void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
+    const bool compute_init_distances =
+        shrink_strategy->requires_init_distances() || prune_unreachable_states;
+    const bool compute_goal_distances =
+            shrink_strategy->requires_goal_distances() || prune_irrelevant_states;
     const bool finalize_if_unsolvable = true;
     FactoredTransitionSystem fts =
         create_factored_transition_system(
             task_proxy,
-            true,
-            true,
+            compute_init_distances,
+            compute_goal_distances,
             prune_unreachable_states,
             prune_irrelevant_states,
             verbosity,

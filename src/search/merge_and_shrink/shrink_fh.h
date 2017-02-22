@@ -49,6 +49,14 @@ protected:
 public:
     explicit ShrinkFH(const options::Options &opts);
     virtual ~ShrinkFH() override = default;
+
+    virtual bool requires_init_distances() const override {
+        return true;
+    }
+
+    virtual bool requires_goal_distances() const override {
+        return true;
+    }
 };
 }
 
