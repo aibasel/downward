@@ -183,7 +183,10 @@ bool Distances::are_distances_computed() const {
     return true;
 }
 
-void Distances::compute_distances(bool init, bool goal, Verbosity verbosity) {
+void Distances::compute_distances(
+    bool compute_init_distances,
+    bool compute_goal_distances,
+    Verbosity verbosity) {
     /*
       This method does the following:
       - Computes the distances of abstract states from the abstract
@@ -195,7 +198,7 @@ void Distances::compute_distances(bool init, bool goal, Verbosity verbosity) {
         irrelevant (abstract h is infinite).
     */
 
-    if (!init && !goal) {
+    if (!compute_init_distances && !compute_goal_distances) {
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "neither init nor goal distances to compute" << endl;
         }
@@ -217,30 +220,30 @@ void Distances::compute_distances(bool init, bool goal, Verbosity verbosity) {
         return;
     }
 
-    if (init) {
+    if (compute_init_distances) {
         init_distances.resize(num_states, INF);
     }
-    if (goal) {
+    if (compute_goal_distances) {
         goal_distances.resize(num_states, INF);
     }
     if (is_unit_cost()) {
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "computing distances using unit-cost algorithm" << endl;
         }
-        if (init) {
+        if (compute_init_distances) {
             compute_init_distances_unit_cost();
         }
-        if (goal) {
+        if (compute_goal_distances) {
             compute_goal_distances_unit_cost();
         }
     } else {
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "computing distances using general-cost algorithm" << endl;
         }
-        if (init) {
+        if (compute_init_distances) {
             compute_init_distances_general_cost();
         }
-        if (goal) {
+        if (compute_goal_distances) {
             compute_goal_distances_general_cost();
         }
     }
