@@ -92,9 +92,13 @@ void FactoredTransitionSystem::compute_distances_and_prune(
       irrelevant (abstract h is infinite), depending on the chosen option.
     */
     assert(is_index_valid(index));
-    distances[index]->compute_distances(
-        compute_init_distances, compute_goal_distances, verbosity);
-    prune_states(index, verbosity);
+    if (compute_init_distances || compute_goal_distances) {
+        distances[index]->compute_distances(
+            compute_init_distances, compute_goal_distances, verbosity);
+    }
+    if (prune_unreachable_states || prune_irrelevant_states) {
+        prune_states(index, verbosity);
+    }
     assert(is_component_valid(index));
 }
 
@@ -205,11 +209,13 @@ bool FactoredTransitionSystem::apply_abstraction(
 
     transition_systems[index]->apply_abstraction(
         state_equivalence_relation, abstraction_mapping, verbosity);
-    distances[index]->apply_abstraction(
-        state_equivalence_relation,
-        verbosity,
-        compute_init_distances,
-        compute_goal_distances);
+    if (compute_init_distances || compute_goal_distances) {
+        distances[index]->apply_abstraction(
+            state_equivalence_relation,
+            verbosity,
+            compute_init_distances,
+            compute_goal_distances);
+    }
     mas_representations[index]->apply_abstraction_to_lookup_table(
         abstraction_mapping);
 
