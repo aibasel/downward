@@ -42,13 +42,6 @@
 namespace merge_and_shrink {
 class TransitionSystem;
 
-enum class Pruning {
-    NONE,
-    UNREACHABLE,
-    IRRELEVANT,
-    UNREACHABLE_AND_IRRELEVANT
-};
-
 class Distances {
     static const int DISTANCE_UNKNOWN = -1;
 
@@ -56,11 +49,6 @@ class Distances {
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
-    std::vector<bool> prunable_states;
-
-    int max_f;
-    int max_g;
-    int max_h;
 
     void clear_distances();
     int get_num_states() const;
@@ -75,7 +63,7 @@ public:
     ~Distances();
 
     bool are_distances_computed() const;
-    void compute_distances(Verbosity verbosity, Pruning pruning);
+    void compute_distances(bool init, bool goal, Verbosity verbosity);
 
     /*
       Update distances according to the given abstraction. If the abstraction
@@ -89,29 +77,17 @@ public:
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity,
-        Pruning pruning);
+        bool compute_init_distances,
+        bool compute_goal_distances);
 
-    bool is_state_prunable(int index) const {
-        assert(are_distances_computed());
-        assert(utils::in_bounds(index, prunable_states));
-        return prunable_states[index];
-    }
-
-    int get_max_f() const { // used by shrink_fh
-        return max_f;
-    }
-    int get_max_g() const { // unused
-        return max_g;
-    }
-    int get_max_h() const { // used by shrink strategies
-        return max_h;
-    }
     int get_init_distance(int state) const { // used by shrink_fh
         return init_distances[state];
     }
+
     int get_goal_distance(int state) const { // used by shrink strategies and DFP
         return goal_distances[state];
     }
+
     void dump() const;
     void statistics() const;
 };

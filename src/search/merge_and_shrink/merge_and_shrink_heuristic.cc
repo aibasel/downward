@@ -45,9 +45,10 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),
       shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
+      prune_unreachable_states(opts.get<bool>("prune_unreachable_states")),
+      prune_irrelevant_states(opts.get<bool>("prune_irrelevant_states")),
       verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))),
       starting_peak_memory(-1),
-      pruning(static_cast<Pruning>(opts.get_enum("pruning"))),
       mas_representation(nullptr) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
@@ -199,8 +200,11 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     FactoredTransitionSystem fts =
         create_factored_transition_system(
             task_proxy,
+            true,
+            true,
+            prune_unreachable_states,
+            prune_irrelevant_states,
             verbosity,
-            pruning,
             finalize_if_unsolvable);
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
@@ -468,18 +472,16 @@ static Heuristic *_parse(OptionParser &parser) {
         "with shrink strategies.",
         OptionParser::NONE);
 
-    // General merge-and-shrink options.
-    vector<string> pruning;
-    pruning.push_back("none");
-    pruning.push_back("unreachable");
-    pruning.push_back("irrelevant");
-    pruning.push_back("unreachable_and_irrelevant");
-    parser.add_enum_option(
-        "pruning",
-        pruning,
-        "Option to specify whether only unreachable, only irrelevant, or"
-        "both kinds of states should be pruned.",
-        "unreachable_and_irrelevant");
+    // Pruning options.
+    parser.add_option<bool>(
+        "prune_unreachable_states",
+        "If true, prune abstract states unreachable from the initial state.",
+        "true");
+    parser.add_option<bool>(
+        "prune_irrelevant_states",
+        "If true, prune abstract states from which no goal state can be "
+        "reached.",
+        "true");
 
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);

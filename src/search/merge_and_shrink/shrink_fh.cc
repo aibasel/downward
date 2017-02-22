@@ -33,14 +33,22 @@ void ShrinkFH::partition_into_buckets(
     assert(buckets.empty());
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
-    int max_f = distances.get_max_f();
+    int max_h = 0;
+    int max_f = 0;
+    for (int state = 0; state < ts.get_size(); ++state) {
+        int g = distances.get_init_distance(state);
+        int h = distances.get_goal_distance(state);
+        int f = g + h;
+        max_h = max(max_h, h);
+        max_f = max(max_f, f);
+    }
     // Calculate with double to avoid overflow.
     if (static_cast<double>(max_f) * max_f / 2.0 > ts.get_size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
         ordered_buckets_use_map(fts, index, buckets);
     } else {
-        ordered_buckets_use_vector(fts, index, buckets);
+        ordered_buckets_use_vector(fts, index, buckets, max_f, max_h);
     }
 }
 
@@ -111,13 +119,15 @@ void ShrinkFH::ordered_buckets_use_map(
 void ShrinkFH::ordered_buckets_use_vector(
     const FactoredTransitionSystem &fts,
     int index,
-    vector<Bucket> &buckets) const {
+    vector<Bucket> &buckets,
+    int max_f,
+    int max_h) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     vector<vector<Bucket>> states_by_f_and_h;
-    states_by_f_and_h.resize(distances.get_max_f() + 1);
-    for (int f = 0; f <= distances.get_max_f(); ++f)
-        states_by_f_and_h[f].resize(min(f, distances.get_max_h()) + 1);
+    states_by_f_and_h.resize(max_f + 1);
+    for (int f = 0; f <= max_f; ++f)
+        states_by_f_and_h[f].resize(min(f, max_h) + 1);
     int bucket_count = 0;
     int num_states = ts.get_size();
     for (int state = 0; state < num_states; ++state) {
@@ -135,8 +145,8 @@ void ShrinkFH::ordered_buckets_use_vector(
     }
 
     buckets.reserve(bucket_count);
-    int f_init = (f_start == HIGH ? distances.get_max_f() : 0);
-    int f_end = (f_start == HIGH ? 0 : distances.get_max_f());
+    int f_init = (f_start == HIGH ? max_f : 0);
+    int f_end = (f_start == HIGH ? 0 : max_f);
     int f_incr = (f_init > f_end ? -1 : 1);
     for (int f = f_init; f != f_end + f_incr; f += f_incr) {
         int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);

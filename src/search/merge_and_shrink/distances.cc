@@ -22,12 +22,8 @@ Distances::~Distances() {
 }
 
 void Distances::clear_distances() {
-    max_f = DISTANCE_UNKNOWN;
-    max_g = DISTANCE_UNKNOWN;
-    max_h = DISTANCE_UNKNOWN;
     init_distances.clear();
     goal_distances.clear();
-    prunable_states.clear();
 }
 
 int Distances::get_num_states() const {
@@ -181,19 +177,13 @@ void Distances::compute_goal_distances_general_cost() {
 }
 
 bool Distances::are_distances_computed() const {
-    if (max_h == DISTANCE_UNKNOWN) {
-        assert(max_f == DISTANCE_UNKNOWN);
-        assert(max_g == DISTANCE_UNKNOWN);
-        assert(init_distances.empty());
-        assert(goal_distances.empty());
-        assert(prunable_states.empty());
+    if (init_distances.empty() && goal_distances.empty()) {
         return false;
     }
     return true;
 }
 
-void Distances::compute_distances(
-    Verbosity verbosity, Pruning pruning) {
+void Distances::compute_distances(bool init, bool goal, Verbosity verbosity) {
     /*
       This method does the following:
       - Computes the distances of abstract states from the abstract
@@ -204,6 +194,13 @@ void Distances::compute_distances(
         because the are unreachable (abstract g is infinite) or
         irrelevant (abstract h is infinite).
     */
+
+    if (!init && !goal) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << "neither init nor goal distances to compute" << endl;
+        }
+        return;
+    }
 
     if (verbosity >= Verbosity::VERBOSE) {
         cout << transition_system.tag();
@@ -217,67 +214,45 @@ void Distances::compute_distances(
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "empty transition system, no distances to compute" << endl;
         }
-        max_f = max_g = max_h = INF;
         return;
     }
 
-    init_distances.resize(num_states, INF);
-    goal_distances.resize(num_states, INF);
+    if (init) {
+        init_distances.resize(num_states, INF);
+    }
+    if (goal) {
+        goal_distances.resize(num_states, INF);
+    }
     if (is_unit_cost()) {
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "computing distances using unit-cost algorithm" << endl;
         }
-        compute_init_distances_unit_cost();
-        compute_goal_distances_unit_cost();
+        if (init) {
+            compute_init_distances_unit_cost();
+        }
+        if (goal) {
+            compute_goal_distances_unit_cost();
+        }
     } else {
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "computing distances using general-cost algorithm" << endl;
         }
-        compute_init_distances_general_cost();
-        compute_goal_distances_general_cost();
-    }
-
-    max_f = 0;
-    max_g = 0;
-    max_h = 0;
-
-    int unreachable_count = 0, irrelevant_count = 0;
-    prunable_states.resize(num_states, false);
-    for (int i = 0; i < num_states; ++i) {
-        int g = init_distances[i];
-        int h = goal_distances[i];
-        /* If pruning both unreachable and irrelevant states, a state which is
-           both is counted twice! */
-        if (g == INF || h == INF) {
-            if (g == INF && (pruning == Pruning::UNREACHABLE ||
-                             pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
-                ++unreachable_count;
-                prunable_states[i] = true;
-            }
-            if (h == INF && (pruning == Pruning::IRRELEVANT||
-                             pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
-                ++irrelevant_count;
-                prunable_states[i] = true;
-            }
-        } else {
-            max_f = max(max_f, g + h);
-            max_g = max(max_g, g);
-            max_h = max(max_h, h);
+        if (init) {
+            compute_init_distances_general_cost();
+        }
+        if (goal) {
+            compute_goal_distances_general_cost();
         }
     }
-    if (verbosity >= Verbosity::VERBOSE &&
-        (unreachable_count || irrelevant_count)) {
-        cout << transition_system.tag()
-             << "unreachable: " << unreachable_count << " states, "
-             << "irrelevant: " << irrelevant_count << " states" << endl;
-    }
+
     assert(are_distances_computed());
 }
 
 void Distances::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     Verbosity verbosity,
-    Pruning pruning) {
+    bool compute_init_distances,
+    bool compute_goal_distances) {
     assert(are_distances_computed());
     assert(state_equivalence_relation.size() < init_distances.size());
     assert(state_equivalence_relation.size() < goal_distances.size());
@@ -321,7 +296,8 @@ void Distances::apply_abstraction(
                  << "simplification was not f-preserving!" << endl;
         }
         clear_distances();
-        compute_distances(verbosity, pruning);
+        compute_distances(
+            compute_init_distances, compute_goal_distances, verbosity);
     } else {
         init_distances = move(new_init_distances);
         goal_distances = move(new_goal_distances);
@@ -341,10 +317,7 @@ void Distances::statistics() const {
     if (!are_distances_computed()) {
         cout << "distances not computed";
     } else if (transition_system.is_solvable()) {
-        cout << "init h=" << get_goal_distance(transition_system.get_init_state())
-             << ", max f=" << get_max_f()
-             << ", max g=" << get_max_g()
-             << ", max h=" << get_max_h();
+        cout << "init h=" << get_goal_distance(transition_system.get_init_state());
     } else {
         cout << "transition system is unsolvable";
     }
