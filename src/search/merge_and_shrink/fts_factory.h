@@ -15,13 +15,15 @@ class TaskProxy;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-enum class Pruning;
 enum class Verbosity;
 
 extern FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
+    const bool compute_init_distances,
+    const bool compute_goal_distances,
+    const bool prune_unreachable_states,
+    const bool prune_irrelevant_states,
     Verbosity verbosity,
-    Pruning pruning,
     bool finalize_if_unsolvable = true);
 }
 

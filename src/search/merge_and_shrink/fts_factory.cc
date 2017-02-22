@@ -83,7 +83,13 @@ public:
       Note: create() may only be called once. We don't worry about
       misuse because the class is only used internally in this file.
     */
-    FactoredTransitionSystem create(Verbosity verbosity, Pruning pruning, bool finalize_if_unsolvable);
+    FactoredTransitionSystem create(
+        const bool compute_init_distances,
+        const bool compute_goal_distances,
+        const bool prune_unreachable_states,
+        const bool prune_irrelevant_states,
+        Verbosity verbosity,
+        bool finalize_if_unsolvable);
 };
 
 
@@ -392,7 +398,12 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 }
 
 FactoredTransitionSystem FTSFactory::create(
-    Verbosity verbosity, Pruning pruning, bool finalize_if_unsolvable) {
+    const bool compute_init_distances,
+    const bool compute_goal_distances,
+    const bool prune_unreachable_states,
+    const bool prune_irrelevant_states,
+    Verbosity verbosity,
+    bool finalize_if_unsolvable) {
     if (verbosity >= Verbosity::NORMAL) {
         cout << "Building atomic transition systems... " << endl;
     }
@@ -413,16 +424,28 @@ FactoredTransitionSystem FTSFactory::create(
         move(transition_systems),
         move(mas_representations),
         move(distances),
+        compute_init_distances,
+        compute_goal_distances,
+        prune_unreachable_states,
+        prune_irrelevant_states,
         verbosity,
-        pruning,
         finalize_if_unsolvable);
 }
 
 FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
+    const bool compute_init_distances,
+    const bool compute_goal_distances,
+    const bool prune_unreachable_states,
+    const bool prune_irrelevant_states,
     Verbosity verbosity,
-    Pruning pruning,
     bool finalize_if_unsolvable) {
-    return FTSFactory(task_proxy).create(verbosity, pruning, finalize_if_unsolvable);
+    return FTSFactory(task_proxy).create(
+        compute_init_distances,
+        compute_goal_distances,
+        prune_unreachable_states,
+        prune_irrelevant_states,
+        verbosity,
+        finalize_if_unsolvable);
 }
 }

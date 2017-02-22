@@ -38,16 +38,22 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
     vector<unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
     vector<unique_ptr<Distances>> &&distances,
+    const bool compute_init_distances,
+    const bool compute_goal_distances,
+    const bool prune_unreachable_states,
+    const bool prune_irrelevant_states,
     Verbosity verbosity,
-    Pruning pruning,
     bool finalize_if_unsolvable)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
       distances(move(distances)),
+      compute_init_distances(compute_init_distances),
+      compute_goal_distances(compute_goal_distances),
+      prune_unreachable_states(prune_unreachable_states),
+      prune_irrelevant_states(prune_irrelevant_states),
       unsolvable_index(-1),
-      num_active_entries(this->transition_systems.size()),
-      pruning(pruning) {
+      num_active_entries(this->transition_systems.size()) {
     for (size_t i = 0; i < this->transition_systems.size(); ++i) {
         compute_distances_and_prune(i, verbosity);
         if (finalize_if_unsolvable && !this->transition_systems[i]->is_solvable()) {
@@ -62,9 +68,12 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
       transition_systems(move(other.transition_systems)),
       mas_representations(move(other.mas_representations)),
       distances(move(other.distances)),
+      compute_init_distances(move(other.compute_init_distances)),
+      compute_goal_distances(move(other.compute_goal_distances)),
+      prune_unreachable_states(move(other.prune_unreachable_states)),
+      prune_irrelevant_states(move(other.prune_irrelevant_states)),
       unsolvable_index(move(other.unsolvable_index)),
-      num_active_entries(move(other.num_active_entries)),
-      pruning(move(other.pruning)) {
+      num_active_entries(move(other.num_active_entries)) {
     /*
       This is just a default move constructor. Unfortunately Visual
       Studio does not support "= default" for move construction or
@@ -83,7 +92,8 @@ void FactoredTransitionSystem::compute_distances_and_prune(
       irrelevant (abstract h is infinite), depending on the chosen option.
     */
     assert(is_index_valid(index));
-    distances[index]->compute_distances(verbosity, pruning);
+    distances[index]->compute_distances(
+        compute_init_distances, compute_goal_distances, verbosity);
     prune_states(index, verbosity);
     assert(is_component_valid(index));
 }
@@ -92,26 +102,39 @@ void FactoredTransitionSystem::prune_states(
     int index,
     Verbosity verbosity) {
     assert(is_index_valid(index));
+    const Distances &dist = *distances[index];
     int num_states = transition_systems[index]->get_size();
     StateEquivalenceRelation state_equivalence_relation;
     state_equivalence_relation.reserve(num_states);
+    int unreachable_count = 0;
+    int irrelevant_count = 0;
     for (int state = 0; state < num_states; ++state) {
-//        bool prune_state = false;
-//        if (distances[index]->get_init_distance(state) == INF &&
-//                (pruning == Pruning::UNREACHABLE ||
-//                 pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
-//            prune_state = true;
-//        }
-//        if (distances[index]->get_goal_distance(state) == INF &&
-//                (pruning == Pruning::IRRELEVANT ||
-//                 pruning == Pruning::UNREACHABLE_AND_IRRELEVANT)) {
-//            prune_state = true;
-//        }
-        if (!distances[index]->is_state_prunable(state)) {
+        /* If pruning both unreachable and irrelevant states, a state which is
+           both is counted twice! */
+        int g = dist.get_init_distance(state);
+        int h = dist.get_goal_distance(state);
+        bool prune_state = false;
+        if (g == INF || h == INF) {
+            if (g == INF && prune_unreachable_states) {
+                ++unreachable_count;
+                prune_state = true;
+            }
+            if (h == INF && prune_irrelevant_states) {
+                ++irrelevant_count;
+                prune_state = true;
+            }
+        }
+        if (!prune_state) {
             StateEquivalenceClass state_equivalence_class;
             state_equivalence_class.push_front(state);
             state_equivalence_relation.push_back(state_equivalence_class);
         }
+    }
+    if (verbosity >= Verbosity::VERBOSE &&
+        (unreachable_count || irrelevant_count)) {
+        cout << transition_systems[index]->tag()
+             << "unreachable: " << unreachable_count << " states, "
+             << "irrelevant: " << irrelevant_count << " states" << endl;
     }
     apply_abstraction(index, state_equivalence_relation, verbosity);
 }
@@ -180,7 +203,10 @@ bool FactoredTransitionSystem::apply_abstraction(
     transition_systems[index]->apply_abstraction(
         state_equivalence_relation, abstraction_mapping, verbosity);
     distances[index]->apply_abstraction(
-        state_equivalence_relation, verbosity, pruning);
+        state_equivalence_relation,
+        verbosity,
+        compute_init_distances,
+        compute_goal_distances);
     mas_representations[index]->apply_abstraction_to_lookup_table(
         abstraction_mapping);
 

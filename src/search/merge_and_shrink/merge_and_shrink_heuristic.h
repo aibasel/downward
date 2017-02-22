@@ -12,7 +12,6 @@ class Timer;
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class LabelReduction;
-enum class Pruning;
 class MergeAndShrinkRepresentation;
 class MergeStrategyFactory;
 class ShrinkStrategy;
@@ -35,9 +34,12 @@ class MergeAndShrinkHeuristic : public Heuristic {
        max_states and max_states_before_merge are not violated. */
     const int shrink_threshold_before_merge;
 
+    // Options for pruning
+    const bool prune_unreachable_states;
+    const bool prune_irrelevant_states;
+
     const Verbosity verbosity;
     long starting_peak_memory;
-    Pruning pruning;
     // The final merge-and-shrink representation, storing goal distances.
     std::unique_ptr<MergeAndShrinkRepresentation> mas_representation;
 

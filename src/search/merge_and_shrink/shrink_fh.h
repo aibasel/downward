@@ -31,7 +31,9 @@ private:
 
     void ordered_buckets_use_vector(const FactoredTransitionSystem &fts,
                                     int index,
-                                    std::vector<Bucket> &buckets) const;
+                                    std::vector<Bucket> &buckets,
+                                    int max_f,
+                                    int max_h) const;
     void ordered_buckets_use_map(const FactoredTransitionSystem &fts,
                                  int index,
                                  std::vector<Bucket> &buckets) const;
