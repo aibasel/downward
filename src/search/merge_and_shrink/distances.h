@@ -63,7 +63,10 @@ public:
     ~Distances();
 
     bool are_distances_computed() const;
-    void compute_distances(bool init, bool goal, Verbosity verbosity);
+    void compute_distances(
+        bool compute_init_distances,
+        bool compute_goal_distances,
+        Verbosity verbosity);
 
     /*
       Update distances according to the given abstraction. If the abstraction
