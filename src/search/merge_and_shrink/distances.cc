@@ -191,19 +191,8 @@ void Distances::compute_distances(
       This method does the following:
       - Computes the distances of abstract states from the abstract
         initial state ("abstract g") and from the abstract goal states
-        ("abstract h").
-      - Set max_f, max_g and max_h.
-      - Return a vector<bool> that indicates which states can be pruned
-        because the are unreachable (abstract g is infinite) or
-        irrelevant (abstract h is infinite).
+        ("abstract h"), depending on the given flags.
     */
-
-    if (!compute_init_distances && !compute_goal_distances) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << "neither init nor goal distances to compute" << endl;
-        }
-        return;
-    }
 
     if (verbosity >= Verbosity::VERBOSE) {
         cout << transition_system.tag();
@@ -257,12 +246,22 @@ void Distances::apply_abstraction(
     bool compute_init_distances,
     bool compute_goal_distances) {
     assert(are_distances_computed());
-    assert(state_equivalence_relation.size() < init_distances.size());
-    assert(state_equivalence_relation.size() < goal_distances.size());
+    if (compute_init_distances) {
+        assert(state_equivalence_relation.size() < init_distances.size());
+    }
+    if (compute_goal_distances) {
+        assert(state_equivalence_relation.size() < goal_distances.size());
+    }
 
     int new_num_states = state_equivalence_relation.size();
-    vector<int> new_init_distances(new_num_states, DISTANCE_UNKNOWN);
-    vector<int> new_goal_distances(new_num_states, DISTANCE_UNKNOWN);
+    vector<int> new_init_distances;
+    vector<int> new_goal_distances;
+    if (compute_init_distances) {
+        new_init_distances.resize(new_num_states, DISTANCE_UNKNOWN);
+    }
+    if (compute_goal_distances) {
+        new_goal_distances.resize(new_num_states, DISTANCE_UNKNOWN);
+    }
 
     bool must_recompute = false;
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
@@ -271,16 +270,22 @@ void Distances::apply_abstraction(
         assert(!state_equivalence_class.empty());
 
         StateEquivalenceClass::const_iterator pos = state_equivalence_class.begin();
-        int new_init_dist = init_distances[*pos];
-        int new_goal_dist = goal_distances[*pos];
+        int new_init_dist = -1;
+        int new_goal_dist = -1;
+        if (compute_init_distances) {
+            new_init_dist = init_distances[*pos];
+        }
+        if (compute_goal_distances) {
+            new_goal_dist = goal_distances[*pos];
+        }
 
         ++pos;
         for (; pos != state_equivalence_class.end(); ++pos) {
-            if (init_distances[*pos] != new_init_dist) {
+            if (compute_init_distances && init_distances[*pos] != new_init_dist) {
                 must_recompute = true;
                 break;
             }
-            if (goal_distances[*pos] != new_goal_dist) {
+            if (compute_goal_distances && goal_distances[*pos] != new_goal_dist) {
                 must_recompute = true;
                 break;
             }
@@ -289,8 +294,12 @@ void Distances::apply_abstraction(
         if (must_recompute)
             break;
 
-        new_init_distances[new_state] = new_init_dist;
-        new_goal_distances[new_state] = new_goal_dist;
+        if (compute_init_distances) {
+            new_init_distances[new_state] = new_init_dist;
+        }
+        if (compute_goal_distances) {
+            new_goal_distances[new_state] = new_goal_dist;
+        }
     }
 
     if (must_recompute) {
