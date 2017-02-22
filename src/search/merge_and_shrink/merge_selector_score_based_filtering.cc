@@ -88,6 +88,30 @@ void MergeSelectorScoreBasedFiltering::dump_specific_options() const {
     }
 }
 
+bool MergeSelectorScoreBasedFiltering::requires_init_distances() const {
+    bool result = false;
+    for (const shared_ptr<MergeScoringFunction> &scoring_function
+        : merge_scoring_functions) {
+        if (scoring_function->requires_init_distances()) {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
+bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
+    bool result = false;
+    for (const shared_ptr<MergeScoringFunction> &scoring_function
+        : merge_scoring_functions) {
+        if (scoring_function->requires_goal_distances()) {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
 static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Score based filtering merge selector",
