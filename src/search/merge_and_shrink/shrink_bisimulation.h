@@ -42,6 +42,14 @@ public:
         int index,
         int target,
         Verbosity verbosity) const override;
+
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
+
+    virtual bool requires_goal_distances() const override {
+        return true;
+    }
 };
 }
 
