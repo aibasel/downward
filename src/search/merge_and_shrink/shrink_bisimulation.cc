@@ -109,8 +109,15 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
-        // We allow h = INF
-        assert(h >= 0);
+        if (h == INF) {
+            /*
+              For irrelevant abstract states, we use dist = INF - 1 because
+              the end sentinal signature uses INF as h_and_goal value.
+              Otherwise, the end sentinal could be "merged" with irrelevant
+              states.
+            */
+            h = INF - 1;
+        }
 
         if (ts.is_goal_state(state)) {
             assert(h == 0);
@@ -141,14 +148,21 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
+        if (h == INF) {
+            /*
+              For irrelevant abstract states, we use dist = INF - 1 because
+              the end sentinal signature uses INF as h_and_goal value.
+              Otherwise, the end sentinal could be "merged" with irrelevant
+              states.
+            */
+            h = INF - 1;
+        }
         Signature signature(h, ts.is_goal_state(state),
                             state_to_group[state], SuccessorSignature(),
                             state);
         signatures.push_back(signature);
     }
-    /* The end sentinel uses h=INF and group=INF, assuming that we never
-       require INF many groups. */
-    signatures.push_back(Signature(INF, false, INF, SuccessorSignature(), -1));
+    signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
     int label_group_counter = 0;
@@ -185,12 +199,18 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = distances.get_goal_distance(transition.src);
                 int target_h = distances.get_goal_distance(transition.target);
-                int cost = label_group.get_cost();
-                assert(target_h + cost >= src_h);
-                skip_transition = (target_h + cost != src_h);
+                if (src_h == INF || target_h == INF) {
+                    // We skip transitions connected to an irrelevan state.
+                    skip_transition = true;
+                } else {
+                    int cost = label_group.get_cost();
+                    assert(target_h + cost >= src_h);
+                    skip_transition = (target_h + cost != src_h);
+                }
             }
             if (!skip_transition) {
                 int target_group = state_to_group[transition.target];
+                assert(target_group != -1 && target_group != INF);
                 signatures[transition.src + 1].succ_signature.push_back(
                     make_pair(label_group_counter, target_group));
             }
@@ -252,12 +272,12 @@ bool ShrinkBisimulation::shrink(
         // Verify size of signatures and presence of sentinels.
         assert(static_cast<int>(signatures.size()) == num_states + 2);
         assert(signatures[0].h_and_goal == -2);
-        assert(signatures[num_states + 1].h_and_goal == INF && signatures[num_states + 1].group == INF);
+        assert(signatures[num_states + 1].h_and_goal == INF);
 
         int sig_start = 1; // Skip over initial sentinel.
         while (true) {
             int h_and_goal = signatures[sig_start].h_and_goal;
-            if (h_and_goal == INF && signatures[sig_start].group == INF) {
+            if (h_and_goal == INF) {
                 // We have hit the end sentinel.
                 assert(sig_start + 1 == static_cast<int>(signatures.size()));
                 break;
@@ -268,14 +288,16 @@ bool ShrinkBisimulation::shrink(
             int num_new_groups = 0;
             int sig_end;
             for (sig_end = sig_start; true; ++sig_end) {
-                if (signatures[sig_end].h_and_goal != h_and_goal)
+                if (signatures[sig_end].h_and_goal != h_and_goal) {
                     break;
+                }
 
                 const Signature &prev_sig = signatures[sig_end - 1];
                 const Signature &curr_sig = signatures[sig_end];
 
-                if (sig_end == sig_start)
+                if (sig_end == sig_start) {
                     assert(prev_sig.group != curr_sig.group);
+                }
 
                 if (prev_sig.group != curr_sig.group) {
                     ++num_old_groups;
