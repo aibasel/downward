@@ -200,7 +200,7 @@ void ShrinkBisimulation::compute_signatures(
                 int src_h = distances.get_goal_distance(transition.src);
                 int target_h = distances.get_goal_distance(transition.target);
                 if (src_h == INF || target_h == INF) {
-                    // We skip transitions connected to an irrelevan state.
+                    // We skip transitions connected to an irrelevant state.
                     skip_transition = true;
                 } else {
                     int cost = label_group.get_cost();

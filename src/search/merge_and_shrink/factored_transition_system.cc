@@ -112,7 +112,7 @@ void FactoredTransitionSystem::prune_states(
     state_equivalence_relation.reserve(num_states);
     int unreachable_count = 0;
     int irrelevant_count = 0;
-    int pruned_count = 0;
+    int inactive_count = 0;
     for (int state = 0; state < num_states; ++state) {
         /* If pruning both unreachable and irrelevant states, a state which is
            both is counted twice! */
@@ -126,7 +126,7 @@ void FactoredTransitionSystem::prune_states(
             prune_state = true;
         }
         if (prune_state) {
-            ++pruned_count;
+            ++inactive_count;
         } else {
             StateEquivalenceClass state_equivalence_class;
             state_equivalence_class.push_front(state);
@@ -138,7 +138,7 @@ void FactoredTransitionSystem::prune_states(
         cout << transition_systems[index]->tag()
              << "unreachable: " << unreachable_count << " states, "
              << "irrelevant: " << irrelevant_count << " states ("
-             << "total pruned: " << pruned_count << ")" << endl;
+             << "total inactive: " << inactive_count << ")" << endl;
     }
     apply_abstraction(index, state_equivalence_relation, verbosity);
 }
