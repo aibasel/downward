@@ -3,9 +3,6 @@
 
 #include "types.h"
 
-#include "../utils/collections.h"
-
-#include <cassert>
 #include <vector>
 
 /*
@@ -71,11 +68,11 @@ public:
         bool compute_init_distances,
         bool compute_goal_distances);
 
-    int get_init_distance(int state) const { // used by shrink_fh
+    int get_init_distance(int state) const {
         return init_distances[state];
     }
 
-    int get_goal_distance(int state) const { // used by shrink strategies and DFP
+    int get_goal_distance(int state) const {
         return goal_distances[state];
     }
 
