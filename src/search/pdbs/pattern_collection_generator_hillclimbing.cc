@@ -77,7 +77,7 @@ void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
 
 size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
     const TaskProxy &task_proxy, set<Pattern> &generated_patterns,
-    PatternCollection &new_candidates, PDBCollection &candidate_pdbs) const {
+    const PatternCollection &new_candidates, PDBCollection &candidate_pdbs) const {
     /*
       For the new candidate patterns check whether they already have been
       candidates before and thus already a PDB has been created an inserted into

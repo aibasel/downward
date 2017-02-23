@@ -61,7 +61,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     std::size_t generate_pdbs_for_candidates(
         const TaskProxy &task_proxy,
         std::set<Pattern> &generated_patterns,
-        PatternCollection &new_candidates,
+        const PatternCollection &new_candidates,
         PDBCollection &candidate_pdbs) const;
 
     /*
