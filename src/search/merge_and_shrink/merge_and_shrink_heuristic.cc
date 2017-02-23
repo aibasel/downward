@@ -161,7 +161,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     if (!prune_unreachable_states || !prune_irrelevant_states) {
         cerr << dashes << endl
              << "WARNING! Pruning is (partially) turned off! \nThis may "
-                "drastically reduce the performance of merge-and-shrink!"
+            "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
     }
 }
