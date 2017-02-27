@@ -9,14 +9,7 @@ import os
 from lab.environments import LocalEnvironment, MaiaEnvironment
 from lab.reports import Attribute, geometric_mean
 
-import common_setup
-from common_setup import IssueConfig, IssueExperiment
-try:
-    from relativescatter import RelativeScatterPlotReport
-    matplotlib = True
-except ImportError:
-    print 'matplotlib not availabe, scatter plots not available'
-    matplotlib = False
+from common_setup import IssueConfig, IssueExperiment, DEFAULT_OPTIMAL_SUITE, is_test_run
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR=os.path.expanduser('~/repos/downward/benchmarks')
@@ -29,11 +22,11 @@ CONFIGS = [
     IssueConfig('rl-f50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_precomputed(merge_tree=linear(variable_order=reverse_level)),shrink_strategy=shrink_fh(),label_reduction=exact(before_shrinking=false,before_merging=true),max_states=50000))']),
     IssueConfig('dfp-f50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_stateless(merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order])),shrink_strategy=shrink_fh(),label_reduction=exact(before_shrinking=false,before_merging=true),max_states=50000))']),
 ]
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+SUITE = DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = MaiaEnvironment(
     priority=0, email='silvan.sievers@unibas.ch')
 
-if common_setup.is_test_run():
+if is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
     ENVIRONMENT = LocalEnvironment(processes=4)
 
