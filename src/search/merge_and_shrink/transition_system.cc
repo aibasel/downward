@@ -421,7 +421,28 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 }
 
 bool TransitionSystem::is_solvable() const {
-    return init_state != PRUNED_STATE;
+    /*
+      There are two conditions under which the transition systems is not
+      solvable: there are no goal states or no goal state can be reached.
+
+      If pruning irrelevant states, the initial state will be irrelevant in
+      both cases and hence the transition system is solvable iff the initial
+      states has been pruned.
+
+      Otherweise, because the initital state may be irrelevant but not pruned,
+      we need to check if there are goal states.
+    */
+    if (init_state == PRUNED_STATE) {
+        return true;
+    }
+    bool has_goal = false;
+    for (int state = 0; state < num_states; ++state) {
+        if (goal_states[state]) {
+            has_goal = true;
+            break;
+        }
+    }
+    return has_goal;
 }
 
 int TransitionSystem::compute_total_transitions() const {
