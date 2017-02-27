@@ -107,6 +107,7 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
     typedef unordered_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
+    bool has_goal = false;
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
         if (h == INF) {
@@ -122,6 +123,7 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
         if (ts.is_goal_state(state)) {
             assert(h == 0);
             state_to_group[state] = 0;
+            has_goal = true;
         } else {
             pair<GroupMap::iterator, bool> result = h_to_group.insert(
                 make_pair(h, num_groups));
@@ -132,6 +134,7 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
             }
         }
     }
+    assert(has_goal);
     return num_groups;
 }
 
