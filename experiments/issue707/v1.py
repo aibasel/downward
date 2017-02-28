@@ -11,7 +11,6 @@ from lab.reports import Attribute, geometric_mean
 
 from common_setup import IssueConfig, IssueExperiment, DEFAULT_OPTIMAL_SUITE, is_test_run
 
-DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR=os.path.expanduser('~/repos/downward/benchmarks')
 REVISIONS = ["issue707-base", "issue707-v1"]
 CONFIGS = [
@@ -72,17 +71,6 @@ attributes = exp.DEFAULT_TABLE_ATTRIBUTES
 attributes.extend(extra_attributes)
 
 exp.add_comparison_table_step(attributes=attributes)
-
-#if matplotlib:
-    #for attribute in ["total_time"]:
-        #for config in CONFIGS:
-            #exp.add_report(
-                #RelativeScatterPlotReport(
-                    #attributes=[attribute],
-                    #filter_algorithm=["{}-{}".format(rev, config.nick) for rev in REVISIONS],
-                    #get_category=lambda run1, run2: run1.get("domain"),
-                #),
-                #outfile="{}-{}-{}-{}-{}.png".format(exp.name, attribute, config.nick, *REVISIONS)
-            #)
+exp.add_scatter_plot_step()
 
 exp.run_steps()
