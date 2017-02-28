@@ -11,7 +11,6 @@ from lab.reports import Attribute, geometric_mean
 
 from common_setup import IssueConfig, IssueExperiment, DEFAULT_OPTIMAL_SUITE, is_test_run
 
-DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR=os.path.expanduser('~/repos/downward/benchmarks')
 REVISIONS = ["issue707-v2"]
 CONFIGS = [
