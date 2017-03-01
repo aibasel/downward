@@ -433,7 +433,7 @@ bool TransitionSystem::is_solvable() const {
       we need to check if there are goal states.
     */
     if (init_state == PRUNED_STATE) {
-        return true;
+        return false;
     }
     bool has_goal = false;
     for (int state = 0; state < num_states; ++state) {
