@@ -40,7 +40,7 @@ ENVIRONMENT = MaiaEnvironment(
     priority=0, email='silvan.sievers@unibas.ch')
 
 if is_test_run():
-    SUITE = IssueExperiment.DEFAULT_TEST_SUITE
+    SUITE = ['depot:p01.pddl', 'depot:p02.pddl', 'parcprinter-opt11-strips:p01.pddl', 'parcprinter-opt11-strips:p02.pddl', 'mystery:prob07.pddl']
     ENVIRONMENT = LocalEnvironment(processes=4)
 
 exp = IssueExperiment(
