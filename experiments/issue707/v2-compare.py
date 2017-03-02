@@ -5,6 +5,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import subprocess
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
 from lab.reports import Attribute, geometric_mean
@@ -67,6 +68,10 @@ attributes.extend(extra_attributes)
 
 exp.add_fetcher('data/issue707-v1-eval')
 exp.add_fetcher('data/issue707-v2-pruning-variants-eval')
+
+outfile = os.path.join(
+    exp.eval_dir,
+    "issue707-v1-v2-dfp-compare.html")
 exp.add_report(ComparativeReport(algorithm_pairs=[
     ('%s-dfp-b50k' % 'issue707-v1', '%s-dfp-b50k-nopruneunreachable' % 'issue707-v2'),
     ('%s-dfp-b50k' % 'issue707-v1', '%s-dfp-b50k-nopruneirrelevant' % 'issue707-v2'),
@@ -77,6 +82,7 @@ exp.add_report(ComparativeReport(algorithm_pairs=[
     #('%s-dfp-ginf' % 'issue707-v1', '%s-dfp-ginf-nopruneunreachable' % 'issue707-v2'),
     #('%s-dfp-ginf' % 'issue707-v1', '%s-dfp-ginf-nopruneirrelevant' % 'issue707-v2'),
     #('%s-dfp-ginf' % 'issue707-v1', '%s-dfp-ginf-noprune' % 'issue707-v2'),
-],attributes=attributes))
+],attributes=attributes),outfile=outfile)
+exp.add_step('publish-issue707-v1-v2-dfp-compare.html', subprocess.call, ['publish', outfile])
 
 exp.run_steps()
