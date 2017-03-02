@@ -188,6 +188,7 @@ class IssueExperiment(FastDownwardExperiment):
         "score_total_time",
         "search_time",
         "total_time",
+        "unsolvable",
         ]
 
     DEFAULT_SCATTER_PLOT_ATTRIBUTES = [
