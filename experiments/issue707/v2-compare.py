@@ -36,8 +36,6 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 # planner outcome attributes
 perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False)
-proved_unsolvability = Attribute('proved_unsolvability', absolute=True, min_wins=False)
-actual_search_time = Attribute('actual_search_time', absolute=False, min_wins=True, functions=[geometric_mean])
 
 # m&s attributes
 ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, functions=[geometric_mean])
@@ -51,8 +49,6 @@ search_out_of_time = Attribute('search_out_of_time', absolute=True, min_wins=Tru
 
 extra_attributes = [
     perfect_heuristic,
-    proved_unsolvability,
-    actual_search_time,
 
     ms_construction_time,
     ms_atomic_construction_time,
