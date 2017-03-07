@@ -102,12 +102,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       a set is used to store all patterns in their "normal form" for duplicate
       detection.
     */
-    void hill_climbing(
-        const TaskProxy &task_proxy,
-        const SuccessorGenerator &successor_generator,
-        double average_operator_costs,
-        std::set<Pattern> &generated_patterns,
-        PDBCollection &candidate_pdbs);
+    void hill_climbing(const TaskProxy &task_proxy);
 
 public:
     explicit PatternCollectionGeneratorHillclimbing(const options::Options &opts);
