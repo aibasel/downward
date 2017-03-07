@@ -243,7 +243,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
                 break;
             }
 
-            // Add the best pattern to the CanonicalPDBsHeuristic.
+            // Add the best PDB to the CanonicalPDBsHeuristic.
             assert(best_pdb_index != -1);
             const shared_ptr<PatternDatabase> &best_pdb =
                 candidate_pdbs[best_pdb_index];
@@ -251,7 +251,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             cout << "found a better pattern with improvement " << improvement
                  << endl;
             cout << "pattern: " << best_pattern << endl;
-            current_pdbs->add_pattern(best_pattern);
+            current_pdbs->add_pattern_and_pdb(best_pattern, best_pdb);
 
             // Generate candidate patterns and pdbs for next iteration.
             size_t new_max_pdb_size = generate_candidate_pdbs(

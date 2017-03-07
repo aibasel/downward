@@ -32,8 +32,10 @@ public:
                              const PatternCollection &intitial_patterns);
     virtual ~IncrementalCanonicalPDBs() = default;
 
-    // Adds a new pattern to the collection and recomputes max_additive_subsets.
-    void add_pattern(const Pattern &pattern);
+    // Adds a new pattern and its PDB to the collection and recomputes
+    // max_additive_subsets.
+    void add_pattern_and_pdb(
+        const Pattern &pattern, const std::shared_ptr<PatternDatabase> &pdb);
 
     /* Returns a set of subsets that would be additive to the new pattern.
        Detailed documentation in max_additive_pdb_sets.h */
