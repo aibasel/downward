@@ -205,15 +205,33 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
 }
 
 void PatternCollectionGeneratorHillclimbing::hill_climbing(
-    const TaskProxy &task_proxy,
-    const SuccessorGenerator &successor_generator,
-    double average_operator_cost,
-    set<Pattern> &generated_patterns,
-    PDBCollection &candidate_pdbs) {
+    const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
+
+    double average_operator_cost = get_average_operator_cost(task_proxy);
+    cout << "Average operator cost: " << average_operator_cost << endl;
+
+    // The set of patterns that are ever considered as candidates.
+    set<Pattern> generated_patterns;
+    // The corresponding PDBs, with those PDBs removed that are too large.
+    PDBCollection candidate_pdbs;
+    /* Generate initial candidate PDBs (based on each PDB from
+       the initial collection).
+       Note that previously, when computing the initial candidate patterns
+       without comparing against generated_patterns, we needed to call
+       validate_and_normalize_patterns. This is not necessary anymore.
+    */
+    for (const shared_ptr<PatternDatabase> &current_pdb :
+         *(current_pdbs->get_pattern_databases())) {
+        generate_candidate_pdbs(
+            task_proxy, *current_pdb, generated_patterns, candidate_pdbs);
+    }
+    cout << "Done calculating initial candidate PDBs for the search" << endl;
+
     int num_iterations = 0;
     size_t max_pdb_size = 0;
     State initial_state = task_proxy.get_initial_state();
+    SuccessorGenerator successor_generator(task_proxy);
     try {
         while (true) {
             ++num_iterations;
@@ -284,11 +302,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
-    SuccessorGenerator successor_generator(task_proxy);
-
     utils::Timer timer;
-    double average_operator_cost = get_average_operator_cost(task_proxy);
-    cout << "Average operator cost: " << average_operator_cost << endl;
 
     // Generate initial collection: a pattern for each goal variable.
     PatternCollection initial_pattern_collection;
@@ -298,36 +312,14 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     }
     current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
         task_proxy, initial_pattern_collection);
+    cout << "Done calculating initial PDB collection" << endl;
 
     State initial_state = task_proxy.get_initial_state();
-    if (!current_pdbs->is_dead_end(initial_state)) {
-        /* Generate initial candidate PDBs (based on each PDB from
-           the initial collection).
-
-           Note that previously, when computing the initial candidate patterns
-           without comparing against generated_patterns, we needed to call
-           validate_and_normalize_patterns. This is not necessary anymore.
-        */
-        set<Pattern> generated_patterns;
-        PDBCollection candidate_pdbs;
-        for (const shared_ptr<PatternDatabase> &current_pdb :
-             *(current_pdbs->get_pattern_databases())) {
-            generate_candidate_pdbs(
-                task_proxy, *current_pdb, generated_patterns, candidate_pdbs);
-        }
-
-        cout << "done calculating initial PDB collection and "
-             << "candidate PDB for the search" << endl;
-
-        if (max_time > 0)
-            /* A call to the following method modifies generated_patterns
-               (contains the candidate patterns) and candidate_pdbs (contains
-               all valid candidate PDBs) */
-            hill_climbing(
-                task_proxy, successor_generator, average_operator_cost,
-                generated_patterns, candidate_pdbs);
-        cout << "Pattern generation (hill climbing) time: " << timer << endl;
+    if (!current_pdbs->is_dead_end(initial_state) && max_time > 0) {
+        hill_climbing(task_proxy);
     }
+
+    cout << "Pattern generation (hill climbing) time: " << timer << endl;
     return current_pdbs->get_pattern_collection_information();
 }
 
