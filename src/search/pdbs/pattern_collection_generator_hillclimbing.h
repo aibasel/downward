@@ -45,24 +45,17 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     utils::CountdownTimer *hill_climbing_timer;
 
     /*
-      For the given pattern, all possible extensions of the pattern by one
-      relevant variable are inserted into candidate_patterns. This may generate
-      duplicated patterns.
+      For the given PDB, all possible extensions of its pattern by one
+      relevant variable are considered as candidate pattern. If the candidate
+      has not been previously generated (in generated_patterns) and if its
+      PDB would not surpass the size limit, then the PDB is built and added
+      to candidate_pdbs.
     */
-    void generate_candidate_patterns(
+    std::size_t generate_candidate_pdbs(
         const TaskProxy &task_proxy,
         const PatternDatabase &pdb,
-        PatternCollection &candidate_patterns);
-
-    /*
-      Generates the PatternDatabase for patterns in new_candidates if they have
-      not been generated already.
-    */
-    std::size_t generate_pdbs_for_candidates(
-        const TaskProxy &task_proxy,
         std::set<Pattern> &generated_patterns,
-        const PatternCollection &new_candidates,
-        PDBCollection &candidate_pdbs) const;
+        PDBCollection &candidate_pdbs);
 
     /*
       Performs num_samples random walks with a length (different for each
@@ -118,7 +111,8 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
         const TaskProxy &task_proxy,
         const SuccessorGenerator &successor_generator,
         double average_operator_costs,
-        PatternCollection &initial_candidate_patterns);
+        std::set<Pattern> &generated_patterns,
+        PDBCollection &candidate_pdbs);
 
 public:
     explicit PatternCollectionGeneratorHillclimbing(const options::Options &opts);
