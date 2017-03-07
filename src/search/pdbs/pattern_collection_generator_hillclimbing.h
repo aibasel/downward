@@ -101,11 +101,6 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       later. This is quite a large time gain, but may use too much memory. Also
       a set is used to store all patterns in their "normal form" for duplicate
       detection.
-      TODO: This method computes all PDBs already for candidate iteration, but
-      for each call of add_pattern for the current CanonicalPDBsHeuristic, only
-      the pattern is passed as an argument and in CanonicalPDBsHeuristic, the
-      PDB is *again* built. One could possibly avoid this by passing the PDB and
-      adapt CanonicalPDBsHeuristic accordingly.
     */
     void hill_climbing(
         const TaskProxy &task_proxy,
