@@ -42,7 +42,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
       hill_climbing_timer(0) {
 }
 
-size_t PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
+int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     const TaskProxy &task_proxy,
     const PatternDatabase &pdb,
     set<Pattern> &generated_patterns,
@@ -50,7 +50,7 @@ size_t PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     const CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const Pattern &pattern = pdb.get_pattern();
     int pdb_size = pdb.get_size();
-    size_t max_pdb_size = 0;
+    int max_pdb_size = 0;
     for (int pattern_var : pattern) {
         /* Only consider variables used in preconditions for current
            variable from pattern. It would also make sense to consider

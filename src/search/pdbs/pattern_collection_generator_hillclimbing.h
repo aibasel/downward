@@ -53,7 +53,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
 
       The method returns the size of the largest PDB added to candidate_pdbs.
     */
-    std::size_t generate_candidate_pdbs(
+    int generate_candidate_pdbs(
         const TaskProxy &task_proxy,
         const PatternDatabase &pdb,
         std::set<Pattern> &generated_patterns,
