@@ -276,7 +276,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             cout << "found a better pattern with improvement " << improvement
                  << endl;
             cout << "pattern: " << best_pattern << endl;
-            current_pdbs->add_pattern_and_pdb(best_pattern, best_pdb);
+            current_pdbs->add_pdb(best_pdb);
 
             // Generate candidate patterns and PDBs for next iteration.
             int new_max_pdb_size = generate_candidate_pdbs(
