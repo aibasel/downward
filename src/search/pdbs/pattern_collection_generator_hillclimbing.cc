@@ -71,6 +71,11 @@ size_t PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
                 new_pattern.push_back(rel_var_id);
                 sort(new_pattern.begin(), new_pattern.end());
                 if (!generated_patterns.count(new_pattern)) {
+                    /*
+                      If we haven't seen this pattern before, generate a PDB
+                      for it and add it to candidate_pdbs if its size does not
+                      surpass the size limit.
+                    */
                     generated_patterns.insert(new_pattern);
                     candidate_pdbs.push_back(
                         make_shared<PatternDatabase>(task_proxy, new_pattern));
@@ -211,25 +216,27 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     double average_operator_cost = get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
-    // The set of patterns that are ever considered as candidates.
+    // Candidate patterns generated so far (used to avoid duplicates).
     set<Pattern> generated_patterns;
-    // The corresponding PDBs, with those PDBs removed that are too large.
+    // The PDBs for the patterns in generated_patterns that satisfy the size
+    // limit to avoid recomputation.
     PDBCollection candidate_pdbs;
-    /* Generate initial candidate PDBs (based on each PDB from
-       the initial collection).
-       Note that previously, when computing the initial candidate patterns
-       without comparing against generated_patterns, we needed to call
-       validate_and_normalize_patterns. This is not necessary anymore.
-    */
+    // The maximum size over all PDBs in candidate_pdbs.
+    int max_pdb_size = 0;
     for (const shared_ptr<PatternDatabase> &current_pdb :
          *(current_pdbs->get_pattern_databases())) {
-        generate_candidate_pdbs(
+        int new_max_pdb_size = generate_candidate_pdbs(
             task_proxy, *current_pdb, generated_patterns, candidate_pdbs);
+        max_pdb_size = max(max_pdb_size, new_max_pdb_size);
     }
-    cout << "Done calculating initial candidate PDBs for the search" << endl;
+    /*
+      NOTE: The initial set of candidate patterns (in generated_patterns) is
+      guaranteed to be "normalized" in the sense that there are no duplicates
+      and patterns are sorted.
+    */
+    cout << "Done calculating initial candidate PDBs" << endl;
 
     int num_iterations = 0;
-    size_t max_pdb_size = 0;
     State initial_state = task_proxy.get_initial_state();
     SuccessorGenerator successor_generator(task_proxy);
     try {
@@ -271,12 +278,12 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             cout << "pattern: " << best_pattern << endl;
             current_pdbs->add_pattern_and_pdb(best_pattern, best_pdb);
 
-            // Generate candidate patterns and pdbs for next iteration.
-            size_t new_max_pdb_size = generate_candidate_pdbs(
+            // Generate candidate patterns and PDBs for next iteration.
+            int new_max_pdb_size = generate_candidate_pdbs(
                 task_proxy, *best_pdb, generated_patterns, candidate_pdbs);
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
-            // remove from candidate_pdbs the added PDB
+            // Remove from candidate_pdbs the added PDB
             candidate_pdbs[best_pdb_index] = nullptr;
 
             cout << "Hill climbing time so far: " << *hill_climbing_timer

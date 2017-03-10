@@ -46,10 +46,12 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
 
     /*
       For the given PDB, all possible extensions of its pattern by one
-      relevant variable are considered as candidate pattern. If the candidate
-      has not been previously generated (in generated_patterns) and if its
-      PDB would not surpass the size limit, then the PDB is built and added
-      to candidate_pdbs.
+      relevant variable are considered as candidate patterns. If the candidate
+      pattern has not been previously considered (not contained in
+      generated_patterns) and if building a PDB for it does not surpass the
+      size limit, then the PDB is built and added to candidate_pdbs.
+
+      The method returns the size of the largest PDB added to candidate_pdbs.
     */
     std::size_t generate_candidate_pdbs(
         const TaskProxy &task_proxy,
@@ -94,13 +96,26 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
         const MaxAdditivePDBSubsets &max_additive_subsets);
 
     /*
-      This is the core algorithm of this class. As soon as after an iteration,
-      the improvement (according to the "counting approximation") is smaller
-      than the minimal required improvement, the search is stopped. This method
-      uses a vector to store PDBs to avoid re-computation of the same PDBs
-      later. This is quite a large time gain, but may use too much memory. Also
-      a set is used to store all patterns in their "normal form" for duplicate
-      detection.
+      This is the core algorithm of this class. The initial PDB collection
+      consists of one PDB for each goal variable. For each PDB of this initial
+      collection, the set of candidate PDBs are added (see
+      generate_candidate_pdbs) to the set of initial candidate PDBs.
+
+      The main loop of the search computes a set of sample states (see
+      sample_states) and uses this set to evaluate the set of all candidate PDBs
+      (see find_best_improving_pdb, using the "counting approximation"). If the
+      improvement obtained through adding the best PDB to the current heuristic
+      is smaller than the minimal required improvement, the search is stopped.
+      Otherwise, the best PDB is added to the heuristic and the candidate PDBs
+      for this best PDB are computed (see generate_candidate_pdbs) and used for
+      the next iteration.
+
+      This method uses a set to store all patterns that are generated as
+      candidate patterns in their "normal form" for duplicate detection.
+      Futhermore, a vector stores the PDBs corresponding to the candidate
+      patterns if its size does not surpass the user-specified size limit.
+      Storing the PDBs has the only purpose to avoid re-computation of the same
+      PDBs. This is quite a large time gain, but may use too much memory.
     */
     void hill_climbing(const TaskProxy &task_proxy);
 
