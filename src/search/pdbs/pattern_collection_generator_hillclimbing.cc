@@ -283,7 +283,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
                 task_proxy, *best_pdb, generated_patterns, candidate_pdbs);
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
-            // Remove from candidate_pdbs the added PDB
+            // Remove the added PDB from candidate_pdbs.
             candidate_pdbs[best_pdb_index] = nullptr;
 
             cout << "Hill climbing time so far: " << *hill_climbing_timer

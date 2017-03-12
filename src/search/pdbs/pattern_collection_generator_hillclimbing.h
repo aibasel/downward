@@ -115,7 +115,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       Futhermore, a vector stores the PDBs corresponding to the candidate
       patterns if its size does not surpass the user-specified size limit.
       Storing the PDBs has the only purpose to avoid re-computation of the same
-      PDBs. This is quite a large time gain, but may use too much memory.
+      PDBs. This is quite a large time gain, but may use a lot of memory.
     */
     void hill_climbing(const TaskProxy &task_proxy);
 
