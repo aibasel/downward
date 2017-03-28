@@ -139,6 +139,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME INT_PACKER
+    HELP "Pack lots of unsigned integers tightly into memory"
+    SOURCES
+        algorithms/int_packer
+)
+
+fast_downward_plugin(
     NAME ORDERED_SET
     HELP "Set of elements ordered by insertion time"
     SOURCES
