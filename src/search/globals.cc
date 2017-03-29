@@ -1,13 +1,13 @@
 #include "globals.h"
 
-#include "algorithms/int_packer.h"
-
 #include "axioms.h"
 #include "causal_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
 #include "heuristic.h"
 #include "successor_generator.h"
+
+#include "algorithms/int_packer.h"
 
 #include "tasks/root_task.h"
 
