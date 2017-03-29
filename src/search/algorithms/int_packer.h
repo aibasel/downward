@@ -1,5 +1,5 @@
-#ifndef INT_PACKER_H
-#define INT_PACKER_H
+#ifndef ALGORITHMS_INT_PACKER_H
+#define ALGORITHMS_INT_PACKER_H
 
 #include <vector>
 

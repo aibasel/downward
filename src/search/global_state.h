@@ -1,9 +1,9 @@
 #ifndef GLOBAL_STATE_H
 #define GLOBAL_STATE_H
 
-#include "algorithms/int_packer.h"
-
 #include "state_id.h"
+
+#include "algorithms/int_packer.h"
 
 #include <cstddef>
 #include <iostream>
