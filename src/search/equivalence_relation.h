@@ -14,14 +14,6 @@ typedef std::list<Block>::iterator BlockListIter;
 typedef std::list<Block>::const_iterator BlockListConstIter;
 class EquivalenceRelation;
 
-struct DoubleEpsilonEquality {
-    bool operator()(const double &d1, const double &d2) {
-        // TODO avoid code duplication with landmark count heuristic
-        static const double epsilon = 0.01;
-        return std::abs(d1 - d2) < epsilon;
-    }
-};
-
 class Block {
     std::list<int> elements;
     /*
