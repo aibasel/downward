@@ -59,7 +59,6 @@ fast_downward_plugin(
         global_state
         heuristic_cache
         heuristic
-        int_packer
         operator_cost
         option_parser
         option_parser_util
