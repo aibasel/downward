@@ -46,7 +46,7 @@ public:
 
     void set(Bin *buffer, int var, int value) const;
 
-    int get_num_bins() const {return num_bins;}
+    int get_num_bins() const {return num_bins; }
 };
 }
 

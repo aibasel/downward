@@ -1,6 +1,7 @@
 #include "int_packer.h"
 
 #include <cassert>
+
 using namespace std;
 
 namespace int_packer {
