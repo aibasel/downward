@@ -8,7 +8,6 @@
 #include "state_id.h"
 
 #include "algorithms/int_packer.h"
-
 #include "utils/hash.h"
 
 #include <set>
