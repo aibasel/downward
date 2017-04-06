@@ -1,5 +1,5 @@
-#ifndef EQUIVALENCE_RELATION_H
-#define EQUIVALENCE_RELATION_H
+#ifndef ALGORITHMS_EQUIVALENCE_RELATION_H
+#define ALGORITHMS_EQUIVALENCE_RELATION_H
 
 #include <algorithm>
 #include <cmath>
