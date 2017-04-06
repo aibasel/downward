@@ -45,13 +45,13 @@ void EagerSearch::initialize() {
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    // add heuristics that are used for preferred operators (in case they are
-    // not also used in the open list)
+    // Add heuristics that are used for preferred operators (in case they are
+    // not also used in the open list).
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    // add heuristics that are used in the f_evaluator. They are usually also
-    // used in the open list and hence already be included, but we want to be
+    // Add heuristics that are used in the f_evaluator. They are usually also
+    // used in the open list and are hence already included, but we want to be
     // sure.
     if (f_evaluator) {
         f_evaluator->get_involved_heuristics(hset);
