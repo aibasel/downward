@@ -140,7 +140,7 @@ fast_downward_plugin(
         NAME DYNAMIC_BITSET
         HELP "Poor man's version of boost::dynamic_bitset, mostly copied from there."
         SOURCES
-        algorithms/dynamic-bitset.h
+        algorithms/dynamic-bitset
 )
 
 fast_downward_plugin(
@@ -148,6 +148,13 @@ fast_downward_plugin(
     HELP "Pack lots of unsigned integers tightly into memory"
     SOURCES
         algorithms/int_packer
+)
+
+fast_downward_plugin(
+        NAME MAX_CLIQUES
+        HELP "Implementation of the Max Cliques algorithm by Tomita et al."
+        SOURCES
+        algorithms/max_cliques
 )
 
 fast_downward_plugin(
