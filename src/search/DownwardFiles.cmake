@@ -72,7 +72,6 @@ fast_downward_plugin(
         search_progress
         search_space
         search_statistics
-        segmented_vector
         state_id
         state_registry
         successor_generator
@@ -137,7 +136,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME DYNAMIC_BITSET
-    HELP "Poor man's version of boost::dynamic_bitset, mostly copied from there."
+    HELP "Poor man's version of boost::dynamic_bitset, mostly copied from there"
     SOURCES
     algorithms/dynamic-bitset
 )
@@ -158,7 +157,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME PRIORITY_QUEUE
-    HELP "Three implementations of priority queue: HeapQueue, BucketQueue and AdaptiveQueue."
+    HELP "Three implementations of priority queue: HeapQueue, BucketQueue and AdaptiveQueue"
     SOURCES
     algorithms/priority_queue
 )
@@ -168,6 +167,13 @@ fast_downward_plugin(
     HELP "Set of elements ordered by insertion time"
     SOURCES
         algorithms/ordered_set
+)
+
+fast_downward_plugin(
+    NAME SEGMENTED_VECTOR
+    HELP "Vector-like class"
+    SOURCES
+    algorithms/segmented_vector
 )
 
 fast_downward_plugin(

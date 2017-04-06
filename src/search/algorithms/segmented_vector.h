@@ -1,11 +1,10 @@
-#ifndef SEGMENTED_VECTOR_H
-#define SEGMENTED_VECTOR_H
+#ifndef ALGORITHMS_SEGMENTED_VECTOR_H
+#define ALGORITHMS_SEGMENTED_VECTOR_H
 
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <vector>
-
 
 /*
   SegmentedVector is a vector-like class with the following advantages over

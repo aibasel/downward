@@ -3,10 +3,10 @@
 
 #include "global_state.h"
 #include "globals.h"
-#include "segmented_vector.h"
 #include "state_id.h"
 #include "state_registry.h"
 
+#include "algorithms/segmented_vector.h"
 #include "utils/collections.h"
 
 #include <cassert>
