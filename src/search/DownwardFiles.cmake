@@ -136,9 +136,9 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME DYNAMIC_BITSET
-    HELP "Poor man's version of boost::dynamic_bitset, mostly copied from there"
+    HELP "Poor man's version of boost::dynamic_bitset"
     SOURCES
-    algorithms/dynamic-bitset
+    algorithms/dynamic_bitset
 )
 
 fast_downward_plugin(
