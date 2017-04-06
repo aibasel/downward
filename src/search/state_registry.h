@@ -4,10 +4,10 @@
 #include "abstract_task.h"
 #include "axioms.h"
 #include "global_state.h"
-#include "segmented_vector.h"
 #include "state_id.h"
 
 #include "algorithms/int_packer.h"
+#include "algorithms/segmented_vector.h"
 #include "utils/hash.h"
 
 #include <set>
