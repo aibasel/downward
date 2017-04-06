@@ -6,11 +6,11 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../equivalence_relation.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../algorithms/equivalence_relation.h"
 #include "../utils/collections.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"

@@ -51,7 +51,6 @@ fast_downward_plugin(
         abstract_task
         axioms
         causal_graph
-        equivalence_relation
         evaluation_context
         evaluation_result
         global_operator
@@ -139,6 +138,13 @@ fast_downward_plugin(
     HELP "Poor man's version of boost::dynamic_bitset"
     SOURCES
         algorithms/dynamic_bitset
+)
+
+fast_downward_plugin(
+    NAME EQUIVALENCE_RELATION
+    HELP "Equivalence relation"
+    SOURCES
+        algorithms/equivalence_relation
 )
 
 fast_downward_plugin(
