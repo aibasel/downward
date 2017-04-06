@@ -5,7 +5,8 @@
 
 #include "../abstract_task.h"
 #include "../heuristic.h"
-#include "../priority_queue.h"
+
+#include "../algorithms/priority_queue.h"
 
 #include <cassert>
 #include <unordered_map>

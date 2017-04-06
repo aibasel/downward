@@ -3,7 +3,7 @@
 #include "label_equivalence_relation.h"
 #include "transition_system.h"
 
-#include "../priority_queue.h"
+#include "../algorithms/priority_queue.h"
 
 #include <cassert>
 #include <deque>

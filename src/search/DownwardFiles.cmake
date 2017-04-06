@@ -65,7 +65,6 @@ fast_downward_plugin(
         per_state_information
         plugin
         pruning_method
-        priority_queue
         sampling
         scalar_evaluator
         search_engine
@@ -137,10 +136,10 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-        NAME DYNAMIC_BITSET
-        HELP "Poor man's version of boost::dynamic_bitset, mostly copied from there."
-        SOURCES
-        algorithms/dynamic-bitset
+    NAME DYNAMIC_BITSET
+    HELP "Poor man's version of boost::dynamic_bitset, mostly copied from there."
+    SOURCES
+    algorithms/dynamic-bitset
 )
 
 fast_downward_plugin(
@@ -151,10 +150,17 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-        NAME MAX_CLIQUES
-        HELP "Implementation of the Max Cliques algorithm by Tomita et al."
-        SOURCES
-        algorithms/max_cliques
+    NAME MAX_CLIQUES
+    HELP "Implementation of the Max Cliques algorithm by Tomita et al."
+    SOURCES
+    algorithms/max_cliques
+)
+
+fast_downward_plugin(
+    NAME PRIORITY_QUEUE
+    HELP "Three implementations of priority queue: HeapQueue, BucketQueue and AdaptiveQueue."
+    SOURCES
+    algorithms/priority_queue
 )
 
 fast_downward_plugin(
