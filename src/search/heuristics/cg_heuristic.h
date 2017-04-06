@@ -2,7 +2,8 @@
 #define HEURISTICS_CG_HEURISTIC_H
 
 #include "../heuristic.h"
-#include "../priority_queue.h"
+
+#include "../algorithms/priority_queue.h"
 
 #include <string>
 #include <vector>

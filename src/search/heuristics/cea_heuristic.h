@@ -3,7 +3,8 @@
 
 #include "../domain_transition_graph.h"
 #include "../heuristic.h"
-#include "../priority_queue.h"
+
+#include "../algorithms/priority_queue.h"
 
 #include <vector>
 

@@ -3,8 +3,7 @@
 
 #include "relaxation_heuristic.h"
 
-#include "../priority_queue.h"
-
+#include "../algorithms/priority_queue.h"
 #include "../utils/collections.h"
 
 #include <cassert>

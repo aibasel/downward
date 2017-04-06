@@ -1,9 +1,9 @@
 #ifndef CEGAR_ABSTRACT_SEARCH_H
 #define CEGAR_ABSTRACT_SEARCH_H
 
-#include "../priority_queue.h"
-
 #include "transition.h"
+
+#include "../algorithms/priority_queue.h"
 
 #include <deque>
 #include <unordered_set>

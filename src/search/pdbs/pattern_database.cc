@@ -2,9 +2,9 @@
 
 #include "match_tree.h"
 
-#include "../priority_queue.h"
 #include "../task_tools.h"
 
+#include "../algorithms/priority_queue.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
