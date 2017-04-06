@@ -121,7 +121,6 @@ fast_downward_plugin(
     SOURCES
         utils/collections
         utils/countdown_timer
-        utils/dynamic_bitset
         utils/hash
         utils/language
         utils/logging
@@ -135,6 +134,13 @@ fast_downward_plugin(
         utils/system_windows
         utils/timer
     CORE_PLUGIN
+)
+
+fast_downward_plugin(
+        NAME DYNAMIC_BITSET
+        HELP "Poor man's version of boost::dynamic_bitset, mostly copied from there."
+        SOURCES
+        algorithms/dynamic-bitset.h
 )
 
 fast_downward_plugin(
