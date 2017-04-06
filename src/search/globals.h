@@ -1,12 +1,12 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include "algorithms/int_packer.h"
+
 #include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "algorithms/int_packer.h"
 
 class AbstractTask;
 class Axiom;
