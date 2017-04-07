@@ -177,7 +177,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME SEGMENTED_VECTOR
-    HELP "Vector-like class"
+    HELP "Memory-friendly and vector-like data structure"
     SOURCES
         algorithms/segmented_vector
 )
