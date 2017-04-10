@@ -3,7 +3,7 @@
 
 #include "../heuristic.h"
 
-#include "../algorithms/priority_queue.h"
+#include "../algorithms/priority_queues.h"
 
 #include <string>
 #include <vector>
@@ -17,7 +17,7 @@ namespace cg_heuristic {
 class CGCache;
 
 class CGHeuristic : public Heuristic {
-    std::vector<AdaptiveQueue<ValueNode *> *> prio_queues;
+    std::vector<priority_queues::AdaptiveQueue<ValueNode *> *> prio_queues;
     std::vector<DomainTransitionGraph *> transition_graphs;
 
     CGCache *cache;

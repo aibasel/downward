@@ -3,7 +3,7 @@
 
 #include "transition.h"
 
-#include "../algorithms/priority_queue.h"
+#include "../algorithms/priority_queues.h"
 
 #include <deque>
 #include <unordered_set>
@@ -23,7 +23,7 @@ class AbstractSearch {
     const std::vector<int> operator_costs;
     AbstractStates &states;
 
-    AdaptiveQueue<AbstractState *> open_queue;
+    priority_queues::AdaptiveQueue<AbstractState *> open_queue;
     Solution solution;
 
     void reset();

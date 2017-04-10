@@ -162,10 +162,10 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME PRIORITY_QUEUE
+    NAME PRIORITY_QUEUES
     HELP "Three implementations of priority queue: HeapQueue, BucketQueue and AdaptiveQueue"
     SOURCES
-        algorithms/priority_queue
+        algorithms/priority_queues
 )
 
 fast_downward_plugin(
