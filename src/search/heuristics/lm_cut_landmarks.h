@@ -3,7 +3,7 @@
 
 #include "../task_tools.h"
 
-#include "../algorithms/priority_queue.h"
+#include "../algorithms/priority_queues.h"
 
 #include <cassert>
 #include <functional>
@@ -54,7 +54,7 @@ class LandmarkCutLandmarks {
     RelaxedProposition artificial_precondition;
     RelaxedProposition artificial_goal;
     int num_propositions;
-    AdaptiveQueue<RelaxedProposition *> priority_queue;
+    priority_queues::AdaptiveQueue<RelaxedProposition *> priority_queue;
 
     void initialize();
     void build_relaxed_operator(const OperatorProxy &op);
