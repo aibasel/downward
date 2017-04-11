@@ -67,11 +67,11 @@ void LabelReduction::compute_label_mapping(
     int next_new_label_no = labels.get_size();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (equivalence_relation::BlockListConstIter group_it = relation->begin();
+    for (auto group_it = relation->begin();
          group_it != relation->end(); ++group_it) {
         const equivalence_relation::Block &block = *group_it;
         unordered_map<int, vector<int>> equivalent_label_nos;
-        for (equivalence_relation::ElementListConstIter label_it = block.begin();
+        for (auto label_it = block.begin();
              label_it != block.end(); ++label_it) {
             assert(*label_it < next_new_label_no);
             int label_no = *label_it;
@@ -124,7 +124,8 @@ equivalence_relation::EquivalenceRelation *LabelReduction::compute_combinable_eq
         }
     }
     equivalence_relation::EquivalenceRelation *relation =
-        equivalence_relation::EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
+        equivalence_relation::EquivalenceRelation::from_annotated_elements<int>(
+                num_labels, annotated_labels);
 
     for (int index : fts) {
         if (index != ts_index) {
