@@ -43,7 +43,8 @@
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 
-template<class Entry, class Allocator = std::allocator<Entry>>
+namespace segmented_vector {
+template<class Entry, class Allocator = std::allocator <Entry>>
 class SegmentedVector {
     typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
     // TODO: Try to find a good value for SEGMENT_BYTES.
@@ -73,7 +74,9 @@ class SegmentedVector {
 
     // No implementation to forbid copies and assignment
     SegmentedVector(const SegmentedVector<Entry> &);
+
     SegmentedVector &operator=(const SegmentedVector<Entry> &);
+
 public:
     SegmentedVector()
         : the_size(0) {
@@ -145,7 +148,7 @@ public:
 };
 
 
-template<class Element, class Allocator = std::allocator<Element>>
+template<class Element, class Allocator = std::allocator <Element>>
 class SegmentedArrayVector {
     typedef typename Allocator::template rebind<Element>::other ElementAllocator;
     // TODO: Try to find a good value for SEGMENT_BYTES.
@@ -175,7 +178,9 @@ class SegmentedArrayVector {
 
     // No implementation to forbid copies and assignment
     SegmentedArrayVector(const SegmentedArrayVector<Element> &);
+
     SegmentedArrayVector &operator=(const SegmentedArrayVector<Element> &);
+
 public:
     SegmentedArrayVector(size_t elements_per_array_)
         : elements_per_array(elements_per_array_),
@@ -263,5 +268,6 @@ public:
         }
     }
 };
+}
 
 #endif

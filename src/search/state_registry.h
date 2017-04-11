@@ -102,10 +102,10 @@ class PerStateInformationBase;
 
 class StateRegistry {
     struct StateIDSemanticHash {
-        const SegmentedArrayVector<PackedStateBin> &state_data_pool;
+        const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
         int state_size;
         StateIDSemanticHash(
-            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool,
             int state_size)
             : state_data_pool(state_data_pool),
               state_size(state_size) {
@@ -118,10 +118,10 @@ class StateRegistry {
     };
 
     struct StateIDSemanticEqual {
-        const SegmentedArrayVector<PackedStateBin> &state_data_pool;
+        const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
         int state_size;
         StateIDSemanticEqual(
-            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool,
             int state_size)
             : state_data_pool(state_data_pool),
               state_size(state_size) {
@@ -156,7 +156,7 @@ class StateRegistry {
     const std::vector<int> &initial_state_data;
     const int num_variables;
 
-    SegmentedArrayVector<PackedStateBin> state_data_pool;
+    segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
     GlobalState *cached_initial_state;
