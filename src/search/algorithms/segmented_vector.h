@@ -44,7 +44,7 @@
 // states see the file state_registry.h.
 
 namespace segmented_vector {
-template<class Entry, class Allocator = std::allocator <Entry>>
+template<class Entry, class Allocator = std::allocator<Entry>>
 class SegmentedVector {
     typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
     // TODO: Try to find a good value for SEGMENT_BYTES.
