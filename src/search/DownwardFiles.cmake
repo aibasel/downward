@@ -86,7 +86,7 @@ fast_downward_plugin(
         open_lists/standard_scalar_open_list
         open_lists/tiebreaking_open_list
         open_lists/type_based_open_list
-    DEPENDS ORDERED_SET
+    DEPENDS INT_PACKER ORDERED_SET SEGMENTED_VECTOR
     CORE_PLUGIN
 )
 
@@ -138,6 +138,7 @@ fast_downward_plugin(
     HELP "Poor man's version of boost::dynamic_bitset"
     SOURCES
         algorithms/dynamic_bitset
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -145,6 +146,7 @@ fast_downward_plugin(
     HELP "Equivalence relation"
     SOURCES
         algorithms/equivalence_relation
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -152,6 +154,7 @@ fast_downward_plugin(
     HELP "Pack lots of unsigned integers tightly into memory"
     SOURCES
         algorithms/int_packer
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -159,6 +162,7 @@ fast_downward_plugin(
     HELP "Implementation of the Max Cliques algorithm by Tomita et al."
     SOURCES
         algorithms/max_cliques
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -166,6 +170,7 @@ fast_downward_plugin(
     HELP "Three implementations of priority queue: HeapQueue, BucketQueue and AdaptiveQueue"
     SOURCES
         algorithms/priority_queues
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -173,6 +178,7 @@ fast_downward_plugin(
     HELP "Set of elements ordered by insertion time"
     SOURCES
         algorithms/ordered_set
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -180,6 +186,7 @@ fast_downward_plugin(
     HELP "Memory-friendly and vector-like data structure"
     SOURCES
         algorithms/segmented_vector
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -278,7 +285,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS SEARCH_COMMON NULL_PRUNING_METHOD
+    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -286,7 +293,7 @@ fast_downward_plugin(
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
         search_engines/enforced_hill_climbing_search
-    DEPENDS SEARCH_COMMON PREF_EVALUATOR G_EVALUATOR
+    DEPENDS G_EVALUATOR ORDERED_SET PREF_EVALUATOR SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -301,7 +308,7 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         search_engines/lazy_search
-    DEPENDS SEARCH_COMMON
+    DEPENDS ORDERED_SET SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -326,7 +333,7 @@ fast_downward_plugin(
     HELP "The additive heuristic"
     SOURCES
         heuristics/additive_heuristic
-    DEPENDS RELAXATION_HEURISTIC
+    DEPENDS PRIORITY_QUEUES RELAXATION_HEURISTIC
 )
 
 fast_downward_plugin(
@@ -341,7 +348,7 @@ fast_downward_plugin(
     HELP "The context-enhanced additive heuristic"
     SOURCES
         heuristics/cea_heuristic
-    DEPENDS DOMAIN_TRANSITION_GRAPH
+    DEPENDS DOMAIN_TRANSITION_GRAPH PRIORITY_QUEUES
 )
 
 fast_downward_plugin(
@@ -349,7 +356,7 @@ fast_downward_plugin(
     HELP "The causal graph heuristic"
     SOURCES heuristics/cg_heuristic
             heuristics/cg_cache
-    DEPENDS DOMAIN_TRANSITION_GRAPH
+    DEPENDS DOMAIN_TRANSITION_GRAPH PRIORITY_QUEUES
 )
 
 fast_downward_plugin(
@@ -388,6 +395,7 @@ fast_downward_plugin(
     SOURCES
         heuristics/lm_cut_heuristic
         heuristics/lm_cut_landmarks
+    DEPENDS PRIORITY_QUEUES
 )
 
 fast_downward_plugin(
@@ -395,7 +403,7 @@ fast_downward_plugin(
     HELP "The Max heuristic"
     SOURCES
         heuristics/max_heuristic
-    DEPENDS RELAXATION_HEURISTIC
+    DEPENDS PRIORITY_QUEUES RELAXATION_HEURISTIC
 )
 
 fast_downward_plugin(
@@ -437,7 +445,7 @@ fast_downward_plugin(
         cegar/transition_updater
         cegar/utils
         cegar/utils_landmarks
-    DEPENDS ADDITIVE_HEURISTIC EXTRA_TASKS LANDMARKS
+    DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES
 )
 
 fast_downward_plugin(
@@ -477,6 +485,7 @@ fast_downward_plugin(
         merge_and_shrink/transition_system
         merge_and_shrink/types
         merge_and_shrink/utils
+    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION
 )
 
 fast_downward_plugin(
@@ -496,7 +505,7 @@ fast_downward_plugin(
         landmarks/landmark_graph
         landmarks/landmark_status_manager
         landmarks/util
-    DEPENDS LP_SOLVER
+    DEPENDS LP_SOLVER PRIORITY_QUEUES
 )
 
 fast_downward_plugin(
@@ -537,6 +546,7 @@ fast_downward_plugin(
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
+    DEPENDS MAX_CLIQUES PRIORITY_QUEUES
 )
 
 fast_downward_plugin(
