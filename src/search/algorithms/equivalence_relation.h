@@ -6,16 +6,19 @@
 #include <list>
 #include <unordered_map>
 #include <vector>
-
+namespace equivalence_relation {
 class Block;
+
 typedef std::list<int>::iterator ElementListIter;
 typedef std::list<int>::const_iterator ElementListConstIter;
 typedef std::list<Block>::iterator BlockListIter;
 typedef std::list<Block>::const_iterator BlockListConstIter;
+
 class EquivalenceRelation;
 
 class Block {
     std::list<int> elements;
+
     /*
       During the refinement step of EquivalenceRelation, every existing block B
       is split along every new block X into the intersection and difference of
@@ -24,27 +27,34 @@ class Block {
       is created and stored in B for easier access.
     */
     friend class EquivalenceRelation;
+
     BlockListIter it_intersection_block;
 public:
     bool empty() const;
+
     ElementListIter insert(int element);
+
     void erase(ElementListIter it);
+
     ElementListIter begin() {return elements.begin(); }
+
     ElementListIter end() {return elements.end(); }
+
     ElementListConstIter begin() const {return elements.begin(); }
+
     ElementListConstIter end() const {return elements.end(); }
 };
 
 class EquivalenceRelation {
     int num_elements;
-    std::list<Block> blocks;
+    std::list <Block> blocks;
     /*
       With each element we associate a pair of iterators (block_it, element_it).
       block_it is an iterator from the list blocks pointing to the block that
       contains the element and element_it is an iterator from the list in this
       block and points to the element within it.
     */
-    typedef std::pair<BlockListIter, ElementListIter> ElementPosition;
+    typedef std::pair <BlockListIter, ElementListIter> ElementPosition;
     typedef std::unordered_map<int, ElementPosition> ElementPositionMap;
     ElementPositionMap element_positions;
 
@@ -55,21 +65,29 @@ class EquivalenceRelation {
     void refine(const Block &block);
 
     BlockListIter add_empty_block();
+
 public:
     EquivalenceRelation(int n);
-    EquivalenceRelation(int n, const std::list<Block> &blocks_);
+
+    EquivalenceRelation(int n, const std::list <Block> &blocks_);
+
     ~EquivalenceRelation();
 
     int get_num_elements() const;
+
     int get_num_explicit_elements() const;
+
     int get_num_blocks() const;
+
     int get_num_explicit_blocks() const;
+
     // TODO: There may or may not be an implicitly defined Block. Should this be
     //       created and returned, too?
     //       The same question goes for get_num_blocks().
     //       This is also a problem with get_num_elements() as there can be less
     //       explicitly specified elements than num_elements.
     BlockListConstIter begin() const {return blocks.begin(); }
+
     BlockListConstIter end() const {return blocks.end(); }
 
     /*
@@ -105,22 +123,24 @@ public:
     template<class T>
     static EquivalenceRelation *from_annotated_elements(
         int n,
-        std::vector<std::pair<T, int>> &annotated_elements);
+        std::vector <std::pair<T, int>> &annotated_elements);
+
     template<class T, class Equal>
     static EquivalenceRelation *from_annotated_elements(
         int n,
-        std::vector<std::pair<T, int>> &annotated_elements);
+        std::vector <std::pair<T, int>> &annotated_elements);
 };
 
 template<class T>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
-                                                                  std::vector<std::pair<T, int>> &annotated_elements) {
-    return EquivalenceRelation::from_annotated_elements<T, std::equal_to<T>>(n, annotated_elements);
+                                                                  std::vector <std::pair<T, int>> &annotated_elements) {
+    return EquivalenceRelation::from_annotated_elements<T, std::equal_to < T>>
+               (n, annotated_elements);
 }
 
 template<class T, class Equal>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
-                                                                  std::vector<std::pair<T, int>> &annotated_elements) {
+                                                                  std::vector <std::pair<T, int>> &annotated_elements) {
     EquivalenceRelation *relation = new EquivalenceRelation(n);
     if (!annotated_elements.empty()) {
         sort(annotated_elements.begin(), annotated_elements.end());
@@ -139,6 +159,7 @@ EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
         }
     }
     return relation;
+}
 }
 
 #endif
