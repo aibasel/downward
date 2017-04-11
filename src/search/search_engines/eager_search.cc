@@ -122,7 +122,7 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
+    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (const GlobalOperator *op : applicable_ops) {
