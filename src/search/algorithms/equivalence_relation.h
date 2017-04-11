@@ -48,7 +48,7 @@ public:
 
 class EquivalenceRelation {
     int num_elements;
-    std::list <Block> blocks;
+    std::list<Block> blocks;
     /*
       With each element we associate a pair of iterators (block_it, element_it).
       block_it is an iterator from the list blocks pointing to the block that
@@ -70,7 +70,7 @@ class EquivalenceRelation {
 public:
     EquivalenceRelation(int n);
 
-    EquivalenceRelation(int n, const std::list <Block> &blocks_);
+    EquivalenceRelation(int n, const std::list<Block> &blocks_);
 
     ~EquivalenceRelation();
 
@@ -124,24 +124,24 @@ public:
     template<class T>
     static EquivalenceRelation *from_annotated_elements(
         int n,
-        std::vector <std::pair<T, int>> &annotated_elements);
+        std::vector<std::pair<T, int>> &annotated_elements);
 
     template<class T, class Equal>
     static EquivalenceRelation *from_annotated_elements(
         int n,
-        std::vector <std::pair<T, int>> &annotated_elements);
+        std::vector<std::pair<T, int>> &annotated_elements);
 };
 
 template<class T>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
-                                                                  std::vector <std::pair<T, int>> &annotated_elements) {
-    return EquivalenceRelation::from_annotated_elements<T, std::equal_to < T>>
+                                                                  std::vector<std::pair<T, int>> &annotated_elements) {
+    return EquivalenceRelation::from_annotated_elements<T, std::equal_to< T>>
                (n, annotated_elements);
 }
 
 template<class T, class Equal>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
-                                                                  std::vector <std::pair<T, int>> &annotated_elements) {
+                                                                  std::vector<std::pair<T, int>> &annotated_elements) {
     EquivalenceRelation *relation = new EquivalenceRelation(n);
     if (!annotated_elements.empty()) {
         sort(annotated_elements.begin(), annotated_elements.end());

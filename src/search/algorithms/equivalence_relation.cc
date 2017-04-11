@@ -21,7 +21,7 @@ EquivalenceRelation::EquivalenceRelation(int n)
     : num_elements(n) {
 }
 
-EquivalenceRelation::EquivalenceRelation(int n, const list <Block> &blocks_)
+EquivalenceRelation::EquivalenceRelation(int n, const list<Block> &blocks_)
     : num_elements(n),
       blocks(blocks_) {
     for (BlockListIter it_block = blocks.begin();
@@ -107,7 +107,7 @@ void EquivalenceRelation::refine(ElementListConstIter block_X_begin,
     // An iterator to the block (B \cap X) is stored in every block B that has
     // a non-empty intersection with X. This iterator has to be reset at the end
     // so all such blocks are stored.
-    vector <BlockListIter> modified_blocks;
+    vector<BlockListIter> modified_blocks;
     // All elements that are specified in X but not in our relation belong in
     // the block (U \cap X) that is created on demand. This iterator refers to
     // the block if it was created already or to blocks.end() otherwise.
