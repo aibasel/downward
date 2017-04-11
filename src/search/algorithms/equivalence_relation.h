@@ -6,6 +6,7 @@
 #include <list>
 #include <unordered_map>
 #include <vector>
+
 namespace equivalence_relation {
 class Block;
 
