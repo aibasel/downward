@@ -125,7 +125,7 @@ equivalence_relation::EquivalenceRelation *LabelReduction::compute_combinable_eq
     }
     equivalence_relation::EquivalenceRelation *relation =
         equivalence_relation::EquivalenceRelation::from_annotated_elements<int>(
-                num_labels, annotated_labels);
+            num_labels, annotated_labels);
 
     for (int index : fts) {
         if (index != ts_index) {
