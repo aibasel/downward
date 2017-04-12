@@ -3,14 +3,13 @@
 
 #include "../priority_queue.h"
 
-#include "transition.h"
-
 #include <deque>
 #include <unordered_set>
 #include <vector>
 
 namespace cegar {
 class AbstractState;
+class Transition;
 
 using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Transition>;
