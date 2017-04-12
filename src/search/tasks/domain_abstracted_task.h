@@ -3,13 +3,10 @@
 
 #include "delegating_task.h"
 
-#include "../utils/collections.h"
-
 #include <cassert>
 #include <string>
 #include <utility>
 #include <vector>
-
 
 namespace extra_tasks {
 /*
