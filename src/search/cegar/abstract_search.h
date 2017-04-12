@@ -1,6 +1,8 @@
 #ifndef CEGAR_ABSTRACT_SEARCH_H
 #define CEGAR_ABSTRACT_SEARCH_H
 
+#include "transition.h"
+
 #include "../priority_queue.h"
 
 #include <deque>
@@ -9,7 +11,6 @@
 
 namespace cegar {
 class AbstractState;
-class Transition;
 
 using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Transition>;
