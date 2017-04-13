@@ -76,7 +76,7 @@ class HeapQueue : public AbstractQueue<Value> {
     };
 
     class Heap
-        : public std::priority_queue<Entry, std::vector < Entry>, compare_func> {
+        : public std::priority_queue<Entry, std::vector<Entry>, compare_func> {
         // We inherit since our friend needs access to the underlying
         // container c which is a protected member.
         friend class HeapQueue;
@@ -168,7 +168,7 @@ public:
     virtual void push(int key, const Value &value) {
         ++num_entries;
         ++num_pushes;
-        assert(num_pushes > 0);     // Check against overflow.
+        assert(num_pushes > 0); // Check against overflow.
         int num_buckets = buckets.size();
         if (key >= num_buckets)
             buckets.resize(key + 1);
