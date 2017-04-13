@@ -109,14 +109,15 @@ public:
         int n,
         std::vector<std::pair<T, int>> &annotated_elements);
     template<class T, class Equal>
-    static EquivalenceRelation *from_annotated_elements(int n, std::vector<std::pair<T, int>> &annotated_elements);
+    static EquivalenceRelation *from_annotated_elements(
+            int n,
+            std::vector<std::pair<T, int>> &annotated_elements);
 };
 
 template<class T>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
                                                                   std::vector<std::pair<T, int>> &annotated_elements) {
-    return EquivalenceRelation::from_annotated_elements<T, std::equal_to< T>>
-               (n, annotated_elements);
+    return EquivalenceRelation::from_annotated_elements<T, std::equal_to< T>>(n, annotated_elements);
 }
 
 template<class T, class Equal>
