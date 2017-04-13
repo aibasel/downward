@@ -9,17 +9,14 @@
 
 namespace equivalence_relation {
 class Block;
-
 typedef std::list<int>::iterator ElementListIter;
 typedef std::list<int>::const_iterator ElementListConstIter;
 typedef std::list<Block>::iterator BlockListIter;
 typedef std::list<Block>::const_iterator BlockListConstIter;
-
 class EquivalenceRelation;
 
 class Block {
     std::list<int> elements;
-
     /*
       During the refinement step of EquivalenceRelation, every existing block B
       is split along every new block X into the intersection and difference of
@@ -28,21 +25,14 @@ class Block {
       is created and stored in B for easier access.
     */
     friend class EquivalenceRelation;
-
     BlockListIter it_intersection_block;
 public:
     bool empty() const;
-
     ElementListIter insert(int element);
-
     void erase(ElementListIter it);
-
     ElementListIter begin() {return elements.begin(); }
-
     ElementListIter end() {return elements.end(); }
-
     ElementListConstIter begin() const {return elements.begin(); }
-
     ElementListConstIter end() const {return elements.end(); }
 };
 
@@ -55,7 +45,7 @@ class EquivalenceRelation {
       contains the element and element_it is an iterator from the list in this
       block and points to the element within it.
     */
-    typedef std::pair <BlockListIter, ElementListIter> ElementPosition;
+    typedef std::pair<BlockListIter, ElementListIter> ElementPosition;
     typedef std::unordered_map<int, ElementPosition> ElementPositionMap;
     ElementPositionMap element_positions;
 
@@ -66,22 +56,15 @@ class EquivalenceRelation {
     void refine(const Block &block);
 
     BlockListIter add_empty_block();
-
 public:
     EquivalenceRelation(int n);
-
     EquivalenceRelation(int n, const std::list<Block> &blocks_);
-
     ~EquivalenceRelation();
 
     int get_num_elements() const;
-
     int get_num_explicit_elements() const;
-
     int get_num_blocks() const;
-
     int get_num_explicit_blocks() const;
-
     // TODO: There may or may not be an implicitly defined Block. Should this be
     //       created and returned, too?
     //       The same question goes for get_num_blocks().
@@ -125,11 +108,8 @@ public:
     static EquivalenceRelation *from_annotated_elements(
         int n,
         std::vector<std::pair<T, int>> &annotated_elements);
-
     template<class T, class Equal>
-    static EquivalenceRelation *from_annotated_elements(
-        int n,
-        std::vector<std::pair<T, int>> &annotated_elements);
+    static EquivalenceRelation *from_annotated_elements(int n, std::vector<std::pair<T, int>> &annotated_elements);
 };
 
 template<class T>

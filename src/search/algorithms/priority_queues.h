@@ -32,15 +32,11 @@ public:
     typedef std::pair<int, Value> Entry;
 
     AbstractQueue() {}
-
     virtual ~AbstractQueue() {}
 
     virtual void push(int key, const Value &value) = 0;
-
     virtual Entry pop() = 0;
-
     virtual bool empty() const = 0;
-
     virtual void clear() = 0;
 
     virtual AbstractQueue<Value> *convert_if_necessary(int /*key*/) {
@@ -80,9 +76,7 @@ class HeapQueue : public AbstractQueue<Value> {
     };
 
     class Heap
-        : public std::priority_queue<Entry, std::vector < Entry>, compare_func
-
-                                     > {
+        : public std::priority_queue<Entry, std::vector < Entry>, compare_func> {
         // We inherit since our friend needs access to the underlying
         // container c which is a protected member.
         friend class HeapQueue;
@@ -116,7 +110,7 @@ public:
     }
 
     static HeapQueue<Value> *create_from_sorted_entries_destructively(
-        std::vector <Entry> &entries) {
+        std::vector<Entry> &entries) {
         // Create a new heap from the entries, which must be sorted.
         // The passed-in vector is cleared as a side effect.
         HeapQueue<Value> *result = new HeapQueue<Value>;
@@ -136,8 +130,8 @@ class BucketQueue : public AbstractQueue<Value> {
 
     typedef typename AbstractQueue<Value>::Entry Entry;
 
-    typedef std::vector <Value> Bucket;
-    std::vector <Bucket> buckets;
+    typedef std::vector<Value> Bucket;
+    std::vector<Bucket> buckets;
     mutable int current_bucket_no;
     int num_entries;
     int num_pushes;
@@ -149,7 +143,7 @@ class BucketQueue : public AbstractQueue<Value> {
             ++current_bucket_no;
     }
 
-    void extract_sorted_entries(std::vector <Entry> &result) {
+    void extract_sorted_entries(std::vector<Entry> &result) {
         // Generate vector with the entries of the queue in sorted
         // order, removing them from this queue as a side effect.
         assert(result.empty());
@@ -164,7 +158,6 @@ class BucketQueue : public AbstractQueue<Value> {
         }
         current_bucket_no = 0;
     }
-
 public:
     BucketQueue() : current_bucket_no(0), num_entries(0), num_pushes(0) {
     }
@@ -216,7 +209,7 @@ public:
             std::cout << "Switch from bucket-based to heap-based queue "
                       << "at key = " << key
                       << ", num_pushes = " << num_pushes << std::endl;
-            std::vector <Entry> entries;
+            std::vector<Entry> entries;
             extract_sorted_entries(entries);
             return HeapQueue<Value>::create_from_sorted_entries_destructively(
                 entries);
@@ -233,12 +226,9 @@ public:
 template<typename Value>
 class AdaptiveQueue {
     AbstractQueue<Value> *wrapped_queue;
-
     // Forbid assigning or copying -- would need to implement them properly.
     AdaptiveQueue &operator=(const AdaptiveQueue<Value> &);
-
     AdaptiveQueue(const AdaptiveQueue<Value> &);
-
 public:
     typedef std::pair<int, Value> Entry;
 
