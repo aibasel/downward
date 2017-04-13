@@ -71,7 +71,6 @@ public:
     //       This is also a problem with get_num_elements() as there can be less
     //       explicitly specified elements than num_elements.
     BlockListConstIter begin() const {return blocks.begin(); }
-
     BlockListConstIter end() const {return blocks.end(); }
 
     /*
@@ -110,14 +109,14 @@ public:
         std::vector<std::pair<T, int>> &annotated_elements);
     template<class T, class Equal>
     static EquivalenceRelation *from_annotated_elements(
-            int n,
-            std::vector<std::pair<T, int>> &annotated_elements);
+        int n,
+        std::vector<std::pair<T, int>> &annotated_elements);
 };
 
 template<class T>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
                                                                   std::vector<std::pair<T, int>> &annotated_elements) {
-    return EquivalenceRelation::from_annotated_elements<T, std::equal_to< T>>(n, annotated_elements);
+    return EquivalenceRelation::from_annotated_elements<T, std::equal_to<T>>(n, annotated_elements);
 }
 
 template<class T, class Equal>
