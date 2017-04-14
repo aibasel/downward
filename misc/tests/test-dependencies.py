@@ -1,4 +1,4 @@
-import os
+import os.path
 import subprocess
 
 DIR = os.path.dirname(os.path.abspath(__file__))
