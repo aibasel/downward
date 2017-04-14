@@ -30,7 +30,7 @@ plugins_failed_test = []
 for plugin in plugins_to_be_tested:
     try:
         subprocess.check_call([BUILD, "-j4", plugin.lower()])
-    except subprocess.CalledProcessError as grepexc:
+    except subprocess.CalledProcessError:
         plugins_failed_test.append(plugin)
 
 if not plugins_failed_test:
