@@ -22,8 +22,8 @@ for i in range(0, len(content)):
 with open(TEST_BUILD_CONFIGS, "w+") as f:
     for plugin in plugins_to_be_tested:
         lowercase = plugin.lower()
-        line = "%(lowercase)s = [\"-DCMAKE_BUILD_TYPE=Debug\", \"-DDISABLE_PLUGINS_BY_DEFAULT=YES\"," \
-               " \"-DPLUGIN_%(plugin)s_ENABLED=True\"]\n" % locals()
+        line = "{lowercase} = [\"-DCMAKE_BUILD_TYPE=Debug\", \"-DDISABLE_PLUGINS_BY_DEFAULT=YES\"," \
+               " \"-DPLUGIN_{plugin}_ENABLED=True\"]\n".format(**locals())
         f.write(line)
 
 plugins_failed_test = []
@@ -38,4 +38,5 @@ if not plugins_failed_test:
 else:
     print("\nFailure:\n")
     for plugin in plugins_failed_test:
-        print("%(plugin)s failed dependencies test.\n" % locals())
+        print("{plugin} failed dependencies test.\n".format(**locals()))
+
