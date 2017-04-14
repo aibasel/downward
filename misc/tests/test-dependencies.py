@@ -1,11 +1,13 @@
-import os.path
+import os
 import subprocess
+import shutil
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 DOWNWARD_FILES = os.path.join(REPO, "src", "search", "DownwardFiles.cmake")
 TEST_BUILD_CONFIGS = os.path.join(REPO, "test_build_configs.py")
 BUILD = os.path.join(REPO, "build.py")
+BUILDS = os.path.join(REPO, "builds")
 
 with open(DOWNWARD_FILES) as d:
     content = d.readlines()
@@ -14,13 +16,13 @@ content = [line for line in content if '#' not in line]
 content = [line for line in content if 'NAME' in line or 'CORE_PLUGIN' in line or 'DEPENDENCY_ONLY' in line]
 
 plugins_to_be_tested = []
-for i in range(0, len(content)):
-    if 'NAME' in content[i]:
-        plugins_to_be_tested.append(content[i].replace("NAME", "").strip())
-    if 'CORE_PLUGIN' in content[i] or 'DEPENDENCY_ONLY' in content[i]:
+for line in content:
+    if 'NAME' in line:
+        plugins_to_be_tested.append(line.replace("NAME", "").strip())
+    if 'CORE_PLUGIN' in line or 'DEPENDENCY_ONLY' in line:
         plugins_to_be_tested.pop()
 
-with open(TEST_BUILD_CONFIGS, "w+") as f:
+with open(TEST_BUILD_CONFIGS, "w") as f:
     for plugin in plugins_to_be_tested:
         lowercase = plugin.lower()
         line = "{lowercase} = [\"-DCMAKE_BUILD_TYPE=Debug\", \"-DDISABLE_PLUGINS_BY_DEFAULT=YES\"," \
@@ -37,7 +39,20 @@ for plugin in plugins_to_be_tested:
 if not plugins_failed_test:
     print("\nAll plugins have passed dependencies test.")
 else:
-    print("\nFailure:\n")
+    print("\nFailure:")
     for plugin in plugins_failed_test:
-        print("{plugin} failed dependencies test.\n".format(**locals()))
+        print("{plugin} failed dependencies test.".format(**locals()))
+
+print("\nCleaning up.")
+for plugin in plugins_to_be_tested:
+    lower = plugin.lower()
+    print("Removing {lower} build".format(**locals()))
+    build_to_be_removed = os.path.join(BUILDS, lower)
+    shutil.rmtree(build_to_be_removed)
+
+print("\nRemoving test_build_configs.py")
+os.remove(TEST_BUILD_CONFIGS)
+
+
+
 
