@@ -14,9 +14,10 @@ content = [line for line in content if '#' not in line]
 content = [line for line in content if 'NAME' in line or 'CORE_PLUGIN' in line or 'DEPENDENCY_ONLY' in line]
 
 plugins_to_be_tested = []
-for i in range(0, len(content) - 1):
-    if 'NAME' in content[i] and 'NAME' in content[i + 1]:
-        plugins_to_be_tested.append(content[i].replace("NAME", "").strip())
+for i in range(0, len(content)):
+    if 'NAME' in content[i]:
+        if i == len(content)-1 or ('CORE_PLUGIN' not in content[i+1] and 'DEPENDENCY_ONLY' not in content[i+1]):
+            plugins_to_be_tested.append(content[i].replace("NAME", "").strip())
 
 with open(TEST_BUILD_CONFIGS, "w+") as f:
     for plugin in plugins_to_be_tested:
