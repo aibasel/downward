@@ -1,6 +1,6 @@
 import os
-import subprocess
 import shutil
+import subprocess
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
