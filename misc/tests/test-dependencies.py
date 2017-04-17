@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+
+import multiprocessing
 import os
 import shutil
 import subprocess
@@ -9,6 +12,7 @@ TEST_BUILD_CONFIGS = os.path.join(REPO, "test_build_configs.py")
 BUILD = os.path.join(REPO, "build.py")
 BUILDS = os.path.join(REPO, "builds")
 paths_to_clean = [TEST_BUILD_CONFIGS]
+cpu_count = multiprocessing.cpu_count()
 
 
 def clean_up(paths_to_clean):
@@ -46,7 +50,7 @@ with open(TEST_BUILD_CONFIGS, "w") as f:
 plugins_failed_test = []
 for plugin in plugins_to_be_tested:
     try:
-        subprocess.check_call([BUILD, "-j4", plugin.lower()])
+        subprocess.check_call([BUILD, "-j{cpu_count}".format(**locals()), plugin.lower()])
     except subprocess.CalledProcessError:
         plugins_failed_test.append(plugin)
 
