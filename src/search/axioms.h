@@ -7,7 +7,9 @@
 #include <memory>
 #include <vector>
 
+namespace int_packer {
 class IntPacker;
+}
 
 class AxiomEvaluator {
     struct AxiomRule;
