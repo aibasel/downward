@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import shutil
 import subprocess
+import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
@@ -54,10 +55,11 @@ for plugin in plugins_to_be_tested:
     except subprocess.CalledProcessError:
         plugins_failed_test.append(plugin)
 
-if not plugins_failed_test:
-    print("\nAll plugins have passed dependencies test")
-    clean_up(paths_to_clean)
-else:
+if plugins_failed_test:
     print("\nFailure:")
     for plugin in plugins_failed_test:
         print("{plugin} failed dependencies test".format(**locals()))
+    sys.exit(1)
+else:
+    print("\nAll plugins have passed dependencies test")
+    clean_up(paths_to_clean)
