@@ -143,7 +143,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME EQUIVALENCE_RELATION
-    HELP "Equivalence relation"
+    HELP "Equivalence relation over [1, ..., n] that can be iteratively refined"
     SOURCES
         algorithms/equivalence_relation
     DEPENDENCY_ONLY
@@ -151,7 +151,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME INT_PACKER
-    HELP "Pack lots of unsigned integers tightly into memory"
+    HELP "Greedy bin packing algorithm to pack integer variables with small domains tightly into memory"
     SOURCES
         algorithms/int_packer
     DEPENDENCY_ONLY
