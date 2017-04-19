@@ -1,8 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "algorithms/int_packer.h"
-
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -15,9 +13,12 @@ class CausalGraph;
 struct FactPair;
 class GlobalOperator;
 class GlobalState;
-class IntPacker;
 class StateRegistry;
 class SuccessorGenerator;
+
+namespace int_packer {
+class IntPacker;
+}
 
 namespace utils {
 struct Log;
