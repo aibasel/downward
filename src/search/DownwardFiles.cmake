@@ -245,6 +245,7 @@ fast_downward_plugin(
     HELP "Pruning method that does nothing"
     SOURCES
         pruning/null_pruning_method
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
