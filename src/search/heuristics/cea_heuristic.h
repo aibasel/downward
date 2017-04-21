@@ -3,7 +3,8 @@
 
 #include "../domain_transition_graph.h"
 #include "../heuristic.h"
-#include "../priority_queue.h"
+
+#include "../algorithms/priority_queues.h"
 
 #include <vector>
 
@@ -22,7 +23,7 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     LocalProblemNode *goal_node;
     int min_action_cost;
 
-    AdaptiveQueue<LocalProblemNode *> node_queue;
+    priority_queues::AdaptiveQueue<LocalProblemNode *> node_queue;
 
     LocalProblem *get_local_problem(int var_no, int value);
     LocalProblem *build_problem_for_variable(int var_no) const;

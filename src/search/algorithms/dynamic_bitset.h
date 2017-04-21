@@ -1,5 +1,5 @@
-#ifndef UTILS_DYNAMIC_BITSET_H
-#define UTILS_DYNAMIC_BITSET_H
+#ifndef ALGORITHMS_DYNAMIC_BITSET_H
+#define ALGORITHMS_DYNAMIC_BITSET_H
 
 #include <cassert>
 #include <limits>
@@ -9,7 +9,7 @@
   Poor man's version of boost::dynamic_bitset, mostly copied from there.
 */
 
-namespace utils {
+namespace dynamic_bitset {
 template<typename Block = unsigned int>
 class DynamicBitset {
     static_assert(

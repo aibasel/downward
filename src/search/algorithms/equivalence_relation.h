@@ -1,5 +1,5 @@
-#ifndef EQUIVALENCE_RELATION_H
-#define EQUIVALENCE_RELATION_H
+#ifndef ALGORITHMS_EQUIVALENCE_RELATION_H
+#define ALGORITHMS_EQUIVALENCE_RELATION_H
 
 #include <algorithm>
 #include <cmath>
@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace equivalence_relation {
 class Block;
 typedef std::list<int>::iterator ElementListIter;
 typedef std::list<int>::const_iterator ElementListConstIter;
@@ -139,6 +140,7 @@ EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
         }
     }
     return relation;
+}
 }
 
 #endif

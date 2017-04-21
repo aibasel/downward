@@ -1,9 +1,9 @@
-#ifndef PDBS_MAX_CLIQUES_H
-#define PDBS_MAX_CLIQUES_H
+#ifndef ALGORITHMS_MAX_CLIQUES_H
+#define ALGORITHMS_MAX_CLIQUES_H
 
 #include <vector>
 
-namespace pdbs {
+namespace max_cliques {
 /* Implementation of the Max Cliques algorithm by Tomita et al. See:
 
    Etsuji Tomita, Akira Tanaka and Haruhisa Takahashi, The Worst-Case
