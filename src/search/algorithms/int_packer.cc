@@ -1,11 +1,11 @@
 #include "int_packer.h"
 
 #include <cassert>
+
 using namespace std;
 
-
+namespace int_packer {
 static const int BITS_PER_BIN = sizeof(IntPacker::Bin) * 8;
-
 
 static IntPacker::Bin get_bit_mask(int from, int to) {
     // Return mask with all bits in the range [from, to) set to 1.
@@ -137,4 +137,5 @@ int IntPacker::pack_one_bin(const vector<int> &ranges,
         used_bits += bits;
         ++num_vars_in_bin;
     }
+}
 }

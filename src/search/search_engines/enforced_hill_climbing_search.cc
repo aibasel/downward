@@ -145,7 +145,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
     int node_g = node.get_g();
 
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators;
     if (use_preferred) {
         preferred_operators = collect_preferred_operators(
             eval_context, preferred_operator_heuristics);

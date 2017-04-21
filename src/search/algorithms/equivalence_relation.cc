@@ -4,6 +4,7 @@
 
 using namespace std;
 
+namespace equivalence_relation {
 bool Block::empty() const {
     return elements.empty();
 }
@@ -158,4 +159,5 @@ void EquivalenceRelation::refine(ElementListConstIter block_X_begin,
             modified_block->it_intersection_block = blocks.end();
         }
     }
+}
 }

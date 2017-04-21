@@ -1,5 +1,5 @@
-#ifndef INT_PACKER_H
-#define INT_PACKER_H
+#ifndef ALGORITHMS_INT_PACKER_H
+#define ALGORITHMS_INT_PACKER_H
 
 #include <vector>
 
@@ -17,7 +17,7 @@
   should be close to optimal in most cases. (See code comments for
   details.)
 */
-
+namespace int_packer {
 class IntPacker {
     class VariableInfo;
 
@@ -44,5 +44,6 @@ public:
 
     int get_num_bins() const {return num_bins; }
 };
+}
 
 #endif
