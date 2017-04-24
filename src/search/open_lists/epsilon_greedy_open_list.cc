@@ -17,7 +17,7 @@
 
 using namespace std;
 
-
+namespace epsilon_greedy_open_list {
 template<class Entry>
 class EpsilonGreedyOpenList : public OpenList<Entry> {
     shared_ptr<utils::RandomNumberGenerator> rng;
@@ -191,3 +191,4 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("epsilon_greedy", _parse);
+}
