@@ -78,7 +78,6 @@ fast_downward_plugin(
         task_tools
         variable_order_finder
 
-        open_lists/epsilon_greedy_open_list
         open_lists/open_list
         open_lists/open_list_factory
         open_lists/pareto_open_list
@@ -137,6 +136,13 @@ fast_downward_plugin(
     HELP "Open list that alternates between underlying open lists in a round-robin manner"
     SOURCES
         open_lists/alternation_open_list
+)
+
+fast_downward_plugin(
+    NAME EPSILON_GREEDY_OPEN_LIST
+    HELP "Open list that chooses an entry uniformly randomly with probability"
+    SOURCES
+        open_lists/epsilon_greedy_open_list
 )
 
 fast_downward_plugin(
@@ -283,7 +289,7 @@ fast_downward_plugin(
     HELP "Basic classes used for all search engines"
     SOURCES
         search_engines/search_common
-    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+    DEPENDS ALTERNATION_OPEN_LIST EPSILON_GREEDY_OPEN_LIST G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
@@ -292,7 +298,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS ALTERNATION_OPEN_LIST NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON
+    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -315,7 +321,7 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         search_engines/lazy_search
-    DEPENDS ALTERNATION_OPEN_LIST ORDERED_SET SEARCH_COMMON
+    DEPENDS ORDERED_SET SEARCH_COMMON
 )
 
 fast_downward_plugin(

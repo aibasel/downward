@@ -43,6 +43,7 @@
     there could be only one bucket).
 */
 
+namespace epsilon_greedy_open_list {
 class EpsilonGreedyOpenListFactory : public OpenListFactory {
     Options options;
 public:
@@ -52,5 +53,6 @@ public:
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
 };
+}
 
 #endif
