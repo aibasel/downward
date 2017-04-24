@@ -283,7 +283,7 @@ fast_downward_plugin(
     HELP "Basic classes used for all search engines"
     SOURCES
         search_engines/search_common
-    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
@@ -292,7 +292,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON
+    DEPENDS ALTERNATION_OPEN_LIST NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -315,7 +315,7 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         search_engines/lazy_search
-    DEPENDS ORDERED_SET SEARCH_COMMON
+    DEPENDS ALTERNATION_OPEN_LIST ORDERED_SET SEARCH_COMMON
 )
 
 fast_downward_plugin(

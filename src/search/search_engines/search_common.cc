@@ -33,7 +33,7 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
     Options options;
     options.set("sublists", subfactories);
     options.set("boost", boost);
-    return make_shared<AlternationOpenListFactory>(options);
+    return make_shared<alternation_open_list::AlternationOpenListFactory>(options);
 }
 
 /*
