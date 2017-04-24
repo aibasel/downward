@@ -15,7 +15,7 @@
 using namespace std;
 using utils::ExitCode;
 
-
+namespace alternation_open_list {
 template<class Entry>
 class AlternationOpenList : public OpenList<Entry> {
     vector<unique_ptr<OpenList<Entry>>> open_lists;
@@ -130,6 +130,7 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
             return true;
     return false;
 }
+}
 
 
 AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
@@ -138,12 +139,12 @@ AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
 
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<alternation_open_list::AlternationOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<alternation_open_list::AlternationOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

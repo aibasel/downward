@@ -78,7 +78,6 @@ fast_downward_plugin(
         task_tools
         variable_order_finder
 
-        open_lists/alternation_open_list
         open_lists/epsilon_greedy_open_list
         open_lists/open_list
         open_lists/open_list_factory
@@ -131,6 +130,13 @@ fast_downward_plugin(
         utils/system_windows
         utils/timer
     CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME ALTERNATION_OPEN_LIST
+    HELP "Open list that alternates between underlying open lists in a round-robin manner"
+    SOURCES
+        open_lists/alternation_open_list
 )
 
 fast_downward_plugin(
@@ -277,7 +283,7 @@ fast_downward_plugin(
     HELP "Basic classes used for all search engines"
     SOURCES
         search_engines/search_common
-    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
