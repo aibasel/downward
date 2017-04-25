@@ -45,13 +45,13 @@ void EagerSearch::initialize() {
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    // add heuristics that are used for preferred operators (in case they are
-    // not also used in the open list)
+    // Add heuristics that are used for preferred operators (in case they are
+    // not also used in the open list).
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    // add heuristics that are used in the f_evaluator. They are usually also
-    // used in the open list and hence already be included, but we want to be
+    // Add heuristics that are used in the f_evaluator. They are usually also
+    // used in the open list and are hence already included, but we want to be
     // sure.
     if (f_evaluator) {
         f_evaluator->get_involved_heuristics(hset);
@@ -122,7 +122,7 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    algorithms::OrderedSet<OperatorID> preferred_operators =
+    ordered_set::OrderedSet<OperatorID> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (OperatorID op_id : applicable_ops) {

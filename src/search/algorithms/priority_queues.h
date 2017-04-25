@@ -1,7 +1,7 @@
-#ifndef PRIORITY_QUEUE_H
-#define PRIORITY_QUEUE_H
+#ifndef ALGORITHMS_PRIORITY_QUEUES_H
+#define ALGORITHMS_PRIORITY_QUEUES_H
 
-#include "utils/collections.h"
+#include "../utils/collections.h"
 
 #include <cassert>
 #include <iostream>
@@ -25,8 +25,7 @@
   same interface as AbstractQueue, however, to facilitate swapping the
   different implementations in and out.
  */
-
-
+namespace priority_queues {
 template<typename Value>
 class AbstractQueue {
 public:
@@ -265,5 +264,6 @@ public:
         wrapped_queue->add_virtual_pushes(num_extra_pushes);
     }
 };
+}
 
 #endif

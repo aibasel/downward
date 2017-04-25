@@ -2,9 +2,9 @@
 
 #include "match_tree.h"
 
-#include "../priority_queue.h"
 #include "../task_tools.h"
 
+#include "../algorithms/priority_queues.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
@@ -227,7 +227,7 @@ void PatternDatabase::create_pdb(
 
     distances.reserve(num_states);
     // first implicit entry: priority, second entry: index for an abstract state
-    AdaptiveQueue<size_t> pq;
+    priority_queues::AdaptiveQueue<size_t> pq;
 
     // initialize queue
     for (size_t state_index = 0; state_index < num_states; ++state_index) {

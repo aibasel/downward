@@ -1,5 +1,5 @@
-#ifndef EQUIVALENCE_RELATION_H
-#define EQUIVALENCE_RELATION_H
+#ifndef ALGORITHMS_EQUIVALENCE_RELATION_H
+#define ALGORITHMS_EQUIVALENCE_RELATION_H
 
 #include <algorithm>
 #include <cmath>
@@ -7,20 +7,13 @@
 #include <unordered_map>
 #include <vector>
 
+namespace equivalence_relation {
 class Block;
 typedef std::list<int>::iterator ElementListIter;
 typedef std::list<int>::const_iterator ElementListConstIter;
 typedef std::list<Block>::iterator BlockListIter;
 typedef std::list<Block>::const_iterator BlockListConstIter;
 class EquivalenceRelation;
-
-struct DoubleEpsilonEquality {
-    bool operator()(const double &d1, const double &d2) {
-        // TODO avoid code duplication with landmark count heuristic
-        static const double epsilon = 0.01;
-        return std::abs(d1 - d2) < epsilon;
-    }
-};
 
 class Block {
     std::list<int> elements;
@@ -147,6 +140,7 @@ EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
         }
     }
     return relation;
+}
 }
 
 #endif

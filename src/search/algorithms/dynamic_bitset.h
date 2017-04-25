@@ -1,5 +1,5 @@
-#ifndef UTILS_DYNAMIC_BITSET_H
-#define UTILS_DYNAMIC_BITSET_H
+#ifndef ALGORITHMS_DYNAMIC_BITSET_H
+#define ALGORITHMS_DYNAMIC_BITSET_H
 
 #include <cassert>
 #include <limits>
@@ -9,8 +9,8 @@
   Poor man's version of boost::dynamic_bitset, mostly copied from there.
 */
 
-namespace utils {
-template <typename Block = unsigned int>
+namespace dynamic_bitset {
+template<typename Block = unsigned int>
 class DynamicBitset {
     static_assert(
         !std::numeric_limits<Block>::is_signed,
@@ -125,10 +125,10 @@ public:
     }
 };
 
-template <typename Block>
+template<typename Block>
 const Block DynamicBitset<Block>::zeros = Block(0);
 
-template <typename Block>
+template<typename Block>
 // MSVC's bitwise negation always returns int.
 const Block DynamicBitset<Block>::ones = Block(~Block(0));
 }

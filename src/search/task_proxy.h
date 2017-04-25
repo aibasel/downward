@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -96,17 +97,31 @@ class VariablesProxy;
 /*
   Basic iterator support for proxy collections.
 */
-template<class ProxyCollection>
+template<typename ProxyCollection>
 class ProxyIterator {
-    const ProxyCollection &collection;
+    /* We store a pointer to collection instead of a reference
+       because iterators have to be copy assignable. */
+    const ProxyCollection *collection;
     std::size_t pos;
 public:
-    ProxyIterator(const ProxyCollection &collection, std::size_t pos)
-        : collection(collection), pos(pos) {}
-    ~ProxyIterator() = default;
+    using iterator_category = std::input_iterator_tag;
+    using value_type = typename ProxyCollection::ItemType;
+    using difference_type = int;
+    using pointer = const value_type *;
+    using reference = value_type;
 
-    typename ProxyCollection::ItemType operator*() const {
-        return collection[pos];
+    ProxyIterator(const ProxyCollection &collection, std::size_t pos)
+        : collection(&collection), pos(pos) {
+    }
+
+    reference operator*() const {
+        return (*collection)[pos];
+    }
+
+    value_type operator++(int) {
+        value_type value(**this);
+        ++(*this);
+        return value;
     }
 
     ProxyIterator &operator++() {
@@ -115,7 +130,7 @@ public:
     }
 
     bool operator==(const ProxyIterator &other) const {
-        assert(&collection == &other.collection);
+        assert(collection == other.collection);
         return pos == other.pos;
     }
 

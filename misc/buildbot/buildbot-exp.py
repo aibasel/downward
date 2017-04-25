@@ -55,8 +55,9 @@ CONFIGS['nightly'] = [
     ('lazy-greedy-ff-cea', ['--heuristic', 'hff=ff()', '--heuristic',  'hcea=cea()',
                             '--search', 'lazy_greedy([hff, hcea], preferred=[hff, hcea])']),
     ('blind', ['--search', 'astar(blind())']),
+    # TODO: Revert to optimal=true.
     ('lmcount-optimal', ['--search',
-        'astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true,lpsolver=CPLEX))']),
+        'astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=false))']),
 ]
 CONFIGS['weekly'] = CONFIGS['nightly']
 
