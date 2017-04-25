@@ -146,6 +146,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME PARETO_OPEN_LIST
+    HELP "Pareto open list"
+    SOURCES
+        open_lists/pareto_open_list
+)
+
+fast_downward_plugin(
     NAME DYNAMIC_BITSET
     HELP "Poor man's version of boost::dynamic_bitset"
     SOURCES
