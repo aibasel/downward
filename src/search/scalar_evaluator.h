@@ -8,10 +8,10 @@
 class EvaluationContext;
 class Heuristic;
 
-class ScalarEvaluator {
+class Evaluator {
 public:
-    ScalarEvaluator() = default;
-    virtual ~ScalarEvaluator() = default;
+    Evaluator() = default;
+    virtual ~Evaluator() = default;
 
     /*
       dead_ends_are_reliable should return true if the evaluator is

@@ -8,13 +8,13 @@ class Options;
 }
 
 namespace weighted_evaluator {
-class WeightedEvaluator : public ScalarEvaluator {
-    ScalarEvaluator *evaluator;
+class WeightedEvaluator : public Evaluator {
+    Evaluator *evaluator;
     int w;
 
 public:
     explicit WeightedEvaluator(const options::Options &opts);
-    WeightedEvaluator(ScalarEvaluator *eval, int weight);
+    WeightedEvaluator(Evaluator *eval, int weight);
     virtual ~WeightedEvaluator() override;
 
     virtual bool dead_ends_are_reliable() const override;

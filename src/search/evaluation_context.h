@@ -8,7 +8,7 @@
 
 class GlobalOperator;
 class GlobalState;
-class ScalarEvaluator;
+class Evaluator;
 class SearchStatistics;
 
 /*
@@ -90,7 +90,7 @@ public:
 
     ~EvaluationContext() = default;
 
-    const EvaluationResult &get_result(ScalarEvaluator *heur);
+    const EvaluationResult &get_result(Evaluator *heur);
     const HeuristicCache &get_cache() const;
     const GlobalState &get_state() const;
     int get_g_value() const;
@@ -107,11 +107,11 @@ public:
       treated uniformly, use get_heuristic_value_or_infinity(), which
       returns numeric_limits<int>::max() for infinite estimates.
     */
-    bool is_heuristic_infinite(ScalarEvaluator *heur);
-    int get_heuristic_value(ScalarEvaluator *heur);
-    int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
+    bool is_heuristic_infinite(Evaluator *heur);
+    int get_heuristic_value(Evaluator *heur);
+    int get_heuristic_value_or_infinity(Evaluator *heur);
     const std::vector<const GlobalOperator *> &get_preferred_operators(
-        ScalarEvaluator *heur);
+        Evaluator *heur);
     bool get_calculate_preferred() const;
 };
 

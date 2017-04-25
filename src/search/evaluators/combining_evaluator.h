@@ -12,14 +12,14 @@ namespace combining_evaluator {
   CombiningEvaluator is the base class for SumEvaluator and
   MaxEvaluator, which captures the common aspects of their behaviour.
 */
-class CombiningEvaluator : public ScalarEvaluator {
-    std::vector<ScalarEvaluator *> subevaluators;
+class CombiningEvaluator : public Evaluator {
+    std::vector<Evaluator *> subevaluators;
     bool all_dead_ends_are_reliable;
 protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
     explicit CombiningEvaluator(
-        const std::vector<ScalarEvaluator *> &subevaluators_);
+        const std::vector<Evaluator *> &subevaluators_);
     virtual ~CombiningEvaluator() override;
 
     /*
