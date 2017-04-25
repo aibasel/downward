@@ -22,7 +22,6 @@ namespace options {
   result is added to the Options.
 */
 class OptionParser {
-    std::string unparsed_config;
     Options opts;
     const ParseTree parse_tree;
     bool dry_run_;
@@ -31,7 +30,7 @@ class OptionParser {
     ParseTree::sibling_iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
 
-    void set_unparsed_config();
+    std::string get_unparsed_config() const;
 
     template<class T>
     void check_bounds(
