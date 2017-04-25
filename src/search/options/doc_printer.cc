@@ -19,12 +19,8 @@ DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    DocStore *ds = DocStore::instance();
-    vector<string> types = ds->get_types();
-    for (size_t n = 0; n < types.size(); ++n) {
-        // Entries for the category itself have an empty type
-        if (!types[n].empty())
-            print_category(types[n]);
+    for (const string &type : DocStore::instance()->get_types()) {
+        print_category(type);
     }
 }
 
