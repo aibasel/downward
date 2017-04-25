@@ -98,13 +98,6 @@ public:
 
     bool dry_run() const;
     bool help_mode() const;
-
-    template<typename T>
-    static const std::string &to_str(T in) {
-        std::ostringstream out;
-        out << std::boolalpha << in;
-        return out.str();
-    }
 };
 
 /*

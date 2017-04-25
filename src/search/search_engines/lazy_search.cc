@@ -19,7 +19,7 @@
 using namespace std;
 
 namespace lazy_search {
-static const int DEFAULT_LAZY_BOOST = 1000;
+static const string DEFAULT_LAZY_BOOST = "1000";
 
 LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
@@ -314,7 +314,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "boost",
         "boost value for alternation queues that are restricted "
         "to preferred operator nodes",
-        OptionParser::to_str(DEFAULT_LAZY_BOOST));
+        DEFAULT_LAZY_BOOST);
     _add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -383,7 +383,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "true");
     parser.add_option<int>("boost",
                            "boost value for preferred operator open lists",
-                           OptionParser::to_str(DEFAULT_LAZY_BOOST));
+                           DEFAULT_LAZY_BOOST);
     parser.add_option<int>("w", "heuristic weight", "1");
     _add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);
