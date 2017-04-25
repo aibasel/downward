@@ -197,7 +197,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     bool merge_selector = options.contains("merge_selector");
     if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
         cerr << "You have to specify exactly one of the options merge_tree "
-                "and merg_selector!" << endl;
+            "and merg_selector!" << endl;
         utils::exit_with(utils::ExitCode::INPUT_ERROR);
     }
     if (parser.dry_run())
