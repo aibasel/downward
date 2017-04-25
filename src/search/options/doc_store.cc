@@ -5,7 +5,7 @@
 using namespace std;
 
 namespace options {
-void DocStore::register_object(string k, string type) {
+void DocStore::register_object(string k, const string &type) {
     transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
     registered[k] = DocStruct();
     registered[k].type = type;
@@ -14,11 +14,11 @@ void DocStore::register_object(string k, string type) {
     registered[k].hidden = false;
 }
 
-void DocStore::add_arg(string k,
-                       string arg_name,
-                       string help,
-                       string type,
-                       string default_value,
+void DocStore::add_arg(const string &k,
+                       const string &arg_name,
+                       const string &help,
+                       const string &type,
+                       const string &default_value,
                        Bounds bounds,
                        ValueExplanations value_explanations) {
     registered[k].arg_help.push_back(
@@ -26,8 +26,8 @@ void DocStore::add_arg(string k,
                      value_explanations));
 }
 
-void DocStore::add_value_explanations(string k,
-                                      string arg_name,
+void DocStore::add_value_explanations(const string &k,
+                                      const string &arg_name,
                                       ValueExplanations value_explanations) {
     vector<ArgumentInfo> &args = registered[k].arg_help;
     for (size_t i = 0; i < args.size(); ++i) {
@@ -39,38 +39,38 @@ void DocStore::add_value_explanations(string k,
 }
 
 
-void DocStore::set_synopsis(string k,
-                            string name, string description) {
+void DocStore::set_synopsis(
+    const string &k, const string &name, const string &description) {
     registered[k].full_name = name;
     registered[k].synopsis = description;
 }
 
-void DocStore::add_property(string k,
-                            string name, string description) {
+void DocStore::add_property(
+    const string &k, const string &name, const string &description) {
     registered[k].property_help.push_back(PropertyInfo(name, description));
 }
 
-void DocStore::add_feature(string k,
-                           string feature, string description) {
+void DocStore::add_feature(
+    const string &k, const string &feature, const string &description) {
     registered[k].support_help.push_back(LanguageSupportInfo(feature,
                                                              description));
 }
 
-void DocStore::add_note(string k,
-                        string name, string description, bool long_text) {
+void DocStore::add_note(
+    const string &k, const string &name, const string &description, bool long_text) {
     registered[k].notes.push_back(NoteInfo(name, description, long_text));
 }
 
-void DocStore::hide(string k) {
+void DocStore::hide(const string &k) {
     registered[k].hidden = true;
 }
 
 
-bool DocStore::contains(string k) {
+bool DocStore::contains(const string &k) {
     return registered.find(k) != registered.end();
 }
 
-DocStruct DocStore::get(string k) {
+DocStruct DocStore::get(const string &k) {
     return registered[k];
 }
 

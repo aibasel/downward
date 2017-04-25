@@ -3,16 +3,16 @@
 using namespace std;
 
 namespace options {
-ArgError::ArgError(string msg)
+ArgError::ArgError(const string &msg)
     : msg(msg) {
 }
 
-ParseError::ParseError(string m, ParseTree pt)
+ParseError::ParseError(const string &m, ParseTree pt)
     : msg(m),
       parse_tree(pt) {
 }
 
-ParseError::ParseError(string m, ParseTree pt, string correct_substring)
+ParseError::ParseError(const string &m, ParseTree pt, const string &correct_substring)
     : msg(m),
       parse_tree(pt),
       substr(correct_substring) {

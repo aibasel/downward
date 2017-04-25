@@ -12,7 +12,7 @@ namespace options {
 typedef std::vector<std::pair<std::string, std::string>> ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
-        std::string k, std::string h, std::string t_n, std::string def_val,
+        const std::string &k, const std::string &h, const std::string &t_n, const std::string &def_val,
         const Bounds &bounds, ValueExplanations val_expl)
         : kwd(k),
           help(h),
@@ -30,7 +30,7 @@ struct ArgumentInfo {
 };
 
 struct PropertyInfo {
-    PropertyInfo(std::string prop, std::string descr)
+    PropertyInfo(const std::string &prop, const std::string &descr)
         : property(prop),
           description(descr) {
     }
@@ -39,7 +39,7 @@ struct PropertyInfo {
 };
 
 struct NoteInfo {
-    NoteInfo(std::string n, std::string descr, bool long_text_)
+    NoteInfo(const std::string &n, const std::string &descr, bool long_text_)
         : name(n),
           description(descr),
           long_text(long_text_) {
@@ -51,7 +51,7 @@ struct NoteInfo {
 
 
 struct LanguageSupportInfo {
-    LanguageSupportInfo(std::string feat, std::string descr)
+    LanguageSupportInfo(const std::string &feat, const std::string &descr)
         : feature(feat),
           description(descr) {
     }
@@ -79,30 +79,30 @@ public:
         return &instance_;
     }
 
-    void register_object(std::string k, std::string type);
+    void register_object(std::string k, const std::string &type);
 
-    void add_arg(std::string k,
-                 std::string arg_name,
-                 std::string help,
-                 std::string type,
-                 std::string default_value,
+    void add_arg(const std::string &k,
+                 const std::string &arg_name,
+                 const std::string &help,
+                 const std::string &type,
+                 const std::string &default_value,
                  Bounds bounds,
                  ValueExplanations value_explanations = ValueExplanations());
-    void add_value_explanations(std::string k,
-                                std::string arg_name,
+    void add_value_explanations(const std::string &k,
+                                const std::string &arg_name,
                                 ValueExplanations value_explanations);
-    void set_synopsis(std::string k,
-                      std::string name, std::string description);
-    void add_property(std::string k,
-                      std::string name, std::string description);
-    void add_feature(std::string k,
-                     std::string feature, std::string description);
-    void add_note(std::string k,
-                  std::string name, std::string description, bool long_text);
-    void hide(std::string k);
+    void set_synopsis(const std::string &k,
+                      const std::string &name, const std::string &description);
+    void add_property(const std::string &k,
+                      const std::string &name, const std::string &description);
+    void add_feature(const std::string &k,
+                     const std::string &feature, const std::string &description);
+    void add_note(const std::string &k,
+                  const std::string &name, const std::string &description, bool long_text);
+    void hide(const std::string &k);
 
-    bool contains(std::string k);
-    DocStruct get(std::string k);
+    bool contains(const std::string &k);
+    DocStruct get(const std::string &k);
     std::vector<std::string> get_keys();
     std::vector<std::string> get_types();
 

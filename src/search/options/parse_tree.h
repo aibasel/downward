@@ -14,7 +14,7 @@ struct ParseNode {
           key("") {
     }
 
-    ParseNode(std::string val, std::string k = "")
+    ParseNode(const std::string &val, const std::string &k = "")
         : value(val),
           key(k) {
     }
