@@ -80,8 +80,6 @@ fast_downward_plugin(
 
         open_lists/open_list
         open_lists/open_list_factory
-        open_lists/pareto_open_list
-        open_lists/standard_scalar_open_list
         open_lists/tiebreaking_open_list
         open_lists/type_based_open_list
     DEPENDS INT_PACKER ORDERED_SET SEGMENTED_VECTOR
@@ -150,6 +148,13 @@ fast_downward_plugin(
     HELP "Pareto open list"
     SOURCES
         open_lists/pareto_open_list
+)
+
+fast_downward_plugin(
+    NAME STANDARD_SCALAR_OPEN_LIST
+    HELP "Standard scalar open list"
+    SOURCES
+        open_lists/standard_scalar_open_list
 )
 
 fast_downward_plugin(
