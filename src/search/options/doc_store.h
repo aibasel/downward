@@ -9,7 +9,8 @@
 #include <vector>
 
 namespace options {
-typedef std::vector<std::pair<std::string, std::string>> ValueExplanations;
+using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
+
 struct ArgumentInfo {
     ArgumentInfo(
         const std::string &k, const std::string &h, const std::string &t_n, const std::string &def_val,
