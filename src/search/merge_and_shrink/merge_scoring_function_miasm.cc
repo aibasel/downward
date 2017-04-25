@@ -26,7 +26,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
     const vector<pair<int, int>> &merge_candidates) {
     vector<double> scores;
     scores.reserve(merge_candidates.size());
-    for (pair<int, int> merge_candidate : merge_candidates ) {
+    for (pair<int, int> merge_candidate : merge_candidates) {
         int ts_index1 = merge_candidate.first;
         int ts_index2 = merge_candidate.second;
 
@@ -38,12 +38,12 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         double score = 0;
         if (fts.get_ts(merge_index).is_solvable()) {
             int expected_size = fts.get_ts(ts_index1).get_size() *
-                fts.get_ts(ts_index2).get_size();
+                                fts.get_ts(ts_index2).get_size();
             assert(expected_size);
             int new_size = fts.get_ts(merge_index).get_size();
             assert(new_size <= expected_size);
             score = static_cast<double>(new_size) /
-                static_cast<double>(expected_size);
+                    static_cast<double>(expected_size);
         }
         scores.push_back(score);
 
