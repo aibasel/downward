@@ -34,8 +34,7 @@ static Evaluator *_parse(OptionParser &parser) {
     parser.document_synopsis("Sum evaluator",
                              "Calculates the sum of the sub-evaluators.");
 
-    parser.add_list_option<Evaluator *>("evals",
-                                        "at least one evaluator");
+    parser.add_list_option<Evaluator *>("evals", "at least one evaluator");
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<Evaluator *>("evals");

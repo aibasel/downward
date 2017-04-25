@@ -1,8 +1,8 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
-#include "per_state_information.h"
 #include "evaluator.h"
+#include "per_state_information.h"
 #include "task_proxy.h"
 
 #include "algorithms/ordered_set.h"

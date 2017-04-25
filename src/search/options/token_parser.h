@@ -3,8 +3,8 @@
 
 #include "predefinitions.h"
 
-class Heuristic;
 class Evaluator;
+class Heuristic;
 
 namespace options {
 class OptionParser;
