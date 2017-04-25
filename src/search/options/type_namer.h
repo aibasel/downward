@@ -50,35 +50,35 @@ struct TypeNamer<T *> {
     }
 };
 
-template <>
+template<>
 struct TypeNamer<int> {
     static std::string name() {
         return "int";
     }
 };
 
-template <>
+template<>
 struct TypeNamer<bool> {
     static std::string name() {
         return "bool";
     }
 };
 
-template <>
+template<>
 struct TypeNamer<double> {
     static std::string name() {
         return "double";
     }
 };
 
-template <>
+template<>
 struct TypeNamer<std::string> {
     static std::string name() {
         return "string";
     }
 };
 
-template <>
+template<>
 struct TypeNamer<ParseTree> {
     static std::string name() {
         return "ParseTree (this just means the input is parsed at a later point. The real type is probably a search engine.)";

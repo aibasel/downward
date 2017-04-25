@@ -7,6 +7,10 @@
 #include <unordered_map>
 #include <vector>
 
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace potentials {
 using SamplesToFunctionsMap =
           std::unordered_map<State, std::unique_ptr<PotentialFunction>>;
@@ -20,6 +24,7 @@ class DiversePotentialHeuristics {
     // with num_samples parameter?
     const int max_num_heuristics;
     const int num_samples;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
     std::vector<std::unique_ptr<PotentialFunction>> diverse_functions;
 
     /* Filter dead end samples and duplicates. Store potential heuristics

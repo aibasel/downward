@@ -3,7 +3,7 @@
 #include "label_equivalence_relation.h"
 #include "transition_system.h"
 
-#include "../priority_queue.h"
+#include "../algorithms/priority_queues.h"
 
 #include <cassert>
 #include <deque>
@@ -116,7 +116,7 @@ void Distances::compute_goal_distances_unit_cost() {
 
 static void dijkstra_search(
     const vector<vector<pair<int, int>>> &graph,
-    AdaptiveQueue<int> &queue,
+    priority_queues::AdaptiveQueue<int> &queue,
     vector<int> &distances) {
     while (!queue.empty()) {
         pair<int, int> top_pair = queue.pop();
@@ -153,7 +153,7 @@ void Distances::compute_init_distances_general_cost() {
 
     // TODO: Reuse the same queue for multiple computations to save speed?
     //       Also see compute_goal_distances_general_cost.
-    AdaptiveQueue<int> queue;
+    priority_queues::AdaptiveQueue<int> queue;
     // TODO: This is an oddly inefficient initialization! Fix it.
     for (int state = 0; state < get_num_states(); ++state) {
         if (state == transition_system.get_init_state()) {
@@ -178,7 +178,7 @@ void Distances::compute_goal_distances_general_cost() {
 
     // TODO: Reuse the same queue for multiple computations to save speed?
     //       Also see compute_init_distances_general_cost.
-    AdaptiveQueue<int> queue;
+    priority_queues::AdaptiveQueue<int> queue;
     for (int state = 0; state < get_num_states(); ++state) {
         if (transition_system.is_goal_state(state)) {
             goal_distances[state] = 0;

@@ -5,11 +5,10 @@
 #include "global_operator.h"
 #include "global_state.h"
 #include "heuristic.h"
-#include "int_packer.h"
 #include "successor_generator.h"
 
+#include "algorithms/int_packer.h"
 #include "tasks/root_task.h"
-
 #include "utils/logging.h"
 #include "utils/rng.h"
 #include "utils/system.h"
@@ -175,12 +174,12 @@ void read_mutexes(istream &in) {
                        don't mark a fact as mutex with itself
                        (important for correctness) and don't include
                        redundant mutexes (important to conserve
-                       memory). Note that the preprocessor removes
-                       mutex groups that contain *only* redundant
-                       mutexes, but it can of course generate mutex
-                       groups which lead to *some* redundant mutexes,
-                       where some but not all facts talk about the
-                       same variable. */
+                       memory). Note that the translator (at least
+                       with default settings) removes mutex groups
+                       that contain *only* redundant mutexes, but it
+                       can of course generate mutex groups which lead
+                       to *some* redundant mutexes, where some but not
+                       all facts talk about the same variable. */
                     g_inconsistent_facts[fact1.var][fact1.value].insert(fact2);
                 }
             }
@@ -245,20 +244,14 @@ void read_everything(istream &in) {
     read_operators(in);
     read_axioms(in);
 
-    // Ignore successor generator from preprocessor output.
-    check_magic(in, "begin_SG");
-    string dummy_string = "";
-    while (dummy_string != "end_SG") {
-        getline(in, dummy_string);
-    }
-
-    check_magic(in, "begin_DTG"); // ignore everything from here
+    /* TODO: We should be stricter here and verify that we
+       have reached the end of "in". */
 
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
     cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
-    g_state_packer = new IntPacker(g_variable_domain);
+    g_state_packer = new int_packer::IntPacker(g_variable_domain);
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
     int num_vars = g_variable_domain.size();
@@ -269,7 +262,7 @@ void read_everything(istream &in) {
     cout << "Variables: " << num_vars << endl;
     cout << "FactPairs: " << num_facts << endl;
     cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() * sizeof(IntPacker::Bin)
+         << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
          << endl;
 
     cout << "Building successor generator..." << flush;
@@ -361,13 +354,6 @@ const shared_ptr<AbstractTask> g_root_task() {
     return root_task;
 }
 
-shared_ptr<utils::RandomNumberGenerator> g_rng() {
-    // Use an arbitrary default seed.
-    static shared_ptr<utils::RandomNumberGenerator> rng =
-        make_shared<utils::RandomNumberGenerator>(2011);
-    return rng;
-}
-
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
@@ -376,7 +362,7 @@ vector<int> g_variable_domain;
 vector<vector<string>> g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-IntPacker *g_state_packer;
+int_packer::IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int>> g_goal;
 vector<GlobalOperator> g_operators;

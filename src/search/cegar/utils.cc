@@ -1,7 +1,6 @@
 #include "utils.h"
 
 #include "../option_parser.h"
-#include "../task_proxy.h"
 #include "../task_tools.h"
 
 #include "../heuristics/additive_heuristic.h"

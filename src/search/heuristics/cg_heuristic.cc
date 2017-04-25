@@ -28,7 +28,7 @@ CGHeuristic::CGHeuristic(const Options &opts)
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
     for (size_t i = 0; i < num_vars; ++i)
-        prio_queues.push_back(new AdaptiveQueue<ValueNode *>);
+        prio_queues.push_back(new priority_queues::AdaptiveQueue<ValueNode *>);
 
     function<bool(int, int)> pruning_condition =
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
@@ -114,7 +114,7 @@ int CGHeuristic::get_transition_cost(const State &state,
         }
 
         // Initialize Heap for Dijkstra's algorithm.
-        AdaptiveQueue<ValueNode *> &prio_queue = *prio_queues[var_no];
+        priority_queues::AdaptiveQueue<ValueNode *> &prio_queue = *prio_queues[var_no];
         prio_queue.clear();
         prio_queue.push(0, start);
 

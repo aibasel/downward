@@ -1,13 +1,13 @@
 #ifndef CEGAR_DOMAINS_H
 #define CEGAR_DOMAINS_H
 
-#include "../utils/dynamic_bitset.h"
+#include "../algorithms/dynamic_bitset.h"
 
 #include <ostream>
 #include <vector>
 
 namespace cegar {
-using Bitset = utils::DynamicBitset<unsigned short>;
+using Bitset = dynamic_bitset::DynamicBitset<unsigned short>;
 
 /*
   Represent a Cartesian set: for each variable store a subset of values.
