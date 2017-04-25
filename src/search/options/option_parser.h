@@ -28,7 +28,7 @@ class OptionParser {
 public:
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
-    OptionParser(std::string config, bool dr);
+    OptionParser(const std::string &config, bool dr);
     OptionParser(ParseTree pt, bool dr);
     ~OptionParser() = default;
 
@@ -38,7 +38,7 @@ public:
     static SearchEngine *parse_cmd_line(
         int argc, const char **argv, bool dr, bool is_unit_cost);
 
-    static std::string usage(std::string progname);
+    static std::string usage(const std::string &progname);
 
     //this function initiates parsing of T (the root node of parse_tree
     //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarkFactory*
@@ -53,30 +53,30 @@ public:
        parameters without default values. */
     template<typename T>
     void add_option(
-        std::string k, std::string h = "", std::string def_val = "",
+        const std::string &k, const std::string &h = "", const std::string &def_val = "",
         Bounds bounds = Bounds::unlimited());
 
-    void add_enum_option(std::string k,
+    void add_enum_option(const std::string &k,
                          std::vector<std::string > enumeration,
-                         std::string h = "", std::string def_val = "",
+                         const std::string &h = "", const std::string &def_val = "",
                          std::vector<std::string> enum_doc = std::vector<std::string>());
     template<typename T>
-    void add_list_option(std::string k,
-                         std::string h = "", std::string def_val = "");
+    void add_list_option(const std::string &k,
+                         const std::string &h = "", const std::string &def_val = "");
 
     bool is_valid_option(const std::string &k) const;
 
-    void document_values(std::string argument,
+    void document_values(const std::string &argument,
                          ValueExplanations value_explanations) const;
-    void document_synopsis(std::string name, std::string note) const;
-    void document_property(std::string property, std::string note) const;
-    void document_language_support(std::string feature, std::string note) const;
-    void document_note(std::string name, std::string note, bool long_text = false) const;
+    void document_synopsis(const std::string &name, const std::string &note) const;
+    void document_property(const std::string &property, const std::string &note) const;
+    void document_language_support(const std::string &feature, const std::string &note) const;
+    void document_note(const std::string &name, const std::string &note, bool long_text = false) const;
     void document_hide() const;
 
-    static void static_error(std::string msg);
-    void error(std::string msg);
-    void warning(std::string msg);
+    static void static_error(const std::string &msg);
+    void error(const std::string &msg);
+    void warning(const std::string &msg);
 
     Options parse(); //parse is not the best name for this function. It just does some checks and returns the parsed options Parsing happens before that. Change?
     const ParseTree *get_parse_tree();
@@ -86,7 +86,7 @@ public:
     bool help_mode() const;
 
     template<typename T>
-    static std::string to_str(T in) {
+    static const std::string &to_str(T in) {
         std::ostringstream out;
         out << std::boolalpha << in;
         return out.str();
@@ -141,7 +141,7 @@ void OptionParser::check_bounds<double>(
 
 template<typename T>
 void OptionParser::add_option(
-    std::string k, std::string h, std::string default_value, Bounds bounds) {
+    const std::string &k, const std::string &h, const std::string &default_value, Bounds bounds) {
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
@@ -197,7 +197,7 @@ void OptionParser::add_option(
 
 template<typename T>
 void OptionParser::add_list_option(
-    std::string k, std::string h, std::string def_val) {
+    const std::string &k, const std::string &h, const std::string &def_val) {
     add_option<std::vector<T>>(k, h, def_val);
 }
 }

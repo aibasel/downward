@@ -25,12 +25,12 @@ public:
     std::map<std::string, Any> storage;
 
     template<typename T>
-    void set(std::string key, T value) {
+    void set(const std::string &key, T value) {
         storage[key] = value;
     }
 
     template<typename T>
-    T get(std::string key) const {
+    T get(const std::string &key) const {
         const auto it = storage.find(key);
         if (it == storage.end()) {
             ABORT("Attempt to retrieve nonexisting object of name " +
@@ -50,7 +50,7 @@ public:
     }
 
     template<typename T>
-    T get(std::string key, const T &default_value) const {
+    T get(const std::string &key, const T &default_value) const {
         if (storage.count(key))
             return get<T>(key);
         else
@@ -58,7 +58,7 @@ public:
     }
 
     template<typename T>
-    void verify_list_non_empty(std::string key) const {
+    void verify_list_non_empty(const std::string &key) const {
         if (!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T>>(key);
             if (temp_vec.empty()) {
@@ -72,19 +72,19 @@ public:
     }
 
     template<typename T>
-    std::vector<T> get_list(std::string key) const {
+    std::vector<T> get_list(const std::string &key) const {
         return get<std::vector<T>>(key);
     }
 
-    int get_enum(std::string key) const {
+    int get_enum(const std::string &key) const {
         return get<int>(key);
     }
 
-    bool contains(std::string key) const {
+    bool contains(const std::string &key) const {
         return storage.find(key) != storage.end();
     }
 
-    std::string get_unparsed_config() const {
+    const std::string &get_unparsed_config() const {
         return unparsed_config;
     }
 

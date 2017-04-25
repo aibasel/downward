@@ -60,11 +60,11 @@ namespace options {
 const string OptionParser::NONE = "<none>";
 
 
-void OptionParser::error(string msg) {
+void OptionParser::error(const string &msg) {
     throw ParseError(msg, *this->get_parse_tree());
 }
 
-void OptionParser::warning(string msg) {
+void OptionParser::warning(const string &msg) {
     cout << "Parser Warning: " << msg << endl;
 }
 
@@ -87,7 +87,7 @@ static void get_help_templ(const ParseTree &pt) {
     }
 }
 
-static void get_help(string k) {
+static void get_help(const string &k) {
     ParseTree pt;
     pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
@@ -150,7 +150,7 @@ Predefining landmarks and heuristics:
 
 //takes a string of the form "word1, word2, word3 " and converts it to a vector
 //(used for predefining synergies)
-static vector<string> to_list(string s) {
+static vector<string> to_list(const string &s) {
     vector<string> result;
     string buffer;
     for (size_t i = 0; i < s.size(); ++i) {
@@ -371,7 +371,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
     return engine;
 }
 
-string OptionParser::usage(string progname) {
+string OptionParser::usage(const string &progname) {
     string usage =
         "usage: \n" +
         progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
@@ -472,7 +472,7 @@ static ParseTree generate_parse_tree(string config) {
     return real_tr;
 }
 
-OptionParser::OptionParser(const string config, bool dr)
+OptionParser::OptionParser(const string &config, bool dr)
     : opts(false),
       parse_tree(generate_parse_tree(config)),
       dry_run_(dr),
@@ -502,9 +502,9 @@ static string str_to_lower(string s) {
     return s;
 }
 
-void OptionParser::add_enum_option(string k,
+void OptionParser::add_enum_option(const string &k,
                                    vector<string > enumeration,
-                                   string h, string def_val,
+                                   const string &h, const string &def_val,
                                    vector<string> enum_docs) {
     if (help_mode_) {
         ValueExplanations value_explanations;
@@ -597,31 +597,31 @@ bool OptionParser::is_valid_option(const string &k) const {
     return find(valid_keys.begin(), valid_keys.end(), k) != valid_keys.end();
 }
 
-void OptionParser::document_values(string argument,
+void OptionParser::document_values(const string &argument,
                                    ValueExplanations value_explanations) const {
     DocStore::instance()->add_value_explanations(
         parse_tree.begin()->value,
         argument, value_explanations);
 }
 
-void OptionParser::document_synopsis(string name, string note) const {
+void OptionParser::document_synopsis(const string &name, const string &note) const {
     DocStore::instance()->set_synopsis(parse_tree.begin()->value,
                                        name, note);
 }
 
-void OptionParser::document_property(string property, string note) const {
+void OptionParser::document_property(const string &property, const string &note) const {
     DocStore::instance()->add_property(parse_tree.begin()->value,
                                        property, note);
 }
 
-void OptionParser::document_language_support(string feature,
-                                             string note) const {
+void OptionParser::document_language_support(const string &feature,
+                                             const string &note) const {
     DocStore::instance()->add_feature(parse_tree.begin()->value,
                                       feature, note);
 }
 
-void OptionParser::document_note(string name,
-                                 string note, bool long_text) const {
+void OptionParser::document_note(const string &name,
+                                 const string &note, bool long_text) const {
     DocStore::instance()->add_note(parse_tree.begin()->value,
                                    name, note, long_text);
 }

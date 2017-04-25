@@ -3,12 +3,12 @@
 
 #include "parse_tree.h"
 
-#include <iosfwd>
+#include <iostream>
 #include <string>
 
 namespace options {
 struct ArgError {
-    ArgError(std::string msg);
+    ArgError(const std::string &msg);
 
     std::string msg;
 
@@ -18,8 +18,8 @@ struct ArgError {
 };
 
 struct ParseError {
-    ParseError(std::string m, ParseTree pt);
-    ParseError(std::string m, ParseTree pt, std::string correct_substring);
+    ParseError(const std::string &m, ParseTree pt);
+    ParseError(const std::string &m, ParseTree pt, const std::string &correct_substring);
 
     std::string msg;
     ParseTree parse_tree;
