@@ -8,10 +8,10 @@
 #include <memory>
 #include <vector>
 
+class Evaluator;
 class GlobalOperator;
 class Heuristic;
 class PruningMethod;
-class ScalarEvaluator;
 
 namespace options {
 class Options;
@@ -23,7 +23,7 @@ class EagerSearch : public SearchEngine {
     const bool use_multi_path_dependence;
 
     std::unique_ptr<StateOpenList> open_list;
-    ScalarEvaluator *f_evaluator;
+    Evaluator *f_evaluator;
 
     std::vector<Heuristic *> heuristics;
     std::vector<Heuristic *> preferred_operator_heuristics;
