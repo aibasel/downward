@@ -22,15 +22,31 @@ namespace options {
   result is added to the Options.
 */
 class OptionParser {
+    std::string unparsed_config;
+    Options opts;
+    const ParseTree parse_tree;
+    bool dry_run_;
+    bool help_mode_;
+
+    ParseTree::sibling_iterator next_unparsed_argument;
+    std::vector<std::string> valid_keys;
+
+    void set_unparsed_config();
+
+    template<class T>
+    void check_bounds(
+        const std::string &key, const T &value, const Bounds &bounds);
+
     static int parse_int_arg(const std::string &name, const std::string &value);
     static SearchEngine *parse_cmd_line_aux(
         const std::vector<std::string> &args, bool dry_run);
+
 public:
+    OptionParser(const std::string &config, bool dry_run);
+    OptionParser(ParseTree pt, bool dry_run);
+    ~OptionParser() = default;
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
-    OptionParser(const std::string &config, bool dr);
-    OptionParser(ParseTree pt, bool dr);
-    ~OptionParser() = default;
 
     static const std::string NONE;
 
@@ -45,15 +61,13 @@ public:
     template<typename T>
     T start_parsing();
 
-    template<class T>
-    void check_bounds(
-        const std::string &key, const T &value, const Bounds &bounds);
-
     /* Add option with default value. Use def_val=NONE for optional
        parameters without default values. */
     template<typename T>
     void add_option(
-        const std::string &k, const std::string &h = "", const std::string &def_val = "",
+        const std::string &key,
+        const std::string &help = "",
+        const std::string &default_value = "",
         Bounds bounds = Bounds::unlimited());
 
     void add_enum_option(const std::string &k,
@@ -91,18 +105,6 @@ public:
         out << std::boolalpha << in;
         return out.str();
     }
-
-private:
-    std::string unparsed_config;
-    Options opts;
-    const ParseTree parse_tree;
-    bool dry_run_;
-    bool help_mode_;
-
-    ParseTree::sibling_iterator next_unparsed_argument;
-    std::vector<std::string> valid_keys;
-
-    void set_unparsed_config();
 };
 
 /*
@@ -141,21 +143,27 @@ void OptionParser::check_bounds<double>(
 
 template<typename T>
 void OptionParser::add_option(
-    const std::string &k, const std::string &h, const std::string &default_value, Bounds bounds) {
+    const std::string &key,
+    const std::string &help,
+    const std::string &default_value,
+    Bounds bounds) {
     if (help_mode()) {
-        DocStore::instance()->add_arg(parse_tree.begin()->value,
-                                      k, h,
-                                      TypeNamer<T>::name(), default_value,
-                                      bounds);
+        DocStore::instance()->add_arg(
+            parse_tree.begin()->value,
+            key,
+            help,
+            TypeNamer<T>::name(),
+            default_value,
+            bounds);
         return;
     }
-    valid_keys.push_back(k);
+    valid_keys.push_back(key);
     bool use_default(false);
     ParseTree::sibling_iterator arg = next_unparsed_argument;
     //scenario where we have already handled all arguments
     if (arg == parse_tree.end(parse_tree.begin())) {
         if (default_value.empty()) {
-            error("missing option: " + k);
+            error("missing option: " + key);
         } else if (default_value == NONE) {
             return;
         } else {
@@ -166,12 +174,12 @@ void OptionParser::add_option(
         if (!arg->key.empty()) { //to check if we reached the params supplied with key
             //try to find a parameter passed with keyword k
             for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
-                if (arg->key.compare(k) == 0)
+                if (arg->key.compare(key) == 0)
                     break;
             }
             if (arg == parse_tree.end(parse_tree.begin())) {
                 if (default_value.empty()) {
-                    error("missing option: " + k);
+                    error("missing option: " + key);
                 } else if (default_value == NONE) {
                     return;
                 } else {
@@ -185,8 +193,8 @@ void OptionParser::add_option(
         new OptionParser(default_value, dry_run()) :
         new OptionParser(subtree(parse_tree, arg), dry_run()));
     T result = TokenParser<T>::parse(*subparser);
-    check_bounds<T>(k, result, bounds);
-    opts.set<T>(k, result);
+    check_bounds<T>(key, result, bounds);
+    opts.set<T>(key, result);
     //if we have not reached the keyword parameters yet
     //and did not use the default value,
     //increment the argument position pointer

@@ -472,20 +472,20 @@ static ParseTree generate_parse_tree(string config) {
     return real_tr;
 }
 
-OptionParser::OptionParser(const string &config, bool dr)
+OptionParser::OptionParser(const string &config, bool dry_run)
     : opts(false),
       parse_tree(generate_parse_tree(config)),
-      dry_run_(dr),
+      dry_run_(dry_run),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
     set_unparsed_config();
 }
 
 
-OptionParser::OptionParser(ParseTree pt, bool dr)
+OptionParser::OptionParser(ParseTree pt, bool dry_run)
     : opts(false),
       parse_tree(pt),
-      dry_run_(dr),
+      dry_run_(dry_run),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
     set_unparsed_config();
