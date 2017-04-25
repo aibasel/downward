@@ -64,12 +64,8 @@ void OptionParser::error(const string &msg) {
     throw ParseError(msg, *this->get_parse_tree());
 }
 
-void OptionParser::warning(const string &msg) {
-    cout << "Parser Warning: " << msg << endl;
-}
-
 /*
-Functions for printing help:
+  Functions for printing help:
 */
 
 void OptionParser::set_help_mode(bool m) {
@@ -501,10 +497,12 @@ static string str_to_lower(string s) {
     return s;
 }
 
-void OptionParser::add_enum_option(const string &k,
-                                   vector<string > enumeration,
-                                   const string &h, const string &def_val,
-                                   vector<string> enum_docs) {
+void OptionParser::add_enum_option(
+    const string &key,
+    vector<string> enumeration,
+    const string &help,
+    const string &default_value,
+    vector<string> enum_docs) {
     if (help_mode_) {
         ValueExplanations value_explanations;
         string enum_descr = "{";
@@ -521,8 +519,8 @@ void OptionParser::add_enum_option(const string &k,
         enum_descr += "}";
 
         DocStore::instance()->add_arg(parse_tree.begin()->value,
-                                      k, h,
-                                      enum_descr, def_val,
+                                      key, help,
+                                      enum_descr, default_value,
                                       Bounds::unlimited(),
                                       value_explanations);
         return;
@@ -530,12 +528,12 @@ void OptionParser::add_enum_option(const string &k,
 
     //enum arguments can be given by name or by number:
     //first parse the corresponding string like a normal argument...
-    add_option<string>(k, h, def_val);
+    add_option<string>(key, help, default_value);
 
-    if (!opts.contains(k))
+    if (!opts.contains(key))
         return;
 
-    string name = str_to_lower(opts.get<string>(k));
+    string name = str_to_lower(opts.get<string>(key));
 
     //...then check if the parsed string can be treated as a number
     stringstream str_stream(name);
@@ -544,9 +542,9 @@ void OptionParser::add_enum_option(const string &k,
         int max_choice = enumeration.size();
         if (x > max_choice) {
             error("invalid enum argument " + name
-                  + " for option " + k);
+                  + " for option " + key);
         }
-        opts.set<int>(k, x);
+        opts.set<int>(key, x);
     } else {
         //...otherwise try to map the string to its position in the enumeration vector
         transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
@@ -555,9 +553,9 @@ void OptionParser::add_enum_option(const string &k,
             find(enumeration.begin(), enumeration.end(), name);
         if (it == enumeration.end()) {
             error("invalid enum argument " + name
-                  + " for option " + k);
+                  + " for option " + key);
         }
-        opts.set<int>(k, it - enumeration.begin());
+        opts.set<int>(key, it - enumeration.begin());
     }
 }
 
@@ -589,11 +587,6 @@ Options OptionParser::parse() {
     }
     opts.set_unparsed_config(unparsed_config);
     return opts;
-}
-
-bool OptionParser::is_valid_option(const string &k) const {
-    assert(!help_mode());
-    return find(valid_keys.begin(), valid_keys.end(), k) != valid_keys.end();
 }
 
 void OptionParser::document_values(const string &argument,
