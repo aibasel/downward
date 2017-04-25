@@ -21,10 +21,10 @@ IteratedSearch::IteratedSearch(const Options &opts)
       iterated_found_solution(false) {
 }
 
-SearchEngine *IteratedSearch::get_search_engine(
+unique_ptr<SearchEngine> IteratedSearch::get_search_engine(
     int engine_configs_index) {
     OptionParser parser(engine_configs[engine_configs_index], false);
-    SearchEngine *engine = parser.start_parsing<SearchEngine *>();
+    unique_ptr<SearchEngine> engine(parser.start_parsing<SearchEngine *>());
 
     cout << "Starting search: ";
     kptree::print_tree_bracketed(engine_configs[engine_configs_index], cout);
@@ -33,7 +33,7 @@ SearchEngine *IteratedSearch::get_search_engine(
     return engine;
 }
 
-SearchEngine *IteratedSearch::create_phase(int phase) {
+unique_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
     int num_phases = engine_configs.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
@@ -54,7 +54,7 @@ SearchEngine *IteratedSearch::create_phase(int phase) {
 }
 
 SearchStatus IteratedSearch::step() {
-    SearchEngine *current_search = create_phase(phase);
+    unique_ptr<SearchEngine> current_search = create_phase(phase);
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }

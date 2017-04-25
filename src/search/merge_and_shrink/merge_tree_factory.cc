@@ -14,8 +14,8 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(const options::Options &options)
-    : update_option(static_cast<UpdateOption>(options.get_enum("update_option"))) {
-    rng = utils::parse_rng_from_options(options);
+    : rng(utils::parse_rng_from_options(options)),
+      update_option(static_cast<UpdateOption>(options.get_enum("update_option"))) {
 }
 
 void MergeTreeFactory::dump_options() const {

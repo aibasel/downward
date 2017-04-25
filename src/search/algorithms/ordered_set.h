@@ -8,12 +8,12 @@
 #include <unordered_set>
 #include <vector>
 
-namespace algorithms {
+namespace ordered_set {
 /*
   Combine vector and unordered_set to store a set of elements, ordered
   by insertion time.
 */
-template <typename T>
+template<typename T>
 class OrderedSet {
     std::vector<T> ordered_items;
     std::unordered_set<T> unordered_items;

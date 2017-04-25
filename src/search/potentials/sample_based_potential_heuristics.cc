@@ -1,5 +1,3 @@
-#include "sample_based_potential_heuristics.h"
-
 #include "potential_function.h"
 #include "potential_max_heuristic.h"
 #include "potential_optimizer.h"
@@ -7,6 +5,9 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+
+#include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <memory>
 #include <vector>
@@ -25,9 +26,12 @@ static void filter_dead_ends(PotentialOptimizer &optimizer, vector<State> &sampl
     swap(samples, non_dead_end_samples);
 }
 
-void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
+static void optimize_for_samples(
+    PotentialOptimizer &optimizer,
+    int num_samples,
+    utils::RandomNumberGenerator &rng) {
     vector<State> samples = sample_without_dead_end_detection(
-        optimizer, num_samples);
+        optimizer, num_samples, rng);
     if (!optimizer.potentials_are_bounded()) {
         filter_dead_ends(optimizer, samples);
     }
@@ -42,8 +46,9 @@ static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_funct
     const Options &opts) {
     vector<unique_ptr<PotentialFunction>> functions;
     PotentialOptimizer optimizer(opts);
+    shared_ptr<utils::RandomNumberGenerator> rng(utils::parse_rng_from_options(opts));
     for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
-        optimize_for_samples(optimizer, opts.get<int>("num_samples"));
+        optimize_for_samples(optimizer, opts.get<int>("num_samples"), *rng);
         functions.push_back(optimizer.get_potential_function());
     }
     return functions;
@@ -65,6 +70,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "1000",
         Bounds("0", "infinity"));
     prepare_parser_for_admissible_potentials(parser);
+    utils::add_rng_options(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

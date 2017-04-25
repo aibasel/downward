@@ -2,7 +2,6 @@
 
 #include "search_common.h"
 
-#include "../globals.h"
 #include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -11,6 +10,7 @@
 #include "../algorithms/ordered_set.h"
 #include "../open_lists/open_list_factory.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <algorithm>
 #include <limits>
@@ -28,6 +28,7 @@ LazySearch::LazySearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       randomize_successors(opts.get<bool>("randomize_successors")),
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
+      rng(utils::parse_rng_from_options(opts)),
       current_state(state_registry.get_initial_state()),
       current_predecessor_id(StateID::no_state),
       current_operator(nullptr),
@@ -66,17 +67,17 @@ void LazySearch::initialize() {
 }
 
 vector<const GlobalOperator *> LazySearch::get_successor_operators(
-    const algorithms::OrderedSet<const GlobalOperator *> &preferred_operators) const {
+    const ordered_set::OrderedSet<const GlobalOperator *> &preferred_operators) const {
     vector<const GlobalOperator *> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);
 
     if (randomize_successors) {
-        g_rng()->shuffle(applicable_operators);
+        rng->shuffle(applicable_operators);
     }
 
     if (preferred_successors_first) {
-        algorithms::OrderedSet<const GlobalOperator *> successor_operators;
+        ordered_set::OrderedSet<const GlobalOperator *> successor_operators;
         for (const GlobalOperator *op : preferred_operators) {
             successor_operators.insert(op);
         }
@@ -90,11 +91,11 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
+    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
     if (randomize_successors) {
-        preferred_operators.shuffle(*g_rng());
+        preferred_operators.shuffle(*rng);
     }
 
     vector<const GlobalOperator *> successor_operators =
@@ -109,7 +110,7 @@ void LazySearch::generate_successors() {
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);
-            open_list->insert(new_eval_context, make_pair(current_state.get_id(), op));
+            open_list->insert(new_eval_context, make_pair(current_state.get_id(), get_op_index_hacked(op)));
         }
     }
 }
@@ -123,7 +124,7 @@ SearchStatus LazySearch::fetch_next_state() {
     EdgeOpenListEntry next = open_list->remove_min();
 
     current_predecessor_id = next.first;
-    current_operator = next.second;
+    current_operator = &g_operators[next.second];
     GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
     current_state = state_registry.get_successor_state(current_predecessor, *current_operator);
@@ -237,6 +238,7 @@ static void _add_succ_order_options(OptionParser &parser) {
         "When using randomize_successors=true and "
         "preferred_successors_first=true, randomization happens before "
         "preferred operators are moved to the front.");
+    utils::add_rng_options(parser);
 }
 
 static SearchEngine *_parse(OptionParser &parser) {

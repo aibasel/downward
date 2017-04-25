@@ -5,7 +5,8 @@
 
 #include "../abstract_task.h"
 #include "../heuristic.h"
-#include "../priority_queue.h"
+
+#include "../algorithms/priority_queues.h"
 
 #include <cassert>
 #include <unordered_map>
@@ -94,7 +95,7 @@ class Exploration : public Heuristic {
     std::vector<ExProposition *> goal_propositions;
     std::vector<ExProposition *> termination_propositions;
 
-    AdaptiveQueue<ExProposition *> prop_queue;
+    priority_queues::AdaptiveQueue<ExProposition *> prop_queue;
     bool did_write_overflow_warning;
 
     bool heuristic_recomputation_needed;
