@@ -41,18 +41,31 @@ public:
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const = 0;
 
     void dump_size_estimate() const {
+
+        int size_estimate = get_size_estimate();
+        int size_estimate_object_overhead = get_size_estimate_object_overhead();
+        int size_estimate_operators = get_size_estimate_operators();
+        int size_estimate_switch_var = get_size_estimate_switch_var();
+        int size_estimate_generator_for_value = get_size_estimate_generator_for_value();
+        int size_estimate_default_generator = get_size_estimate_default_generator();
+
         cout << "SG size estimates: "
-             << "total: " << get_size_estimate() << endl;
+             << "total: " << size_estimate << endl;
         cout << "SG size estimates: "
-             << "object overhead: " << get_size_estimate_object_overhead() << endl;
+             << "object overhead: " << size_estimate_object_overhead
+             << " (" << size_estimate_object_overhead / (double) size_estimate << ")" << endl;
         cout << "SG size estimates: "
-             << "operators: " << get_size_estimate_operators() << endl;
+             << "operators: " << size_estimate_operators
+             << " (" << size_estimate_operators / (double) size_estimate << ")" << endl;
         cout << "SG size estimates: "
-             << "switch var: " << get_size_estimate_switch_var() << endl;
+             << "switch var: " << size_estimate_switch_var
+             << " (" << size_estimate_switch_var / (double) size_estimate << ")" << endl;
         cout << "SG size estimates: "
-             << "generator for value: " << get_size_estimate_generator_for_value() << endl;
+             << "generator for value: " << size_estimate_generator_for_value
+             << " (" << size_estimate_generator_for_value / (double) size_estimate << ")" << endl;
         cout << "SG size estimates: "
-             << "default generator: " << get_size_estimate_default_generator() << endl;
+             << "default generator: " << size_estimate_default_generator
+             << " (" << size_estimate_default_generator / (double) size_estimate << ")" << endl;
 
         int switches = count_switches();
         int switch_immediate_empty = count_switch_immediate_empty();
@@ -63,13 +76,17 @@ public:
         int leaf_applicable_single = count_leaf_applicable_single();
         int leaf_applicable_more = count_leaf_applicable_more();
         int empty = count_empty();
+        int total_nodes = leaves + switches + empty;
 
         cout << "SG object counts: "
-             << "switches: " << switches << endl;
+             << "switches: " << switches
+             << " (" << switches / (double) total_nodes << ")" << endl;
         cout << "SG object counts: "
-             << "leaves: " << leaves << endl;
+             << "leaves: " << leaves
+             << " (" << leaves / (double) total_nodes << ")" << endl;
         cout << "SG object counts: "
-             << "empty: " << empty << endl;
+             << "empty: " << empty
+             << " (" << empty / (double) total_nodes << ")" << endl;
 
         cout << "SG switch statistics: "
              << "immediate ops empty: " << switch_immediate_empty
@@ -508,8 +525,8 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
     int peak_memory_after = utils::get_peak_memory_in_kb();
     int memory_diff = 1024 * (peak_memory_after - peak_memory_before);
     cout << endl;
-    cout << "SG: construction time: " << construction_timer << endl;
-    cout << "SG: construction peak memory difference: " << memory_diff << endl;
+    cout << "SG construction time: " << construction_timer << endl;
+    cout << "SG construction peak memory difference: " << memory_diff << endl;
     root->dump_size_estimate();
 }
 
