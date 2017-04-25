@@ -3,8 +3,7 @@
 
 #include "relaxation_heuristic.h"
 
-#include "../priority_queue.h"
-
+#include "../algorithms/priority_queues.h"
 #include "../utils/collections.h"
 
 #include <cassert>
@@ -25,7 +24,7 @@ class AdditiveHeuristic : public relaxation_heuristic::RelaxationHeuristic {
      */
     static const int MAX_COST_VALUE = 100000000;
 
-    AdaptiveQueue<Proposition *> queue;
+    priority_queues::AdaptiveQueue<Proposition *> queue;
     bool did_write_overflow_warning;
 
     void setup_exploration_queue();
