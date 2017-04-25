@@ -102,13 +102,13 @@ public:
 
         cout << "SG switch statistics: "
              << "immediate ops empty: " << switch_immediate_empty
-             << " (" << switch_immediate_empty / (double) switches << ")" << endl;
+             << " (" << switch_immediate_empty / (double) immediates << ")" << endl;
         cout << "SG switch statistics: "
              << "single immediate op: " << switch_immediate_single
-             << " (" << switch_immediate_single / (double) switches << ")" << endl;
+             << " (" << switch_immediate_single / (double) immediates << ")" << endl;
         cout << "SG switch statistics: "
              << "more immediate ops: " << switch_immediate_more
-             << " (" << switch_immediate_more / (double) switches << ")" << endl;
+             << " (" << switch_immediate_more / (double) immediates << ")" << endl;
 
         cout << "SG leaf statistics: "
              << "applicable ops empty: " << leaf_applicable_empty
