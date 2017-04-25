@@ -4,6 +4,7 @@
 #include "task_tools.h"
 
 #include "utils/collections.h"
+#include "utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -38,6 +39,45 @@ public:
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const = 0;
+
+    void dump_size_estimate() const {
+        cout << "SG size estimates: "
+             << "total: " << get_size_estimate() << endl;
+        cout << "SG size estimates: "
+             << "object overhead: " << get_size_estimate_object_overhead() << endl;
+        cout << "SG size estimates: "
+             << "operators: " << get_size_estimate_operators() << endl;
+        cout << "SG size estimates: "
+             << "switch var: " << get_size_estimate_switch_var() << endl;
+        cout << "SG size estimates: "
+             << "generator for value: " << get_size_estimate_generator_for_value() << endl;
+        cout << "SG size estimates: "
+             << "default generator: " << get_size_estimate_default_generator() << endl;
+        cout << "SG object counts: "
+             << "switches: " << count_switches() << endl;
+        cout << "SG object counts: "
+             << "leaves: " << count_leaves() << endl;
+        cout << "SG object counts: "
+             << "empty: " << count_empty() << endl;
+    }
+
+    size_t get_size_estimate() const {
+        return get_size_estimate_object_overhead() +
+            get_size_estimate_operators() +
+            get_size_estimate_switch_var() +
+            get_size_estimate_generator_for_value() +
+            get_size_estimate_default_generator();
+    }
+
+    virtual size_t get_size_estimate_object_overhead() const = 0;
+    virtual size_t get_size_estimate_operators() const = 0;
+    virtual size_t get_size_estimate_switch_var() const = 0;
+    virtual size_t get_size_estimate_generator_for_value() const = 0;
+    virtual size_t get_size_estimate_default_generator() const = 0;
+
+    virtual size_t count_switches() const = 0;
+    virtual size_t count_leaves() const = 0;
+    virtual size_t count_empty() const = 0;
 };
 
 class GeneratorSwitch : public GeneratorBase {
@@ -56,6 +96,81 @@ public:
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
+
+    virtual size_t get_size_estimate_object_overhead() const {
+        size_t result = 0;
+        result += 4; // estimate for vtbl pointer
+        result += 8; // estimate for dynamic memory management overhead
+        for (const auto &child : generator_for_value)
+            result += child->get_size_estimate_object_overhead();
+        result += default_generator->get_size_estimate_object_overhead();
+        return result;
+    }
+
+    virtual size_t get_size_estimate_operators() const {
+        size_t result = 8; // base cost for list.
+        if (immediate_operators.size() > 1)
+            result += 16 * (immediate_operators.size() - 1);
+        for (const auto &child : generator_for_value)
+            result += child->get_size_estimate_operators();
+        result += default_generator->get_size_estimate_operators();
+        return result;
+    }
+
+    virtual size_t get_size_estimate_switch_var() const {
+        size_t result = 0;
+        result += 8; // estimate for switch_var; could be made smaller
+        for (const auto &child : generator_for_value)
+            result += child->get_size_estimate_switch_var();
+        result += default_generator->get_size_estimate_switch_var();
+        return result;
+    }
+
+    virtual size_t get_size_estimate_generator_for_value() const {
+        size_t result = 0;
+        result += 12; // empty vector
+        if (!generator_for_value.empty()) {
+            result += 8; // memory management overhead
+            result += 4 * generator_for_value.size();
+        }
+        for (const auto &child : generator_for_value)
+            result += child->get_size_estimate_generator_for_value();
+        result += default_generator->get_size_estimate_generator_for_value();
+        return result;
+    }
+
+    virtual size_t get_size_estimate_default_generator() const {
+        size_t result = 0;
+        result += 4; // default generator pointer
+        for (const auto &child : generator_for_value)
+            result += child->get_size_estimate_default_generator();
+        result += default_generator->get_size_estimate_default_generator();
+        return result;
+    }
+
+    virtual size_t count_switches() const {
+        size_t result = 1;
+        for (const auto &child : generator_for_value)
+            result += child->count_switches();
+        result += default_generator->count_switches();
+        return result;
+    }
+
+    virtual size_t count_leaves() const {
+        size_t result = 0;
+        for (const auto &child : generator_for_value)
+            result += child->count_leaves();
+        result += default_generator->count_leaves();
+        return result;
+    }
+
+    virtual size_t count_empty() const {
+        size_t result = 0;
+        for (const auto &child : generator_for_value)
+            result += child->count_empty();
+        result += default_generator->count_empty();
+        return result;
+    }
 };
 
 class GeneratorLeaf : public GeneratorBase {
@@ -67,6 +182,44 @@ public:
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
+
+    virtual size_t get_size_estimate_object_overhead() const {
+        size_t result = 0;
+        result += 4; // estimate for vtbl pointer
+        result += 8; // estimate for dynamic memory management overhead
+        return result;
+    }
+
+    virtual size_t get_size_estimate_operators() const {
+        size_t result = 8; // base cost for list.
+        if (applicable_operators.size() > 1)
+            result += 16 * (applicable_operators.size() - 1);
+        return result;
+    }
+
+    virtual size_t get_size_estimate_switch_var() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_generator_for_value() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_default_generator() const {
+        return 0;
+    }
+
+    virtual size_t count_switches() const {
+        return 0;
+    }
+
+    virtual size_t count_leaves() const {
+        return 1;
+    }
+
+    virtual size_t count_empty() const {
+        return 0;
+    }
 };
 
 class GeneratorEmpty : public GeneratorBase {
@@ -76,6 +229,41 @@ public:
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
         const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
+
+    virtual size_t get_size_estimate_object_overhead() const {
+        size_t result = 0;
+        result += 4; // estimate for vtbl pointer
+        result += 8; // estimate for dynamic memory management overhead
+        return result;
+    }
+
+    virtual size_t get_size_estimate_operators() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_switch_var() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_generator_for_value() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_default_generator() const {
+        return 0;
+    }
+
+    virtual size_t count_switches() const {
+        return 0;
+    }
+
+    virtual size_t count_leaves() const {
+        return 0;
+    }
+
+    virtual size_t count_empty() const {
+        return 1;
+    }
 };
 
 GeneratorSwitch::GeneratorSwitch(
@@ -142,6 +330,9 @@ void GeneratorEmpty::generate_applicable_ops(
 
 SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
     : task_proxy(task_proxy) {
+    utils::Timer construction_timer;
+    int peak_memory_before = utils::get_peak_memory_in_kb();
+
     OperatorsProxy operators = task_proxy.get_operators();
     // We need the iterators to conditions to be stable:
     conditions.reserve(operators.size());
@@ -162,6 +353,13 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
     root = unique_ptr<GeneratorBase>(construct_recursive(0, move(all_operators)));
     utils::release_vector_memory(conditions);
     utils::release_vector_memory(next_condition_by_op);
+
+    int peak_memory_after = utils::get_peak_memory_in_kb();
+    int memory_diff = 1024 * (peak_memory_after - peak_memory_before);
+    cout << endl;
+    cout << "SG: construction time: " << construction_timer << endl;
+    cout << "SG: construction peak memory difference: " << memory_diff << endl;
+    root->dump_size_estimate();
 }
 
 SuccessorGenerator::~SuccessorGenerator() {
