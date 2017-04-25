@@ -372,11 +372,11 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
 }
 
 string OptionParser::usage(const string &progname) {
-    string usage =
+    return
         "usage: \n" +
         progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
         "* SEARCH (SearchEngine): configuration of the search algorithm\n"
-        "* OUTPUT (filename): preprocessor output\n\n"
+        "* OUTPUT (filename): translator output\n\n"
         "Options:\n"
         "--help [NAME]\n"
         "    Prints help for all heuristics, open lists, etc. called NAME.\n"
@@ -394,7 +394,6 @@ string OptionParser::usage(const string &progname) {
         "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
         "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
         "See http://www.fast-downward.org/ for details.";
-    return usage;
 }
 
 
