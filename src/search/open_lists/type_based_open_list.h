@@ -25,6 +25,7 @@
     Remove entry            O(m)        O(1)        # both use swap+pop
 */
 
+namespace type_based_open_list {
 class TypeBasedOpenListFactory : public OpenListFactory {
     Options options;
 public:
@@ -34,5 +35,6 @@ public:
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
 };
+}
 
 #endif
