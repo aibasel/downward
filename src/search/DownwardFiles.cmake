@@ -80,7 +80,6 @@ fast_downward_plugin(
 
         open_lists/open_list
         open_lists/open_list_factory
-        open_lists/tiebreaking_open_list
         open_lists/type_based_open_list
     DEPENDS INT_PACKER ORDERED_SET SEGMENTED_VECTOR
     CORE_PLUGIN
@@ -155,6 +154,13 @@ fast_downward_plugin(
     HELP "Standard scalar open list"
     SOURCES
         open_lists/standard_scalar_open_list
+)
+
+fast_downward_plugin(
+    NAME TIEBREAKING_OPEN_LIST
+    HELP "Tiebreaking open list"
+    SOURCES
+        open_lists/tiebreaking_open_list
 )
 
 fast_downward_plugin(
