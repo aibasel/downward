@@ -8,8 +8,6 @@
 #include <memory>
 #include <vector>
 
-class State;
-
 namespace options {
 class Options;
 }

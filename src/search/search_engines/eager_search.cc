@@ -46,13 +46,13 @@ void EagerSearch::initialize() {
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    // add heuristics that are used for preferred operators (in case they are
-    // not also used in the open list)
+    // Add heuristics that are used for preferred operators (in case they are
+    // not also used in the open list).
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    // add heuristics that are used in the f_evaluator. They are usually also
-    // used in the open list and hence already be included, but we want to be
+    // Add heuristics that are used in the f_evaluator. They are usually also
+    // used in the open list and are hence already included, but we want to be
     // sure.
     if (f_evaluator) {
         f_evaluator->get_involved_heuristics(hset);
@@ -91,6 +91,8 @@ void EagerSearch::initialize() {
     }
 
     print_initial_h_values(eval_context);
+
+    pruning_method->initialize(g_root_task());
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -146,7 +148,7 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators =
+    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (const GlobalOperator *op : applicable_ops) {

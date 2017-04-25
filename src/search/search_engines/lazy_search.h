@@ -29,6 +29,7 @@ protected:
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     bool randomize_successors;
     bool preferred_successors_first;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     std::vector<Heuristic *> heuristics;
     std::vector<Heuristic *> preferred_operator_heuristics;
@@ -50,7 +51,7 @@ protected:
     void reward_progress();
 
     std::vector<const GlobalOperator *> get_successor_operators(
-        const algorithms::OrderedSet<const GlobalOperator *> &preferred_operators) const;
+        const ordered_set::OrderedSet<const GlobalOperator *> &preferred_operators) const;
 
     // TODO: Move into SearchEngine?
     void print_checkpoint_line(int g) const;

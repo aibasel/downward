@@ -18,6 +18,7 @@ class Options;
 
 namespace utils {
 class CountdownTimer;
+class RandomNumberGenerator;
 }
 
 namespace pdbs {
@@ -35,6 +36,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     // minimal improvement required for hill climbing to continue search
     const int min_improvement;
     const double max_time;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     std::unique_ptr<IncrementalCanonicalPDBs> current_pdbs;
 
@@ -43,24 +45,19 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     utils::CountdownTimer *hill_climbing_timer;
 
     /*
-      For the given pattern, all possible extensions of the pattern by one
-      relevant variable are inserted into candidate_patterns. This may generate
-      duplicated patterns.
+      For the given PDB, all possible extensions of its pattern by one
+      relevant variable are considered as candidate patterns. If the candidate
+      pattern has not been previously considered (not contained in
+      generated_patterns) and if building a PDB for it does not surpass the
+      size limit, then the PDB is built and added to candidate_pdbs.
+
+      The method returns the size of the largest PDB added to candidate_pdbs.
     */
-    void generate_candidate_patterns(
+    int generate_candidate_pdbs(
         const TaskProxy &task_proxy,
         const PatternDatabase &pdb,
-        PatternCollection &candidate_patterns);
-
-    /*
-      Generates the PatternDatabase for patterns in new_candidates if they have
-      not been generated already.
-    */
-    std::size_t generate_pdbs_for_candidates(
-        const TaskProxy &task_proxy,
         std::set<Pattern> &generated_patterns,
-        PatternCollection &new_candidates,
-        PDBCollection &candidate_pdbs) const;
+        PDBCollection &candidate_pdbs);
 
     /*
       Performs num_samples random walks with a length (different for each
@@ -99,24 +96,28 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
         const MaxAdditivePDBSubsets &max_additive_subsets);
 
     /*
-      This is the core algorithm of this class. As soon as after an iteration,
-      the improvement (according to the "counting approximation") is smaller
-      than the minimal required improvement, the search is stopped. This method
-      uses a vector to store PDBs to avoid re-computation of the same PDBs
-      later. This is quite a large time gain, but may use too much memory. Also
-      a set is used to store all patterns in their "normal form" for duplicate
-      detection.
-      TODO: This method computes all PDBs already for candidate iteration, but
-      for each call of add_pattern for the current CanonicalPDBsHeuristic, only
-      the pattern is passed as an argument and in CanonicalPDBsHeuristic, the
-      PDB is *again* built. One could possibly avoid this by passing the PDB and
-      adapt CanonicalPDBsHeuristic accordingly.
+      This is the core algorithm of this class. The initial PDB collection
+      consists of one PDB for each goal variable. For each PDB of this initial
+      collection, the set of candidate PDBs are added (see
+      generate_candidate_pdbs) to the set of initial candidate PDBs.
+
+      The main loop of the search computes a set of sample states (see
+      sample_states) and uses this set to evaluate the set of all candidate PDBs
+      (see find_best_improving_pdb, using the "counting approximation"). If the
+      improvement obtained through adding the best PDB to the current heuristic
+      is smaller than the minimal required improvement, the search is stopped.
+      Otherwise, the best PDB is added to the heuristic and the candidate PDBs
+      for this best PDB are computed (see generate_candidate_pdbs) and used for
+      the next iteration.
+
+      This method uses a set to store all patterns that are generated as
+      candidate patterns in their "normal form" for duplicate detection.
+      Futhermore, a vector stores the PDBs corresponding to the candidate
+      patterns if its size does not surpass the user-specified size limit.
+      Storing the PDBs has the only purpose to avoid re-computation of the same
+      PDBs. This is quite a large time gain, but may use a lot of memory.
     */
-    void hill_climbing(
-        const TaskProxy &task_proxy,
-        const SuccessorGenerator &successor_generator,
-        double average_operator_costs,
-        PatternCollection &initial_candidate_patterns);
+    void hill_climbing(const TaskProxy &task_proxy);
 
 public:
     explicit PatternCollectionGeneratorHillclimbing(const options::Options &opts);
