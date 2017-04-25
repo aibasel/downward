@@ -52,7 +52,7 @@ public:
 
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(
-        int argc, const char **argv, bool dr, bool is_unit_cost);
+        int argc, const char **argv, bool dry_run, bool is_unit_cost);
 
     static std::string usage(const std::string &progname);
 
