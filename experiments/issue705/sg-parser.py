@@ -20,6 +20,7 @@ add_absolute_and_relative(parser, 'sg_size_estimate_default_generator', 'SG size
 add_absolute_and_relative(parser, 'sg_size_estimate_next_generator', 'SG size estimates: next generator:')
 
 add_absolute_and_relative(parser, 'sg_counts_immediates', 'SG object counts: immediates:')
+add_absolute_and_relative(parser, 'sg_counts_forks', 'SG object counts: forks:')
 add_absolute_and_relative(parser, 'sg_counts_switches', 'SG object counts: switches:')
 add_absolute_and_relative(parser, 'sg_counts_leaves', 'SG object counts: leaves:')
 add_absolute_and_relative(parser, 'sg_counts_empty', 'SG object counts: empty:')
