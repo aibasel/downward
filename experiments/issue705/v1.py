@@ -16,7 +16,7 @@ from csv_report import CSVReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue705-base", "issue705-v1"]
+REVISIONS = ["issue705-base", "issue705-v1", "issue705-v2"]
 CONFIGS = [
     IssueConfig(
         'bounded-blind',
@@ -55,6 +55,7 @@ exp.add_absolute_report_step(attributes=[
     Attribute("sg_counts_switch_more", functions=[arithmetic_mean], min_wins=True),
     Attribute("sg_counts_switch_single", functions=[arithmetic_mean], min_wins=True),
     Attribute("sg_counts_switches", functions=[arithmetic_mean], min_wins=True),
+    Attribute("sg_counts_forks", functions=[arithmetic_mean], min_wins=True),
     Attribute("sg_counts_immediates", functions=[arithmetic_mean], min_wins=True),
 
     Attribute("sg_size_estimate_default_generator", functions=[arithmetic_mean], min_wins=True),
@@ -74,6 +75,7 @@ exp.add_absolute_report_step(attributes=[
     Attribute("sg_counts_switch_more_rel", functions=[geometric_mean], min_wins=True),
     Attribute("sg_counts_switch_single_rel", functions=[geometric_mean], min_wins=True),
     Attribute("sg_counts_switches_rel", functions=[geometric_mean], min_wins=True),
+    Attribute("sg_counts_forks_rel", functions=[geometric_mean], min_wins=True),
     Attribute("sg_counts_immediates_rel", functions=[geometric_mean], min_wins=True),
 
     Attribute("sg_size_estimate_default_generator_rel", functions=[geometric_mean], min_wins=True),
