@@ -53,12 +53,43 @@ public:
              << "generator for value: " << get_size_estimate_generator_for_value() << endl;
         cout << "SG size estimates: "
              << "default generator: " << get_size_estimate_default_generator() << endl;
+
+        int switches = count_switches();
+        int switch_immediate_empty = count_switch_immediate_empty();
+        int switch_immediate_single = count_switch_immediate_single();
+        int switch_immediate_more = count_switch_immediate_more();
+        int leaves = count_leaves();
+        int leaf_applicable_empty = count_leaf_applicable_empty();
+        int leaf_applicable_single = count_leaf_applicable_single();
+        int leaf_applicable_more = count_leaf_applicable_more();
+        int empty = count_empty();
+
         cout << "SG object counts: "
-             << "switches: " << count_switches() << endl;
+             << "switches: " << switches << endl;
         cout << "SG object counts: "
-             << "leaves: " << count_leaves() << endl;
+             << "leaves: " << leaves << endl;
         cout << "SG object counts: "
-             << "empty: " << count_empty() << endl;
+             << "empty: " << empty << endl;
+
+        cout << "SG switch statistics: "
+             << "immediate ops empty: " << switch_immediate_empty
+             << " (" << switch_immediate_empty / (double) switches << ")" << endl;
+        cout << "SG switch statistics: "
+             << "single immediate op: " << switch_immediate_single
+             << " (" << switch_immediate_single / (double) switches << ")" << endl;
+        cout << "SG switch statistics: "
+             << "more immediate ops: " << switch_immediate_more
+             << " (" << switch_immediate_more / (double) switches << ")" << endl;
+
+        cout << "SG leaf statistics: "
+             << "applicable ops empty: " << leaf_applicable_empty
+             << " (" << leaf_applicable_empty / (double) leaves << ")" << endl;
+        cout << "SG leaf statistics: "
+             << "single applicable op: " << leaf_applicable_single
+             << " (" << leaf_applicable_single / (double) leaves << ")" << endl;
+        cout << "SG leaf statistics: "
+             << "more applicable ops: " << leaf_applicable_more
+             << " (" << leaf_applicable_more / (double) leaves << ")" << endl;
     }
 
     size_t get_size_estimate() const {
@@ -78,6 +109,13 @@ public:
     virtual size_t count_switches() const = 0;
     virtual size_t count_leaves() const = 0;
     virtual size_t count_empty() const = 0;
+
+    virtual size_t count_switch_immediate_empty() const = 0;
+    virtual size_t count_switch_immediate_single() const = 0;
+    virtual size_t count_switch_immediate_more() const = 0;
+    virtual size_t count_leaf_applicable_empty() const = 0;
+    virtual size_t count_leaf_applicable_single() const = 0;
+    virtual size_t count_leaf_applicable_more() const = 0;
 };
 
 class GeneratorSwitch : public GeneratorBase {
@@ -171,6 +209,63 @@ public:
         result += default_generator->count_empty();
         return result;
     }
+
+    virtual size_t count_switch_immediate_empty() const {
+        size_t result = 0;
+        if (immediate_operators.empty()) {
+            result += 1;
+        }
+        for (const auto &child : generator_for_value)
+            result += child->count_switch_immediate_empty();
+        result += default_generator->count_switch_immediate_empty();
+        return result;
+    }
+
+    virtual size_t count_switch_immediate_single() const {
+        size_t result = 0;
+        if (immediate_operators.size() == 1) {
+            result += 1;
+        }
+        for (const auto &child : generator_for_value)
+            result += child->count_switch_immediate_single();
+        result += default_generator->count_switch_immediate_single();
+        return result;
+    }
+
+    virtual size_t count_switch_immediate_more() const {
+        size_t result = 0;
+        if (immediate_operators.size() > 1) {
+            result += 1;
+        }
+        for (const auto &child : generator_for_value)
+            result += child->count_switch_immediate_more();
+        result += default_generator->count_switch_immediate_more();
+        return result;
+    }
+
+    virtual size_t count_leaf_applicable_empty() const  {
+        size_t result = 0;
+        for (const auto &child : generator_for_value)
+            result += child->count_leaf_applicable_empty();
+        result += default_generator->count_leaf_applicable_empty();
+        return result;
+    }
+
+    virtual size_t count_leaf_applicable_single() const {
+        size_t result = 0;
+        for (const auto &child : generator_for_value)
+            result += child->count_leaf_applicable_single();
+        result += default_generator->count_leaf_applicable_single();
+        return result;
+    }
+
+    virtual size_t count_leaf_applicable_more() const {
+        size_t result = 0;
+        for (const auto &child : generator_for_value)
+            result += child->count_leaf_applicable_more();
+        result += default_generator->count_leaf_applicable_more();
+        return result;
+    }
 };
 
 class GeneratorLeaf : public GeneratorBase {
@@ -220,6 +315,38 @@ public:
     virtual size_t count_empty() const {
         return 0;
     }
+
+    virtual size_t count_switch_immediate_empty() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_immediate_single() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_immediate_more() const {
+        return 0;
+    }
+
+    virtual size_t count_leaf_applicable_empty() const {
+        if (applicable_operators.empty()) {
+            return 1;
+        }
+        return 0;
+    }
+
+    virtual size_t count_leaf_applicable_single() const {
+        if (applicable_operators.size() == 1) {
+            return 1;
+        }
+        return 0;
+    }
+    virtual size_t count_leaf_applicable_more() const {
+        if (applicable_operators.size() > 1) {
+            return 1;
+        }
+        return 0;
+    }
 };
 
 class GeneratorEmpty : public GeneratorBase {
@@ -263,6 +390,30 @@ public:
 
     virtual size_t count_empty() const {
         return 1;
+    }
+
+    virtual size_t count_switch_immediate_empty() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_immediate_single() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_immediate_more() const {
+        return 0;
+    }
+
+    virtual size_t count_leaf_applicable_empty() const {
+        return 0;
+    }
+
+    virtual size_t count_leaf_applicable_single() const {
+        return 0;
+    }
+
+    virtual size_t count_leaf_applicable_more() const {
+        return 0;
     }
 };
 
