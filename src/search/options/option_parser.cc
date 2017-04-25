@@ -368,28 +368,27 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
 }
 
 string OptionParser::usage(const string &progname) {
-    return
-        "usage: \n" +
-        progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
-        "* SEARCH (SearchEngine): configuration of the search algorithm\n"
-        "* OUTPUT (filename): translator output\n\n"
-        "Options:\n"
-        "--help [NAME]\n"
-        "    Prints help for all heuristics, open lists, etc. called NAME.\n"
-        "    Without parameter: prints help for everything available\n"
-        "--landmarks LANDMARKS_PREDEFINITION\n"
-        "    Predefines a set of landmarks that can afterwards be referenced\n"
-        "    by the name that is specified in the definition.\n"
-        "--heuristic HEURISTIC_PREDEFINITION\n"
-        "    Predefines a heuristic that can afterwards be referenced\n"
-        "    by the name that is specified in the definition.\n"
-        "--internal-plan-file FILENAME\n"
-        "    Plan will be output to a file called FILENAME\n\n"
-        "--internal-previous-portfolio-plans COUNTER\n"
-        "    This planner call is part of a portfolio which already created\n"
-        "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
-        "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
-        "See http://www.fast-downward.org/ for details.";
+    return "usage: \n" +
+           progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+           "* SEARCH (SearchEngine): configuration of the search algorithm\n"
+           "* OUTPUT (filename): translator output\n\n"
+           "Options:\n"
+           "--help [NAME]\n"
+           "    Prints help for all heuristics, open lists, etc. called NAME.\n"
+           "    Without parameter: prints help for everything available\n"
+           "--landmarks LANDMARKS_PREDEFINITION\n"
+           "    Predefines a set of landmarks that can afterwards be referenced\n"
+           "    by the name that is specified in the definition.\n"
+           "--heuristic HEURISTIC_PREDEFINITION\n"
+           "    Predefines a heuristic that can afterwards be referenced\n"
+           "    by the name that is specified in the definition.\n"
+           "--internal-plan-file FILENAME\n"
+           "    Plan will be output to a file called FILENAME\n\n"
+           "--internal-previous-portfolio-plans COUNTER\n"
+           "    This planner call is part of a portfolio which already created\n"
+           "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
+           "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
+           "See http://www.fast-downward.org/ for details.";
 }
 
 
