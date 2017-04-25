@@ -2,9 +2,8 @@
 #define SEARCH_ENGINES_ENFORCED_HILL_CLIMBING_SEARCH_H
 
 #include "../evaluation_context.h"
+#include "../open_list.h"
 #include "../search_engine.h"
-
-#include "../open_lists/open_list.h"
 
 #include <map>
 #include <memory>

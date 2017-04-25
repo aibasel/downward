@@ -1,8 +1,7 @@
 #include "epsilon_greedy_open_list.h"
 
-#include "open_list.h"
-
 #include "../globals.h"
+#include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 

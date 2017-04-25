@@ -3,12 +3,12 @@
 #include "search_common.h"
 
 #include "../heuristic.h"
+#include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
-#include "../open_lists/open_list_factory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 

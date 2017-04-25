@@ -58,6 +58,8 @@ fast_downward_plugin(
         global_state
         heuristic_cache
         heuristic
+        open_list
+        open_list_factory
         operator_cost
         option_parser
         option_parser_util
@@ -78,8 +80,6 @@ fast_downward_plugin(
         task_tools
         variable_order_finder
 
-        open_lists/open_list
-        open_lists/open_list_factory
     DEPENDS INT_PACKER ORDERED_SET SEGMENTED_VECTOR
     CORE_PLUGIN
 )
