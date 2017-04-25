@@ -5,7 +5,8 @@
 #include "landmark_graph.h"
 
 #include "../heuristic.h"
-#include "../successor_generator.h"
+
+class SuccessorGenerator;
 
 namespace landmarks {
 class LandmarkCostAssignment;
