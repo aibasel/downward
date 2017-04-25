@@ -1,7 +1,7 @@
 #ifndef EVALUATORS_G_EVALUATOR_H
 #define EVALUATORS_G_EVALUATOR_H
 
-#include "../scalar_evaluator.h"
+#include "../evaluator.h"
 
 class Heuristic;
 

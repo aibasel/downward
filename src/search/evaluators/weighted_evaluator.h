@@ -1,7 +1,7 @@
 #ifndef EVALUATORS_WEIGHTED_EVALUATOR_H
 #define EVALUATORS_WEIGHTED_EVALUATOR_H
 
-#include "../scalar_evaluator.h"
+#include "../evaluator.h"
 
 namespace options {
 class Options;

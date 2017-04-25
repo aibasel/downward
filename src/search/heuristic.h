@@ -2,7 +2,7 @@
 #define HEURISTIC_H
 
 #include "per_state_information.h"
-#include "scalar_evaluator.h"
+#include "evaluator.h"
 #include "task_proxy.h"
 
 #include "algorithms/ordered_set.h"

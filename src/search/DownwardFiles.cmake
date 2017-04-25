@@ -65,7 +65,7 @@ fast_downward_plugin(
         plugin
         pruning_method
         sampling
-        scalar_evaluator
+        evaluator
         search_engine
         search_node_info
         search_progress
