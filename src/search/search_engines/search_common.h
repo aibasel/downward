@@ -20,8 +20,8 @@
 
 #include <memory>
 
-class OpenListFactory;
 class Evaluator;
+class OpenListFactory;
 
 namespace options {
 class Options;

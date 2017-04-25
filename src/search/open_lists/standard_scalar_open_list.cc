@@ -29,8 +29,7 @@ protected:
 
 public:
     explicit StandardScalarOpenList(const Options &opts);
-    StandardScalarOpenList(Evaluator *eval,
-                           bool preferred_only);
+    StandardScalarOpenList(Evaluator *eval, bool preferred_only);
     virtual ~StandardScalarOpenList() override = default;
 
     virtual Entry remove_min(vector<int> *key = nullptr) override;
