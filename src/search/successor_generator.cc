@@ -414,14 +414,16 @@ public:
         result += 4; // estimate for vtbl pointer
         result += 8; // estimate for dynamic memory management overhead
         for (const auto &child : generator_for_value)
-            result += child->get_size_estimate_object_overhead();
+            if (child)
+               result += child->get_size_estimate_object_overhead();
         return result;
     }
 
     virtual size_t get_size_estimate_operators() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->get_size_estimate_operators();
+            if (child)
+                result += child->get_size_estimate_operators();
         return result;
     }
 
@@ -429,7 +431,8 @@ public:
         size_t result = 0;
         result += 8; // estimate for switch_var; could be made smaller
         for (const auto &child : generator_for_value)
-            result += child->get_size_estimate_switch_var();
+            if (child)
+                result += child->get_size_estimate_switch_var();
         return result;
     }
 
@@ -441,98 +444,112 @@ public:
             result += 4 * generator_for_value.size();
         }
         for (const auto &child : generator_for_value)
-            result += child->get_size_estimate_generator_for_value();
+            if (child)
+                result += child->get_size_estimate_generator_for_value();
         return result;
     }
 
     virtual size_t get_size_estimate_default_generator() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->get_size_estimate_default_generator();
+            if (child)
+                result += child->get_size_estimate_default_generator();
         return result;
     }
 
     virtual size_t get_size_estimate_next_generator() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->get_size_estimate_next_generator();
+            if (child)
+                result += child->get_size_estimate_next_generator();
         return result;
     }
 
     virtual size_t count_immediate() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_immediate();
+            if (child)
+                result += child->count_immediate();
         return result;
     }
 
     virtual size_t count_forks() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_forks();
+            if (child)
+                result += child->count_forks();
         return result;
     }
 
     virtual size_t count_switches() const {
         size_t result = 1;
         for (const auto &child : generator_for_value)
-            result += child->count_switches();
+            if (child)
+                result += child->count_switches();
         return result;
     }
 
     virtual size_t count_leaves() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_leaves();
+            if (child)
+                result += child->count_leaves();
         return result;
     }
 
     virtual size_t count_empty() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_empty();
+            if (child)
+                result += child->count_empty();
         return result;
     }
 
     virtual size_t count_switch_immediate_empty() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_switch_immediate_empty();
+            if (child)
+                result += child->count_switch_immediate_empty();
         return result;
     }
 
     virtual size_t count_switch_immediate_single() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_switch_immediate_single();
+            if (child)
+                result += child->count_switch_immediate_single();
         return result;
     }
 
     virtual size_t count_switch_immediate_more() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_switch_immediate_more();
+            if (child)
+                result += child->count_switch_immediate_more();
         return result;
     }
 
     virtual size_t count_leaf_applicable_empty() const  {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_leaf_applicable_empty();
+            if (child)
+                result += child->count_leaf_applicable_empty();
         return result;
     }
 
     virtual size_t count_leaf_applicable_single() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_leaf_applicable_single();
+            if (child)
+                result += child->count_leaf_applicable_single();
         return result;
     }
 
     virtual size_t count_leaf_applicable_more() const {
         size_t result = 0;
         for (const auto &child : generator_for_value)
-            result += child->count_leaf_applicable_more();
+            if (child)
+                result += child->count_leaf_applicable_more();
         return result;
     }
 };
@@ -630,91 +647,14 @@ public:
     }
 };
 
-class GeneratorEmpty : public GeneratorBase {
-public:
-    virtual void generate_applicable_ops(
-        const State &state, vector<OperatorProxy> &applicable_ops) const;
-    // Transitional method, used until the search is switched to the new task interface.
-    virtual void generate_applicable_ops(
-        const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
-
-    virtual size_t get_size_estimate_object_overhead() const {
-        size_t result = 0;
-        result += 4; // estimate for vtbl pointer
-        result += 8; // estimate for dynamic memory management overhead
-        return result;
-    }
-
-    virtual size_t get_size_estimate_operators() const {
-        return 0;
-    }
-
-    virtual size_t get_size_estimate_switch_var() const {
-        return 0;
-    }
-
-    virtual size_t get_size_estimate_generator_for_value() const {
-        return 0;
-    }
-
-    virtual size_t get_size_estimate_default_generator() const {
-        return 0;
-    }
-
-    virtual size_t get_size_estimate_next_generator() const {
-        return 0;
-    }
-
-    virtual size_t count_immediate() const {
-        return 0;
-    }
-
-    virtual size_t count_forks() const {
-        return 0;
-    }
-
-    virtual size_t count_switches() const {
-        return 0;
-    }
-
-    virtual size_t count_leaves() const {
-        return 0;
-    }
-
-    virtual size_t count_empty() const {
-        return 1;
-    }
-
-    virtual size_t count_switch_immediate_empty() const {
-        return 0;
-    }
-
-    virtual size_t count_switch_immediate_single() const {
-        return 0;
-    }
-
-    virtual size_t count_switch_immediate_more() const {
-        return 0;
-    }
-
-    virtual size_t count_leaf_applicable_empty() const {
-        return 0;
-    }
-
-    virtual size_t count_leaf_applicable_single() const {
-        return 0;
-    }
-
-    virtual size_t count_leaf_applicable_more() const {
-        return 0;
-    }
-};
-
 GeneratorImmediate::GeneratorImmediate(
     list<OperatorProxy> &&immediate_operators,
     GeneratorBase *next_generator)
     : immediate_operators(move(immediate_operators)),
       next_generator(next_generator) {
+    /* There is no reason to to use GeneratorImmediate if there is no next generator.
+       Use GeneratorLeaf instead in such situtations. */
+    assert(next_generator);
 }
 
 GeneratorImmediate::~GeneratorImmediate() {
@@ -740,6 +680,11 @@ void GeneratorImmediate::generate_applicable_ops(
 GeneratorFork::GeneratorFork(GeneratorBase *generator1, GeneratorBase *generator2)
     : generator1(generator1),
       generator2(generator2) {
+    /* There is no reason to use a fork if only one of the generators exists.
+       Use the existing generator directly if one of them exists or a nullptr
+       otherwise. */
+    assert(generator1);
+    assert(generator2);
 }
 
 GeneratorFork::~GeneratorFork() {
@@ -773,13 +718,19 @@ GeneratorSwitch::~GeneratorSwitch() {
 void GeneratorSwitch::generate_applicable_ops(
     const State &state, vector<OperatorProxy> &applicable_ops) const {
     int val = state[switch_var].get_value();
-    generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
+    GeneratorBase *generator_for_val = generator_for_value[val];
+    if (generator_for_val) {
+        generator_for_val->generate_applicable_ops(state, applicable_ops);
+    }
 }
 
 void GeneratorSwitch::generate_applicable_ops(
     const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const {
     int val = state[switch_var.get_id()];
-    generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
+    GeneratorBase *generator_for_val = generator_for_value[val];
+    if (generator_for_val) {
+        generator_for_val->generate_applicable_ops(state, applicable_ops);
+    }
 }
 
 GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
@@ -798,14 +749,6 @@ void GeneratorLeaf::generate_applicable_ops(
     for (OperatorProxy op : applicable_operators) {
         applicable_ops.push_back(op.get_global_operator());
     }
-}
-
-void GeneratorEmpty::generate_applicable_ops(
-    const State &, vector<OperatorProxy> &) const {
-}
-
-void GeneratorEmpty::generate_applicable_ops(
-    const GlobalState &, vector<const GlobalOperator *> &) const {
 }
 
 SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
@@ -848,7 +791,7 @@ SuccessorGenerator::~SuccessorGenerator() {
 GeneratorBase *SuccessorGenerator::construct_recursive(
     int switch_var_id, list<OperatorProxy> &&operator_queue) {
     if (operator_queue.empty())
-        return new GeneratorEmpty;
+        return nullptr;
 
     VariablesProxy variables = task_proxy.get_variables();
     int num_variables = variables.size();
