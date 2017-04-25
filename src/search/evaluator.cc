@@ -11,6 +11,6 @@ bool Evaluator::dead_ends_are_reliable() const {
 
 
 static PluginTypePlugin<Evaluator> _type_plugin(
-    "ScalarEvaluator",
+    "Evaluator",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");

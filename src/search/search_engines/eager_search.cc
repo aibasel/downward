@@ -436,7 +436,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--search eager(single(eval1))\n```\n", true);
 
-    parser.add_list_option<Evaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Evaluator *>("evals", "evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");

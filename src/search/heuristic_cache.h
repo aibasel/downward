@@ -34,7 +34,7 @@ public:
             const Heuristic *heuristic = dynamic_cast<const Heuristic *>(eval);
             if (heuristic) {
                 /* We want to consider only Heuristic instances, not other
-                   ScalarEvaluator instances. */
+                   Evaluator instances. */
                 callback(heuristic, result);
             }
         }

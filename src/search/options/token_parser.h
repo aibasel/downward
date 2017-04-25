@@ -157,7 +157,7 @@ inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &p) {
         return (Evaluator *)
                Registry<Heuristic *>::instance()->get(pt->value) (p);
     }
-    p.error("ScalarEvaluator " + pt->value + " not found");
+    p.error("Evaluator " + pt->value + " not found");
     return 0;
 }
 

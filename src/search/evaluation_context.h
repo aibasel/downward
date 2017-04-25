@@ -21,7 +21,7 @@ class SearchStatistics;
 */
 
 /*
-  TODO/NOTE: The code currently uses "ScalarEvaluator" everywhere, but
+  TODO/NOTE: The code currently uses "Evaluator" everywhere, but
   this should eventually be replaced by "Heuristic" once these are
   unified.
 */
