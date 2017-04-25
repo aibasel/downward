@@ -44,7 +44,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         Options options;
         options.set("eval", g_evaluator);
         options.set("pref_only", false);
-        return make_shared<StandardScalarOpenListFactory>(options);
+        return make_shared<standard_scalar_open_list::StandardScalarOpenListFactory>(options);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
