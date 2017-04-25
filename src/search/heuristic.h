@@ -102,9 +102,6 @@ public:
         EvaluationContext &eval_context) override;
 
     std::string get_description() const;
-    bool is_h_dirty(GlobalState &state) {
-        return heuristic_cache[state].dirty;
-    }
 };
 
 #endif
