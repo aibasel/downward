@@ -48,16 +48,8 @@ public:
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
 
-    static const std::string NONE;
-
-    //this is where input from the commandline goes:
-    static SearchEngine *parse_cmd_line(
-        int argc, const char **argv, bool dry_run, bool is_unit_cost);
-
-    static std::string usage(const std::string &progname);
-
-    //this function initiates parsing of T (the root node of parse_tree
-    //will be parsed as T). Usually T=SearchEngine*, Evaluator* or LandmarkFactory*
+    /* This function initiates parsing of T (the root node of parse_tree will be
+       parsed as T). Usually T=SearchEngine*, Evaluator* or LandmarkFactory*. */
     template<typename T>
     T start_parsing();
 
@@ -70,15 +62,18 @@ public:
         const std::string &default_value = "",
         Bounds bounds = Bounds::unlimited());
 
-    void add_enum_option(const std::string &k,
-                         std::vector<std::string > enumeration,
-                         const std::string &h = "", const std::string &def_val = "",
-                         std::vector<std::string> enum_doc = std::vector<std::string>());
-    template<typename T>
-    void add_list_option(const std::string &k,
-                         const std::string &h = "", const std::string &def_val = "");
+    void add_enum_option(
+        const std::string &key,
+        std::vector<std::string> enumeration,
+        const std::string &help = "",
+        const std::string &default_value = "",
+        std::vector<std::string> enum_doc = std::vector<std::string>());
 
-    bool is_valid_option(const std::string &k) const;
+    template<typename T>
+    void add_list_option(
+        const std::string &key,
+        const std::string &help = "",
+        const std::string &default_value = "");
 
     void document_values(const std::string &argument,
                          ValueExplanations value_explanations) const;
@@ -88,9 +83,7 @@ public:
     void document_note(const std::string &name, const std::string &note, bool long_text = false) const;
     void document_hide() const;
 
-    static void static_error(const std::string &msg);
     void error(const std::string &msg);
-    void warning(const std::string &msg);
 
     Options parse(); //parse is not the best name for this function. It just does some checks and returns the parsed options Parsing happens before that. Change?
     const ParseTree *get_parse_tree();
@@ -98,6 +91,14 @@ public:
 
     bool dry_run() const;
     bool help_mode() const;
+
+    static const std::string NONE;
+
+    //this is where input from the commandline goes:
+    static SearchEngine *parse_cmd_line(
+        int argc, const char **argv, bool dry_run, bool is_unit_cost);
+
+    static std::string usage(const std::string &progname);
 };
 
 /*
@@ -198,8 +199,10 @@ void OptionParser::add_option(
 
 template<typename T>
 void OptionParser::add_list_option(
-    const std::string &k, const std::string &h, const std::string &def_val) {
-    add_option<std::vector<T>>(k, h, def_val);
+    const std::string &key,
+    const std::string &help,
+    const std::string &default_value) {
+    add_option<std::vector<T>>(key, help, default_value);
 }
 }
 
