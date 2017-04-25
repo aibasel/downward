@@ -41,7 +41,7 @@ public:
     static std::string usage(std::string progname);
 
     //this function initiates parsing of T (the root node of parse_tree
-    //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarkFactory*
+    //will be parsed as T). Usually T=SearchEngine*, Evaluator* or LandmarkFactory*
     template<typename T>
     T start_parsing();
 

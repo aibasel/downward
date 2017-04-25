@@ -47,8 +47,8 @@ void WeightedEvaluator::get_involved_heuristics(set<Heuristic *> &hset) {
 static Evaluator *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Weighted evaluator",
-        "Multiplies the value of the scalar evaluator with the given weight.");
-    parser.add_option<Evaluator *>("eval", "scalar evaluator");
+        "Multiplies the value of the evaluator with the given weight.");
+    parser.add_option<Evaluator *>("eval", "evaluator");
     parser.add_option<int>("weight", "weight");
     Options opts = parser.parse();
     if (parser.dry_run())

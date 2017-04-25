@@ -37,7 +37,7 @@ const EvaluationResult &EvaluationContext::get_result(Evaluator *heur) {
         result = heur->compute_result(*this);
         if (statistics && dynamic_cast<const Heuristic *>(heur)) {
             /* Only count evaluations of actual Heuristics, not arbitrary
-               scalar evaluators. */
+               evaluators. */
             if (result.get_count_evaluation()) {
                 statistics->inc_evaluations();
             }

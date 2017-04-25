@@ -304,7 +304,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "```\n--search lazy(single(eval1))\n```\n",
         true);
 
-    parser.add_list_option<Evaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Evaluator *>("evals", "evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
@@ -376,7 +376,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         "```\n--search lazy(single(sum([g(), weight(eval1, 2)])), reopen_closed=true)\n```\n",
         true);
 
-    parser.add_list_option<Evaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Evaluator *>("evals", "evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
