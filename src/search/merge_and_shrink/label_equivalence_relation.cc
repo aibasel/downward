@@ -28,7 +28,6 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
     for (size_t other_group_id = 0;
          other_group_id < other.grouped_labels.size();
          ++other_group_id) {
-
         // Add a new empty label group.
         int group_id = grouped_labels.size();
         assert(group_id == static_cast<int>(other_group_id));

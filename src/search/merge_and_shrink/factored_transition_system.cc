@@ -94,7 +94,7 @@ void FactoredTransitionSystem::discard_states(
 
 bool FactoredTransitionSystem::is_index_valid(int index) const {
     if (index >= static_cast<int>(transition_systems.size())) {
-        assert(ignore_representation||
+        assert(ignore_representation ||
                index >= static_cast<int>(mas_representations.size()));
         assert(index >= static_cast<int>(distances.size()));
         return false;
