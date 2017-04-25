@@ -3,7 +3,7 @@
 
 #include "relaxation_heuristic.h"
 
-#include "../priority_queue.h"
+#include "../algorithms/priority_queues.h"
 
 #include <cassert>
 
@@ -12,7 +12,7 @@ using relaxation_heuristic::Proposition;
 using relaxation_heuristic::UnaryOperator;
 
 class HSPMaxHeuristic : public relaxation_heuristic::RelaxationHeuristic {
-    AdaptiveQueue<Proposition *> queue;
+    priority_queues::AdaptiveQueue<Proposition *> queue;
 
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);

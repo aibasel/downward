@@ -4,7 +4,6 @@
 #include "zero_one_pdbs.h"
 
 #include "../causal_graph.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
@@ -12,6 +11,7 @@
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -29,7 +29,8 @@ PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
       mutation_probability(opts.get<double>("mutation_probability")),
-      disjoint_patterns(opts.get<bool>("disjoint")) {
+      disjoint_patterns(opts.get<bool>("disjoint")),
+      rng(utils::parse_rng_from_options(opts)) {
 }
 
 void PatternCollectionGeneratorGenetic::select(
@@ -49,10 +50,10 @@ void PatternCollectionGeneratorGenetic::select(
         int selected;
         if (total_so_far == 0) {
             // All fitness values are 0 => choose uniformly.
-            selected = (*g_rng())(fitness_values.size());
+            selected = (*rng)(fitness_values.size());
         } else {
             // [0..total_so_far)
-            double random = (*g_rng())() * total_so_far;
+            double random = (*rng)() * total_so_far;
             // Find first entry which is strictly greater than random.
             selected = upper_bound(cumulative_fitness.begin(),
                                    cumulative_fitness.end(), random) -
@@ -67,7 +68,7 @@ void PatternCollectionGeneratorGenetic::mutate() {
     for (auto &collection : pattern_collections) {
         for (vector<bool> &pattern : collection) {
             for (size_t k = 0; k < pattern.size(); ++k) {
-                double random = (*g_rng())(); // [0..1)
+                double random = (*rng)(); // [0..1)
                 if (random < mutation_probability) {
                     pattern[k].flip();
                 }
@@ -218,7 +219,7 @@ void PatternCollectionGeneratorGenetic::bin_packing() {
 
     for (int i = 0; i < num_collections; ++i) {
         // Use random variable ordering for all pattern collections.
-        g_rng()->shuffle(variable_ids);
+        rng->shuffle(variable_ids);
         vector<vector<bool>> pattern_collection;
         vector<bool> pattern(variables.size(), false);
         int current_size = 1;
@@ -364,6 +365,8 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "consider a pattern collection invalid (giving it very low "
         "fitness) if its patterns are not disjoint",
         "false");
+
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

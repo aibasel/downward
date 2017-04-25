@@ -167,7 +167,7 @@ public:
     }
 
     // Returns the size (number of abstract states) of the PDB
-    std::size_t get_size() const {
+    int get_size() const {
         return num_states;
     }
 

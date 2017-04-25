@@ -13,6 +13,10 @@ namespace options {
 class Options;
 }
 
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace pdbs {
 /*
   Implementation of the pattern generation algorithm by Edelkamp. See:
@@ -26,11 +30,13 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     const int num_collections;
     const int num_episodes;
     const double mutation_probability;
-
-    std::shared_ptr<AbstractTask> task;
     /* Specifies whether patterns in each pattern collection need to be disjoint
        or not. */
     const bool disjoint_patterns;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
+
+    std::shared_ptr<AbstractTask> task;
+
     // All current pattern collections.
     std::vector<std::vector<std::vector<bool>>> pattern_collections;
 
