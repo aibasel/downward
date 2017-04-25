@@ -80,8 +80,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 0, we omit the heuristic altogether:
   we use g instead of g + 0 * h.
 */
-static Evaluator *create_wastar_eval(
-    GEval *g_eval, int w, Evaluator *h_eval) {
+static Evaluator *create_wastar_eval(GEval *g_eval, int w, Evaluator *h_eval) {
     if (w == 0)
         return g_eval;
     Evaluator *w_h_eval = nullptr;

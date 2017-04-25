@@ -91,9 +91,9 @@ static void get_help(string k) {
     ParseTree pt;
     pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
+    get_help_templ<Evaluator *>(pt);
     get_help_templ<Heuristic *>(pt);
     get_help_templ<shared_ptr<AbstractTask>>(pt);
-    get_help_templ<Evaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<landmarks::LandmarkFactory *>(pt);
     get_help_templ<shared_ptr<cegar::SubtaskGenerator>>(pt);
