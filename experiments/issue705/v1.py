@@ -16,7 +16,7 @@ from csv_report import CSVReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue705-base", "issue705-v1", "issue705-v2"]
+REVISIONS = ["issue705-base", "issue705-v1", "issue705-v2", "issue705-v3"]
 CONFIGS = [
     IssueConfig(
         'bounded-blind',
@@ -91,5 +91,20 @@ exp.add_absolute_report_step(attributes=[
 
 exp.add_report(CSVReport(attributes=["algorithm", "domain", "sg_*", "translator_task_size"]), outfile="csvreport.csv")
 
+def add_sg_peak_mem_diff_per_task_size(run):
+    mem = run.get("sg_peak_mem_diff")
+    size = run.get("translator_task_size")
+    if mem and size:
+        run["sg_peak_mem_diff_per_task_size"] = mem / float(size)
+    return run
+
+for rev1, rev2 in [("base", "v1"), ("base", "v2"), ("base", "v3")]:
+    exp.add_report(RelativeScatterPlotReport(
+        attributes=["sg_peak_mem_diff_per_task_size"],
+        filter=add_sg_peak_mem_diff_per_task_size,
+        filter_algorithm=["issue705-%s-bounded-blind" % rev1, "issue705-%s-bounded-blind" % rev2],
+        get_category=lambda r1, r2: r1["domain"],
+    ),
+    outfile="issue705-%s-%s.png" % (rev1, rev2))
 
 exp.run_steps()
