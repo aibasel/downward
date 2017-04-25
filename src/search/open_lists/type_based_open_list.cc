@@ -1,7 +1,6 @@
 #include "type_based_open_list.h"
 
-#include "open_list.h"
-
+#include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 

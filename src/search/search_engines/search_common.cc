@@ -1,5 +1,6 @@
 #include "search_common.h"
 
+#include "../open_list_factory.h"
 #include "../option_parser_util.h"
 
 #include "../evaluators/g_evaluator.h"
@@ -7,7 +8,6 @@
 #include "../evaluators/weighted_evaluator.h"
 
 #include "../open_lists/alternation_open_list.h"
-#include "../open_lists/open_list_factory.h"
 #include "../open_lists/standard_scalar_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 

@@ -1,8 +1,7 @@
 #ifndef OPEN_LISTS_PARETO_OPEN_LIST_H
 #define OPEN_LISTS_PARETO_OPEN_LIST_H
 
-#include "open_list_factory.h"
-
+#include "../open_list_factory.h"
 #include "../option_parser_util.h"
 
 namespace pareto_open_list {
