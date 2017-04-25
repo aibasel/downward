@@ -67,7 +67,7 @@ void LazySearch::initialize() {
 }
 
 vector<OperatorID> LazySearch::get_successor_operators(
-    const algorithms::OrderedSet<OperatorID> &preferred_operators) const {
+    const ordered_set::OrderedSet<OperatorID> &preferred_operators) const {
     vector<OperatorID> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);
@@ -77,7 +77,7 @@ vector<OperatorID> LazySearch::get_successor_operators(
     }
 
     if (preferred_successors_first) {
-        algorithms::OrderedSet<OperatorID> successor_operators;
+        ordered_set::OrderedSet<OperatorID> successor_operators;
         for (OperatorID op_id : preferred_operators) {
             successor_operators.insert(op_id);
         }
@@ -91,7 +91,7 @@ vector<OperatorID> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    algorithms::OrderedSet<OperatorID> preferred_operators =
+    ordered_set::OrderedSet<OperatorID> preferred_operators =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
     if (randomize_successors) {

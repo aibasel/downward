@@ -1,11 +1,10 @@
-#ifndef SEGMENTED_VECTOR_H
-#define SEGMENTED_VECTOR_H
+#ifndef ALGORITHMS_SEGMENTED_VECTOR_H
+#define ALGORITHMS_SEGMENTED_VECTOR_H
 
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <vector>
-
 
 /*
   SegmentedVector is a vector-like class with the following advantages over
@@ -44,6 +43,7 @@
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 
+namespace segmented_vector {
 template<class Entry, class Allocator = std::allocator<Entry>>
 class SegmentedVector {
     typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
@@ -264,5 +264,6 @@ public:
         }
     }
 };
+}
 
 #endif

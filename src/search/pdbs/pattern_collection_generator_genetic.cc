@@ -366,6 +366,8 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "fitness) if its patterns are not disjoint",
         "false");
 
+    utils::add_rng_options(parser);
+
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
