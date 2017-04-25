@@ -135,10 +135,10 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
     "");
 
 
-algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+ordered_set::OrderedSet<const GlobalOperator *> collect_preferred_operators(
     EvaluationContext &eval_context,
     const vector<Heuristic *> &preferred_operator_heuristics) {
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators;
     for (Heuristic *heuristic : preferred_operator_heuristics) {
         /*
           Unreliable heuristics might consider solvable states as dead

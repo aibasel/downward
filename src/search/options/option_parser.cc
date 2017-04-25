@@ -322,13 +322,6 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             ++i;
             OptionParser p(args[i], dry_run);
             engine = p.start_parsing<SearchEngine *>();
-        } else if (arg.compare("--random-seed") == 0) {
-            if (is_last)
-                throw ArgError("missing argument after --random-seed");
-            ++i;
-            int seed = parse_int_arg(arg, args[i]);
-            g_rng()->seed(seed);
-            cout << "random seed: " << seed << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
@@ -394,8 +387,6 @@ string OptionParser::usage(string progname) {
         "--heuristic HEURISTIC_PREDEFINITION\n"
         "    Predefines a heuristic that can afterwards be referenced\n"
         "    by the name that is specified in the definition.\n"
-        "--random-seed SEED\n"
-        "    Use random seed SEED\n\n"
         "--internal-plan-file FILENAME\n"
         "    Plan will be output to a file called FILENAME\n\n"
         "--internal-previous-portfolio-plans COUNTER\n"
