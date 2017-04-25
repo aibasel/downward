@@ -12,7 +12,7 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Evaluator *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "g-value evaluator",
         "Returns the g-value (path cost) of the search node.");
@@ -23,5 +23,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new GEvaluator;
 }
 
-static Plugin<ScalarEvaluator> _plugin("g", _parse);
+static Plugin<Evaluator> _plugin("g", _parse);
 }

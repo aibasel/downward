@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace pref_evaluator {
-class PrefEvaluator : public ScalarEvaluator {
+class PrefEvaluator : public Evaluator {
 public:
     PrefEvaluator();
     virtual ~PrefEvaluator() override;

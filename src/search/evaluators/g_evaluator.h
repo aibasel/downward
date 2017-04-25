@@ -6,7 +6,7 @@
 class Heuristic;
 
 namespace g_evaluator {
-class GEvaluator : public ScalarEvaluator {
+class GEvaluator : public Evaluator {
 public:
     GEvaluator() = default;
     virtual ~GEvaluator() override = default;

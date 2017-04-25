@@ -28,7 +28,7 @@ EagerSearch::EagerSearch(const Options &opts)
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
-      f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
+      f_evaluator(opts.get<Evaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
@@ -332,7 +332,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
-    parser.add_option<ScalarEvaluator *>(
+    parser.add_option<Evaluator *>(
         "f_eval",
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
@@ -374,7 +374,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
         "               reopen_closed=true, f_eval=sum([g(), h]))\n"
         "```\n", true);
-    parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
+    parser.add_option<Evaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("mpd",
                             "use multi-path dependence (LM-A*)", "false");
 
@@ -436,7 +436,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--search eager(single(eval1))\n```\n", true);
 
-    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Evaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
@@ -448,14 +448,14 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();
-    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
+    opts.verify_list_non_empty<Evaluator *>("evals");
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
         opts.set("mpd", false);
-        ScalarEvaluator *evaluator = nullptr;
+        Evaluator *evaluator = nullptr;
         opts.set("f_eval", evaluator);
         engine = new EagerSearch(opts);
     }

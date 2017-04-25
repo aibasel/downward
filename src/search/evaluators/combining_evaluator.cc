@@ -7,10 +7,10 @@ using namespace std;
 
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
-    const vector<ScalarEvaluator *> &subevaluators_)
+    const vector<Evaluator *> &subevaluators_)
     : subevaluators(subevaluators_) {
     all_dead_ends_are_reliable = true;
-    for (const ScalarEvaluator *subevaluator : subevaluators)
+    for (const Evaluator *subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
             all_dead_ends_are_reliable = false;
 }
@@ -30,7 +30,7 @@ EvaluationResult CombiningEvaluator::compute_result(
     values.reserve(subevaluators.size());
 
     // Collect component values. Return infinity if any is infinite.
-    for (ScalarEvaluator *subevaluator : subevaluators) {
+    for (Evaluator *subevaluator : subevaluators) {
         int h_val = eval_context.get_heuristic_value_or_infinity(subevaluator);
         if (h_val == EvaluationResult::INFTY) {
             result.set_h_value(h_val);
