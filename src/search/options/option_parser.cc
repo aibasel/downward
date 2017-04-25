@@ -124,9 +124,9 @@ static void get_full_help_templ() {
 
 static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
+    get_full_help_templ<Evaluator *>();
     get_full_help_templ<Heuristic *>();
     get_full_help_templ<shared_ptr<AbstractTask>>();
-    get_full_help_templ<Evaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<landmarks::LandmarkFactory *>();
     get_full_help_templ<shared_ptr<cegar::SubtaskGenerator>>();

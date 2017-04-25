@@ -6,9 +6,9 @@
 
 #include <unordered_map>
 
+class Evaluator;
 class GlobalOperator;
 class GlobalState;
-class Evaluator;
 class SearchStatistics;
 
 /*

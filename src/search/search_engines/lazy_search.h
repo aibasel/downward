@@ -2,8 +2,8 @@
 #define SEARCH_ENGINES_LAZY_SEARCH_H
 
 #include "../evaluation_context.h"
-#include "../global_state.h"
 #include "../evaluator.h"
+#include "../global_state.h"
 #include "../search_engine.h"
 #include "../search_progress.h"
 #include "../search_space.h"

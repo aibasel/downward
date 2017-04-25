@@ -53,6 +53,7 @@ fast_downward_plugin(
         causal_graph
         evaluation_context
         evaluation_result
+        evaluator
         global_operator
         globals
         global_state
@@ -65,7 +66,6 @@ fast_downward_plugin(
         plugin
         pruning_method
         sampling
-        evaluator
         search_engine
         search_node_info
         search_progress
