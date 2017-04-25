@@ -3,7 +3,7 @@
 
 #include "../evaluation_context.h"
 #include "../global_state.h"
-#include "../scalar_evaluator.h"
+#include "../evaluator.h"
 #include "../search_engine.h"
 #include "../search_progress.h"
 #include "../search_space.h"
