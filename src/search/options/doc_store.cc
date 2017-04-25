@@ -83,7 +83,10 @@ vector<string> DocStore::get_keys() {
 vector<string> DocStore::get_types() {
     vector<string> types;
     for (const auto it : registered) {
-        if (find(types.begin(), types.end(), it.second.type) == types.end()) {
+        /* Entries for the category itself have an empty type. We filter
+           duplicates but keep the original ordering by key. */
+        if (!it.second.type.empty() &&
+            find(types.begin(), types.end(), it.second.type) == types.end()) {
             types.push_back(it.second.type);
         }
     }

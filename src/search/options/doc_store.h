@@ -97,7 +97,7 @@ public:
         return &instance_;
     }
 
-    void register_object(std::string k, const std::string &type);
+    void register_object(std::string key, const std::string &type);
 
     void add_arg(
         const std::string &k,
