@@ -68,7 +68,7 @@ void Txt2TagsPrinter::print_usage(const string &call_name, const DocStruct &info
         os << "``` " << call_name << "(";
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
-            os << arg.kwd;
+            os << arg.key;
             if (!arg.default_value.empty())
                 os << "=" << arg.default_value;
             if (i != info.arg_help.size() - 1)
@@ -81,7 +81,7 @@ void Txt2TagsPrinter::print_usage(const string &call_name, const DocStruct &info
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
-        os << "- //" << arg.kwd << "// (" << arg.type_name;
+        os << "- //" << arg.key << "// (" << arg.type_name;
         if (arg.bounds.has_bound())
             os << " \"\"" << arg.bounds << "\"\"";
         os << "): " << arg.help << endl;
@@ -160,7 +160,7 @@ void PlainPrinter::print_usage(const string &call_name, const DocStruct &info) {
         os << call_name << "(";
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
-            os << arg.kwd;
+            os << arg.key;
             if (!arg.default_value.empty())
                 os << "=" << arg.default_value;
             if (i != info.arg_help.size() - 1)
@@ -173,7 +173,7 @@ void PlainPrinter::print_usage(const string &call_name, const DocStruct &info) {
 void PlainPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
-        os << " " << arg.kwd << " (" << arg.type_name;
+        os << " " << arg.key << " (" << arg.type_name;
         if (arg.bounds.has_bound())
             os << " " << arg.bounds;
         os << "): " << arg.help << endl;

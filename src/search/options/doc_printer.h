@@ -21,7 +21,7 @@ protected:
     virtual void print_category_footer() = 0;
 
 public:
-    DocPrinter(std::ostream &out);
+    explicit DocPrinter(std::ostream &out);
     virtual ~DocPrinter();
 
     virtual void print_all();
