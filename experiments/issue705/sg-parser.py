@@ -33,4 +33,9 @@ add_absolute_and_relative(parser, 'sg_counts_leaf_empty', 'SG leaf statistics: a
 add_absolute_and_relative(parser, 'sg_counts_leaf_single', 'SG leaf statistics: single applicable op:')
 add_absolute_and_relative(parser, 'sg_counts_leaf_more', 'SG leaf statistics: more applicable ops:')
 
+add_absolute_and_relative(parser, 'sg_counts_switch_vector_single', 'SG switch statistics: vector single:')
+add_absolute_and_relative(parser, 'sg_counts_switch_vector_small', 'SG switch statistics: vector small:')
+add_absolute_and_relative(parser, 'sg_counts_switch_vector_large', 'SG switch statistics: vector large:')
+add_absolute_and_relative(parser, 'sg_counts_switch_vector_full', 'SG switch statistics: vector full:')
+
 parser.parse()
