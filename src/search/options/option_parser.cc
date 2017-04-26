@@ -516,7 +516,7 @@ void OptionParser::add_enum_option(
         }
 
         DocStore::instance()->add_arg(
-            parse_tree.begin()->value, key, help, enum_descr, default_value,
+            get_root_value(), key, help, enum_descr, default_value,
             Bounds::unlimited(), value_explanations);
         return;
     }
@@ -574,13 +574,10 @@ Options OptionParser::parse() {
                 }
             }
             if (!valid_key) {
-                error("invalid keyword "
-                      + pti->key + " for "
-                      + parse_tree.begin()->value);
+                error("invalid keyword " + pti->key + " for " + get_root_value());
             }
         }
-        if (pti->key.compare("") == 0 &&
-            last_key.compare("") != 0) {
+        if (pti->key.compare("") == 0 && last_key.compare("") != 0) {
             error("positional argument after keyword argument");
         }
         last_key = pti->key;
@@ -593,29 +590,29 @@ void OptionParser::document_values(
     const string &argument,
     const ValueExplanations &value_explanations) const {
     DocStore::instance()->add_value_explanations(
-        parse_tree.begin()->value, argument, value_explanations);
+        get_root_value(), argument, value_explanations);
 }
 
 void OptionParser::document_synopsis(const string &name, const string &note) const {
-    DocStore::instance()->set_synopsis(parse_tree.begin()->value, name, note);
+    DocStore::instance()->set_synopsis(get_root_value(), name, note);
 }
 
 void OptionParser::document_property(const string &property, const string &note) const {
-    DocStore::instance()->add_property(parse_tree.begin()->value, property, note);
+    DocStore::instance()->add_property(get_root_value(), property, note);
 }
 
 void OptionParser::document_language_support(
     const string &feature, const string &note) const {
-    DocStore::instance()->add_feature(parse_tree.begin()->value, feature, note);
+    DocStore::instance()->add_feature(get_root_value(), feature, note);
 }
 
 void OptionParser::document_note(
     const string &name, const string &note, bool long_text) const {
-    DocStore::instance()->add_note(parse_tree.begin()->value, name, note, long_text);
+    DocStore::instance()->add_note(get_root_value(), name, note, long_text);
 }
 
 void OptionParser::document_hide() const {
-    DocStore::instance()->hide(parse_tree.begin()->value);
+    DocStore::instance()->hide(get_root_value());
 }
 
 bool OptionParser::dry_run() const {
@@ -628,5 +625,9 @@ bool OptionParser::help_mode() const {
 
 const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
+}
+
+const string &OptionParser::get_root_value() const {
+    return parse_tree.begin()->value;
 }
 }
