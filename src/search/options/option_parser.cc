@@ -75,46 +75,45 @@ void OptionParser::set_help_mode(bool use_help_mode) {
 }
 
 template<typename T>
-static void get_help_templ(const ParseTree &pt) {
-    if (Registry<T>::instance()->contains(pt.begin()->value)) {
-        OptionParser p(pt, true);
-        p.set_help_mode(true);
-        p.start_parsing<T>();
+static void get_help_templ(const ParseTree &parse_tree) {
+    if (Registry<T>::instance()->contains(parse_tree.begin()->value)) {
+        OptionParser parser(parse_tree, true);
+        parser.set_help_mode(true);
+        parser.start_parsing<T>();
     }
 }
 
-static void get_help(const string &k) {
-    ParseTree pt;
-    pt.insert(pt.begin(), ParseNode(k));
-    get_help_templ<SearchEngine *>(pt);
-    get_help_templ<Evaluator *>(pt);
-    get_help_templ<Heuristic *>(pt);
-    get_help_templ<shared_ptr<AbstractTask>>(pt);
-    get_help_templ<Synergy *>(pt);
-    get_help_templ<landmarks::LandmarkFactory *>(pt);
-    get_help_templ<shared_ptr<cegar::SubtaskGenerator>>(pt);
-    get_help_templ<shared_ptr<OpenListFactory>>(pt);
-    get_help_templ<shared_ptr<merge_and_shrink::LabelReduction>>(pt);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeScoringFunction>>(pt);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeSelector>>(pt);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>(pt);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeTreeFactory>>(pt);
-    get_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>(pt);
-    get_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>(pt);
-    get_help_templ<shared_ptr<pdbs::PatternCollectionGenerator>>(pt);
-    get_help_templ<shared_ptr<pdbs::PatternGenerator>>(pt);
-    get_help_templ<shared_ptr<PruningMethod>>(pt);
+static void get_help(const string &name) {
+    ParseTree parse_tree;
+    parse_tree.insert(parse_tree.begin(), ParseNode(name));
+    get_help_templ<SearchEngine *>(parse_tree);
+    get_help_templ<Evaluator *>(parse_tree);
+    get_help_templ<Heuristic *>(parse_tree);
+    get_help_templ<shared_ptr<AbstractTask>>(parse_tree);
+    get_help_templ<Synergy *>(parse_tree);
+    get_help_templ<landmarks::LandmarkFactory *>(parse_tree);
+    get_help_templ<shared_ptr<cegar::SubtaskGenerator>>(parse_tree);
+    get_help_templ<shared_ptr<OpenListFactory>>(parse_tree);
+    get_help_templ<shared_ptr<merge_and_shrink::LabelReduction>>(parse_tree);
+    get_help_templ<shared_ptr<merge_and_shrink::MergeScoringFunction>>(parse_tree);
+    get_help_templ<shared_ptr<merge_and_shrink::MergeSelector>>(parse_tree);
+    get_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>(parse_tree);
+    get_help_templ<shared_ptr<merge_and_shrink::MergeTreeFactory>>(parse_tree);
+    get_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>(parse_tree);
+    get_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>(parse_tree);
+    get_help_templ<shared_ptr<pdbs::PatternCollectionGenerator>>(parse_tree);
+    get_help_templ<shared_ptr<pdbs::PatternGenerator>>(parse_tree);
+    get_help_templ<shared_ptr<PruningMethod>>(parse_tree);
 }
 
 template<typename T>
 static void get_full_help_templ() {
-    DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
-                                       TypeDocumenter<T>::synopsis());
-    vector<string> keys = Registry<T>::instance()->get_sorted_keys();
-    for (size_t i = 0; i < keys.size(); ++i) {
-        ParseTree pt;
-        pt.insert(pt.begin(), ParseNode(keys[i]));
-        get_help_templ<T>(pt);
+    DocStore::instance()->set_synopsis(
+        TypeNamer<T>::name(), "", TypeDocumenter<T>::synopsis());
+    for (const string &key : Registry<T>::instance()->get_sorted_keys()) {
+        ParseTree parse_tree;
+        parse_tree.insert(parse_tree.begin(), ParseNode(key));
+        get_help_templ<T>(parse_tree);
     }
 }
 
@@ -141,46 +140,43 @@ static void get_full_help() {
 
 
 /*
-Predefining landmarks and heuristics:
+  Predefine landmarks and heuristics.
 */
 
-//takes a string of the form "word1, word2, word3 " and converts it to a vector
-//(used for predefining synergies)
+/* Convert a string of the form "word1, word2, word3" and convert it to a vector.
+   (used for predefining synergies) */
 static vector<string> to_list(const string &s) {
     vector<string> result;
     string buffer;
-    for (size_t i = 0; i < s.size(); ++i) {
-        if (s[i] == ',') {
+    for (char c : s) {
+        if (c == ',') {
             result.push_back(buffer);
             buffer.clear();
-        } else if (s[i] == ' ') {
+        } else if (c == ' ') {
             continue;
         } else {
-            buffer.push_back(s[i]);
+            buffer.push_back(c);
         }
     }
     result.push_back(buffer);
     return result;
 }
 
-//Note: originally the following function was templated (predefine<T>),
-//but there is no Synergy<LandmarkFactory>, so I split it up for now.
-static void predefine_heuristic(string s, bool dry_run) {
-    //remove newlines so they don't mess anything up:
-    s.erase(remove(s.begin(), s.end(), '\n'), s.end());
-
-    size_t split = s.find("=");
-    string ls = s.substr(0, split);
-    vector<string> definees = to_list(ls);
-    string rs = s.substr(split + 1);
-    OptionParser op(rs, dry_run);
-    if (definees.size() == 1) { //normal predefinition
+// TODO: Update this function when we get rid of the Synergy object.
+static void predefine_heuristic(const string &arg, bool dry_run) {
+    size_t split_pos = arg.find("=");
+    string lhs = arg.substr(0, split_pos);
+    vector<string> definees = to_list(lhs);
+    string rhs = arg.substr(split_pos + 1);
+    OptionParser parser(rhs, dry_run);
+    if (definees.size() == 1) {
+        // Normal predefinition
         Predefinitions<Heuristic *>::instance()->predefine(
-            definees[0], op.start_parsing<Heuristic *>());
-    } else if (definees.size() > 1) { //synergy
+            definees[0], parser.start_parsing<Heuristic *>());
+    } else if (definees.size() > 1) {
+        // Synergy
         if (!dry_run) {
-            vector<Heuristic *> heur =
-                op.start_parsing<Synergy *>()->heuristics;
+            vector<Heuristic *> heur = parser.start_parsing<Synergy *>()->heuristics;
             for (size_t i = 0; i < definees.size(); ++i) {
                 Predefinitions<Heuristic *>::instance()->predefine(
                     definees[i], heur[i]);
@@ -192,19 +188,16 @@ static void predefine_heuristic(string s, bool dry_run) {
             }
         }
     } else {
-        op.error("predefinition has invalid left side");
+        parser.error("predefinition has invalid left side");
     }
 }
 
-static void predefine_lmgraph(string s, bool dry_run) {
-    //remove newlines so they don't mess anything up:
-    s.erase(remove(s.begin(), s.end(), '\n'), s.end());
-
-    size_t split = s.find("=");
-    string ls = s.substr(0, split);
-    vector<string> definees = to_list(ls);
-    string rs = s.substr(split + 1);
-    OptionParser op(rs, dry_run);
+static void predefine_lmgraph(const string &arg, bool dry_run) {
+    size_t split_pos = arg.find("=");
+    string lhs = arg.substr(0, split_pos);
+    vector<string> definees = to_list(lhs);
+    string rhs = arg.substr(split_pos + 1);
+    OptionParser op(rhs, dry_run);
     if (definees.size() == 1) {
         Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
             definees[0], op.start_parsing<landmarks::LandmarkFactory *>());
@@ -213,10 +206,6 @@ static void predefine_lmgraph(string s, bool dry_run) {
     }
 }
 
-
-/*
-Parse command line options
-*/
 
 template<class T>
 void _check_bounds(
@@ -270,8 +259,13 @@ SearchEngine *OptionParser::parse_cmd_line(
     bool active = true;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
-        // Ignore case for all arguments.
+
+        // Ignore case.
         transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
+
+        // Sanitize argument by removing newlines.
+        arg.erase(remove(arg.begin(), arg.end(), '\n'), arg.end());
+
         if (arg == "--if-unit-cost") {
             active = is_unit_cost;
         } else if (arg == "--if-non-unit-cost") {
@@ -324,13 +318,11 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             cout << "Help:" << endl;
             bool txt2tags = false;
             vector<string> helpiands;
-            if (i + 1 < args.size()) {
-                for (size_t j = i + 1; j < args.size(); ++j) {
-                    if (args[j] == "--txt2tags") {
-                        txt2tags = true;
-                    } else {
-                        helpiands.push_back(string(args[j]));
-                    }
+            for (size_t j = i + 1; j < args.size(); ++j) {
+                if (args[j] == "--txt2tags") {
+                    txt2tags = true;
+                } else {
+                    helpiands.push_back(string(args[j]));
                 }
             }
             if (helpiands.empty()) {
@@ -340,13 +332,12 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                     get_help(helpiand);
                 }
             }
-            DocPrinter *dp;
-            if (txt2tags) {
-                dp = new Txt2TagsPrinter(cout);
-            } else {
-                dp = new PlainPrinter(cout);
-            }
-            dp->print_all();
+            unique_ptr<DocPrinter> doc_printer;
+            if (txt2tags)
+                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout);
+            else
+                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout);
+            doc_printer->print_all();
             cout << "Help output finished." << endl;
             exit(0);
         } else if (arg.compare("--internal-plan-file") == 0) {
@@ -394,54 +385,50 @@ string OptionParser::usage(const string &progname) {
 }
 
 
-static ParseTree generate_parse_tree(string config) {
-    //remove newlines so they don't mess anything up:
-    config.erase(remove(config.begin(), config.end(), '\n'), config.end());
-
-    ParseTree tr;
-    ParseTree::iterator top = tr.begin();
+static ParseTree generate_parse_tree(const string &config) {
+    ParseTree tree;
     ParseTree::sibling_iterator pseudoroot =
-        tr.insert(top, ParseNode("pseudoroot", ""));
+        tree.insert(tree.begin(), ParseNode("pseudoroot", ""));
     ParseTree::sibling_iterator cur_node = pseudoroot;
-    string buffer(""), key("");
-    char next = ' ';
+    string buffer = "";
+    string key = "";
     for (size_t i = 0; i < config.size(); ++i) {
-        next = config.at(i);
-        if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
-            tr.append_child(cur_node, ParseNode(buffer, key));
+        char next = config.at(i);
+        if ((next == '(' || next == ')' || next == ',') && !buffer.empty()) {
+            tree.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
-        } else if (next == '(' && buffer.size() == 0) {
+        } else if (next == '(' && buffer.empty()) {
             throw ParseError("misplaced opening bracket (", *cur_node, config.substr(0, i));
         }
         switch (next) {
         case ' ':
             break;
         case '(':
-            cur_node = last_child(tr, cur_node);
+            cur_node = last_child(tree, cur_node);
             break;
         case ')':
             if (cur_node == pseudoroot)
                 throw ParseError("missing (", *cur_node, config.substr(0, i));
-            cur_node = tr.parent(cur_node);
+            cur_node = tree.parent(cur_node);
             break;
         case '[':
             if (!buffer.empty())
                 throw ParseError("misplaced opening bracket [", *cur_node, config.substr(0, i));
-            tr.append_child(cur_node, ParseNode("list", key));
+            tree.append_child(cur_node, ParseNode("list", key));
             key.clear();
-            cur_node = last_child(tr, cur_node);
+            cur_node = last_child(tree, cur_node);
             break;
         case ']':
             if (!buffer.empty()) {
-                tr.append_child(cur_node, ParseNode(buffer, key));
+                tree.append_child(cur_node, ParseNode(buffer, key));
                 buffer.clear();
                 key.clear();
             }
             if (cur_node->value.compare("list") != 0) {
                 throw ParseError("mismatched brackets", *cur_node, config.substr(0, i));
             }
-            cur_node = tr.parent(cur_node);
+            cur_node = tree.parent(cur_node);
             break;
         case ',':
             break;
@@ -452,20 +439,17 @@ static ParseTree generate_parse_tree(string config) {
             buffer.clear();
             break;
         default:
-            buffer.push_back(tolower(next));
+            buffer.push_back(next);
             break;
         }
     }
     if (cur_node->value.compare("pseudoroot") != 0)
         throw ParseError("missing )", *cur_node);
-    if (buffer.size() > 0)
-        tr.append_child(cur_node, ParseNode(buffer, key));
+    if (!buffer.empty())
+        tree.append_child(cur_node, ParseNode(buffer, key));
 
-
-    //the real parse tree is the first (and only) child of the pseudoroot.
-    //pseudoroot is only a placeholder.
-    ParseTree real_tr = subtree(tr, tr.begin(pseudoroot));
-    return real_tr;
+    // The real parse tree is the first (and only) child of the pseudoroot placeholder.
+    return subtree(tree, tree.begin(pseudoroot));
 }
 
 OptionParser::OptionParser(const string &config, bool dry_run)
