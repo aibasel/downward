@@ -857,6 +857,120 @@ public:
     }
 };
 
+class GeneratorSwitchSingle : public GeneratorBase {
+    VariableProxy switch_var;
+    int value;
+    GeneratorBase *generator_for_value;
+public:
+    ~GeneratorSwitchSingle();
+    GeneratorSwitchSingle(const VariableProxy &switch_var, int value,
+                          GeneratorBase *generator_for_value);
+    virtual void generate_applicable_ops(
+        const State &state, vector<OperatorProxy> &applicable_ops) const;
+    // Transitional method, used until the search is switched to the new task interface.
+    virtual void generate_applicable_ops(
+        const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
+
+    virtual size_t get_size_estimate_object_overhead() const {
+        size_t result = 0;
+        result += 4; // estimate for vtbl pointer
+        result += 8; // estimate for dynamic memory management overhead
+        result += 4; // value
+        result += generator_for_value->get_size_estimate_object_overhead();
+        return result;
+    }
+
+    virtual size_t get_size_estimate_operators() const {
+        return generator_for_value->get_size_estimate_operators();
+    }
+
+    virtual size_t get_size_estimate_switch_var() const {
+        size_t result = 0;
+        result += 8; // estimate for switch_var; could be made smaller
+        result += generator_for_value->get_size_estimate_switch_var();
+        return result;
+    }
+
+    virtual size_t get_size_estimate_generator_for_value() const {
+        size_t result = 0;
+        result += 4; // single pointer
+        result += generator_for_value->get_size_estimate_generator_for_value();
+        return result;
+    }
+
+    virtual size_t get_size_estimate_default_generator() const {
+        return generator_for_value->get_size_estimate_default_generator();
+    }
+
+    virtual size_t get_size_estimate_next_generator() const {
+        return generator_for_value->get_size_estimate_next_generator();
+    }
+
+    virtual size_t count_immediate() const {
+        return generator_for_value->count_immediate();
+    }
+
+    virtual size_t count_forks() const {
+        return generator_for_value->count_forks();
+    }
+
+    virtual size_t count_switches() const {
+        size_t result = 1;
+        result += generator_for_value->count_switches();
+        return result;
+    }
+
+    virtual size_t count_leaves() const {
+        return generator_for_value->count_leaves();
+    }
+
+    virtual size_t count_empty() const {
+        return generator_for_value->count_empty();
+    }
+
+    virtual size_t count_switch_immediate_empty() const {
+        return generator_for_value->count_switch_immediate_empty();
+    }
+
+    virtual size_t count_switch_immediate_single() const {
+        return generator_for_value->count_switch_immediate_single();
+    }
+
+    virtual size_t count_switch_immediate_more() const {
+        return generator_for_value->count_switch_immediate_more();
+    }
+
+    virtual size_t count_leaf_applicable_empty() const  {
+        return generator_for_value->count_leaf_applicable_empty();
+    }
+
+    virtual size_t count_leaf_applicable_single() const {
+        return generator_for_value->count_leaf_applicable_single();
+    }
+
+    virtual size_t count_leaf_applicable_more() const {
+        return generator_for_value->count_leaf_applicable_more();
+    }
+
+    virtual size_t count_switch_vector_unique() const {
+        size_t result = 1;
+        result += generator_for_value->count_switch_vector_unique();
+        return result;
+    }
+
+    virtual size_t count_switch_vector_small() const {
+        return generator_for_value->count_switch_vector_small();
+    }
+
+    virtual size_t count_switch_vector_large() const {
+        return generator_for_value->count_switch_vector_large();
+    }
+
+    virtual size_t count_switch_vector_full() const {
+        return generator_for_value->count_switch_vector_full();
+    }
+};
+
 class GeneratorLeaf : public GeneratorBase {
     list<OperatorProxy> applicable_operators;
 public:
@@ -1086,6 +1200,31 @@ void GeneratorSwitchHash::generate_applicable_ops(
     }
 }
 
+GeneratorSwitchSingle::GeneratorSwitchSingle(const VariableProxy &switch_var, int value,
+                                             GeneratorBase *generator_for_value)
+    : switch_var(switch_var),
+      value(value),
+      generator_for_value(generator_for_value) {
+}
+
+GeneratorSwitchSingle::~GeneratorSwitchSingle() {
+    delete generator_for_value;
+}
+
+void GeneratorSwitchSingle::generate_applicable_ops(
+    const State &state, vector<OperatorProxy> &applicable_ops) const {
+    if (value == state[switch_var].get_value()) {
+        generator_for_value->generate_applicable_ops(state, applicable_ops);
+    }
+}
+
+void GeneratorSwitchSingle::generate_applicable_ops(
+    const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const {
+    if (value == state[switch_var.get_id()]) {
+        generator_for_value->generate_applicable_ops(state, applicable_ops);
+    }
+}
+
 GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
@@ -1211,16 +1350,26 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
                     ++num_non_zero;
                 }
             }
-            int min_size = generator_for_val.size() * MIN_VECTOR_FILL_RATE;
+            int num_values = generator_for_val.size();
+            int min_size = num_values * MIN_VECTOR_FILL_RATE;
 
-            GeneratorBase *switch_generator;
-            if (num_non_zero < min_size) {
+            GeneratorBase *switch_generator = nullptr;
+            if (num_non_zero == 1) {
+                for (int value = 0; value < num_values; ++value) {
+                    if (generator_for_val[value]) {
+                        switch_generator = new GeneratorSwitchSingle(
+                            switch_var, value, generator_for_val[value]);
+                        break;
+                    }
+                }
+            } else if (num_non_zero < min_size) {
                 switch_generator = new GeneratorSwitchHash(
                     switch_var, generator_for_val);
             } else {
                 switch_generator = new GeneratorSwitchVector(
                     switch_var, move(generator_for_val));
             }
+            assert(switch_generator);
 
             GeneratorBase *non_immediate_generator = nullptr;
             if (default_operators.empty()) {
