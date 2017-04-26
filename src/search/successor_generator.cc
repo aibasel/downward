@@ -12,7 +12,7 @@
 
 using namespace std;
 
-double MIN_VECTOR_FILL_RATE = 0;
+double MIN_VECTOR_FILL_RATE = 0.5;
 
 /* NOTE on possible optimizations:
 
