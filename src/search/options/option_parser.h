@@ -184,10 +184,10 @@ void OptionParser::add_option(
             }
         }
     }
-    std::unique_ptr<OptionParser> subparser(
+    std::unique_ptr<OptionParser> subparser =
         use_default ?
-        new OptionParser(default_value, dry_run()) :
-        new OptionParser(subtree(parse_tree, arg), dry_run()));
+        utils::make_unique_ptr<OptionParser>(default_value, dry_run()) :
+        utils::make_unique_ptr<OptionParser>(subtree(parse_tree, arg), dry_run());
     T result = TokenParser<T>::parse(*subparser);
     check_bounds<T>(key, result, bounds);
     opts.set<T>(key, result);
