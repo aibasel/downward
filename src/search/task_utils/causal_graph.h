@@ -57,6 +57,7 @@ typedef std::vector<std::vector<int>> IntRelation;
 class AbstractTask;
 class TaskProxy;
 
+namespace causal_graph {
 class CausalGraph {
     IntRelation pre_to_eff;
     IntRelation eff_to_pre;
@@ -114,5 +115,6 @@ public:
 /* Create or retrieve a causal graph from cache. If causal graphs are created
    with this function, we build at most one causal graph per AbstractTask. */
 extern const CausalGraph &get_causal_graph(const AbstractTask *task);
+}
 
 #endif

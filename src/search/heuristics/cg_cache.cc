@@ -1,10 +1,11 @@
 #include "cg_cache.h"
 
-#include "../causal_graph.h"
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
 #include "../utils/math.h"
+
+#include "../task_utils/causal_graph.h"
 
 #include <algorithm>
 #include <cassert>
@@ -20,7 +21,7 @@ CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = task_proxy.get_variables().size();
-    const CausalGraph &cg = task_proxy.get_causal_graph();
+    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);

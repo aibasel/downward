@@ -5,7 +5,6 @@
 #include "pattern_database.h"
 #include "validation.h"
 
-#include "../causal_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../sampling.h"
@@ -19,6 +18,8 @@
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
+
+#include "../task_utils/causal_graph.h"
 
 #include <algorithm>
 #include <cassert>
@@ -47,7 +48,7 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     const PatternDatabase &pdb,
     set<Pattern> &generated_patterns,
     PDBCollection &candidate_pdbs) {
-    const CausalGraph &causal_graph = task_proxy.get_causal_graph();
+    const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const Pattern &pattern = pdb.get_pattern();
     int pdb_size = pdb.get_size();
     int max_pdb_size = 0;

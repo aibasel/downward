@@ -14,7 +14,6 @@
 
 
 class AxiomsProxy;
-class CausalGraph;
 class ConditionsProxy;
 class EffectProxy;
 class EffectConditionsProxy;
@@ -29,6 +28,10 @@ class State;
 class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
+
+namespace causal_graph {
+class CausalGraph;
+}
 
 /*
   Overview of the task interface.
@@ -673,7 +676,7 @@ public:
         return State(*task, std::move(state_values));
     }
 
-    const CausalGraph &get_causal_graph() const;
+    const causal_graph::CausalGraph &get_causal_graph() const;
 };
 
 
