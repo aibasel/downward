@@ -59,11 +59,6 @@ class PatternGenerator;
 namespace options {
 const string OptionParser::NONE = "<none>";
 
-
-void OptionParser::error(const string &msg) const {
-    throw ParseError(msg, parse_tree);
-}
-
 /*
   Functions for printing help:
 */
@@ -564,6 +559,10 @@ Options OptionParser::parse() {
     }
     opts.set_unparsed_config(get_unparsed_config());
     return opts;
+}
+
+void OptionParser::error(const string &msg) const {
+    throw ParseError(msg, parse_tree);
 }
 
 void OptionParser::document_values(
