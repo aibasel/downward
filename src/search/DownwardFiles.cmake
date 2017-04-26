@@ -569,7 +569,8 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME SCCS
-    HELP "Utility to compute maximal SCCs of a graph"
+    HELP "Algorithm to compute the strongly connected components (SCCs) of a "
+         "directed graph."
     SOURCES
         algorithms/sccs.cc
     DEPENDENCY_ONLY
