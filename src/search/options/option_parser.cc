@@ -270,6 +270,8 @@ SearchEngine *OptionParser::parse_cmd_line(
     bool active = true;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
+        // Ignore case for all arguments.
+        transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
         if (arg == "--if-unit-cost") {
             active = is_unit_cost;
         } else if (arg == "--if-non-unit-cost") {
@@ -489,11 +491,6 @@ string OptionParser::get_unparsed_config() const {
     return stream.str();
 }
 
-static string str_to_lower(string s) {
-    transform(s.begin(), s.end(), s.begin(), ::tolower);
-    return s;
-}
-
 void OptionParser::add_enum_option(
     const string &key,
     vector<string> enumeration,
@@ -530,27 +527,32 @@ void OptionParser::add_enum_option(
     if (!opts.contains(key))
         return;
 
-    string name = str_to_lower(opts.get<string>(key));
+    string name = opts.get<string>(key);
 
     //...then check if the parsed string can be treated as a number
     stringstream str_stream(name);
-    int x;
-    if (!(str_stream >> x).fail()) {
+    int choice;
+    if (!(str_stream >> choice).fail()) {
         int max_choice = enumeration.size();
-        if (x > max_choice) {
-            error("invalid enum argument " + name
-                  + " for option " + key);
+        if (choice > max_choice) {
+            error("invalid enum argument " + name + " for option " + key);
         }
-        opts.set<int>(key, x);
+        opts.set<int>(key, choice);
     } else {
-        //...otherwise try to map the string to its position in the enumeration vector
-        transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
-                  str_to_lower); //make the enumeration lower case
-        vector<string>::const_iterator it =
-            find(enumeration.begin(), enumeration.end(), name);
+        // ... otherwise try to map the string to its position in the enumeration vector.
+        auto it = find_if(enumeration.begin(), enumeration.end(),
+            [&](const string &enum_name) {
+                if (enum_name.size() != name.size())
+                    return false;
+                for (size_t i = 0; i < name.size(); ++i) {
+                    // Ignore case.
+                    if (tolower(enum_name[i]) != tolower(name[i]))
+                        return false;
+                }
+                return true;
+            });
         if (it == enumeration.end()) {
-            error("invalid enum argument " + name
-                  + " for option " + key);
+            error("invalid enum argument " + name + " for option " + key);
         }
         opts.set<int>(key, it - enumeration.begin());
     }
