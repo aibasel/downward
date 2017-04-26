@@ -36,8 +36,8 @@ class OptionParser {
         const std::vector<std::string> &args, bool dry_run);
 
 public:
-    OptionParser(const std::string &config, bool dry_run);
     OptionParser(ParseTree pt, bool dry_run);
+    OptionParser(const std::string &config, bool dry_run);
     ~OptionParser() = default;
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
