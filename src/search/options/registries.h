@@ -19,7 +19,7 @@ class OptionParser;
 template<typename T>
 class Registry {
 public:
-    using Factory = std::function<T (OptionParser &)>;
+    using Factory = std::function<T(OptionParser &)>;
 
     void insert(const std::string &key, Factory factory) {
         if (registered.count(key)) {

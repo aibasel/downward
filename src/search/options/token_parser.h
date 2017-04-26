@@ -154,11 +154,11 @@ template<>
 inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     if (Predefinitions<Heuristic *>::instance()->contains(value)) {
-        return (Evaluator *) Predefinitions<Heuristic *>::instance()->get(value);
+        return (Evaluator *)Predefinitions<Heuristic *>::instance()->get(value);
     } else if (Registry<Evaluator *>::instance()->contains(value)) {
         return Registry<Evaluator *>::instance()->get(value)(parser);
     } else if (Registry<Heuristic *>::instance()->contains(value)) {
-        return (Evaluator *) Registry<Heuristic *>::instance()->get(value)(parser);
+        return (Evaluator *)Registry<Heuristic *>::instance()->get(value)(parser);
     }
     parser.error("Evaluator " + value + " not found");
     return nullptr;
