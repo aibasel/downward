@@ -517,7 +517,7 @@ void OptionParser::add_enum_option(
     } else {
         // ... otherwise map the string to its position in the enumeration vector.
         auto it = find_if(names.begin(), names.end(),
-            [&](const string &name) {
+                          [&](const string &name) {
                 if (name.size() != value.size())
                     return false;
                 for (size_t i = 0; i < value.size(); ++i) {
