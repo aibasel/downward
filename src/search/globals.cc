@@ -7,8 +7,8 @@
 #include "successor_generator.h"
 
 #include "algorithms/int_packer.h"
-#include "tasks/root_task.h"
 #include "task_utils/causal_graph.h"
+#include "tasks/root_task.h"
 #include "utils/logging.h"
 #include "utils/rng.h"
 #include "utils/system.h"
