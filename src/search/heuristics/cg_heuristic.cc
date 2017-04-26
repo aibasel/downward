@@ -80,7 +80,8 @@ void CGHeuristic::setup_domain_transition_graphs() {
 }
 
 int CGHeuristic::get_transition_cost(const State &state,
-                                     domain_transition_graph::DomainTransitionGraph *dtg, int start_val,
+                                     domain_transition_graph::DomainTransitionGraph *dtg,
+                                     int start_val,
                                      int goal_val) {
     if (start_val == goal_val)
         return 0;
