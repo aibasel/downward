@@ -452,14 +452,6 @@ static ParseTree generate_parse_tree(const string &config) {
     return subtree(tree, tree.begin(pseudoroot));
 }
 
-OptionParser::OptionParser(const string &config, bool dry_run)
-    : opts(false),
-      parse_tree(generate_parse_tree(config)),
-      dry_run_(dry_run),
-      help_mode_(false),
-      next_unparsed_argument(first_child_of_root(parse_tree)) {
-}
-
 
 OptionParser::OptionParser(ParseTree pt, bool dry_run)
     : opts(false),
@@ -467,6 +459,10 @@ OptionParser::OptionParser(ParseTree pt, bool dry_run)
       dry_run_(dry_run),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
+}
+
+OptionParser::OptionParser(const string &config, bool dry_run)
+    : OptionParser(generate_parse_tree(config), dry_run) {
 }
 
 string OptionParser::get_unparsed_config() const {
