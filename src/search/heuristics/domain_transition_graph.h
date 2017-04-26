@@ -7,10 +7,16 @@
 #include <unordered_map>
 #include <vector>
 
+
+namespace cea_heuristic {
+class ContextEnhancedAdditiveHeuristic;
+}
+
 namespace cg_heuristic {
 class CGHeuristic;
 }
 
+namespace domain_transition_graph {
 struct LocalAssignment;
 struct ValueNode;
 struct ValueTransition;
@@ -107,10 +113,6 @@ struct ValueNode {
         : parent_graph(parent), value(val), reached_from(0), reached_by(0) {}
 };
 
-namespace cea_heuristic {
-class ContextEnhancedAdditiveHeuristic;
-}
-
 class DomainTransitionGraph {
     friend class cg_heuristic::CGHeuristic;
     friend class cea_heuristic::ContextEnhancedAdditiveHeuristic;
@@ -129,5 +131,6 @@ class DomainTransitionGraph {
 public:
     DomainTransitionGraph(int var_index, int node_count);
 };
+}
 
 #endif

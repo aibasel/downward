@@ -51,7 +51,7 @@ namespace cea_heuristic {
 struct LocalTransition {
     LocalProblemNode *source;
     LocalProblemNode *target;
-    const ValueTransitionLabel *label;
+    const domain_transition_graph::ValueTransitionLabel *label;
     int action_cost;
 
     int target_cost;
@@ -59,7 +59,7 @@ struct LocalTransition {
 
     LocalTransition(
         LocalProblemNode *source_, LocalProblemNode *target_,
-        const ValueTransitionLabel *label_, int action_cost_)
+        const domain_transition_graph::ValueTransitionLabel *label_, int action_cost_)
         : source(source_), target(target_),
           label(label_), action_cost(action_cost_),
           target_cost(-1), unreached_conditions(-1) {
@@ -132,7 +132,7 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
     int var_no) const {
     LocalProblem *problem = new LocalProblem;
 
-    DomainTransitionGraph *dtg = transition_graphs[var_no];
+    domain_transition_graph::DomainTransitionGraph *dtg = transition_graphs[var_no];
 
     problem->context_variables = &dtg->local_to_global_child;
 
@@ -145,12 +145,12 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
     // Compile the DTG arcs into LocalTransition objects.
     for (size_t value = 0; value < num_values; ++value) {
         LocalProblemNode &node = problem->nodes[value];
-        const ValueNode &dtg_node = dtg->nodes[value];
+        const domain_transition_graph::ValueNode &dtg_node = dtg->nodes[value];
         for (size_t i = 0; i < dtg_node.transitions.size(); ++i) {
-            const ValueTransition &dtg_trans = dtg_node.transitions[i];
+            const domain_transition_graph::ValueTransition &dtg_trans = dtg_node.transitions[i];
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = problem->nodes[target_value];
-            for (const ValueTransitionLabel &label : dtg_trans.labels) {
+            for (const domain_transition_graph::ValueTransitionLabel &label : dtg_trans.labels) {
                 OperatorProxy op = label.is_axiom ?
                                    task_proxy.get_axioms()[label.op_id] :
                                    task_proxy.get_operators()[label.op_id];
@@ -174,13 +174,13 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
     for (size_t value = 0; value < 2; ++value)
         problem->nodes.push_back(LocalProblemNode(problem, goals_proxy.size()));
 
-    vector<LocalAssignment> goals;
+    vector<domain_transition_graph::LocalAssignment> goals;
     for (size_t goal_no = 0; goal_no < goals_proxy.size(); ++goal_no) {
         int goal_value = goals_proxy[goal_no].get_value();
-        goals.push_back(LocalAssignment(goal_no, goal_value));
+        goals.push_back(domain_transition_graph::LocalAssignment(goal_no, goal_value));
     }
-    vector<LocalAssignment> no_effects;
-    ValueTransitionLabel *label = new ValueTransitionLabel(0, true, goals, no_effects);
+    vector<domain_transition_graph::LocalAssignment> no_effects;
+    domain_transition_graph::ValueTransitionLabel *label = new domain_transition_graph::ValueTransitionLabel(0, true, goals, no_effects);
     LocalTransition trans(&problem->nodes[0], &problem->nodes[1], label, 0);
     problem->nodes[0].outgoing_transitions.push_back(trans);
     return problem;
@@ -253,10 +253,10 @@ void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
         LocalProblemNode *parent = reached_by->source;
         vector<short> &context = node->context;
         context = parent->context;
-        const vector<LocalAssignment> &precond = reached_by->label->precond;
+        const vector<domain_transition_graph::LocalAssignment> &precond = reached_by->label->precond;
         for (size_t i = 0; i < precond.size(); ++i)
             context[precond[i].local_var] = precond[i].value;
-        const vector<LocalAssignment> &effect = reached_by->label->effect;
+        const vector<domain_transition_graph::LocalAssignment> &effect = reached_by->label->effect;
         for (size_t i = 0; i < effect.size(); ++i)
             context[effect[i].local_var] = effect[i].value;
         if (parent->reached_by)
@@ -292,9 +292,9 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
     }
 
     trans->unreached_conditions = 0;
-    const vector<LocalAssignment> &precond = trans->label->precond;
+    const vector<domain_transition_graph::LocalAssignment> &precond = trans->label->precond;
 
-    vector<LocalAssignment>::const_iterator
+    vector<domain_transition_graph::LocalAssignment>::const_iterator
         curr_precond = precond.begin(),
         last_precond = precond.end();
 
@@ -362,7 +362,7 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
         node->reached_by = 0; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
-            const ValueTransitionLabel &label = *first_on_path->label;
+            const domain_transition_graph::ValueTransitionLabel &label = *first_on_path->label;
             OperatorProxy op = label.is_axiom ?
                                task_proxy.get_axioms()[label.op_id] :
                                task_proxy.get_operators()[label.op_id];
@@ -413,7 +413,7 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
       min_action_cost(get_min_operator_cost(task_proxy)) {
     cout << "Initializing context-enhanced additive heuristic..." << endl;
 
-    DTGFactory factory(task_proxy, true, [](int, int) {return false; });
+    domain_transition_graph::DTGFactory factory(task_proxy, true, [](int, int) {return false; });
     transition_graphs = factory.build_dtgs();
 
     goal_problem = build_problem_for_goal();
@@ -434,7 +434,7 @@ ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
 
     for (LocalProblem *problem : local_problems)
         delete problem;
-    for (DomainTransitionGraph *dtg : transition_graphs)
+    for (domain_transition_graph::DomainTransitionGraph *dtg : transition_graphs)
         delete dtg;
 }
 
