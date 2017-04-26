@@ -7,7 +7,6 @@
 #include "../task_proxy.h"
 
 #include "../utils/markup.h"
-
 #include "../task_utils/causal_graph.h"
 
 #include <algorithm>

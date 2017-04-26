@@ -589,7 +589,7 @@ fast_downward_plugin(
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
-    DEPENDS MAX_CLIQUES PRIORITY_QUEUES
+    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES
 )
 
 fast_downward_plugin(

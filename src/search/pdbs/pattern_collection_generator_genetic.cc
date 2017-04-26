@@ -12,7 +12,6 @@
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
-
 #include "../task_utils/causal_graph.h"
 
 #include <algorithm>
