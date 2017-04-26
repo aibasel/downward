@@ -31,7 +31,7 @@ struct ParseError {
         out << "parse error: " << std::endl
             << parse_error.msg << " at: " << std::endl;
         kptree::print_tree_bracketed<ParseNode>(parse_error.parse_tree, out);
-        if (parse_error.substring.size() > 0) {
+        if (!parse_error.substring.empty()) {
             out << " (cannot continue parsing after \"" << parse_error.substring
                 << "\")" << std::endl;
         }
