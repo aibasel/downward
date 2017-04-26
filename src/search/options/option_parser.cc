@@ -60,18 +60,18 @@ namespace options {
 const string OptionParser::NONE = "<none>";
 
 
-void OptionParser::error(const string &msg) {
-    throw ParseError(msg, *this->get_parse_tree());
+void OptionParser::error(const string &msg) const {
+    throw ParseError(msg, parse_tree);
 }
 
 /*
   Functions for printing help:
 */
 
-void OptionParser::set_help_mode(bool m) {
-    dry_run_ = dry_run_ && m;
-    help_mode_ = m;
-    opts.set_help_mode(m);
+void OptionParser::set_help_mode(bool use_help_mode) {
+    dry_run_ = dry_run_ && use_help_mode;
+    help_mode_ = use_help_mode;
+    opts.set_help_mode(use_help_mode);
 }
 
 template<typename T>
@@ -589,33 +589,29 @@ Options OptionParser::parse() {
     return opts;
 }
 
-void OptionParser::document_values(const string &argument,
-                                   ValueExplanations value_explanations) const {
+void OptionParser::document_values(
+    const string &argument,
+    const ValueExplanations &value_explanations) const {
     DocStore::instance()->add_value_explanations(
-        parse_tree.begin()->value,
-        argument, value_explanations);
+        parse_tree.begin()->value, argument, value_explanations);
 }
 
 void OptionParser::document_synopsis(const string &name, const string &note) const {
-    DocStore::instance()->set_synopsis(parse_tree.begin()->value,
-                                       name, note);
+    DocStore::instance()->set_synopsis(parse_tree.begin()->value, name, note);
 }
 
 void OptionParser::document_property(const string &property, const string &note) const {
-    DocStore::instance()->add_property(parse_tree.begin()->value,
-                                       property, note);
+    DocStore::instance()->add_property(parse_tree.begin()->value, property, note);
 }
 
-void OptionParser::document_language_support(const string &feature,
-                                             const string &note) const {
-    DocStore::instance()->add_feature(parse_tree.begin()->value,
-                                      feature, note);
+void OptionParser::document_language_support(
+    const string &feature, const string &note) const {
+    DocStore::instance()->add_feature(parse_tree.begin()->value, feature, note);
 }
 
-void OptionParser::document_note(const string &name,
-                                 const string &note, bool long_text) const {
-    DocStore::instance()->add_note(parse_tree.begin()->value,
-                                   name, note, long_text);
+void OptionParser::document_note(
+    const string &name, const string &note, bool long_text) const {
+    DocStore::instance()->add_note(parse_tree.begin()->value, name, note, long_text);
 }
 
 void OptionParser::document_hide() const {

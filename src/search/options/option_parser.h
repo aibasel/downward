@@ -4,12 +4,7 @@
 #include "doc_store.h"
 #include "options.h"
 
-#include <algorithm>
-#include <iostream>
-#include <limits>
-#include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -59,7 +54,7 @@ public:
         const std::string &key,
         const std::string &help = "",
         const std::string &default_value = "",
-        Bounds bounds = Bounds::unlimited());
+        const Bounds &bounds = Bounds::unlimited());
 
     void add_enum_option(
         const std::string &key,
@@ -74,26 +69,38 @@ public:
         const std::string &help = "",
         const std::string &default_value = "");
 
-    void document_values(const std::string &argument,
-                         ValueExplanations value_explanations) const;
-    void document_synopsis(const std::string &name, const std::string &note) const;
-    void document_property(const std::string &property, const std::string &note) const;
-    void document_language_support(const std::string &feature, const std::string &note) const;
-    void document_note(const std::string &name, const std::string &note, bool long_text = false) const;
+    void document_values(
+        const std::string &argument,
+        const ValueExplanations &value_explanations) const;
+
+    void document_synopsis(
+        const std::string &name, const std::string &note) const;
+
+    void document_property(
+        const std::string &property, const std::string &note) const;
+
+    void document_language_support(
+        const std::string &feature, const std::string &note) const;
+
+    void document_note(
+        const std::string &name, const std::string &note, bool long_text = false) const;
+
     void document_hide() const;
 
-    void error(const std::string &msg);
+    void error(const std::string &msg) const;
 
-    Options parse(); //parse is not the best name for this function. It just does some checks and returns the parsed options Parsing happens before that. Change?
+    /* TODO: "parse" is not the best name for this function. It just does some
+       checks and returns the parsed options. Parsing happens before that. */
+    Options parse();
+
     const ParseTree *get_parse_tree();
-    void set_help_mode(bool m);
 
+    void set_help_mode(bool use_help_mode);
     bool dry_run() const;
     bool help_mode() const;
 
     static const std::string NONE;
 
-    //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(
         int argc, const char **argv, bool dry_run, bool is_unit_cost);
 
@@ -110,13 +117,11 @@ public:
 #include "token_parser.h"
 
 namespace options {
-//Definitions of OptionParsers template functions:
-
 template<typename T>
 T OptionParser::start_parsing() {
     if (help_mode()) {
-        DocStore::instance()->register_object(parse_tree.begin()->value,
-                                              TypeNamer<T>::name());
+        DocStore::instance()->register_object(
+            parse_tree.begin()->value, TypeNamer<T>::name());
     }
     return TokenParser<T>::parse(*this);
 }
@@ -139,7 +144,7 @@ void OptionParser::add_option(
     const std::string &key,
     const std::string &help,
     const std::string &default_value,
-    Bounds bounds) {
+    const Bounds &bounds) {
     if (help_mode()) {
         DocStore::instance()->add_arg(
             parse_tree.begin()->value,
@@ -151,10 +156,10 @@ void OptionParser::add_option(
         return;
     }
     valid_keys.push_back(key);
-    bool use_default(false);
+    bool use_default = false;
     ParseTree::sibling_iterator arg = next_unparsed_argument;
-    //scenario where we have already handled all arguments
     if (arg == parse_tree.end(parse_tree.begin())) {
+        // We have already handled all arguments.
         if (default_value.empty()) {
             error("missing option: " + key);
         } else if (default_value == NONE) {
@@ -162,22 +167,20 @@ void OptionParser::add_option(
         } else {
             use_default = true;
         }
-    } else {
-        //handling arguments with explicit keyword:
-        if (!arg->key.empty()) { //to check if we reached the params supplied with key
-            //try to find a parameter passed with keyword k
-            for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
-                if (arg->key.compare(key) == 0)
-                    break;
-            }
-            if (arg == parse_tree.end(parse_tree.begin())) {
-                if (default_value.empty()) {
-                    error("missing option: " + key);
-                } else if (default_value == NONE) {
-                    return;
-                } else {
-                    use_default = true;
-                }
+    } else if (!arg->key.empty()) {
+        // Handle arguments with explicit keyword.
+        // Try to find a parameter passed with keyword key.
+        for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
+            if (arg->key.compare(key) == 0)
+                break;
+        }
+        if (arg == parse_tree.end(parse_tree.begin())) {
+            if (default_value.empty()) {
+                error("missing option: " + key);
+            } else if (default_value == NONE) {
+                return;
+            } else {
+                use_default = true;
             }
         }
     }
@@ -188,9 +191,8 @@ void OptionParser::add_option(
     T result = TokenParser<T>::parse(*subparser);
     check_bounds<T>(key, result, bounds);
     opts.set<T>(key, result);
-    //if we have not reached the keyword parameters yet
-    //and did not use the default value,
-    //increment the argument position pointer
+    /* If we have not reached the keyword parameters yet and have not used the
+       default value, increment the argument position pointer. */
     if (!use_default && arg->key.empty()) {
         ++next_unparsed_argument;
     }
