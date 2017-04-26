@@ -334,8 +334,8 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (helpiands.empty()) {
                 get_full_help();
             } else {
-                for (size_t j = 0; j != helpiands.size(); ++j) {
-                    get_help(helpiands[j]);
+                for (const string &helpiand : helpiands) {
+                    get_help(helpiand);
                 }
             }
             DocPrinter *dp;
