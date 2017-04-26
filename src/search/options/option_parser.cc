@@ -110,7 +110,7 @@ template<typename T>
 static void get_full_help_templ() {
     DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
                                        TypeDocumenter<T>::synopsis());
-    vector<string> keys = Registry<T>::instance()->get_keys();
+    vector<string> keys = Registry<T>::instance()->get_sorted_keys();
     for (size_t i = 0; i < keys.size(); ++i) {
         ParseTree pt;
         pt.insert(pt.begin(), ParseNode(keys[i]));
