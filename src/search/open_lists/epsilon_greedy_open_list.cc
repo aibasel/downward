@@ -1,8 +1,7 @@
 #include "epsilon_greedy_open_list.h"
 
-#include "open_list.h"
-
 #include "../globals.h"
+#include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -17,7 +16,7 @@
 
 using namespace std;
 
-
+namespace epsilon_greedy_open_list {
 template<class Entry>
 class EpsilonGreedyOpenList : public OpenList<Entry> {
     shared_ptr<utils::RandomNumberGenerator> rng;
@@ -191,3 +190,4 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("epsilon_greedy", _parse);
+}
