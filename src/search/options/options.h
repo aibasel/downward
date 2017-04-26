@@ -16,13 +16,13 @@ class Options {
     bool help_mode;
 
 public:
-    Options(bool hm = false)
+    Options(bool help_mode = false)
         : unparsed_config("<missing>"),
-          help_mode(hm) {
+          help_mode(help_mode) {
     }
 
-    void set_help_mode(bool hm) {
-        help_mode = hm;
+    void set_help_mode(bool help_mode_) {
+        help_mode = help_mode_;
     }
 
     std::unordered_map<std::string, Any> storage;
@@ -63,8 +63,7 @@ public:
     template<typename T>
     void verify_list_non_empty(const std::string &key) const {
         if (!help_mode) {
-            std::vector<T> temp_vec = get<std::vector<T>>(key);
-            if (temp_vec.empty()) {
+            if (get_list<T>(key).empty()) {
                 std::cout << "Error: unexpected empty list!"
                           << std::endl
                           << "List " << key << " is empty"
