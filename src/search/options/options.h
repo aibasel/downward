@@ -6,6 +6,7 @@
 
 #include "../utils/system.h"
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -44,7 +45,7 @@ public:
             T result = any_cast<T>(it->second);
             return result;
         } catch (const BadAnyCast &) {
-            std::cout << "Invalid conversion while retrieving config options!"
+            std::cerr << "Invalid conversion while retrieving config options!"
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
@@ -64,7 +65,7 @@ public:
     void verify_list_non_empty(const std::string &key) const {
         if (!help_mode) {
             if (get_list<T>(key).empty()) {
-                std::cout << "Error: unexpected empty list!"
+                std::cerr << "Error: unexpected empty list!"
                           << std::endl
                           << "List " << key << " is empty"
                           << std::endl;
