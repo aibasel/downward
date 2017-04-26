@@ -5,7 +5,6 @@
 #include "../evaluation_context.h"
 #include "../globals.h"
 #include "../heuristic.h"
-#include "../open_list.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../plugin.h"
