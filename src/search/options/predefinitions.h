@@ -1,14 +1,12 @@
 #ifndef OPTIONS_PREDEFINITIONS_H
 #define OPTIONS_PREDEFINITIONS_H
 
-#include <algorithm>
 #include <string>
 #include <unordered_map>
 
 namespace options {
 /*
-  Predefinitions<T> maps strings to pointers to already created
-  plug-in objects.
+  Predefinitions<T> maps strings to pointers to already created plug-in objects.
 */
 template<typename T>
 class Predefinitions {
@@ -18,7 +16,6 @@ class Predefinitions {
 
 public:
     void predefine(std::string key, T object) {
-        transform(key.begin(), key.end(), key.begin(), ::tolower);
         predefined[key] = object;
     }
 

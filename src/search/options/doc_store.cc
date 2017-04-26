@@ -6,7 +6,6 @@ using namespace std;
 
 namespace options {
 void DocStore::register_object(string key, const string &type) {
-    transform(key.begin(), key.end(), key.begin(), ::tolower);
     registered[key] = DocStruct();
     registered[key].type = type;
     registered[key].full_name = key;
