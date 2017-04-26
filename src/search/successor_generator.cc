@@ -4,6 +4,7 @@
 #include "task_tools.h"
 
 #include "utils/collections.h"
+#include "utils/memory.h"
 #include "utils/timer.h"
 
 #include <algorithm>
@@ -1126,6 +1127,12 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
     }
 
     root = unique_ptr<GeneratorBase>(construct_recursive(0, move(all_operators)));
+    if (!root) {
+        /* Task is trivially unsolvable. Create dummy leaf,
+           so we don't have to check root for nullptr everywhere. */
+        list<OperatorProxy> no_applicable_operators;
+        root = utils::make_unique_ptr<GeneratorLeaf>(move(no_applicable_operators));
+    }
     utils::release_vector_memory(conditions);
     utils::release_vector_memory(next_condition_by_op);
 
