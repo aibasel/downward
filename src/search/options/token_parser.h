@@ -53,7 +53,7 @@ public:
 */
 template<typename T>
 inline T TokenParser<T>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     std::stringstream str_stream(value);
     T x;
     if ((str_stream >> std::boolalpha >> x).fail()) {
@@ -65,7 +65,7 @@ inline T TokenParser<T>::parse(OptionParser &parser) {
 // int needs a specialization to allow "infinity".
 template<>
 inline int TokenParser<int>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     if (value.compare("infinity") == 0) {
         return std::numeric_limits<int>::max();
     } else {
@@ -81,7 +81,7 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
 // double needs a specialization to allow "infinity".
 template<>
 inline double TokenParser<double>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     if (value.compare("infinity") == 0) {
         return std::numeric_limits<double>::infinity();
     } else {
@@ -101,7 +101,7 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
 */
 template<typename T>
 static T *lookup_in_registry(OptionParser &parser) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     if (Registry<T *>::instance()->contains(value)) {
         return Registry<T *>::instance()->get(value) (parser);
     }
@@ -112,7 +112,7 @@ static T *lookup_in_registry(OptionParser &parser) {
 // TODO: Rename to lookup_in_registry() once all plugins use shared_ptr.
 template<typename T>
 static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     if (Registry<std::shared_ptr<T>>::instance()->contains(value)) {
         return Registry<std::shared_ptr<T>>::instance()->get(value)(parser);
     }
@@ -122,7 +122,7 @@ static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
 
 template<typename T>
 static T *lookup_in_predefinitions(OptionParser &parser, bool &found) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     if (Predefinitions<T *>::instance()->contains(value)) {
         found = true;
         return Predefinitions<T *>::instance()->get(value);
@@ -134,7 +134,7 @@ static T *lookup_in_predefinitions(OptionParser &parser, bool &found) {
 template<typename T>
 static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     if (Predefinitions<TPtr>::instance()->contains(value)) {
         found = true;
         return Predefinitions<TPtr>::instance()->get(value);
@@ -152,7 +152,7 @@ static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, 
 */
 template<>
 inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     if (Predefinitions<Heuristic *>::instance()->contains(value)) {
         return (Evaluator *) Predefinitions<Heuristic *>::instance()->get(value);
     } else if (Registry<Evaluator *>::instance()->contains(value)) {
@@ -191,7 +191,7 @@ inline ParseTree TokenParser<ParseTree>::parse(OptionParser &parser) {
 
 template<typename T>
 inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_parse_tree()->begin()->value;
+    const std::string &value = parser.get_root_value();
     std::vector<T> results;
     if (value.compare("list") != 0) {
         // Try to parse the next token as list of length 1 given without brackets.

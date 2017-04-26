@@ -94,6 +94,7 @@ public:
     Options parse();
 
     const ParseTree *get_parse_tree();
+    const std::string &get_root_value() const;
 
     void set_help_mode(bool use_help_mode);
     bool dry_run() const;
@@ -120,8 +121,7 @@ namespace options {
 template<typename T>
 T OptionParser::start_parsing() {
     if (help_mode()) {
-        DocStore::instance()->register_object(
-            parse_tree.begin()->value, TypeNamer<T>::name());
+        DocStore::instance()->register_object(get_root_value(), TypeNamer<T>::name());
     }
     return TokenParser<T>::parse(*this);
 }
@@ -147,7 +147,7 @@ void OptionParser::add_option(
     const Bounds &bounds) {
     if (help_mode()) {
         DocStore::instance()->add_arg(
-            parse_tree.begin()->value,
+            get_root_value(),
             key,
             help,
             TypeNamer<T>::name(),
