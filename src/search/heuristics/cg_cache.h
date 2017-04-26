@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace domain_transition_graph{
+namespace domain_transition_graph {
 struct ValueTransitionLabel;
 }
 
