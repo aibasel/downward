@@ -971,10 +971,10 @@ public:
     }
 };
 
-class GeneratorLeaf : public GeneratorBase {
+class GeneratorLeafList : public GeneratorBase {
     list<OperatorProxy> applicable_operators;
 public:
-    GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
+    GeneratorLeafList(list<OperatorProxy> &&applicable_operators);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -1060,6 +1060,102 @@ public:
         if (applicable_operators.size() > 1) {
             return 1;
         }
+        return 0;
+    }
+
+    virtual size_t count_switch_vector_unique() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_vector_small() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_vector_large() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_vector_full() const {
+        return 0;
+    }};
+
+class GeneratorLeafSingle : public GeneratorBase {
+    OperatorProxy applicable_operator;
+public:
+    GeneratorLeafSingle(OperatorProxy applicable_operator);
+    virtual void generate_applicable_ops(
+        const State &state, vector<OperatorProxy> &applicable_ops) const;
+    // Transitional method, used until the search is switched to the new task interface.
+    virtual void generate_applicable_ops(
+        const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
+
+    virtual size_t get_size_estimate_object_overhead() const {
+        size_t result = 0;
+        result += 4; // estimate for vtbl pointer
+        result += 8; // estimate for dynamic memory management overhead
+        return result;
+    }
+
+    virtual size_t get_size_estimate_operators() const {
+        return 4;
+    }
+
+    virtual size_t get_size_estimate_switch_var() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_generator_for_value() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_default_generator() const {
+        return 0;
+    }
+
+    virtual size_t get_size_estimate_next_generator() const {
+        return 0;
+    }
+
+    virtual size_t count_immediate() const {
+        return 0;
+    }
+
+    virtual size_t count_forks() const {
+        return 0;
+    }
+
+    virtual size_t count_switches() const {
+        return 0;
+    }
+
+    virtual size_t count_leaves() const {
+        return 1;
+    }
+
+    virtual size_t count_empty() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_immediate_empty() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_immediate_single() const {
+        return 0;
+    }
+
+    virtual size_t count_switch_immediate_more() const {
+        return 0;
+    }
+
+    virtual size_t count_leaf_applicable_empty() const {
+        return 0;
+    }
+
+    virtual size_t count_leaf_applicable_single() const {
+        return 1;
+    }
+    virtual size_t count_leaf_applicable_more() const {
         return 0;
     }
 
@@ -1225,22 +1321,36 @@ void GeneratorSwitchSingle::generate_applicable_ops(
     }
 }
 
-GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
+GeneratorLeafList::GeneratorLeafList(list<OperatorProxy> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
 
-void GeneratorLeaf::generate_applicable_ops(
+void GeneratorLeafList::generate_applicable_ops(
     const State &, vector<OperatorProxy> &applicable_ops) const {
     applicable_ops.insert(applicable_ops.end(),
                           applicable_operators.begin(),
                           applicable_operators.end());
 }
 
-void GeneratorLeaf::generate_applicable_ops(
+void GeneratorLeafList::generate_applicable_ops(
     const GlobalState &, vector<const GlobalOperator *> &applicable_ops) const {
     for (OperatorProxy op : applicable_operators) {
         applicable_ops.push_back(op.get_global_operator());
     }
+}
+
+GeneratorLeafSingle::GeneratorLeafSingle(OperatorProxy applicable_operator)
+    : applicable_operator(applicable_operator) {
+}
+
+void GeneratorLeafSingle::generate_applicable_ops(
+    const State &, vector<OperatorProxy> &applicable_ops) const {
+    applicable_ops.push_back(applicable_operator);
+}
+
+void GeneratorLeafSingle::generate_applicable_ops(
+    const GlobalState &, vector<const GlobalOperator *> &applicable_ops) const {
+    applicable_ops.push_back(applicable_operator.get_global_operator());
 }
 
 SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
@@ -1270,7 +1380,7 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
         /* Task is trivially unsolvable. Create dummy leaf,
            so we don't have to check root for nullptr everywhere. */
         list<OperatorProxy> no_applicable_operators;
-        root = utils::make_unique_ptr<GeneratorLeaf>(move(no_applicable_operators));
+        root = utils::make_unique_ptr<GeneratorLeafList>(move(no_applicable_operators));
     }
     utils::release_vector_memory(conditions);
     utils::release_vector_memory(next_condition_by_op);
@@ -1296,8 +1406,13 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
 
     while (true) {
         // Test if no further switch is necessary (or possible).
-        if (switch_var_id == num_variables)
-            return new GeneratorLeaf(move(operator_queue));
+        if (switch_var_id == num_variables) {
+            if (operator_queue.size() == 1) {
+                return new GeneratorLeafSingle(operator_queue.front());
+            } else {
+                return new GeneratorLeafList(move(operator_queue));
+            }
+        }
 
         VariableProxy switch_var = variables[switch_var_id];
         int number_of_children = switch_var.get_domain_size();
@@ -1338,7 +1453,11 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
         }
 
         if (all_ops_are_immediate) {
-            return new GeneratorLeaf(move(applicable_operators));
+            if (applicable_operators.size() == 1) {
+                return new GeneratorLeafSingle(applicable_operators.front());
+            } else {
+                return new GeneratorLeafList(move(applicable_operators));
+            }
         } else if (var_is_interesting) {
             vector<GeneratorBase *> generator_for_val;
             generator_for_val.reserve(operators_for_val.size());
