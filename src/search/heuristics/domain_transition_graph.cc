@@ -1,6 +1,6 @@
 #include "domain_transition_graph.h"
 
-#include "utils/hash.h"
+#include "../utils/hash.h"
 
 #include <algorithm>
 #include <cassert>

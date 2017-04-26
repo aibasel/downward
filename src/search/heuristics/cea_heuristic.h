@@ -1,7 +1,8 @@
 #ifndef HEURISTICS_CEA_HEURISTIC_H
 #define HEURISTICS_CEA_HEURISTIC_H
 
-#include "../domain_transition_graph.h"
+#include "domain_transition_graph.h"
+
 #include "../heuristic.h"
 
 #include "../algorithms/priority_queues.h"
