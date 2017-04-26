@@ -44,7 +44,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         Options options;
         options.set("eval", g_evaluator);
         options.set("pref_only", false);
-        return make_shared<StandardScalarOpenListFactory>(options);
+        return make_shared<standard_scalar_open_list::StandardScalarOpenListFactory>(options);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
@@ -59,7 +59,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         options.set("evals", evals);
         options.set("pref_only", false);
         options.set("unsafe_pruning", true);
-        return make_shared<TieBreakingOpenListFactory>(options);
+        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
     }
 }
 
