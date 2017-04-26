@@ -1,5 +1,5 @@
-#ifndef CAUSAL_GRAPH_H
-#define CAUSAL_GRAPH_H
+#ifndef TASK_UTILS_CAUSAL_GRAPH_H
+#define TASK_UTILS_CAUSAL_GRAPH_H
 
 /*
   TODO: Perform some memory profiling on this class.
