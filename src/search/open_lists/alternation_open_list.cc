@@ -130,6 +130,7 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
+
 AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
     : options(options) {
 }

@@ -136,7 +136,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME EPSILON_GREEDY_OPEN_LIST
-    HELP "Open list that chooses an entry uniformly randomly with probability"
+    HELP "Open list that chooses an entry randomly with probability epsilon"
     SOURCES
         open_lists/epsilon_greedy_open_list
 )

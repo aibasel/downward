@@ -11,7 +11,6 @@ class Heuristic;
 class StateID;
 
 
-
 template<class Entry>
 class OpenList {
     bool only_preferred;
