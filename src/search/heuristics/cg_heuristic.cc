@@ -1,8 +1,8 @@
 #include "cg_heuristic.h"
 
 #include "cg_cache.h"
+#include "domain_transition_graph.h"
 
-#include "../domain_transition_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"

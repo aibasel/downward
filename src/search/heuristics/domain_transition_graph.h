@@ -1,7 +1,7 @@
-#ifndef DOMAIN_TRANSITION_GRAPH_H
-#define DOMAIN_TRANSITION_GRAPH_H
+#ifndef HEURISTICS_DOMAIN_TRANSITION_GRAPH_H
+#define HEURISTICS_DOMAIN_TRANSITION_GRAPH_H
 
-#include "task_proxy.h"
+#include "../task_proxy.h"
 
 #include <cassert>
 #include <unordered_map>

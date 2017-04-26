@@ -400,7 +400,7 @@ fast_downward_plugin(
     NAME DOMAIN_TRANSITION_GRAPH
     HELP "DTGs used by cg and cea heuristic"
     SOURCES
-        domain_transition_graph
+        heuristics/domain_transition_graph
     DEPENDENCY_ONLY
 )
 
