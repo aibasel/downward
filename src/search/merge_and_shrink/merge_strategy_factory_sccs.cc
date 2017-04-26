@@ -60,8 +60,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
             task_proxy.get_causal_graph().get_successors(var.get_id());
         cg.push_back(successors);
     }
-    sccs::SCCs sccs_algorithm(cg);
-    vector<vector<int>> sccs(sccs_algorithm.get_result());
+    vector<vector<int>> sccs = move(sccs::compute_maximal_sccs(cg));
 
     // Put the SCCs in the desired order
     switch (order_of_sccs) {

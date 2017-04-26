@@ -5,27 +5,15 @@
 using namespace std;
 
 namespace sccs {
-SCCs::SCCs(const vector<vector<int>> &graph_)
-    : graph(graph_) {
-}
-
-const vector<vector<int>> &SCCs::get_result() {
-    int node_count = graph.size();
-    dfs_numbers.resize(node_count, -1);
-    dfs_minima.resize(node_count, -1);
-    stack_indices.resize(node_count, -1);
-    stack.reserve(node_count);
-    current_dfs_number = 0;
-
-    for (int i = 0; i < node_count; i++)
-        if (dfs_numbers[i] == -1)
-            dfs(i);
-
-    reverse(sccs.begin(), sccs.end());
-    return sccs;
-}
-
-void SCCs::dfs(int vertex) {
+void dfs(
+    const vector<vector<int>> &graph,
+    int vertex,
+    vector<int> &dfs_numbers,
+    vector<int> &dfs_minima,
+    vector<int> &stack_indices,
+    vector<int> &stack,
+    int &current_dfs_number,
+    vector<vector<int>> &sccs) {
     int vertex_dfs_number = current_dfs_number++;
     dfs_numbers[vertex] = dfs_minima[vertex] = vertex_dfs_number;
     stack_indices[vertex] = stack.size();
@@ -36,7 +24,7 @@ void SCCs::dfs(int vertex) {
         int succ = successors[i];
         int succ_dfs_number = dfs_numbers[succ];
         if (succ_dfs_number == -1) {
-            dfs(succ);
+            dfs(graph, succ, dfs_numbers, dfs_minima, stack_indices, stack, current_dfs_number, sccs);
             dfs_minima[vertex] = min(dfs_minima[vertex], dfs_minima[succ]);
         } else if (succ_dfs_number < vertex_dfs_number && stack_indices[succ] != -1) {
             dfs_minima[vertex] = min(dfs_minima[vertex], succ_dfs_number);
@@ -53,5 +41,26 @@ void SCCs::dfs(int vertex) {
         stack.erase(stack.begin() + stack_index, stack.end());
         sccs.push_back(scc);
     }
+}
+
+vector<vector<int>> compute_maximal_sccs(
+    const vector<vector<int>> &graph) {
+    int node_count = graph.size();
+    vector<int> dfs_numbers(node_count, -1);
+    vector<int> dfs_minima(node_count, -1);
+    vector<int> stack_indices(node_count, -1);
+    vector<int> stack;
+    stack.reserve(node_count);
+    int current_dfs_number = 0;
+
+    vector<vector<int>> sccs;
+    for (int i = 0; i < node_count; i++) {
+        if (dfs_numbers[i] == -1) {
+            dfs(graph, i, dfs_numbers, dfs_minima, stack_indices, stack, current_dfs_number, sccs);
+        }
+    }
+
+    reverse(sccs.begin(), sccs.end());
+    return sccs;
 }
 }
