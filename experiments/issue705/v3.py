@@ -16,7 +16,7 @@ from csv_report import CSVReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue705-base", "issue705-v3", "issue705-v4", "issue705-v5"]
+REVISIONS = ["issue705-base", "issue705-v5", "issue705-v6"]
 CONFIGS = [
     IssueConfig(
         'bounded-blind',
@@ -108,7 +108,7 @@ def add_sg_peak_mem_diff_per_task_size(run):
         run["sg_peak_mem_diff_per_task_size"] = mem / float(size)
     return run
 
-for rev1, rev2 in [("base", "v3"), ("base", "v4"), ("base", "v5"), ("v4", "v5")]:
+for rev1, rev2 in [("base", "v6"), ("v5", "v6")]:
     exp.add_report(RelativeScatterPlotReport(
         attributes=["sg_peak_mem_diff_per_task_size"],
         filter=add_sg_peak_mem_diff_per_task_size,
