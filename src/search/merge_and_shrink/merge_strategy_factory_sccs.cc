@@ -52,7 +52,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
-    // Compute SCCs of the causal graph
+    // Compute SCCs of the causal graph.
     vector<vector<int>> cg;
     cg.reserve(num_vars);
     for (VariableProxy var : vars) {
@@ -62,13 +62,13 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     }
     vector<vector<int>> sccs = move(sccs::compute_maximal_sccs(cg));
 
-    // Put the SCCs in the desired order
+    // Put the SCCs in the desired order.
     switch (order_of_sccs) {
     case OrderOfSCCs::TOPOLOGICAL:
-        // SCCs are computed in topological order
+        // SCCs are computed in topological order.
         break;
     case OrderOfSCCs::REVERSE_TOPOLOGICAL:
-        // SCCs are computed in topological order
+        // SCCs are computed in topological order.
         reverse(sccs.begin(), sccs.end());
         break;
     case OrderOfSCCs::DECREASING:
@@ -96,7 +96,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         } else {
             index += scc_size - 1;
             indices_of_merged_sccs.push_back(index);
-            non_singleton_cg_sccs.push_back(vector<int>(scc.begin(), scc.end()));
+            non_singleton_cg_sccs.push_back(vector<int>(scc));
         }
     }
     if (sccs.size() == 1) {
@@ -178,8 +178,12 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     parser.add_enum_option(
         "order_of_sccs",
         order_of_sccs,
-        "choose an ordering of the sccs: topological/reverse_topological or "
-        "decreasing/increasing in the size of the SCCs.");
+        "choose an ordering of the SCCs: topological/reverse_topological or "
+        "decreasing/increasing in the size of the SCCs. The former two options "
+        "refer to the directed graph where each obtained SCC is a 'supernode'. "
+        "For the latter two options, the tie-breaking is to use the "
+        "topological order according to that same graph of SCC supernodes.",
+        "topological");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
         "the fallback merge strategy to use if a precomputed strategy should"
@@ -196,11 +200,11 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     bool merge_selector = options.contains("merge_selector");
     if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
         cerr << "You have to specify exactly one of the options merge_tree "
-            "and merg_selector!" << endl;
+            "and merge_selector!" << endl;
         utils::exit_with(utils::ExitCode::INPUT_ERROR);
     }
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return make_shared<MergeStrategyFactorySCCs>(options);
 }
