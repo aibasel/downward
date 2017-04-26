@@ -63,10 +63,10 @@ public:
 
     void add_enum_option(
         const std::string &key,
-        std::vector<std::string> enumeration,
+        const std::vector<std::string> &names,
         const std::string &help = "",
         const std::string &default_value = "",
-        std::vector<std::string> enum_doc = std::vector<std::string>());
+        const std::vector<std::string> &docs = {});
 
     template<typename T>
     void add_list_option(
