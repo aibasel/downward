@@ -3,6 +3,8 @@
 
 #include "predefinitions.h"
 
+#include <sstream>
+
 class Evaluator;
 class Heuristic;
 
