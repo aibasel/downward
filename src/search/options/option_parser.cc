@@ -535,27 +535,21 @@ void OptionParser::add_enum_option(
 }
 
 Options OptionParser::parse() {
-    //check if there were any arguments with invalid keywords,
-    //or positional arguments after keyword arguments
+    /* Check if there were any arguments with invalid keywords,
+       or positional arguments after keyword arguments. */
     string last_key = "";
-    for (ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
-         pti != end_of_roots_children(parse_tree); ++pti) {
-        if (pti->key.compare("") != 0) {
-            bool valid_key = false;
-            for (size_t i = 0; i < valid_keys.size(); ++i) {
-                if (valid_keys[i].compare(pti->key) == 0) {
-                    valid_key = true;
-                    break;
-                }
-            }
-            if (!valid_key) {
-                error("invalid keyword " + pti->key + " for " + get_root_value());
+    for (auto tree_it = first_child_of_root(parse_tree);
+         tree_it != end_of_roots_children(parse_tree);
+         ++tree_it) {
+        if (!tree_it->key.empty()) {
+            if (find(valid_keys.begin(), valid_keys.end(), tree_it->key) == valid_keys.end()) {
+                error("invalid keyword " + tree_it->key + " for " + get_root_value());
             }
         }
-        if (pti->key.compare("") == 0 && last_key.compare("") != 0) {
+        if (tree_it->key.empty() && !last_key.empty()) {
             error("positional argument after keyword argument");
         }
-        last_key = pti->key;
+        last_key = tree_it->key;
     }
     opts.set_unparsed_config(get_unparsed_config());
     return opts;
