@@ -10,6 +10,7 @@
 #include "../sampling.h"
 #include "../task_tools.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -18,7 +19,6 @@
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
-#include "../task_utils/causal_graph.h"
 
 #include <algorithm>
 #include <cassert>

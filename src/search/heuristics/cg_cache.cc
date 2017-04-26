@@ -2,9 +2,9 @@
 
 #include "../task_proxy.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../utils/collections.h"
 #include "../utils/math.h"
-#include "../task_utils/causal_graph.h"
 
 #include <algorithm>
 #include <cassert>

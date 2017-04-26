@@ -79,7 +79,7 @@ fast_downward_plugin(
         task_tools
         variable_order_finder
 
-    DEPENDS INT_PACKER ORDERED_SET SEGMENTED_VECTOR
+    DEPENDS CAUSAL_GRAPH INT_PACKER ORDERED_SET SEGMENTED_VECTOR
     CORE_PLUGIN
 )
 
