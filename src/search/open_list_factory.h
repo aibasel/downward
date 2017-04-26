@@ -1,5 +1,5 @@
-#ifndef OPEN_LISTS_OPEN_LIST_FACTORY_H
-#define OPEN_LISTS_OPEN_LIST_FACTORY_H
+#ifndef OPEN_LIST_FACTORY_H
+#define OPEN_LIST_FACTORY_H
 
 #include "open_list.h"
 

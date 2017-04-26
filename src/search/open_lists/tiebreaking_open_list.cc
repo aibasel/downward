@@ -1,7 +1,6 @@
 #include "tiebreaking_open_list.h"
 
-#include "open_list.h"
-
+#include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -15,7 +14,7 @@
 
 using namespace std;
 
-
+namespace tiebreaking_open_list {
 template<class Entry>
 class TieBreakingOpenList : public OpenList<Entry> {
     using Bucket = deque<Entry>;
@@ -175,3 +174,4 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("tiebreaking", _parse);
+}
