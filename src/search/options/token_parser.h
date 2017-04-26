@@ -147,6 +147,8 @@ static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, 
 /*
   TODO (post-issue586): We should decide how to handle subclasses more generally.
   See http://issues.fast-downward.org/msg4686 (which is part of that issue).
+
+  For now, we use C-style casts since C++-style casts need complete types.
 */
 template<>
 inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &parser) {
@@ -181,6 +183,7 @@ inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &p
     return lookup_in_registry_shared<T>(parser);
 }
 
+// Needed for iterated search.
 template<>
 inline ParseTree TokenParser<ParseTree>::parse(OptionParser &parser) {
     return *parser.get_parse_tree();
