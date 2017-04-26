@@ -6,12 +6,15 @@
 
 #include "../utils/system.h"
 
-#include <map>
 #include <string>
+#include <unordered_map>
 
 namespace options {
-//Options is just a wrapper for map<string, Any>
+// Wrapper for unordered_map<string, Any>.
 class Options {
+    std::string unparsed_config;
+    bool help_mode;
+
 public:
     Options(bool hm = false)
         : unparsed_config("<missing>"),
@@ -22,7 +25,7 @@ public:
         help_mode = hm;
     }
 
-    std::map<std::string, Any> storage;
+    std::unordered_map<std::string, Any> storage;
 
     template<typename T>
     void set(const std::string &key, T value) {
@@ -91,9 +94,6 @@ public:
     void set_unparsed_config(const std::string &config) {
         unparsed_config = config;
     }
-private:
-    std::string unparsed_config;
-    bool help_mode;
 };
 }
 
