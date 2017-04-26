@@ -2,8 +2,8 @@
 #define OPTIONS_PREDEFINITIONS_H
 
 #include <algorithm>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 namespace options {
 /*
@@ -12,28 +12,28 @@ namespace options {
 */
 template<typename T>
 class Predefinitions {
+    std::unordered_map<std::string, T> predefined;
+
+    Predefinitions<T>() = default;
+
 public:
+    void predefine(std::string key, T object) {
+        transform(key.begin(), key.end(), key.begin(), ::tolower);
+        predefined[key] = object;
+    }
+
+    bool contains(const std::string &key) const {
+        return predefined.find(key) != predefined.end();
+    }
+
+    T get(const std::string &key) const {
+        return predefined.at(key);
+    }
+
     static Predefinitions<T> *instance() {
         static Predefinitions<T> instance_;
         return &instance_;
     }
-
-    void predefine(std::string k, T obj) {
-        transform(k.begin(), k.end(), k.begin(), ::tolower);
-        predefined[k] = obj;
-    }
-
-    bool contains(const std::string &k) {
-        return predefined.find(k) != predefined.end();
-    }
-
-    T get(const std::string &k) {
-        return predefined[k];
-    }
-
-private:
-    Predefinitions<T>() = default;
-    std::map<std::string, T> predefined;
 };
 }
 
