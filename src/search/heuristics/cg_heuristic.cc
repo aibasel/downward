@@ -28,11 +28,11 @@ CGHeuristic::CGHeuristic(const Options &opts)
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
     for (size_t i = 0; i < num_vars; ++i)
-        prio_queues.push_back(new priority_queues::AdaptiveQueue<ValueNode *>);
+        prio_queues.push_back(new priority_queues::AdaptiveQueue<domain_transition_graph::ValueNode *>);
 
     function<bool(int, int)> pruning_condition =
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
-    DTGFactory factory(task_proxy, false, pruning_condition);
+    domain_transition_graph::DTGFactory factory(task_proxy, false, pruning_condition);
     transition_graphs = factory.build_dtgs();
 }
 
@@ -56,7 +56,7 @@ int CGHeuristic::compute_heuristic(const GlobalState &g_state) {
         const VariableProxy var = goal.get_variable();
         int var_no = var.get_id();
         int from = state[var_no].get_value(), to = goal.get_value();
-        DomainTransitionGraph *dtg = transition_graphs[var_no];
+        domain_transition_graph::DomainTransitionGraph *dtg = transition_graphs[var_no];
         int cost_for_goal = get_transition_cost(state, dtg, from, to);
         if (cost_for_goal == numeric_limits<int>::max()) {
             return DEAD_END;
@@ -80,7 +80,7 @@ void CGHeuristic::setup_domain_transition_graphs() {
 }
 
 int CGHeuristic::get_transition_cost(const State &state,
-                                     DomainTransitionGraph *dtg, int start_val,
+                                     domain_transition_graph::DomainTransitionGraph *dtg, int start_val,
                                      int goal_val) {
     if (start_val == goal_val)
         return 0;
@@ -99,7 +99,7 @@ int CGHeuristic::get_transition_cost(const State &state,
         ++cache_misses;
     }
 
-    ValueNode *start = &dtg->nodes[start_val];
+    domain_transition_graph::ValueNode *start = &dtg->nodes[start_val];
     if (start->distances.empty()) {
         // Initialize data of initial node.
         start->distances.resize(dtg->nodes.size(), numeric_limits<int>::max());
@@ -114,49 +114,49 @@ int CGHeuristic::get_transition_cost(const State &state,
         }
 
         // Initialize Heap for Dijkstra's algorithm.
-        priority_queues::AdaptiveQueue<ValueNode *> &prio_queue = *prio_queues[var_no];
+        priority_queues::AdaptiveQueue<domain_transition_graph::ValueNode *> &prio_queue = *prio_queues[var_no];
         prio_queue.clear();
         prio_queue.push(0, start);
 
         // Dijkstra algorithm main loop.
         while (!prio_queue.empty()) {
-            pair<int, ValueNode *> top_pair = prio_queue.pop();
+            pair<int, domain_transition_graph::ValueNode *> top_pair = prio_queue.pop();
             int source_distance = top_pair.first;
-            ValueNode *source = top_pair.second;
+            domain_transition_graph::ValueNode *source = top_pair.second;
 
             assert(start->distances[source->value] <= source_distance);
             if (start->distances[source->value] < source_distance)
                 continue;
 
-            ValueTransitionLabel *current_helpful_transition =
+            domain_transition_graph::ValueTransitionLabel *current_helpful_transition =
                 start->helpful_transitions[source->value];
 
             // Set children state for all nodes but the initial.
             if (source->value != start_val) {
                 source->children_state = source->reached_from->children_state;
-                vector<LocalAssignment> &precond = source->reached_by->precond;
-                for (const LocalAssignment &assign : precond)
+                vector<domain_transition_graph::LocalAssignment> &precond = source->reached_by->precond;
+                for (const domain_transition_graph::LocalAssignment &assign : precond)
                     source->children_state[assign.local_var] = assign.value;
             }
 
             // Scan outgoing transitions.
-            for (ValueTransition &transition : source->transitions) {
-                ValueNode *target = transition.target;
+            for (domain_transition_graph::ValueTransition &transition : source->transitions) {
+                domain_transition_graph::ValueNode *target = transition.target;
                 int *target_distance_ptr = &start->distances[target->value];
 
                 // Scan labels of the transition.
-                for (ValueTransitionLabel &label : transition.labels) {
+                for (domain_transition_graph::ValueTransitionLabel &label : transition.labels) {
                     OperatorProxy op = label.is_axiom ?
                                        task_proxy.get_axioms()[label.op_id] :
                                        task_proxy.get_operators()[label.op_id];
                     int new_distance = source_distance + op.get_cost();
-                    for (LocalAssignment &assignment : label.precond) {
+                    for (domain_transition_graph::LocalAssignment &assignment : label.precond) {
                         if (new_distance >= *target_distance_ptr)
                             break;  // We already know this isn't an improved path.
                         int local_var = assignment.local_var;
                         int current_val = source->children_state[local_var];
                         int global_var = dtg->local_to_global_child[local_var];
-                        DomainTransitionGraph *precond_dtg =
+                        domain_transition_graph::DomainTransitionGraph *precond_dtg =
                             transition_graphs[global_var];
                         int recursive_cost = get_transition_cost(
                             state, precond_dtg, current_val, assignment.value);
@@ -207,7 +207,7 @@ int CGHeuristic::get_transition_cost(const State &state,
             if (val == start_val)
                 continue;
             int distance = start->distances[val];
-            ValueTransitionLabel *helpful = start->helpful_transitions[val];
+            domain_transition_graph::ValueTransitionLabel *helpful = start->helpful_transitions[val];
             // We should have a helpful transition iff distance is infinite.
             assert((distance == numeric_limits<int>::max()) == !helpful);
             cache->store(var_no, state, start_val, val, distance);
@@ -220,7 +220,7 @@ int CGHeuristic::get_transition_cost(const State &state,
 }
 
 void CGHeuristic::mark_helpful_transitions(const State &state,
-                                           DomainTransitionGraph *dtg, int to) {
+                                           domain_transition_graph::DomainTransitionGraph *dtg, int to) {
     int var_no = dtg->var;
     int from = state[var_no].get_value();
     if (from == to)
@@ -250,7 +250,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     dtg->last_helpful_transition_extraction_time =
         helpful_transition_extraction_counter;
 
-    ValueTransitionLabel *helpful;
+    domain_transition_graph::ValueTransitionLabel *helpful;
     int cost;
     // Check cache.
     if (USE_CACHE && cache->is_cached(var_no)) {
@@ -258,7 +258,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
         cost = cache->lookup(var_no, state, from, to);
         assert(helpful);
     } else {
-        ValueNode *start_node = &dtg->nodes[from];
+        domain_transition_graph::ValueNode *start_node = &dtg->nodes[from];
         assert(!start_node->helpful_transitions.empty());
         helpful = start_node->helpful_transitions[to];
         cost = start_node->distances[to];
@@ -272,10 +272,10 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
         set_preferred(op);
     } else {
         // Recursively compute helpful transitions for the precondition variables.
-        for (const LocalAssignment &assignment : helpful->precond) {
+        for (const domain_transition_graph::LocalAssignment &assignment : helpful->precond) {
             int local_var = assignment.local_var;
             int global_var = dtg->local_to_global_child[local_var];
-            DomainTransitionGraph *precond_dtg = transition_graphs[global_var];
+            domain_transition_graph::DomainTransitionGraph *precond_dtg = transition_graphs[global_var];
             mark_helpful_transitions(state, precond_dtg, assignment.value);
         }
     }
