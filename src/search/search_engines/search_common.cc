@@ -1,5 +1,6 @@
 #include "search_common.h"
 
+#include "../open_list_factory.h"
 #include "../option_parser_util.h"
 
 #include "../evaluators/g_evaluator.h"
@@ -7,7 +8,6 @@
 #include "../evaluators/weighted_evaluator.h"
 
 #include "../open_lists/alternation_open_list.h"
-#include "../open_lists/open_list_factory.h"
 #include "../open_lists/standard_scalar_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 
@@ -25,7 +25,7 @@ shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     Options options;
     options.set("eval", eval);
     options.set("pref_only", pref_only);
-    return make_shared<StandardScalarOpenListFactory>(options);
+    return make_shared<standard_scalar_open_list::StandardScalarOpenListFactory>(options);
 }
 
 static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
@@ -33,7 +33,7 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
     Options options;
     options.set("sublists", subfactories);
     options.set("boost", boost);
-    return make_shared<AlternationOpenListFactory>(options);
+    return make_shared<alternation_open_list::AlternationOpenListFactory>(options);
 }
 
 /*
@@ -121,7 +121,7 @@ create_astar_open_list_factory_and_f_eval(const Options &opts) {
     options.set("pref_only", false);
     options.set("unsafe_pruning", false);
     shared_ptr<OpenListFactory> open =
-        make_shared<TieBreakingOpenListFactory>(options);
+        make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
     return make_pair(open, f);
 }
 }

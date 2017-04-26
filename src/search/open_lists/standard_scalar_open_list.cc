@@ -1,7 +1,6 @@
 #include "standard_scalar_open_list.h"
 
-#include "open_list.h"
-
+#include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -13,7 +12,7 @@
 
 using namespace std;
 
-
+namespace standard_scalar_open_list {
 template<class Entry>
 class StandardScalarOpenList : public OpenList<Entry> {
     typedef deque<Entry> Bucket;
@@ -147,3 +146,4 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("single", _parse);
+}

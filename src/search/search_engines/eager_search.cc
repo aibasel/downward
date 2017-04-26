@@ -5,14 +5,13 @@
 #include "../evaluation_context.h"
 #include "../globals.h"
 #include "../heuristic.h"
+#include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../pruning_method.h"
 #include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
-
-#include "../open_lists/open_list_factory.h"
 
 #include <cassert>
 #include <cstdlib>
