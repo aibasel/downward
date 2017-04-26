@@ -493,68 +493,69 @@ string OptionParser::get_unparsed_config() const {
 
 void OptionParser::add_enum_option(
     const string &key,
-    vector<string> enumeration,
+    const vector<string> &names,
     const string &help,
     const string &default_value,
-    vector<string> enum_docs) {
+    const vector<string> &docs) {
     if (help_mode_) {
-        ValueExplanations value_explanations;
         string enum_descr = "{";
-        for (size_t i = 0; i < enumeration.size(); ++i) {
-            enum_descr += enumeration[i];
-            if (i != enumeration.size() - 1) {
+        for (size_t i = 0; i < names.size(); ++i) {
+            enum_descr += names[i];
+            if (i != names.size() - 1) {
                 enum_descr += ", ";
-            }
-            if (enum_docs.size() > i) {
-                value_explanations.push_back(make_pair(enumeration[i],
-                                                       enum_docs[i]));
             }
         }
         enum_descr += "}";
 
-        DocStore::instance()->add_arg(parse_tree.begin()->value,
-                                      key, help,
-                                      enum_descr, default_value,
-                                      Bounds::unlimited(),
-                                      value_explanations);
+        ValueExplanations value_explanations;
+        for (size_t i = 0; i < names.size(); ++i) {
+            // TODO: Either provide help for all or none of the values.
+            if (docs.size() > i) {
+                value_explanations.emplace_back(names[i], docs[i]);
+            }
+        }
+
+        DocStore::instance()->add_arg(
+            parse_tree.begin()->value, key, help, enum_descr, default_value,
+            Bounds::unlimited(), value_explanations);
         return;
     }
 
-    //enum arguments can be given by name or by number:
-    //first parse the corresponding string like a normal argument...
+    // Enum arguments can be given by name or by number.
+    // First, parse the corresponding string like a normal argument ...
     add_option<string>(key, help, default_value);
 
     if (!opts.contains(key))
         return;
 
-    string name = opts.get<string>(key);
+    string value = opts.get<string>(key);
 
-    //...then check if the parsed string can be treated as a number
-    stringstream str_stream(name);
+    // ... then check if the parsed string can be treated as a number.
+    stringstream str_stream(value);
     int choice;
     if (!(str_stream >> choice).fail()) {
-        int max_choice = enumeration.size();
+        int max_choice = names.size();
         if (choice > max_choice) {
-            error("invalid enum argument " + name + " for option " + key);
+            error("invalid enum argument " + value + " for option " + key);
         }
         opts.set<int>(key, choice);
     } else {
-        // ... otherwise try to map the string to its position in the enumeration vector.
-        auto it = find_if(enumeration.begin(), enumeration.end(),
-            [&](const string &enum_name) {
-                if (enum_name.size() != name.size())
+        // ... otherwise map the string to its position in the enumeration vector.
+        auto it = find_if(names.begin(), names.end(),
+            [&](const string &name) {
+                if (name.size() != value.size())
                     return false;
-                for (size_t i = 0; i < name.size(); ++i) {
+                for (size_t i = 0; i < value.size(); ++i) {
                     // Ignore case.
-                    if (tolower(enum_name[i]) != tolower(name[i]))
+                    if (tolower(name[i]) != tolower(value[i]))
                         return false;
                 }
                 return true;
             });
-        if (it == enumeration.end()) {
-            error("invalid enum argument " + name + " for option " + key);
+        if (it == names.end()) {
+            error("invalid enum argument " + value + " for option " + key);
         }
-        opts.set<int>(key, it - enumeration.begin());
+        opts.set<int>(key, it - names.begin());
     }
 }
 
