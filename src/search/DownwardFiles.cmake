@@ -50,7 +50,6 @@ fast_downward_plugin(
 
         abstract_task
         axioms
-        causal_graph
         evaluation_context
         evaluation_result
         evaluator
@@ -462,6 +461,13 @@ fast_downward_plugin(
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
     DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME CAUSAL_GRAPH
+    HELP "Causal Graph"
+    SOURCES
+        task_utils/causal_graph
 )
 
 fast_downward_plugin(

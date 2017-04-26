@@ -1,7 +1,6 @@
 #include "globals.h"
 
 #include "axioms.h"
-#include "causal_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
 #include "heuristic.h"
@@ -13,6 +12,8 @@
 #include "utils/rng.h"
 #include "utils/system.h"
 #include "utils/timer.h"
+
+#include "task_utils/causal_graph.h"
 
 #include <cstdlib>
 #include <fstream>
