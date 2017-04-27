@@ -4,9 +4,9 @@
 #include <iostream>
 
 /*
-  Operator ids identify operators as opposed to action ids that can
+  Operator IDs identify operators as opposed to action IDs that can
   identify operators or axioms. The task they refer to is not stored,
-  so it is the user's responsibility to avoid mixing ids from
+  so it is the user's responsibility to avoid mixing IDs from
   different tasks.
 */
 class OperatorID {
