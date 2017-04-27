@@ -122,8 +122,8 @@ class PluginTypeRegistry {
     ~PluginTypeRegistry() = default;
     Map registry;
 public:
-    static PluginTypeRegistry *instance();
     void insert(const PluginTypeInfo &info);
+
     const PluginTypeInfo &get(const std::type_index &type) const;
 
     Map::const_iterator begin() const {
@@ -142,6 +142,8 @@ public:
     Map::const_iterator end() const {
         return registry.cend();
     }
+
+    static PluginTypeRegistry *instance();
 };
 }
 
