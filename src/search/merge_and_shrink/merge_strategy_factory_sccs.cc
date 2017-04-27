@@ -159,7 +159,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-            "Proceedings of the xxth Internation Conference on Planning and "
+            "Proceedings of the 26th Internation Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
             "AAAI Press 2016") +
