@@ -42,13 +42,24 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_resource('sg_parser', 'sg-parser.py', dest='sg-parser.py')
 exp.add_command('sg-parser', ['{sg_parser}'])
 
+exp.add_fetcher('data/issue705-v4-eval')
+
 exp.add_comparison_table_step()
 
-for attr in ["total_time", "search_time", "sg_construction_time", "memory"]:
-    for rev1, rev2 in [("base", "v7")]:
+def add_sg_peak_mem_diff_per_task_size(run):
+    mem = run.get("sg_peak_mem_diff")
+    size = run.get("translator_task_size")
+    if mem and size:
+        run["sg_peak_mem_diff_per_task_size"] = mem / float(size)
+    return run
+
+
+for attr in ["total_time", "search_time", "sg_construction_time", "memory", "sg_peak_mem_diff_per_task_size"]:
+    for rev1, rev2 in [("base", "v7"), ("v6", "v7")]:
         exp.add_report(RelativeScatterPlotReport(
             attributes=[attr],
             filter_algorithm=["issue705-%s-astar-blind" % rev1, "issue705-%s-astar-blind" % rev2],
+            filter=add_sg_peak_mem_diff_per_task_size,
             get_category=lambda r1, r2: r1["domain"],
         ),
         outfile="issue705-%s-%s-%s.png" % (attr, rev1, rev2))
