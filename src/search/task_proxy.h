@@ -229,7 +229,7 @@ public:
   We don't implement size() because it would not be constant-time.
 
   FactsProxy supports iteration, e.g. for range-based for loops. This
-  iterates over all facts in order of increasing variable id, and in
+  iterates over all facts in order of increasing variable ID, and in
   order of increasing value for each variable.
 */
 class FactsProxy {
