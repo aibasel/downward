@@ -9,11 +9,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <unordered_map>
 
 using namespace std;
-
-double MIN_VECTOR_FILL_RATE = 0.5;
 
 /* NOTE on possible optimizations:
 
@@ -26,6 +25,32 @@ double MIN_VECTOR_FILL_RATE = 0.5;
 
 bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
     return f1.get_variable().get_id() < f2.get_variable().get_id();
+}
+
+
+int estimate_switch_vector_size(int num_elements) {
+    // See issue705 for a discussion of this estimation.
+    return 40 + 4 * num_elements;
+}
+
+int estimate_switch_hash_size(int num_non_zero_elements) {
+    // See issue705 for a discussion of this estimation.
+    int num_buckets = 0;
+    if (num_non_zero_elements < 5) {
+        num_buckets = 1;
+    } else if (num_non_zero_elements < 11) {
+        num_buckets = 4;
+    } else if (num_non_zero_elements < 23) {
+        num_buckets = 10;
+    } else if (num_non_zero_elements < 47) {
+        num_buckets = 22;
+    } else if (num_non_zero_elements < 97) {
+        num_buckets = 47;
+    } else {
+        int n = log2(num_non_zero_elements / 3);
+        num_buckets = 3 * pow(2, n);
+    }
+    return 96 + 32 * num_non_zero_elements + 16 * num_buckets;
 }
 
 class GeneratorBase {
@@ -1470,7 +1495,8 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
                 }
             }
             int num_values = generator_for_val.size();
-            int min_size = num_values * MIN_VECTOR_FILL_RATE;
+            int estimated_switch_vector_size = estimate_switch_vector_size(num_values);
+            int estimated_switch_hash_size = estimate_switch_hash_size(num_non_zero);
 
             GeneratorBase *switch_generator = nullptr;
             if (num_non_zero == 1) {
@@ -1481,7 +1507,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
                         break;
                     }
                 }
-            } else if (num_non_zero < min_size) {
+            } else if (estimated_switch_hash_size < estimated_switch_vector_size) {
                 switch_generator = new GeneratorSwitchHash(
                     switch_var, generator_for_val);
             } else {
