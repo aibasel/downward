@@ -6,7 +6,7 @@
 namespace sccs {
 /*
   This function implements Tarjan's algorithm for finding the strongly
-  connected component of a directed graph. The runtime is O(n + m) for a
+  connected components of a directed graph. The runtime is O(n + m) for a
   directed graph with n vertices and m arcs.
 
   Input: a directed graph represented as a vector of vectors, where graph[i] is
