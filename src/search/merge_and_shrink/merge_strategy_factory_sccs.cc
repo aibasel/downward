@@ -197,17 +197,20 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         options::OptionParser::NONE);
 
     options::Options options = parser.parse();
-    bool merge_tree = options.contains("merge_tree");
-    bool merge_selector = options.contains("merge_selector");
-    if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
-        cerr << "You have to specify exactly one of the options merge_tree "
-            "and merge_selector!" << endl;
-        utils::exit_with(utils::ExitCode::INPUT_ERROR);
-    }
-    if (parser.dry_run())
+    if (parser.help_mode()) {
         return nullptr;
-    else
+    } else if (parser.dry_run()) {
+        bool merge_tree = options.contains("merge_tree");
+        bool merge_selector = options.contains("merge_selector");
+        if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
+            cerr << "You have to specify exactly one of the options merge_tree "
+                "and merge_selector!" << endl;
+            utils::exit_with(utils::ExitCode::INPUT_ERROR);
+        }
+        return nullptr;
+    } else {
         return make_shared<MergeStrategyFactorySCCs>(options);
+    }
 }
 
 static options::PluginShared<MergeStrategyFactory> _plugin("merge_sccs", _parse);
