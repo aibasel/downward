@@ -47,6 +47,12 @@ void BitsetView::reset(int index) {
     p[array_pos] &= ~((unsigned int)(1) << offset);
 }
 
+void BitsetView::reset_all() {
+    for(size_t i = 0; i < int_array_size; ++i) {
+        p[i] = 0;
+    }
+}
+
 bool BitsetView::test(int index) const {
     assert(index < (int) array_size);
     int array_pos = index / INT_BITSIZE;
