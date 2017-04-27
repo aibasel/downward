@@ -91,9 +91,9 @@ static void get_help(string k) {
     ParseTree pt;
     pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
+    get_help_templ<Evaluator *>(pt);
     get_help_templ<Heuristic *>(pt);
     get_help_templ<shared_ptr<AbstractTask>>(pt);
-    get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<landmarks::LandmarkFactory *>(pt);
     get_help_templ<shared_ptr<cegar::SubtaskGenerator>>(pt);
@@ -124,9 +124,9 @@ static void get_full_help_templ() {
 
 static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
+    get_full_help_templ<Evaluator *>();
     get_full_help_templ<Heuristic *>();
     get_full_help_templ<shared_ptr<AbstractTask>>();
-    get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<landmarks::LandmarkFactory *>();
     get_full_help_templ<shared_ptr<cegar::SubtaskGenerator>>();
