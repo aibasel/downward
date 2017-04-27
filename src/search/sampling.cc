@@ -56,16 +56,17 @@ vector<State> sample_states_with_random_walks(
 
         // Sample one state with a random walk of length length.
         State current_state(initial_state);
-        vector<OperatorProxy> applicable_ops;
+        vector<OperatorID> applicable_operators;
         for (int j = 0; j < length; ++j) {
-            applicable_ops.clear();
+            applicable_operators.clear();
             successor_generator.generate_applicable_ops(current_state,
-                                                        applicable_ops);
+                                                        applicable_operators);
             // If there are no applicable operators, do not walk further.
-            if (applicable_ops.empty()) {
+            if (applicable_operators.empty()) {
                 break;
             } else {
-                const OperatorProxy &random_op = *rng.choose(applicable_ops);
+                OperatorID random_op_id = *rng.choose(applicable_operators);
+                OperatorProxy random_op = task_proxy.get_operators()[random_op_id];
                 assert(is_applicable(random_op, current_state));
                 current_state = current_state.get_successor(random_op);
                 /* If current state is a dead end, then restart the random walk

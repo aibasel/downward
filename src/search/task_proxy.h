@@ -2,7 +2,9 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
+#include "operator_id.h"
 
+#include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
 
@@ -227,7 +229,7 @@ public:
   We don't implement size() because it would not be constant-time.
 
   FactsProxy supports iteration, e.g. for range-based for loops. This
-  iterates over all facts in order of increasing variable id, and in
+  iterates over all facts in order of increasing variable ID, and in
   order of increasing value for each variable.
 */
 class FactsProxy {
@@ -471,8 +473,9 @@ public:
         return index;
     }
 
-    const GlobalOperator *get_global_operator() const {
-        return task->get_global_operator(index, is_an_axiom);
+    OperatorID get_global_operator_id() const {
+        assert(!is_an_axiom);
+        return task->get_global_operator_id(OperatorID(index));
     }
 };
 
@@ -496,6 +499,10 @@ public:
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
         return OperatorProxy(*task, index, false);
+    }
+
+    OperatorProxy operator[](OperatorID id) const {
+        return (*this)[id.get_index()];
     }
 };
 

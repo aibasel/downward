@@ -66,9 +66,9 @@ void LazySearch::initialize() {
     }
 }
 
-vector<const GlobalOperator *> LazySearch::get_successor_operators(
-    const ordered_set::OrderedSet<const GlobalOperator *> &preferred_operators) const {
-    vector<const GlobalOperator *> applicable_operators;
+vector<OperatorID> LazySearch::get_successor_operators(
+    const ordered_set::OrderedSet<OperatorID> &preferred_operators) const {
+    vector<OperatorID> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);
 
@@ -77,12 +77,12 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
     }
 
     if (preferred_successors_first) {
-        ordered_set::OrderedSet<const GlobalOperator *> successor_operators;
-        for (const GlobalOperator *op : preferred_operators) {
-            successor_operators.insert(op);
+        ordered_set::OrderedSet<OperatorID> successor_operators;
+        for (OperatorID op_id : preferred_operators) {
+            successor_operators.insert(op_id);
         }
-        for (const GlobalOperator *op : applicable_operators) {
-            successor_operators.insert(op);
+        for (OperatorID op_id : applicable_operators) {
+            successor_operators.insert(op_id);
         }
         return successor_operators.pop_as_vector();
     } else {
@@ -91,22 +91,23 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators =
+    ordered_set::OrderedSet<OperatorID> preferred_operators =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
     if (randomize_successors) {
         preferred_operators.shuffle(*rng);
     }
 
-    vector<const GlobalOperator *> successor_operators =
+    vector<OperatorID> successor_operators =
         get_successor_operators(preferred_operators);
 
     statistics.inc_generated(successor_operators.size());
 
-    for (const GlobalOperator *op : successor_operators) {
+    for (OperatorID op_id : successor_operators) {
+        const GlobalOperator *op = &g_operators[op_id.get_index()];
         int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
-        bool is_preferred = preferred_operators.contains(op);
+        bool is_preferred = preferred_operators.contains(op_id);
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);

@@ -38,7 +38,7 @@ LandmarkCutLandmarks::LandmarkCutLandmarks(const TaskProxy &task_proxy) {
         goal_op_pre.push_back(get_proposition(goal));
     }
     goal_op_eff.push_back(&artificial_goal);
-    /* Use the invalid operator id -1 so accessing
+    /* Use the invalid operator ID -1 so accessing
        the artificial operator will generate an error. */
     add_relaxed_operator(move(goal_op_pre), move(goal_op_eff), -1, 0);
 
