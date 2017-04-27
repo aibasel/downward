@@ -201,12 +201,12 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
             operator_queue.pop_front();
             assert(utils::in_bounds(op_index, next_condition_by_op));
             Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
-            assert(utils::in_bounds(
-                cond_iter - conditions[op_index].begin(), conditions[op_index]));
             if (cond_iter == conditions[op_index].end()) {
                 var_is_interesting = true;
                 applicable_operators.push_back(op_id);
             } else {
+                assert(utils::in_bounds(
+                    cond_iter - conditions[op_index].begin(), conditions[op_index]));
                 all_ops_are_immediate = false;
                 FactProxy fact = *cond_iter;
                 if (fact.get_variable() == switch_var) {
