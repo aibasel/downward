@@ -13,7 +13,7 @@ TEST_BUILD_CONFIGS = os.path.join(REPO, "test_build_configs.py")
 BUILD = os.path.join(REPO, "build.py")
 BUILDS = os.path.join(REPO, "builds")
 paths_to_clean = [TEST_BUILD_CONFIGS]
-cpu_count = multiprocessing.cpu_count()
+cpu_count = 2
 
 
 def clean_up(paths_to_clean):

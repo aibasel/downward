@@ -91,7 +91,7 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
 }
 
 void PatternCollectionGeneratorHillclimbing::sample_states(
-    const TaskProxy &task_proxy, const SuccessorGenerator &successor_generator,
+    const TaskProxy &task_proxy, const successor_generator::SuccessorGenerator &successor_generator,
     vector<State> &samples, double average_operator_cost) {
     int init_h = current_pdbs->get_value(
         task_proxy.get_initial_state());
@@ -238,7 +238,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
     int num_iterations = 0;
     State initial_state = task_proxy.get_initial_state();
-    SuccessorGenerator successor_generator(task_proxy);
+    successor_generator::SuccessorGenerator successor_generator(task_proxy);
     try {
         while (true) {
             ++num_iterations;

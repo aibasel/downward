@@ -7,12 +7,10 @@
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../successor_generator.h"
-
-#include "../lp/lp_solver.h"
-
 #include "../task_tools.h"
 
+#include "../lp/lp_solver.h"
+#include "../task_utils/successor_generator.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
