@@ -103,7 +103,7 @@ template<typename T>
 static T *lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     if (Registry<T *>::instance()->contains(value)) {
-        return Registry<T *>::instance()->get(value) (parser);
+        return Registry<T *>::instance()->get(value)(parser);
     }
     parser.error(TypeNamer<T *>::name() + " " + value + " not found");
     return nullptr;
