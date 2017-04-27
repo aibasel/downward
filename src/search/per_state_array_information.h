@@ -4,7 +4,7 @@
 #include "global_state.h"
 #include "globals.h"
 #include "per_state_information.h"
-#include "segmented_vector.h"
+#include "algorithms/segmented_vector.h"
 #include "state_id.h"
 #include "state_registry.h"
 
@@ -61,9 +61,9 @@ public:
 };
 
 /*
-  PerStateInformation is used to associate information with states.
-  PerStateInformation<Entry> logically behaves somewhat like an unordered map
-  from states to objects of class Entry. However, lookup of unknown states is
+  PerStateArrayInformation is used to associate information with states.
+  PerStateArrayInformation<Entry> logically behaves somewhat like an unordered map
+  from states to arrays of class Entry. However, lookup of unknown states is
   supported and leads to insertion of a default value (similar to the
   defaultdict class in Python).
 
@@ -73,15 +73,15 @@ public:
 
   Implementation notes: PerStateInformation is essentially implemented as a
   kind of two-level map:
-    1. Find the correct SegmentedVector for the registry of the given state.
-    2. Look up the associated entry in the SegmentedVector based on the ID of
+    1. Find the correct SegmentedArrayVector for the registry of the given state.
+    2. Look up the associated entry in the SegmentedArrayVector based on the ID of
        the state.
   It is common in many use cases that we look up information for states from
   the same registry in sequence. Therefore, to make step 1. more efficient, we
   remember (in "cached_registry" and "cached_entries") the results of the
   previous lookup and reuse it on consecutive lookups for the same registry.
 
-  A PerStateInformation object subscribes to every StateRegistry for which it
+  A PerStateArrayInformation object subscribes to every StateRegistry for which it
   stores information. Once a StateRegistry is destroyed, it notifies all
   subscribed objects, which in turn destroy all information stored for states
   in that registry.
@@ -92,24 +92,24 @@ class PerStateArrayInformation : public PerStateInformationBase {
     size_t array_size;
     const std::vector<Element> default_array;
     typedef std::unordered_map<const StateRegistry *,
-                               SegmentedArrayVector<Element> * > EntryArrayVectorMap;
+                               segmented_vector::SegmentedArrayVector<Element> * > EntryArrayVectorMap;
     EntryArrayVectorMap entry_arrays_by_registry;
 
     mutable const StateRegistry *cached_registry;
-    mutable SegmentedArrayVector<Element> *cached_entries;
+    mutable segmented_vector::SegmentedArrayVector<Element> *cached_entries;
 
     /*
-      Returns the SegmentedVector associated with the given StateRegistry.
+      Returns the SegmentedArrayVector associated with the given StateRegistry.
       If no vector is associated with this registry yet, an empty one is created.
       Both the registry and the returned vector are cached to speed up
       consecutive calls with the same registry.
     */
-    SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) {
+    segmented_vector::SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) {
         if (cached_registry != registry) {
             cached_registry = registry;
             typename EntryArrayVectorMap::const_iterator it = entry_arrays_by_registry.find(registry);
             if (it == entry_arrays_by_registry.end()) {
-                cached_entries = new SegmentedArrayVector<Element>(array_size);
+                cached_entries = new segmented_vector::SegmentedArrayVector<Element>(array_size);
                 entry_arrays_by_registry[registry] = cached_entries;
                 registry->subscribe(this);
             } else {
@@ -121,19 +121,19 @@ class PerStateArrayInformation : public PerStateInformationBase {
     }
 
     /*
-      Returns the SegmentedVector associated with the given StateRegistry.
+      Returns the SegmentedArrayVector associated with the given StateRegistry.
       Returns 0, if no vector is associated with this registry yet.
       Otherwise, both the registry and the returned vector are cached to speed
       up consecutive calls with the same registry.
     */
-    const SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) const {
+    const segmented_vector::SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) const {
         if (cached_registry != registry) {
             typename EntryArrayVectorMap::const_iterator it = entry_arrays_by_registry.find(registry);
             if (it == entry_arrays_by_registry.end()) {
                 return 0;
             } else {
                 cached_registry = registry;
-                cached_entries = const_cast<SegmentedArrayVector<Element> *>(it->second);
+                cached_entries = const_cast<segmented_vector::SegmentedArrayVector<Element> *>(it->second);
             }
         }
         assert(cached_registry == registry);
@@ -222,7 +222,7 @@ public:
 
     ArrayView<Element> operator[](const GlobalState &state) {
         const StateRegistry *registry = &state.get_registry();
-        SegmentedArrayVector<Element> *entries = get_entries(registry);
+        segmented_vector::SegmentedArrayVector<Element> *entries = get_entries(registry);
         int state_id = state.get_id().value;
         size_t virtual_size = registry->size();
         assert(utils::in_bounds(state_id, *registry));
@@ -235,15 +235,15 @@ public:
 
     const ArrayView<Element> operator[](const GlobalState &state) const {
         const StateRegistry *registry = &state.get_registry();
-        const SegmentedArrayVector<Element> *entries = get_entries(registry);
+        const segmented_vector::SegmentedArrayVector<Element> *entries = get_entries(registry);
         if (!entries) {
-            return nullptr;
+            return nullptr; // TODO: does this make sense?
         }
         int state_id = state.get_id().value;
         assert(utils::in_bounds(state_id, *registry));
         int num_entries = entries->size();
         if (state_id >= num_entries) {
-            return nullptr;
+            return nullptr; // TODO: does this make sense?
         }
         // TODO: is this effiecient? is move better?
         return ArrayView<Element>((*cached_entries)[state_id], array_size);

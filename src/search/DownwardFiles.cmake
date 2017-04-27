@@ -63,6 +63,7 @@ fast_downward_plugin(
         option_parser_util
         per_state_information
         per_state_array_information
+        per_state_bitset_information
         plugin
         pruning_method
         sampling
