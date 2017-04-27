@@ -7,10 +7,10 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
 
 #include "../task_utils/causal_graph.h"
 #include "../task_utils/sampling.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -213,7 +213,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
-    double average_operator_cost = get_average_operator_cost(task_proxy);
+    double average_operator_cost = task_properties::get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
     // Candidate patterns generated so far (used to avoid duplicates).

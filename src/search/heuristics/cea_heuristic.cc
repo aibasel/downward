@@ -7,7 +7,8 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
+
+#include "../task_utils/task_properties.h"
 
 #include <cassert>
 #include <limits>
@@ -367,7 +368,7 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
             OperatorProxy op = label.is_axiom ?
                                task_proxy.get_axioms()[label.op_id] :
                                task_proxy.get_operators()[label.op_id];
-            if (min_action_cost != 0 || is_applicable(op, state)) {
+            if (min_action_cost != 0 || task_properties::is_applicable(op, state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
                 assert(!op.is_axiom());
@@ -411,7 +412,7 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &g_sta
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const Options &opts)
     : Heuristic(opts),
-      min_action_cost(get_min_operator_cost(task_proxy)) {
+      min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing context-enhanced additive heuristic..." << endl;
 
     domain_transition_graph::DTGFactory factory(task_proxy, true, [](int, int) {return false; });
