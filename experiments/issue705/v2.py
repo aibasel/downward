@@ -108,7 +108,7 @@ def add_sg_peak_mem_diff_per_task_size(run):
         run["sg_peak_mem_diff_per_task_size"] = mem / float(size)
     return run
 
-for rev1, rev2 in [("base", "v3"), ("base", "v4"), ("base", "v5"), ("v4", "v5")]:
+for rev1, rev2 in [("base", "v3"), ("base", "v4"), ("base", "v5"), ("v3", "v4"), ("v4", "v5")]:
     exp.add_report(RelativeScatterPlotReport(
         attributes=["sg_peak_mem_diff_per_task_size"],
         filter=add_sg_peak_mem_diff_per_task_size,
