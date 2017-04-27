@@ -140,7 +140,7 @@ public:
     }
 
     // Copy TS and Distances at index and append it, increasing the size by one.
-    int copy_without_representation(int index);
+    int copy_factor_without_representation(int index);
     /*
       Delete the last three indices. This assumes and requires that the
       entry at the last index represents a merge of the entries of the

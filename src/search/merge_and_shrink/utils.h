@@ -51,7 +51,7 @@ extern bool is_goal_relevant(const TransitionSystem &ts);
   shrink_transition_system), and then merges them. The given factored
   transition system fts is extended with those three new entries. The caller
   is responsible to delete those copies afterwards with a call to
-  fts.release_copies().
+  fts.delete_last_three_entries().
 */
 extern int shrink_and_merge_temporarily(
     FactoredTransitionSystem &fts,
