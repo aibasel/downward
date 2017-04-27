@@ -1,6 +1,6 @@
 #include "variable_order_finder.h"
 
-#include "globals.h"
+#include "../globals.h"
 
 #include "../task_utils/causal_graph.h"
 #include "../utils/system.h"
@@ -15,6 +15,7 @@ using namespace std;
 using utils::ExitCode;
 
 
+namespace variable_order_finder {
 VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
                                          VariableOrderType variable_order_type)
     : task_proxy(task_proxy),
@@ -125,4 +126,5 @@ void dump_variable_order_type(VariableOrderType variable_order_type) {
         ABORT("Unknown variable order type.");
     }
     cout << endl;
+}
 }
