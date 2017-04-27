@@ -4,10 +4,22 @@
 #include <iostream>
 
 /*
-  Operator IDs identify operators as opposed to action IDs that can
-  identify operators or axioms. The task they refer to is not stored,
-  so it is the user's responsibility to avoid mixing IDs from
-  different tasks.
+  OperatorIDs are used to define an operator that belongs to a given
+  planning task. These IDs are meant to be compact and efficient to use.
+  They can be thought of as a type-safe replacement for "int" for the
+  purpose of referring to an operator.
+
+  Because of their efficiency requirements, they do *not* store which
+  task they belong to, and it is the user's responsibility not to mix
+  OperatorIDs that belong to different tasks.
+
+  OperatorIDs can only refer to *operators*, not to *axioms*. This is
+  by design: using OperatorID clearly communicates that only operators
+  are appropriate in a given place and it is an error to use an axiom.
+  We also considered introducing a class that can refer to operators or
+  axioms (suggested names were OperatorOrAxiomID and ActionID, introducing
+  the convention that "action" stands for "operator or axiom"), but so
+  far we have not found a use case for it.
 */
 class OperatorID {
     int index;
