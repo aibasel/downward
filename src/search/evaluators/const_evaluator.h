@@ -5,7 +5,7 @@
 
 namespace const_evaluator {
 // TODO: When the searches don't need at least one heuristic anymore,
-//       ConstEvaluator should inherit from ScalarEvaluator.
+//       ConstEvaluator should inherit from Evaluator.
 class ConstEvaluator : public Heuristic {
     int value;
 
