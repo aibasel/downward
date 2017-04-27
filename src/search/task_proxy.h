@@ -91,7 +91,7 @@ class CausalGraph;
   task.
 
   For helper functions that work on task related objects, please see the
-  task_tools.h module.
+  task_properties.h module.
 */
 
 

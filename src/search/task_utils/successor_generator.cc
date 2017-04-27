@@ -1,8 +1,8 @@
 #include "successor_generator.h"
 
 #include "../global_state.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 
 #include <algorithm>

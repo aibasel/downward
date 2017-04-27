@@ -3,8 +3,8 @@
 #include "successor_generator.h"
 
 #include "../task_proxy.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/rng.h"
 
@@ -68,7 +68,7 @@ vector<State> sample_states_with_random_walks(
                 break;
             } else {
                 const OperatorProxy &random_op = *rng.choose(applicable_ops);
-                assert(is_applicable(random_op, current_state));
+                assert(task_properties::is_applicable(random_op, current_state));
                 current_state = current_state.get_successor(random_op);
                 /* If current state is a dead end, then restart the random walk
                    with the initial state. */
