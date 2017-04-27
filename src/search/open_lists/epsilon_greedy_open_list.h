@@ -1,8 +1,7 @@
 #ifndef OPEN_LISTS_EPSILON_GREEDY_OPEN_LIST_H
 #define OPEN_LISTS_EPSILON_GREEDY_OPEN_LIST_H
 
-#include "open_list_factory.h"
-
+#include "../open_list_factory.h"
 #include "../option_parser_util.h"
 
 
@@ -43,6 +42,7 @@
     there could be only one bucket).
 */
 
+namespace epsilon_greedy_open_list {
 class EpsilonGreedyOpenListFactory : public OpenListFactory {
     Options options;
 public:
@@ -52,5 +52,6 @@ public:
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
 };
+}
 
 #endif
