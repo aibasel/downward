@@ -3,12 +3,12 @@
 #include "search_common.h"
 
 #include "../heuristic.h"
+#include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
-#include "../open_lists/open_list_factory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -304,7 +304,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "```\n--search lazy(single(eval1))\n```\n",
         true);
 
-    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Evaluator *>("evals", "evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
@@ -376,7 +376,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         "```\n--search lazy(single(sum([g(), weight(eval1, 2)])), reopen_closed=true)\n```\n",
         true);
 
-    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Evaluator *>("evals", "evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
@@ -389,7 +389,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
+    opts.verify_list_non_empty<Evaluator *>("evals");
 
     LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
