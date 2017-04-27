@@ -20,7 +20,7 @@ class BitsetView {
     const size_t array_size;
     const size_t int_array_size;
 public:
-    // we might want to make the constructor private and
+    // TODO: we might want to make the constructor private and
     // PerStateBitsetInformation a friend class in the future
     BitsetView(unsigned int *p, size_t size);
 
