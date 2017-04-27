@@ -37,11 +37,10 @@ protected:
 public:
     explicit ShrinkBisimulation(const options::Options &opts);
     virtual ~ShrinkBisimulation() override = default;
-    virtual bool shrink(
-        FactoredTransitionSystem &fts,
+    virtual StateEquivalenceRelation shrink(
+        const FactoredTransitionSystem &fts,
         int index,
-        int target,
-        Verbosity verbosity) const override;
+        int target) const override;
 };
 }
 

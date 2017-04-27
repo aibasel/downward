@@ -54,11 +54,10 @@ protected:
 public:
     explicit ShrinkBucketBased(const options::Options &opts);
     virtual ~ShrinkBucketBased() override = default;
-    virtual bool shrink(
-        FactoredTransitionSystem &fts,
+    virtual StateEquivalenceRelation shrink(
+        const FactoredTransitionSystem &fts,
         int index,
-        int target,
-        Verbosity verbosity) const override;
+        int target) const override;
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

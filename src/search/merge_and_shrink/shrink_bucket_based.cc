@@ -92,15 +92,14 @@ void ShrinkBucketBased::compute_abstraction(
     }
 }
 
-bool ShrinkBucketBased::shrink(
-    FactoredTransitionSystem &fts,
+StateEquivalenceRelation ShrinkBucketBased::shrink(
+    const FactoredTransitionSystem &fts,
     int index,
-    int target,
-    Verbosity verbosity) const {
+    int target) const {
     vector<Bucket> buckets;
     partition_into_buckets(fts, index, buckets);
     StateEquivalenceRelation equivalence_relation;
     compute_abstraction(buckets, target, equivalence_relation);
-    return shrink_fts(fts, index, equivalence_relation, verbosity);
+    return equivalence_relation;
 }
 }
