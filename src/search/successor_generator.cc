@@ -206,7 +206,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
                 applicable_operators.push_back(op_id);
             } else {
                 assert(utils::in_bounds(
-                    cond_iter - conditions[op_index].begin(), conditions[op_index]));
+                           cond_iter - conditions[op_index].begin(), conditions[op_index]));
                 all_ops_are_immediate = false;
                 FactProxy fact = *cond_iter;
                 if (fact.get_variable() == switch_var) {
