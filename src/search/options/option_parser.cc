@@ -483,11 +483,11 @@ void OptionParser::add_enum_option(
         enum_descr += "}";
 
         ValueExplanations value_explanations;
-        for (size_t i = 0; i < names.size(); ++i) {
-            // TODO: Either provide help for all or none of the values.
-            if (docs.size() > i) {
-                value_explanations.emplace_back(names[i], docs[i]);
-            }
+        if (!docs.empty() && docs.size() != names.size()) {
+            ABORT("Please provide documentation for all or none of the values of " + key);
+        }
+        for (size_t i = 0; i < docs.size(); ++i) {
+            value_explanations.emplace_back(names[i], docs[i]);
         }
 
         DocStore::instance()->add_arg(
