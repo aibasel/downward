@@ -1,5 +1,5 @@
-#ifndef SCALAR_EVALUATOR_H
-#define SCALAR_EVALUATOR_H
+#ifndef EVALUATOR_H
+#define EVALUATOR_H
 
 #include "evaluation_result.h"
 
@@ -8,10 +8,10 @@
 class EvaluationContext;
 class Heuristic;
 
-class ScalarEvaluator {
+class Evaluator {
 public:
-    ScalarEvaluator() = default;
-    virtual ~ScalarEvaluator() = default;
+    Evaluator() = default;
+    virtual ~Evaluator() = default;
 
     /*
       dead_ends_are_reliable should return true if the evaluator is

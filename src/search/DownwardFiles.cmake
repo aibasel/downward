@@ -53,11 +53,14 @@ fast_downward_plugin(
         causal_graph
         evaluation_context
         evaluation_result
+        evaluator
         global_operator
         globals
         global_state
         heuristic_cache
         heuristic
+        open_list
+        open_list_factory
         operator_cost
         option_parser
         option_parser_util
@@ -65,7 +68,6 @@ fast_downward_plugin(
         plugin
         pruning_method
         sampling
-        scalar_evaluator
         search_engine
         search_node_info
         search_progress
@@ -78,14 +80,6 @@ fast_downward_plugin(
         task_tools
         variable_order_finder
 
-        open_lists/alternation_open_list
-        open_lists/epsilon_greedy_open_list
-        open_lists/open_list
-        open_lists/open_list_factory
-        open_lists/pareto_open_list
-        open_lists/standard_scalar_open_list
-        open_lists/tiebreaking_open_list
-        open_lists/type_based_open_list
     DEPENDS INT_PACKER ORDERED_SET SEGMENTED_VECTOR
     CORE_PLUGIN
 )
@@ -131,6 +125,48 @@ fast_downward_plugin(
         utils/system_windows
         utils/timer
     CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME ALTERNATION_OPEN_LIST
+    HELP "Open list that alternates between underlying open lists in a round-robin manner"
+    SOURCES
+        open_lists/alternation_open_list
+)
+
+fast_downward_plugin(
+    NAME EPSILON_GREEDY_OPEN_LIST
+    HELP "Open list that chooses an entry randomly with probability epsilon"
+    SOURCES
+        open_lists/epsilon_greedy_open_list
+)
+
+fast_downward_plugin(
+    NAME PARETO_OPEN_LIST
+    HELP "Pareto open list"
+    SOURCES
+        open_lists/pareto_open_list
+)
+
+fast_downward_plugin(
+    NAME STANDARD_SCALAR_OPEN_LIST
+    HELP "Standard scalar open list"
+    SOURCES
+        open_lists/standard_scalar_open_list
+)
+
+fast_downward_plugin(
+    NAME TIEBREAKING_OPEN_LIST
+    HELP "Tiebreaking open list"
+    SOURCES
+        open_lists/tiebreaking_open_list
+)
+
+fast_downward_plugin(
+    NAME TYPE_BASED_OPEN_LIST
+    HELP "Type-based open list"
+    SOURCES
+        open_lists/type_based_open_list
 )
 
 fast_downward_plugin(
@@ -277,7 +313,7 @@ fast_downward_plugin(
     HELP "Basic classes used for all search engines"
     SOURCES
         search_engines/search_common
-    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR STANDARD_SCALAR_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
@@ -473,8 +509,10 @@ fast_downward_plugin(
         merge_and_shrink/merge_strategy_aliases
         merge_and_shrink/merge_strategy_factory
         merge_and_shrink/merge_strategy_factory_precomputed
+        merge_and_shrink/merge_strategy_factory_sccs
         merge_and_shrink/merge_strategy_factory_stateless
         merge_and_shrink/merge_strategy_precomputed
+        merge_and_shrink/merge_strategy_sccs
         merge_and_shrink/merge_strategy_stateless
         merge_and_shrink/merge_tree
         merge_and_shrink/merge_tree_factory
@@ -487,7 +525,7 @@ fast_downward_plugin(
         merge_and_shrink/transition_system
         merge_and_shrink/types
         merge_and_shrink/utils
-    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION
+    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION SCCS
 )
 
 fast_downward_plugin(
@@ -564,6 +602,15 @@ fast_downward_plugin(
         potentials/single_potential_heuristics
         potentials/util
     DEPENDS LP_SOLVER
+)
+
+fast_downward_plugin(
+    NAME SCCS
+    HELP "Algorithm to compute the strongly connected components (SCCs) of a "
+         "directed graph."
+    SOURCES
+        algorithms/sccs.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)

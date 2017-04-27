@@ -7,9 +7,9 @@
 
 #include <unordered_map>
 
-class ScalarEvaluator;
+class Evaluator;
 
-using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
+using EvaluationResults = std::unordered_map<Evaluator *, EvaluationResult>;
 
 /*
   Store a state and evaluation results for this state.
@@ -22,19 +22,19 @@ public:
     explicit HeuristicCache(const GlobalState &state);
     ~HeuristicCache() = default;
 
-    EvaluationResult &operator[](ScalarEvaluator *heur);
+    EvaluationResult &operator[](Evaluator *heur);
 
     const GlobalState &get_state() const;
 
     template<class Callback>
     void for_each_heuristic_value(const Callback &callback) const {
         for (const auto &element : eval_results) {
-            const ScalarEvaluator *eval = element.first;
+            const Evaluator *eval = element.first;
             const EvaluationResult &result = element.second;
             const Heuristic *heuristic = dynamic_cast<const Heuristic *>(eval);
             if (heuristic) {
                 /* We want to consider only Heuristic instances, not other
-                   ScalarEvaluator instances. */
+                   Evaluator instances. */
                 callback(heuristic, result);
             }
         }
