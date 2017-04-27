@@ -252,7 +252,7 @@ void FactoredTransitionSystem::dump(int index) const {
     mas_representations[index]->dump();
 }
 
-int FactoredTransitionSystem::copy_without_representation(int index) {
+int FactoredTransitionSystem::copy_factor_without_representation(int index) {
     assert(is_index_valid(index));
     int new_index = transition_systems.size();
     transition_systems.push_back(
@@ -265,6 +265,7 @@ int FactoredTransitionSystem::copy_without_representation(int index) {
 }
 
 void FactoredTransitionSystem::delete_last_three_entries() {
+    assert(ignore_representation);
     int last_index = transition_systems.size() - 1;
     transition_systems[last_index] = nullptr;
     transition_systems.pop_back();

@@ -94,16 +94,16 @@ int shrink_and_merge_temporarily(
     int max_states,
     int max_states_before_merge,
     int shrink_threshold_before_merge) {
-    // Copy the transition systems (distances etc)
-    int copy_ts_index1 = fts.copy_without_representation(ts_index1);
-    int copy_ts_index2 = fts.copy_without_representation(ts_index2);
+    // Copy the transition systems (distances etc).
+    int copy_ts_index1 = fts.copy_factor_without_representation(ts_index1);
+    int copy_ts_index2 = fts.copy_factor_without_representation(ts_index2);
     pair<int, int> shrink_sizes =
         compute_shrink_sizes(fts.get_ts(copy_ts_index1).get_size(),
                              fts.get_ts(copy_ts_index2).get_size(),
                              max_states,
                              max_states_before_merge);
 
-    // Shrink before merge
+    // Shrink before merge.
     Verbosity verbosity = Verbosity::SILENT;
     shrink_transition_system(
         fts,
@@ -120,7 +120,7 @@ int shrink_and_merge_temporarily(
         shrink_strategy,
         verbosity);
 
-    // Perform the merge and temporarily add it to FTS
+    // Perform the merge and temporarily add it to FTS.
     const bool invalidating_merge = true;
     int merge_index = fts.merge(
         copy_ts_index1,
