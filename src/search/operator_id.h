@@ -17,7 +17,7 @@ public:
         : index(index) {
     }
 
-    int get_index() {
+    int get_index() const {
         return index;
     }
 
