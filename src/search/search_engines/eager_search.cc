@@ -9,9 +9,9 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../pruning_method.h"
-#include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
+#include "../task_utils/successor_generator.h"
 
 #include <cassert>
 #include <cstdlib>

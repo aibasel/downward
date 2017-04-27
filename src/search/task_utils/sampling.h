@@ -7,8 +7,11 @@
 #include <vector>
 
 class State;
-class SuccessorGenerator;
 class TaskProxy;
+
+namespace successor_generator {
+class SuccessorGenerator;
+}
 
 namespace utils {
 class CountdownTimer;
@@ -30,7 +33,7 @@ struct SamplingTimeout : public std::exception {};
 */
 std::vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
-    const SuccessorGenerator &successor_generator,
+    const successor_generator::SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,

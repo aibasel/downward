@@ -66,7 +66,6 @@ fast_downward_plugin(
         per_state_information
         plugin
         pruning_method
-        sampling
         search_engine
         search_node_info
         search_progress
@@ -74,12 +73,11 @@ fast_downward_plugin(
         search_statistics
         state_id
         state_registry
-        successor_generator
         task_proxy
         task_tools
         variable_order_finder
 
-    DEPENDS CAUSAL_GRAPH INT_PACKER ORDERED_SET SEGMENTED_VECTOR
+    DEPENDS CAUSAL_GRAPH INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR
     CORE_PLUGIN
 )
 
@@ -321,7 +319,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON
+    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -329,7 +327,7 @@ fast_downward_plugin(
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
         search_engines/enforced_hill_climbing_search
-    DEPENDS G_EVALUATOR ORDERED_SET PREF_EVALUATOR SEARCH_COMMON
+    DEPENDS G_EVALUATOR ORDERED_SET PREF_EVALUATOR SEARCH_COMMON SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -344,7 +342,7 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         search_engines/lazy_search
-    DEPENDS ORDERED_SET SEARCH_COMMON
+    DEPENDS ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -475,6 +473,14 @@ fast_downward_plugin(
     HELP "Sampling"
     SOURCES
         task_utils/sampling
+    DEPENDS SUCCESSOR_GENERATOR
+)
+
+fast_downward_plugin(
+    NAME SUCCESSOR_GENERATOR
+    HELP "Successor generator"
+    SOURCES
+        task_utils/successor_generator
 )
 
 fast_downward_plugin(
@@ -555,7 +561,7 @@ fast_downward_plugin(
         landmarks/landmark_graph
         landmarks/landmark_status_manager
         landmarks/util
-    DEPENDS LP_SOLVER PRIORITY_QUEUES
+    DEPENDS LP_SOLVER PRIORITY_QUEUES SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -596,7 +602,7 @@ fast_downward_plugin(
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
-    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING
+    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -611,7 +617,7 @@ fast_downward_plugin(
         potentials/sample_based_potential_heuristics
         potentials/single_potential_heuristics
         potentials/util
-    DEPENDS LP_SOLVER SAMPLING
+    DEPENDS LP_SOLVER SAMPLING SUCCESSOR_GENERATOR
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)

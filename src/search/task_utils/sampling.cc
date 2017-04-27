@@ -1,6 +1,7 @@
 #include "sampling.h"
 
-#include "../successor_generator.h"
+#include "successor_generator.h"
+
 #include "../task_proxy.h"
 #include "../task_tools.h"
 
@@ -13,7 +14,7 @@ using namespace std;
 namespace sampling {
 vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
-    const SuccessorGenerator &successor_generator,
+    const successor_generator::SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,
