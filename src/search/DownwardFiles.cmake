@@ -508,8 +508,10 @@ fast_downward_plugin(
         merge_and_shrink/merge_strategy_aliases
         merge_and_shrink/merge_strategy_factory
         merge_and_shrink/merge_strategy_factory_precomputed
+        merge_and_shrink/merge_strategy_factory_sccs
         merge_and_shrink/merge_strategy_factory_stateless
         merge_and_shrink/merge_strategy_precomputed
+        merge_and_shrink/merge_strategy_sccs
         merge_and_shrink/merge_strategy_stateless
         merge_and_shrink/merge_tree
         merge_and_shrink/merge_tree_factory
@@ -522,7 +524,7 @@ fast_downward_plugin(
         merge_and_shrink/transition_system
         merge_and_shrink/types
         merge_and_shrink/utils
-    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION
+    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION SCCS
 )
 
 fast_downward_plugin(
@@ -599,6 +601,15 @@ fast_downward_plugin(
         potentials/single_potential_heuristics
         potentials/util
     DEPENDS LP_SOLVER
+)
+
+fast_downward_plugin(
+    NAME SCCS
+    HELP "Algorithm to compute the strongly connected components (SCCs) of a "
+         "directed graph."
+    SOURCES
+        algorithms/sccs.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
