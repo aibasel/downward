@@ -5,10 +5,10 @@
 
 #include "../heuristic.h"
 #include "../option_parser.h"
-#include "../sampling.h"
 #include "../successor_generator.h"
 #include "../task_tools.h"
 
+#include "../task_utils/sampling.h"
 #include "../utils/markup.h"
 
 #include <limits>
@@ -26,7 +26,7 @@ vector<State> sample_without_dead_end_detection(
     optimizer.optimize_for_state(initial_state);
     SuccessorGenerator successor_generator(task_proxy);
     int init_h = optimizer.get_potential_function()->get_value(initial_state);
-    return sample_states_with_random_walks(
+    return sampling::sample_states_with_random_walks(
         task_proxy, successor_generator, num_samples, init_h,
         get_average_operator_cost(task_proxy), rng);
 }

@@ -7,10 +7,10 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../sampling.h"
 #include "../task_tools.h"
 
 #include "../task_utils/causal_graph.h"
+#include "../task_utils/sampling.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -97,7 +97,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
         task_proxy.get_initial_state());
 
     try {
-        samples = sample_states_with_random_walks(
+        samples = sampling::sample_states_with_random_walks(
             task_proxy, successor_generator, num_samples, init_h,
             average_operator_cost,
             *rng,
@@ -105,7 +105,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
                 return current_pdbs->is_dead_end(state);
             },
             hill_climbing_timer);
-    } catch (SamplingTimeout &) {
+    } catch (sampling::SamplingTimeout &) {
         throw HillClimbingTimeout();
     }
 }

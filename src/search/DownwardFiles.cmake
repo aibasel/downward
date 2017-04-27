@@ -471,6 +471,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME SAMPLING
+    HELP "Sampling"
+    SOURCES
+        task_utils/sampling
+)
+
+fast_downward_plugin(
     NAME CEGAR
     HELP "Plugin containing the code for CEGAR heuristics"
     SOURCES
@@ -589,7 +596,7 @@ fast_downward_plugin(
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
-    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES
+    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING
 )
 
 fast_downward_plugin(
@@ -604,7 +611,7 @@ fast_downward_plugin(
         potentials/sample_based_potential_heuristics
         potentials/single_potential_heuristics
         potentials/util
-    DEPENDS LP_SOLVER
+    DEPENDS LP_SOLVER SAMPLING
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)

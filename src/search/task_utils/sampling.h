@@ -1,5 +1,5 @@
-#ifndef SAMPLING_H
-#define SAMPLING_H
+#ifndef TASK_UTILS_SAMPLING_H
+#define TASK_UTILS_SAMPLING_H
 
 #include <exception>
 #include <functional>
@@ -16,6 +16,7 @@ class RandomNumberGenerator;
 }
 
 
+namespace sampling {
 struct SamplingTimeout : public std::exception {};
 
 /*
@@ -38,5 +39,6 @@ std::vector<State> sample_states_with_random_walks(
                                                  return false;
                                              },
     const utils::CountdownTimer *timer = nullptr);
+}
 
 #endif
