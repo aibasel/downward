@@ -71,7 +71,11 @@ bool shrink_transition_system(
                 cout << " (shrink threshold: " << shrink_threshold_before_merge;
             cout << ")" << endl;
         }
-        return shrink_strategy.shrink(fts, index, new_size, verbosity);
+        StateEquivalenceRelation equivalence_relation =
+            shrink_strategy.shrink(fts, index, new_size);
+        // TODO: We currently violate this; see issue250
+        //assert(equivalence_relation.size() <= new_size);
+        return fts.apply_abstraction(index, equivalence_relation, verbosity);
     }
     return false;
 }

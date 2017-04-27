@@ -157,7 +157,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
+bool MergeAndShrinkHeuristic::shrink_before_merge(
     FactoredTransitionSystem &fts, int index1, int index2) {
     /*
       Compute the size limit for both transition systems as imposed by
@@ -183,6 +183,9 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
         shrink_threshold_before_merge,
         *shrink_strategy,
         verbosity);
+    if (verbosity >= Verbosity::VERBOSE && shrunk1) {
+        fts.statistics(index2);
+    }
     bool shrunk2 = shrink_transition_system(
         fts,
         index2,
@@ -190,7 +193,10 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
         shrink_threshold_before_merge,
         *shrink_strategy,
         verbosity);
-    return make_pair(shrunk1, shrunk2);
+    if (verbosity >= Verbosity::VERBOSE && shrunk2) {
+        fts.statistics(index2);
+    }
+    return shrunk1 || shrunk2;
 }
 
 void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
@@ -234,18 +240,9 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             }
 
             // Shrinking
-            pair<bool, bool> shrunk = shrink_before_merge(
+            bool shrunk = shrink_before_merge(
                 fts, merge_index1, merge_index2);
-            if (verbosity >= Verbosity::NORMAL &&
-                (shrunk.first || shrunk.second)) {
-                if (verbosity >= Verbosity::VERBOSE) {
-                    if (shrunk.first) {
-                        fts.statistics(merge_index1);
-                    }
-                    if (shrunk.second) {
-                        fts.statistics(merge_index2);
-                    }
-                }
+            if (verbosity >= Verbosity::NORMAL && shrunk) {
                 print_time(timer, "after shrinking");
             }
 

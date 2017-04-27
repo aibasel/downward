@@ -39,7 +39,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     // The final merge-and-shrink representation, storing goal distances.
     std::unique_ptr<MergeAndShrinkRepresentation> mas_representation;
 
-    std::pair<bool, bool> shrink_before_merge(
+    bool shrink_before_merge(
         FactoredTransitionSystem &fts, int index1, int index2);
     void build(const utils::Timer &timer);
 
