@@ -96,6 +96,8 @@ GeneratorSwitch::~GeneratorSwitch() {
 
 void GeneratorSwitch::generate_applicable_ops(
     const State &state, vector<OperatorID> &applicable_ops) const {
+    /* A loop over push_back is faster than using insert in this situation
+       because the lists are typically very small. We measured this in issue688. */
     for (OperatorID id : immediate_operators) {
         applicable_ops.push_back(id);
     }
@@ -106,6 +108,7 @@ void GeneratorSwitch::generate_applicable_ops(
 
 void GeneratorSwitch::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
+    // See above for the reason for using push_back instead of insert.
     for (OperatorID id : immediate_operators) {
         applicable_ops.push_back(id);
     }
@@ -120,6 +123,7 @@ GeneratorLeaf::GeneratorLeaf(list<OperatorID> &&applicable_operators)
 
 void GeneratorLeaf::generate_applicable_ops(
     const State &, vector<OperatorID> &applicable_ops) const {
+    // See above for the reason for using push_back instead of insert.
     for (OperatorID id : applicable_operators) {
         applicable_ops.push_back(id);
     }
@@ -127,6 +131,7 @@ void GeneratorLeaf::generate_applicable_ops(
 
 void GeneratorLeaf::generate_applicable_ops(
     const GlobalState &, vector<OperatorID> &applicable_ops) const {
+    // See above for the reason for using push_back instead of insert.
     for (OperatorID id : applicable_operators) {
         applicable_ops.push_back(id);
     }
