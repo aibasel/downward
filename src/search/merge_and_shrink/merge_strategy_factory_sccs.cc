@@ -60,7 +60,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
             task_proxy.get_causal_graph().get_successors(var.get_id());
         cg.push_back(successors);
     }
-    vector<vector<int>> sccs = move(sccs::compute_maximal_sccs(cg));
+    vector<vector<int>> sccs(sccs::compute_maximal_sccs(cg));
 
     // Put the SCCs in the desired order.
     switch (order_of_sccs) {
@@ -96,7 +96,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         } else {
             index += scc_size - 1;
             indices_of_merged_sccs.push_back(index);
-            non_singleton_cg_sccs.push_back(vector<int>(scc));
+            non_singleton_cg_sccs.push_back(scc);
         }
     }
     if (sccs.size() == 1) {
@@ -180,9 +180,10 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         order_of_sccs,
         "choose an ordering of the SCCs: topological/reverse_topological or "
         "decreasing/increasing in the size of the SCCs. The former two options "
-        "refer to the directed graph where each obtained SCC is a 'supernode'. "
-        "For the latter two options, the tie-breaking is to use the "
-        "topological order according to that same graph of SCC supernodes.",
+        "refer to the directed graph where each obtained SCC is a "
+        "'supervertex'. For the latter two options, the tie-breaking is to "
+        "use the topological order according to that same graph of SCC "
+        "supervertices.",
         "topological");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
