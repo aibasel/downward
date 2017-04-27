@@ -28,6 +28,7 @@ public:
     BitsetView &operator=(const BitsetView &data);
     void set(int index);
     void reset(int index);
+    void reset_all();
     bool test(int index) const;
     void intersect(BitsetView &other);
     size_t size() const;
