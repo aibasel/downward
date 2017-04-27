@@ -1,9 +1,9 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
+#include "evaluator.h"
 #include "operator_id.h"
 #include "per_state_information.h"
-#include "scalar_evaluator.h"
 #include "task_proxy.h"
 
 #include "algorithms/ordered_set.h"
@@ -20,7 +20,7 @@ class OptionParser;
 class Options;
 }
 
-class Heuristic : public ScalarEvaluator {
+class Heuristic : public Evaluator {
     struct HEntry {
         /* dirty is conceptually a bool, but Visual C++ does not support
            packing ints and bools together in a bitfield. */
@@ -101,9 +101,6 @@ public:
         EvaluationContext &eval_context) override;
 
     std::string get_description() const;
-    bool is_h_dirty(GlobalState &state) {
-        return heuristic_cache[state].dirty;
-    }
 };
 
 #endif

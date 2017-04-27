@@ -29,7 +29,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    ScalarEvaluator *g_evaluator = new GEval();
+    Evaluator *g_evaluator = new GEval();
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -44,7 +44,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         Options options;
         options.set("eval", g_evaluator);
         options.set("pref_only", false);
-        return make_shared<StandardScalarOpenListFactory>(options);
+        return make_shared<standard_scalar_open_list::StandardScalarOpenListFactory>(options);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
@@ -54,12 +54,12 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<ScalarEvaluator *> evals = {g_evaluator, new PrefEval()};
+        vector<Evaluator *> evals = {g_evaluator, new PrefEval()};
         Options options;
         options.set("evals", evals);
         options.set("pref_only", false);
         options.set("unsafe_pruning", true);
-        return make_shared<TieBreakingOpenListFactory>(options);
+        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
     }
 }
 
