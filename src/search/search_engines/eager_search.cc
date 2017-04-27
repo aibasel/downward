@@ -30,8 +30,7 @@ EagerSearch::EagerSearch(const Options &opts)
                 create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
-      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
-      values(3) {
+      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
 
 void EagerSearch::initialize() {
@@ -82,12 +81,6 @@ void EagerSearch::initialize() {
         node.open_initial();
 
         open_list->insert(eval_context, initial_state.get_id());
-        int h_value = eval_context.get_heuristic_value(heuristics[0]);
-        values[initial_state][0] = 0;
-        values[initial_state][1] = h_value;
-        values[initial_state][2] = 0 + h_value;
-        values[initial_state][3] = 42;
-        non_dead_end_states.push_back(initial_state.get_id());
     }
 
     print_initial_h_values(eval_context);
@@ -115,27 +108,8 @@ SearchStatus EagerSearch::step() {
     SearchNode node = n.first;
 
     GlobalState s = node.get_state();
-    if (check_goal_and_set_plan(s)) {
-        for (StateID state_id : non_dead_end_states) {
-            GlobalState state = state_registry.lookup_state(state_id);
-            SearchNode node = search_space.get_node(state);
-            EvaluationContext eval_context(state);
-            int h_value = eval_context.get_heuristic_value(heuristics[0]);
-            if (values[state][0] != node.get_g()
-                || values[state][1] != h_value
-                || values[state][2] != node.get_g() + h_value) {
-                cout << "PerStateArrayInformation returns wrong element." << endl;
-                cout << "values: " << values[state][0] << " " << values[state][1] << " "
-                     << values[state][2] << " " << endl;
-                cout << "expected: " << node.get_g() << " " << h_value << " "
-                     << node.get_g() + h_value << endl;
-                break;
-            }
-        }
-        cout << "PerStateArrayInformation works properly." << endl;
+    if (check_goal_and_set_plan(s))
         return SOLVED;
-    }
-
 
     vector<const GlobalOperator *> applicable_ops;
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
@@ -196,12 +170,6 @@ SearchStatus EagerSearch::step() {
             }
             succ_node.open(node, op);
 
-            int h_value = eval_context.get_heuristic_value(heuristics[0]);
-            values[succ_state][0] = succ_node.get_g();
-            values[succ_state][1] = h_value;
-            values[succ_state][2] = succ_node.get_g() + h_value;
-            non_dead_end_states.push_back(succ_state.get_id());
-
             open_list->insert(eval_context, succ_state.get_id());
             if (search_progress.check_progress(eval_context)) {
                 print_checkpoint_line(succ_node.get_g());
@@ -243,20 +211,11 @@ SearchStatus EagerSearch::step() {
                   from scratch.
                 */
                 open_list->insert(eval_context, succ_state.get_id());
-                values[succ_state][0] = succ_node.get_g();
-                values[succ_state][1] = eval_context.get_heuristic_value(heuristics[0]);
-                values[succ_state][2] = succ_node.get_g() + eval_context.get_heuristic_value(heuristics[0]);
-
             } else {
                 // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back.
                 succ_node.update_parent(node, op);
-                EvaluationContext eval_context(
-                    succ_state, succ_node.get_g(), is_preferred, &statistics);
-                values[succ_state][0] = succ_node.get_g();
-                values[succ_state][1] = eval_context.get_heuristic_value(heuristics[0]);
-                values[succ_state][2] = succ_node.get_g() + eval_context.get_heuristic_value(heuristics[0]);
             }
         }
     }
