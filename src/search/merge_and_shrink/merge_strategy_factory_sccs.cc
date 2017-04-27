@@ -163,12 +163,12 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
             "Scheduling (ICAPS 2016)",
             "2358-2366",
             "AAAI Press 2016") +
-        "In a nutshel, it computes the maximal SCCs of the causal graph, "
+        "In a nutshell, it computes the maximal SCCs of the causal graph, "
         "obtaining a partitioning of the task's variables. Every such "
-        "partition is then merged individually, using the specified fallback"
+        "partition is then merged individually, using the specified fallback "
         "merge strategy, considering the SCCs in a configurable order. "
-        "Afterwards, all resulting composite abstractions are merged to form"
-        "the final abstraction, again using the specified fallback merge"
+        "Afterwards, all resulting composite abstractions are merged to form "
+        "the final abstraction, again using the specified fallback merge "
         "strategy and the configurable order of the SCCs.");
     vector<string> order_of_sccs;
     order_of_sccs.push_back("topological");
@@ -187,12 +187,12 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "topological");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
-        "the fallback merge strategy to use if a precomputed strategy should"
+        "the fallback merge strategy to use if a precomputed strategy should "
         "be used.",
         options::OptionParser::NONE);
     parser.add_option<shared_ptr<MergeSelector>>(
         "merge_selector",
-        "the fallback merge strategy to use if a stateless strategy should"
+        "the fallback merge strategy to use if a stateless strategy should "
         "be used.",
         options::OptionParser::NONE);
 
