@@ -13,6 +13,7 @@ class StateID {
     friend class PerStateInformation;
     template<typename>
     friend class PerStateArrayInformation;
+    friend class PerStateBitsetInformation;
 
     int value;
     explicit StateID(int value_)
