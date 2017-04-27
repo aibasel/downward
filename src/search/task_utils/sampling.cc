@@ -1,15 +1,16 @@
 #include "sampling.h"
 
-#include "successor_generator.h"
-#include "task_proxy.h"
-#include "task_tools.h"
+#include "../successor_generator.h"
+#include "../task_proxy.h"
+#include "../task_tools.h"
 
-#include "utils/countdown_timer.h"
-#include "utils/rng.h"
+#include "../utils/countdown_timer.h"
+#include "../utils/rng.h"
 
 using namespace std;
 
 
+namespace sampling {
 vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
     const SuccessorGenerator &successor_generator,
@@ -78,4 +79,5 @@ vector<State> sample_states_with_random_walks(
         samples.push_back(current_state);
     }
     return samples;
+}
 }
