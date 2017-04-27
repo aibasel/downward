@@ -73,7 +73,7 @@ CGCache::~CGCache() {
 int CGCache::compute_required_cache_size(
     int var_id, const vector<int> &depends_on) const {
     /*
-      Compute the size of the cache required for variable with id "var_id",
+      Compute the size of the cache required for variable with ID "var_id",
       which depends on the variables in "depends_on". Requires that the caches
       for all variables in "depends_on" have already been allocated. Returns -1
       if the variable cannot be cached because the required cache size would be

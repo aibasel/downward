@@ -3,11 +3,11 @@
 
 #include "evaluation_result.h"
 #include "heuristic_cache.h"
+#include "operator_id.h"
 
 #include <unordered_map>
 
 class Evaluator;
-class GlobalOperator;
 class GlobalState;
 class SearchStatistics;
 
@@ -110,7 +110,7 @@ public:
     bool is_heuristic_infinite(Evaluator *heur);
     int get_heuristic_value(Evaluator *heur);
     int get_heuristic_value_or_infinity(Evaluator *heur);
-    const std::vector<const GlobalOperator *> &get_preferred_operators(
+    const std::vector<OperatorID> &get_preferred_operators(
         Evaluator *heur);
     bool get_calculate_preferred() const;
 };

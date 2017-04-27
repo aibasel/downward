@@ -28,7 +28,7 @@
   StateID
     StateIDs identify states within a state registry.
     If the registry is known, the ID is sufficient to look up the state, which
-    is why ids are intended for long term storage (e.g. in open lists).
+    is why IDs are intended for long term storage (e.g. in open lists).
     Internally, a StateID is just an integer, so it is cheap to store and copy.
 
   PackedStateBin (currently the same as unsigned int)
