@@ -74,7 +74,6 @@ fast_downward_plugin(
         state_id
         state_registry
         task_proxy
-        variable_order_finder
 
     DEPENDS CAUSAL_GRAPH INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
@@ -495,6 +494,15 @@ fast_downward_plugin(
     HELP "Task properties"
     SOURCES
         task_utils/task_properties
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME VARIABLE_ORDER_FINDER
+    HELP "Variable order finder"
+    SOURCES
+        task_utils/variable_order_finder
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -555,7 +563,7 @@ fast_downward_plugin(
         merge_and_shrink/transition_system
         merge_and_shrink/types
         merge_and_shrink/utils
-    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION TASK_PROPERTIES
+    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION TASK_PROPERTIES VARIABLE_ORDER_FINDER
 )
 
 fast_downward_plugin(
@@ -616,7 +624,7 @@ fast_downward_plugin(
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
-    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES
+    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES VARIABLE_ORDER_FINDER
 )
 
 fast_downward_plugin(
