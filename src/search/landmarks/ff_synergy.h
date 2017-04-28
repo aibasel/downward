@@ -1,9 +1,9 @@
 #ifndef LANDMARKS_FF_SYNERGY_H
 #define LANDMARKS_FF_SYNERGY_H
 
-#include "../heuristic.h"
-
 #include "lama_synergy.h"
+
+#include "../heuristic.h"
 
 namespace landmarks{
 class LamaSynergyHeuristic;
