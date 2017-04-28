@@ -23,6 +23,5 @@ public:
 
     void set_master(LamaSynergyHeuristic *lama_master);
 };
-
 }
 #endif
