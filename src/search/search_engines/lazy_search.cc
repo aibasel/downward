@@ -31,7 +31,7 @@ LazySearch::LazySearch(const Options &opts)
       rng(utils::parse_rng_from_options(opts)),
       current_state(state_registry.get_initial_state()),
       current_predecessor_id(StateID::no_state),
-      current_operator(nullptr),
+      current_operator_id(OperatorID::no_operator),
       current_g(0),
       current_real_g(0),
       current_eval_context(current_state, 0, true, &statistics) {
@@ -125,14 +125,15 @@ SearchStatus LazySearch::fetch_next_state() {
     EdgeOpenListEntry next = open_list->remove_min();
 
     current_predecessor_id = next.first;
-    current_operator = &g_operators[next.second.get_index()];
+    current_operator_id = next.second;
     GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
-    assert(current_operator->is_applicable(current_predecessor));
-    current_state = state_registry.get_successor_state(current_predecessor, *current_operator);
+    const GlobalOperator &current_operator = g_operators[current_operator_id.get_index()];
+    assert(current_operator.is_applicable(current_predecessor));
+    current_state = state_registry.get_successor_state(current_predecessor, current_operator);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);
-    current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
-    current_real_g = pred_node.get_real_g() + current_operator->get_cost();
+    current_g = pred_node.get_g() + get_adjusted_cost(current_operator);
+    current_real_g = pred_node.get_real_g() + current_operator.get_cost();
 
     /*
       Note: We mark the node in current_eval_context as "preferred"
@@ -170,7 +171,9 @@ SearchStatus LazySearch::step() {
         GlobalState parent_state = state_registry.lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        if (current_operator) {
+        GlobalOperator *current_operator = nullptr;
+        if (current_operator_id != OperatorID::no_operator) {
+            current_operator = &g_operators[current_operator_id.get_index()];
             for (Heuristic *heuristic : heuristics)
                 heuristic->notify_state_transition(
                     parent_state, *current_operator, current_state);
