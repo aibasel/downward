@@ -95,8 +95,7 @@ static Heuristic *_parse(OptionParser &parser) {
     */
     opts.set("pref", true);
 
-    Heuristic *lama_synergy = new LamaSynergyHeuristic(opts);
-    return lama_synergy;
+    return new LamaSynergyHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("lm_syn", _parse);
