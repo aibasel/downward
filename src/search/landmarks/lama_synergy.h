@@ -1,10 +1,10 @@
 #ifndef LANDMARKS_LAMA_SYNERGY_H
 #define LANDMARKS_LAMA_SYNERGY_H
 
-#include "../heuristic.h"
-
 #include "ff_synergy.h"
 #include "landmark_count_heuristic.h"
+
+#include "../heuristic.h"
 
 namespace landmarks {
 class LandmarkCountHeuristic;
