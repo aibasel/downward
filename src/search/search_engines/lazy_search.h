@@ -13,7 +13,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalOperator;
 class Heuristic;
 
 namespace options {

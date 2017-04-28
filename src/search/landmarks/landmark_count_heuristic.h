@@ -54,7 +54,7 @@ public:
 
     virtual void notify_initial_state(const GlobalState &initial_state) override;
     virtual bool notify_state_transition(const GlobalState &parent_state,
-                                         const GlobalOperator &op,
+                                         OperatorID op_id,
                                          const GlobalState &state) override;
     virtual bool dead_ends_are_reliable() const override;
 };

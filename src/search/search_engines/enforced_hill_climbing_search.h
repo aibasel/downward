@@ -52,7 +52,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
         bool preferred);
     void expand(EvaluationContext &eval_context);
     void reach_state(
-        const GlobalState &parent, const GlobalOperator &op,
+        const GlobalState &parent, OperatorID op_id,
         const GlobalState &state);
     SearchStatus ehc();
 
