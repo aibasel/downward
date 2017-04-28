@@ -26,7 +26,7 @@ class SuccessorGenerator {
 
     typedef std::vector<FactProxy> Condition;
     GeneratorBase *construct_recursive(
-        int switch_var_id, std::list<OperatorProxy> &&operator_queue);
+        int switch_var_id, std::list<OperatorID> &&operator_queue);
 
     std::vector<Condition> conditions;
     std::vector<Condition::const_iterator> next_condition_by_op;
@@ -37,10 +37,10 @@ public:
     ~SuccessorGenerator();
 
     void generate_applicable_ops(
-        const State &state, std::vector<OperatorProxy> &applicable_ops) const;
+        const State &state, std::vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
     void generate_applicable_ops(
-        const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) const;
+        const GlobalState &state, std::vector<OperatorID> &applicable_ops) const;
 };
 }
 

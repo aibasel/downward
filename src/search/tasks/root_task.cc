@@ -96,8 +96,8 @@ FactPair RootTask::get_operator_effect(
     return FactPair(effect.var, effect.val);
 }
 
-const GlobalOperator *RootTask::get_global_operator(int index, bool is_axiom) const {
-    return &get_operator_or_axiom(index, is_axiom);
+OperatorID RootTask::get_global_operator_id(OperatorID id) const {
+    return id;
 }
 
 int RootTask::get_num_axioms() const {

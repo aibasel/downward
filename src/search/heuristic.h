@@ -2,6 +2,7 @@
 #define HEURISTIC_H
 
 #include "evaluator.h"
+#include "operator_id.h"
 #include "per_state_information.h"
 #include "task_proxy.h"
 
@@ -45,7 +46,7 @@ class Heuristic : public Evaluator {
       being able to reuse the data structure from one iteration to the
       next, but this seems to be the only potential downside.
     */
-    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators;
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
 
 protected:
     /*
@@ -72,8 +73,6 @@ protected:
       is OK -- it will only appear once in the list of preferred
       operators for this heuristic.
     */
-    // TODO: Make private once all heuristics use the TaskProxy class.
-    void set_preferred(const GlobalOperator *op);
     void set_preferred(const OperatorProxy &op);
 
     /* TODO: Make private and use State instead of GlobalState once all
