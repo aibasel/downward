@@ -1,15 +1,14 @@
-#ifndef OPEN_LISTS_OPEN_LIST_H
-#define OPEN_LISTS_OPEN_LIST_H
+#ifndef OPEN_LIST_H
+#define OPEN_LIST_H
 
 #include <set>
 #include <vector>
 
-#include "../evaluation_context.h"
+#include "evaluation_context.h"
 
 class GlobalOperator;
 class Heuristic;
 class StateID;
-
 
 
 template<class Entry>
