@@ -189,7 +189,7 @@ bool FactoredTransitionSystem::shrink(
         }
         const Distances &dist = *distances[index];
         StateEquivalenceRelation equivalence_relation =
-            shrink_strategy.shrink(ts, dist, new_size);
+            shrink_strategy.compute_equivalence_relation(ts, dist, new_size);
         // TODO: We currently violate this; see issue250
         //assert(equivalence_relation.size() <= new_size);
         return apply_abstraction(index, equivalence_relation, verbosity);

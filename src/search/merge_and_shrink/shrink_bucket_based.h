@@ -54,7 +54,7 @@ protected:
 public:
     explicit ShrinkBucketBased(const options::Options &opts);
     virtual ~ShrinkBucketBased() override = default;
-    virtual StateEquivalenceRelation shrink(
+    virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,
         const Distances &distances,
         int target_size) const override;

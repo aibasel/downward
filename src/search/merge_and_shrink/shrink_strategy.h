@@ -28,7 +28,7 @@ public:
       transition system. However, it may attempt to e.g. shrink the transition
       system in an information preserving way.
     */
-    virtual StateEquivalenceRelation shrink(
+    virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,
         const Distances &distances,
         int target_size) const = 0;
