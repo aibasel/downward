@@ -7,17 +7,14 @@
 #include "../heuristic.h"
 
 namespace landmarks {
+class FFSynergyHeuristic;
 class LandmarkCountHeuristic;
 class LandmarkFactory;
 
-class FFSynergyHeuristic;
-
-
 
 class LamaSynergyHeuristic : public Heuristic {
-    friend class FFSynergyHeuristic;
+    friend FFSynergyHeuristic;
 
-    std::unique_ptr<FFSynergyHeuristic> ff_synergy_heuristic;
     std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
 
     EvaluationResult ff_result;
