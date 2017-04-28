@@ -2,6 +2,7 @@ DOWNWARD_BITWIDTH ?= 32
 
 HEADERS = \
           hash.h \
+          SpookyV2.h \
 
 SOURCES = main.cc $(HEADERS:%.h=%.cc)
 TARGET = benchmark
