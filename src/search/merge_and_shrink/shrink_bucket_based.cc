@@ -19,12 +19,10 @@ void ShrinkBucketBased::add_options_to_parser(options::OptionParser &parser) {
     utils::add_rng_options(parser);
 }
 
-void ShrinkBucketBased::compute_abstraction(
-    const vector<Bucket> &buckets, int target_size,
-    StateEquivalenceRelation &equiv_relation) const {
+StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(
+    const vector<Bucket> &buckets, int target_size) const {
     bool show_combine_buckets_warning = true;
-
-    assert(equiv_relation.empty());
+    StateEquivalenceRelation equiv_relation;
     equiv_relation.reserve(target_size);
 
     size_t num_states_to_go = 0;
@@ -90,16 +88,14 @@ void ShrinkBucketBased::compute_abstraction(
             }
         }
     }
+    return equiv_relation;
 }
 
 StateEquivalenceRelation ShrinkBucketBased::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
     int target_size) const {
-    vector<Bucket> buckets;
-    partition_into_buckets(ts, distances, buckets);
-    StateEquivalenceRelation equivalence_relation;
-    compute_abstraction(buckets, target_size, equivalence_relation);
-    return equivalence_relation;
+    vector<Bucket> buckets = partition_into_buckets(ts, distances);
+    return compute_abstraction(buckets, target_size);
 }
 }
