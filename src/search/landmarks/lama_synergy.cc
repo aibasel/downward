@@ -18,9 +18,8 @@ namespace landmarks {
 
 LamaSynergyHeuristic::LamaSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
-        ff_synergy_heuristic(
-                dynamic_cast<FFSynergyHeuristic *>(
-                    opts.get<Heuristic *>("ff_synergy_heuristic"))),
+      ff_synergy_heuristic(dynamic_cast<FFSynergyHeuristic *>(
+          opts.get<Heuristic *>("ff_synergy_heuristic"))),
       lama_heuristic(new LandmarkCountHeuristic(opts)) {
     cout << "Initializing LAMA synergy object" << endl;
     ff_synergy_heuristic->set_master(this);
