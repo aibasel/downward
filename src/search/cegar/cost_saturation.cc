@@ -6,10 +6,9 @@
 #include "utils.h"
 
 #include "../globals.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../tasks/modified_operator_costs_task.h"
-
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
@@ -60,8 +59,8 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
 
     TaskProxy task_proxy(*task);
 
-    verify_no_axioms(task_proxy);
-    verify_no_conditional_effects(task_proxy);
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
 
     reset(task_proxy);
 
@@ -93,7 +92,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
 }
 
 void CostSaturation::reset(const TaskProxy &task_proxy) {
-    remaining_costs = get_operator_costs(task_proxy);
+    remaining_costs = task_properties::get_operator_costs(task_proxy);
     num_abstractions = 0;
     num_states = 0;
 }

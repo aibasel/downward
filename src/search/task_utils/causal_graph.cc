@@ -1,12 +1,12 @@
 #include "causal_graph.h"
 
-#include "global_operator.h"
-#include "globals.h"
-#include "task_proxy.h"
+#include "../global_operator.h"
+#include "../globals.h"
+#include "../task_proxy.h"
 
-#include "utils/logging.h"
-#include "utils/memory.h"
-#include "utils/timer.h"
+#include "../utils/logging.h"
+#include "../utils/memory.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -28,6 +28,8 @@ using namespace std;
   (causal graphs, successor generators and axiom evlauators, DTGs, ...) and can
   maybe deal with all of them in the same way.
 */
+
+namespace causal_graph {
 static unordered_map<const AbstractTask *,
                      unique_ptr<CausalGraph>> causal_graph_cache;
 
@@ -210,4 +212,5 @@ const CausalGraph &get_causal_graph(const AbstractTask *task) {
             make_pair(task, utils::make_unique_ptr<CausalGraph>(task_proxy)));
     }
     return *causal_graph_cache[task];
+}
 }

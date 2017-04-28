@@ -6,9 +6,9 @@
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
+#include "../task_utils/successor_generator.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 

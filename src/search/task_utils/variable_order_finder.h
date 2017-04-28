@@ -1,11 +1,12 @@
-#ifndef VARIABLE_ORDER_FINDER_H
-#define VARIABLE_ORDER_FINDER_H
+#ifndef TASK_UTILS_VARIABLE_ORDER_FINDER_H
+#define TASK_UTILS_VARIABLE_ORDER_FINDER_H
 
-#include "task_proxy.h"
+#include "../task_proxy.h"
 
 #include <memory>
 #include <vector>
 
+namespace variable_order_finder {
 enum VariableOrderType {
     CG_GOAL_LEVEL,
     CG_GOAL_RANDOM,
@@ -38,5 +39,6 @@ public:
     bool done() const;
     int next();
 };
+}
 
 #endif

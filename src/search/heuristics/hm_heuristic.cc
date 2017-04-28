@@ -2,8 +2,8 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -16,8 +16,8 @@ namespace hm_heuristic {
 HMHeuristic::HMHeuristic(const Options &opts)
     : Heuristic(opts),
       m(opts.get<int>("m")),
-      has_cond_effects(has_conditional_effects(task_proxy)),
-      goals(get_fact_pairs(task_proxy.get_goals())) {
+      has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
+      goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
     cout << "Using h^" << m << "." << endl;
     cout << "The implementation of the h^m heuristic is preliminary." << endl
          << "It is SLOOOOOOOOOOOW." << endl
@@ -27,16 +27,16 @@ HMHeuristic::HMHeuristic(const Options &opts)
 
 
 bool HMHeuristic::dead_ends_are_reliable() const {
-    return !has_axioms(task_proxy) && !has_cond_effects;
+    return !task_properties::has_axioms(task_proxy) && !has_cond_effects;
 }
 
 
 int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
-    if (is_goal_state(task_proxy, state)) {
+    if (task_properties::is_goal_state(task_proxy, state)) {
         return 0;
     } else {
-        Tuple s_tup = get_fact_pairs(state);
+        Tuple s_tup = task_properties::get_fact_pairs(state);
 
         init_hm_table(s_tup);
         update_hm_table();
@@ -178,7 +178,7 @@ int HMHeuristic::check_tuple_in_tuple(
 
 
 HMHeuristic::Tuple HMHeuristic::get_operator_pre(const OperatorProxy &op) const {
-    Tuple preconditions = get_fact_pairs(op.get_preconditions());
+    Tuple preconditions = task_properties::get_fact_pairs(op.get_preconditions());
     sort(preconditions.begin(), preconditions.end());
     return preconditions;
 }
