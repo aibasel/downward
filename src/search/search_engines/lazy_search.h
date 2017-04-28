@@ -5,6 +5,7 @@
 #include "../evaluator.h"
 #include "../global_state.h"
 #include "../open_list.h"
+#include "../operator_id.h"
 #include "../search_engine.h"
 #include "../search_progress.h"
 #include "../search_space.h"
@@ -36,7 +37,7 @@ protected:
 
     GlobalState current_state;
     StateID current_predecessor_id;
-    const GlobalOperator *current_operator;
+    OperatorID current_operator_id;
     int current_g;
     int current_real_g;
     EvaluationContext current_eval_context;
