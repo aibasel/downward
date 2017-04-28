@@ -11,6 +11,7 @@ class Distances;
 class FactoredTransitionSystem;
 class MergeAndShrinkRepresentation;
 class Labels;
+class ShrinkStrategy;
 class TransitionSystem;
 
 class FTSConstIterator {
@@ -83,11 +84,28 @@ public:
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity);
+
+    /*
+      This method checks if the transition system specified via index violates
+      the size limit given via new_size (e.g. as computed by compute_shrink_sizes)
+      or the threshold shrink_threshold_before_merge that triggers shrinking even
+      if the size limit is not violated. If so, the given shrink strategy
+      shrink_strategy is used to reduce the size of the transition system to at
+      most new_size. Return true iff the transition was modified (i.e. shrunk).
+    */
+    bool shrink(
+        int index,
+        int new_size,
+        int shrink_threshold_before_merge,
+        const ShrinkStrategy &shrink_strategy,
+        Verbosity verbosity);
+
     int merge(
         int index1,
         int index2,
         Verbosity verbosity,
         bool finalize_if_unsolvable);
+
     /*
       This method may only be called either when there is only one entry left
       in the FTS or when the FTS is unsolvable.

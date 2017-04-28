@@ -52,34 +52,6 @@ pair<int, int> compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-bool shrink_transition_system(
-    FactoredTransitionSystem &fts,
-    int index,
-    int new_size,
-    int shrink_threshold_before_merge,
-    const ShrinkStrategy &shrink_strategy,
-    Verbosity verbosity) {
-    const TransitionSystem &ts = fts.get_ts(index);
-    assert(ts.is_solvable());
-    int num_states = ts.get_size();
-    if (num_states > min(new_size, shrink_threshold_before_merge)) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << ts.tag() << "current size: " << num_states;
-            if (new_size < num_states)
-                cout << " (new size limit: " << new_size;
-            else
-                cout << " (shrink threshold: " << shrink_threshold_before_merge;
-            cout << ")" << endl;
-        }
-        StateEquivalenceRelation equivalence_relation =
-            shrink_strategy.shrink(fts, index, new_size);
-        // TODO: We currently violate this; see issue250
-        //assert(equivalence_relation.size() <= new_size);
-        return fts.apply_abstraction(index, equivalence_relation, verbosity);
-    }
-    return false;
-}
-
 bool is_goal_relevant(const TransitionSystem &ts) {
     int num_states = ts.get_size();
     for (int state = 0; state < num_states; ++state) {
