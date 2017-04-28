@@ -41,7 +41,8 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       dead_ends_reliable(
           admissible ||
           (!task_properties::has_axioms(task_proxy) &&
-           (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))) {
+           (!task_properties::has_conditional_effects(task_proxy) ||
+            conditional_effects_supported))) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
@@ -55,16 +56,21 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         } else if (task_properties::has_axioms(task_proxy)) {
             cerr << "cost partitioning does not support axioms" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
-        } else if (task_properties::has_conditional_effects(task_proxy) && !conditional_effects_supported) {
+        } else if (task_properties::has_conditional_effects(task_proxy) &&
+                   !conditional_effects_supported) {
             cerr << "conditional effects not supported by the landmark generation method" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
-            lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
-                task_properties::get_operator_costs(task_proxy), *lgraph, static_cast<lp::LPSolverType>(opts.get_enum("lpsolver")));
+            lm_cost_assignment = utils::make_unique_ptr
+                <LandmarkEfficientOptimalSharedCostAssignment>(
+                task_properties::get_operator_costs(task_proxy), *lgraph,
+                static_cast<lp::LPSolverType>(opts.get_enum("lpsolver")));
         } else {
-            lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
-                task_properties::get_operator_costs(task_proxy), *lgraph, opts.get<bool>("alm"));
+            lm_cost_assignment = utils::make_unique_ptr
+                <LandmarkUniformSharedCostAssignment>(
+                    task_properties::get_operator_costs(task_proxy),
+                    *lgraph, opts.get<bool>("alm"));
         }
     } else {
         lm_cost_assignment = nullptr;

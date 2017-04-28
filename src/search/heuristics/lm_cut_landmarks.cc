@@ -1,5 +1,7 @@
 #include "lm_cut_landmarks.h"
 
+#include "../task_utils/task_properties.h"
+
 #include <algorithm>
 #include <limits>
 #include <utility>
