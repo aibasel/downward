@@ -58,12 +58,6 @@ static Heuristic *_parse(OptionParser &parser) {
     return ff_synergy;
 }
 
-
-// static PluginTypePlugin<FFSynergyHeuristic> _type_plugin(
-//     "FFSynergyHeuristic",
-//     // TODO: Replace empty string by synopsis for the wiki page.
-//     "");
-
 static Plugin<Heuristic> _plugin("ff_syn", _parse);
 
 }
