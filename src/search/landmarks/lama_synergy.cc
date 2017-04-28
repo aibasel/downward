@@ -1,6 +1,5 @@
 #include "lama_synergy.h"
 
-
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
 #include "../option_parser.h"
@@ -10,12 +9,9 @@
 
 #include "../utils/system.h"
 
-
 using namespace std;
 
 namespace landmarks {
-
-
 LamaSynergyHeuristic::LamaSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
       lama_heuristic(new LandmarkCountHeuristic(opts)) {
