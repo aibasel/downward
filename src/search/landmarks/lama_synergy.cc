@@ -99,11 +99,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return lama_synergy;
 }
 
-
-static PluginTypePlugin<LamaSynergyHeuristic> _type_plugin(
-    "Heuristic",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
-
 static Plugin<Heuristic> _plugin("lm_syn", _parse);
 }
