@@ -1,8 +1,8 @@
 #include "variable_order_finder.h"
 
-#include "causal_graph.h"
-#include "globals.h"
+#include "../globals.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -15,6 +15,7 @@ using namespace std;
 using utils::ExitCode;
 
 
+namespace variable_order_finder {
 VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
                                          VariableOrderType variable_order_type)
     : task_proxy(task_proxy),
@@ -42,7 +43,7 @@ void VariableOrderFinder::select_next(int position, int var_no) {
     assert(remaining_vars[position] == var_no);
     remaining_vars.erase(remaining_vars.begin() + position);
     selected_vars.push_back(var_no);
-    const CausalGraph &cg = task_proxy.get_causal_graph();
+    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
     const vector<int> &new_vars = cg.get_eff_to_pre(var_no);
     for (int new_var : new_vars)
         is_causal_predecessor[new_var] = true;
@@ -125,4 +126,5 @@ void dump_variable_order_type(VariableOrderType variable_order_type) {
         ABORT("Unknown variable order type.");
     }
     cout << endl;
+}
 }

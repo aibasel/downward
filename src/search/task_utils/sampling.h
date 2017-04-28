@@ -1,5 +1,5 @@
-#ifndef SAMPLING_H
-#define SAMPLING_H
+#ifndef TASK_UTILS_SAMPLING_H
+#define TASK_UTILS_SAMPLING_H
 
 #include <exception>
 #include <functional>
@@ -7,8 +7,11 @@
 #include <vector>
 
 class State;
-class SuccessorGenerator;
 class TaskProxy;
+
+namespace successor_generator {
+class SuccessorGenerator;
+}
 
 namespace utils {
 class CountdownTimer;
@@ -16,6 +19,7 @@ class RandomNumberGenerator;
 }
 
 
+namespace sampling {
 struct SamplingTimeout : public std::exception {};
 
 /*
@@ -29,7 +33,7 @@ struct SamplingTimeout : public std::exception {};
 */
 std::vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
-    const SuccessorGenerator &successor_generator,
+    const successor_generator::SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,
@@ -38,5 +42,6 @@ std::vector<State> sample_states_with_random_walks(
                                                  return false;
                                              },
     const utils::CountdownTimer *timer = nullptr);
+}
 
 #endif

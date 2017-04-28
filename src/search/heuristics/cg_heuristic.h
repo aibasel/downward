@@ -8,17 +8,20 @@
 #include <string>
 #include <vector>
 
+namespace domain_transition_graph {
 class DomainTransitionGraph;
+struct ValueNode;
+}
+
 class GlobalState;
 class State;
-struct ValueNode;
 
 namespace cg_heuristic {
 class CGCache;
 
 class CGHeuristic : public Heuristic {
-    std::vector<priority_queues::AdaptiveQueue<ValueNode *> *> prio_queues;
-    std::vector<DomainTransitionGraph *> transition_graphs;
+    std::vector<priority_queues::AdaptiveQueue<domain_transition_graph::ValueNode *> *> prio_queues;
+    std::vector<domain_transition_graph::DomainTransitionGraph *> transition_graphs;
 
     CGCache *cache;
     int cache_hits;
@@ -29,8 +32,15 @@ class CGHeuristic : public Heuristic {
     int min_action_cost;
 
     void setup_domain_transition_graphs();
-    int get_transition_cost(const State &state, DomainTransitionGraph *dtg, int start_val, int goal_val);
-    void mark_helpful_transitions(const State &state, DomainTransitionGraph *dtg, int to);
+    int get_transition_cost(
+        const State &state,
+        domain_transition_graph::DomainTransitionGraph *dtg,
+        int start_val,
+        int goal_val);
+    void mark_helpful_transitions(
+        const State &state,
+        domain_transition_graph::DomainTransitionGraph *dtg,
+        int to);
 protected:
     virtual int compute_heuristic(const GlobalState &state);
 public:

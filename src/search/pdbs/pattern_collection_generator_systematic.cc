@@ -2,11 +2,11 @@
 
 #include "validation.h"
 
-#include "../causal_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../utils/markup.h"
 
 #include <algorithm>
@@ -51,7 +51,7 @@ PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
 }
 
 void PatternCollectionGeneratorSystematic::compute_eff_pre_neighbors(
-    const CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
+    const causal_graph::CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
     /*
       Compute all variables that are reachable from pattern by an
       (eff, pre) arc and are not already contained in the pattern.
@@ -73,7 +73,7 @@ void PatternCollectionGeneratorSystematic::compute_eff_pre_neighbors(
 }
 
 void PatternCollectionGeneratorSystematic::compute_connection_points(
-    const CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
+    const causal_graph::CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
     /*
       The "connection points" of a pattern are those variables of which
       one must be contained in an SGA pattern that can be attached to this
@@ -119,7 +119,7 @@ void PatternCollectionGeneratorSystematic::enqueue_pattern_if_new(
 }
 
 void PatternCollectionGeneratorSystematic::build_sga_patterns(
-    const TaskProxy &task_proxy, const CausalGraph &cg) {
+    const TaskProxy &task_proxy, const causal_graph::CausalGraph &cg) {
     assert(max_pattern_size >= 1);
     assert(pattern_set.empty());
     assert(patterns && patterns->empty());
@@ -174,7 +174,7 @@ void PatternCollectionGeneratorSystematic::build_sga_patterns(
 void PatternCollectionGeneratorSystematic::build_patterns(
     const TaskProxy &task_proxy) {
     int num_variables = task_proxy.get_variables().size();
-    const CausalGraph &cg = task_proxy.get_causal_graph();
+    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
 
     // Generate SGA (single-goal-ancestor) patterns.
     // They are generated into the patterns variable,

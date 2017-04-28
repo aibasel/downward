@@ -1,6 +1,6 @@
 #include "task_proxy.h"
 
-#include "causal_graph.h"
+#include "task_utils/causal_graph.h"
 
 #include <iostream>
 
@@ -22,6 +22,6 @@ void State::dump_fdr() const {
     }
 }
 
-const CausalGraph &TaskProxy::get_causal_graph() const {
-    return ::get_causal_graph(task);
+const causal_graph::CausalGraph &TaskProxy::get_causal_graph() const {
+    return causal_graph::get_causal_graph(task);
 }
