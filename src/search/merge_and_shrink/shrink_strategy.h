@@ -19,14 +19,18 @@ public:
     virtual ~ShrinkStrategy() = default;
 
     /*
-      Shrink the given transition system so that its size is at most
-      target_size (currently violated; see issue250). dist must be the
-      distances information associated with the transition system.
+      Compute a state equivalence relation over the states of the given
+      transition system such that its new number of states after abstracting
+      it according to this equivalence relation is at most target_size
+      (currently violated; see issue250). dist must be the distances
+      information associated with the given transition system.
 
       Note that if target_size equals the current size of the transition system,
-      the shrink strategy is not required to actually shrink the size of the
-      transition system. However, it may attempt to e.g. shrink the transition
-      system in an information preserving way.
+      the shrink strategy is not required to compute an equivalence relation
+      that results in actually shrinking the size of the transition system.
+      However, it may attempt to e.g. compute an equivalence relation that
+      results in shrinking the transition system in an information preserving
+      way.
     */
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,

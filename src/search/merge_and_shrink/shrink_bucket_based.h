@@ -37,20 +37,18 @@ namespace merge_and_shrink {
 */
 class ShrinkBucketBased : public ShrinkStrategy {
 protected:
-    typedef std::vector<int> Bucket;
+    using Bucket = std::vector<int>;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 private:
-    void compute_abstraction(
+    StateEquivalenceRelation compute_abstraction(
         const std::vector<Bucket> &buckets,
-        int target_size,
-        StateEquivalenceRelation &equivalence_relation) const;
+        int target_size) const;
 
 protected:
-    virtual void partition_into_buckets(
+    virtual std::vector<Bucket> partition_into_buckets(
         const TransitionSystem &ts,
-        const Distances &Distances,
-        std::vector<Bucket> &buckets) const = 0;
+        const Distances &Distances) const = 0;
 public:
     explicit ShrinkBucketBased(const options::Options &opts);
     virtual ~ShrinkBucketBased() override = default;

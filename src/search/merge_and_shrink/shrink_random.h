@@ -10,10 +10,9 @@ class Options;
 namespace merge_and_shrink {
 class ShrinkRandom : public ShrinkBucketBased {
 protected:
-    virtual void partition_into_buckets(
+    virtual std::vector<Bucket> partition_into_buckets(
         const TransitionSystem &ts,
-        const Distances &distances,
-        std::vector<Bucket> &buckets) const override;
+        const Distances &distances) const override;
 
     virtual std::string name() const override;
     void dump_strategy_specific_options() const override {}
