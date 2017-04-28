@@ -52,7 +52,8 @@ void LamaSynergyHeuristic::notify_initial_state(const GlobalState &initial_state
 }
 
 bool LamaSynergyHeuristic::notify_state_transition(
-        const GlobalState &parent_state, const GlobalOperator &op,
+        const GlobalState &parent_state,
+        const GlobalOperator &op,
         const GlobalState &state){
     if (lama_heuristic->notify_state_transition(parent_state, op, state)) {
         if (cache_h_values) {
