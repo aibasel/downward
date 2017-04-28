@@ -82,7 +82,7 @@ void PatternCollectionGeneratorSystematic::compute_connection_points(
 
       A variable is a connection point if it satisfies the following criteria:
       1. We can get from the pattern to the connection point via
-         an (pre, eff) or (eff, eff) arc in the causal graph.
+         a (pre, eff) or (eff, eff) arc in the causal graph.
       2. It is not part of pattern.
       3. We *cannot* get from the pattern to the connection point
          via an (eff, pre) arc.

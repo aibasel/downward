@@ -66,7 +66,7 @@ public:
 */
 extern void print_initial_h_values(const EvaluationContext &eval_context);
 
-extern ordered_set::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
     const std::vector<Heuristic *> &preferred_operator_heuristics);
 
