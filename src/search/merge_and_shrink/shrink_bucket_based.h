@@ -48,16 +48,16 @@ private:
 
 protected:
     virtual void partition_into_buckets(
-        const FactoredTransitionSystem &fts,
-        int index,
+        const TransitionSystem &ts,
+        const Distances &Distances,
         std::vector<Bucket> &buckets) const = 0;
 public:
     explicit ShrinkBucketBased(const options::Options &opts);
     virtual ~ShrinkBucketBased() override = default;
     virtual StateEquivalenceRelation shrink(
-        const FactoredTransitionSystem &fts,
-        int index,
-        int target) const override;
+        const TransitionSystem &ts,
+        const Distances &distances,
+        int target_size) const override;
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

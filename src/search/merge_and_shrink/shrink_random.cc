@@ -17,10 +17,9 @@ ShrinkRandom::ShrinkRandom(const Options &opts)
 }
 
 void ShrinkRandom::partition_into_buckets(
-    const FactoredTransitionSystem &fts,
-    int index,
+    const TransitionSystem &ts,
+    const Distances &,
     vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts.get_ts(index);
     assert(buckets.empty());
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();

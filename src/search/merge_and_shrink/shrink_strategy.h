@@ -7,7 +7,8 @@
 #include <vector>
 
 namespace merge_and_shrink {
-class FactoredTransitionSystem;
+class Distances;
+class TransitionSystem;
 
 class ShrinkStrategy {
 protected:
@@ -18,18 +19,19 @@ public:
     virtual ~ShrinkStrategy() = default;
 
     /*
-      Shrink the given transition system (index in fts) so that its size is
-      at most target (currently violated; see issue250).
+      Shrink the given transition system so that its size is at most
+      target_size (currently violated; see issue250). dist must be the
+      distances information associated with the transition system.
 
-      Note that if target equals the current size of the transition system,
+      Note that if target_size equals the current size of the transition system,
       the shrink strategy is not required to actually shrink the size of the
       transition system. However, it may attempt to e.g. shrink the transition
       system in an information preserving way.
     */
     virtual StateEquivalenceRelation shrink(
-        const FactoredTransitionSystem &fts,
-        int index,
-        int target) const = 0;
+        const TransitionSystem &ts,
+        const Distances &distances,
+        int target_size) const = 0;
 
     void dump_options() const;
     std::string get_name() const;

@@ -187,8 +187,9 @@ bool FactoredTransitionSystem::shrink(
                 cout << " (shrink threshold: " << shrink_threshold_before_merge;
             cout << ")" << endl;
         }
+        const Distances &dist = *distances[index];
         StateEquivalenceRelation equivalence_relation =
-            shrink_strategy.shrink(*this, index, new_size);
+            shrink_strategy.shrink(ts, dist, new_size);
         // TODO: We currently violate this; see issue250
         //assert(equivalence_relation.size() <= new_size);
         return apply_abstraction(index, equivalence_relation, verbosity);
