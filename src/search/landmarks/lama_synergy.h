@@ -20,9 +20,8 @@ class LamaSynergyHeuristic : public Heuristic {
     std::unique_ptr<FFSynergyHeuristic> ff_synergy_heuristic;
     std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
 
-
-    EvaluationResult lama_result;
     EvaluationResult ff_result;
+    EvaluationResult lama_result;
 
     void compute_heuristics(EvaluationContext &eval_context);
 
