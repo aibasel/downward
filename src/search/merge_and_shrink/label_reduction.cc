@@ -62,7 +62,7 @@ void LabelReduction::compute_label_mapping(
     const equivalence_relation::EquivalenceRelation *relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
-    Verbosity verbosity) {
+    Verbosity verbosity) const {
     const Labels &labels = fts.get_labels();
     int next_new_label_no = labels.get_size();
     int num_labels = 0;
@@ -103,7 +103,8 @@ void LabelReduction::compute_label_mapping(
     }
 }
 
-equivalence_relation::EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
+equivalence_relation::EquivalenceRelation
+    *LabelReduction::compute_combinable_equivalence_relation(
     int ts_index,
     const FactoredTransitionSystem &fts) const {
     /*
@@ -140,9 +141,9 @@ equivalence_relation::EquivalenceRelation *LabelReduction::compute_combinable_eq
 }
 
 bool LabelReduction::reduce(
-    pair<int, int> next_merge,
+    const pair<int, int> &next_merge,
     FactoredTransitionSystem &fts,
-    Verbosity verbosity) {
+    Verbosity verbosity) const {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = fts.get_size();
@@ -159,9 +160,8 @@ bool LabelReduction::reduce(
         assert(fts.is_active(next_merge.second));
 
         bool reduced = false;
-        equivalence_relation::EquivalenceRelation *relation = compute_combinable_equivalence_relation(
-            next_merge.first,
-            fts);
+        equivalence_relation::EquivalenceRelation *relation =
+            compute_combinable_equivalence_relation(next_merge.first, fts);
         vector<pair<int, vector<int>>> label_mapping;
         compute_label_mapping(relation, fts, label_mapping, verbosity);
         if (!label_mapping.empty()) {
@@ -213,8 +213,7 @@ bool LabelReduction::reduce(
         vector<pair<int, vector<int>>> label_mapping;
         if (fts.is_active(ts_index)) {
             equivalence_relation::EquivalenceRelation *relation =
-                compute_combinable_equivalence_relation(ts_index,
-                                                        fts);
+                compute_combinable_equivalence_relation(ts_index, fts);
             compute_label_mapping(relation, fts, label_mapping, verbosity);
             delete relation;
         }

@@ -173,7 +173,7 @@ bool FactoredTransitionSystem::apply_label_reduction(
     const LabelReduction &label_reduction,
     const pair<int, int> &merge_indices,
     Verbosity verbosity) {
-    label_reduction.reduce(merge_indices, *this, verbosity);
+    return label_reduction.reduce(merge_indices, *this, verbosity);
 }
 
 bool FactoredTransitionSystem::shrink(

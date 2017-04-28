@@ -249,7 +249,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             // Label reduction (before merging)
             if (label_reduction && label_reduction->reduce_before_merging()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, fts, verbosity);
+                    fts.apply_label_reduction(*label_reduction, merge_indices, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
