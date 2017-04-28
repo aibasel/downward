@@ -3,6 +3,7 @@
 #include "distances.h"
 #include "labels.h"
 #include "merge_and_shrink_representation.h"
+#include "shrink_strategy.h"
 #include "transition_system.h"
 
 #include "../utils/memory.h"
@@ -165,6 +166,34 @@ bool FactoredTransitionSystem::apply_abstraction(
     }
     assert(is_component_valid(index));
     return shrunk;
+}
+
+
+bool FactoredTransitionSystem::shrink(
+    int index,
+    int new_size,
+    int shrink_threshold_before_merge,
+    const ShrinkStrategy &shrink_strategy,
+    Verbosity verbosity) {
+    const TransitionSystem &ts = *transition_systems[index];
+    assert(ts.is_solvable());
+    int num_states = ts.get_size();
+    if (num_states > min(new_size, shrink_threshold_before_merge)) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << ts.tag() << "current size: " << num_states;
+            if (new_size < num_states)
+                cout << " (new size limit: " << new_size;
+            else
+                cout << " (shrink threshold: " << shrink_threshold_before_merge;
+            cout << ")" << endl;
+        }
+        StateEquivalenceRelation equivalence_relation =
+            shrink_strategy.shrink(*this, index, new_size);
+        // TODO: We currently violate this; see issue250
+        //assert(equivalence_relation.size() <= new_size);
+        return apply_abstraction(index, equivalence_relation, verbosity);
+    }
+    return false;
 }
 
 int FactoredTransitionSystem::merge(

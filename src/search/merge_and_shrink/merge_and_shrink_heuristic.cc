@@ -176,8 +176,7 @@ bool MergeAndShrinkHeuristic::shrink_before_merge(
       for the second shrinking if the first shrinking was larger than
       required.
     */
-    bool shrunk1 = shrink_transition_system(
-        fts,
+    bool shrunk1 = fts.shrink(
         index1,
         new_sizes.first,
         shrink_threshold_before_merge,
@@ -186,8 +185,7 @@ bool MergeAndShrinkHeuristic::shrink_before_merge(
     if (verbosity >= Verbosity::VERBOSE && shrunk1) {
         fts.statistics(index2);
     }
-    bool shrunk2 = shrink_transition_system(
-        fts,
+    bool shrunk2 = fts.shrink(
         index2,
         new_sizes.second,
         shrink_threshold_before_merge,
