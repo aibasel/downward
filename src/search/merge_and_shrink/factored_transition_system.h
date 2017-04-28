@@ -88,7 +88,7 @@ public:
       compute label reductions in LabelReduction, it is not easily possible
       to avoid having a method to update the FTS in each iteration.
 
-      One solution could be to make the method privae and declare
+      One solution could be to make the method privat and declare
       LabelReduction a friend class, or to use a callback function.
     */
     void apply_label_mapping(
