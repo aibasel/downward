@@ -70,9 +70,9 @@ class LabelReduction {
         std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         Verbosity verbosity) const;
     equivalence_relation::EquivalenceRelation
-        *compute_combinable_equivalence_relation(
-            int ts_index,
-            const FactoredTransitionSystem &fts) const;
+    *compute_combinable_equivalence_relation(
+        int ts_index,
+        const FactoredTransitionSystem &fts) const;
 public:
     explicit LabelReduction(const options::Options &options);
     void initialize(const TaskProxy &task_proxy);
