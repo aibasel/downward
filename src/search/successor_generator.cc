@@ -104,12 +104,12 @@ public:
 };
 
 class GeneratorSwitchVector : public GeneratorBase {
-    VariableProxy switch_var;
+    int switch_var_id;
     vector<GeneratorBase *> generator_for_value;
 public:
     ~GeneratorSwitchVector();
-    GeneratorSwitchVector(const VariableProxy &switch_var,
-                    const vector<GeneratorBase *> &&generator_for_value);
+    GeneratorSwitchVector(
+        int switch_var_id, const vector<GeneratorBase *> &&generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -118,12 +118,12 @@ public:
 };
 
 class GeneratorSwitchHash : public GeneratorBase {
-    VariableProxy switch_var;
+    int switch_var_id;
     unordered_map<int, GeneratorBase *> generator_for_value;
 public:
     ~GeneratorSwitchHash();
-    GeneratorSwitchHash(const VariableProxy &switch_var,
-                        const vector<GeneratorBase *> &generator_for_value);
+    GeneratorSwitchHash(
+        int switch_var_id, const vector<GeneratorBase *> &generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -132,13 +132,13 @@ public:
 };
 
 class GeneratorSwitchSingle : public GeneratorBase {
-    VariableProxy switch_var;
+    int switch_var_id;
     int value;
     GeneratorBase *generator_for_value;
 public:
     ~GeneratorSwitchSingle();
-    GeneratorSwitchSingle(const VariableProxy &switch_var, int value,
-                          GeneratorBase *generator_for_value);
+    GeneratorSwitchSingle(
+        int switch_var_id, int value, GeneratorBase *generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -229,8 +229,8 @@ void GeneratorFork::generate_applicable_ops(
 }
 
 GeneratorSwitchVector::GeneratorSwitchVector(
-    const VariableProxy &switch_var, const vector<GeneratorBase *> &&generator_for_value)
-    : switch_var(switch_var),
+    int switch_var_id, const vector<GeneratorBase *> &&generator_for_value)
+    : switch_var_id(switch_var_id),
       generator_for_value(move(generator_for_value)) {
 }
 
@@ -241,7 +241,7 @@ GeneratorSwitchVector::~GeneratorSwitchVector() {
 
 void GeneratorSwitchVector::generate_applicable_ops(
     const State &state, vector<OperatorID> &applicable_ops) const {
-    int val = state[switch_var].get_value();
+    int val = state[switch_var_id].get_value();
     GeneratorBase *generator_for_val = generator_for_value[val];
     if (generator_for_val) {
         generator_for_val->generate_applicable_ops(state, applicable_ops);
@@ -250,7 +250,7 @@ void GeneratorSwitchVector::generate_applicable_ops(
 
 void GeneratorSwitchVector::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
-    int val = state[switch_var.get_id()];
+    int val = state[switch_var_id];
     GeneratorBase *generator_for_val = generator_for_value[val];
     if (generator_for_val) {
         generator_for_val->generate_applicable_ops(state, applicable_ops);
@@ -258,12 +258,14 @@ void GeneratorSwitchVector::generate_applicable_ops(
 }
 
 GeneratorSwitchHash::GeneratorSwitchHash(
-    const VariableProxy &switch_var, const vector<GeneratorBase *> &generators)
-    : switch_var(switch_var) {
-    for (int val = 0; val < switch_var.get_domain_size(); ++val) {
-        if (generators[val]) {
-            generator_for_value[val] = generators[val];
+    int switch_var_id, const vector<GeneratorBase *> &generators)
+    : switch_var_id(switch_var_id) {
+    int val = 0;
+    for (GeneratorBase *generator : generators) {
+        if (generator) {
+            generator_for_value[val] = generator;
         }
+        ++val;
     }
 }
 
@@ -274,7 +276,7 @@ GeneratorSwitchHash::~GeneratorSwitchHash() {
 
 void GeneratorSwitchHash::generate_applicable_ops(
     const State &state, vector<OperatorID> &applicable_ops) const {
-    int val = state[switch_var].get_value();
+    int val = state[switch_var_id].get_value();
     const auto &child = generator_for_value.find(val);
     if (child != generator_for_value.end()) {
         GeneratorBase *generator_for_val = child->second;
@@ -284,7 +286,7 @@ void GeneratorSwitchHash::generate_applicable_ops(
 
 void GeneratorSwitchHash::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
-    int val = state[switch_var.get_id()];
+    int val = state[switch_var_id];
     const auto &child = generator_for_value.find(val);
     if (child != generator_for_value.end()) {
         GeneratorBase *generator_for_val = child->second;
@@ -292,9 +294,9 @@ void GeneratorSwitchHash::generate_applicable_ops(
     }
 }
 
-GeneratorSwitchSingle::GeneratorSwitchSingle(const VariableProxy &switch_var, int value,
+GeneratorSwitchSingle::GeneratorSwitchSingle(int switch_var_id, int value,
                                              GeneratorBase *generator_for_value)
-    : switch_var(switch_var),
+    : switch_var_id(switch_var_id),
       value(value),
       generator_for_value(generator_for_value) {
 }
@@ -305,14 +307,14 @@ GeneratorSwitchSingle::~GeneratorSwitchSingle() {
 
 void GeneratorSwitchSingle::generate_applicable_ops(
     const State &state, vector<OperatorID> &applicable_ops) const {
-    if (value == state[switch_var].get_value()) {
+    if (value == state[switch_var_id].get_value()) {
         generator_for_value->generate_applicable_ops(state, applicable_ops);
     }
 }
 
 void GeneratorSwitchSingle::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
-    if (value == state[switch_var.get_id()]) {
+    if (value == state[switch_var_id]) {
         generator_for_value->generate_applicable_ops(state, applicable_ops);
     }
 }
@@ -474,16 +476,16 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
                 for (int value = 0; value < num_values; ++value) {
                     if (generator_for_val[value]) {
                         switch_generator = new GeneratorSwitchSingle(
-                            switch_var, value, generator_for_val[value]);
+                            switch_var.get_id(), value, generator_for_val[value]);
                         break;
                     }
                 }
             } else if (estimated_switch_hash_size < estimated_switch_vector_size) {
                 switch_generator = new GeneratorSwitchHash(
-                    switch_var, generator_for_val);
+                    switch_var.get_id(), generator_for_val);
             } else {
                 switch_generator = new GeneratorSwitchVector(
-                    switch_var, move(generator_for_val));
+                    switch_var.get_id(), move(generator_for_val));
             }
             assert(switch_generator);
 
