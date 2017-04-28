@@ -291,7 +291,8 @@ void EagerSearch::reward_progress() {
 }
 
 void EagerSearch::dump_search_space() const {
-    search_space.dump();
+    TaskProxy task_proxy(*g_root_task());
+    search_space.dump(task_proxy);
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {

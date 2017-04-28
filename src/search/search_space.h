@@ -10,6 +10,7 @@
 
 class GlobalOperator;
 class GlobalState;
+class TaskProxy;
 
 
 class SearchNode {
@@ -46,7 +47,7 @@ public:
     void close();
     void mark_as_dead_end();
 
-    void dump() const;
+    void dump(const TaskProxy &task_proxy) const;
 };
 
 
@@ -62,7 +63,7 @@ public:
     void trace_path(const GlobalState &goal_state,
                     std::vector<const GlobalOperator *> &path) const;
 
-    void dump() const;
+    void dump(const TaskProxy &task_proxy) const;
     void print_statistics() const;
 };
 
