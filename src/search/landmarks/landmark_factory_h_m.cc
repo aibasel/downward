@@ -3,8 +3,8 @@
 #include "../abstract_task.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/system.h"
 
@@ -299,7 +299,7 @@ void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const
 }
 
 static FluentSet get_operator_precondition(const OperatorProxy &op) {
-    FluentSet preconditions = get_fact_pairs(op.get_preconditions());
+    FluentSet preconditions = task_properties::get_fact_pairs(op.get_preconditions());
     sort(preconditions.begin(), preconditions.end());
     return preconditions;
 }
@@ -905,7 +905,7 @@ void LandmarkFactoryHM::generate_landmarks(
     compute_h_m_landmarks(task_proxy);
     // now construct landmarks graph
     vector<FluentSet> goal_subsets;
-    FluentSet goals = get_fact_pairs(task_proxy.get_goals());
+    FluentSet goals = task_properties::get_fact_pairs(task_proxy.get_goals());
     VariablesProxy variables = task_proxy.get_variables();
     get_m_sets(variables, m_, goal_subsets, goals);
     list<int> all_lms;

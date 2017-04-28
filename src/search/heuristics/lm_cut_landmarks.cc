@@ -1,5 +1,7 @@
 #include "lm_cut_landmarks.h"
 
+#include "../task_utils/task_properties.h"
+
 #include <algorithm>
 #include <limits>
 #include <utility>
@@ -9,8 +11,8 @@ using namespace std;
 namespace lm_cut_heuristic {
 // construction and destruction
 LandmarkCutLandmarks::LandmarkCutLandmarks(const TaskProxy &task_proxy) {
-    verify_no_axioms(task_proxy);
-    verify_no_conditional_effects(task_proxy);
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
 
     // Build propositions.
     num_propositions = 2; // artificial goal and artificial precondition

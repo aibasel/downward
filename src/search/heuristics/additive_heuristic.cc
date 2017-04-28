@@ -3,7 +3,8 @@
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
+
+#include "../task_utils/task_properties.h"
 
 #include <cassert>
 #include <vector>
@@ -106,7 +107,7 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
                 OperatorProxy op = task_proxy.get_operators()[operator_no];
-                if (is_applicable(op, state))
+                if (task_properties::is_applicable(op, state))
                     set_preferred(op);
             }
         }
