@@ -14,13 +14,26 @@
 
 using namespace std;
 
-/* NOTE on possible optimizations:
+/* Notes on possible optimizations:
+   Allocators
+   * Using specialized allocators (e.g. an arena allocator) could improve
+     cache locality and reduce the memory management overhead. We could then
+     also use indices instead of pointers to reduce the overhead in 64-bit
+     builds.
 
-   * Using slist instead of list led to a further 10% speedup on the
-     largest Logistics instance, logistics-98/prob28.pddl. It would of
-     course also reduce memory usage. However, it would make the code
-     g++-specific, so it's probably not worth it.
+   Switch nodes
+   * For small numbers of entries (2-3) it could be worth it
+     to store a list/vector of (value, generator) tuples and do a linear scan
+     instead of using a hash map.
 
+   Immediate and leaf nodes
+   * Using forward_list instead of list led to a further 10% speedup on the
+     largest Logistics instance, logistics-98/prob28.pddl, when we tested this
+     (way back when). It would of course also reduce memory usage.
+   * We could also experiment with other types (e.g. vector) to see if they
+     perform better.
+   * Analogously to GeneratorSwitchSingle and GeneratorLeafSingle, we could
+     add GeneratorImmediateSingle.
 */
 
 bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
