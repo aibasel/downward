@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <unordered_map>
 
 using namespace std;
@@ -43,7 +44,7 @@ bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
 template<typename T>
 int estimate_vector_size(int num_elements) {
     int size = 0;
-    size += 2 * sizeof(void*);        // overhead for dynamic memory management
+    size += 2 * sizeof(void *);       // overhead for dynamic memory management
     size += sizeof(vector<T>);        // size of empty vector
     size += num_elements * sizeof(T); // size of actual entries
     return size;
@@ -64,19 +65,18 @@ int estimate_unordered_map_size(int num_entries) {
     } else if (num_entries < 97) {
         num_buckets = 97;
     } else {
-        int n = log2((num_entries+1) / 3);
+        int n = log2((num_entries + 1) / 3);
         num_buckets = 3 * pow(2, n + 1) - 1;
     }
 
     int size = 0;
-    size += 2 * sizeof(void*);                        // overhead for dynamic memory management
+    size += 2 * sizeof(void *);                       // overhead for dynamic memory management
     size += sizeof(unordered_map<Key, Value>);        // empty map
-    size += num_entries * sizeof(pair<Key, Value>);  // actual entries
-    size += num_entries * sizeof(pair<Key, Value>*); // pointer to values
-    size += num_entries * sizeof(void*);             // pointer to next node
-    size += num_buckets * sizeof(void*);              // pointer to next bucket
+    size += num_entries * sizeof(pair<Key, Value>);   // actual entries
+    size += num_entries * sizeof(pair<Key, Value> *); // pointer to values
+    size += num_entries * sizeof(void *);             // pointer to next node
+    size += num_buckets * sizeof(void *);             // pointer to next bucket
     return size;
-
 }
 
 class GeneratorBase {
@@ -122,7 +122,8 @@ class GeneratorSwitchVector : public GeneratorBase {
 public:
     ~GeneratorSwitchVector();
     GeneratorSwitchVector(
-        int switch_var_id, const vector<GeneratorBase *> &&generator_for_value);
+        int switch_var_id,
+        const vector<GeneratorBase *> &&generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -136,7 +137,8 @@ class GeneratorSwitchHash : public GeneratorBase {
 public:
     ~GeneratorSwitchHash();
     GeneratorSwitchHash(
-        int switch_var_id, const vector<GeneratorBase *> &generator_for_value);
+        int switch_var_id,
+        unordered_map<int, GeneratorBase *> &&generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -271,15 +273,9 @@ void GeneratorSwitchVector::generate_applicable_ops(
 }
 
 GeneratorSwitchHash::GeneratorSwitchHash(
-    int switch_var_id, const vector<GeneratorBase *> &generators)
-    : switch_var_id(switch_var_id) {
-    int val = 0;
-    for (GeneratorBase *generator : generators) {
-        if (generator) {
-            generator_for_value[val] = generator;
-        }
-        ++val;
-    }
+    int switch_var_id, unordered_map<int, GeneratorBase *> &&generator_for_value)
+    : switch_var_id(switch_var_id),
+      generator_for_value(move(generator_for_value)) {
 }
 
 GeneratorSwitchHash::~GeneratorSwitchHash() {
@@ -307,8 +303,8 @@ void GeneratorSwitchHash::generate_applicable_ops(
     }
 }
 
-GeneratorSwitchSingle::GeneratorSwitchSingle(int switch_var_id, int value,
-                                             GeneratorBase *generator_for_value)
+GeneratorSwitchSingle::GeneratorSwitchSingle(
+    int switch_var_id, int value, GeneratorBase *generator_for_value)
     : switch_var_id(switch_var_id),
       value(value),
       generator_for_value(generator_for_value) {
@@ -408,6 +404,80 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
 SuccessorGenerator::~SuccessorGenerator() {
 }
 
+GeneratorBase *SuccessorGenerator::construct_leaf(
+    list<OperatorID> &&operators) {
+    if (operators.size() == 1) {
+        return new GeneratorLeafSingle(operators.front());
+    } else {
+        return new GeneratorLeafList(move(operators));
+    }
+}
+
+GeneratorBase *SuccessorGenerator::construct_switch(
+    int switch_var_id,
+    vector<list<OperatorID>> &&operators_for_value) {
+    int num_values = operators_for_value.size();
+    vector<GeneratorBase *> generator_for_value;
+    generator_for_value.reserve(num_values);
+    int num_non_zero = 0;
+    for (list<OperatorID> &ops : operators_for_value) {
+        GeneratorBase *value_generator =
+            construct_recursive(switch_var_id + 1, move(ops));
+        if (value_generator) {
+            ++num_non_zero;
+        }
+        generator_for_value.push_back(value_generator);
+    }
+
+    if (num_non_zero == 1) {
+        for (int value = 0; value < num_values; ++value) {
+            if (generator_for_value[value]) {
+                return new GeneratorSwitchSingle(
+                    switch_var_id, value, generator_for_value[value]);
+            }
+        }
+        assert(false);
+    }
+    int vector_size = estimate_vector_size<GeneratorBase *>(num_values);
+    int hash_size = estimate_unordered_map_size<int, GeneratorBase *>(num_non_zero);
+    if (hash_size < vector_size) {
+        unordered_map<int, GeneratorBase *> map;
+        for (int value = 0; value < num_values; ++value) {
+            if (generator_for_value[value]) {
+                map[value] = generator_for_value[value];
+            }
+        }
+        return new GeneratorSwitchHash(switch_var_id, move(map));
+    } else {
+        return new GeneratorSwitchVector(switch_var_id, move(generator_for_value));
+    }
+}
+
+GeneratorBase *SuccessorGenerator::construct_branch(
+    int switch_var_id,
+    vector<list<OperatorID>> &&operators_for_value,
+    list<OperatorID> &&default_operators,
+    list<OperatorID> &&applicable_operators) {
+    GeneratorBase *switch_generator =
+        construct_switch(switch_var_id, move(operators_for_value));
+    assert(switch_generator);
+
+    GeneratorBase *non_immediate_generator = nullptr;
+    if (default_operators.empty()) {
+        non_immediate_generator = switch_generator;
+    } else {
+        GeneratorBase *default_generator = construct_recursive(
+            switch_var_id + 1, move(default_operators));
+        non_immediate_generator = new GeneratorFork(switch_generator, default_generator);
+    }
+
+    if (applicable_operators.empty()) {
+        return non_immediate_generator;
+    } else {
+        return new GeneratorImmediate(move(applicable_operators), non_immediate_generator);
+    }
+}
+
 GeneratorBase *SuccessorGenerator::construct_recursive(
     int switch_var_id, list<OperatorID> &&operator_queue) {
     if (operator_queue.empty())
@@ -419,11 +489,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
     while (true) {
         // Test if no further switch is necessary (or possible).
         if (switch_var_id == num_variables) {
-            if (operator_queue.size() == 1) {
-                return new GeneratorLeafSingle(operator_queue.front());
-            } else {
-                return new GeneratorLeafList(move(operator_queue));
-            }
+            return construct_leaf(move(operator_queue));
         }
 
         VariableProxy switch_var = variables[switch_var_id];
@@ -464,58 +530,13 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
         }
 
         if (all_ops_are_immediate) {
-            if (applicable_operators.size() == 1) {
-                return new GeneratorLeafSingle(applicable_operators.front());
-            } else {
-                return new GeneratorLeafList(move(applicable_operators));
-            }
+            return construct_leaf(move(applicable_operators));
         } else if (var_is_interesting) {
-            vector<GeneratorBase *> generator_for_val;
-            generator_for_val.reserve(operators_for_val.size());
-            int num_non_zero = 0;
-            for (list<OperatorID> &ops : operators_for_val) {
-                GeneratorBase *value_generator = construct_recursive(switch_var_id + 1, move(ops));
-                generator_for_val.push_back(value_generator);
-                if (value_generator) {
-                    ++num_non_zero;
-                }
-            }
-            int num_values = generator_for_val.size();
-            int estimated_switch_vector_size = estimate_vector_size<GeneratorBase *>(num_values);
-            int estimated_switch_hash_size = estimate_unordered_map_size<int, GeneratorBase *>(num_non_zero);
-
-            GeneratorBase *switch_generator = nullptr;
-            if (num_non_zero == 1) {
-                for (int value = 0; value < num_values; ++value) {
-                    if (generator_for_val[value]) {
-                        switch_generator = new GeneratorSwitchSingle(
-                            switch_var.get_id(), value, generator_for_val[value]);
-                        break;
-                    }
-                }
-            } else if (estimated_switch_hash_size < estimated_switch_vector_size) {
-                switch_generator = new GeneratorSwitchHash(
-                    switch_var.get_id(), generator_for_val);
-            } else {
-                switch_generator = new GeneratorSwitchVector(
-                    switch_var.get_id(), move(generator_for_val));
-            }
-            assert(switch_generator);
-
-            GeneratorBase *non_immediate_generator = nullptr;
-            if (default_operators.empty()) {
-                non_immediate_generator = switch_generator;
-            } else {
-                GeneratorBase *default_generator = construct_recursive(
-                    switch_var_id + 1, move(default_operators));
-                non_immediate_generator = new GeneratorFork(switch_generator, default_generator);
-            }
-
-            if (applicable_operators.empty()) {
-                return non_immediate_generator;
-            } else {
-                return new GeneratorImmediate(move(applicable_operators), non_immediate_generator);
-            }
+            return construct_branch(
+                switch_var_id,
+                move(operators_for_val),
+                move(default_operators),
+                move(applicable_operators));
         } else {
             // this switch var can be left out because no operator depends on it
             ++switch_var_id;

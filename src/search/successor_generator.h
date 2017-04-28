@@ -17,15 +17,23 @@ class GlobalState;
 */
 class SuccessorGenerator {
     TaskProxy task_proxy;
-
     std::unique_ptr<GeneratorBase> root;
 
     typedef std::vector<FactProxy> Condition;
-    GeneratorBase *construct_recursive(
-        int switch_var_id, std::list<OperatorID> &&operator_queue);
-
     std::vector<Condition> conditions;
     std::vector<Condition::const_iterator> next_condition_by_op;
+
+    GeneratorBase *construct_leaf(std::list<OperatorID> &&operators);
+    GeneratorBase *construct_switch(
+        int switch_var_id,
+        std::vector<std::list<OperatorID>> &&operators_for_value);
+    GeneratorBase *construct_branch(
+        int switch_var_id,
+        std::vector<std::list<OperatorID>> &&operators_for_value,
+        std::list<OperatorID> &&default_operators,
+        std::list<OperatorID> &&applicable_operators);
+    GeneratorBase *construct_recursive(
+        int switch_var_id, std::list<OperatorID> &&operator_queue);
 
     SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
