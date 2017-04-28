@@ -1,8 +1,9 @@
-#ifndef TASK_TOOLS_H
-#define TASK_TOOLS_H
+#ifndef TASK_UTILS_TASK_PROPERTIES_H
+#define TASK_UTILS_TASK_PROPERTIES_H
 
-#include "task_proxy.h"
+#include "../task_proxy.h"
 
+namespace task_properties {
 inline bool is_applicable(OperatorProxy op, const State &state) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (state[precondition.get_variable()] != precondition)
@@ -57,6 +58,7 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
         fact_pairs.push_back(fact.get_pair());
     }
     return fact_pairs;
+}
 }
 
 #endif

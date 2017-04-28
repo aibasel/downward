@@ -2,9 +2,8 @@
 
 #include "match_tree.h"
 
-#include "../task_tools.h"
-
 #include "../algorithms/priority_queues.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
@@ -73,8 +72,8 @@ PatternDatabase::PatternDatabase(
     bool dump,
     const vector<int> &operator_costs)
     : pattern(pattern) {
-    verify_no_axioms(task_proxy);
-    verify_no_conditional_effects(task_proxy);
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
     assert(operator_costs.empty() ||
            operator_costs.size() == task_proxy.get_operators().size());
     assert(utils::is_sorted_unique(pattern));

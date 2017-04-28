@@ -1,18 +1,20 @@
 #include "sampling.h"
 
 #include "successor_generator.h"
-#include "task_proxy.h"
-#include "task_tools.h"
 
-#include "utils/countdown_timer.h"
-#include "utils/rng.h"
+#include "../task_proxy.h"
+
+#include "../task_utils/task_properties.h"
+#include "../utils/countdown_timer.h"
+#include "../utils/rng.h"
 
 using namespace std;
 
 
+namespace sampling {
 vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
-    const SuccessorGenerator &successor_generator,
+    const successor_generator::SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,
@@ -67,7 +69,7 @@ vector<State> sample_states_with_random_walks(
             } else {
                 OperatorID random_op_id = *rng.choose(applicable_operators);
                 OperatorProxy random_op = task_proxy.get_operators()[random_op_id];
-                assert(is_applicable(random_op, current_state));
+                assert(task_properties::is_applicable(random_op, current_state));
                 current_state = current_state.get_successor(random_op);
                 /* If current state is a dead end, then restart the random walk
                    with the initial state. */
@@ -79,4 +81,5 @@ vector<State> sample_states_with_random_walks(
         samples.push_back(current_state);
     }
     return samples;
+}
 }
