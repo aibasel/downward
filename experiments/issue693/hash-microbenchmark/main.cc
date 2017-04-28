@@ -29,8 +29,8 @@ static int scramble(int i) {
 
 
 int main(int, char **) {
-    const int REPETITIONS = 5;
-    const int NUM_CALLS = 10000;
+    const int REPETITIONS = 3;
+    const int NUM_CALLS = 100000;
     const int NUM_INSERTIONS = 100;
 
     for (int i = 0; i < REPETITIONS; ++i) {
