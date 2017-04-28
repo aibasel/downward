@@ -6,7 +6,6 @@
 
 #include "evaluation_context.h"
 
-class GlobalOperator;
 class Heuristic;
 class StateID;
 

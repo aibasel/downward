@@ -8,7 +8,6 @@
 #include <vector>
 
 class AbstractTask;
-class GlobalOperator;
 class GlobalState;
 
 class PruningMethod {
