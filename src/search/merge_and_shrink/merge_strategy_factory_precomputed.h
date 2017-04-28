@@ -19,7 +19,7 @@ public:
     virtual ~MergeStrategyFactoryPrecomputed() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
-        FactoredTransitionSystem &fts) override;
+        const FactoredTransitionSystem &fts) override;
 };
 }
 

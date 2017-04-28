@@ -37,7 +37,7 @@ public:
        system, possibly for a sbuset of indices. */
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy,
-        FactoredTransitionSystem &fts,
+        const FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset);
     // Inheriting classes must call this method in their parsing methods.
     static void add_options_to_parser(options::OptionParser &parser);

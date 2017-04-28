@@ -45,7 +45,7 @@ vector<pair<int, int>> MergeSelectorScoreBasedFiltering::get_remaining_candidate
 }
 
 pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) const {
     vector<pair<int, int>> merge_candidates =
         compute_merge_candidates(fts, indices_subset);
