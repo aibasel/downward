@@ -8,7 +8,8 @@
 namespace landmarks{
 
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
-    : Heuristic(opts)
+    : Heuristic(opts),
+      master(nullptr)
 {}
 
 void FFSynergyHeuristic::set_master(LamaSynergyHeuristic *lama_master){
@@ -23,8 +24,9 @@ EvaluationResult FFSynergyHeuristic::compute_result(
        If they have been computed yet, then both heuristic values
        are already cached, and this is just a quick lookup. In
        either case, the result is subsequently available in the
-       synergy object.
+       master object.
     */
+    assert(master);
     eval_context.get_heuristic_value_or_infinity(master);
     return master->ff_result;
 }
@@ -46,16 +48,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    /*
-      It does not make sense to use the synergy without preferred
-      operators, so they are always enabled. (A landmark heuristic
-      without preferred operators does not need to perform a relaxed
-      exploration, hence no need for a synergy.)
-    */
-    opts.set("pref", true);
-
-    Heuristic *ff_synergy = new FFSynergyHeuristic(opts);
-    return ff_synergy;
+    return new FFSynergyHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("ff_synergy", _parse);
