@@ -486,7 +486,7 @@ fast_downward_plugin(
     SOURCES
         task_utils/successor_generator
     DEPENDS TASK_PROPERTIES
-    DEPENENCY_ONLY
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(

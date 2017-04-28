@@ -270,7 +270,9 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     OperatorProxy op = helpful->is_axiom ?
                        task_proxy.get_axioms()[helpful->op_id] :
                        task_proxy.get_operators()[helpful->op_id];
-    if (cost == op.get_cost() && !op.is_axiom() && task_properties::is_applicable(op, state)) {
+    if (cost == op.get_cost() &&
+        !op.is_axiom() &&
+        task_properties::is_applicable(op, state)) {
         // Transition immediately applicable, all preconditions true.
         set_preferred(op);
     } else {

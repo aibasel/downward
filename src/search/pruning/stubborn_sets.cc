@@ -38,7 +38,8 @@ void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
     num_operators = task_proxy.get_operators().size();
     num_unpruned_successors_generated = 0;
     num_pruned_successors_generated = 0;
-    sorted_goals = utils::sorted<FactPair>(task_properties::get_fact_pairs(task_proxy.get_goals()));
+    sorted_goals = utils::sorted<FactPair>(
+        task_properties::get_fact_pairs(task_proxy.get_goals()));
 
     compute_sorted_operators(task_proxy);
     compute_achievers(task_proxy);
@@ -61,7 +62,8 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
 
     sorted_op_preconditions = utils::map_vector<vector<FactPair>>(
         operators, [](const OperatorProxy &op) {
-            return utils::sorted<FactPair>(task_properties::get_fact_pairs(op.get_preconditions()));
+            return utils::sorted<FactPair>(
+                task_properties::get_fact_pairs(op.get_preconditions()));
         });
 
     sorted_op_effects = utils::map_vector<vector<FactPair>>(

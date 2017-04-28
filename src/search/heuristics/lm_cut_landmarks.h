@@ -1,8 +1,9 @@
 #ifndef HEURISTICS_LM_CUT_LANDMARKS_H
 #define HEURISTICS_LM_CUT_LANDMARKS_H
 
+#include "../task_proxy.h"
+
 #include "../algorithms/priority_queues.h"
-#include "../task_utils/task_properties.h"
 
 #include <cassert>
 #include <functional>
