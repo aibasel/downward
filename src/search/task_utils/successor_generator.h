@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalOperator;
 class GlobalState;
 
 namespace successor_generator {
