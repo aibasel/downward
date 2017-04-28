@@ -1,10 +1,11 @@
 DOWNWARD_BITWIDTH ?= 32
 
 HEADERS = \
+          fast_hash.h \
           hash.h \
           SpookyV2.h \
 
-SOURCES = main.cc $(HEADERS:%.h=%.cc)
+SOURCES = main.cc SpookyV2.cc
 TARGET = benchmark
 
 default: release
