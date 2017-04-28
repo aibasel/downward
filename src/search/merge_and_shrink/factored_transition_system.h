@@ -86,17 +86,13 @@ public:
         Verbosity verbosity);
 
     /*
-      This method checks if the transition system specified via index violates
-      the size limit given via new_size (e.g. as computed by compute_shrink_sizes)
-      or the threshold shrink_threshold_before_merge that triggers shrinking even
-      if the size limit is not violated. If so, the given shrink strategy
-      shrink_strategy is used to reduce the size of the transition system to at
-      most new_size. Return true iff the transition was modified (i.e. shrunk).
+      Shrink the transition system of the factor at index to have a size of
+      at most target_size. If t he transition system was shrunk, update the
+      other components of the factor (distances, MSR) and return true.
     */
     bool shrink(
         int index,
-        int new_size,
-        int shrink_threshold_before_merge,
+        int target_size,
         const ShrinkStrategy &shrink_strategy,
         Verbosity verbosity);
 

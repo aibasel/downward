@@ -52,6 +52,30 @@ pair<int, int> compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
+bool shrink_factor(
+    FactoredTransitionSystem &fts,
+    int index,
+    int new_size,
+    int shrink_threshold_before_merge,
+    const ShrinkStrategy &shrink_strategy,
+    Verbosity verbosity) {
+    const TransitionSystem &ts = fts.get_ts(index);
+    assert(ts.is_solvable());
+    int num_states = ts.get_size();
+    if (num_states > min(new_size, shrink_threshold_before_merge)) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << ts.tag() << "current size: " << num_states;
+            if (new_size < num_states)
+                cout << " (new size limit: " << new_size;
+            else
+                cout << " (shrink threshold: " << shrink_threshold_before_merge;
+            cout << ")" << endl;
+        }
+        return fts.shrink(index, new_size, shrink_strategy, verbosity);
+    }
+    return false;
+}
+
 bool is_goal_relevant(const TransitionSystem &ts) {
     int num_states = ts.get_size();
     for (int state = 0; state < num_states; ++state) {
