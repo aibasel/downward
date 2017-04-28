@@ -129,7 +129,7 @@ SearchNode SearchSpace::get_node(const GlobalState &state) {
 }
 
 void SearchSpace::trace_path(const GlobalState &goal_state,
-                             vector<const GlobalOperator *> &path) const {
+                             vector<OperatorID> &path) const {
     GlobalState current_state = goal_state;
     assert(path.empty());
     for (;;) {
@@ -139,8 +139,7 @@ void SearchSpace::trace_path(const GlobalState &goal_state,
             break;
         }
         assert(utils::in_bounds(info.creating_operator, g_operators));
-        const GlobalOperator *op = &g_operators[info.creating_operator.get_index()];
-        path.push_back(op);
+        path.push_back(info.creating_operator);
         current_state = state_registry.lookup_state(info.parent_state_id);
     }
     reverse(path.begin(), path.end());

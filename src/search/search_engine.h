@@ -3,6 +3,7 @@
 
 #include "global_operator.h"
 #include "operator_cost.h"
+#include "operator_id.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
@@ -26,7 +27,7 @@ enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
 public:
-    typedef std::vector<const GlobalOperator *> Plan;
+    typedef std::vector<OperatorID> Plan;
 private:
     SearchStatus status;
     bool solution_found;
