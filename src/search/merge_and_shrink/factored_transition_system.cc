@@ -168,33 +168,19 @@ bool FactoredTransitionSystem::apply_abstraction(
     return shrunk;
 }
 
-
 bool FactoredTransitionSystem::shrink(
     int index,
-    int new_size,
-    int shrink_threshold_before_merge,
+    int target_size,
     const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity) {
     const TransitionSystem &ts = *transition_systems[index];
     assert(ts.is_solvable());
-    int num_states = ts.get_size();
-    if (num_states > min(new_size, shrink_threshold_before_merge)) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << ts.tag() << "current size: " << num_states;
-            if (new_size < num_states)
-                cout << " (new size limit: " << new_size;
-            else
-                cout << " (shrink threshold: " << shrink_threshold_before_merge;
-            cout << ")" << endl;
-        }
-        const Distances &dist = *distances[index];
-        StateEquivalenceRelation equivalence_relation =
-            shrink_strategy.compute_equivalence_relation(ts, dist, new_size);
-        // TODO: We currently violate this; see issue250
-        //assert(equivalence_relation.size() <= new_size);
-        return apply_abstraction(index, equivalence_relation, verbosity);
-    }
-    return false;
+    const Distances &dist = *distances[index];
+    StateEquivalenceRelation equivalence_relation =
+        shrink_strategy.compute_equivalence_relation(ts, dist, target_size);
+    // TODO: We currently violate this; see issue250
+    //assert(equivalence_relation.size() <= target_size);
+    return apply_abstraction(index, equivalence_relation, verbosity);
 }
 
 int FactoredTransitionSystem::merge(
