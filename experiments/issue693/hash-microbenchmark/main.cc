@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "fast_hash.h"
 #include "hash.h"
 #include "SpookyV2.h"
 
@@ -118,7 +119,7 @@ struct SpookyV2HashInt {
 
 
 int main(int, char **) {
-    const int REPETITIONS = 3;
+    const int REPETITIONS = 2;
     const int NUM_CALLS = 100000;
     const int NUM_INSERTIONS = 100;
 
@@ -128,6 +129,13 @@ int main(int, char **) {
         benchmark("insert int into std::unordered_set", NUM_CALLS,
                   [&]() {
             unordered_set<int> s;
+            for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                s.insert(scramble(i));
+            }
+        });
+        benchmark("insert int into FastHashSet", NUM_CALLS,
+                  [&]() {
+            fast_hash::HashSet<int> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 s.insert(scramble(i));
             }
@@ -155,6 +163,13 @@ int main(int, char **) {
                 s.insert(make_pair(scramble(i), scramble(i + 1)));
             }
         });
+        benchmark("insert pair<int, int> into FastHashSet", NUM_CALLS,
+                  [&]() {
+            fast_hash::HashSet<pair<int, int>> s;
+            for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                s.insert(make_pair(scramble(i), scramble(i + 1)));
+            }
+        });
         benchmark("insert pair<int, int> into utils::HashSet", NUM_CALLS,
                   [&]() {
             utils::HashSet<pair<int, int>> s;
@@ -171,6 +186,20 @@ int main(int, char **) {
                 " into std::unordered_set", NUM_CALLS,
                 [&]() {
                 unordered_set<vector<int>> s;
+                for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                    vector<int> v;
+                    v.reserve(length);
+                    for (int j = 0; j < length; ++j) {
+                        v.push_back(scramble(NUM_INSERTIONS * length + j));
+                    }
+                    s.insert(v);
+                }
+            });
+            benchmark(
+                "insert vector<int> of size " + to_string(length) +
+                " into FastHashSet", NUM_CALLS,
+                [&]() {
+                fast_hash::HashSet<vector<int>> s;
                 for (int i = 0; i < NUM_INSERTIONS; ++i) {
                     vector<int> v;
                     v.reserve(length);
