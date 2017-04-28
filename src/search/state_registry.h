@@ -98,6 +98,7 @@
     to store for each state and each landmark whether it was reached in this state.
 */
 
+class GlobalOperator;
 class PerStateInformationBase;
 
 class StateRegistry {
