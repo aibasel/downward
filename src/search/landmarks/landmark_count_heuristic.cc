@@ -263,9 +263,9 @@ void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_sta
 }
 
 bool LandmarkCountHeuristic::notify_state_transition(
-    const GlobalState &parent_state, const GlobalOperator &op,
+    const GlobalState &parent_state, OperatorID op_id,
     const GlobalState &state) {
-    lm_status_manager->update_reached_lms(parent_state, op, state);
+    lm_status_manager->update_reached_lms(parent_state, op_id, state);
     /* TODO: The return value "true" signals that the LM set of this state
              has changed and the h value should be recomputed. It's not
              wrong to always return true, but it may be more efficient to

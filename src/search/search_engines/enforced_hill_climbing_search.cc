@@ -90,9 +90,9 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 
 void EnforcedHillClimbingSearch::reach_state(
-    const GlobalState &parent, const GlobalOperator &op, const GlobalState &state) {
+    const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
     for (Heuristic *heur : heuristics) {
-        heur->notify_state_transition(parent, op, state);
+        heur->notify_state_transition(parent, op_id, state);
     }
 }
 
@@ -208,7 +208,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         if (node.is_new()) {
             EvaluationContext eval_context(state, &statistics);
-            reach_state(parent_state, *last_op, state);
+            reach_state(parent_state, last_op_id, state);
             statistics.inc_evaluated_states();
 
             if (eval_context.is_heuristic_infinite(heuristic)) {

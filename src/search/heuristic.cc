@@ -33,7 +33,7 @@ void Heuristic::set_preferred(const OperatorProxy &op) {
 
 bool Heuristic::notify_state_transition(
     const GlobalState & /*parent_state*/,
-    const GlobalOperator & /*op*/,
+    OperatorID /*op_id*/,
     const GlobalState & /*state*/) {
     return false;
 }

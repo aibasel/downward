@@ -176,7 +176,7 @@ SearchStatus LazySearch::step() {
             current_operator = &g_operators[current_operator_id.get_index()];
             for (Heuristic *heuristic : heuristics)
                 heuristic->notify_state_transition(
-                    parent_state, *current_operator, current_state);
+                    parent_state, current_operator_id, current_state);
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {

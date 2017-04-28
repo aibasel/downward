@@ -146,7 +146,7 @@ SearchStatus EagerSearch::step() {
               don't break out of the for loop early.
             */
             for (Heuristic *heuristic : heuristics) {
-                heuristic->notify_state_transition(s, *op, succ_state);
+                heuristic->notify_state_transition(s, op_id, succ_state);
             }
         }
 
