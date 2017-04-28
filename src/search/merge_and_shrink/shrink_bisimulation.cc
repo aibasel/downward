@@ -218,7 +218,7 @@ void ShrinkBisimulation::compute_signatures(
     ::sort(signatures.begin(), signatures.end());
 }
 
-StateEquivalenceRelation ShrinkBisimulation::shrink(
+StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
     int target_size) const {

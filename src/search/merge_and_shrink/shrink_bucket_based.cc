@@ -92,7 +92,7 @@ void ShrinkBucketBased::compute_abstraction(
     }
 }
 
-StateEquivalenceRelation ShrinkBucketBased::shrink(
+StateEquivalenceRelation ShrinkBucketBased::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
     int target_size) const {
