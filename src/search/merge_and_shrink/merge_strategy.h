@@ -44,7 +44,6 @@ protected:
 public:
     explicit MergeStrategy(const FactoredTransitionSystem &fts);
     virtual ~MergeStrategy() = default;
-    // TODO: should become const
     virtual std::pair<int, int> get_next() = 0;
 };
 }
