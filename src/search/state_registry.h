@@ -223,6 +223,13 @@ public:
 
     class const_iterator : public std::iterator<
                                std::forward_iterator_tag, StateID> {
+        /*
+          We intentionally omit parts of the forward iterator concept
+          (e.g. default construction, copy assignment, post-increment)
+          to reduce boilerplate. Supported compilers may complain about
+          this, in which case we will add the missing methods.
+        */
+
         friend class StateRegistry;
         const StateRegistry &registry;
         StateID pos;
@@ -233,12 +240,6 @@ public:
         const_iterator &operator++() {
             ++pos.value;
             return *this;
-        }
-
-        const_iterator operator++(int) {
-            const_iterator tmp(*this);
-            operator++();
-            return tmp;
         }
 
         bool operator==(const const_iterator &rhs) {
