@@ -111,7 +111,7 @@ void LazySearch::generate_successors() {
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);
-            open_list->insert(new_eval_context, make_pair(current_state.get_id(), get_op_index_hacked(op)));
+            open_list->insert(new_eval_context, make_pair(current_state.get_id(), op_id));
         }
     }
 }
@@ -125,7 +125,7 @@ SearchStatus LazySearch::fetch_next_state() {
     EdgeOpenListEntry next = open_list->remove_min();
 
     current_predecessor_id = next.first;
-    current_operator = &g_operators[next.second];
+    current_operator = &g_operators[next.second.get_index()];
     GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
     current_state = state_registry.get_successor_state(current_predecessor, *current_operator);

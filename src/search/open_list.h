@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "evaluation_context.h"
+#include "operator_id.h"
 
 class Heuristic;
 class StateID;
@@ -133,7 +134,7 @@ public:
 
 
 using StateOpenListEntry = StateID;
-using EdgeOpenListEntry = std::pair<StateID, int>;
+using EdgeOpenListEntry = std::pair<StateID, OperatorID>;
 
 using StateOpenList = OpenList<StateOpenListEntry>;
 using EdgeOpenList = OpenList<EdgeOpenListEntry>;
