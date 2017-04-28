@@ -1,20 +1,24 @@
-#ifndef SUCCESSOR_GENERATOR_H
-#define SUCCESSOR_GENERATOR_H
+#ifndef TASK_UTILS_SUCCESSOR_GENERATOR_H
+#define TASK_UTILS_SUCCESSOR_GENERATOR_H
 
-#include "task_proxy.h"
+#include "../task_proxy.h"
 
 #include <list>
 #include <memory>
 #include <vector>
 
-class GeneratorBase;
+class GlobalOperator;
 class GlobalState;
+
+namespace successor_generator {
+class GeneratorBase;
 
 /*
   NOTE: SuccessorGenerator keeps a reference to the task proxy passed to the
   constructor. Therefore, users of the class must ensure that the task lives at
   least as long as the successor generator.
 */
+
 class SuccessorGenerator {
     TaskProxy task_proxy;
 
@@ -38,5 +42,6 @@ public:
     void generate_applicable_ops(
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const;
 };
+}
 
 #endif

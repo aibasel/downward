@@ -1,9 +1,8 @@
 #include "successor_generator.h"
 
-#include "global_state.h"
-#include "task_tools.h"
+#include "../global_state.h"
 
-#include "utils/collections.h"
+#include "../utils/collections.h"
 
 #include <algorithm>
 #include <cassert>
@@ -26,6 +25,7 @@ using namespace std;
 
 */
 
+namespace successor_generator {
 bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
     return f1.get_variable().get_id() < f2.get_variable().get_id();
 }
@@ -253,4 +253,5 @@ void SuccessorGenerator::generate_applicable_ops(
 void SuccessorGenerator::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
+}
 }

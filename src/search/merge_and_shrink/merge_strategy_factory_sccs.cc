@@ -5,15 +5,13 @@
 #include "merge_tree_factory.h"
 #include "transition_system.h"
 
-#include "../causal_graph.h"
 #include "../task_proxy.h"
 
 #include "../algorithms/sccs.h"
-
 #include "../options/option_parser.h"
 #include "../options/options.h"
 #include "../options/plugin.h"
-
+#include "../task_utils/causal_graph.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
