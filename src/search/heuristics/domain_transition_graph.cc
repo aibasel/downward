@@ -1,6 +1,6 @@
 #include "domain_transition_graph.h"
 
-#include "utils/hash.h"
+#include "../utils/hash.h"
 
 #include <algorithm>
 #include <cassert>
@@ -8,7 +8,7 @@
 
 using namespace std;
 
-
+namespace domain_transition_graph {
 DTGFactory::DTGFactory(const TaskProxy &task_proxy,
                        bool collect_transition_side_effects,
                        const function<bool(int, int)> &pruning_condition)
@@ -296,4 +296,5 @@ DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
     for (int value = 0; value < node_count; ++value)
         nodes.push_back(ValueNode(this, value));
     last_helpful_transition_extraction_time = -1;
+}
 }

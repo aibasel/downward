@@ -3,16 +3,13 @@
 #include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../successor_generator.h"
-
-#include "../evaluators/g_evaluator.h"
-#include "../evaluators/pref_evaluator.h"
-
-#include "../open_lists/standard_scalar_open_list.h"
-#include "../open_lists/tiebreaking_open_list.h"
 
 #include "../algorithms/ordered_set.h"
-
+#include "../evaluators/g_evaluator.h"
+#include "../evaluators/pref_evaluator.h"
+#include "../open_lists/standard_scalar_open_list.h"
+#include "../open_lists/tiebreaking_open_list.h"
+#include "../task_utils/successor_generator.h"
 #include "../utils/system.h"
 
 using namespace std;
