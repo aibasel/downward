@@ -22,7 +22,7 @@ EvaluationResult PrefEvaluator::compute_result(
     return result;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Evaluator *_parse(OptionParser &parser) {
     parser.document_synopsis("Preference evaluator",
                              "Returns 0 if preferred is true and 1 otherwise.");
     parser.parse();
@@ -32,5 +32,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new PrefEvaluator;
 }
 
-static Plugin<ScalarEvaluator> _plugin("pref", _parse);
+static Plugin<Evaluator> _plugin("pref", _parse);
 }

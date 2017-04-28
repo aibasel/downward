@@ -1,6 +1,6 @@
 #include "open_list_factory.h"
 
-#include "../plugin.h"
+#include "plugin.h"
 
 using namespace std;
 
