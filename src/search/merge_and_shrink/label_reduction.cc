@@ -104,7 +104,7 @@ void LabelReduction::compute_label_mapping(
 }
 
 equivalence_relation::EquivalenceRelation
-    *LabelReduction::compute_combinable_equivalence_relation(
+*LabelReduction::compute_combinable_equivalence_relation(
     int ts_index,
     const FactoredTransitionSystem &fts) const {
     /*
@@ -166,7 +166,7 @@ bool LabelReduction::reduce(
         compute_label_mapping(relation, fts, label_mapping, verbosity);
         if (!label_mapping.empty()) {
             fts.apply_label_mapping(label_mapping,
-                                      next_merge.first);
+                                    next_merge.first);
             reduced = true;
         }
         delete relation;
@@ -179,7 +179,7 @@ bool LabelReduction::reduce(
         compute_label_mapping(relation, fts, label_mapping, verbosity);
         if (!label_mapping.empty()) {
             fts.apply_label_mapping(label_mapping,
-                                      next_merge.second);
+                                    next_merge.second);
             reduced = true;
         }
         delete relation;
