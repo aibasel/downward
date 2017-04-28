@@ -6,7 +6,7 @@
 
 #include "../heuristic.h"
 
-namespace successor_generator{
+namespace successor_generator {
 class SuccessorGenerator;
 }
 
