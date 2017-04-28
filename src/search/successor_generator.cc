@@ -27,30 +27,43 @@ bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
     return f1.get_variable().get_id() < f2.get_variable().get_id();
 }
 
-
-int estimate_switch_vector_size(int num_elements) {
-    // See issue705 for a discussion of this estimation.
-    return 40 + 4 * num_elements;
+template<typename T>
+int estimate_vector_size(int num_elements) {
+    int size = 0;
+    size += 2 * sizeof(void*);        // overhead for dynamic memory management
+    size += sizeof(vector<T>);        // size of empty vector
+    size += num_elements * sizeof(T); // size of actual entries
+    return size;
 }
 
-int estimate_switch_hash_size(int num_non_zero_elements) {
+template<typename Key, typename Value>
+int estimate_unordered_map_size(int num_entries) {
     // See issue705 for a discussion of this estimation.
-    int num_buckets = 0;
-    if (num_non_zero_elements < 5) {
-        num_buckets = 1;
-    } else if (num_non_zero_elements < 11) {
-        num_buckets = 4;
-    } else if (num_non_zero_elements < 23) {
-        num_buckets = 10;
-    } else if (num_non_zero_elements < 47) {
-        num_buckets = 22;
-    } else if (num_non_zero_elements < 97) {
+    int num_buckets = 2;
+    if (num_entries < 5) {
+        num_buckets = 5;
+    } else if (num_entries < 11) {
+        num_buckets = 11;
+    } else if (num_entries < 23) {
+        num_buckets = 23;
+    } else if (num_entries < 47) {
         num_buckets = 47;
+    } else if (num_entries < 97) {
+        num_buckets = 97;
     } else {
-        int n = log2(num_non_zero_elements / 3);
-        num_buckets = 3 * pow(2, n);
+        int n = log2((num_entries+1) / 3);
+        num_buckets = 3 * pow(2, n + 1) - 1;
     }
-    return 96 + 32 * num_non_zero_elements + 16 * num_buckets;
+
+    int size = 0;
+    size += 2 * sizeof(void*);                        // overhead for dynamic memory management
+    size += sizeof(unordered_map<Key, Value>);        // empty map
+    size += num_elements * sizeof(pair<Key, Value>);  // actual entries
+    size += num_elements * sizeof(pair<Key, Value>*); // pointer to values
+    size += num_elements * sizeof(void*);             // pointer to next node
+    size += num_buckets * sizeof(void*);              // pointer to next bucket
+    return size;
+
 }
 
 class GeneratorBase {
