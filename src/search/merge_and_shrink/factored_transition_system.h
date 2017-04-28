@@ -57,6 +57,10 @@ class FactoredTransitionSystem {
         int index,
         const std::vector<bool> &to_be_pruned_states,
         Verbosity verbosity);
+    bool apply_abstraction(
+        int index,
+        const StateEquivalenceRelation &state_equivalence_relation,
+        Verbosity verbosity);
 
     bool is_index_valid(int index) const;
     bool is_component_valid(int index) const;
@@ -76,14 +80,10 @@ public:
     FactoredTransitionSystem &operator=(
         const FactoredTransitionSystem &) = delete;
 
-    // Methods for MergeAndShrinkHeuristic
+    // Merge-and-shrink transformations.
     void apply_label_reduction(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         int combinable_index);
-    bool apply_abstraction(
-        int index,
-        const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity);
 
     /*
       Shrink the transition system of the factor at index to have a size of
@@ -96,6 +96,12 @@ public:
         const ShrinkStrategy &shrink_strategy,
         Verbosity verbosity);
 
+    /*
+      Merge the two factors at index1 and index2. If finalize_if_unsolvable is
+      true and the product (the new factor) is unsolvable, the index is stored
+      accordingly and get_final_entry() can be called to obtain the final
+      distances and MSR.
+    */
     int merge(
         int index1,
         int index2,
