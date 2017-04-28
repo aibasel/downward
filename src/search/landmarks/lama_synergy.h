@@ -4,16 +4,11 @@
 #include "../heuristic.h"
 
 #include "ff_synergy.h"
-#include "exploration.h"
 #include "landmark_count_heuristic.h"
-#include "landmark_factory_rpg_sasp.h"
-
-#include <memory>
-
 
 namespace landmarks {
-class Exploration;
 class LandmarkCountHeuristic;
+class LandmarkFactory;
 
 class FFSynergyHeuristic;
 
