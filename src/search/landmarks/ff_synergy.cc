@@ -5,12 +5,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include <iostream>
-
-
 namespace landmarks{
-
-using namespace std;
 
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts)
