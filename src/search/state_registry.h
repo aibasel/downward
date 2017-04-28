@@ -220,6 +220,55 @@ public:
     */
     void subscribe(PerStateInformationBase *psi) const;
     void unsubscribe(PerStateInformationBase *psi) const;
+
+    class const_iterator : public std::iterator<std::forward_iterator_tag,
+                                                StateID> {
+        friend class StateRegistry;
+        const StateRegistry *registry;
+        StateID pos;
+
+        const_iterator(const StateRegistry *registry_, size_t start)
+            : registry(registry_), pos(start) {}
+public:
+        const_iterator(const const_iterator &other)
+            : registry(other.registry), pos(other.pos) {}
+
+        ~const_iterator() {}
+
+        const_iterator &operator++() {
+            ++pos.value;
+            return *this;
+        }
+
+        const_iterator operator++(int) {
+            const_iterator tmp(*this);
+            operator++();
+            return tmp;
+        }
+
+        bool operator==(const const_iterator &rhs) {
+            return registry == rhs.registry && pos == rhs.pos;
+        }
+
+        bool operator!=(const const_iterator &rhs) {
+            return !(*this == rhs);
+        }
+
+        StateID operator*() {
+            return pos;
+        }
+
+        StateID *operator->() {
+            return &pos;
+        }
+    };
+
+    const_iterator begin() const {
+        return const_iterator(this, 0);
+    }
+    const_iterator end() const {
+        return const_iterator(this, size());
+    }
 };
 
 #endif
