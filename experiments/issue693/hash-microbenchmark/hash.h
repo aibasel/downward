@@ -152,6 +152,32 @@ public:
           pending_values(0) {
     }
 
+    void feed_ints(const int *values, int length) {
+        // Handle most of the key.
+        while (length > 3) {
+            a += values[0];
+            b += values[1];
+            c += values[2];
+            mix();
+            length -= 3;
+            values += 3;
+        }
+
+        // Handle the last 3 unsigned ints. All case statements fall through.
+        switch (length) {
+        case 3:
+            c += values[2];
+        case 2:
+            b += values[1];
+        case 1:
+            a += values[0];
+            final_mix();
+        // case 0: nothing left to add.
+        case 0:
+            break;
+        }
+    }
+
     void feed(std::uint32_t value) {
         assert(pending_values != -1);
         if (pending_values == 3) {
