@@ -48,7 +48,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     void insert_successor_into_open_list(
         const EvaluationContext &eval_context,
         int parent_g,
-        const GlobalOperator *op,
+        OperatorID op_id,
         bool preferred);
     void expand(EvaluationContext &eval_context);
     void reach_state(
