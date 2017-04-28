@@ -9,7 +9,8 @@ namespace landmarks{
 
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      master(nullptr)
+      master(dynamic_cast<LamaSynergyHeuristic *>(
+                  opts.get<Heuristic *>("lama_synergy_heuristic")))
 {}
 
 void FFSynergyHeuristic::set_master(LamaSynergyHeuristic *lama_master){
@@ -42,6 +43,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "This synergy can only be used via Predefinition "
         "(see OptionSyntax#Predefinitions), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
+    parser.add_option<Heuristic *>("lama_synergy_heuristic");
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();

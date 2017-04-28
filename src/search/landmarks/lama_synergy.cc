@@ -18,11 +18,8 @@ namespace landmarks {
 
 LamaSynergyHeuristic::LamaSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      ff_synergy_heuristic(dynamic_cast<FFSynergyHeuristic *>(
-          opts.get<Heuristic *>("ff_synergy_heuristic"))),
       lama_heuristic(new LandmarkCountHeuristic(opts)) {
     cout << "Initializing LAMA synergy object" << endl;
-    ff_synergy_heuristic->set_master(this);
 }
 
 EvaluationResult LamaSynergyHeuristic::compute_result(
@@ -75,7 +72,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "This synergy can only be used via Predefinition "
         "(see OptionSyntax#Predefinitions), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
-    parser.add_option<Heuristic *>("ff_synergy_heuristic");
     parser.add_option<LandmarkFactory *>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
