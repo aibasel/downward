@@ -58,6 +58,6 @@ static Heuristic *_parse(OptionParser &parser) {
     return ff_synergy;
 }
 
-static Plugin<Heuristic> _plugin("ff_syn", _parse);
+static Plugin<Heuristic> _plugin("ff_synergy", _parse);
 
 }
