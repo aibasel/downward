@@ -1,6 +1,7 @@
 #include "factored_transition_system.h"
 
 #include "distances.h"
+#include "label_reduction.h"
 #include "labels.h"
 #include "merge_and_shrink_representation.h"
 #include "shrink_strategy.h"
@@ -153,7 +154,7 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
            && transition_systems[index]->are_transitions_sorted_unique();
 }
 
-void FactoredTransitionSystem::apply_label_reduction(
+void FactoredTransitionSystem::apply_label_mapping(
     const vector<pair<int, vector<int>>> &label_mapping,
     int combinable_index) {
     for (const auto &new_label_old_labels : label_mapping) {
@@ -166,6 +167,13 @@ void FactoredTransitionSystem::apply_label_reduction(
                 label_mapping, static_cast<int>(i) != combinable_index);
         }
     }
+}
+
+bool FactoredTransitionSystem::apply_label_reduction(
+    const LabelReduction &label_reduction,
+    const pair<int, int> &merge_indices,
+    Verbosity verbosity) {
+    label_reduction.reduce(merge_indices, *this, verbosity);
 }
 
 bool FactoredTransitionSystem::shrink(

@@ -10,6 +10,7 @@ namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
 class MergeAndShrinkRepresentation;
+class LabelReduction;
 class Labels;
 class ShrinkStrategy;
 class TransitionSystem;
@@ -81,14 +82,30 @@ public:
         const FactoredTransitionSystem &) = delete;
 
     // Merge-and-shrink transformations.
-    void apply_label_reduction(
+    /*
+      TODO: this method should be private because it is used internally
+      by apply_label_reduction. However, given the iterative algorithm to
+      compute label reductions in LabelReduction, it is not easily possible
+      to avoid having a method to update the FTS in each iteration.
+
+      One solution could be to make the method privae and declare
+      LabelReduction a friend class, or to use a callback function.
+    */
+    void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         int combinable_index);
+    /* Apply a label reduction as computed with the given LabelReduction
+       object. */
+    bool apply_label_reduction(
+        const LabelReduction &label_reduction,
+        const std::pair<int, int> &merge_indices,
+        Verbosity verbosity);
 
     /*
       Shrink the transition system of the factor at index to have a size of
-      at most target_size. If t he transition system was shrunk, update the
-      other components of the factor (distances, MSR) and return true.
+      at most target_size, using the given shrink strategy. If the transition
+      system was shrunk, update the other components of the factor (distances,
+      MSR) and return true.
     */
     bool shrink(
         int index,
