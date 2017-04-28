@@ -32,7 +32,6 @@ protected:
 
 public:
     explicit LamaSynergyHeuristic(const options::Options &opts);
-    virtual ~LamaSynergyHeuristic() = default;
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
