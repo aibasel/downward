@@ -21,8 +21,6 @@ public:
 
     virtual EvaluationResult compute_result(EvaluationContext &eval_context) override;
 
-    virtual ~FFSynergyHeuristic() override = default;
-
     void set_master(LamaSynergyHeuristic *lama_master);
 };
 
