@@ -46,8 +46,6 @@ public:
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
-
-    void add_pruning_option(options::OptionParser &parser);
 };
 }
 

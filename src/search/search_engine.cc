@@ -4,7 +4,6 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "pruning_method.h"
 
 #include "algorithms/ordered_set.h"
 
@@ -19,6 +18,7 @@
 using namespace std;
 using utils::ExitCode;
 
+class PruningMethod;
 
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
