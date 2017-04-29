@@ -315,34 +315,6 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     }
 }
 
-static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Eager best-first search", "");
-
-    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
-    parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes", "false");
-    parser.add_option<Evaluator *>(
-        "f_eval",
-        "set evaluator for jump statistics. "
-        "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
-        OptionParser::NONE);
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-
-    SearchEngine::add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        opts.set<bool>("mpd", false);
-        engine = new EagerSearch(opts);
-    }
-
-    return engine;
-}
-
 static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.document_synopsis("Greedy search (eager)", "");
     parser.document_note(
@@ -409,6 +381,5 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin("eager", _parse);
 static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_greedy);
 }

@@ -331,6 +331,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME PLUGIN_EAGER
+    HELP "Eager Search"
+    SOURCES
+        search_engines/plugin_eager
+    DEPENDS EAGER_SEARCH
+)
+
+fast_downward_plugin(
     NAME ENFORCED_HILL_CLIMBING_SEARCH
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
