@@ -138,7 +138,7 @@ void SearchSpace::trace_path(const GlobalState &goal_state,
             assert(info.parent_state_id == StateID::no_state);
             break;
         }
-        assert(utils::in_bounds(info.creating_operator, g_operators));
+        assert(utils::in_bounds(info.creating_operator.get_index(), g_operators));
         path.push_back(info.creating_operator);
         current_state = state_registry.lookup_state(info.parent_state_id);
     }
