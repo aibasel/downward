@@ -58,6 +58,7 @@ public:
     const SearchStatistics &get_statistics() const {return statistics; }
     void set_bound(int b) {bound = b; }
     int get_bound() {return bound; }
+    static void add_pruning_option(options::OptionParser &parser);
     static void add_options_to_parser(options::OptionParser &parser);
 };
 

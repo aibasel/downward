@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "pruning_method.h"
 
 #include "algorithms/ordered_set.h"
 
@@ -95,6 +96,17 @@ void SearchEngine::save_plan_if_necessary() const {
 
 int SearchEngine::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
+}
+
+/* TODO: merge this into add_options_to_parser when all search
+         engines support pruning. */
+void SearchEngine::add_pruning_option(OptionParser &parser) {
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "Pruning methods can prune or reorder the set of applicable operators in "
+        "each state and thereby influence the number and order of successor states "
+        "that are considered.",
+        "null()");
 }
 
 void SearchEngine::add_options_to_parser(OptionParser &parser) {

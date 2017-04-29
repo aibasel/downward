@@ -315,17 +315,6 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     }
 }
 
-/* TODO: merge this into SearchEngine::add_options_to_parser when all search
-         engines support pruning. */
-void add_pruning_option(OptionParser &parser) {
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "Pruning methods can prune or reorder the set of applicable operators in "
-        "each state and thereby influence the number and order of successor states "
-        "that are considered.",
-        "null()");
-}
-
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Eager best-first search", "");
 
@@ -341,55 +330,13 @@ static SearchEngine *_parse(OptionParser &parser) {
         "preferred",
         "use preferred operators of these heuristics", "[]");
 
-    add_pruning_option(parser);
+    SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
         opts.set<bool>("mpd", false);
-        engine = new EagerSearch(opts);
-    }
-
-    return engine;
-}
-
-static SearchEngine *_parse_astar(OptionParser &parser) {
-    parser.document_synopsis(
-        "A* search (eager)",
-        "A* is a special case of eager best first search that uses g+h "
-        "as f-function. "
-        "We break ties using the evaluator. Closed nodes are re-opened.");
-    parser.document_note(
-        "mpd option",
-        "This option is currently only present for the A* algorithm and not "
-        "for the more general eager search, "
-        "because the current implementation of multi-path depedence "
-        "does not support general open lists.");
-    parser.document_note(
-        "Equivalent statements using general eager search",
-        "\n```\n--search astar(evaluator)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h=evaluator\n"
-        "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
-        "               reopen_closed=true, f_eval=sum([g(), h]))\n"
-        "```\n", true);
-    parser.add_option<Evaluator *>("eval", "evaluator for h-value");
-    parser.add_option<bool>("mpd",
-                            "use multi-path dependence (LM-A*)", "false");
-
-    add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts);
-        opts.set("open", temp.first);
-        opts.set("f_eval", temp.second);
-        opts.set("reopen_closed", true);
-        vector<Heuristic *> preferred_list;
-        opts.set("preferred", preferred_list);
         engine = new EagerSearch(opts);
     }
 
@@ -444,7 +391,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "boost",
         "boost value for preferred operator open lists", "0");
 
-    add_pruning_option(parser);
+    SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();
@@ -463,6 +410,5 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 }
 
 static Plugin<SearchEngine> _plugin("eager", _parse);
-static Plugin<SearchEngine> _plugin_astar("astar", _parse_astar);
 static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_greedy);
 }
