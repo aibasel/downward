@@ -191,18 +191,12 @@ inline ParseTree TokenParser<ParseTree>::parse(OptionParser &parser) {
 
 template<typename T>
 inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_root_value();
     std::vector<T> results;
-    if (value != "list") {
-        // Try to parse the next token as list of length 1 given without brackets.
-        results.push_back(TokenParser<T>::parse(parser));
-    } else {
-        for (auto tree_it = first_child_of_root(*parser.get_parse_tree());
-             tree_it != end_of_roots_children(*parser.get_parse_tree());
-             ++tree_it) {
-            OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it), parser.dry_run());
-            results.push_back(TokenParser<T>::parse(subparser));
-        }
+    for (auto tree_it = first_child_of_root(*parser.get_parse_tree());
+         tree_it != end_of_roots_children(*parser.get_parse_tree());
+         ++tree_it) {
+        OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it), parser.dry_run());
+        results.push_back(TokenParser<T>::parse(subparser));
     }
     return results;
 }
