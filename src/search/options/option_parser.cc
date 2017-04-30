@@ -138,7 +138,7 @@ static void get_full_help() {
   Predefine landmarks and heuristics.
 */
 
-/* Convert a string of the form "word1, word2, word3" and convert it to a vector.
+/* Convert a string of the form "word1, word2, word3" to a vector.
    (used for predefining synergies) */
 static vector<string> to_list(const string &s) {
     vector<string> result;
