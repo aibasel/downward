@@ -270,7 +270,7 @@ void read_everything(istream &in) {
     g_successor_generator = new successor_generator::SuccessorGenerator(task_proxy);
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
-    cout << "done initalizing global data [t=" << utils::g_timer << "]" << endl;
+    cout << "done initializing global data [t=" << utils::g_timer << "]" << endl;
 }
 
 void dump_everything() {
