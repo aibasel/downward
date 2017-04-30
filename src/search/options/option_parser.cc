@@ -209,7 +209,7 @@ void _check_bounds(
     if (lower_bound > upper_bound)
         ABORT("lower bound is greater than upper bound for " + key);
     if (value < lower_bound || value > upper_bound) {
-        stringstream stream;
+        ostringstream stream;
         stream << key << " (" << value << ") must be in range ["
                << lower_bound << ", " << upper_bound << "]";
         parser.error(stream.str());
@@ -506,9 +506,9 @@ void OptionParser::add_enum_option(
     string value = opts.get<string>(key);
 
     // ... then check if the parsed string can be treated as a number.
-    stringstream str_stream(value);
+    istringstream stream(value);
     int choice;
-    if (!(str_stream >> choice).fail()) {
+    if (!(stream >> choice).fail()) {
         int max_choice = names.size();
         if (choice > max_choice) {
             error("invalid enum argument " + value + " for option " + key);

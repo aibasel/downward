@@ -54,9 +54,9 @@ public:
 template<typename T>
 inline T TokenParser<T>::parse(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    std::stringstream str_stream(value);
+    std::istringstream stream(value);
     T x;
-    if ((str_stream >> std::boolalpha >> x).fail()) {
+    if ((stream >> std::boolalpha >> x).fail()) {
         parser.error("could not parse argument " + value + " of type " + TypeNamer<T>::name());
     }
     return x;
@@ -69,9 +69,9 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
     if (value == "infinity") {
         return std::numeric_limits<int>::max();
     } else {
-        std::stringstream str_stream(value);
+        std::istringstream stream(value);
         int x;
-        if ((str_stream >> x).fail()) {
+        if ((stream >> x).fail()) {
             parser.error("could not parse int argument " + value);
         }
         return x;
@@ -85,9 +85,9 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
     if (value == "infinity") {
         return std::numeric_limits<double>::infinity();
     } else {
-        std::stringstream str_stream(value);
+        std::istringstream stream(value);
         double x;
-        if ((str_stream >> x).fail()) {
+        if ((stream >> x).fail()) {
             parser.error("could not parse double argument " + value);
         }
         return x;
