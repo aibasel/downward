@@ -171,7 +171,7 @@ void OptionParser::add_option(
         // Handle arguments with explicit keyword.
         // Try to find a parameter passed with keyword key.
         for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
-            if (arg->key.compare(key) == 0)
+            if (arg->key == key)
                 break;
         }
         if (arg == parse_tree.end(parse_tree.begin())) {

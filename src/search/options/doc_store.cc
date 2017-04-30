@@ -31,7 +31,7 @@ void DocStore::add_value_explanations(
     const ValueExplanations &value_explanations) {
     vector<ArgumentInfo> &args = registered[key].arg_help;
     for (size_t i = 0; i < args.size(); ++i) {
-        if (args[i].key.compare(arg_name) == 0) {
+        if (args[i].key == arg_name) {
             args[i].value_explanations = value_explanations;
             break;
         }

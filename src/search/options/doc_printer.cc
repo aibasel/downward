@@ -30,7 +30,7 @@ void DocPrinter::print_category(const string &category_name) {
     print_element("", ds->get(category_name));
     for (const string &key : ds->get_keys()) {
         DocStruct info = ds->get(key);
-        if (info.type.compare(category_name) == 0 && !info.hidden) {
+        if (info.type == category_name && !info.hidden) {
             print_element(key, info);
         }
     }
