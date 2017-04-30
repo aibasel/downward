@@ -36,37 +36,37 @@ using ParseTree = tree<ParseNode>;
 
 template<class T>
 typename tree<T>::sibling_iterator last_child(
-    const tree<T> &tree, typename tree<T>::sibling_iterator tree_it) {
-    return --tree.end(tree_it);
+    const tree<T> &parse_tree, typename tree<T>::sibling_iterator tree_it) {
+    return --parse_tree.end(tree_it);
 }
 
 template<class T>
-typename tree<T>::sibling_iterator last_child_of_root(const tree<T> &tree) {
-    return last_child(tree, tree.begin());
+typename tree<T>::sibling_iterator last_child_of_root(const tree<T> &parse_tree) {
+    return last_child(parse_tree, parse_tree.begin());
 }
 
 template<class T>
 typename tree<T>::sibling_iterator first_child(
-    const tree<T> &tree, typename tree<T>::sibling_iterator tree_it) {
-    return tree.begin(tree_it);
+    const tree<T> &parse_tree, typename tree<T>::sibling_iterator tree_it) {
+    return parse_tree.begin(tree_it);
 }
 
 template<class T>
-typename tree<T>::sibling_iterator first_child_of_root(const tree<T> &tree) {
-    return first_child(tree, tree.begin());
+typename tree<T>::sibling_iterator first_child_of_root(const tree<T> &parse_tree) {
+    return first_child(parse_tree, parse_tree.begin());
 }
 
 template<class T>
-typename tree<T>::sibling_iterator end_of_roots_children(const tree<T> &tree) {
-    return tree.end(tree.begin());
+typename tree<T>::sibling_iterator end_of_roots_children(const tree<T> &parse_tree) {
+    return parse_tree.end(parse_tree.begin());
 }
 
 template<class T>
 tree<T> subtree(
-    const tree<T> &tree, typename tree<T>::sibling_iterator tree_it) {
+    const tree<T> &parse_tree, typename tree<T>::sibling_iterator tree_it) {
     typename tree<T>::sibling_iterator tree_it_next = tree_it;
     ++tree_it_next;
-    return tree.subtree(tree_it, tree_it_next);
+    return parse_tree.subtree(tree_it, tree_it_next);
 }
 }
 
