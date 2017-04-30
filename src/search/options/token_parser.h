@@ -191,6 +191,9 @@ inline ParseTree TokenParser<ParseTree>::parse(OptionParser &parser) {
 
 template<typename T>
 inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
+    if (parser.get_parse_tree()->begin()->value != "list") {
+        parser.error("expected list");
+    }
     std::vector<T> results;
     for (auto tree_it = first_child_of_root(*parser.get_parse_tree());
          tree_it != end_of_roots_children(*parser.get_parse_tree());
