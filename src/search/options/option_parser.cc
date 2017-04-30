@@ -293,23 +293,23 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = args[i];
         bool is_last = (i == args.size() - 1);
-        if (arg.compare("--heuristic") == 0) {
+        if (arg == "--heuristic") {
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
             predefine_heuristic(args[i], dry_run);
-        } else if (arg.compare("--landmarks") == 0) {
+        } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
             predefine_lmgraph(args[i], dry_run);
-        } else if (arg.compare("--search") == 0) {
+        } else if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
             OptionParser p(args[i], dry_run);
             engine = p.start_parsing<SearchEngine *>();
-        } else if ((arg.compare("--help") == 0) && dry_run) {
+        } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
             vector<string> helpiands;
@@ -335,12 +335,12 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             doc_printer->print_all();
             cout << "Help output finished." << endl;
             exit(0);
-        } else if (arg.compare("--internal-plan-file") == 0) {
+        } else if (arg == "--internal-plan-file") {
             if (is_last)
                 throw ArgError("missing argument after --internal-plan-file");
             ++i;
             g_plan_filename = args[i];
-        } else if (arg.compare("--internal-previous-portfolio-plans") == 0) {
+        } else if (arg == "--internal-previous-portfolio-plans") {
             if (is_last)
                 throw ArgError("missing argument after --internal-previous-portfolio-plans");
             ++i;
@@ -420,7 +420,7 @@ static ParseTree generate_parse_tree(const string &config) {
                 buffer.clear();
                 key.clear();
             }
-            if (cur_node->value.compare("list") != 0) {
+            if (cur_node->value != "list") {
                 throw ParseError("mismatched brackets", *cur_node, config.substr(0, i));
             }
             cur_node = tree.parent(cur_node);
@@ -438,7 +438,7 @@ static ParseTree generate_parse_tree(const string &config) {
             break;
         }
     }
-    if (cur_node->value.compare("pseudoroot") != 0)
+    if (cur_node->value != "pseudoroot")
         throw ParseError("missing )", *cur_node);
     if (!buffer.empty())
         tree.append_child(cur_node, ParseNode(buffer, key));

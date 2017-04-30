@@ -66,7 +66,7 @@ inline T TokenParser<T>::parse(OptionParser &parser) {
 template<>
 inline int TokenParser<int>::parse(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (value.compare("infinity") == 0) {
+    if (value == "infinity") {
         return std::numeric_limits<int>::max();
     } else {
         std::stringstream str_stream(value);
@@ -82,7 +82,7 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
 template<>
 inline double TokenParser<double>::parse(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (value.compare("infinity") == 0) {
+    if (value == "infinity") {
         return std::numeric_limits<double>::infinity();
     } else {
         std::stringstream str_stream(value);
@@ -193,7 +193,7 @@ template<typename T>
 inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     std::vector<T> results;
-    if (value.compare("list") != 0) {
+    if (value != "list") {
         // Try to parse the next token as list of length 1 given without brackets.
         results.push_back(TokenParser<T>::parse(parser));
     } else {
