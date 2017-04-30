@@ -32,14 +32,14 @@ public:
 
 class Txt2TagsPrinter : public DocPrinter {
 protected:
-    virtual void print_synopsis(const DocStruct &info);
-    virtual void print_usage(const std::string &call_name, const DocStruct &info);
-    virtual void print_arguments(const DocStruct &info);
-    virtual void print_notes(const DocStruct &info);
-    virtual void print_language_features(const DocStruct &info);
-    virtual void print_properties(const DocStruct &info);
-    virtual void print_category_header(const std::string &category_name);
-    virtual void print_category_footer();
+    virtual void print_synopsis(const DocStruct &info) override;
+    virtual void print_usage(const std::string &call_name, const DocStruct &info) override;
+    virtual void print_arguments(const DocStruct &info) override;
+    virtual void print_notes(const DocStruct &info) override;
+    virtual void print_language_features(const DocStruct &info) override;
+    virtual void print_properties(const DocStruct &info) override;
+    virtual void print_category_header(const std::string &category_name) override;
+    virtual void print_category_footer() override;
 
 public:
     explicit Txt2TagsPrinter(std::ostream &out);
@@ -51,14 +51,14 @@ class PlainPrinter : public DocPrinter {
     bool print_all;
 
 protected:
-    virtual void print_synopsis(const DocStruct &info);
-    virtual void print_usage(const std::string &call_name, const DocStruct &info);
-    virtual void print_arguments(const DocStruct &info);
-    virtual void print_notes(const DocStruct &info);
-    virtual void print_language_features(const DocStruct &info);
-    virtual void print_properties(const DocStruct &info);
-    virtual void print_category_header(const std::string &category_name);
-    virtual void print_category_footer();
+    virtual void print_synopsis(const DocStruct &info) override;
+    virtual void print_usage(const std::string &call_name, const DocStruct &info) override;
+    virtual void print_arguments(const DocStruct &info) override;
+    virtual void print_notes(const DocStruct &info) override;
+    virtual void print_language_features(const DocStruct &info) override;
+    virtual void print_properties(const DocStruct &info) override;
+    virtual void print_category_header(const std::string &category_name) override;
+    virtual void print_category_footer() override;
 
 public:
     PlainPrinter(std::ostream &out, bool print_all = false);
