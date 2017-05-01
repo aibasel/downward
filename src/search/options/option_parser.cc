@@ -288,7 +288,7 @@ int OptionParser::parse_int_arg(const string &name, const string &value) {
 
 SearchEngine *OptionParser::parse_cmd_line_aux(
     const vector<string> &args, bool dry_run) {
-    SearchEngine *engine(0);
+    SearchEngine *engine = nullptr;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = args[i];

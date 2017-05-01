@@ -13,11 +13,12 @@
 namespace options {
 // Wrapper for unordered_map<string, Any>.
 class Options {
+    std::unordered_map<std::string, Any> storage;
     std::string unparsed_config;
     bool help_mode;
 
 public:
-    Options(bool help_mode = false)
+    explicit Options(bool help_mode = false)
         : unparsed_config("<missing>"),
           help_mode(help_mode) {
     }
@@ -25,8 +26,6 @@ public:
     void set_help_mode(bool help_mode_) {
         help_mode = help_mode_;
     }
-
-    std::unordered_map<std::string, Any> storage;
 
     template<typename T>
     void set(const std::string &key, T value) {
