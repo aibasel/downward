@@ -199,7 +199,10 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         if (parent_node.get_real_g() + last_op->get_cost() >= bound)
             continue;
 
-        GlobalState state = state_registry.get_successor_state(parent_state, *last_op);
+        // TODO this will simplify a bit once issue725 is merged.
+        TaskProxy task_proxy(*g_root_task());
+        OperatorProxy last_op_proxy = task_proxy.get_operators()[entry.second];
+        GlobalState state = state_registry.get_successor_state(parent_state, last_op_proxy);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state);

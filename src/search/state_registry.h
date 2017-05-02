@@ -98,6 +98,7 @@
     to store for each state and each landmark whether it was reached in this state.
 */
 
+class OperatorProxy;
 class PerStateInformationBase;
 
 class StateRegistry {
@@ -201,7 +202,7 @@ public:
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    GlobalState get_successor_state(const GlobalState &predecessor, const GlobalOperator &op);
+    GlobalState get_successor_state(const GlobalState &predecessor, const OperatorProxy &op);
 
     /*
       Returns the number of states registered so far.
