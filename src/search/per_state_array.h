@@ -4,6 +4,7 @@
 #include "global_state.h"
 #include "globals.h"
 #include "per_state_information.h"
+#include "per_state_bitset.h"
 #include "algorithms/segmented_vector.h"
 #include "state_id.h"
 #include "state_registry.h"
@@ -16,12 +17,29 @@
 
 template<class T>
 class ArrayView {
+    template<typename>
+    friend class PerStateArray;
     T *const p;
-    const size_t array_size;
-public:
-    // we might want to make the constructor private and
-    // PerStateArraInformation a friend class in the future
+    const int array_size;
     ArrayView(T *p, size_t size) : p(p), array_size(size) {}
+public:
+    class const_reference {
+        template<typename>
+        friend class PerStateArray;
+        const T *const p;
+        const int array_size;
+        const_reference(const T *p, const int size) : p(p), array_size(size) {}
+public:
+        const T &operator[](int index) const {
+            return p[index];
+        }
+
+        int size() const {
+            return array_size;
+        }
+
+    };
+
     // TODO: is return *this correct?
     ArrayView<T> &operator=(const std::vector<T> &data) {
         assert(data.size() == array_size);
@@ -38,14 +56,6 @@ public:
         return *this;
     }
 
-    std::vector<T> get_vector() {
-        std::vector<T> ret(array_size);
-        for(size_t i = 0; i < array_size; ++i) {
-            ret[i] = p[i];
-        }
-        // TODO: move correct here?
-        return std::move(ret);
-    }
 
     T &operator[](int index) {
         return p[index];
@@ -55,7 +65,7 @@ public:
         return p[index];
     }
 
-    size_t size() const {
+    int size() const {
         return array_size;
     }
 };
@@ -88,7 +98,8 @@ public:
 */
 
 template<class Element>
-class PerStateArrayInformation : public PerStateInformationBase {
+class PerStateArray : public PerStateInformationBase {
+    friend class PerStateBitset;
     size_t array_size;
     const std::vector<Element> default_array;
     typedef std::unordered_map<const StateRegistry *,
@@ -141,70 +152,18 @@ class PerStateArrayInformation : public PerStateInformationBase {
     }
 
     // No implementation to forbid copies and assignment
-    PerStateArrayInformation(const PerStateArrayInformation<Element> &);
-    PerStateArrayInformation &operator=(const PerStateArrayInformation<Element> &);
+    PerStateArray(const PerStateArray<Element> &);
+    PerStateArray &operator=(const PerStateArray<Element> &);
+
 public:
-    // TODO this iterates over StateIDs not over entries. Move it to StateRegistry?
-    //      A better implementation would allow to iterate over pair<StateID, Entry>.
-    class const_iterator : public std::iterator<std::forward_iterator_tag,
-                                                StateID> {
-        friend class PerStateArrayInformation<Element>;
-        const PerStateArrayInformation<Element> &owner;
-        const StateRegistry *registry;
-        StateID pos;
-
-        const_iterator(const PerStateArrayInformation<Element> &owner_,
-                       const StateRegistry *registry_, size_t start)
-            : owner(owner_), registry(registry_), pos(start) {}
-public:
-        const_iterator(const const_iterator &other)
-            : owner(other.owner), registry(other.registry), pos(other.pos) {}
-
-        ~const_iterator() {}
-
-        const_iterator &operator++() {
-            ++pos.value;
-            return *this;
-        }
-
-        const_iterator operator++(int) {
-            const_iterator tmp(*this);
-            operator++();
-            return tmp;
-        }
-
-        bool operator==(const const_iterator &rhs) {
-            return &owner == &rhs.owner && registry == rhs.registry && pos == rhs.pos;
-        }
-
-        bool operator!=(const const_iterator &rhs) {
-            return !(*this == rhs);
-        }
-
-        StateID operator*() {
-            return pos;
-        }
-
-        StateID *operator->() {
-            return &pos;
-        }
-    };
-
-    const_iterator begin(const StateRegistry *registry) const {
-        return const_iterator(*this, registry, 0);
-    }
-    const_iterator end(const StateRegistry *registry) const {
-        return const_iterator(*this, registry, registry->size());
-    }
-
-    PerStateArrayInformation(size_t array_size_)
+    PerStateArray(size_t array_size_)
         : array_size(array_size_),
           default_array(std::vector<Element>(array_size_)),
           cached_registry(0),
           cached_entries(0) {
     }
 
-    explicit PerStateArrayInformation(size_t array_size_, const std::vector<Element> &default_array_)
+    explicit PerStateArray(size_t array_size_, const std::vector<Element> &default_array_)
         : array_size(array_size_),
           default_array(default_array_),
           cached_registry(0),
@@ -212,7 +171,7 @@ public:
         assert(default_array.size() == array_size);
     }
 
-    ~PerStateArrayInformation() {
+    ~PerStateArray() {
         for (typename EntryArrayVectorMap::iterator it = entry_arrays_by_registry.begin();
              it != entry_arrays_by_registry.end(); ++it) {
             it->first->unsubscribe(this);
@@ -229,24 +188,22 @@ public:
         if (entries->size() < virtual_size) {
             entries->push_back(&default_array[0]);
         }
-        // TODO: is this effiecient? is move better?
         return ArrayView<Element>((*cached_entries)[state_id], array_size);
     }
 
-    const ArrayView<Element> operator[](const GlobalState &state) const {
+    typename ArrayView<Element>::const_reference operator[](const GlobalState &state) const {
         const StateRegistry *registry = &state.get_registry();
         const segmented_vector::SegmentedArrayVector<Element> *entries = get_entries(registry);
         if (!entries) {
-            return nullptr; // TODO: does this make sense?
+            return typename ArrayView<Element>::const_reference(&default_array[0], array_size);
         }
         int state_id = state.get_id().value;
         assert(utils::in_bounds(state_id, *registry));
         int num_entries = entries->size();
         if (state_id >= num_entries) {
-            return nullptr; // TODO: does this make sense?
+            return typename ArrayView<Element>::const_reference(&default_array[0], array_size);
         }
-        // TODO: is this effiecient? is move better?
-        return ArrayView<Element>((*cached_entries)[state_id], array_size);
+        return typename ArrayView<Element>::const_reference((*cached_entries)[state_id], array_size);
     }
 
     void remove_state_registry(StateRegistry *registry) {
