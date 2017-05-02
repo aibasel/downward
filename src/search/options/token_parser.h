@@ -3,8 +3,8 @@
 
 #include "predefinitions.h"
 
+class Evaluator;
 class Heuristic;
-class ScalarEvaluator;
 
 namespace options {
 class OptionParser;
@@ -146,18 +146,18 @@ static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &p, bool 
   See http://issues.fast-downward.org/msg4686 (which is part of that issue).
 */
 template<>
-inline ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
+inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
-        return (ScalarEvaluator *)
+        return (Evaluator *)
                Predefinitions<Heuristic *>::instance()->get(pt->value);
-    } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
-        return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
+    } else if (Registry<Evaluator *>::instance()->contains(pt->value)) {
+        return Registry<Evaluator *>::instance()->get(pt->value) (p);
     } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
-        return (ScalarEvaluator *)
+        return (Evaluator *)
                Registry<Heuristic *>::instance()->get(pt->value) (p);
     }
-    p.error("ScalarEvaluator " + pt->value + " not found");
+    p.error("Evaluator " + pt->value + " not found");
     return 0;
 }
 

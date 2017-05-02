@@ -2,13 +2,12 @@
 #define SEARCH_ENGINES_LAZY_SEARCH_H
 
 #include "../evaluation_context.h"
+#include "../evaluator.h"
 #include "../global_state.h"
-#include "../scalar_evaluator.h"
+#include "../open_list.h"
 #include "../search_engine.h"
 #include "../search_progress.h"
 #include "../search_space.h"
-
-#include "../open_lists/open_list.h"
 
 #include <memory>
 #include <vector>
@@ -50,8 +49,8 @@ protected:
 
     void reward_progress();
 
-    std::vector<const GlobalOperator *> get_successor_operators(
-        const algorithms::OrderedSet<const GlobalOperator *> &preferred_operators) const;
+    std::vector<OperatorID> get_successor_operators(
+        const ordered_set::OrderedSet<OperatorID> &preferred_operators) const;
 
     // TODO: Move into SearchEngine?
     void print_checkpoint_line(int g) const;

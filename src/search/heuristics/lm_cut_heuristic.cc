@@ -5,8 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/memory.h"
 
 #include <iostream>

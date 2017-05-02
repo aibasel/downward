@@ -1,7 +1,5 @@
 #include "stubborn_sets_simple.h"
 
-#include "../globals.h"
-#include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -11,39 +9,14 @@
 using namespace std;
 
 namespace stubborn_sets_simple {
-/* Implementation of simple instantiation of strong stubborn sets.
-   Disjunctive action landmarks are computed trivially.*/
-
-// Return the first unsatified goal pair, or (-1, -1) if there is none.
-static inline FactPair find_unsatisfied_goal(const GlobalState &state) {
-    for (const pair<int, int> &goal : g_goal) {
-        int goal_var = goal.first;
-        int goal_value = goal.second;
-        if (state[goal_var] != goal_value)
-            return FactPair(goal_var, goal_value);
-    }
-    return FactPair(-1, -1);
-}
-
-// Return the first unsatified precondition, or (-1, -1) if there is none.
-static inline FactPair find_unsatisfied_precondition(
-    const GlobalOperator &op, const GlobalState &state) {
-    for (const GlobalCondition &precondition : op.get_preconditions()) {
-        int var = precondition.var;
-        int value = precondition.val;
-        if (state[var] != value)
-            return FactPair(var, value);
-    }
-    return FactPair(-1, -1);
-}
-
-StubbornSetsSimple::StubbornSetsSimple() {
+void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
+    StubbornSets::initialize(task);
     compute_interference_relation();
     cout << "pruning method: stubborn sets simple" << endl;
 }
 
+
 void StubbornSetsSimple::compute_interference_relation() {
-    int num_operators = g_operators.size();
     interference_relation.resize(num_operators);
 
     /*
@@ -75,18 +48,17 @@ void StubbornSetsSimple::add_interfering(int op_no) {
     }
 }
 
-void StubbornSetsSimple::initialize_stubborn_set(const GlobalState &state) {
+void StubbornSetsSimple::initialize_stubborn_set(const State &state) {
     // Add a necessary enabling set for an unsatisfied goal.
     FactPair unsatisfied_goal = find_unsatisfied_goal(state);
-    assert(unsatisfied_goal.var != -1);
+    assert(unsatisfied_goal != FactPair::no_fact);
     add_necessary_enabling_set(unsatisfied_goal);
 }
 
-void StubbornSetsSimple::handle_stubborn_operator(const GlobalState &state,
+void StubbornSetsSimple::handle_stubborn_operator(const State &state,
                                                   int op_no) {
-    const GlobalOperator &op = g_operators[op_no];
-    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op, state);
-    if (unsatisfied_precondition.var == -1) {
+    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op_no, state);
+    if (unsatisfied_precondition == FactPair::no_fact) {
         /* no unsatisfied precondition found
            => operator is applicable
            => add all interfering operators */

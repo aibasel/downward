@@ -33,9 +33,10 @@ void IncrementalCanonicalPDBs::add_pdb_for_pattern(const Pattern &pattern) {
     size += pattern_databases->back()->get_size();
 }
 
-void IncrementalCanonicalPDBs::add_pattern(const Pattern &pattern) {
-    patterns->push_back(pattern);
-    add_pdb_for_pattern(pattern);
+void IncrementalCanonicalPDBs::add_pdb(const shared_ptr<PatternDatabase> &pdb) {
+    patterns->push_back(pdb->get_pattern());
+    pattern_databases->push_back(pdb);
+    size += pattern_databases->back()->get_size();
     recompute_max_additive_subsets();
 }
 

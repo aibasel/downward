@@ -1,7 +1,6 @@
 #include "alternation_open_list.h"
 
-#include "open_list.h"
-
+#include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -15,7 +14,7 @@
 using namespace std;
 using utils::ExitCode;
 
-
+namespace alternation_open_list {
 template<class Entry>
 class AlternationOpenList : public OpenList<Entry> {
     vector<unique_ptr<OpenList<Entry>>> open_lists;
@@ -167,3 +166,4 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("alt", _parse);
+}
