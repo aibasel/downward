@@ -25,6 +25,7 @@ struct GlobalCondition {
         return !(*this == other);
     }
 
+    // TODO: move to FactProxy
     void dump() const;
 };
 
@@ -42,6 +43,7 @@ struct GlobalEffect {
         return true;
     }
 
+    // TODO: move to EffectProxy
     void dump() const;
 };
 

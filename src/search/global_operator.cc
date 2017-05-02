@@ -1,6 +1,7 @@
 #include "global_operator.h"
 
 #include "globals.h"
+#include "task_proxy.h"
 
 #include "utils/collections.h"
 #include "utils/system.h"
@@ -99,11 +100,15 @@ GlobalOperator::GlobalOperator(istream &in, bool axiom) {
 }
 
 void GlobalCondition::dump() const {
-    cout << g_variable_name[var] << ": " << val;
+    TaskProxy task_proxy(*g_root_task());
+    VariablesProxy variables = task_proxy.get_variables();
+    cout << variables[var].get_name() << ": " << val;
 }
 
 void GlobalEffect::dump() const {
-    cout << g_variable_name[var] << ":= " << val;
+    TaskProxy task_proxy(*g_root_task());
+    VariablesProxy variables = task_proxy.get_variables();
+    cout << variables[var].get_name() << ":= " << val;
     if (!conditions.empty()) {
         cout << " if";
         for (size_t i = 0; i < conditions.size(); ++i) {
