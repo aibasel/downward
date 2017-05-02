@@ -65,7 +65,6 @@ SearchStatus IteratedSearch::step() {
 
     current_search->search();
 
-    TaskProxy task_proxy(*g_root_task());
     SearchEngine::Plan found_plan;
     int plan_cost = 0;
     last_phase_found_solution = current_search->found_solution();

@@ -8,6 +8,7 @@
 #include "search_space.h"
 #include "search_statistics.h"
 #include "state_registry.h"
+#include "task_proxy.h"
 
 #include <vector>
 
@@ -27,12 +28,17 @@ enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
 public:
-    typedef std::vector<OperatorID> Plan;
+    using Plan = std::vector<OperatorID>;
 private:
     SearchStatus status;
     bool solution_found;
     Plan plan;
 protected:
+    // Hold a reference to the task implementation and pass it to objects that need it.
+    const std::shared_ptr<AbstractTask> task;
+    // Use task_proxy to access task information.
+    TaskProxy task_proxy;
+
     StateRegistry state_registry;
     SearchSpace search_space;
     SearchProgress search_progress;
