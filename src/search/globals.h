@@ -70,9 +70,7 @@ extern utils::Log g_log;
 
 // TODO: the following variables are deprecated and will be removed soon.
 
-// still needed by GlobalOperator::dump
-extern std::vector<std::string> g_variable_name;
-// still used in pruning and to check FactPair validity in GlobalOperator
+// still used to check FactPair validity in GlobalOperator
 extern std::vector<int> g_variable_domain;
 
 /*

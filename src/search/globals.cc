@@ -40,6 +40,7 @@ static vector<vector<set<FactPair>>> g_inconsistent_facts;
 static vector<vector<string>> g_fact_names;
 static vector<int> g_axiom_layers;
 static vector<int> g_default_axiom_values;
+static vector<string> g_variable_name;
 
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -364,7 +365,6 @@ const shared_ptr<AbstractTask> g_root_task() {
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
-vector<string> g_variable_name;
 vector<int> g_variable_domain;
 int_packer::IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
