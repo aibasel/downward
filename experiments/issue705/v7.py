@@ -55,7 +55,7 @@ def add_sg_peak_mem_diff_per_task_size(run):
 
 
 for attr in ["total_time", "search_time", "sg_construction_time", "memory", "sg_peak_mem_diff_per_task_size"]:
-    for rev1, rev2 in [("base", "v8"), ("v7", "v8")]:
+    for rev1, rev2 in [("base", "v11"), ("v8", "v9"), ("v9", "v10"), ("v10", "v11")]:
         exp.add_report(RelativeScatterPlotReport(
             attributes=[attr],
             filter_algorithm=["issue705-%s-astar-blind" % rev1, "issue705-%s-astar-blind" % rev2],
@@ -63,5 +63,10 @@ for attr in ["total_time", "search_time", "sg_construction_time", "memory", "sg_
             get_category=lambda r1, r2: r1["domain"],
         ),
         outfile="issue705-%s-%s-%s.png" % (attr, rev1, rev2))
+
+exp.add_report(CSVReport(
+    filter_algorithm="issue705-v11-astar-blind",
+    attributes=["algorithm", "domain", "sg_*", "translator_task_size"]),
+    outfile="csvreport.csv")
 
 exp.run_steps()
