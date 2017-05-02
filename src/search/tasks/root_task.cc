@@ -321,8 +321,8 @@ shared_ptr<RootTask> create_root_task(
 
     vector<FactPair> goals;
     goals.reserve(goal.size());
-    for (pair<int, int> goal : goal) {
-        goals.emplace_back(goal.first, goal.second);
+    for (pair<int, int> g : goal) {
+        goals.emplace_back(g.first, g.second);
     }
 
     return make_shared<RootTask>(
