@@ -22,8 +22,10 @@ using utils::ExitCode;
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
+      task(g_root_task()),
+      task_proxy(*task),
       state_registry(
-          *g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
+          *task, *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
@@ -90,7 +92,6 @@ bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
 
 void SearchEngine::save_plan_if_necessary() const {
     if (found_solution()) {
-        TaskProxy task_proxy(*g_root_task());
         save_plan(get_plan(), task_proxy);
     }
 }
