@@ -6,6 +6,8 @@ import os
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
 
+from downward.reports import compare
+
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
 
@@ -26,12 +28,14 @@ exp = IssueExperiment(
     environment=ENVIRONMENT,
 )
 
+compared_algorithms = []
 for search in ["eager_greedy", "lazy_greedy"]:
     for h1, h2 in itertools.permutations(["cea", "cg", "ff"], 2):
         rev = "issue714-base"
         config_nick = "-".join([search, h1, h2])
+        algo1 = common_setup.get_algo_nick(rev, config_nick)
         exp.add_algorithm(
-            common_setup.get_algo_nick(rev, config_nick),
+            algo1,
             common_setup.get_repo_base(),
             rev,
             [
@@ -42,8 +46,9 @@ for search in ["eager_greedy", "lazy_greedy"]:
 
         rev = "issue714-v1"
         config_nick = "-".join([search, h1, h2])
+        algo2 = common_setup.get_algo_nick(rev, config_nick)
         exp.add_algorithm(
-            common_setup.get_algo_nick(rev, config_nick),
+            algo2,
             common_setup.get_repo_base(),
             rev,
             [
@@ -52,8 +57,13 @@ for search in ["eager_greedy", "lazy_greedy"]:
                 "--search", "{search}([h{h1},h{h2}], preferred=[h{h1},h{h2}])".format(**locals())],
             driver_options=["--search-time-limit", "1m"])
 
+        compared_algorithms.append([algo1, algo2, "Diff ({config_nick})".format(**locals())])
+
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_absolute_report_step()
-exp.add_comparison_table_step()
+exp.add_report(compare.ComparativeReport(
+        compared_algorithms,
+        attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES),
+    name=common_setup.get_experiment_name() + "-comparison")
 
 exp.run_steps()
