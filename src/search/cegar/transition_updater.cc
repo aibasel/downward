@@ -4,7 +4,8 @@
 #include "utils.h"
 
 #include "../task_proxy.h"
-#include "../task_tools.h"
+
+#include "../task_utils/task_properties.h"
 
 #include <algorithm>
 #include <map>
@@ -17,7 +18,8 @@ static vector<vector<FactPair>> get_preconditions_by_operator(
     vector<vector<FactPair>> preconditions_by_operator;
     preconditions_by_operator.reserve(ops.size());
     for (OperatorProxy op : ops) {
-        vector<FactPair> preconditions = get_fact_pairs(op.get_preconditions());
+        vector<FactPair> preconditions = task_properties::get_fact_pairs(
+            op.get_preconditions());
         sort(preconditions.begin(), preconditions.end());
         preconditions_by_operator.push_back(move(preconditions));
     }

@@ -32,8 +32,6 @@ def main():
         try:
             if component == "translate":
                 run_components.run_translate(args)
-            elif component == "preprocess":
-                run_components.run_preprocess(args)
             elif component == "search":
                 exitcode = run_components.run_search(args)
             elif component == "validate":

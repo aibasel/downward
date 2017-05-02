@@ -3,6 +3,8 @@
 
 #include "explicit_task.h"
 
+#include "../global_operator.h"
+
 namespace tasks {
 class RootTask : public ExplicitTask {
 public:
@@ -15,7 +17,7 @@ public:
         std::vector<int> &&initial_state_values,
         std::vector<FactPair> &&goals);
 
-    virtual const GlobalOperator *get_global_operator(int index, bool is_axiom) const override;
+    virtual OperatorID get_global_operator_id(OperatorID id) const override;
     virtual void convert_state_values_from_parent(std::vector<int> &values) const override;
 };
 

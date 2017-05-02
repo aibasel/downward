@@ -4,6 +4,7 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../state_registry.h"
 
 #include "../utils/collections.h"
 
@@ -25,15 +26,8 @@ RootTask::RootTask(
                    move(initial_state_values), move(goals)) {
 }
 
-const GlobalOperator *RootTask::get_global_operator(int index, bool is_axiom) const {
-    // When we switch to operator ids, this should just return index
-    if (is_axiom) {
-        assert(utils::in_bounds(index, g_axioms));
-        return &g_axioms[index];
-    } else {
-        assert(utils::in_bounds(index, g_operators));
-        return &g_operators[index];
-    }
+OperatorID RootTask::get_global_operator_id(OperatorID id) const {
+    return id;
 }
 
 void RootTask::convert_state_values_from_parent(vector<int> &) const {

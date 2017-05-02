@@ -13,9 +13,15 @@ class CausalGraph;
 struct FactPair;
 class GlobalOperator;
 class GlobalState;
-class IntPacker;
 class StateRegistry;
+
+namespace int_packer {
+class IntPacker;
+}
+
+namespace successor_generator {
 class SuccessorGenerator;
+}
 
 namespace utils {
 struct Log;
@@ -34,7 +40,7 @@ int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 void read_everything(std::istream &in);
 void dump_everything();
 
-// The following six functions are deprecated. Use task_tools.h instead.
+// The following six functions are deprecated. Use task_properties.h instead.
 bool is_unit_cost();
 bool has_axioms();
 void verify_no_axioms();
@@ -50,9 +56,9 @@ extern bool g_use_metric;
 extern int g_min_action_cost;
 extern int g_max_action_cost;
 
-extern IntPacker *g_state_packer;
+extern int_packer::IntPacker *g_state_packer;
 extern AxiomEvaluator *g_axiom_evaluator;
-extern SuccessorGenerator *g_successor_generator;
+extern successor_generator::SuccessorGenerator *g_successor_generator;
 extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
 extern bool g_is_part_of_anytime_portfolio;

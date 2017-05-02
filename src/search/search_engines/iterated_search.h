@@ -21,8 +21,8 @@ class IteratedSearch : public SearchEngine {
     int best_bound;
     bool iterated_found_solution;
 
-    SearchEngine *get_search_engine(int engine_config_start_index);
-    SearchEngine *create_phase(int phase);
+    std::unique_ptr<SearchEngine> get_search_engine(int engine_config_start_index);
+    std::unique_ptr<SearchEngine> create_phase(int phase);
     SearchStatus step_return_value();
 
     virtual SearchStatus step() override;

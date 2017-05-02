@@ -1,7 +1,7 @@
 #include "axioms.h"
 
-#include "int_packer.h"
-#include "task_tools.h"
+#include "algorithms/int_packer.h"
+#include "task_utils/task_properties.h"
 
 #include <algorithm>
 #include <cassert>
@@ -11,7 +11,7 @@
 using namespace std;
 
 AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
-    task_has_axioms = has_axioms(task_proxy);
+    task_has_axioms = task_properties::has_axioms(task_proxy);
     if (task_has_axioms) {
         VariablesProxy variables = task_proxy.get_variables();
         AxiomsProxy axioms = task_proxy.get_axioms();
@@ -75,7 +75,7 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
 
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
-                              const IntPacker &state_packer) {
+                              const int_packer::IntPacker &state_packer) {
     if (!task_has_axioms)
         return;
 

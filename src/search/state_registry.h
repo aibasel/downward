@@ -4,10 +4,10 @@
 #include "abstract_task.h"
 #include "axioms.h"
 #include "global_state.h"
-#include "int_packer.h"
-#include "segmented_vector.h"
 #include "state_id.h"
 
+#include "algorithms/int_packer.h"
+#include "algorithms/segmented_vector.h"
 #include "utils/hash.h"
 
 #include <set>
@@ -28,7 +28,7 @@
   StateID
     StateIDs identify states within a state registry.
     If the registry is known, the ID is sufficient to look up the state, which
-    is why ids are intended for long term storage (e.g. in open lists).
+    is why IDs are intended for long term storage (e.g. in open lists).
     Internally, a StateID is just an integer, so it is cheap to store and copy.
 
   PackedStateBin (currently the same as unsigned int)
@@ -102,10 +102,10 @@ class PerStateInformationBase;
 
 class StateRegistry {
     struct StateIDSemanticHash {
-        const SegmentedArrayVector<PackedStateBin> &state_data_pool;
+        const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
         int state_size;
         StateIDSemanticHash(
-            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool,
             int state_size)
             : state_data_pool(state_data_pool),
               state_size(state_size) {
@@ -118,10 +118,10 @@ class StateRegistry {
     };
 
     struct StateIDSemanticEqual {
-        const SegmentedArrayVector<PackedStateBin> &state_data_pool;
+        const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
         int state_size;
         StateIDSemanticEqual(
-            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool,
             int state_size)
             : state_data_pool(state_data_pool),
               state_size(state_size) {
@@ -151,12 +151,12 @@ class StateRegistry {
 
     /* TODO: When we switch StateRegistry to the task interface, the next three
              members should come from the task. */
-    const IntPacker &state_packer;
+    const int_packer::IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
     const std::vector<int> &initial_state_data;
     const int num_variables;
 
-    SegmentedArrayVector<PackedStateBin> state_data_pool;
+    segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
     GlobalState *cached_initial_state;
@@ -166,7 +166,7 @@ class StateRegistry {
     int get_bins_per_state() const;
 public:
     StateRegistry(
-        const AbstractTask &task, const IntPacker &state_packer,
+        const AbstractTask &task, const int_packer::IntPacker &state_packer,
         AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
     ~StateRegistry();
 
