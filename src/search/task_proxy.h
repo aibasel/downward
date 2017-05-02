@@ -2,6 +2,7 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
+#include "global_state.h"
 #include "operator_id.h"
 
 #include "utils/collections.h"
@@ -551,6 +552,7 @@ public:
 
 
 bool does_fire(EffectProxy effect, const State &state);
+bool does_fire(EffectProxy effect, const GlobalState &state);
 
 
 class State {
@@ -709,6 +711,15 @@ inline TaskProxy State::get_task() const {
 inline bool does_fire(EffectProxy effect, const State &state) {
     for (FactProxy condition : effect.get_conditions()) {
         if (state[condition.get_variable()] != condition)
+            return false;
+    }
+    return true;
+}
+
+inline bool does_fire(EffectProxy effect, const GlobalState &state) {
+    for (FactProxy condition : effect.get_conditions()) {
+        FactPair condition_pair = condition.get_pair();
+        if (state[condition_pair.var] != condition_pair.value)
             return false;
     }
     return true;

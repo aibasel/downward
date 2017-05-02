@@ -129,7 +129,10 @@ SearchStatus EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        GlobalState succ_state = state_registry.get_successor_state(s, *op);
+        // TODO this will simplify a bit once issue725 is merged.
+        TaskProxy task_proxy(*g_root_task());
+        OperatorProxy op_proxy = task_proxy.get_operators()[op_id];
+        GlobalState succ_state = state_registry.get_successor_state(s, op_proxy);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 

@@ -128,7 +128,11 @@ SearchStatus LazySearch::fetch_next_state() {
     current_operator = &g_operators[next.second];
     GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
-    current_state = state_registry.get_successor_state(current_predecessor, *current_operator);
+
+    // TODO this will simplify a bit once issue725 is merged.
+    TaskProxy task_proxy(*g_root_task());
+    OperatorProxy current_operator_proxy = task_proxy.get_operators()[next.second];
+    current_state = state_registry.get_successor_state(current_predecessor, current_operator_proxy);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
