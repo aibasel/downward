@@ -21,8 +21,8 @@ class GlobalState {
     template<typename Entry>
     friend class PerStateInformation;
     template<typename>
-    friend class PerStateArrayInformation;
-    friend class PerStateBitsetInformation;
+    friend class PerStateArray;
+    friend class PerStateBitset;
 
     // Values for vars are maintained in a packed state and accessed on demand.
     const PackedStateBin *buffer;

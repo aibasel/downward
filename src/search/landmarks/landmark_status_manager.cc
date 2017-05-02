@@ -15,8 +15,9 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
       do_intersection(true) {
 }
 
-BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
-    return reached_lms[state];
+BitsetView::const_reference LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
+    const PerStateBitset &ref(reached_lms);
+    return ref[state];
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
@@ -75,8 +76,8 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
     }
 
     int num_landmarks = lm_graph.number_of_landmarks();
-    assert(static_cast<int>(reached.size()) == num_landmarks);
-    assert(static_cast<int>(parent_reached.size()) == num_landmarks);
+    assert(reached.size() == num_landmarks);
+    assert(parent_reached.size() == num_landmarks);
 
     if (do_intersection) {
         /*
@@ -179,8 +180,7 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
     return false;
 }
 
-bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
-                                             const BitsetView &reached) const {
+bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node, BitsetView &reached) const {
     //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;

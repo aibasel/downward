@@ -12,8 +12,8 @@ class StateID {
     template<typename>
     friend class PerStateInformation;
     template<typename>
-    friend class PerStateArrayInformation;
-    friend class PerStateBitsetInformation;
+    friend class PerStateArray;
+    friend class PerStateBitset;
 
     int value;
     explicit StateID(int value_)

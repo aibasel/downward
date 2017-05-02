@@ -5,7 +5,7 @@
 #include "landmark_graph.h"
 
 #include "../heuristic.h"
-#include "../per_state_bitset_information.h"
+#include "../per_state_bitset.h"
 
 namespace landmarks {
 class LandmarkCostAssignment;
@@ -40,8 +40,7 @@ class LandmarkCountHeuristic : public Heuristic {
         const State &state, const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &global_state);
 
-    LandmarkSet convert_to_landmark_set(
-        const BitsetView &landmark_vector);
+    LandmarkSet convert_to_landmark_set(BitsetView::const_reference landmark_vector);
 protected:
     virtual int compute_heuristic(const GlobalState &state) override;
 public:
