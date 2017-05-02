@@ -19,7 +19,7 @@ class SuccessorGenerator {
     TaskProxy task_proxy;
     std::unique_ptr<GeneratorBase> root;
 
-    typedef std::vector<FactProxy> Condition;
+    using Condition = std::vector<FactProxy>;
     std::vector<Condition> conditions;
     std::vector<Condition::const_iterator> next_condition_by_op;
 
