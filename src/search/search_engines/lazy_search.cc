@@ -173,6 +173,7 @@ SearchStatus LazySearch::step() {
 
         GlobalOperator *current_operator = nullptr;
         if (current_operator_id != OperatorID::no_operator) {
+            assert(utils::in_bounds(current_operator_id.get_index(), g_operators));
             current_operator = &g_operators[current_operator_id.get_index()];
             for (Heuristic *heuristic : heuristics)
                 heuristic->notify_state_transition(
