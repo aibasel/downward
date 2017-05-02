@@ -143,8 +143,7 @@ int RootTask::get_num_operators() const {
     return operators.size();
 }
 
-int RootTask::get_num_operator_preconditions(
-    int index, bool is_axiom) const {
+int RootTask::get_num_operator_preconditions(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).preconditions.size();
 }
 
@@ -201,9 +200,8 @@ vector<int> RootTask::get_initial_state_values() const {
 }
 
 void RootTask::convert_state_values(
-    vector<int> &,
-    const AbstractTask *ancestor_task) const {
-    if (ancestor_task != this) {
+    vector<int> &, const AbstractTask *ancestor_task) const {
+    if (this != ancestor_task) {
         ABORT("Invalid state conversion");
     }
 }
@@ -291,7 +289,6 @@ shared_ptr<RootTask> create_root_task(
     const vector<pair<int, int>> &goal,
     const vector<GlobalOperator> &global_operators,
     const vector<GlobalOperator> &global_axioms) {
-
     vector<ExplicitVariable> variables;
     variables.reserve(variable_domain.size());
     for (int i = 0; i < static_cast<int>(variable_domain.size()); ++i) {
