@@ -3,7 +3,6 @@
 #include "../heuristic.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
-#include "../plugin.h"
 
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
