@@ -81,5 +81,5 @@ static SearchEngine *_parse(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin_wastar("lazy_wastar", _parse);
+static Plugin<SearchEngine> _plugin("lazy_wastar", _parse);
 }
