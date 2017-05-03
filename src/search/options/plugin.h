@@ -1,7 +1,11 @@
 #ifndef OPTIONS_PLUGIN_H
 #define OPTIONS_PLUGIN_H
 
+#include "doc_store.h"
+#include "option_parser.h"
 #include "registries.h"
+#include "type_documenter.h"
+#include "type_namer.h"
 
 #include <memory>
 #include <string>
@@ -25,7 +29,10 @@ public:
     PluginTypePlugin(const std::string &type_name,
                      const std::string &documentation) {
         using TPtr = std::shared_ptr<T>;
+        std::cout << "register " << type_name << std::endl;
         register_plugin_type_plugin(typeid(TPtr), type_name, documentation);
+        DocStore::instance()->set_synopsis(
+            TypeNamer<TPtr>::name(), "", TypeDocumenter<TPtr>::synopsis());
     }
 
     ~PluginTypePlugin() = default;
@@ -51,7 +58,18 @@ template<typename T>
 class PluginShared {
 public:
     PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
-        Registry<std::shared_ptr<T>>::instance()->insert(key, factory);
+        using TPtr = std::shared_ptr<T>;
+        Registry<TPtr>::instance()->insert(key, factory);
+        std::cout << "register " << key << std::endl;
+        // PluginTypes are (or may be) registered after Plugins.
+        //DocStore::instance()->register_object(key, TypeNamer<TPtr>::name());
+        DocStore::instance()->register_object(key, "missing");
+        ParseTree parse_tree;
+        parse_tree.insert(parse_tree.begin(), ParseNode(key));
+        OptionParser parser(parse_tree, true);
+        parser.set_help_mode(true);
+        parser.start_parsing<TPtr>();
+        std::cout << "registered " << key << std::endl;
     }
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;

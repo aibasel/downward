@@ -101,39 +101,6 @@ static void get_help(const string &name) {
     get_help_templ<shared_ptr<PruningMethod>>(parse_tree);
 }
 
-template<typename T>
-static void get_full_help_templ() {
-    DocStore::instance()->set_synopsis(
-        TypeNamer<T>::name(), "", TypeDocumenter<T>::synopsis());
-    for (const string &key : Registry<T>::instance()->get_sorted_keys()) {
-        ParseTree parse_tree;
-        parse_tree.insert(parse_tree.begin(), ParseNode(key));
-        get_help_templ<T>(parse_tree);
-    }
-}
-
-static void get_full_help() {
-    get_full_help_templ<SearchEngine *>();
-    get_full_help_templ<Evaluator *>();
-    get_full_help_templ<Heuristic *>();
-    get_full_help_templ<shared_ptr<AbstractTask>>();
-    get_full_help_templ<Synergy *>();
-    get_full_help_templ<landmarks::LandmarkFactory *>();
-    get_full_help_templ<shared_ptr<cegar::SubtaskGenerator>>();
-    get_full_help_templ<shared_ptr<OpenListFactory>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::LabelReduction>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeScoringFunction>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeSelector>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeTreeFactory>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>();
-    get_full_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>();
-    get_full_help_templ<shared_ptr<pdbs::PatternCollectionGenerator>>();
-    get_full_help_templ<shared_ptr<pdbs::PatternGenerator>>();
-    get_full_help_templ<shared_ptr<PruningMethod>>();
-}
-
-
 /*
   Predefine landmarks and heuristics.
 */
@@ -321,7 +288,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 }
             }
             if (helpiands.empty()) {
-                get_full_help();
+                //get_full_help();
             } else {
                 for (const string &helpiand : helpiands) {
                     get_help(helpiand);
