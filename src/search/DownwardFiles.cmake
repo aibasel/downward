@@ -324,7 +324,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME PLUGIN_ASTAR
-    HELP "A* Search"
+    HELP "A* search"
     SOURCES
         search_engines/plugin_astar
     DEPENDS EAGER_SEARCH
@@ -332,7 +332,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME PLUGIN_EAGER
-    HELP "Eager Search"
+    HELP "Eager search"
     SOURCES
         search_engines/plugin_eager
     DEPENDS EAGER_SEARCH
