@@ -348,6 +348,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME PLUGIN_LAZY_GREEDY
+    HELP "Eager greedy best-first search"
+    SOURCES
+        search_engines/plugin_lazy_greedy
+    DEPENDS LAZY_SEARCH
+)
+
+fast_downward_plugin(
     NAME ENFORCED_HILL_CLIMBING_SEARCH
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
