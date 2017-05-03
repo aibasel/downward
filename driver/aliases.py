@@ -132,6 +132,14 @@ ALIASES["lama-first"] = [
     "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                cost_type=one,reopen_closed=false)"""]
 
+ALIASES["lama-first-new"] = [
+    "--heuristic",
+    """hlm=lama_synergy(lm_rhw(reasonable_orders=true,lm_cost_type=one),
+                               transform=adapt_costs(one))""",
+    "--heuristic", "hff=ff_synergy(hlm)",
+    "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
+                               cost_type=one,reopen_closed=false)"""]
+
 ALIASES["seq-opt-bjolp"] = [
     "--search",
     "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),"
