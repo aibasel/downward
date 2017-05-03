@@ -9,7 +9,7 @@ using namespace std;
 namespace plugin_lazy_wastar {
 static const int DEFAULT_LAZY_BOOST = 1000;
 
-static SearchEngine *_parse_lazy_wastar(OptionParser &parser) {
+static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "(Weighted) A* search (lazy)",
         "Weighted A* is a special case of lazy best first search.");
@@ -81,5 +81,5 @@ static SearchEngine *_parse_lazy_wastar(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin_weighted_astar("lazy_wastar", _parse_lazy_wastar);
+static Plugin<SearchEngine> _plugin_wastar("lazy_wastar", _parse);
 }
