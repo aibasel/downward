@@ -96,6 +96,7 @@ public:
     const ParseTree *get_parse_tree();
     const std::string &get_root_value() const;
 
+    // TODO: Can we pass help_mode to the constructor?
     void set_help_mode(bool use_help_mode);
     bool dry_run() const;
     bool help_mode() const;
