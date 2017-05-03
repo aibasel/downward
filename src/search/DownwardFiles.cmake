@@ -349,7 +349,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME PLUGIN_LAZY_GREEDY
-    HELP "Eager greedy best-first search"
+    HELP "Greedy best-first search with deferred evaluation (lazy)"
     SOURCES
         search_engines/plugin_lazy_greedy
     DEPENDS LAZY_SEARCH
