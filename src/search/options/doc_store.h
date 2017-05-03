@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <typeindex>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,7 @@ using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 struct ArgumentInfo {
     std::string key;
     std::string help;
-    std::string type_name;
+    std::type_index type;
     std::string default_value;
     Bounds bounds;
     std::vector<std::pair<std::string, std::string>> value_explanations;
@@ -23,17 +24,19 @@ struct ArgumentInfo {
     ArgumentInfo(
         const std::string &key,
         const std::string &help,
-        const std::string &type_name,
+        const std::type_index &type,
         const std::string &default_value,
         const Bounds &bounds,
         const ValueExplanations &value_explanations)
         : key(key),
           help(help),
-          type_name(type_name),
+          type(type),
           default_value(default_value),
           bounds(bounds),
           value_explanations(value_explanations) {
     }
+
+    std::string get_type_name() const;
 };
 
 
@@ -103,7 +106,7 @@ public:
         const std::string &k,
         const std::string &arg_name,
         const std::string &help,
-        const std::string &type,
+        const std::type_info &type,
         const std::string &default_value,
         const Bounds &bounds,
         const ValueExplanations &value_explanations = ValueExplanations());
