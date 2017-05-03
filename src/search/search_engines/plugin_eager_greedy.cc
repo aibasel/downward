@@ -73,5 +73,5 @@ static SearchEngine *_parse(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse);
+static Plugin<SearchEngine> _plugin("eager_greedy", _parse);
 }
