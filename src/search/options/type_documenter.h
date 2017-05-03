@@ -15,13 +15,7 @@ namespace options {
 */
 template<typename T>
 struct TypeDocumenter {
-    static std::string synopsis() {
-        /*
-          TODO (post-issue586): once all plugin types are pluginized, this
-          default implementation can go away (as in TypeNamer).
-        */
-        return "";
-    }
+    static std::string synopsis();
 };
 
 // See comments for TypeNamer.
