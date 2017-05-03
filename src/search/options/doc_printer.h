@@ -8,6 +8,9 @@ namespace options {
 struct DocStruct;
 
 class DocPrinter {
+    virtual void print_category(const std::string &category_name);
+    virtual void print_element(const std::string &call_name, const DocStruct &info);
+
 protected:
     std::ostream &os;
 
@@ -25,8 +28,6 @@ public:
     virtual ~DocPrinter();
 
     virtual void print_all();
-    virtual void print_category(const std::string &category_name);
-    virtual void print_element(const std::string &call_name, const DocStruct &info);
 };
 
 
