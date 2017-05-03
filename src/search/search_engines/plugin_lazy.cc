@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace plugin_lazy {
-static SearchEngine *_parse_lazy(OptionParser &parser) {
+static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
     parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
@@ -31,5 +31,5 @@ static SearchEngine *_parse_lazy(OptionParser &parser) {
 
     return engine;
 }
-static Plugin<SearchEngine> _plugin("lazy", _parse_lazy);
+static Plugin<SearchEngine> _plugin("lazy", _parse);
 }

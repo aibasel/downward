@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace plugin_astar {
-static SearchEngine *_parse_astar(OptionParser &parser) {
+static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "A* search (eager)",
         "A* is a special case of eager best first search that uses g+h "
@@ -49,5 +49,5 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin_astar("astar", _parse_astar);
+static Plugin<SearchEngine> _plugin_astar("astar", _parse);
 }

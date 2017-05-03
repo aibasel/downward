@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace plugin_eager {
-static SearchEngine *_parse_eager(OptionParser &parser) {
+static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Eager best-first search", "");
 
     parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
@@ -35,5 +35,5 @@ static SearchEngine *_parse_eager(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin("eager", _parse_eager);
+static Plugin<SearchEngine> _plugin("eager", _parse);
 }

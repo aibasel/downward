@@ -328,7 +328,7 @@ fast_downward_plugin(
     HELP "A* search"
     SOURCES
         search_engines/plugin_astar
-    DEPENDS EAGER_SEARCH
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -336,7 +336,7 @@ fast_downward_plugin(
     HELP "Eager search"
     SOURCES
         search_engines/plugin_eager
-    DEPENDS EAGER_SEARCH
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -344,7 +344,7 @@ fast_downward_plugin(
     HELP "Eager greedy best-first search"
     SOURCES
         search_engines/plugin_eager_greedy
-    DEPENDS EAGER_SEARCH
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -352,7 +352,7 @@ fast_downward_plugin(
     HELP "Search with deferred evaluation (lazy)"
     SOURCES
         search_engines/plugin_lazy
-    DEPENDS LAZY_SEARCH
+    DEPENDS LAZY_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -360,7 +360,7 @@ fast_downward_plugin(
     HELP "Greedy best-first search with deferred evaluation (lazy)"
     SOURCES
         search_engines/plugin_lazy_greedy
-    DEPENDS LAZY_SEARCH
+    DEPENDS LAZY_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -368,7 +368,7 @@ fast_downward_plugin(
     HELP "Weighted A* search with deferred evaluation (lazy)"
     SOURCES
         search_engines/plugin_lazy_wastar
-    DEPENDS LAZY_SEARCH
+    DEPENDS LAZY_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(

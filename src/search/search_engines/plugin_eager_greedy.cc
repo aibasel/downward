@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace plugin_eager_greedy {
-static SearchEngine *_parse_eager_greedy(OptionParser &parser) {
+static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Greedy search (eager)", "");
     parser.document_note(
         "Open list",
@@ -73,5 +73,5 @@ static SearchEngine *_parse_eager_greedy(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_eager_greedy);
+static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse);
 }
