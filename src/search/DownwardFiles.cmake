@@ -319,7 +319,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
+    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SUCCESSOR_GENERATOR
     DEPENDENCY_ONLY
 )
 
@@ -391,7 +391,8 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         search_engines/lazy_search
-    DEPENDS ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
+    DEPENDS ORDERED_SET SUCCESSOR_GENERATOR
+    DEPNDENCY_ONLY
 )
 
 fast_downward_plugin(
