@@ -13,18 +13,32 @@ namespace options {
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
 
+class TypeInfo {
+    std::type_index type;
+    std::string type_name;
+
+public:
+    TypeInfo(const std::type_index &type, const std::string &type_name = "")
+        : type(type),
+          type_name(type_name) {
+    }
+
+    std::string get_type_name() const;
+};
+
+
 struct ArgumentInfo {
     std::string key;
     std::string help;
-    std::type_index type;
+    TypeInfo type;
     std::string default_value;
     Bounds bounds;
-    std::vector<std::pair<std::string, std::string>> value_explanations;
+    ValueExplanations value_explanations;
 
     ArgumentInfo(
         const std::string &key,
         const std::string &help,
-        const std::type_index &type,
+        const TypeInfo &type,
         const std::string &default_value,
         const Bounds &bounds,
         const ValueExplanations &value_explanations)
@@ -77,7 +91,7 @@ struct LanguageSupportInfo {
 
 // Store documentation for a single type, for use in combination with DocStore.
 struct DocStruct {
-    std::string type;
+    TypeInfo type;
     std::string full_name;
     std::string synopsis;
     std::vector<ArgumentInfo> arg_help;
@@ -85,6 +99,11 @@ struct DocStruct {
     std::vector<LanguageSupportInfo> support_help;
     std::vector<NoteInfo> notes;
     bool hidden;
+
+    // TODO: set all args in ctor.
+    explicit DocStruct(const TypeInfo &type)
+        : type(type) {
+    }
 };
 
 
@@ -100,13 +119,15 @@ public:
         return &instance_;
     }
 
-    void register_object(const std::string &key, const std::string &type);
+    //void register_plugin_type(const std::string &key, const TypeInfo &type);
+
+    void register_plugin(const std::string &key, const TypeInfo &type);
 
     void add_arg(
         const std::string &k,
         const std::string &arg_name,
         const std::string &help,
-        const std::type_info &type,
+        const TypeInfo &type,
         const std::string &default_value,
         const Bounds &bounds,
         const ValueExplanations &value_explanations = ValueExplanations());

@@ -31,8 +31,8 @@ public:
         using TPtr = std::shared_ptr<T>;
         std::cout << "register " << type_name << std::endl;
         register_plugin_type_plugin(typeid(TPtr), type_name, documentation);
-        DocStore::instance()->set_synopsis(
-            TypeNamer<TPtr>::name(), "", TypeDocumenter<TPtr>::synopsis());
+        //DocStore::instance()->set_synopsis(
+        //    TypeNamer<TPtr>::name(), "", TypeDocumenter<TPtr>::synopsis());
     }
 
     ~PluginTypePlugin() = default;
@@ -61,9 +61,7 @@ public:
         using TPtr = std::shared_ptr<T>;
         Registry<TPtr>::instance()->insert(key, factory);
         std::cout << "register " << key << std::endl;
-        // PluginTypes are (or may be) registered after Plugins.
-        //DocStore::instance()->register_object(key, TypeNamer<TPtr>::name());
-        DocStore::instance()->register_object(key, "missing");
+        DocStore::instance()->register_plugin(key, TypeInfo(typeid(TPtr)));
         ParseTree parse_tree;
         parse_tree.insert(parse_tree.begin(), ParseNode(key));
         OptionParser parser(parse_tree, true);

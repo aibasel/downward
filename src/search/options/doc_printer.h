@@ -62,7 +62,8 @@ protected:
     virtual void print_category_footer() override;
 
 public:
-    PlainPrinter(std::ostream &out, bool print_all = false);
+    // TODO: Change back to false.
+    PlainPrinter(std::ostream &out, bool print_all = true);
 };
 }
 
