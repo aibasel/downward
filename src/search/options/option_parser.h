@@ -120,9 +120,6 @@ public:
 namespace options {
 template<typename T>
 T OptionParser::start_parsing() {
-    if (help_mode()) {
-        DocStore::instance()->register_object(get_root_value(), TypeNamer<T>::name());
-    }
     return TokenParser<T>::parse(*this);
 }
 
@@ -150,7 +147,7 @@ void OptionParser::add_option(
             get_root_value(),
             key,
             help,
-            TypeNamer<T>::name(),
+            "missing", //TypeNamer<T>::name(),
             default_value,
             bounds);
         return;
