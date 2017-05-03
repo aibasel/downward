@@ -17,7 +17,7 @@ int main(int argc, const char **argv) {
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
 
-    if (string(argv[1]).compare("--help") != 0)
+    if (static_cast<string>(argv[1]) != "--help")
         read_everything(cin);
 
     SearchEngine *engine = nullptr;

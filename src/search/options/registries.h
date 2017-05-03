@@ -3,52 +3,59 @@
 
 #include "../utils/system.h"
 
+#include <algorithm>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <string>
 #include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 namespace options {
 class OptionParser;
 
-//a registry<T> maps a string to a T-factory
+// A Registry<T> maps a string to a T-factory.
 template<typename T>
 class Registry {
 public:
-    typedef T (*Factory)(OptionParser &);
+    using Factory = std::function<T(OptionParser &)>;
+
+    void insert(const std::string &key, Factory factory) {
+        if (registered.count(key)) {
+            std::cerr << "duplicate key in registry: " << key << std::endl;
+            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+        }
+        registered[key] = factory;
+    }
+
+    bool contains(const std::string &key) const {
+        return registered.find(key) != registered.end();
+    }
+
+    Factory get(const std::string &key) const {
+        return registered.at(key);
+    }
+
+    std::vector<std::string> get_sorted_keys() const {
+        std::vector<std::string> keys;
+        for (auto it : registered) {
+            keys.push_back(it.first);
+        }
+        sort(keys.begin(), keys.end());
+        return keys;
+    }
+
     static Registry<T> *instance() {
         static Registry<T> instance_;
         return &instance_;
     }
 
-    void insert(const std::string &k, Factory f) {
-        if (registered.count(k)) {
-            std::cerr << "duplicate key in registry: " << k << std::endl;
-            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
-        }
-        registered[k] = f;
-    }
-
-    bool contains(const std::string &k) {
-        return registered.find(k) != registered.end();
-    }
-
-    Factory get(const std::string &k) {
-        return registered[k];
-    }
-
-    std::vector<std::string> get_keys() {
-        std::vector<std::string> keys;
-        for (auto it : registered) {
-            keys.push_back(it.first);
-        }
-        return keys;
-    }
-
 private:
+    // Define this below public methods since it needs "Factory" typedef.
+    std::unordered_map<std::string, Factory> registered;
+
     Registry() = default;
-    std::map<std::string, Factory> registered;
 };
 
 
@@ -115,8 +122,8 @@ class PluginTypeRegistry {
     ~PluginTypeRegistry() = default;
     Map registry;
 public:
-    static PluginTypeRegistry *instance();
     void insert(const PluginTypeInfo &info);
+
     const PluginTypeInfo &get(const std::type_index &type) const;
 
     Map::const_iterator begin() const {
@@ -135,6 +142,8 @@ public:
     Map::const_iterator end() const {
         return registry.cend();
     }
+
+    static PluginTypeRegistry *instance();
 };
 }
 
