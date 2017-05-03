@@ -8,6 +8,7 @@
 #include "algorithms/ordered_set.h"
 
 #include "utils/countdown_timer.h"
+#include "utils/rng_options.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -124,6 +125,24 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
+}
+
+void SearchEngine::add_succ_order_options(OptionParser &parser) {
+    vector<string> options;
+    parser.add_option<bool>(
+        "randomize_successors",
+        "randomize the order in which successors are generated",
+        "false");
+    parser.add_option<bool>(
+        "preferred_successors_first",
+        "consider preferred operators first",
+        "false");
+    parser.document_note(
+        "Successor ordering",
+        "When using randomize_successors=true and "
+        "preferred_successors_first=true, randomization happens before "
+        "preferred operators are moved to the front.");
+    utils::add_rng_options(parser);
 }
 
 void print_initial_h_values(const EvaluationContext &eval_context) {

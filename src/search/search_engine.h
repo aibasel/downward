@@ -60,6 +60,7 @@ public:
     int get_bound() {return bound; }
     static void add_pruning_option(options::OptionParser &parser);
     static void add_options_to_parser(options::OptionParser &parser);
+    static void add_succ_order_options(options::OptionParser &parser);
 };
 
 /*
