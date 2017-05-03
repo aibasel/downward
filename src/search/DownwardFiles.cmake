@@ -348,10 +348,26 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME PLUGIN_LAZY
+    HELP "Search with deferred evaluation (lazy)"
+    SOURCES
+        search_engines/plugin_lazy
+    DEPENDS LAZY_SEARCH
+)
+
+fast_downward_plugin(
     NAME PLUGIN_LAZY_GREEDY
     HELP "Greedy best-first search with deferred evaluation (lazy)"
     SOURCES
         search_engines/plugin_lazy_greedy
+    DEPENDS LAZY_SEARCH
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_LAZY_WASTAR
+    HELP "Weighted A* search with deferred evaluation (lazy)"
+    SOURCES
+        search_engines/plugin_lazy_wastar
     DEPENDS LAZY_SEARCH
 )
 

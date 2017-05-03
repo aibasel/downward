@@ -1,7 +1,5 @@
 #include "eager_search.h"
 
-#include "search_common.h"
-
 #include "../evaluation_context.h"
 #include "../globals.h"
 #include "../heuristic.h"
