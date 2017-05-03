@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace plugin_lazy_wastar {
-static const int DEFAULT_LAZY_BOOST = 1000;
+static const string DEFAULT_LAZY_BOOST = "1000";
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis(
@@ -62,7 +62,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "true");
     parser.add_option<int>("boost",
                            "boost value for preferred operator open lists",
-                           OptionParser::to_str(DEFAULT_LAZY_BOOST));
+                           DEFAULT_LAZY_BOOST);
     parser.add_option<int>("w", "heuristic weight", "1");
     SearchEngine::add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);

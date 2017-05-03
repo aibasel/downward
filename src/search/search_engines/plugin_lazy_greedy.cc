@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace plugin_lazy_greedy {
-static const int DEFAULT_LAZY_BOOST = 1000;
+static const string DEFAULT_LAZY_BOOST = "1000";
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Greedy search (lazy)", "");
@@ -56,7 +56,7 @@ static SearchEngine *_parse(OptionParser &parser) {
         "boost",
         "boost value for alternation queues that are restricted "
         "to preferred operator nodes",
-        OptionParser::to_str(DEFAULT_LAZY_BOOST));
+        DEFAULT_LAZY_BOOST);
     SearchEngine::add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
