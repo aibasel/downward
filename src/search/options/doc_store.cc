@@ -1,33 +1,49 @@
 #include "doc_store.h"
 
 #include "registries.h"
+#include "type_namer.h"
 
 #include <algorithm>
 
 using namespace std;
 
 namespace options {
-string ArgumentInfo::get_type_name() const {
+string TypeInfo::get_type_name() const {
+    if (!type_name.empty()) {
+        return type_name;
+    }
     return PluginTypeRegistry::instance()->get(type).get_type_name();
 }
 
-void DocStore::register_object(const string &key, const string &type) {
-    registered[key] = DocStruct();
-    registered[key].type = type;
-    registered[key].full_name = key;
-    registered[key].synopsis = "";
-    registered[key].hidden = false;
+string ArgumentInfo::get_type_name() const {
+    return type.get_type_name();
+}
+
+/*void DocStore::register_plugin_type(const string &key, const string &synopsis) {
+    DocStruct doc = DocStruct(type);
+    doc.full_name = key;
+    doc.synopsis = "";
+    doc.hidden = false;
+    registered.insert(make_pair(key, doc));
+}*/
+
+void DocStore::register_plugin(const string &key, const TypeInfo &type) {
+    DocStruct doc = DocStruct(type);
+    doc.full_name = key;
+    doc.synopsis = "";
+    doc.hidden = false;
+    registered.insert(make_pair(key, doc));
 }
 
 void DocStore::add_arg(
     const string &key,
     const string &arg_name,
     const string &help,
-    const type_info &type,
+    const TypeInfo &type,
     const string &default_value,
     const Bounds &bounds,
     const ValueExplanations &value_explanations) {
-    registered[key].arg_help.emplace_back(
+    registered.at(key).arg_help.emplace_back(
         arg_name, help, type, default_value, bounds, value_explanations);
 }
 
@@ -35,7 +51,7 @@ void DocStore::add_value_explanations(
     const string &key,
     const string &arg_name,
     const ValueExplanations &value_explanations) {
-    vector<ArgumentInfo> &args = registered[key].arg_help;
+    vector<ArgumentInfo> &args = registered.at(key).arg_help;
     for (size_t i = 0; i < args.size(); ++i) {
         if (args[i].key == arg_name) {
             args[i].value_explanations = value_explanations;
@@ -46,27 +62,27 @@ void DocStore::add_value_explanations(
 
 void DocStore::set_synopsis(
     const string &key, const string &name, const string &description) {
-    registered[key].full_name = name;
-    registered[key].synopsis = description;
+    registered.at(key).full_name = name;
+    registered.at(key).synopsis = description;
 }
 
 void DocStore::add_property(
     const string &key, const string &name, const string &description) {
-    registered[key].property_help.emplace_back(name, description);
+    registered.at(key).property_help.emplace_back(name, description);
 }
 
 void DocStore::add_feature(
     const string &key, const string &feature, const string &description) {
-    registered[key].support_help.emplace_back(feature, description);
+    registered.at(key).support_help.emplace_back(feature, description);
 }
 
 void DocStore::add_note(
     const string &key, const string &name, const string &description, bool long_text) {
-    registered[key].notes.emplace_back(name, description, long_text);
+    registered.at(key).notes.emplace_back(name, description, long_text);
 }
 
 void DocStore::hide(const string &key) {
-    registered[key].hidden = true;
+    registered.at(key).hidden = true;
 }
 
 bool DocStore::contains(const string &key) {
@@ -74,7 +90,7 @@ bool DocStore::contains(const string &key) {
 }
 
 DocStruct DocStore::get(const string &key) {
-    return registered[key];
+    return registered.at(key);
 }
 
 vector<string> DocStore::get_keys() {
@@ -90,9 +106,10 @@ vector<string> DocStore::get_types() {
     for (const auto it : registered) {
         /* Entries for the category itself have an empty type. We filter
            duplicates but keep the original ordering by key. */
-        if (!it.second.type.empty() &&
-            find(types.begin(), types.end(), it.second.type) == types.end()) {
-            types.push_back(it.second.type);
+        const string type_name = it.second.type.get_type_name();
+        if (!type_name.empty() &&
+            find(types.begin(), types.end(), type_name) == types.end()) {
+            types.push_back(type_name);
         }
     }
     return types;

@@ -27,10 +27,13 @@ void DocPrinter::print_all() {
 void DocPrinter::print_category(const string &category_name) {
     print_category_header(category_name);
     DocStore *ds = DocStore::instance();
-    print_element("", ds->get(category_name));
+    // TODO: Fix this.
+    DocStruct category_doc(TypeInfo(typeid(string)));
+    category_doc.synopsis = "missing synopsis";
+    print_synopsis(category_doc);
     for (const string &key : ds->get_keys()) {
         DocStruct info = ds->get(key);
-        if (info.type == category_name && !info.hidden) {
+        if (info.type.get_type_name() == category_name && !info.hidden) {
             print_element(key, info);
         }
     }
