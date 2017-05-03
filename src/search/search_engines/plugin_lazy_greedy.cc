@@ -7,10 +7,9 @@
 using namespace std;
 
 namespace plugin_lazy_greedy {
-
 static const int DEFAULT_LAZY_BOOST = 1000;
 
-static SearchEngine *_parse_greedy(OptionParser &parser) {
+static SearchEngine *_parse_lazy_greedy(OptionParser &parser) {
     parser.document_synopsis("Greedy search (lazy)", "");
     parser.document_note(
         "Open lists",
@@ -73,5 +72,5 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_greedy);
+static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_lazy_greedy);
 }
