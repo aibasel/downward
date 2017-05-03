@@ -396,9 +396,10 @@ void OptionParser::add_enum_option(
             value_explanations.emplace_back(names[i], docs[i]);
         }
 
-        DocStore::instance()->add_arg(
-            get_root_value(), key, help, enum_descr, default_value,
-            Bounds::unlimited(), value_explanations);
+        // TODO: support enum args.
+        //DocStore::instance()->add_arg(
+        //    get_root_value(), key, help, enum_descr, default_value,
+        //    Bounds::unlimited(), value_explanations);
         return;
     }
 

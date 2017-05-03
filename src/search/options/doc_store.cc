@@ -1,10 +1,16 @@
 #include "doc_store.h"
 
+#include "registries.h"
+
 #include <algorithm>
 
 using namespace std;
 
 namespace options {
+string ArgumentInfo::get_type_name() const {
+    return PluginTypeRegistry::instance()->get(type).get_type_name();
+}
+
 void DocStore::register_object(const string &key, const string &type) {
     registered[key] = DocStruct();
     registered[key].type = type;
@@ -17,7 +23,7 @@ void DocStore::add_arg(
     const string &key,
     const string &arg_name,
     const string &help,
-    const string &type,
+    const type_info &type,
     const string &default_value,
     const Bounds &bounds,
     const ValueExplanations &value_explanations) {

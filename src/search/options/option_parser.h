@@ -148,7 +148,7 @@ void OptionParser::add_option(
             get_root_value(),
             key,
             help,
-            "missing", //TypeNamer<T>::name(),
+            typeid(T),
             default_value,
             bounds);
         return;
