@@ -23,37 +23,9 @@
 
 using namespace std;
 
-
-// TODO (post-issue586): Remove this once we no longer need it.
-class AbstractTask;
-class OpenListFactory;
-class PruningMethod;
-class SearchEngine;
-
-namespace cegar {
-class SubtaskGenerator;
-}
-
+// TODO: Remove this when Synergy is gone.
 namespace landmarks {
 class LandmarkFactory;
-}
-
-namespace merge_and_shrink {
-class LabelReduction;
-class MergeScoringFunction;
-class MergeSelector;
-class MergeStrategyFactory;
-class MergeTreeFactory;
-class ShrinkStrategy;
-}
-
-namespace operator_counting {
-class ConstraintGenerator;
-}
-
-namespace pdbs {
-class PatternCollectionGenerator;
-class PatternGenerator;
 }
 
 namespace options {
