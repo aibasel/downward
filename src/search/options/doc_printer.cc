@@ -56,8 +56,7 @@ Txt2TagsPrinter::Txt2TagsPrinter(ostream &out)
 }
 
 void Txt2TagsPrinter::print_synopsis(const DocStruct &info) {
-    if (!info.full_name.empty())
-        os << "== " << info.full_name << " ==" << endl;
+    os << "== " << info.full_name << " ==" << endl;
     if (!info.synopsis.empty())
         os << info.synopsis << endl;
 }
@@ -147,8 +146,7 @@ PlainPrinter::PlainPrinter(ostream &out, bool pa)
 }
 
 void PlainPrinter::print_synopsis(const DocStruct &info) {
-    if (!info.full_name.empty())
-        os << "== " << info.full_name << " ==" << endl;
+    os << "== " << info.full_name << " ==" << endl;
     if (print_all && !info.synopsis.empty()) {
         os << info.synopsis << endl;
     }
