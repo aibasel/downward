@@ -149,7 +149,7 @@ void OptionParser::add_option(
             get_root_value(),
             key,
             help,
-            TypeInfo(typeid(T)),
+            TypeNamer<T>::name(),
             default_value,
             bounds);
         std::cout << "done" << std::endl;

@@ -3,6 +3,7 @@
 
 #include "bounds.h"
 
+#include <functional>
 #include <map>
 #include <string>
 #include <typeindex>
@@ -10,27 +11,17 @@
 #include <vector>
 
 namespace options {
+class OptionParser;
+
+using DocFactory = std::function<void(OptionParser &)>;
+using TypeNameFactory = std::function<std::string()>;
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
-
-
-class TypeInfo {
-    std::type_index type;
-    std::string type_name;
-
-public:
-    TypeInfo(const std::type_index &type, const std::string &type_name = "")
-        : type(type),
-          type_name(type_name) {
-    }
-
-    std::string get_type_name() const;
-};
 
 
 struct ArgumentInfo {
     std::string key;
     std::string help;
-    TypeInfo type;
+    std::string type_name;
     std::string default_value;
     Bounds bounds;
     ValueExplanations value_explanations;
@@ -38,13 +29,13 @@ struct ArgumentInfo {
     ArgumentInfo(
         const std::string &key,
         const std::string &help,
-        const TypeInfo &type,
+        const std::string &type_name,
         const std::string &default_value,
         const Bounds &bounds,
         const ValueExplanations &value_explanations)
         : key(key),
           help(help),
-          type(type),
+          type_name(type_name),
           default_value(default_value),
           bounds(bounds),
           value_explanations(value_explanations) {
@@ -91,7 +82,8 @@ struct LanguageSupportInfo {
 
 // Store documentation for a single type, for use in combination with DocStore.
 struct DocStruct {
-    TypeInfo type;
+    DocFactory doc_factory;
+    TypeNameFactory type_name_factory;
     std::string full_name;
     std::string synopsis;
     std::vector<ArgumentInfo> arg_help;
@@ -100,10 +92,9 @@ struct DocStruct {
     std::vector<NoteInfo> notes;
     bool hidden;
 
-    // TODO: set all args in ctor.
-    explicit DocStruct(const TypeInfo &type)
-        : type(type) {
-    }
+    void fill_docs();
+
+    std::string get_type_name() const;
 };
 
 
@@ -121,13 +112,13 @@ public:
 
     //void register_plugin_type(const std::string &key, const TypeInfo &type);
 
-    void register_plugin(const std::string &key, const TypeInfo &type);
+    void register_plugin(const std::string &key, DocFactory factory, TypeNameFactory type_name_factory);
 
     void add_arg(
         const std::string &k,
         const std::string &arg_name,
         const std::string &help,
-        const TypeInfo &type,
+        const std::string &type_name,
         const std::string &default_value,
         const Bounds &bounds,
         const ValueExplanations &value_explanations = ValueExplanations());
@@ -156,7 +147,7 @@ public:
 
     bool contains(const std::string &key);
 
-    DocStruct get(const std::string &key);
+    DocStruct &get(const std::string &key);
 
     std::vector<std::string> get_keys();
 
