@@ -1,6 +1,7 @@
 #include "doc_printer.h"
 
 #include "doc_store.h"
+#include "registries.h"
 
 #include <iostream>
 
@@ -22,19 +23,19 @@ void DocPrinter::print_all() {
     for (const string &key : DocStore::instance()->get_keys()) {
         DocStore::instance()->get(key).fill_docs();
     }
-    for (const PluginTypeDoc &doc : DocStore::instance()->get_plugin_type_docs()) {
-        print_category(doc);
+    for (const auto it : *PluginTypeRegistry::instance()) {
+        const PluginTypeInfo &info = it.second;
+        print_category(info.get_type_name(), info.get_documentation());
     }
 }
 
-void DocPrinter::print_category(const PluginTypeDoc &plugin_type_doc) {
-    const string &category_name = plugin_type_doc.type_name;
-    print_category_header(category_name);
-    print_category_synopsis(plugin_type_doc.synopsis);
+void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
+    print_category_header(plugin_type_name);
+    print_category_synopsis(synopsis);
     DocStore *doc_store = DocStore::instance();
     for (const string &key : doc_store->get_keys()) {
         DocStruct info = doc_store->get(key);
-        if (info.get_type_name() == category_name && !info.hidden) {
+        if (info.get_type_name() == plugin_type_name && !info.hidden) {
             print_element(key, info);
         }
     }
