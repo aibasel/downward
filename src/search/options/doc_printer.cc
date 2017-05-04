@@ -78,7 +78,7 @@ void Txt2TagsPrinter::print_usage(const string &call_name, const DocStruct &info
 
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     for (const ArgumentInfo &arg : info.arg_help) {
-        os << "- //" << arg.key << "// (" << arg.get_type_name();
+        os << "- //" << arg.key << "// (" << arg.type_name;
         if (arg.bounds.has_bound())
             os << " \"\"" << arg.bounds << "\"\"";
         os << "): " << arg.help << endl;
@@ -170,7 +170,7 @@ void PlainPrinter::print_usage(const string &call_name, const DocStruct &info) {
 
 void PlainPrinter::print_arguments(const DocStruct &info) {
     for (const ArgumentInfo &arg : info.arg_help) {
-        os << " " << arg.key << " (" << arg.get_type_name();
+        os << " " << arg.key << " (" << arg.type_name;
         if (arg.bounds.has_bound())
             os << " " << arg.bounds;
         os << "): " << arg.help << endl;

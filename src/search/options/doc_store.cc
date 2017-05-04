@@ -2,18 +2,12 @@
 
 #include "option_parser.h"
 #include "parse_tree.h"
-#include "registries.h"
-#include "type_namer.h"
 
 #include <algorithm>
 
 using namespace std;
 
 namespace options {
-string ArgumentInfo::get_type_name() const {
-    return type_name;
-}
-
 void DocStore::register_plugin_type(const string &type_name, const string &synopsis) {
     PluginTypeDocumentation doc;
     doc.type_name = type_name;
@@ -34,13 +28,13 @@ string DocStruct::get_type_name() const {
 }
 
 void DocStore::register_plugin(const string &key, DocFactory doc_factory, TypeNameFactory type_name_factory) {
-    DocStruct doc = DocStruct();
+    DocStruct doc;
     doc.doc_factory = doc_factory;
     doc.type_name_factory = type_name_factory;
     doc.full_name = key;
     doc.synopsis = "";
     doc.hidden = false;
-    registered.insert(make_pair(key, doc));
+    registered[key] = doc;
 }
 
 void DocStore::add_arg(
@@ -107,20 +101,6 @@ vector<string> DocStore::get_keys() {
         keys.push_back(it.first);
     }
     return keys;
-}
-
-vector<string> DocStore::get_types() {
-    vector<string> types;
-    for (const auto it : registered) {
-        /* Entries for the category itself have an empty type. We filter
-           duplicates but keep the original ordering by key. */
-        const string type_name = it.second.get_type_name();
-        if (!type_name.empty() &&
-            find(types.begin(), types.end(), type_name) == types.end()) {
-            types.push_back(type_name);
-        }
-    }
-    return types;
 }
 
 const std::vector<PluginTypeDocumentation> &DocStore::get_plugin_type_docs() const {

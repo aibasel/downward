@@ -2,9 +2,7 @@
 #define OPTIONS_PLUGIN_H
 
 #include "doc_store.h"
-#include "option_parser.h"
 #include "registries.h"
-#include "type_documenter.h"
 #include "type_namer.h"
 
 #include <memory>
@@ -31,8 +29,6 @@ public:
         using TPtr = std::shared_ptr<T>;
         std::cout << "register " << type_name << std::endl;
         register_plugin_type_plugin(typeid(TPtr), type_name, documentation);
-        //DocStore::instance()->set_synopsis(
-        //    TypeNamer<TPtr>::name(), "", TypeDocumenter<TPtr>::synopsis());
     }
 
     ~PluginTypePlugin() = default;
