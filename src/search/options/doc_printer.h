@@ -6,10 +6,10 @@
 
 namespace options {
 struct DocStruct;
-struct PluginTypeDocumentation;
+struct PluginTypeDoc;
 
 class DocPrinter {
-    virtual void print_category(const PluginTypeDocumentation &plugin_type_doc);
+    virtual void print_category(const PluginTypeDoc &plugin_type_doc);
     virtual void print_element(const std::string &call_name, const DocStruct &info);
 
 protected:

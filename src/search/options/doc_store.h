@@ -95,7 +95,7 @@ struct DocStruct {
 };
 
 
-struct PluginTypeDocumentation {
+struct PluginTypeDoc {
     std::string type_name;
     std::string synopsis;
 };
@@ -104,7 +104,7 @@ struct PluginTypeDocumentation {
 // Store documentation for types parsed in help mode.
 class DocStore {
     std::map<std::string, DocStruct> registered;
-    std::vector<PluginTypeDocumentation> plugin_type_docs;
+    std::vector<PluginTypeDoc> plugin_type_docs;
 
     DocStore() = default;
 
@@ -119,7 +119,7 @@ public:
     void register_plugin(const std::string &key, DocFactory factory, TypeNameFactory type_name_factory);
 
     void add_arg(
-        const std::string &k,
+        const std::string &key,
         const std::string &arg_name,
         const std::string &help,
         const std::string &type_name,
@@ -156,7 +156,7 @@ public:
     std::vector<std::string> get_keys();
 
     // TODO: Sort this.
-    const std::vector<PluginTypeDocumentation> &get_plugin_type_docs() const;
+    const std::vector<PluginTypeDoc> &get_plugin_type_docs() const;
 };
 }
 
