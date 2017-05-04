@@ -59,8 +59,8 @@ public:
         std::cout << "register " << key << std::endl;
         DocFactory doc_factory = static_cast<DocFactory>(factory);
         TypeNameFactory type_name_factory = [&]() {
-            return TypeNamer<TPtr>::name();
-        };
+                                                return TypeNamer<TPtr>::name();
+                                            };
         DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
         std::cout << "registered " << key << std::endl;
     }
