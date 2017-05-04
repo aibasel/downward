@@ -9,7 +9,7 @@ struct DocStruct;
 struct PluginTypeDoc;
 
 class DocPrinter {
-    virtual void print_category(const PluginTypeDoc &plugin_type_doc);
+    virtual void print_category(const std::string &plugin_type_name, const std::string &synopsis);
     virtual void print_element(const std::string &call_name, const DocStruct &info);
 
 protected:
