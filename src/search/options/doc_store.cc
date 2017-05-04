@@ -14,13 +14,12 @@ string ArgumentInfo::get_type_name() const {
     return type_name;
 }
 
-/*void DocStore::register_plugin_type(const string &key, const string &synopsis) {
-    DocStruct doc = DocStruct(type);
-    doc.full_name = key;
-    doc.synopsis = "";
-    doc.hidden = false;
-    registered.insert(make_pair(key, doc));
-}*/
+void DocStore::register_plugin_type(const string &type_name, const string &synopsis) {
+    PluginTypeDocumentation doc;
+    doc.type_name = type_name;
+    doc.synopsis = synopsis;
+    plugin_type_docs.push_back(move(doc));
+}
 
 void DocStruct::fill_docs() {
     ParseTree parse_tree;
@@ -122,5 +121,9 @@ vector<string> DocStore::get_types() {
         }
     }
     return types;
+}
+
+const std::vector<PluginTypeDocumentation> &DocStore::get_plugin_type_docs() const {
+    return plugin_type_docs;
 }
 }

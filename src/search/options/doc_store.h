@@ -80,7 +80,7 @@ struct LanguageSupportInfo {
 };
 
 
-// Store documentation for a single type, for use in combination with DocStore.
+// Store documentation for a plugin.
 struct DocStruct {
     DocFactory doc_factory;
     TypeNameFactory type_name_factory;
@@ -98,9 +98,16 @@ struct DocStruct {
 };
 
 
+struct PluginTypeDocumentation {
+    std::string type_name;
+    std::string synopsis;
+};
+
+
 // Store documentation for types parsed in help mode.
 class DocStore {
     std::map<std::string, DocStruct> registered;
+    std::vector<PluginTypeDocumentation> plugin_type_docs;
 
     DocStore() = default;
 
@@ -110,7 +117,7 @@ public:
         return &instance_;
     }
 
-    //void register_plugin_type(const std::string &key, const TypeInfo &type);
+    void register_plugin_type(const std::string &type_name, const std::string &synopsis);
 
     void register_plugin(const std::string &key, DocFactory factory, TypeNameFactory type_name_factory);
 
@@ -152,6 +159,8 @@ public:
     std::vector<std::string> get_keys();
 
     std::vector<std::string> get_types();
+
+    const std::vector<PluginTypeDocumentation> &get_plugin_type_docs() const;
 };
 }
 
