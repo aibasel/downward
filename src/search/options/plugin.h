@@ -43,6 +43,13 @@ class Plugin {
 public:
     Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
         Registry<T *>::instance()->insert(key, factory);
+        std::cout << "register " << key << std::endl;
+        DocFactory doc_factory = static_cast<DocFactory>(factory);
+        TypeNameFactory type_name_factory = [&]() {
+                                                return TypeNamer<T *>::name();
+                                            };
+        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
+        std::cout << "registered " << key << std::endl;
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
