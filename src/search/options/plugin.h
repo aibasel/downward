@@ -61,12 +61,11 @@ public:
         using TPtr = std::shared_ptr<T>;
         Registry<TPtr>::instance()->insert(key, factory);
         std::cout << "register " << key << std::endl;
-        DocStore::instance()->register_plugin(key, TypeInfo(typeid(TPtr)));
-        ParseTree parse_tree;
-        parse_tree.insert(parse_tree.begin(), ParseNode(key));
-        OptionParser parser(parse_tree, true);
-        parser.set_help_mode(true);
-        parser.start_parsing<TPtr>();
+        DocFactory doc_factory = static_cast<DocFactory>(factory);
+        TypeNameFactory type_name_factory = [&]() {
+            return TypeNamer<TPtr>::name();
+        };
+        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
         std::cout << "registered " << key << std::endl;
     }
     ~PluginShared() = default;

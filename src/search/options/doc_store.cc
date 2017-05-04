@@ -1,5 +1,7 @@
 #include "doc_store.h"
 
+#include "option_parser.h"
+#include "parse_tree.h"
 #include "registries.h"
 #include "type_namer.h"
 
@@ -8,15 +10,8 @@
 using namespace std;
 
 namespace options {
-string TypeInfo::get_type_name() const {
-    if (!type_name.empty()) {
-        return type_name;
-    }
-    return PluginTypeRegistry::instance()->get(type).get_type_name();
-}
-
 string ArgumentInfo::get_type_name() const {
-    return type.get_type_name();
+    return type_name;
 }
 
 /*void DocStore::register_plugin_type(const string &key, const string &synopsis) {
@@ -27,8 +22,22 @@ string ArgumentInfo::get_type_name() const {
     registered.insert(make_pair(key, doc));
 }*/
 
-void DocStore::register_plugin(const string &key, const TypeInfo &type) {
-    DocStruct doc = DocStruct(type);
+void DocStruct::fill_docs() {
+    ParseTree parse_tree;
+    parse_tree.insert(parse_tree.begin(), ParseNode(full_name));
+    OptionParser parser(parse_tree, true);
+    parser.set_help_mode(true);
+    doc_factory(parser);
+}
+
+string DocStruct::get_type_name() const {
+    return type_name_factory();
+}
+
+void DocStore::register_plugin(const string &key, DocFactory doc_factory, TypeNameFactory type_name_factory) {
+    DocStruct doc = DocStruct();
+    doc.doc_factory = doc_factory;
+    doc.type_name_factory = type_name_factory;
     doc.full_name = key;
     doc.synopsis = "";
     doc.hidden = false;
@@ -39,12 +48,12 @@ void DocStore::add_arg(
     const string &key,
     const string &arg_name,
     const string &help,
-    const TypeInfo &type,
+    const string &type_name,
     const string &default_value,
     const Bounds &bounds,
     const ValueExplanations &value_explanations) {
     registered.at(key).arg_help.emplace_back(
-        arg_name, help, type, default_value, bounds, value_explanations);
+        arg_name, help, type_name, default_value, bounds, value_explanations);
 }
 
 void DocStore::add_value_explanations(
@@ -89,7 +98,7 @@ bool DocStore::contains(const string &key) {
     return registered.find(key) != registered.end();
 }
 
-DocStruct DocStore::get(const string &key) {
+DocStruct &DocStore::get(const string &key) {
     return registered.at(key);
 }
 
@@ -106,7 +115,7 @@ vector<string> DocStore::get_types() {
     for (const auto it : registered) {
         /* Entries for the category itself have an empty type. We filter
            duplicates but keep the original ordering by key. */
-        const string type_name = it.second.type.get_type_name();
+        const string type_name = it.second.get_type_name();
         if (!type_name.empty() &&
             find(types.begin(), types.end(), type_name) == types.end()) {
             types.push_back(type_name);
