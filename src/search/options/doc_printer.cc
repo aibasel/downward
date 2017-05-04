@@ -22,20 +22,18 @@ void DocPrinter::print_all() {
     for (const string &key : DocStore::instance()->get_keys()) {
         DocStore::instance()->get(key).fill_docs();
     }
-    for (const string &type : DocStore::instance()->get_types()) {
-        print_category(type);
+    for (const PluginTypeDocumentation &doc : DocStore::instance()->get_plugin_type_docs()) {
+        print_category(doc);
     }
 }
 
-void DocPrinter::print_category(const string &category_name) {
+void DocPrinter::print_category(const PluginTypeDocumentation &plugin_type_doc) {
+    const string &category_name = plugin_type_doc.type_name;
     print_category_header(category_name);
-    DocStore *ds = DocStore::instance();
-    // TODO: Fix this.
-    //DocStruct category_doc(TypeInfo(typeid(string)));
-    //category_doc.synopsis = "missing synopsis";
-    //print_synopsis(category_doc);
-    for (const string &key : ds->get_keys()) {
-        DocStruct info = ds->get(key);
+    print_category_synopsis(plugin_type_doc.synopsis);
+    DocStore *doc_store = DocStore::instance();
+    for (const string &key : doc_store->get_keys()) {
+        DocStruct info = doc_store->get(key);
         if (info.get_type_name() == category_name && !info.hidden) {
             print_element(key, info);
         }
@@ -131,6 +129,12 @@ void Txt2TagsPrinter::print_category_header(const string &category_name) {
     os << ">>>>CATEGORY: " << category_name << "<<<<" << endl;
 }
 
+void Txt2TagsPrinter::print_category_synopsis(const string &synopsis) {
+    if (!synopsis.empty()) {
+        os << synopsis << endl;
+    }
+}
+
 void Txt2TagsPrinter::print_category_footer() {
     os << endl
        << ">>>>CATEGORYEND<<<<" << endl;
@@ -210,6 +214,12 @@ void PlainPrinter::print_properties(const DocStruct &info) {
 
 void PlainPrinter::print_category_header(const string &category_name) {
     os << "Help for " << category_name << endl << endl;
+}
+
+void PlainPrinter::print_category_synopsis(const string &synopsis) {
+    if (print_all && !synopsis.empty()) {
+        os << synopsis << endl;
+    }
 }
 
 void PlainPrinter::print_category_footer() {

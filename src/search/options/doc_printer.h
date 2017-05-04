@@ -6,9 +6,10 @@
 
 namespace options {
 struct DocStruct;
+struct PluginTypeDocumentation;
 
 class DocPrinter {
-    virtual void print_category(const std::string &category_name);
+    virtual void print_category(const PluginTypeDocumentation &plugin_type_doc);
     virtual void print_element(const std::string &call_name, const DocStruct &info);
 
 protected:
@@ -21,6 +22,7 @@ protected:
     virtual void print_language_features(const DocStruct &info) = 0;
     virtual void print_properties(const DocStruct &info) = 0;
     virtual void print_category_header(const std::string &category_name) = 0;
+    virtual void print_category_synopsis(const std::string &synopsis) = 0;
     virtual void print_category_footer() = 0;
 
 public:
@@ -40,6 +42,7 @@ protected:
     virtual void print_language_features(const DocStruct &info) override;
     virtual void print_properties(const DocStruct &info) override;
     virtual void print_category_header(const std::string &category_name) override;
+    virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_footer() override;
 
 public:
@@ -59,6 +62,7 @@ protected:
     virtual void print_language_features(const DocStruct &info) override;
     virtual void print_properties(const DocStruct &info) override;
     virtual void print_category_header(const std::string &category_name) override;
+    virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_footer() override;
 
 public:
