@@ -22,12 +22,12 @@ void DocPrinter::print_all() {
     for (const string &key : DocStore::instance()->get_keys()) {
         DocStore::instance()->get(key).fill_docs();
     }
-    for (const PluginTypeDocumentation &doc : DocStore::instance()->get_plugin_type_docs()) {
+    for (const PluginTypeDoc &doc : DocStore::instance()->get_plugin_type_docs()) {
         print_category(doc);
     }
 }
 
-void DocPrinter::print_category(const PluginTypeDocumentation &plugin_type_doc) {
+void DocPrinter::print_category(const PluginTypeDoc &plugin_type_doc) {
     const string &category_name = plugin_type_doc.type_name;
     print_category_header(category_name);
     print_category_synopsis(plugin_type_doc.synopsis);

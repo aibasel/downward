@@ -9,7 +9,7 @@ using namespace std;
 
 namespace options {
 void DocStore::register_plugin_type(const string &type_name, const string &synopsis) {
-    PluginTypeDocumentation doc;
+    PluginTypeDoc doc;
     doc.type_name = type_name;
     doc.synopsis = synopsis;
     plugin_type_docs.push_back(move(doc));
@@ -103,7 +103,7 @@ vector<string> DocStore::get_keys() {
     return keys;
 }
 
-const std::vector<PluginTypeDocumentation> &DocStore::get_plugin_type_docs() const {
+const vector<PluginTypeDoc> &DocStore::get_plugin_type_docs() const {
     return plugin_type_docs;
 }
 }
