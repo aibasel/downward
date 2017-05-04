@@ -6,7 +6,6 @@
 #include <functional>
 #include <map>
 #include <string>
-#include <typeindex>
 #include <utility>
 #include <vector>
 
@@ -40,8 +39,6 @@ struct ArgumentInfo {
           bounds(bounds),
           value_explanations(value_explanations) {
     }
-
-    std::string get_type_name() const;
 };
 
 
@@ -158,8 +155,7 @@ public:
 
     std::vector<std::string> get_keys();
 
-    std::vector<std::string> get_types();
-
+    // TODO: Sort this.
     const std::vector<PluginTypeDocumentation> &get_plugin_type_docs() const;
 };
 }
