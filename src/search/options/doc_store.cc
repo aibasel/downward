@@ -8,13 +8,6 @@
 using namespace std;
 
 namespace options {
-void DocStore::register_plugin_type(const string &type_name, const string &synopsis) {
-    PluginTypeDoc doc;
-    doc.type_name = type_name;
-    doc.synopsis = synopsis;
-    plugin_type_docs.push_back(move(doc));
-}
-
 void DocStruct::fill_docs() {
     ParseTree parse_tree;
     parse_tree.insert(parse_tree.begin(), ParseNode(full_name));
@@ -26,6 +19,7 @@ void DocStruct::fill_docs() {
 string DocStruct::get_type_name() const {
     return type_name_factory();
 }
+
 
 void DocStore::register_plugin(const string &key, DocFactory doc_factory, TypeNameFactory type_name_factory) {
     DocStruct doc;
@@ -101,9 +95,5 @@ vector<string> DocStore::get_keys() {
         keys.push_back(it.first);
     }
     return keys;
-}
-
-const vector<PluginTypeDoc> &DocStore::get_plugin_type_docs() const {
-    return plugin_type_docs;
 }
 }
