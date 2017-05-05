@@ -23,8 +23,7 @@ DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    for (const auto it : *PluginTypeRegistry::instance()) {
-        const PluginTypeInfo &info = it.second;
+    for (const PluginTypeInfo &info : PluginTypeRegistry::instance()->get_sorted_types()) {
         print_category(info.get_type_name(), info.get_documentation());
     }
 }
