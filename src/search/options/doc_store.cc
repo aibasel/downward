@@ -1,7 +1,6 @@
 #include "doc_store.h"
 
 #include "option_parser.h"
-#include "parse_tree.h"
 
 #include <algorithm>
 
@@ -9,9 +8,7 @@ using namespace std;
 
 namespace options {
 void DocStruct::fill_docs() {
-    ParseTree parse_tree;
-    parse_tree.insert(parse_tree.begin(), ParseNode(full_name));
-    OptionParser parser(parse_tree, true);
+    OptionParser parser(full_name, true);
     parser.set_help_mode(true);
     doc_factory(parser);
 }
