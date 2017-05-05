@@ -144,7 +144,6 @@ void OptionParser::add_option(
     const std::string &default_value,
     const Bounds &bounds) {
     if (help_mode()) {
-        std::cout << "register option " << key << std::endl;
         DocStore::instance()->add_arg(
             get_root_value(),
             key,
@@ -152,7 +151,6 @@ void OptionParser::add_option(
             TypeNamer<T>::name(),
             default_value,
             bounds);
-        std::cout << "done" << std::endl;
         return;
     }
     valid_keys.push_back(key);

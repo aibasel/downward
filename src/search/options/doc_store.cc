@@ -18,7 +18,8 @@ string DocStruct::get_type_name() const {
 }
 
 
-void DocStore::register_plugin(const string &key, DocFactory doc_factory, TypeNameFactory type_name_factory) {
+void DocStore::register_plugin(
+    const string &key, DocFactory doc_factory, TypeNameFactory type_name_factory) {
     DocStruct doc;
     doc.doc_factory = doc_factory;
     doc.type_name_factory = type_name_factory;

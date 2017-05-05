@@ -27,7 +27,6 @@ public:
     PluginTypePlugin(const std::string &type_name,
                      const std::string &documentation) {
         using TPtr = std::shared_ptr<T>;
-        std::cout << "register " << type_name << std::endl;
         register_plugin_type_plugin(typeid(TPtr), type_name, documentation);
     }
 
@@ -43,13 +42,12 @@ class Plugin {
 public:
     Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
         Registry<T *>::instance()->insert(key, factory);
-        std::cout << "register " << key << std::endl;
+        // See comment in PluginShared.
         DocFactory doc_factory = static_cast<DocFactory>(factory);
         TypeNameFactory type_name_factory = [&]() {
                                                 return TypeNamer<T *>::name();
                                             };
         DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
-        std::cout << "registered " << key << std::endl;
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
@@ -63,13 +61,15 @@ public:
     PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
         using TPtr = std::shared_ptr<T>;
         Registry<TPtr>::instance()->insert(key, factory);
-        std::cout << "register " << key << std::endl;
+        /* We can't collect the plugin documentation here since TypePlugins may
+           be loaded after Plugins and we need the names of PluginTypes when
+           documenting Plugins. We therefore collect the necessary functions and
+           execute them once all PluginTypes are loaded. */
         DocFactory doc_factory = static_cast<DocFactory>(factory);
         TypeNameFactory type_name_factory = [&]() {
                                                 return TypeNamer<TPtr>::name();
                                             };
         DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
-        std::cout << "registered " << key << std::endl;
     }
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;
