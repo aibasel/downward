@@ -29,7 +29,8 @@ public:
     explicit DocPrinter(std::ostream &out);
     virtual ~DocPrinter();
 
-    virtual void print_all();
+    void print_all();
+    void print_plugin(const std::string &name);
 };
 
 

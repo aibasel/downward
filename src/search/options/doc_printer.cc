@@ -14,19 +14,23 @@ static bool is_call(const string &s) {
 
 DocPrinter::DocPrinter(ostream &out)
     : os(out) {
+    for (const string &key : DocStore::instance()->get_keys()) {
+        DocStore::instance()->get(key).fill_docs();
+    }
 }
 
 DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    for (const string &key : DocStore::instance()->get_keys()) {
-        DocStore::instance()->get(key).fill_docs();
-    }
     for (const auto it : *PluginTypeRegistry::instance()) {
         const PluginTypeInfo &info = it.second;
         print_category(info.get_type_name(), info.get_documentation());
     }
+}
+
+void DocPrinter::print_plugin(const string &name) {
+    print_element(name, DocStore::instance()->get(name));
 }
 
 void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {

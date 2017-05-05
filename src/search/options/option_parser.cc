@@ -236,7 +236,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 doc_printer->print_all();
             } else {
                 for (const string &name : plugin_names) {
-                    (void)name;  // TODO: doc_printer->print_element(name);
+                    doc_printer->print_plugin(name);
                 }
             }
             cout << "Help output finished." << endl;
