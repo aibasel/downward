@@ -6,7 +6,6 @@
 
 namespace options {
 struct DocStruct;
-struct PluginTypeDoc;
 
 class DocPrinter {
     virtual void print_category(const std::string &plugin_type_name, const std::string &synopsis);
