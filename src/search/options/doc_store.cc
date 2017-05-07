@@ -8,8 +8,7 @@ using namespace std;
 
 namespace options {
 void DocStruct::fill_docs() {
-    OptionParser parser(full_name, true);
-    parser.set_help_mode(true);
+    OptionParser parser(full_name, true, true);
     doc_factory(parser);
 }
 
