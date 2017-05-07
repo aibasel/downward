@@ -61,10 +61,12 @@ public:
     PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
         using TPtr = std::shared_ptr<T>;
         Registry<TPtr>::instance()->insert(key, factory);
-        /* We can't collect the plugin documentation here since TypePlugins may
-           be loaded after Plugins and we need the names of PluginTypes when
-           documenting Plugins. We therefore collect the necessary functions and
-           execute them once all PluginTypes are loaded. */
+        /*
+          We cannot collect the plugin documentation here because this might
+          require information from a TypePlugin object that has not yet been
+          constructed. We therefore collect the necessary functions here and
+          call them later, after all PluginType objects have been constructed.
+        */
         DocFactory doc_factory = static_cast<DocFactory>(factory);
         TypeNameFactory type_name_factory = [&]() {
                                                 return TypeNamer<TPtr>::name();
