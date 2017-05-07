@@ -3,12 +3,19 @@
 
 #include "bounds.h"
 
+#include <functional>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace options {
+class OptionParser;
+
+// See comment in constructor of PluginShared in plugin.h.
+using DocFactory = std::function<void(OptionParser &)>;
+using PluginTypeNameGetter = std::function<std::string()>;
+
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
 
@@ -18,7 +25,7 @@ struct ArgumentInfo {
     std::string type_name;
     std::string default_value;
     Bounds bounds;
-    std::vector<std::pair<std::string, std::string>> value_explanations;
+    ValueExplanations value_explanations;
 
     ArgumentInfo(
         const std::string &key,
@@ -72,9 +79,10 @@ struct LanguageSupportInfo {
 };
 
 
-// Store documentation for a single type, for use in combination with DocStore.
+// Store documentation for a plugin.
 struct DocStruct {
-    std::string type;
+    DocFactory doc_factory;
+    PluginTypeNameGetter type_name_factory;
     std::string full_name;
     std::string synopsis;
     std::vector<ArgumentInfo> arg_help;
@@ -82,6 +90,10 @@ struct DocStruct {
     std::vector<LanguageSupportInfo> support_help;
     std::vector<NoteInfo> notes;
     bool hidden;
+
+    void fill_docs();
+
+    std::string get_type_name() const;
 };
 
 
@@ -97,13 +109,14 @@ public:
         return &instance_;
     }
 
-    void register_object(const std::string &key, const std::string &type);
+    void register_plugin(
+        const std::string &key, DocFactory factory, PluginTypeNameGetter type_name_factory);
 
     void add_arg(
-        const std::string &k,
+        const std::string &key,
         const std::string &arg_name,
         const std::string &help,
-        const std::string &type,
+        const std::string &type_name,
         const std::string &default_value,
         const Bounds &bounds,
         const ValueExplanations &value_explanations = ValueExplanations());
@@ -132,11 +145,9 @@ public:
 
     bool contains(const std::string &key);
 
-    DocStruct get(const std::string &key);
+    DocStruct &get(const std::string &key);
 
     std::vector<std::string> get_keys();
-
-    std::vector<std::string> get_types();
 };
 }
 
