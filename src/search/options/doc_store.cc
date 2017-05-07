@@ -7,25 +7,25 @@
 using namespace std;
 
 namespace options {
-void DocStruct::fill_docs() {
-    OptionParser parser(full_name, true, true);
+void PluginInfo::fill_docs() {
+    OptionParser parser(name, true, true);
     doc_factory(parser);
 }
 
-string DocStruct::get_type_name() const {
+string PluginInfo::get_type_name() const {
     return type_name_factory();
 }
 
 
 void DocStore::register_plugin(
     const string &key, DocFactory doc_factory, PluginTypeNameGetter type_name_factory) {
-    DocStruct doc;
+    PluginInfo doc;
     doc.doc_factory = doc_factory;
     doc.type_name_factory = type_name_factory;
-    doc.full_name = key;
+    doc.name = key;
     doc.synopsis = "";
     doc.hidden = false;
-    registered[key] = doc;
+    plugin_infos[key] = doc;
 }
 
 void DocStore::add_arg(
@@ -55,7 +55,7 @@ void DocStore::add_value_explanations(
 
 void DocStore::set_synopsis(
     const string &key, const string &name, const string &description) {
-    get(key).full_name = name;
+    get(key).name = name;
     get(key).synopsis = description;
 }
 
@@ -79,18 +79,18 @@ void DocStore::hide(const string &key) {
 }
 
 bool DocStore::contains(const string &key) {
-    return registered.find(key) != registered.end();
+    return plugin_infos.find(key) != plugin_infos.end();
 }
 
-DocStruct &DocStore::get(const string &key) {
+PluginInfo &DocStore::get(const string &key) {
     /* Use at() to get an error when trying to modify a plugin that has not been
        registered with register_plugin. */
-    return registered.at(key);
+    return plugin_infos.at(key);
 }
 
 vector<string> DocStore::get_keys() {
     vector<string> keys;
-    for (const auto it : registered) {
+    for (const auto it : plugin_infos) {
         keys.push_back(it.first);
     }
     return keys;

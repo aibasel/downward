@@ -5,21 +5,21 @@
 #include <string>
 
 namespace options {
-struct DocStruct;
+struct PluginInfo;
 
 class DocPrinter {
     virtual void print_category(const std::string &plugin_type_name, const std::string &synopsis);
-    virtual void print_element(const std::string &call_name, const DocStruct &info);
+    virtual void print_plugin(const std::string &name, const PluginInfo &info);
 
 protected:
     std::ostream &os;
 
-    virtual void print_synopsis(const DocStruct &info) = 0;
-    virtual void print_usage(const std::string &call_name, const DocStruct &info) = 0;
-    virtual void print_arguments(const DocStruct &info) = 0;
-    virtual void print_notes(const DocStruct &info) = 0;
-    virtual void print_language_features(const DocStruct &info) = 0;
-    virtual void print_properties(const DocStruct &info) = 0;
+    virtual void print_synopsis(const PluginInfo &info) = 0;
+    virtual void print_usage(const std::string &name, const PluginInfo &info) = 0;
+    virtual void print_arguments(const PluginInfo &info) = 0;
+    virtual void print_notes(const PluginInfo &info) = 0;
+    virtual void print_language_features(const PluginInfo &info) = 0;
+    virtual void print_properties(const PluginInfo &info) = 0;
     virtual void print_category_header(const std::string &category_name) = 0;
     virtual void print_category_synopsis(const std::string &synopsis) = 0;
     virtual void print_category_footer() = 0;
@@ -35,12 +35,12 @@ public:
 
 class Txt2TagsPrinter : public DocPrinter {
 protected:
-    virtual void print_synopsis(const DocStruct &info) override;
-    virtual void print_usage(const std::string &call_name, const DocStruct &info) override;
-    virtual void print_arguments(const DocStruct &info) override;
-    virtual void print_notes(const DocStruct &info) override;
-    virtual void print_language_features(const DocStruct &info) override;
-    virtual void print_properties(const DocStruct &info) override;
+    virtual void print_synopsis(const PluginInfo &info) override;
+    virtual void print_usage(const std::string &name, const PluginInfo &info) override;
+    virtual void print_arguments(const PluginInfo &info) override;
+    virtual void print_notes(const PluginInfo &info) override;
+    virtual void print_language_features(const PluginInfo &info) override;
+    virtual void print_properties(const PluginInfo &info) override;
     virtual void print_category_header(const std::string &category_name) override;
     virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_footer() override;
@@ -55,12 +55,12 @@ class PlainPrinter : public DocPrinter {
     bool print_all;
 
 protected:
-    virtual void print_synopsis(const DocStruct &info) override;
-    virtual void print_usage(const std::string &call_name, const DocStruct &info) override;
-    virtual void print_arguments(const DocStruct &info) override;
-    virtual void print_notes(const DocStruct &info) override;
-    virtual void print_language_features(const DocStruct &info) override;
-    virtual void print_properties(const DocStruct &info) override;
+    virtual void print_synopsis(const PluginInfo &info) override;
+    virtual void print_usage(const std::string &name, const PluginInfo &info) override;
+    virtual void print_arguments(const PluginInfo &info) override;
+    virtual void print_notes(const PluginInfo &info) override;
+    virtual void print_language_features(const PluginInfo &info) override;
+    virtual void print_properties(const PluginInfo &info) override;
     virtual void print_category_header(const std::string &category_name) override;
     virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_footer() override;
