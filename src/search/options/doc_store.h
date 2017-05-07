@@ -14,7 +14,7 @@ class OptionParser;
 
 // See documentation in plugin.h.
 using DocFactory = std::function<void(OptionParser &)>;
-using TypeNameFactory = std::function<std::string()>;
+using PluginTypeNameGetter = std::function<std::string()>;
 
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
@@ -82,7 +82,7 @@ struct LanguageSupportInfo {
 // Store documentation for a plugin.
 struct DocStruct {
     DocFactory doc_factory;
-    TypeNameFactory type_name_factory;
+    PluginTypeNameGetter type_name_factory;
     std::string full_name;
     std::string synopsis;
     std::vector<ArgumentInfo> arg_help;
@@ -110,7 +110,7 @@ public:
     }
 
     void register_plugin(
-        const std::string &key, DocFactory factory, TypeNameFactory type_name_factory);
+        const std::string &key, DocFactory factory, PluginTypeNameGetter type_name_factory);
 
     void add_arg(
         const std::string &key,
