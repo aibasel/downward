@@ -1,6 +1,7 @@
 #include "doc_printer.h"
 
 #include "doc_store.h"
+#include "registries.h"
 
 #include <iostream>
 
@@ -13,24 +14,31 @@ static bool is_call(const string &s) {
 
 DocPrinter::DocPrinter(ostream &out)
     : os(out) {
+    for (const string &key : DocStore::instance()->get_keys()) {
+        DocStore::instance()->get(key).fill_docs();
+    }
 }
 
 DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    for (const string &type : DocStore::instance()->get_types()) {
-        print_category(type);
+    for (const PluginTypeInfo &info : PluginTypeRegistry::instance()->get_sorted_types()) {
+        print_category(info.get_type_name(), info.get_documentation());
     }
 }
 
-void DocPrinter::print_category(const string &category_name) {
-    print_category_header(category_name);
-    DocStore *ds = DocStore::instance();
-    print_element("", ds->get(category_name));
-    for (const string &key : ds->get_keys()) {
-        DocStruct info = ds->get(key);
-        if (info.type == category_name && !info.hidden) {
+void DocPrinter::print_plugin(const string &name) {
+    print_element(name, DocStore::instance()->get(name));
+}
+
+void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
+    print_category_header(plugin_type_name);
+    print_category_synopsis(synopsis);
+    DocStore *doc_store = DocStore::instance();
+    for (const string &key : doc_store->get_keys()) {
+        DocStruct info = doc_store->get(key);
+        if (info.get_type_name() == plugin_type_name && !info.hidden) {
             print_element(key, info);
         }
     }
@@ -51,8 +59,7 @@ Txt2TagsPrinter::Txt2TagsPrinter(ostream &out)
 }
 
 void Txt2TagsPrinter::print_synopsis(const DocStruct &info) {
-    if (!info.full_name.empty())
-        os << "== " << info.full_name << " ==" << endl;
+    os << "== " << info.full_name << " ==" << endl;
     if (!info.synopsis.empty())
         os << info.synopsis << endl;
 }
@@ -125,6 +132,12 @@ void Txt2TagsPrinter::print_category_header(const string &category_name) {
     os << ">>>>CATEGORY: " << category_name << "<<<<" << endl;
 }
 
+void Txt2TagsPrinter::print_category_synopsis(const string &synopsis) {
+    if (!synopsis.empty()) {
+        os << synopsis << endl;
+    }
+}
+
 void Txt2TagsPrinter::print_category_footer() {
     os << endl
        << ">>>>CATEGORYEND<<<<" << endl;
@@ -136,8 +149,7 @@ PlainPrinter::PlainPrinter(ostream &out, bool pa)
 }
 
 void PlainPrinter::print_synopsis(const DocStruct &info) {
-    if (!info.full_name.empty())
-        os << "== " << info.full_name << " ==" << endl;
+    os << "== " << info.full_name << " ==" << endl;
     if (print_all && !info.synopsis.empty()) {
         os << info.synopsis << endl;
     }
@@ -204,6 +216,12 @@ void PlainPrinter::print_properties(const DocStruct &info) {
 
 void PlainPrinter::print_category_header(const string &category_name) {
     os << "Help for " << category_name << endl << endl;
+}
+
+void PlainPrinter::print_category_synopsis(const string &synopsis) {
+    if (print_all && !synopsis.empty()) {
+        os << synopsis << endl;
+    }
 }
 
 void PlainPrinter::print_category_footer() {

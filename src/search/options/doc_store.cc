@@ -1,35 +1,51 @@
 #include "doc_store.h"
 
+#include "option_parser.h"
+
 #include <algorithm>
 
 using namespace std;
 
 namespace options {
-void DocStore::register_object(const string &key, const string &type) {
-    registered[key] = DocStruct();
-    registered[key].type = type;
-    registered[key].full_name = key;
-    registered[key].synopsis = "";
-    registered[key].hidden = false;
+void DocStruct::fill_docs() {
+    OptionParser parser(full_name, true);
+    parser.set_help_mode(true);
+    doc_factory(parser);
+}
+
+string DocStruct::get_type_name() const {
+    return type_name_factory();
+}
+
+
+void DocStore::register_plugin(
+    const string &key, DocFactory doc_factory, PluginTypeNameGetter type_name_factory) {
+    DocStruct doc;
+    doc.doc_factory = doc_factory;
+    doc.type_name_factory = type_name_factory;
+    doc.full_name = key;
+    doc.synopsis = "";
+    doc.hidden = false;
+    registered[key] = doc;
 }
 
 void DocStore::add_arg(
     const string &key,
     const string &arg_name,
     const string &help,
-    const string &type,
+    const string &type_name,
     const string &default_value,
     const Bounds &bounds,
     const ValueExplanations &value_explanations) {
-    registered[key].arg_help.emplace_back(
-        arg_name, help, type, default_value, bounds, value_explanations);
+    get(key).arg_help.emplace_back(
+        arg_name, help, type_name, default_value, bounds, value_explanations);
 }
 
 void DocStore::add_value_explanations(
     const string &key,
     const string &arg_name,
     const ValueExplanations &value_explanations) {
-    vector<ArgumentInfo> &args = registered[key].arg_help;
+    vector<ArgumentInfo> &args = get(key).arg_help;
     for (size_t i = 0; i < args.size(); ++i) {
         if (args[i].key == arg_name) {
             args[i].value_explanations = value_explanations;
@@ -40,35 +56,37 @@ void DocStore::add_value_explanations(
 
 void DocStore::set_synopsis(
     const string &key, const string &name, const string &description) {
-    registered[key].full_name = name;
-    registered[key].synopsis = description;
+    get(key).full_name = name;
+    get(key).synopsis = description;
 }
 
 void DocStore::add_property(
     const string &key, const string &name, const string &description) {
-    registered[key].property_help.emplace_back(name, description);
+    get(key).property_help.emplace_back(name, description);
 }
 
 void DocStore::add_feature(
     const string &key, const string &feature, const string &description) {
-    registered[key].support_help.emplace_back(feature, description);
+    get(key).support_help.emplace_back(feature, description);
 }
 
 void DocStore::add_note(
     const string &key, const string &name, const string &description, bool long_text) {
-    registered[key].notes.emplace_back(name, description, long_text);
+    get(key).notes.emplace_back(name, description, long_text);
 }
 
 void DocStore::hide(const string &key) {
-    registered[key].hidden = true;
+    get(key).hidden = true;
 }
 
 bool DocStore::contains(const string &key) {
     return registered.find(key) != registered.end();
 }
 
-DocStruct DocStore::get(const string &key) {
-    return registered[key];
+DocStruct &DocStore::get(const string &key) {
+    /* Use at() to get an error when trying to modify a plugin that has not been
+       registered with register_plugin. */
+    return registered.at(key);
 }
 
 vector<string> DocStore::get_keys() {
@@ -77,18 +95,5 @@ vector<string> DocStore::get_keys() {
         keys.push_back(it.first);
     }
     return keys;
-}
-
-vector<string> DocStore::get_types() {
-    vector<string> types;
-    for (const auto it : registered) {
-        /* Entries for the category itself have an empty type. We filter
-           duplicates but keep the original ordering by key. */
-        if (!it.second.type.empty() &&
-            find(types.begin(), types.end(), it.second.type) == types.end()) {
-            types.push_back(it.second.type);
-        }
-    }
-    return types;
 }
 }

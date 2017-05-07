@@ -4,7 +4,6 @@
 #include "errors.h"
 #include "plugin.h"
 #include "synergy.h"
-#include "type_documenter.h"
 
 #include "../globals.h"
 
@@ -23,37 +22,9 @@
 
 using namespace std;
 
-
-// TODO (post-issue586): Remove this once we no longer need it.
-class AbstractTask;
-class OpenListFactory;
-class PruningMethod;
-class SearchEngine;
-
-namespace cegar {
-class SubtaskGenerator;
-}
-
+// TODO: Remove this when Synergy is gone.
 namespace landmarks {
 class LandmarkFactory;
-}
-
-namespace merge_and_shrink {
-class LabelReduction;
-class MergeScoringFunction;
-class MergeSelector;
-class MergeStrategyFactory;
-class MergeTreeFactory;
-class ShrinkStrategy;
-}
-
-namespace operator_counting {
-class ConstraintGenerator;
-}
-
-namespace pdbs {
-class PatternCollectionGenerator;
-class PatternGenerator;
 }
 
 namespace options {
@@ -68,71 +39,6 @@ void OptionParser::set_help_mode(bool use_help_mode) {
     help_mode_ = use_help_mode;
     opts.set_help_mode(use_help_mode);
 }
-
-template<typename T>
-static void get_help_templ(const ParseTree &parse_tree) {
-    if (Registry<T>::instance()->contains(parse_tree.begin()->value)) {
-        OptionParser parser(parse_tree, true);
-        parser.set_help_mode(true);
-        parser.start_parsing<T>();
-    }
-}
-
-static void get_help(const string &name) {
-    ParseTree parse_tree;
-    parse_tree.insert(parse_tree.begin(), ParseNode(name));
-    get_help_templ<SearchEngine *>(parse_tree);
-    get_help_templ<Evaluator *>(parse_tree);
-    get_help_templ<Heuristic *>(parse_tree);
-    get_help_templ<shared_ptr<AbstractTask>>(parse_tree);
-    get_help_templ<Synergy *>(parse_tree);
-    get_help_templ<landmarks::LandmarkFactory *>(parse_tree);
-    get_help_templ<shared_ptr<cegar::SubtaskGenerator>>(parse_tree);
-    get_help_templ<shared_ptr<OpenListFactory>>(parse_tree);
-    get_help_templ<shared_ptr<merge_and_shrink::LabelReduction>>(parse_tree);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeScoringFunction>>(parse_tree);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeSelector>>(parse_tree);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>(parse_tree);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeTreeFactory>>(parse_tree);
-    get_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>(parse_tree);
-    get_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>(parse_tree);
-    get_help_templ<shared_ptr<pdbs::PatternCollectionGenerator>>(parse_tree);
-    get_help_templ<shared_ptr<pdbs::PatternGenerator>>(parse_tree);
-    get_help_templ<shared_ptr<PruningMethod>>(parse_tree);
-}
-
-template<typename T>
-static void get_full_help_templ() {
-    DocStore::instance()->set_synopsis(
-        TypeNamer<T>::name(), "", TypeDocumenter<T>::synopsis());
-    for (const string &key : Registry<T>::instance()->get_sorted_keys()) {
-        ParseTree parse_tree;
-        parse_tree.insert(parse_tree.begin(), ParseNode(key));
-        get_help_templ<T>(parse_tree);
-    }
-}
-
-static void get_full_help() {
-    get_full_help_templ<SearchEngine *>();
-    get_full_help_templ<Evaluator *>();
-    get_full_help_templ<Heuristic *>();
-    get_full_help_templ<shared_ptr<AbstractTask>>();
-    get_full_help_templ<Synergy *>();
-    get_full_help_templ<landmarks::LandmarkFactory *>();
-    get_full_help_templ<shared_ptr<cegar::SubtaskGenerator>>();
-    get_full_help_templ<shared_ptr<OpenListFactory>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::LabelReduction>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeScoringFunction>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeSelector>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeTreeFactory>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>();
-    get_full_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>();
-    get_full_help_templ<shared_ptr<pdbs::PatternCollectionGenerator>>();
-    get_full_help_templ<shared_ptr<pdbs::PatternGenerator>>();
-    get_full_help_templ<shared_ptr<PruningMethod>>();
-}
-
 
 /*
   Predefine landmarks and heuristics.
@@ -312,19 +218,12 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
-            vector<string> helpiands;
+            vector<string> plugin_names;
             for (size_t j = i + 1; j < args.size(); ++j) {
                 if (args[j] == "--txt2tags") {
                     txt2tags = true;
                 } else {
-                    helpiands.push_back(string(args[j]));
-                }
-            }
-            if (helpiands.empty()) {
-                get_full_help();
-            } else {
-                for (const string &helpiand : helpiands) {
-                    get_help(helpiand);
+                    plugin_names.push_back(args[j]);
                 }
             }
             unique_ptr<DocPrinter> doc_printer;
@@ -332,7 +231,13 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout);
             else
                 doc_printer = utils::make_unique_ptr<PlainPrinter>(cout);
-            doc_printer->print_all();
+            if (plugin_names.empty()) {
+                doc_printer->print_all();
+            } else {
+                for (const string &name : plugin_names) {
+                    doc_printer->print_plugin(name);
+                }
+            }
             cout << "Help output finished." << endl;
             exit(0);
         } else if (arg == "--internal-plan-file") {

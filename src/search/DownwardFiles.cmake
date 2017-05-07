@@ -97,7 +97,6 @@ fast_downward_plugin(
         options/registries
         options/synergy
         options/token_parser
-        options/type_documenter
         options/type_namer
     CORE_PLUGIN
 )

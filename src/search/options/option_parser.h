@@ -96,6 +96,7 @@ public:
     const ParseTree *get_parse_tree();
     const std::string &get_root_value() const;
 
+    // TODO: Pass help_mode to the constructor.
     void set_help_mode(bool use_help_mode);
     bool dry_run() const;
     bool help_mode() const;
@@ -120,9 +121,6 @@ public:
 namespace options {
 template<typename T>
 T OptionParser::start_parsing() {
-    if (help_mode()) {
-        DocStore::instance()->register_object(get_root_value(), TypeNamer<T>::name());
-    }
     return TokenParser<T>::parse(*this);
 }
 

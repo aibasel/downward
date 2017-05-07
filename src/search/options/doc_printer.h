@@ -8,6 +8,9 @@ namespace options {
 struct DocStruct;
 
 class DocPrinter {
+    virtual void print_category(const std::string &plugin_type_name, const std::string &synopsis);
+    virtual void print_element(const std::string &call_name, const DocStruct &info);
+
 protected:
     std::ostream &os;
 
@@ -18,15 +21,15 @@ protected:
     virtual void print_language_features(const DocStruct &info) = 0;
     virtual void print_properties(const DocStruct &info) = 0;
     virtual void print_category_header(const std::string &category_name) = 0;
+    virtual void print_category_synopsis(const std::string &synopsis) = 0;
     virtual void print_category_footer() = 0;
 
 public:
     explicit DocPrinter(std::ostream &out);
     virtual ~DocPrinter();
 
-    virtual void print_all();
-    virtual void print_category(const std::string &category_name);
-    virtual void print_element(const std::string &call_name, const DocStruct &info);
+    void print_all();
+    void print_plugin(const std::string &name);
 };
 
 
@@ -39,6 +42,7 @@ protected:
     virtual void print_language_features(const DocStruct &info) override;
     virtual void print_properties(const DocStruct &info) override;
     virtual void print_category_header(const std::string &category_name) override;
+    virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_footer() override;
 
 public:
@@ -58,6 +62,7 @@ protected:
     virtual void print_language_features(const DocStruct &info) override;
     virtual void print_properties(const DocStruct &info) override;
     virtual void print_category_header(const std::string &category_name) override;
+    virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_footer() override;
 
 public:

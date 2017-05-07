@@ -102,6 +102,10 @@ public:
     const std::string &get_documentation() const {
         return documentation;
     }
+
+    bool operator<(const PluginTypeInfo &other) const {
+        return make_pair(type_name, type) < make_pair(other.type_name, other.type);
+    }
 };
 
 /*
@@ -126,21 +130,13 @@ public:
 
     const PluginTypeInfo &get(const std::type_index &type) const;
 
-    Map::const_iterator begin() const {
-        /*
-          TODO (post-issue586): We want plugin types sorted by name in
-          output. One way to achieve this is by defining the map's
-          comparison function to sort first by the name and then by
-          the type_index, but this is actually a bit difficult if the
-          name isn't part of the key. One option to work around this
-          is to use a set instead of a map as the internal data
-          structure here.
-        */
-        return registry.cbegin();
-    }
-
-    Map::const_iterator end() const {
-        return registry.cend();
+    std::vector<PluginTypeInfo> get_sorted_types() const {
+        std::vector<PluginTypeInfo> types;
+        for (auto it : registry) {
+            types.push_back(it.second);
+        }
+        sort(types.begin(), types.end());
+        return types;
     }
 
     static PluginTypeRegistry *instance();
