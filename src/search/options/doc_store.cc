@@ -37,7 +37,7 @@ void DocStore::add_arg(
     const string &default_value,
     const Bounds &bounds,
     const ValueExplanations &value_explanations) {
-    registered.at(key).arg_help.emplace_back(
+    get(key).arg_help.emplace_back(
         arg_name, help, type_name, default_value, bounds, value_explanations);
 }
 
@@ -45,7 +45,7 @@ void DocStore::add_value_explanations(
     const string &key,
     const string &arg_name,
     const ValueExplanations &value_explanations) {
-    vector<ArgumentInfo> &args = registered.at(key).arg_help;
+    vector<ArgumentInfo> &args = get(key).arg_help;
     for (size_t i = 0; i < args.size(); ++i) {
         if (args[i].key == arg_name) {
             args[i].value_explanations = value_explanations;
@@ -56,27 +56,27 @@ void DocStore::add_value_explanations(
 
 void DocStore::set_synopsis(
     const string &key, const string &name, const string &description) {
-    registered.at(key).full_name = name;
-    registered.at(key).synopsis = description;
+    get(key).full_name = name;
+    get(key).synopsis = description;
 }
 
 void DocStore::add_property(
     const string &key, const string &name, const string &description) {
-    registered.at(key).property_help.emplace_back(name, description);
+    get(key).property_help.emplace_back(name, description);
 }
 
 void DocStore::add_feature(
     const string &key, const string &feature, const string &description) {
-    registered.at(key).support_help.emplace_back(feature, description);
+    get(key).support_help.emplace_back(feature, description);
 }
 
 void DocStore::add_note(
     const string &key, const string &name, const string &description, bool long_text) {
-    registered.at(key).notes.emplace_back(name, description, long_text);
+    get(key).notes.emplace_back(name, description, long_text);
 }
 
 void DocStore::hide(const string &key) {
-    registered.at(key).hidden = true;
+    get(key).hidden = true;
 }
 
 bool DocStore::contains(const string &key) {
@@ -84,6 +84,8 @@ bool DocStore::contains(const string &key) {
 }
 
 DocStruct &DocStore::get(const string &key) {
+    /* Use at() to get an error when trying to modify a plugin that has not been
+       registered with register_plugin. */
     return registered.at(key);
 }
 
