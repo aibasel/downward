@@ -12,8 +12,10 @@
 namespace options {
 class OptionParser;
 
+// See documentation in plugin.h.
 using DocFactory = std::function<void(OptionParser &)>;
 using TypeNameFactory = std::function<std::string()>;
+
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
 
