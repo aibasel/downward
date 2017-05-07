@@ -12,7 +12,7 @@
 namespace options {
 class OptionParser;
 
-// See documentation in plugin.h.
+// See comment in constructor of PluginShared in plugin.h.
 using DocFactory = std::function<void(OptionParser &)>;
 using PluginTypeNameGetter = std::function<std::string()>;
 
