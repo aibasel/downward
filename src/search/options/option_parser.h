@@ -19,8 +19,8 @@ namespace options {
 class OptionParser {
     Options opts;
     const ParseTree parse_tree;
-    bool dry_run_;
-    bool help_mode_;
+    const bool dry_run_;
+    const bool help_mode_;
 
     ParseTree::sibling_iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
@@ -36,8 +36,8 @@ class OptionParser {
         const std::vector<std::string> &args, bool dry_run);
 
 public:
-    OptionParser(ParseTree pt, bool dry_run);
-    OptionParser(const std::string &config, bool dry_run);
+    OptionParser(ParseTree parse_tree, bool dry_run, bool help_mode = false);
+    OptionParser(const std::string &config, bool dry_run, bool help_mode = false);
     ~OptionParser() = default;
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
@@ -96,8 +96,6 @@ public:
     const ParseTree *get_parse_tree();
     const std::string &get_root_value() const;
 
-    // TODO: Pass help_mode to the constructor.
-    void set_help_mode(bool use_help_mode);
     bool dry_run() const;
     bool help_mode() const;
 

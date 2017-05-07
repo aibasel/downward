@@ -31,16 +31,6 @@ namespace options {
 const string OptionParser::NONE = "<none>";
 
 /*
-  Functions for printing help:
-*/
-
-void OptionParser::set_help_mode(bool use_help_mode) {
-    dry_run_ = dry_run_ && use_help_mode;
-    help_mode_ = use_help_mode;
-    opts.set_help_mode(use_help_mode);
-}
-
-/*
   Predefine landmarks and heuristics.
 */
 
@@ -353,16 +343,16 @@ static ParseTree generate_parse_tree(const string &config) {
 }
 
 
-OptionParser::OptionParser(ParseTree pt, bool dry_run)
+OptionParser::OptionParser(ParseTree parse_tree, bool dry_run, bool help_mode)
     : opts(false),
-      parse_tree(pt),
+      parse_tree(parse_tree),
       dry_run_(dry_run),
-      help_mode_(false),
+      help_mode_(help_mode),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
 }
 
-OptionParser::OptionParser(const string &config, bool dry_run)
-    : OptionParser(generate_parse_tree(config), dry_run) {
+OptionParser::OptionParser(const string &config, bool dry_run, bool help_mode)
+    : OptionParser(generate_parse_tree(config), dry_run, help_mode) {
 }
 
 string OptionParser::get_unparsed_config() const {
