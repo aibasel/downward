@@ -203,8 +203,8 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
-            OptionParser p(args[i], dry_run);
-            engine = p.start_parsing<SearchEngine *>();
+            OptionParser parser(args[i], dry_run);
+            engine = parser.start_parsing<SearchEngine *>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;

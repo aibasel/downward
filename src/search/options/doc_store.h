@@ -72,18 +72,18 @@ struct LanguageSupportInfo {
     std::string feature;
     std::string description;
 
-    LanguageSupportInfo(const std::string &feat, const std::string &descr)
-        : feature(feat),
-          description(descr) {
+    LanguageSupportInfo(const std::string &feature, const std::string &description)
+        : feature(feature),
+          description(description) {
     }
 };
 
 
 // Store documentation for a plugin.
-struct DocStruct {
+struct PluginInfo {
     DocFactory doc_factory;
     PluginTypeNameGetter type_name_factory;
-    std::string full_name;
+    std::string name;
     std::string synopsis;
     std::vector<ArgumentInfo> arg_help;
     std::vector<PropertyInfo> property_help;
@@ -99,7 +99,7 @@ struct DocStruct {
 
 // Store documentation for types parsed in help mode.
 class DocStore {
-    std::map<std::string, DocStruct> registered;
+    std::map<std::string, PluginInfo> plugin_infos;
 
     DocStore() = default;
 
@@ -145,7 +145,7 @@ public:
 
     bool contains(const std::string &key);
 
-    DocStruct &get(const std::string &key);
+    PluginInfo &get(const std::string &key);
 
     std::vector<std::string> get_keys();
 };
