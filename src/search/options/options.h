@@ -15,16 +15,12 @@ namespace options {
 class Options {
     std::unordered_map<std::string, Any> storage;
     std::string unparsed_config;
-    bool help_mode;
+    const bool help_mode;
 
 public:
     explicit Options(bool help_mode = false)
         : unparsed_config("<missing>"),
           help_mode(help_mode) {
-    }
-
-    void set_help_mode(bool help_mode_) {
-        help_mode = help_mode_;
     }
 
     template<typename T>

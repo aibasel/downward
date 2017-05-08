@@ -29,7 +29,7 @@ void DocPrinter::print_all() {
 }
 
 void DocPrinter::print_plugin(const string &name) {
-    print_element(name, DocStore::instance()->get(name));
+    print_plugin(name, DocStore::instance()->get(name));
 }
 
 void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
@@ -37,17 +37,17 @@ void DocPrinter::print_category(const string &plugin_type_name, const string &sy
     print_category_synopsis(synopsis);
     DocStore *doc_store = DocStore::instance();
     for (const string &key : doc_store->get_keys()) {
-        DocStruct info = doc_store->get(key);
+        PluginInfo info = doc_store->get(key);
         if (info.get_type_name() == plugin_type_name && !info.hidden) {
-            print_element(key, info);
+            print_plugin(key, info);
         }
     }
     print_category_footer();
 }
 
-void DocPrinter::print_element(const string &call_name, const DocStruct &info) {
+void DocPrinter::print_plugin(const string &name, const PluginInfo &info) {
     print_synopsis(info);
-    print_usage(call_name, info);
+    print_usage(name, info);
     print_arguments(info);
     print_notes(info);
     print_language_features(info);
@@ -58,15 +58,15 @@ Txt2TagsPrinter::Txt2TagsPrinter(ostream &out)
     : DocPrinter(out) {
 }
 
-void Txt2TagsPrinter::print_synopsis(const DocStruct &info) {
-    os << "== " << info.full_name << " ==" << endl;
+void Txt2TagsPrinter::print_synopsis(const PluginInfo &info) {
+    os << "== " << info.name << " ==" << endl;
     if (!info.synopsis.empty())
         os << info.synopsis << endl;
 }
 
-void Txt2TagsPrinter::print_usage(const string &call_name, const DocStruct &info) {
-    if (!call_name.empty()) {
-        os << "``` " << call_name << "(";
+void Txt2TagsPrinter::print_usage(const string &name, const PluginInfo &info) {
+    if (!name.empty()) {
+        os << "``` " << name << "(";
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
             os << arg.key;
@@ -79,7 +79,7 @@ void Txt2TagsPrinter::print_usage(const string &call_name, const DocStruct &info
     }
 }
 
-void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
+void Txt2TagsPrinter::print_arguments(const PluginInfo &info) {
     for (const ArgumentInfo &arg : info.arg_help) {
         os << "- //" << arg.key << "// (" << arg.type_name;
         if (arg.bounds.has_bound())
@@ -99,7 +99,7 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     }
 }
 
-void Txt2TagsPrinter::print_notes(const DocStruct &info) {
+void Txt2TagsPrinter::print_notes(const PluginInfo &info) {
     for (const NoteInfo &note : info.notes) {
         if (note.long_text) {
             os << "=== " << note.name << " ===" << endl
@@ -110,7 +110,7 @@ void Txt2TagsPrinter::print_notes(const DocStruct &info) {
     }
 }
 
-void Txt2TagsPrinter::print_language_features(const DocStruct &info) {
+void Txt2TagsPrinter::print_language_features(const PluginInfo &info) {
     if (!info.support_help.empty()) {
         os << "Language features supported:" << endl;
     }
@@ -119,7 +119,7 @@ void Txt2TagsPrinter::print_language_features(const DocStruct &info) {
     }
 }
 
-void Txt2TagsPrinter::print_properties(const DocStruct &info) {
+void Txt2TagsPrinter::print_properties(const PluginInfo &info) {
     if (!info.property_help.empty()) {
         os << "Properties:" << endl;
     }
@@ -148,16 +148,16 @@ PlainPrinter::PlainPrinter(ostream &out, bool pa)
       print_all(pa) {
 }
 
-void PlainPrinter::print_synopsis(const DocStruct &info) {
-    os << "== " << info.full_name << " ==" << endl;
+void PlainPrinter::print_synopsis(const PluginInfo &info) {
+    os << "== " << info.name << " ==" << endl;
     if (print_all && !info.synopsis.empty()) {
         os << info.synopsis << endl;
     }
 }
 
-void PlainPrinter::print_usage(const string &call_name, const DocStruct &info) {
-    if (!call_name.empty()) {
-        os << call_name << "(";
+void PlainPrinter::print_usage(const string &name, const PluginInfo &info) {
+    if (!name.empty()) {
+        os << name << "(";
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
             os << arg.key;
@@ -170,7 +170,7 @@ void PlainPrinter::print_usage(const string &call_name, const DocStruct &info) {
     }
 }
 
-void PlainPrinter::print_arguments(const DocStruct &info) {
+void PlainPrinter::print_arguments(const PluginInfo &info) {
     for (const ArgumentInfo &arg : info.arg_help) {
         os << " " << arg.key << " (" << arg.type_name;
         if (arg.bounds.has_bound())
@@ -179,7 +179,7 @@ void PlainPrinter::print_arguments(const DocStruct &info) {
     }
 }
 
-void PlainPrinter::print_notes(const DocStruct &info) {
+void PlainPrinter::print_notes(const PluginInfo &info) {
     if (print_all) {
         for (const NoteInfo &note : info.notes) {
             if (note.long_text) {
@@ -192,7 +192,7 @@ void PlainPrinter::print_notes(const DocStruct &info) {
     }
 }
 
-void PlainPrinter::print_language_features(const DocStruct &info) {
+void PlainPrinter::print_language_features(const PluginInfo &info) {
     if (print_all) {
         if (!info.support_help.empty()) {
             os << "Language features supported:" << endl;
@@ -203,7 +203,7 @@ void PlainPrinter::print_language_features(const DocStruct &info) {
     }
 }
 
-void PlainPrinter::print_properties(const DocStruct &info) {
+void PlainPrinter::print_properties(const PluginInfo &info) {
     if (print_all) {
         if (!info.property_help.empty()) {
             os << "Properties:" << endl;
