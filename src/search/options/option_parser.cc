@@ -348,7 +348,7 @@ OptionParser::OptionParser(ParseTree parse_tree, bool dry_run, bool help_mode)
       parse_tree(parse_tree),
       dry_run_(dry_run),
       help_mode_(help_mode),
-      next_unparsed_argument(first_child_of_root(parse_tree)) {
+      next_unparsed_argument(first_child_of_root(this->parse_tree)) {
 }
 
 OptionParser::OptionParser(const string &config, bool dry_run, bool help_mode)
