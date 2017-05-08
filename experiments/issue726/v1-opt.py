@@ -7,6 +7,7 @@ from lab.environments import LocalEnvironment, MaiaEnvironment
 
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
+from relativescatter import RelativeScatterPlotReport
 
 
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -33,5 +34,16 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
+
+for attr in ["total_time", "search_time", "memory"]:
+    for rev1, rev2 in [("base", "v1")]:
+        for config_nick in ["blind", "lmcut"]:
+            exp.add_report(RelativeScatterPlotReport(
+                attributes=[attr],
+                filter_algorithm=["issue726-%s-%s" % (rev1, config_nick),
+                                  "issue726-%s-%s" % (rev2, config_nick)],
+                get_category=lambda r1, r2: r1["domain"],
+            ),
+            outfile="issue726-%s-%s-%s-%s.png" % (config_nick, attr, rev1, rev2))
 
 exp.run_steps()
