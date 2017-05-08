@@ -43,7 +43,9 @@ public:
     Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
         Registry<T *>::instance()->insert(key, factory);
         // See comment in PluginShared.
-        DocFactory doc_factory = static_cast<DocFactory>(factory);
+        DocFactory doc_factory = [factory](OptionParser &parser) {
+            factory(parser);
+        };
         PluginTypeNameGetter type_name_factory = [&]() {
                                                      return TypeNamer<T *>::name();
                                                  };
@@ -67,7 +69,9 @@ public:
           constructed. We therefore collect the necessary functions here and
           call them later, after all PluginType objects have been constructed.
         */
-        DocFactory doc_factory = static_cast<DocFactory>(factory);
+        DocFactory doc_factory = [factory](OptionParser &parser) {
+            factory(parser);
+        };
         PluginTypeNameGetter type_name_factory = [&]() {
                                                      return TypeNamer<TPtr>::name();
                                                  };
