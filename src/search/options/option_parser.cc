@@ -344,7 +344,7 @@ static ParseTree generate_parse_tree(const string &config) {
 
 
 OptionParser::OptionParser(ParseTree parse_tree, bool dry_run, bool help_mode)
-    : opts(false),
+    : opts(help_mode),
       parse_tree(parse_tree),
       dry_run_(dry_run),
       help_mode_(help_mode),
