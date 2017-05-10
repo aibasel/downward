@@ -5,16 +5,21 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-namespace landmarks{
+#include "../utils/system.h"
 
+using namespace std;
+using utils::ExitCode;
+
+namespace landmarks{
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
       master(dynamic_cast<LamaSynergyHeuristic *>(
                   opts.get<Heuristic *>("lama_synergy_heuristic")))
-{}
-
-void FFSynergyHeuristic::set_master(LamaSynergyHeuristic *lama_master){
-   master = lama_master;
+{
+    if (!master) {
+        cerr << "ff_synergy requires a lama_synergy heuristic" << endl;
+        utils::exit_with(ExitCode::INPUT_ERROR);
+    }
 }
 
 EvaluationResult FFSynergyHeuristic::compute_result(
@@ -27,7 +32,6 @@ EvaluationResult FFSynergyHeuristic::compute_result(
        either case, the result is subsequently available in the
        master object.
     */
-    assert(master);
     eval_context.get_heuristic_value_or_infinity(master);
     return master->ff_result;
 }
@@ -44,8 +48,9 @@ static Heuristic *_parse(OptionParser &parser) {
         "(see OptionSyntax#Predefinitions), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
     parser.add_option<Heuristic *>("lama_synergy_heuristic");
-    Heuristic::add_options_to_parser(parser);
 
+    // Note that we deliberately omit options from the Heuristic base class
+    // since they are ignored anyway.
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

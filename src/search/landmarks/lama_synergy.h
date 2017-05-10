@@ -40,8 +40,6 @@ public:
         const GlobalOperator &op,
         const GlobalState &state) override;
 };
-
 }
 
 #endif
-

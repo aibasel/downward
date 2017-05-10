@@ -7,8 +7,6 @@
 
 #include "../lp/lp_solver.h"
 
-#include "../utils/system.h"
-
 using namespace std;
 
 namespace landmarks {
@@ -55,7 +53,6 @@ bool LamaSynergyHeuristic::notify_state_transition(
     }
     return false;
 }
-
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
