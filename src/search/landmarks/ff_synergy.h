@@ -20,8 +20,6 @@ public:
     explicit FFSynergyHeuristic(const options::Options &opts);
 
     virtual EvaluationResult compute_result(EvaluationContext &eval_context) override;
-
-    void set_master(LamaSynergyHeuristic *lama_master);
 };
 }
 #endif
