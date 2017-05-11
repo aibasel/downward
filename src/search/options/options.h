@@ -6,31 +6,30 @@
 
 #include "../utils/system.h"
 
-#include <map>
+#include <iostream>
 #include <string>
+#include <unordered_map>
 
 namespace options {
-//Options is just a wrapper for map<string, Any>
+// Wrapper for unordered_map<string, Any>.
 class Options {
+    std::unordered_map<std::string, Any> storage;
+    std::string unparsed_config;
+    const bool help_mode;
+
 public:
-    Options(bool hm = false)
+    explicit Options(bool help_mode = false)
         : unparsed_config("<missing>"),
-          help_mode(hm) {
+          help_mode(help_mode) {
     }
-
-    void set_help_mode(bool hm) {
-        help_mode = hm;
-    }
-
-    std::map<std::string, Any> storage;
 
     template<typename T>
-    void set(std::string key, T value) {
+    void set(const std::string &key, T value) {
         storage[key] = value;
     }
 
     template<typename T>
-    T get(std::string key) const {
+    T get(const std::string &key) const {
         const auto it = storage.find(key);
         if (it == storage.end()) {
             ABORT("Attempt to retrieve nonexisting object of name " +
@@ -41,7 +40,7 @@ public:
             T result = any_cast<T>(it->second);
             return result;
         } catch (const BadAnyCast &) {
-            std::cout << "Invalid conversion while retrieving config options!"
+            std::cerr << "Invalid conversion while retrieving config options!"
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
@@ -50,7 +49,7 @@ public:
     }
 
     template<typename T>
-    T get(std::string key, const T &default_value) const {
+    T get(const std::string &key, const T &default_value) const {
         if (storage.count(key))
             return get<T>(key);
         else
@@ -58,11 +57,10 @@ public:
     }
 
     template<typename T>
-    void verify_list_non_empty(std::string key) const {
+    void verify_list_non_empty(const std::string &key) const {
         if (!help_mode) {
-            std::vector<T> temp_vec = get<std::vector<T>>(key);
-            if (temp_vec.empty()) {
-                std::cout << "Error: unexpected empty list!"
+            if (get_list<T>(key).empty()) {
+                std::cerr << "Error: unexpected empty list!"
                           << std::endl
                           << "List " << key << " is empty"
                           << std::endl;
@@ -72,28 +70,25 @@ public:
     }
 
     template<typename T>
-    std::vector<T> get_list(std::string key) const {
+    std::vector<T> get_list(const std::string &key) const {
         return get<std::vector<T>>(key);
     }
 
-    int get_enum(std::string key) const {
+    int get_enum(const std::string &key) const {
         return get<int>(key);
     }
 
-    bool contains(std::string key) const {
+    bool contains(const std::string &key) const {
         return storage.find(key) != storage.end();
     }
 
-    std::string get_unparsed_config() const {
+    const std::string &get_unparsed_config() const {
         return unparsed_config;
     }
 
     void set_unparsed_config(const std::string &config) {
         unparsed_config = config;
     }
-private:
-    std::string unparsed_config;
-    bool help_mode;
 };
 }
 

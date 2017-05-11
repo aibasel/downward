@@ -1,8 +1,9 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
+#include "evaluator.h"
+#include "operator_id.h"
 #include "per_state_information.h"
-#include "scalar_evaluator.h"
 #include "task_proxy.h"
 
 #include "algorithms/ordered_set.h"
@@ -19,7 +20,7 @@ class OptionParser;
 class Options;
 }
 
-class Heuristic : public ScalarEvaluator {
+class Heuristic : public Evaluator {
     struct HEntry {
         /* dirty is conceptually a bool, but Visual C++ does not support
            packing ints and bools together in a bitfield. */
@@ -45,7 +46,7 @@ class Heuristic : public ScalarEvaluator {
       being able to reuse the data structure from one iteration to the
       next, but this seems to be the only potential downside.
     */
-    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
 
 protected:
     /*
@@ -72,8 +73,6 @@ protected:
       is OK -- it will only appear once in the list of preferred
       operators for this heuristic.
     */
-    // TODO: Make private once all heuristics use the TaskProxy class.
-    void set_preferred(const GlobalOperator *op);
     void set_preferred(const OperatorProxy &op);
 
     /* TODO: Make private and use State instead of GlobalState once all
@@ -102,9 +101,6 @@ public:
         EvaluationContext &eval_context) override;
 
     std::string get_description() const;
-    bool is_h_dirty(GlobalState &state) {
-        return heuristic_cache[state].dirty;
-    }
 };
 
 #endif

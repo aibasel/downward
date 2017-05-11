@@ -3,7 +3,8 @@
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
+
+#include "../task_utils/task_properties.h"
 
 #include <cstddef>
 #include <limits>
@@ -14,7 +15,7 @@ using namespace std;
 namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts),
-      min_operator_cost(get_min_operator_cost(task_proxy)) {
+      min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing blind search heuristic..." << endl;
 }
 
@@ -23,7 +24,7 @@ BlindSearchHeuristic::~BlindSearchHeuristic() {
 
 int BlindSearchHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
-    if (is_goal_state(task_proxy, state))
+    if (task_properties::is_goal_state(task_proxy, state))
         return 0;
     else
         return min_operator_cost;

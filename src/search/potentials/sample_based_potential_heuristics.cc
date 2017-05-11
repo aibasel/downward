@@ -26,7 +26,7 @@ static void filter_dead_ends(PotentialOptimizer &optimizer, vector<State> &sampl
     swap(samples, non_dead_end_samples);
 }
 
-void optimize_for_samples(
+static void optimize_for_samples(
     PotentialOptimizer &optimizer,
     int num_samples,
     utils::RandomNumberGenerator &rng) {

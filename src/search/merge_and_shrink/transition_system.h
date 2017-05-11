@@ -99,7 +99,7 @@ private:
     std::unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
 
     /*
-      The transitions of a label group are indexed via its id. The id of a
+      The transitions of a label group are indexed via its ID. The ID of a
       group does not change, and hence its transitions are never moved.
 
       We tested different alternatives to store the transitions, but they all

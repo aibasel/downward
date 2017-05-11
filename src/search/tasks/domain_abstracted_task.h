@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-
 namespace extra_tasks {
 /*
   Task transformation for performing domain abstraction.
