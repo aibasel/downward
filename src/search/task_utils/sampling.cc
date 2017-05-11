@@ -1,18 +1,20 @@
 #include "sampling.h"
 
 #include "successor_generator.h"
-#include "task_proxy.h"
-#include "task_tools.h"
 
-#include "utils/countdown_timer.h"
-#include "utils/rng.h"
+#include "../task_proxy.h"
+
+#include "../task_utils/task_properties.h"
+#include "../utils/countdown_timer.h"
+#include "../utils/rng.h"
 
 using namespace std;
 
 
+namespace sampling {
 vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
-    const SuccessorGenerator &successor_generator,
+    const successor_generator::SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,
@@ -56,17 +58,18 @@ vector<State> sample_states_with_random_walks(
 
         // Sample one state with a random walk of length length.
         State current_state(initial_state);
-        vector<OperatorProxy> applicable_ops;
+        vector<OperatorID> applicable_operators;
         for (int j = 0; j < length; ++j) {
-            applicable_ops.clear();
+            applicable_operators.clear();
             successor_generator.generate_applicable_ops(current_state,
-                                                        applicable_ops);
+                                                        applicable_operators);
             // If there are no applicable operators, do not walk further.
-            if (applicable_ops.empty()) {
+            if (applicable_operators.empty()) {
                 break;
             } else {
-                const OperatorProxy &random_op = *rng.choose(applicable_ops);
-                assert(is_applicable(random_op, current_state));
+                OperatorID random_op_id = *rng.choose(applicable_operators);
+                OperatorProxy random_op = task_proxy.get_operators()[random_op_id];
+                assert(task_properties::is_applicable(random_op, current_state));
                 current_state = current_state.get_successor(random_op);
                 /* If current state is a dead end, then restart the random walk
                    with the initial state. */
@@ -78,4 +81,5 @@ vector<State> sample_states_with_random_walks(
         samples.push_back(current_state);
     }
     return samples;
+}
 }

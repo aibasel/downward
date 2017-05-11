@@ -81,7 +81,8 @@ struct TypeNamer<std::string> {
 template<>
 struct TypeNamer<ParseTree> {
     static std::string name() {
-        return "ParseTree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
+        return "ParseTree (this just means the input is parsed at a later point."
+               " The real type is probably a search engine.)";
     }
 };
 
