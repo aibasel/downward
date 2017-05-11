@@ -5,8 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
-#include "../variable_order_finder.h"
 
+#include "../task_utils/variable_order_finder.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
 
@@ -26,7 +26,7 @@ PatternGeneratorGreedy::PatternGeneratorGreedy(int max_states)
 Pattern PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     Pattern pattern;
-    VariableOrderFinder order(task_proxy, GOAL_CG_LEVEL);
+    variable_order_finder::VariableOrderFinder order(task_proxy, variable_order_finder::GOAL_CG_LEVEL);
     VariablesProxy variables = task_proxy.get_variables();
 
     int size = 1;

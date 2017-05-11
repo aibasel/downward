@@ -15,8 +15,8 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/memory.h"
@@ -62,7 +62,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     utils::Timer timer;
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     starting_peak_memory = utils::get_peak_memory_in_kb();
-    verify_no_axioms(task_proxy);
+    task_properties::verify_no_axioms(task_proxy);
     dump_options();
     warn_on_unusual_options();
     cout << endl;

@@ -351,9 +351,9 @@ void TransitionSystem::apply_label_reduction(
     } else {
         /*
           Go over all mappings, collect transitions of old groups and
-          remember all affected group ids. This needs to happen *before*
+          remember all affected group IDs. This needs to happen *before*
           updating label_equivalence_relation, because after updating it,
-          we cannot find out the group id of reduced labels anymore.
+          we cannot find out the group ID of reduced labels anymore.
         */
         unordered_map<int, vector<Transition>> new_label_to_transitions;
         unordered_set<int> affected_group_ids;
@@ -380,7 +380,7 @@ void TransitionSystem::apply_label_reduction(
            to happen *before* we can add the new transitions to this transition
            systems and *before* we can remove empty groups of old labels,
            because only after updating label_equivalence_relation, we know the
-           group id of the new labels and which old groups became empty.
+           group ID of the new labels and which old groups became empty.
         */
         label_equivalence_relation->apply_label_mapping(label_mapping, &affected_group_ids);
 
@@ -392,7 +392,7 @@ void TransitionSystem::apply_label_reduction(
             transitions_by_group_id[new_group_id] = move(transitions);
         }
 
-        // Go over all affected group ids and remove their transitions if the
+        // Go over all affected group IDs and remove their transitions if the
         // group is empty.
         for (int group_id : affected_group_ids) {
             if (label_equivalence_relation->is_empty_group(group_id)) {
@@ -502,7 +502,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
     cout << tag() << "transitions" << endl;
     for (const GroupAndTransitions &gat : *this) {
         const LabelGroup &label_group = gat.label_group;
-//        cout << "group id: " << ts_it.get_id() << endl;
+//        cout << "group ID: " << ts_it.get_id() << endl;
         cout << "labels: ";
         for (LabelConstIter label_it = label_group.begin();
              label_it != label_group.end(); ++label_it) {

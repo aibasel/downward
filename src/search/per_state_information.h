@@ -3,14 +3,13 @@
 
 #include "global_state.h"
 #include "globals.h"
-#include "segmented_vector.h"
 #include "state_id.h"
 #include "state_registry.h"
 
+#include "algorithms/segmented_vector.h"
 #include "utils/collections.h"
 
 #include <cassert>
-#include <iterator>
 #include <unordered_map>
 
 class PerStateInformationBase {
@@ -52,11 +51,11 @@ template<class Entry>
 class PerStateInformation : public PerStateInformationBase {
     const Entry default_value;
     typedef std::unordered_map<const StateRegistry *,
-                               SegmentedVector<Entry> * > EntryVectorMap;
+                               segmented_vector::SegmentedVector<Entry> * > EntryVectorMap;
     EntryVectorMap entries_by_registry;
 
     mutable const StateRegistry *cached_registry;
-    mutable SegmentedVector<Entry> *cached_entries;
+    mutable segmented_vector::SegmentedVector<Entry> *cached_entries;
 
     /*
       Returns the SegmentedVector associated with the given StateRegistry.
@@ -64,12 +63,12 @@ class PerStateInformation : public PerStateInformationBase {
       Both the registry and the returned vector are cached to speed up
       consecutive calls with the same registry.
     */
-    SegmentedVector<Entry> *get_entries(const StateRegistry *registry) {
+    segmented_vector::SegmentedVector<Entry> *get_entries(const StateRegistry *registry) {
         if (cached_registry != registry) {
             cached_registry = registry;
             typename EntryVectorMap::const_iterator it = entries_by_registry.find(registry);
             if (it == entries_by_registry.end()) {
-                cached_entries = new SegmentedVector<Entry>();
+                cached_entries = new segmented_vector::SegmentedVector<Entry>();
                 entries_by_registry[registry] = cached_entries;
                 registry->subscribe(this);
             } else {
@@ -86,14 +85,14 @@ class PerStateInformation : public PerStateInformationBase {
       Otherwise, both the registry and the returned vector are cached to speed
       up consecutive calls with the same registry.
     */
-    const SegmentedVector<Entry> *get_entries(const StateRegistry *registry) const {
+    const segmented_vector::SegmentedVector<Entry> *get_entries(const StateRegistry *registry) const {
         if (cached_registry != registry) {
             typename EntryVectorMap::const_iterator it = entries_by_registry.find(registry);
             if (it == entries_by_registry.end()) {
                 return 0;
             } else {
                 cached_registry = registry;
-                cached_entries = const_cast<SegmentedVector<Entry> *>(it->second);
+                cached_entries = const_cast<segmented_vector::SegmentedVector<Entry> *>(it->second);
             }
         }
         assert(cached_registry == registry);
@@ -104,59 +103,6 @@ class PerStateInformation : public PerStateInformationBase {
     PerStateInformation(const PerStateInformation<Entry> &);
     PerStateInformation &operator=(const PerStateInformation<Entry> &);
 public:
-    // TODO this iterates over StateIDs not over entries. Move it to StateRegistry?
-    //      A better implementation would allow to iterate over pair<StateID, Entry>.
-    class const_iterator : public std::iterator<std::forward_iterator_tag,
-                                                StateID> {
-        friend class PerStateInformation<Entry>;
-        const PerStateInformation<Entry> &owner;
-        const StateRegistry *registry;
-        StateID pos;
-
-        const_iterator(const PerStateInformation<Entry> &owner_,
-                       const StateRegistry *registry_, size_t start)
-            : owner(owner_), registry(registry_), pos(start) {}
-public:
-        const_iterator(const const_iterator &other)
-            : owner(other.owner), registry(other.registry), pos(other.pos) {}
-
-        ~const_iterator() {}
-
-        const_iterator &operator++() {
-            ++pos.value;
-            return *this;
-        }
-
-        const_iterator operator++(int) {
-            const_iterator tmp(*this);
-            operator++();
-            return tmp;
-        }
-
-        bool operator==(const const_iterator &rhs) {
-            return &owner == &rhs.owner && registry == rhs.registry && pos == rhs.pos;
-        }
-
-        bool operator!=(const const_iterator &rhs) {
-            return !(*this == rhs);
-        }
-
-        StateID operator*() {
-            return pos;
-        }
-
-        StateID *operator->() {
-            return &pos;
-        }
-    };
-
-    const_iterator begin(const StateRegistry *registry) const {
-        return const_iterator(*this, registry, 0);
-    }
-    const_iterator end(const StateRegistry *registry) const {
-        return const_iterator(*this, registry, registry->size());
-    }
-
     PerStateInformation()
         : default_value(),
           cached_registry(0),
@@ -179,7 +125,7 @@ public:
 
     Entry &operator[](const GlobalState &state) {
         const StateRegistry *registry = &state.get_registry();
-        SegmentedVector<Entry> *entries = get_entries(registry);
+        segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
         int state_id = state.get_id().value;
         size_t virtual_size = registry->size();
         assert(utils::in_bounds(state_id, *registry));
@@ -191,7 +137,7 @@ public:
 
     const Entry &operator[](const GlobalState &state) const {
         const StateRegistry *registry = &state.get_registry();
-        const SegmentedVector<Entry> *entries = get_entries(registry);
+        const segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
         if (!entries) {
             return default_value;
         }

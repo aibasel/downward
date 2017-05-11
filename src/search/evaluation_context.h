@@ -3,12 +3,12 @@
 
 #include "evaluation_result.h"
 #include "heuristic_cache.h"
+#include "operator_id.h"
 
 #include <unordered_map>
 
-class GlobalOperator;
+class Evaluator;
 class GlobalState;
-class ScalarEvaluator;
 class SearchStatistics;
 
 /*
@@ -21,7 +21,7 @@ class SearchStatistics;
 */
 
 /*
-  TODO/NOTE: The code currently uses "ScalarEvaluator" everywhere, but
+  TODO/NOTE: The code currently uses "Evaluator" everywhere, but
   this should eventually be replaced by "Heuristic" once these are
   unified.
 */
@@ -90,7 +90,7 @@ public:
 
     ~EvaluationContext() = default;
 
-    const EvaluationResult &get_result(ScalarEvaluator *heur);
+    const EvaluationResult &get_result(Evaluator *heur);
     const HeuristicCache &get_cache() const;
     const GlobalState &get_state() const;
     int get_g_value() const;
@@ -107,11 +107,11 @@ public:
       treated uniformly, use get_heuristic_value_or_infinity(), which
       returns numeric_limits<int>::max() for infinite estimates.
     */
-    bool is_heuristic_infinite(ScalarEvaluator *heur);
-    int get_heuristic_value(ScalarEvaluator *heur);
-    int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
-    const std::vector<const GlobalOperator *> &get_preferred_operators(
-        ScalarEvaluator *heur);
+    bool is_heuristic_infinite(Evaluator *heur);
+    int get_heuristic_value(Evaluator *heur);
+    int get_heuristic_value_or_infinity(Evaluator *heur);
+    const std::vector<OperatorID> &get_preferred_operators(
+        Evaluator *heur);
     bool get_calculate_preferred() const;
 };
 
