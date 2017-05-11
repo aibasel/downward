@@ -50,7 +50,6 @@ fast_downward_plugin(
 
         abstract_task
         axioms
-        causal_graph
         evaluation_context
         evaluation_result
         evaluator
@@ -62,12 +61,12 @@ fast_downward_plugin(
         open_list
         open_list_factory
         operator_cost
+        operator_id
         option_parser
         option_parser_util
         per_state_information
         plugin
         pruning_method
-        sampling
         search_engine
         search_node_info
         search_progress
@@ -75,12 +74,9 @@ fast_downward_plugin(
         search_statistics
         state_id
         state_registry
-        successor_generator
         task_proxy
-        task_tools
-        variable_order_finder
 
-    DEPENDS INT_PACKER ORDERED_SET SEGMENTED_VECTOR
+    DEPENDS CAUSAL_GRAPH INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
 )
 
@@ -101,7 +97,6 @@ fast_downward_plugin(
         options/registries
         options/synergy
         options/token_parser
-        options/type_documenter
         options/type_namer
     CORE_PLUGIN
 )
@@ -289,6 +284,7 @@ fast_downward_plugin(
     HELP "Base class for all stubborn set partial order reduction methods"
     SOURCES
         pruning/stubborn_sets
+    DEPENDS TASK_PROPERTIES
     DEPENDENCY_ONLY
 )
 
@@ -305,7 +301,7 @@ fast_downward_plugin(
     HELP "Stubborn set method that dominates expansion core"
     SOURCES
         pruning/stubborn_sets_ec
-    DEPENDS STUBBORN_SETS
+    DEPENDS STUBBORN_SETS TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -322,7 +318,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON
+    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -330,7 +326,7 @@ fast_downward_plugin(
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
         search_engines/enforced_hill_climbing_search
-    DEPENDS G_EVALUATOR ORDERED_SET PREF_EVALUATOR SEARCH_COMMON
+    DEPENDS G_EVALUATOR ORDERED_SET PREF_EVALUATOR SEARCH_COMMON SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -345,7 +341,7 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         search_engines/lazy_search
-    DEPENDS ORDERED_SET SEARCH_COMMON
+    DEPENDS ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
@@ -370,7 +366,7 @@ fast_downward_plugin(
     HELP "The additive heuristic"
     SOURCES
         heuristics/additive_heuristic
-    DEPENDS PRIORITY_QUEUES RELAXATION_HEURISTIC
+    DEPENDS PRIORITY_QUEUES RELAXATION_HEURISTIC TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -378,6 +374,7 @@ fast_downward_plugin(
     HELP "The 'blind search' heuristic"
     SOURCES
         heuristics/blind_search_heuristic
+    DEPENDS TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -385,7 +382,7 @@ fast_downward_plugin(
     HELP "The context-enhanced additive heuristic"
     SOURCES
         heuristics/cea_heuristic
-    DEPENDS DOMAIN_TRANSITION_GRAPH PRIORITY_QUEUES
+    DEPENDS DOMAIN_TRANSITION_GRAPH PRIORITY_QUEUES TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -393,14 +390,14 @@ fast_downward_plugin(
     HELP "The causal graph heuristic"
     SOURCES heuristics/cg_heuristic
             heuristics/cg_cache
-    DEPENDS DOMAIN_TRANSITION_GRAPH PRIORITY_QUEUES
+    DEPENDS DOMAIN_TRANSITION_GRAPH PRIORITY_QUEUES TASK_PROPERTIES
 )
 
 fast_downward_plugin(
     NAME DOMAIN_TRANSITION_GRAPH
     HELP "DTGs used by cg and cea heuristic"
     SOURCES
-        domain_transition_graph
+        heuristics/domain_transition_graph
     DEPENDENCY_ONLY
 )
 
@@ -409,7 +406,7 @@ fast_downward_plugin(
     HELP "The FF heuristic (an implementation of the RPG heuristic)"
     SOURCES
         heuristics/ff_heuristic
-    DEPENDS ADDITIVE_HEURISTIC
+    DEPENDS ADDITIVE_HEURISTIC TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -424,6 +421,7 @@ fast_downward_plugin(
     HELP "The h^m heuristic"
     SOURCES
         heuristics/hm_heuristic
+    DEPENDS TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -432,7 +430,7 @@ fast_downward_plugin(
     SOURCES
         heuristics/lm_cut_heuristic
         heuristics/lm_cut_landmarks
-    DEPENDS PRIORITY_QUEUES
+    DEPENDS PRIORITY_QUEUES TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -461,6 +459,49 @@ fast_downward_plugin(
         tasks/domain_abstracted_task_factory
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
+    DEPENDS TASK_PROPERTIES
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME CAUSAL_GRAPH
+    HELP "Causal Graph"
+    SOURCES
+        task_utils/causal_graph
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME SAMPLING
+    HELP "Sampling"
+    SOURCES
+        task_utils/sampling
+    DEPENDS SUCCESSOR_GENERATOR TASK_PROPERTIES
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME SUCCESSOR_GENERATOR
+    HELP "Successor generator"
+    SOURCES
+        task_utils/successor_generator
+    DEPENDS TASK_PROPERTIES
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME TASK_PROPERTIES
+    HELP "Task properties"
+    SOURCES
+        task_utils/task_properties
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME VARIABLE_ORDER_FINDER
+    HELP "Variable order finder"
+    SOURCES
+        task_utils/variable_order_finder
     DEPENDENCY_ONLY
 )
 
@@ -482,7 +523,7 @@ fast_downward_plugin(
         cegar/transition_updater
         cegar/utils
         cegar/utils_landmarks
-    DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES
+    DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -524,7 +565,7 @@ fast_downward_plugin(
         merge_and_shrink/transition_system
         merge_and_shrink/types
         merge_and_shrink/utils
-    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION SCCS
+    DEPENDS PRIORITY_QUEUES EQUIVALENCE_RELATION SCCS TASK_PROPERTIES VARIABLE_ORDER_FINDER
 )
 
 fast_downward_plugin(
@@ -544,7 +585,7 @@ fast_downward_plugin(
         landmarks/landmark_graph
         landmarks/landmark_status_manager
         landmarks/util
-    DEPENDS LP_SOLVER PRIORITY_QUEUES
+    DEPENDS LP_SOLVER PRIORITY_QUEUES SUCCESSOR_GENERATOR TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -556,7 +597,7 @@ fast_downward_plugin(
         operator_counting/operator_counting_heuristic
         operator_counting/pho_constraints
         operator_counting/state_equation_constraints
-    DEPENDS LP_SOLVER LANDMARK_CUT_HEURISTIC PDBS
+    DEPENDS LP_SOLVER LANDMARK_CUT_HEURISTIC PDBS TASK_PROPERTIES
 )
 
 fast_downward_plugin(
@@ -585,7 +626,7 @@ fast_downward_plugin(
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
-    DEPENDS MAX_CLIQUES PRIORITY_QUEUES
+    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES VARIABLE_ORDER_FINDER
 )
 
 fast_downward_plugin(
@@ -600,7 +641,7 @@ fast_downward_plugin(
         potentials/sample_based_potential_heuristics
         potentials/single_potential_heuristics
         potentials/util
-    DEPENDS LP_SOLVER
+    DEPENDS LP_SOLVER SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES
 )
 
 fast_downward_plugin(

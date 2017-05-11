@@ -26,7 +26,7 @@ namespace merge_and_shrink {
    identical successor signature are not distinguished by
    bisimulation.
 
-   Each entry in the vector is a pair of (label group id, equivalence class of
+   Each entry in the vector is a pair of (label group ID, equivalence class of
    successor). The bisimulation algorithm requires that the vector is
    sorted and uniquified. */
 using SuccessorSignature = vector<pair<int, int>>;
