@@ -56,15 +56,16 @@ bool LamaSynergyHeuristic::notify_state_transition(
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
-        "LAMA-FF synergy",
+        "LAMA-FF synergy master",
         "If the FF heuristic should be used "
         "(for its estimates or its preferred operators) "
         "and we want to use preferred operators of the "
         "landmark count heuristic, we can exploit synergy effects by "
         "using the LAMA-FF synergy. "
-        "This synergy can only be used via Predefinition "
+        "This synergy can be used via Predefinition "
         "(see OptionSyntax#Predefinitions), for example:\n"
-        "\"hlm,hff=lm_ff_syn(...)\"");
+        "--heuristic \"lama_master=lama_synergy(...)\""
+        "--heuristic \"lama_slave=ff_synergy(lama_master)\"");
     parser.add_option<LandmarkFactory *>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
