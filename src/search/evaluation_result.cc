@@ -1,7 +1,5 @@
 #include "evaluation_result.h"
 
-#include <vector>
-
 using namespace std;
 
 const int EvaluationResult::INFTY = numeric_limits<int>::max();
@@ -21,8 +19,7 @@ int EvaluationResult::get_h_value() const {
     return h_value;
 }
 
-const vector<const GlobalOperator *> &
-EvaluationResult::get_preferred_operators() const {
+const vector<OperatorID> &EvaluationResult::get_preferred_operators() const {
     return preferred_operators;
 }
 
@@ -35,7 +32,7 @@ void EvaluationResult::set_h_value(int value) {
 }
 
 void EvaluationResult::set_preferred_operators(
-    vector<const GlobalOperator *> &&preferred_ops) {
+    vector<OperatorID> &&preferred_ops) {
     preferred_operators = move(preferred_ops);
 }
 

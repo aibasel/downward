@@ -5,13 +5,15 @@
 
 #include <vector>
 
+namespace domain_transition_graph {
 struct ValueTransitionLabel;
+}
 
 namespace cg_heuristic {
 class CGCache {
     TaskProxy task_proxy;
     std::vector<std::vector<int>> cache;
-    std::vector<std::vector<ValueTransitionLabel *>> helpful_transition_cache;
+    std::vector<std::vector<domain_transition_graph::ValueTransitionLabel *>> helpful_transition_cache;
     std::vector<std::vector<int>> depends_on;
 
     int get_index(int var, const State &state, int from_val, int to_val) const;
@@ -36,7 +38,7 @@ public:
         cache[var][get_index(var, state, from_val, to_val)] = cost;
     }
 
-    ValueTransitionLabel *lookup_helpful_transition(
+    domain_transition_graph::ValueTransitionLabel *lookup_helpful_transition(
         int var, const State &state, int from_val, int to_val) const {
         int index = get_index(var, state, from_val, to_val);
         return helpful_transition_cache[var][index];
@@ -44,7 +46,7 @@ public:
 
     void store_helpful_transition(
         int var, const State &state, int from_val, int to_val,
-        ValueTransitionLabel *helpful_transition) {
+        domain_transition_graph::ValueTransitionLabel *helpful_transition) {
         int index = get_index(var, state, from_val, to_val);
         helpful_transition_cache[var][index] = helpful_transition;
     }

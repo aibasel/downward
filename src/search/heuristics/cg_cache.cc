@@ -1,8 +1,8 @@
 #include "cg_cache.h"
 
-#include "../causal_graph.h"
 #include "../task_proxy.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../utils/collections.h"
 #include "../utils/math.h"
 
@@ -20,7 +20,7 @@ CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = task_proxy.get_variables().size();
-    const CausalGraph &cg = task_proxy.get_causal_graph();
+    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);
@@ -73,7 +73,7 @@ CGCache::~CGCache() {
 int CGCache::compute_required_cache_size(
     int var_id, const vector<int> &depends_on) const {
     /*
-      Compute the size of the cache required for variable with id "var_id",
+      Compute the size of the cache required for variable with ID "var_id",
       which depends on the variables in "depends_on". Requires that the caches
       for all variables in "depends_on" have already been allocated. Returns -1
       if the variable cannot be cached because the required cache size would be

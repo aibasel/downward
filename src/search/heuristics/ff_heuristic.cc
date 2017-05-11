@@ -3,7 +3,8 @@
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
+
+#include "../task_utils/task_properties.h"
 
 #include <cassert>
 
@@ -40,7 +41,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
                     OperatorProxy op = task_proxy.get_operators()[operator_no];
-                    if (is_applicable(op, state))
+                    if (task_properties::is_applicable(op, state))
                         set_preferred(op);
                 }
             }

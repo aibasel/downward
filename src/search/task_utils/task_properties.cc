@@ -1,4 +1,4 @@
-#include "task_tools.h"
+#include "task_properties.h"
 
 #include "../utils/system.h"
 
@@ -10,6 +10,7 @@ using namespace std;
 using utils::ExitCode;
 
 
+namespace task_properties {
 bool is_unit_cost(TaskProxy task) {
     for (OperatorProxy op : task.get_operators()) {
         if (op.get_cost() != 1)
@@ -80,4 +81,5 @@ int get_min_operator_cost(TaskProxy task_proxy) {
         min_cost = min(min_cost, op.get_cost());
     }
     return min_cost;
+}
 }
