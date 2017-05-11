@@ -8,7 +8,6 @@
 #include "../utils/system.h"
 
 using namespace std;
-using utils::ExitCode;
 
 namespace landmarks{
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
@@ -18,7 +17,7 @@ FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
 {
     if (!master) {
         cerr << "ff_synergy requires a lama_synergy heuristic" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::INPUT_ERROR);
     }
 }
 
