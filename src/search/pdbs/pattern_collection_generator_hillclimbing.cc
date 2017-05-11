@@ -5,12 +5,12 @@
 #include "pattern_database.h"
 #include "validation.h"
 
-#include "../causal_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../sampling.h"
-#include "../task_tools.h"
 
+#include "../task_utils/causal_graph.h"
+#include "../task_utils/sampling.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -47,7 +47,7 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     const PatternDatabase &pdb,
     set<Pattern> &generated_patterns,
     PDBCollection &candidate_pdbs) {
-    const CausalGraph &causal_graph = task_proxy.get_causal_graph();
+    const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const Pattern &pattern = pdb.get_pattern();
     int pdb_size = pdb.get_size();
     int max_pdb_size = 0;
@@ -91,13 +91,13 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
 }
 
 void PatternCollectionGeneratorHillclimbing::sample_states(
-    const TaskProxy &task_proxy, const SuccessorGenerator &successor_generator,
+    const TaskProxy &task_proxy, const successor_generator::SuccessorGenerator &successor_generator,
     vector<State> &samples, double average_operator_cost) {
     int init_h = current_pdbs->get_value(
         task_proxy.get_initial_state());
 
     try {
-        samples = sample_states_with_random_walks(
+        samples = sampling::sample_states_with_random_walks(
             task_proxy, successor_generator, num_samples, init_h,
             average_operator_cost,
             *rng,
@@ -105,7 +105,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
                 return current_pdbs->is_dead_end(state);
             },
             hill_climbing_timer);
-    } catch (SamplingTimeout &) {
+    } catch (sampling::SamplingTimeout &) {
         throw HillClimbingTimeout();
     }
 }
@@ -213,7 +213,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
-    double average_operator_cost = get_average_operator_cost(task_proxy);
+    double average_operator_cost = task_properties::get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
     // Candidate patterns generated so far (used to avoid duplicates).
@@ -238,7 +238,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
     int num_iterations = 0;
     State initial_state = task_proxy.get_initial_state();
-    SuccessorGenerator successor_generator(task_proxy);
+    successor_generator::SuccessorGenerator successor_generator(task_proxy);
     try {
         while (true) {
             ++num_iterations;
