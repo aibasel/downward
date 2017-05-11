@@ -38,15 +38,13 @@ EvaluationResult FFSynergyHeuristic::compute_result(
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
-        "LAMA-FF synergy",
-        "If the FF heuristic should be used "
-        "(for its estimates or its preferred operators) "
-        "and we want to use preferred operators of the "
-        "landmark count heuristic, we can exploit synergy effects by "
-        "using the LAMA-FF synergy. "
-        "This synergy can only be used via Predefinition "
-        "(see OptionSyntax#Predefinitions), for example:\n"
-        "\"hlm,hff=lm_ff_syn(...)\"");
+        "LAMA-FF synergy slave",
+        "If we want to exploit synergy effects of the FF heuristic to the "
+        "LAMA-FF synergy, we can do this by passing the LAMA-FF synergy master "
+        "to the slave via Predefinition (see OptionSyntax#Predefinitions), "
+        "for example:\n"
+        "--heuristic \"lama_master=lama_synergy(...)\" "
+        "--heuristic \"lama_slave=ff_synergy(lama_master)\"");
     parser.add_option<Heuristic *>("lama_synergy_heuristic");
 
     // Note that we deliberately omit options from the Heuristic base class
