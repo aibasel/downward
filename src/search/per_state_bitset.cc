@@ -75,35 +75,19 @@ int BitsetView::size() const {
     return array_size;
 }
 
-BitsetView::const_reference::const_reference(const unsigned int *p, int size)
-    : p(p), array_size(size) {}
-
-bool BitsetView::const_reference::test(int index) const {
-    assert(index >= 0 && index < array_size);
-    int array_pos = index / INT_BITSIZE;
-    int offset = index % INT_BITSIZE;
-    return ( (p[array_pos] & (1U << offset)) != 0 );
-}
-
-int BitsetView::const_reference::size() const {
-    return array_size;
-}
-
-
 
 segmented_vector::SegmentedArrayVector<unsigned int> *PerStateBitset::get_entries(const StateRegistry *registry) {
     return data.get_entries(registry);
 }
 
 const segmented_vector::SegmentedArrayVector<unsigned int> *PerStateBitset::get_entries(const StateRegistry *registry) const {
-    return data.get_entries(registry); // TODO: will this call the right method?
+    return data.get_entries(registry); // TODO: will this call the right method (the one that returns const)?
 }
 
 PerStateBitset::PerStateBitset(int array_size_)
     : array_size(array_size_),
       int_array_size(std::ceil(double(array_size)/INT_BITSIZE)),
-      data(PerStateArray<unsigned int>(int_array_size)),
-      default_view(&data.default_array[0], array_size) {
+      data(PerStateArray<unsigned int>(int_array_size)) {
 }
 
 std::vector<unsigned int> build_default_array(const std::vector<bool> &default_array, int int_array_size) {
@@ -127,8 +111,7 @@ std::vector<unsigned int> build_default_array(const std::vector<bool> &default_a
 PerStateBitset::PerStateBitset(int array_size_, const std::vector<bool> &default_array_)
     : array_size(array_size_),
       int_array_size(std::ceil(double(array_size)/INT_BITSIZE)),
-      data(int_array_size, build_default_array(default_array_, int_array_size)),
-      default_view(&data.default_array[0], array_size) {
+      data(int_array_size, build_default_array(default_array_, int_array_size)) {
     assert(array_size_ == default_array_.size());
 }
 
@@ -146,23 +129,6 @@ BitsetView PerStateBitset::operator[](const GlobalState &state) {
     }
     // TODO: this was cached_entries before... but shouldnt matter?
     return BitsetView((*entries)[state_id], array_size);
-}
-
-// TODO: can we avoid code duplication from PerStateArray here?
-BitsetView::const_reference PerStateBitset::operator[](const GlobalState &state) const {
-    const StateRegistry *registry = &state.get_registry();
-    const segmented_vector::SegmentedArrayVector<unsigned int> *entries = get_entries(registry);
-    if (!entries) {
-        return default_view;
-    }
-    int state_id = state.get_id().value;
-    assert(utils::in_bounds(state_id, *registry));
-    int num_entries = entries->size();
-    if (state_id >= num_entries) {
-        return default_view;
-    }
-    // TODO: this was cached_entries before... but shouldnt matter?
-    return BitsetView::const_reference((*entries)[state_id], array_size);
 }
 
 void PerStateBitset::remove_state_registry(StateRegistry *registry) {

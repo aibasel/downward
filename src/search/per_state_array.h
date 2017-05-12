@@ -23,23 +23,6 @@ class ArrayView {
     const int array_size;
     ArrayView(T *p, size_t size) : p(p), array_size(size) {}
 public:
-    class const_reference {
-        template<typename>
-        friend class PerStateArray;
-        const T *const p;
-        const int array_size;
-        const_reference(const T *p, const int size) : p(p), array_size(size) {}
-public:
-        const T &operator[](int index) const {
-            return p[index];
-        }
-
-        int size() const {
-            return array_size;
-        }
-
-    };
-
     // TODO: is return *this correct?
     ArrayView<T> &operator=(const std::vector<T> &data) {
         assert(data.size() == array_size);
@@ -189,21 +172,6 @@ public:
             entries->push_back(&default_array[0]);
         }
         return ArrayView<Element>((*cached_entries)[state_id], array_size);
-    }
-
-    typename ArrayView<Element>::const_reference operator[](const GlobalState &state) const {
-        const StateRegistry *registry = &state.get_registry();
-        const segmented_vector::SegmentedArrayVector<Element> *entries = get_entries(registry);
-        if (!entries) {
-            return typename ArrayView<Element>::const_reference(&default_array[0], array_size);
-        }
-        int state_id = state.get_id().value;
-        assert(utils::in_bounds(state_id, *registry));
-        int num_entries = entries->size();
-        if (state_id >= num_entries) {
-            return typename ArrayView<Element>::const_reference(&default_array[0], array_size);
-        }
-        return typename ArrayView<Element>::const_reference((*cached_entries)[state_id], array_size);
     }
 
     void remove_state_registry(StateRegistry *registry) {
