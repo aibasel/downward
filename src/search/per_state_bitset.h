@@ -20,17 +20,8 @@ class BitsetView {
     friend class PerStateBitset;
     unsigned int *const p;
     const int array_size;
-    BitsetView(unsigned int *p, const int size);
+    BitsetView(unsigned int *p, int size);
 public:
-    class const_reference {
-        friend class PerStateBitset;
-        const unsigned int *const p;
-        const int array_size;
-        const_reference(const unsigned int *p, const int size);
-public:
-        bool test(int index) const;
-        int size() const;
-    };
     BitsetView &operator=(const std::vector<bool> &data);
     BitsetView &operator=(const BitsetView &data);
     void set(int index);
@@ -53,7 +44,6 @@ class PerStateBitset : public PerStateInformationBase {
     int array_size;
     int int_array_size; // the size of the int array (=ceil(array_size / INT_BITSIZE))
     PerStateArray<unsigned int> data;
-    BitsetView::const_reference default_view;
 
 
     /*
@@ -82,7 +72,6 @@ public:
     ~PerStateBitset();
 
     BitsetView operator[](const GlobalState &state);
-    BitsetView::const_reference operator[](const GlobalState &state) const; // TODO: const_reference is not actually a reference...
     void remove_state_registry(StateRegistry *registry);
 };
 

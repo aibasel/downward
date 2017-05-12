@@ -15,9 +15,8 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
       do_intersection(true) {
 }
 
-BitsetView::const_reference LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
-    const PerStateBitset &ref(reached_lms);
-    return ref[state];
+BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
+    return reached_lms[state];
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(

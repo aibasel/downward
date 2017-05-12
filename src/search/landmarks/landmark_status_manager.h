@@ -18,7 +18,7 @@ class LandmarkStatusManager {
 public:
     explicit LandmarkStatusManager(LandmarkGraph &graph);
 
-    BitsetView::const_reference get_reached_landmarks(const GlobalState &state); // TODO: does it make sense to pass a "const_reference" here?
+    BitsetView get_reached_landmarks(const GlobalState &state);
 
     bool update_lm_status(const GlobalState &state);
 

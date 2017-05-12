@@ -273,7 +273,7 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
 // functions in this class that use LandmarkSets for the reached LMs
 // (HACK).
 LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
-    BitsetView::const_reference landmark_vector) {
+    BitsetView landmark_vector) {
     LandmarkSet landmark_set;
     for (int i = 0; i < landmark_vector.size(); ++i)
         if (landmark_vector.test(i))
