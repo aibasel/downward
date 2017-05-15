@@ -9,12 +9,11 @@
 
 using namespace std;
 
-namespace landmarks{
+namespace landmarks {
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
       master(dynamic_cast<LamaSynergyHeuristic *>(
-                  opts.get<Heuristic *>("lama_synergy_heuristic")))
-{
+                 opts.get<Heuristic *>("lama_synergy_heuristic"))) {
     if (!master) {
         cerr << "ff_synergy requires a lama_synergy heuristic" << endl;
         utils::exit_with(utils::ExitCode::INPUT_ERROR);
@@ -22,7 +21,7 @@ FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
 }
 
 EvaluationResult FFSynergyHeuristic::compute_result(
-    EvaluationContext &eval_context){
+    EvaluationContext &eval_context) {
     /*
        Asking for the master's heuristic value triggers both
        heuristic computations if they have not been computed yet.
@@ -51,5 +50,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("ff_synergy", _parse);
-
 }
