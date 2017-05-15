@@ -5,7 +5,7 @@
 
 #include "../heuristic.h"
 
-namespace landmarks{
+namespace landmarks {
 class LamaSynergyHeuristic;
 
 class FFSynergyHeuristic : public Heuristic {
