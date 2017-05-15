@@ -100,7 +100,10 @@ int SearchEngine::get_adjusted_cost(const GlobalOperator &op) const {
 }
 
 /* TODO: merge this into add_options_to_parser when all search
-         engines support pruning. */
+         engines support pruning.
+
+    Method doesn't belong here because it's only useful for certain derived classes.
+    TODO: Figure out where it belongs and move it there. */
 void SearchEngine::add_pruning_option(OptionParser &parser) {
     parser.add_option<shared_ptr<PruningMethod>>(
         "pruning",
@@ -127,6 +130,8 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "infinity");
 }
 
+/*  Method doesn't belong here because it's only useful for certain derived classes.
+    TODO: Figure out where it belongs and move it there. */
 void SearchEngine::add_succ_order_options(OptionParser &parser) {
     vector<string> options;
     parser.add_option<bool>(
