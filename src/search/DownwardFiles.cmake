@@ -333,7 +333,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME PLUGIN_EAGER
-    HELP "Eager search"
+    HELP "Eager (i.e., normal) best-first search"
     SOURCES
         search_engines/plugin_eager
     DEPENDS EAGER_SEARCH SEARCH_COMMON
@@ -349,7 +349,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME PLUGIN_LAZY
-    HELP "Search with deferred evaluation (lazy)"
+    HELP "Best-first search with deferred evaluation (lazy)"
     SOURCES
         search_engines/plugin_lazy
     DEPENDS LAZY_SEARCH SEARCH_COMMON
