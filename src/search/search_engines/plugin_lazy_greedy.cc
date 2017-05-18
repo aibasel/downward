@@ -9,7 +9,7 @@ using namespace std;
 namespace plugin_lazy_greedy {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
-static SearchEngine *_parse(OptionParser &parser) {
+static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Greedy search (lazy)", "");
     parser.document_note(
         "Open lists",
@@ -61,10 +61,10 @@ static SearchEngine *_parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    lazy_search::LazySearch *engine = 0;
+    shared_ptr<lazy_search::LazySearch> engine;
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
-        engine = new lazy_search::LazySearch(opts);
+        engine = make_shared<lazy_search::LazySearch>(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
@@ -72,5 +72,5 @@ static SearchEngine *_parse(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin("lazy_greedy", _parse);
+static PluginShared<SearchEngine> _plugin("lazy_greedy", _parse);
 }
