@@ -144,12 +144,8 @@ void FactoredTransitionSystem::assert_index_valid(int index) const {
     assert(utils::in_bounds(index, transition_systems));
     assert(utils::in_bounds(index, mas_representations));
     assert(utils::in_bounds(index, distances));
-    if (static_cast<bool>(transition_systems[index]) !=
-            static_cast<bool>(mas_representations[index]) ||
-        static_cast<bool>(transition_systems[index]) !=
-            static_cast<bool>(distances[index]) ||
-        static_cast<bool>(mas_representations[index]) !=
-            static_cast<bool>(distances[index])) {
+    if (!(transition_systems[index] && mas_representations[index] && distances[index]) &&
+        !(!transition_systems[index] && !mas_representations[index] & !distances[index])) {
         cerr << "Factor at index is in an inconsistent state!" << endl;
         utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
     }
@@ -277,7 +273,6 @@ void FactoredTransitionSystem::dump(int index) const {
 
 bool FactoredTransitionSystem::is_active(int index) const {
     assert_index_valid(index);
-    return transition_systems[index] && mas_representations[index]
-           && distances[index];
+    return transition_systems[index] != nullptr;
 }
 }
