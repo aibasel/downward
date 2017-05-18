@@ -165,8 +165,7 @@ bool LabelReduction::reduce(
         vector<pair<int, vector<int>>> label_mapping;
         compute_label_mapping(relation, fts, label_mapping, verbosity);
         if (!label_mapping.empty()) {
-            fts.apply_label_mapping(label_mapping,
-                                    next_merge.first);
+            fts.apply_label_mapping(label_mapping, next_merge.first);
             reduced = true;
         }
         delete relation;
@@ -178,8 +177,7 @@ bool LabelReduction::reduce(
             fts);
         compute_label_mapping(relation, fts, label_mapping, verbosity);
         if (!label_mapping.empty()) {
-            fts.apply_label_mapping(label_mapping,
-                                    next_merge.second);
+            fts.apply_label_mapping(label_mapping, next_merge.second);
             reduced = true;
         }
         delete relation;

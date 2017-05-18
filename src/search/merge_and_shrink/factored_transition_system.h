@@ -58,6 +58,11 @@ class FactoredTransitionSystem {
         int index,
         const std::vector<bool> &to_be_pruned_states,
         Verbosity verbosity);
+    /*
+      Apply the given state equivalence relation to the factor at index if
+      it would reduce the size of the factor. Return true iff it was applied
+      to the fator.
+    */
     bool apply_abstraction(
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
@@ -87,9 +92,6 @@ public:
       by apply_label_reduction. However, given the iterative algorithm to
       compute label reductions in LabelReduction, it is not easily possible
       to avoid having a method to update the FTS in each iteration.
-
-      One solution could be to make the method privat and declare
-      LabelReduction a friend class, or to use a callback function.
     */
     void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
