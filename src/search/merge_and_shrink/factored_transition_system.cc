@@ -7,7 +7,9 @@
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
+#include "../utils/collections.h"
 #include "../utils/memory.h"
+#include "../utils/system.h"
 
 #include <cassert>
 
@@ -80,7 +82,7 @@ void FactoredTransitionSystem::compute_distances_and_prune(
       additionally prunes all states that are unreachable (abstract g
       is infinite) or irrelevant (abstract h is infinite).
     */
-    assert(is_index_valid(index));
+    assert(is_active(index));
     discard_states(
         index,
         distances[index]->compute_distances(verbosity),
@@ -92,7 +94,7 @@ void FactoredTransitionSystem::discard_states(
     int index,
     const vector<bool> &to_be_pruned_states,
     Verbosity verbosity) {
-    assert(is_index_valid(index));
+    assert(is_active(index));
     int num_states = transition_systems[index]->get_size();
     assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
     StateEquivalenceRelation state_equivalence_relation;
@@ -111,7 +113,7 @@ bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
     Verbosity verbosity) {
-    assert(is_index_valid(index));
+    assert(is_active(index));
 
     vector<int> abstraction_mapping(
         transition_systems[index]->get_size(), PRUNED_STATE);
@@ -138,18 +140,23 @@ bool FactoredTransitionSystem::apply_abstraction(
     return shrunk;
 }
 
-bool FactoredTransitionSystem::is_index_valid(int index) const {
-    if (index >= static_cast<int>(transition_systems.size())) {
-        assert(index >= static_cast<int>(mas_representations.size()));
-        assert(index >= static_cast<int>(distances.size()));
-        return false;
+void FactoredTransitionSystem::assert_index_valid(int index) const {
+    assert(utils::in_bounds(index, transition_systems));
+    assert(utils::in_bounds(index, mas_representations));
+    assert(utils::in_bounds(index, distances));
+    if (static_cast<bool>(transition_systems[index]) !=
+            static_cast<bool>(mas_representations[index]) ||
+        static_cast<bool>(transition_systems[index]) !=
+            static_cast<bool>(distances[index]) ||
+        static_cast<bool>(mas_representations[index]) !=
+            static_cast<bool>(distances[index])) {
+        cerr << "Factor at index is in an inconsistent state!" << endl;
+        utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
     }
-    return transition_systems[index] && mas_representations[index]
-           && distances[index];
 }
 
 bool FactoredTransitionSystem::is_component_valid(int index) const {
-    assert(is_index_valid(index));
+    assert(is_active(index));
     return distances[index]->are_distances_computed()
            && transition_systems[index]->are_transitions_sorted_unique();
 }
@@ -196,8 +203,8 @@ int FactoredTransitionSystem::merge(
     int index2,
     Verbosity verbosity,
     bool finalize_if_unsolvable) {
-    assert(is_index_valid(index1));
-    assert(is_index_valid(index2));
+    assert_index_valid(index1);
+    assert_index_valid(index2);
     transition_systems.push_back(
         TransitionSystem::merge(
             *labels,
@@ -255,7 +262,7 @@ FactoredTransitionSystem::get_final_entry() {
 }
 
 void FactoredTransitionSystem::statistics(int index) const {
-    assert(is_index_valid(index));
+    assert(is_active(index));
     const TransitionSystem &ts = *transition_systems[index];
     ts.statistics();
     const Distances &dist = *distances[index];
@@ -266,5 +273,11 @@ void FactoredTransitionSystem::dump(int index) const {
     assert(transition_systems[index]);
     transition_systems[index]->dump_labels_and_transitions();
     mas_representations[index]->dump();
+}
+
+bool FactoredTransitionSystem::is_active(int index) const {
+    assert_index_valid(index);
+    return transition_systems[index] && mas_representations[index]
+           && distances[index];
 }
 }
