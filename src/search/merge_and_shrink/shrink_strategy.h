@@ -29,7 +29,7 @@ public:
       the shrink strategy is not required to compute an equivalence relation
       that results in actually shrinking the size of the transition system.
       However, it may attempt to e.g. compute an equivalence relation that
-      results in shrinking the transition system in an information preserving
+      results in shrinking the transition system in an information-preserving
       way.
     */
     virtual StateEquivalenceRelation compute_equivalence_relation(
