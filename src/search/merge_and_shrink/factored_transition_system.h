@@ -68,7 +68,7 @@ class FactoredTransitionSystem {
         const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity);
 
-    bool is_index_valid(int index) const;
+    void assert_index_valid(int index) const;
     bool is_component_valid(int index) const;
 public:
     FactoredTransitionSystem(
@@ -173,9 +173,7 @@ public:
         return transition_systems.size();
     }
 
-    bool is_active(int index) const {
-        return is_index_valid(index);
-    }
+    bool is_active(int index) const;
 };
 }
 
