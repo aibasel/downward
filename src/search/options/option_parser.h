@@ -32,7 +32,7 @@ class OptionParser {
         const std::string &key, const T &value, const Bounds &bounds);
 
     static int parse_int_arg(const std::string &name, const std::string &value);
-    static SearchEngine *parse_cmd_line_aux(
+    static std::shared_ptr<SearchEngine> parse_cmd_line_aux(
         const std::vector<std::string> &args, bool dry_run);
 
 public:
@@ -43,7 +43,7 @@ public:
     OptionParser &operator=(const OptionParser &other) = delete;
 
     /* This function initiates parsing of T (the root node of parse_tree will be
-       parsed as T). Usually T=SearchEngine*, Evaluator* or LandmarkFactory*. */
+       parsed as T). Usually T=shared_ptr<SearchEngine>, Evaluator* or LandmarkFactory*. */
     template<typename T>
     T start_parsing();
 
@@ -101,7 +101,7 @@ public:
 
     static const std::string NONE;
 
-    static SearchEngine *parse_cmd_line(
+    static std::shared_ptr<SearchEngine> parse_cmd_line(
         int argc, const char **argv, bool dry_run, bool is_unit_cost);
 
     static std::string usage(const std::string &progname);
