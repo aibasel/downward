@@ -10,7 +10,9 @@ namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
 class MergeAndShrinkRepresentation;
+class LabelReduction;
 class Labels;
+class ShrinkStrategy;
 class TransitionSystem;
 
 class FTSConstIterator {
@@ -59,8 +61,17 @@ class FactoredTransitionSystem {
     void prune_states(
         int index,
         Verbosity verbosity);
+    /*
+      Apply the given state equivalence relation to the factor at index if
+      it would reduce the size of the factor. Return true iff it was applied
+      to the fator.
+    */
+    bool apply_abstraction(
+        int index,
+        const StateEquivalenceRelation &state_equivalence_relation,
+        Verbosity verbosity);
 
-    bool is_index_valid(int index) const;
+    void assert_index_valid(int index) const;
     bool is_component_valid(int index) const;
 public:
     FactoredTransitionSystem(
@@ -82,24 +93,47 @@ public:
     FactoredTransitionSystem &operator=(
         const FactoredTransitionSystem &) = delete;
 
-    // Methods for MergeAndShrinkHeuristic
-    void apply_label_reduction(
+    // Merge-and-shrink transformations.
+    /*
+      TODO: this method should be private because it is used internally
+      by apply_label_reduction. However, given the iterative algorithm to
+      compute label reductions in LabelReduction, it is not easily possible
+      to avoid having a method to update the FTS in each iteration.
+    */
+    void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         int combinable_index);
-    /*
-      Apply the given abstraction to the component at index. Return true
-      iff the abstraction was actually applied and false if the abstraction
-      does not reduce the number of abstract states.
-    */
-    bool apply_abstraction(
-        int index,
-        const StateEquivalenceRelation &state_equivalence_relation,
+    /* Apply a label reduction as computed with the given LabelReduction
+       object. */
+    bool apply_label_reduction(
+        const LabelReduction &label_reduction,
+        const std::pair<int, int> &merge_indices,
         Verbosity verbosity);
+
+    /*
+      Shrink the transition system of the factor at index to have a size of
+      at most target_size, using the given shrink strategy. If the transition
+      system was shrunk, update the other components of the factor (distances,
+      MSR) and return true.
+    */
+    bool shrink(
+        int index,
+        int target_size,
+        const ShrinkStrategy &shrink_strategy,
+        Verbosity verbosity);
+
+    /*
+      Merge the two factors at index1 and index2. If finalize_if_unsolvable is
+      true and the product (the new factor) is unsolvable, the index is stored
+      accordingly and get_final_entry() can be called to obtain the final
+      distances and MSR.
+    */
     int merge(
         int index1,
         int index2,
         Verbosity verbosity,
         bool finalize_if_unsolvable);
+
     /*
       This method may only be called either when there is only one entry left
       in the FTS or when the FTS is unsolvable.
@@ -146,9 +180,7 @@ public:
         return transition_systems.size();
     }
 
-    bool is_active(int index) const {
-        return is_index_valid(index);
-    }
+    bool is_active(int index) const;
 };
 }
 

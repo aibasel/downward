@@ -18,7 +18,7 @@ public:
         const TaskProxy &task_proxy) override;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy,
-        FactoredTransitionSystem &fts,
+        const FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset) override;
     static void add_options_to_parser(options::OptionParser &parser);
 };

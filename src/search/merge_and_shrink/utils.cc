@@ -52,7 +52,7 @@ pair<int, int> compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-bool shrink_transition_system(
+bool shrink_factor(
     FactoredTransitionSystem &fts,
     int index,
     int new_size,
@@ -71,7 +71,7 @@ bool shrink_transition_system(
                 cout << " (shrink threshold: " << shrink_threshold_before_merge;
             cout << ")" << endl;
         }
-        return shrink_strategy.shrink(fts, index, new_size, verbosity);
+        return fts.shrink(index, new_size, shrink_strategy, verbosity);
     }
     return false;
 }

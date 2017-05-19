@@ -89,9 +89,10 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
-int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
-                                          int index,
-                                          vector<int> &state_to_group) const {
+int ShrinkBisimulation::initialize_groups(
+    const TransitionSystem &ts,
+    const Distances &distances,
+    vector<int> &state_to_group) const {
     /* Group 0 holds all goal states.
 
        Each other group holds all states with one particular h value.
@@ -102,9 +103,6 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
        unsolvable.
     */
 
-    const TransitionSystem &ts = fts.get_ts(index);
-    assert(ts.is_solvable());
-    const Distances &distances = fts.get_dist(index);
     typedef unordered_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
@@ -137,13 +135,11 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
 }
 
 void ShrinkBisimulation::compute_signatures(
-    const FactoredTransitionSystem &fts,
-    int index,
+    const TransitionSystem &ts,
+    const Distances &distances,
     vector<Signature> &signatures,
     const vector<int> &state_to_group) const {
     assert(signatures.empty());
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
 
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
@@ -244,19 +240,17 @@ void ShrinkBisimulation::compute_signatures(
     ::sort(signatures.begin(), signatures.end());
 }
 
-bool ShrinkBisimulation::shrink(
-    FactoredTransitionSystem &fts,
-    int index,
-    int target_size,
-    Verbosity verbosity) const {
-    const TransitionSystem &ts = fts.get_ts(index);
+StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
+    const TransitionSystem &ts,
+    const Distances &distances,
+    int target_size) const {
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
     vector<Signature> signatures;
     signatures.reserve(num_states + 2);
 
-    int num_groups = initialize_groups(fts, index, state_to_group);
+    int num_groups = initialize_groups(ts, distances, state_to_group);
     // cout << "number of initial groups: " << num_groups << endl;
 
     // TODO: We currently violate this; see issue250
@@ -268,7 +262,7 @@ bool ShrinkBisimulation::shrink(
         stable = true;
 
         signatures.clear();
-        compute_signatures(fts, index, signatures, state_to_group);
+        compute_signatures(ts, distances, signatures, state_to_group);
 
         // Verify size of signatures and presence of sentinels.
         assert(static_cast<int>(signatures.size()) == num_states + 2);
@@ -363,7 +357,7 @@ bool ShrinkBisimulation::shrink(
         }
     }
 
-    return shrink_fts(fts, index, equivalence_relation, verbosity);
+    return equivalence_relation;
 }
 
 string ShrinkBisimulation::name() const {
