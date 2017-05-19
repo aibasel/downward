@@ -8,6 +8,7 @@
 #include "algorithms/ordered_set.h"
 
 #include "utils/countdown_timer.h"
+#include "utils/rng_options.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -18,6 +19,7 @@
 using namespace std;
 using utils::ExitCode;
 
+class PruningMethod;
 
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
@@ -97,6 +99,20 @@ int SearchEngine::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
+/* TODO: merge this into add_options_to_parser when all search
+         engines support pruning.
+
+   Method doesn't belong here because it's only useful for certain derived classes.
+   TODO: Figure out where it belongs and move it there. */
+void SearchEngine::add_pruning_option(OptionParser &parser) {
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "Pruning methods can prune or reorder the set of applicable operators in "
+        "each state and thereby influence the number and order of successor states "
+        "that are considered.",
+        "null()");
+}
+
 void SearchEngine::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     parser.add_option<int>(
@@ -112,6 +128,26 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
+}
+
+/* Method doesn't belong here because it's only useful for certain derived classes.
+   TODO: Figure out where it belongs and move it there. */
+void SearchEngine::add_succ_order_options(OptionParser &parser) {
+    vector<string> options;
+    parser.add_option<bool>(
+        "randomize_successors",
+        "randomize the order in which successors are generated",
+        "false");
+    parser.add_option<bool>(
+        "preferred_successors_first",
+        "consider preferred operators first",
+        "false");
+    parser.document_note(
+        "Successor ordering",
+        "When using randomize_successors=true and "
+        "preferred_successors_first=true, randomization happens before "
+        "preferred operators are moved to the front.");
+    utils::add_rng_options(parser);
 }
 
 void print_initial_h_values(const EvaluationContext &eval_context) {

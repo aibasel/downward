@@ -14,7 +14,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategySCCs::MergeStrategySCCs(
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const TaskProxy &task_proxy,
     const shared_ptr<MergeTreeFactory> &merge_tree_factory,
     const shared_ptr<MergeSelector> &merge_selector,

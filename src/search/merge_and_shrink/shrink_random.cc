@@ -16,12 +16,10 @@ ShrinkRandom::ShrinkRandom(const Options &opts)
     : ShrinkBucketBased(opts) {
 }
 
-void ShrinkRandom::partition_into_buckets(
-    const FactoredTransitionSystem &fts,
-    int index,
-    vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts.get_ts(index);
-    assert(buckets.empty());
+vector<ShrinkBucketBased::Bucket> ShrinkRandom::partition_into_buckets(
+    const TransitionSystem &ts,
+    const Distances &) const {
+    vector<Bucket> buckets;
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();
     big_bucket.reserve(ts.get_size());
@@ -29,6 +27,7 @@ void ShrinkRandom::partition_into_buckets(
     for (int state = 0; state < num_states; ++state)
         big_bucket.push_back(state);
     assert(!big_bucket.empty());
+    return buckets;
 }
 
 string ShrinkRandom::name() const {
