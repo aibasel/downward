@@ -17,7 +17,7 @@ public:
     MergeScoringFunction();
     virtual ~MergeScoringFunction() = default;
     virtual std::vector<double> compute_scores(
-        FactoredTransitionSystem &fts,
+        const FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) = 0;
     // Overriding methods must set initialized to true.
     virtual void initialize(const TaskProxy &) {
