@@ -28,7 +28,7 @@ MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
 }
 
 vector<double> MergeScoringFunctionTotalOrder::compute_scores(
-    FactoredTransitionSystem &,
+    const FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
     assert(initialized);
     vector<double> scores;

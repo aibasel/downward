@@ -11,7 +11,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 vector<pair<int, int>> MergeSelector::compute_merge_candidates(
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) const {
     vector<pair<int, int>> merge_candidates;
     if (indices_subset.empty()) {

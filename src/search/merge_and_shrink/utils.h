@@ -28,14 +28,13 @@ extern std::pair<int, int> compute_shrink_sizes(
     int max_states_after_merge);
 
 /*
-  This method checks if the transition system specified via index violates
+  This method checks if the transition system of the factor at index violates
   the size limit given via new_size (e.g. as computed by compute_shrink_sizes)
   or the threshold shrink_threshold_before_merge that triggers shrinking even
-  if the size limit is not violated. If so, the given shrink strategy
-  shrink_strategy is used to reduce the size of the transition system to at
-  most new_size. Return true iff the transition was modified (i.e. shrunk).
+  if the size limit is not violated. If so, call fts.shrink() to shrink the
+  factor. Return true iff the factor was actually shrunk.
 */
-extern bool shrink_transition_system(
+extern bool shrink_factor(
     FactoredTransitionSystem &fts,
     int index,
     int new_size,

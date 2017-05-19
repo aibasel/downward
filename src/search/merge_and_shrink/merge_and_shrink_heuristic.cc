@@ -157,7 +157,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
+bool MergeAndShrinkHeuristic::shrink_before_merge(
     FactoredTransitionSystem &fts, int index1, int index2) {
     /*
       Compute the size limit for both transition systems as imposed by
@@ -176,21 +176,27 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
       for the second shrinking if the first shrinking was larger than
       required.
     */
-    bool shrunk1 = shrink_transition_system(
+    bool shrunk1 = shrink_factor(
         fts,
         index1,
         new_sizes.first,
         shrink_threshold_before_merge,
         *shrink_strategy,
         verbosity);
-    bool shrunk2 = shrink_transition_system(
+    if (verbosity >= Verbosity::VERBOSE && shrunk1) {
+        fts.statistics(index1);
+    }
+    bool shrunk2 = shrink_factor(
         fts,
         index2,
         new_sizes.second,
         shrink_threshold_before_merge,
         *shrink_strategy,
         verbosity);
-    return make_pair(shrunk1, shrunk2);
+    if (verbosity >= Verbosity::VERBOSE && shrunk2) {
+        fts.statistics(index2);
+    }
+    return shrunk1 || shrunk2;
 }
 
 void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
@@ -227,32 +233,23 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             // Label reduction (before shrinking)
             if (label_reduction && label_reduction->reduce_before_shrinking()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, fts, verbosity);
+                    fts.apply_label_reduction(*label_reduction, merge_indices, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
             }
 
             // Shrinking
-            pair<bool, bool> shrunk = shrink_before_merge(
+            bool shrunk = shrink_before_merge(
                 fts, merge_index1, merge_index2);
-            if (verbosity >= Verbosity::NORMAL &&
-                (shrunk.first || shrunk.second)) {
-                if (verbosity >= Verbosity::VERBOSE) {
-                    if (shrunk.first) {
-                        fts.statistics(merge_index1);
-                    }
-                    if (shrunk.second) {
-                        fts.statistics(merge_index2);
-                    }
-                }
+            if (verbosity >= Verbosity::NORMAL && shrunk) {
                 print_time(timer, "after shrinking");
             }
 
             // Label reduction (before merging)
             if (label_reduction && label_reduction->reduce_before_merging()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, fts, verbosity);
+                    fts.apply_label_reduction(*label_reduction, merge_indices, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
