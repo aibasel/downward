@@ -1,4 +1,5 @@
 #include "ff_synergy.h"
+
 #include "lama_synergy.h"
 
 #include "../evaluation_context.h"
@@ -40,9 +41,12 @@ static Heuristic *_parse(OptionParser &parser) {
         "LAMA-FF synergy slave",
         "See documentation for LAMA-FF synergy master.");
     parser.add_option<Heuristic *>("lama_synergy_heuristic");
-    Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
+    // Predefined options required by Heuristic base class since they are
+    // ignored anyways.
+    opts.set<shared_ptr<AbstractTask>>("transform", nullptr);
+    opts.set<bool>("cache_estimates", false);
     if (parser.dry_run())
         return nullptr;
 
