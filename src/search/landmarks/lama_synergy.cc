@@ -1,4 +1,5 @@
 #include "lama_synergy.h"
+
 #include "landmark_count_heuristic.h"
 
 #include "../evaluation_context.h"
