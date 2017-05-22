@@ -43,8 +43,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<Heuristic *>("lama_synergy_heuristic");
 
     Options opts = parser.parse();
-    // Predefined options required by Heuristic base class since they are
-    // ignored anyways.
+    // Set options required by Heuristic base class. They are never accessed.
     opts.set<shared_ptr<AbstractTask>>("transform", nullptr);
     opts.set<bool>("cache_estimates", false);
     if (parser.dry_run())
