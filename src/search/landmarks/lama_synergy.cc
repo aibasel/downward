@@ -1,7 +1,7 @@
 #include "lama_synergy.h"
+#include "landmark_count_heuristic.h"
 
 #include "../evaluation_context.h"
-#include "../evaluation_result.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -12,8 +12,8 @@ using namespace std;
 namespace landmarks {
 LamaSynergyHeuristic::LamaSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      lama_heuristic(new LandmarkCountHeuristic(opts)) {
-    cout << "Initializing LAMA synergy object" << endl;
+      lama_heuristic(utils::make_unique_ptr<LandmarkCountHeuristic>(opts)) {
+    cout << "Initializing LAMA-FF synergy master" << endl;
 }
 
 EvaluationResult LamaSynergyHeuristic::compute_result(
@@ -30,7 +30,6 @@ void LamaSynergyHeuristic::compute_heuristics(EvaluationContext &eval_context) {
       and the two results are always added to the evaluation context
       together.
     */
-
     lama_heuristic->exploration.set_recompute_heuristic();
     lama_result = lama_heuristic->compute_result(eval_context);
     ff_result = lama_heuristic->exploration.compute_result(eval_context);
