@@ -1,9 +1,7 @@
 #ifndef LANDMARKS_LAMA_SYNERGY_H
 #define LANDMARKS_LAMA_SYNERGY_H
 
-#include "ff_synergy.h"
-#include "landmark_count_heuristic.h"
-
+#include "../evaluation_result.h"
 #include "../heuristic.h"
 
 namespace landmarks {
@@ -11,11 +9,10 @@ class FFSynergyHeuristic;
 class LandmarkCountHeuristic;
 class LandmarkFactory;
 
-
 class LamaSynergyHeuristic : public Heuristic {
     friend FFSynergyHeuristic;
 
-    std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
+    const std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
 
     EvaluationResult ff_result;
     EvaluationResult lama_result;

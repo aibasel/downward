@@ -1,7 +1,7 @@
 #include "ff_synergy.h"
+#include "lama_synergy.h"
 
 #include "../evaluation_context.h"
-#include "../evaluation_result.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -14,6 +14,7 @@ FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
       master(dynamic_cast<LamaSynergyHeuristic *>(
                  opts.get<Heuristic *>("lama_synergy_heuristic"))) {
+    cout << "Initializing LAMA-FF synergy slave" << endl;
     if (!master) {
         cerr << "ff_synergy requires a lama_synergy heuristic" << endl;
         utils::exit_with(utils::ExitCode::INPUT_ERROR);
@@ -39,9 +40,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "LAMA-FF synergy slave",
         "See documentation for LAMA-FF synergy master.");
     parser.add_option<Heuristic *>("lama_synergy_heuristic");
+    Heuristic::add_options_to_parser(parser);
 
-    // Note that we deliberately omit options from the Heuristic base class
-    // since they are ignored anyway.
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
