@@ -27,7 +27,7 @@ void LamaSynergyHeuristic::compute_heuristics(EvaluationContext &eval_context) {
     /*
       When this method is called, we know that eval_context contains
       results for neither of the two synergy heuristics because the
-      method isn't called when a heuristic results is already present,
+      method isn't called when a heuristic result is already present,
       and the two results are always added to the evaluation context
       together.
     */
