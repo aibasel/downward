@@ -50,17 +50,9 @@ class FactoredTransitionSystem {
     std::vector<std::unique_ptr<Distances>> distances;
     const bool compute_init_distances;
     const bool compute_goal_distances;
-    const bool prune_unreachable_states;
-    const bool prune_irrelevant_states;
     int unsolvable_index; // -1 if solvable, index of an unsolvable entry otw.
     int num_active_entries;
 
-    void compute_distances_and_prune(
-        int index,
-        Verbosity verbosity);
-    void prune_states(
-        int index,
-        Verbosity verbosity);
     /*
       Apply the given state equivalence relation to the factor at index if
       it would reduce the size of the factor. Return true iff it was applied
@@ -133,6 +125,17 @@ public:
         int index2,
         Verbosity verbosity,
         bool finalize_if_unsolvable);
+
+    /*
+      Prune unreachable and/or irrelevant states of the factor at index.
+      Requires init/goal distances to be computed accordingly. Return true
+      iff at least one state was pruned.
+    */
+    bool prune(
+        int index,
+        bool prune_unreachable_states,
+        bool prune_irrelevant_states,
+        Verbosity verbosity);
 
     /*
       This method may only be called either when there is only one entry left

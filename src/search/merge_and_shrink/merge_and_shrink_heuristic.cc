@@ -296,6 +296,25 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                 }
                 cout << endl;
             }
+
+            // Pruning
+            if (prune_unreachable_states || prune_irrelevant_states) {
+                bool pruned = fts.prune(
+                    merged_index,
+                    prune_unreachable_states,
+                    prune_irrelevant_states,
+                    verbosity);
+                if (verbosity >= Verbosity::NORMAL && pruned) {
+                    if (verbosity >= Verbosity::VERBOSE) {
+                        fts.statistics(merged_index);
+                    }
+                    print_time(timer, "after pruning");
+                    if (verbosity >= Verbosity::VERBOSE) {
+                        report_peak_memory_delta();
+                    }
+                    cout << endl;
+                }
+            }
         }
     }
 
