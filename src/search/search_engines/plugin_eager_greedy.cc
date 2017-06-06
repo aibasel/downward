@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace plugin_eager_greedy {
-static SearchEngine *_parse(OptionParser &parser) {
+static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Greedy search (eager)", "");
     parser.document_note(
         "Open list",
@@ -61,17 +61,17 @@ static SearchEngine *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     opts.verify_list_non_empty<Evaluator *>("evals");
 
-    eager_search::EagerSearch *engine = nullptr;
+    shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
         opts.set("mpd", false);
         Evaluator *evaluator = nullptr;
         opts.set("f_eval", evaluator);
-        engine = new eager_search::EagerSearch(opts);
+        engine = make_shared<eager_search::EagerSearch>(opts);
     }
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin("eager_greedy", _parse);
+static PluginShared<SearchEngine> _plugin("eager_greedy", _parse);
 }

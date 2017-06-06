@@ -260,7 +260,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
-static SearchEngine *_parse(OptionParser &parser) {
+static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Lazy enforced hill-climbing", "");
     parser.add_option<Heuristic *>("h", "heuristic");
     vector<string> preferred_usages;
@@ -281,8 +281,8 @@ static SearchEngine *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new EnforcedHillClimbingSearch(opts);
+        return make_shared<EnforcedHillClimbingSearch>(opts);
 }
 
-static Plugin<SearchEngine> _plugin("ehc", _parse);
+static PluginShared<SearchEngine> _plugin("ehc", _parse);
 }
