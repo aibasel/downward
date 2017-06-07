@@ -44,7 +44,7 @@ CONFIGS = [
     IssueConfig('dfp-f50k-noprune', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_stateless(merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order])),shrink_strategy=shrink_fh(),label_reduction=exact(before_shrinking=false,before_merging=true),max_states=50000,prune_unreachable_states=false,prune_irrelevant_states=false))']),
     IssueConfig('sccs-dfp-f50k-noprune', ['--search', 'astar(merge_and_shrink(shrink_strategy=shrink_fh(),merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order(atomic_ts_order=reverse_level,product_ts_order=new_to_old,atomic_before_product=false)])),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,prune_unreachable_states=false,prune_irrelevant_states=false))']),
 ]
-SUITE = ['miconic-fulladl:f21-3.pddl', 'miconic-fulladl:f30-2.pddl',
+SUITE = [
 'mystery:prob04.pddl', 'mystery:prob05.pddl', 'mystery:prob07.pddl',
 'mystery:prob08.pddl', 'mystery:prob12.pddl', 'mystery:prob16.pddl',
 'mystery:prob18.pddl', 'mystery:prob21.pddl', 'mystery:prob22.pddl',
