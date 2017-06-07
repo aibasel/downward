@@ -303,7 +303,8 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                     merged_index,
                     prune_unreachable_states,
                     prune_irrelevant_states,
-                    verbosity);
+                    verbosity,
+                    finalize_if_unsolvable);
                 if (verbosity >= Verbosity::NORMAL && pruned) {
                     if (verbosity >= Verbosity::VERBOSE) {
                         fts.statistics(merged_index);
