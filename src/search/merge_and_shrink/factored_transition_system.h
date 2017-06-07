@@ -57,11 +57,15 @@ class FactoredTransitionSystem {
       Apply the given state equivalence relation to the factor at index if
       it would reduce the size of the factor. Return true iff it was applied
       to the fator.
+
+      Set unsolvable_index if finalize_if_unsolvable = true and the fator
+      became unsolvable (currently only possible after pruning).
     */
     bool apply_abstraction(
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity);
+        Verbosity verbosity,
+        bool finalize_if_unsolvable = false);
 
     void assert_index_valid(int index) const;
     bool is_component_valid(int index) const;
@@ -135,7 +139,8 @@ public:
         int index,
         bool prune_unreachable_states,
         bool prune_irrelevant_states,
-        Verbosity verbosity);
+        Verbosity verbosity,
+        bool finalize_if_unsolvable);
 
     /*
       This method may only be called either when there is only one entry left

@@ -67,7 +67,11 @@ FactoredTransitionSystem::FactoredTransitionSystem(
             */
             if (prune_unreachable_states || prune_irrelevant_states) {
                 prune(
-                    index, prune_unreachable_states, prune_irrelevant_states, verbosity);
+                    index,
+                    prune_unreachable_states,
+                    prune_irrelevant_states,
+                    verbosity,
+                    finalize_if_unsolvable);
             }
         }
         if (finalize_if_unsolvable && !this->transition_systems[index]->is_solvable()) {
@@ -100,7 +104,8 @@ FactoredTransitionSystem::~FactoredTransitionSystem() {
 bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
-    Verbosity verbosity) {
+    Verbosity verbosity,
+    bool finalize_if_unsolvable) {
     assert(is_active(index));
 
     int new_num_states = state_equivalence_relation.size();
@@ -138,6 +143,14 @@ bool FactoredTransitionSystem::apply_abstraction(
     }
     mas_representations[index]->apply_abstraction_to_lookup_table(
         abstraction_mapping);
+    /*
+      If this method is called from prune, then the transition system can
+      become unsolvable.
+    */
+    if (finalize_if_unsolvable && !transition_systems[index]->is_solvable()) {
+        unsolvable_index = index;
+        return true;
+    }
 
     /* If distances need to be recomputed, this already happened in the
        Distances object. */
@@ -159,7 +172,8 @@ void FactoredTransitionSystem::assert_index_valid(int index) const {
 bool FactoredTransitionSystem::is_component_valid(int index) const {
     assert(is_active(index));
     return distances[index]->are_distances_computed()
-           && transition_systems[index]->are_transitions_sorted_unique();
+           && transition_systems[index]->are_transitions_sorted_unique()
+           && transition_systems[index]->is_solvable();
 }
 
 void FactoredTransitionSystem::apply_label_mapping(
@@ -230,6 +244,7 @@ int FactoredTransitionSystem::merge(
         distances[new_index]->compute_distances(
             compute_init_distances, compute_goal_distances, verbosity);
     }
+    // TODO: can this ever trigger, given that both components are solvable?
     if (finalize_if_unsolvable && !new_ts.is_solvable()) {
         unsolvable_index = new_index;
     }
@@ -242,7 +257,8 @@ bool FactoredTransitionSystem::prune(
     int index,
     bool prune_unreachable_states,
     bool prune_irrelevant_states,
-    Verbosity verbosity) {
+    Verbosity verbosity,
+    bool finalize_if_unsolvable) {
     assert(is_component_valid(index));
     assert(prune_unreachable_states || prune_irrelevant_states);
     const Distances &dist = *distances[index];
@@ -279,7 +295,7 @@ bool FactoredTransitionSystem::prune(
              << "irrelevant: " << irrelevant_count << " states ("
              << "total inactive: " << inactive_count << ")" << endl;
     }
-    return apply_abstraction(index, state_equivalence_relation, verbosity);
+    return apply_abstraction(index, state_equivalence_relation, verbosity, finalize_if_unsolvable);
 }
 
 pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
