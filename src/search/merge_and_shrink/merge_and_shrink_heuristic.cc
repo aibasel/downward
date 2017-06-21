@@ -406,9 +406,8 @@ static Heuristic *_parse(OptionParser &parser) {
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
             "AAAI Press 2016") + "\n" +
-        "Note that the two new merge strategies have not yet been integrated "
-        "into the official code base of Fast Downward. They are available on "
-        "request.");
+        "Note that dyn-MIASM has not been integrated into the official code "
+        "base of Fast Downward and are available on request.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
