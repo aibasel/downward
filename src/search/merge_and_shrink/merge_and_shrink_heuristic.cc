@@ -427,12 +427,13 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_note(
         "Note",
         "A currently recommended good configuration uses bisimulation "
-        "based shrinking, DFP merging, and the appropriate label "
-        "reduction setting (max_states has been altered to be between "
+        "based shrinking, the merge strategy SCC-DFP, and the appropriate "
+        "label reduction setting (max_states has been altered to be between "
         "10000 and 200000 in the literature):\n"
         "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
-        "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[goal_relevance,dfp,total_order])),"
+        "merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
+        "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
+        "total_order])),"
         "label_reduction=exact(before_shrinking=true,"
         "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}\n"
         "Note that for versions of Fast Downward prior to 2016-08-19, the "
@@ -443,22 +444,24 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<shared_ptr<MergeStrategyFactory>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
-        "We currently recommend DFP, which can be achieved using "
-        "{{{merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[goal_relevance,dfp,total_order]))}}}");
+        "We currently recommend SCC-DFP, which can be achieved using "
+        "{{{merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
+        "score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order"
+        "]))}}}");
 
     // Shrink strategy option.
     parser.add_option<shared_ptr<ShrinkStrategy>>(
         "shrink_strategy",
         "See detailed documentation for shrink strategies. "
-        "We currently recommend shrink_bisimulation.");
+        "We currently recommend non-greedy shrink_bisimulation, which can be "
+        "achieved using {{{shrink_strategy=shrink_bisimulation(greedy=false)}}}");
 
     // Label reduction option.
     parser.add_option<shared_ptr<LabelReduction>>(
         "label_reduction",
         "See detailed documentation for labels. There is currently only "
-        "one 'option' to use label_reduction. Also note the interaction "
-        "with shrink strategies.",
+        "one 'option' to use label_reduction, which is {{{label_reduction=exact}}} "
+        "Also note the interaction with shrink strategies.",
         OptionParser::NONE);
 
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
