@@ -407,7 +407,7 @@ static Heuristic *_parse(OptionParser &parser) {
             "294-298",
             "AAAI Press 2016") + "\n" +
         "Note that dyn-MIASM has not been integrated into the official code "
-        "base of Fast Downward and are available on request.");
+        "base of Fast Downward and is available on request.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
