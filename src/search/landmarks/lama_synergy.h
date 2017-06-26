@@ -10,20 +10,19 @@ class LandmarkCountHeuristic;
 class LandmarkFactory;
 
 /*
-  This class can be used if the FF heuristic should be used (for its estimates
-  or its preferred operators) and we want to use preferred operators of the
-  landmark count heuristic, we can exploit synergy effects by using the LAMA-FF
-  synergy. This synergy can be used via Predefinition (see
-  OptionSyntax#Predefinitions), for example:
-    --heuristic lama_master=lama_synergy(...)
-    --heuristic lama_slave=ff_synergy(lama_master)
+  The LamaSynergyHeuristic allows exploiting synergy effects when using
+  both the FF heuristic (for its estimates or its preferred operators)
+  and preferred operators of the landmark count (lama) heuristic.
+
+  This synergy can be used via predefinitions (see user documentation in
+  lama_synergy.cc).
 
   The interaction of LamaSynergyHeuristic and FFSynergyHeuristic works as
   follows: the lama synergy acts as the master heuristic, wrapping the actual
-  lama (landmark count) heuristic. If computing the heuristic value for the
+  lama (landmark count) heuristic. When computing the heuristic value for the
   lama heuristic, either the heuristic values of both the lama synergy and the
   ff synergy must be computed, or both have been previously computed and are
-  cached in the lama synergy. If computing the heuristic value for the ff
+  cached in the lama synergy. When computing the heuristic value for the ff
   synergy, the ff synergy triggers the computation or lookup of its master lama
   synergy.
 
