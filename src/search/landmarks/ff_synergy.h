@@ -6,6 +6,7 @@
 namespace landmarks {
 class LamaSynergyHeuristic;
 
+// See documentation of LamaSynergyHeuristic
 class FFSynergyHeuristic : public Heuristic {
     LamaSynergyHeuristic *master;
 
