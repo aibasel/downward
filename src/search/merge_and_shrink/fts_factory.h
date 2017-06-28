@@ -21,10 +21,7 @@ extern FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    const bool prune_unreachable_states,
-    const bool prune_irrelevant_states,
-    Verbosity verbosity,
-    bool finalize_if_unsolvable = true);
+    Verbosity verbosity);
 }
 
 #endif

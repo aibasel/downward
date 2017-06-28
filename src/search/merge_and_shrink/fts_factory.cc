@@ -86,10 +86,7 @@ public:
     FactoredTransitionSystem create(
         const bool compute_init_distances,
         const bool compute_goal_distances,
-        const bool prune_unreachable_states,
-        const bool prune_irrelevant_states,
-        Verbosity verbosity,
-        bool finalize_if_unsolvable);
+        Verbosity verbosity);
 };
 
 
@@ -400,10 +397,7 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 FactoredTransitionSystem FTSFactory::create(
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    const bool prune_unreachable_states,
-    const bool prune_irrelevant_states,
-    Verbosity verbosity,
-    bool finalize_if_unsolvable) {
+    Verbosity verbosity) {
     if (verbosity >= Verbosity::NORMAL) {
         cout << "Building atomic transition systems... " << endl;
     }
@@ -426,26 +420,17 @@ FactoredTransitionSystem FTSFactory::create(
         move(distances),
         compute_init_distances,
         compute_goal_distances,
-        prune_unreachable_states,
-        prune_irrelevant_states,
-        verbosity,
-        finalize_if_unsolvable);
+        verbosity);
 }
 
 FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    const bool prune_unreachable_states,
-    const bool prune_irrelevant_states,
-    Verbosity verbosity,
-    bool finalize_if_unsolvable) {
+    Verbosity verbosity) {
     return FTSFactory(task_proxy).create(
         compute_init_distances,
         compute_goal_distances,
-        prune_unreachable_states,
-        prune_irrelevant_states,
-        verbosity,
-        finalize_if_unsolvable);
+        verbosity);
 }
 }

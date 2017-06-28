@@ -50,24 +50,29 @@ class FactoredTransitionSystem {
     std::vector<std::unique_ptr<Distances>> distances;
     const bool compute_init_distances;
     const bool compute_goal_distances;
-    int unsolvable_index; // -1 if solvable, index of an unsolvable entry otw.
     int num_active_entries;
 
     /*
       Apply the given state equivalence relation to the factor at index if
       it would reduce the size of the factor. Return true iff it was applied
       to the fator.
-
-      Set unsolvable_index if finalize_if_unsolvable = true and the fator
-      became unsolvable (currently only possible after pruning).
     */
     bool apply_abstraction(
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity,
-        bool finalize_if_unsolvable = false);
+        Verbosity verbosity);
 
+    /*
+      Assert that the factor at the given index is in a consistent state, i.e.
+      that there is a transition system, a distances object, and an MSR.
+    */
     void assert_index_valid(int index) const;
+
+    /*
+      We maintain the invariant that for all factors, distances are always
+      computed and all transitions are grouped according to locally equivalent
+      labels.
+    */
     bool is_component_valid(int index) const;
 public:
     FactoredTransitionSystem(
@@ -77,10 +82,7 @@ public:
         std::vector<std::unique_ptr<Distances>> &&distances,
         const bool compute_init_distances,
         const bool compute_goal_distances,
-        const bool prune_unreachable_states,
-        const bool prune_irrelevant_states,
-        Verbosity verbosity,
-        bool finalize_if_unsolvable);
+        Verbosity verbosity);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
@@ -119,16 +121,12 @@ public:
         Verbosity verbosity);
 
     /*
-      Merge the two factors at index1 and index2. If finalize_if_unsolvable is
-      true and the product (the new factor) is unsolvable, the index is stored
-      accordingly and get_final_entry() can be called to obtain the final
-      distances and MSR.
+      Merge the two factors at index1 and index2.
     */
     int merge(
         int index1,
         int index2,
-        Verbosity verbosity,
-        bool finalize_if_unsolvable);
+        Verbosity verbosity);
 
     /*
       Prune unreachable and/or irrelevant states of the factor at index.
@@ -139,17 +137,13 @@ public:
         int index,
         bool prune_unreachable_states,
         bool prune_irrelevant_states,
-        Verbosity verbosity,
-        bool finalize_if_unsolvable);
+        Verbosity verbosity);
 
     /*
-      This method may only be called either when there is only one entry left
-      in the FTS or when the FTS is unsolvable.
-
-      Note that the FTS becomes invalid after calling this method.
+      Extract the factor at the given index, rendering the FTS invalid.
     */
     std::pair<std::unique_ptr<MergeAndShrinkRepresentation>,
-              std::unique_ptr<Distances>> get_final_entry();
+              std::unique_ptr<Distances>> extract_factor(int index);
 
     void statistics(int index) const;
     void dump(int index) const;
@@ -162,9 +156,7 @@ public:
         return *distances[index];
     }
 
-    bool is_solvable() const {
-        return unsolvable_index == -1;
-    }
+    bool is_factor_solvable(int index) const;
 
     int get_num_active_entries() const {
         return num_active_entries;

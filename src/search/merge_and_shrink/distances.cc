@@ -22,6 +22,7 @@ Distances::~Distances() {
 }
 
 void Distances::clear_distances() {
+    distances_computed = false;
     init_distances.clear();
     goal_distances.clear();
 }
@@ -176,13 +177,6 @@ void Distances::compute_goal_distances_general_cost() {
     dijkstra_search(backward_graph, queue, goal_distances);
 }
 
-bool Distances::are_distances_computed() const {
-    if (init_distances.empty() && goal_distances.empty()) {
-        return false;
-    }
-    return true;
-}
-
 void Distances::compute_distances(
     bool compute_init_distances,
     bool compute_goal_distances,
@@ -237,6 +231,7 @@ void Distances::compute_distances(
         }
     }
 
+    distances_computed = true;
     assert(are_distances_computed());
 }
 
@@ -314,6 +309,8 @@ void Distances::apply_abstraction(
         init_distances = move(new_init_distances);
         goal_distances = move(new_goal_distances);
     }
+
+    assert(are_distances_computed());
 }
 
 void Distances::dump() const {
