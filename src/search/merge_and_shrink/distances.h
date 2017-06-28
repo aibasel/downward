@@ -29,11 +29,10 @@ class TransitionSystem;
 
 class Distances {
     static const int DISTANCE_UNKNOWN = -1;
-
     const TransitionSystem &transition_system;
-
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
+    bool distances_computed;
 
     void clear_distances();
     int get_num_states() const;
@@ -47,7 +46,10 @@ public:
     explicit Distances(const TransitionSystem &transition_system);
     ~Distances();
 
-    bool are_distances_computed() const;
+    bool are_distances_computed() const {
+        return distances_computed;
+    }
+
     void compute_distances(
         bool compute_init_distances,
         bool compute_goal_distances,

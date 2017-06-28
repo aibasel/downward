@@ -217,25 +217,41 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
         shrink_strategy->requires_goal_distances() ||
         merge_strategy_factory->requires_goal_distances() ||
         prune_irrelevant_states;
-    const bool finalize_if_unsolvable = true;
     FactoredTransitionSystem fts =
         create_factored_transition_system(
             task_proxy,
             compute_init_distances,
             compute_goal_distances,
-            prune_unreachable_states,
-            prune_irrelevant_states,
-            verbosity,
-            finalize_if_unsolvable);
+            verbosity);
+    int unsolvable_index = -1;
+    for (int index = 0; index < fts.get_size(); ++index) {
+        /*
+          While pruning is not part of the invariant of factors, we by
+          default prune here because if we detect a factor as unsolvable,
+          we can immediately stop, without computing distances for the
+          remaining factors.
+        */
+        if (prune_unreachable_states || prune_irrelevant_states) {
+            fts.prune(
+                index,
+                prune_unreachable_states,
+                prune_irrelevant_states,
+                verbosity);
+        }
+        if (!fts.is_factor_solvable(index)) {
+            unsolvable_index = index;
+            break;
+        }
+    }
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
 
-    if (fts.is_solvable()) { // All atomic transition system are solvable.
+    if (unsolvable_index == -1) { // All atomic transition systems are solvable.
         unique_ptr<MergeStrategy> merge_strategy =
             merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
         merge_strategy_factory = nullptr;
 
-        while (fts.is_solvable() && fts.get_num_active_entries() > 1) {
+        while (fts.get_num_active_entries() > 1) {
             // Choose next transition systems to merge
             pair<int, int> merge_indices = merge_strategy->get_next();
             int merge_index1 = merge_indices.first;
@@ -277,15 +293,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             }
 
             // Merging
-            int merged_index = fts.merge(
-                merge_index1, merge_index2, verbosity, finalize_if_unsolvable);
-            /*
-              NOTE: both the shrinking strategy classes and the construction of
-              the composite require input transition systems to be solvable.
-            */
-            if (!fts.is_solvable()) {
-                break;
-            }
+            int merged_index = fts.merge(merge_index1, merge_index2, verbosity);
             if (verbosity >= Verbosity::NORMAL) {
                 if (verbosity >= Verbosity::VERBOSE) {
                     fts.statistics(merged_index);
@@ -303,8 +311,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                     merged_index,
                     prune_unreachable_states,
                     prune_irrelevant_states,
-                    verbosity,
-                    finalize_if_unsolvable);
+                    verbosity);
                 if (verbosity >= Verbosity::NORMAL && pruned) {
                     if (verbosity >= Verbosity::VERBOSE) {
                         fts.statistics(merged_index);
@@ -315,12 +322,41 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                     }
                     cout << endl;
                 }
+                /*
+                  NOTE: both the shrinking strategy classes and the construction of
+                  the composite require input transition systems to be solvable.
+                */
+                if (!fts.is_factor_solvable(merged_index)) {
+                    unsolvable_index = merged_index;
+                    break;
+                }
             }
         }
     }
 
+    int final_index;
+    if (unsolvable_index == -1) {
+        /*
+          If unsolvable_index == -1, we "regularly" finished the merge-and-
+          shrink construction, i.e. we merged all transition systems and are
+          left with one solvable transition system. This assumes that merges
+          are always appended at the end.
+        */
+        for (int index = 0; index < fts.get_size() - 1; ++index) {
+            assert(!fts.is_active(index));
+        }
+        final_index = fts.get_size() - 1;
+        assert(fts.is_factor_solvable(final_index));
+        cout << "Final transition system size: "
+             << fts.get_ts(final_index).get_size() << endl;
+    } else {
+        // unsolvable_index points to an unsolvable transition system.
+        final_index = unsolvable_index;
+        cout << "Abstract problem is unsolvable!" << endl;
+    }
+
     pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
-    final_entry = fts.get_final_entry();
+    final_entry = fts.extract_factor(final_index);
     mas_representation = move(final_entry.first);
     mas_representation->set_distances(*final_entry.second);
     shrink_strategy = nullptr;
