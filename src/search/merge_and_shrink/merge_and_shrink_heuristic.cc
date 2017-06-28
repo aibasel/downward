@@ -224,13 +224,12 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             compute_goal_distances,
             verbosity);
     int unsolvable_index = -1;
+    /*
+      Go over all atomic factors and check if any is unsolvable. If so,
+      we can skip the main loop and immediately terminate the heuristic
+      computation.
+    */
     for (int index = 0; index < fts.get_size(); ++index) {
-        /*
-          While pruning is not part of the invariant of factors, we by
-          default prune here because if we detect a factor as unsolvable,
-          we can immediately stop, without computing distances for the
-          remaining factors.
-        */
         if (prune_unreachable_states || prune_irrelevant_states) {
             fts.prune(
                 index,
@@ -323,8 +322,13 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                     cout << endl;
                 }
                 /*
-                  NOTE: both the shrinking strategy classes and the construction of
-                  the composite require input transition systems to be solvable.
+                  NOTE: both the shrinking strategy classes and the construction
+                  of the composite require input transition systems to be
+                  solvable in the sense that the initial state is not pruned and
+                  not all goal states are pruned. A transition system is
+                  allowed to be semantically unsolvable as long as pruning is
+                  (partially) turned off and there is at least one "real" state
+                  in the transition system.
                 */
                 if (!fts.is_factor_solvable(merged_index)) {
                     unsolvable_index = merged_index;
