@@ -10,9 +10,7 @@ namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
 class MergeAndShrinkRepresentation;
-class LabelReduction;
 class Labels;
-class ShrinkStrategy;
 class TransitionSystem;
 
 class FTSConstIterator {
@@ -53,16 +51,6 @@ class FactoredTransitionSystem {
     int num_active_entries;
 
     /*
-      Apply the given state equivalence relation to the factor at index if
-      it would reduce the size of the factor. Return true iff it was applied
-      to the fator.
-    */
-    bool apply_abstraction(
-        int index,
-        const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity);
-
-    /*
       Assert that the factor at the given index is in a consistent state, i.e.
       that there is a transition system, a distances object, and an MSR.
     */
@@ -93,31 +81,29 @@ public:
 
     // Merge-and-shrink transformations.
     /*
-      TODO: this method should be private because it is used internally
-      by apply_label_reduction. However, given the iterative algorithm to
-      compute label reductions in LabelReduction, it is not easily possible
-      to avoid having a method to update the FTS in each iteration.
+      Apply the given label mapping to the factored transition system by
+      updating all transistions of all transition systems. Only for the factor
+      at combinable_index, the local equivalence relation over labels must be
+      recomputed; for all factors, all labels that are combined by the label
+      mapping have been locally equivalent already before.
     */
     void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         int combinable_index);
-    /* Apply a label reduction as computed with the given LabelReduction
-       object. */
-    bool apply_label_reduction(
-        const LabelReduction &label_reduction,
-        const std::pair<int, int> &merge_indices,
-        Verbosity verbosity);
 
     /*
-      Shrink the transition system of the factor at index to have a size of
-      at most target_size, using the given shrink strategy. If the transition
-      system was shrunk, update the other components of the factor (distances,
-      MSR) and return true.
+      Apply the given state equivalence relation to the transition system at
+      index if it would reduce its size. If the transition system was shrunk,
+      update the other components of the factor (distances, MSR) and return
+      true, otherwise return false.
+
+      Note that this method is also suitable to be used for a prune
+      transformation. All states not mentioned in the state equivalence
+      relation are considered to be pruned.
     */
-    bool shrink(
+    bool apply_abstraction(
         int index,
-        int target_size,
-        const ShrinkStrategy &shrink_strategy,
+        const StateEquivalenceRelation &state_equivalence_relation,
         Verbosity verbosity);
 
     /*
@@ -126,17 +112,6 @@ public:
     int merge(
         int index1,
         int index2,
-        Verbosity verbosity);
-
-    /*
-      Prune unreachable and/or irrelevant states of the factor at index.
-      Requires init/goal distances to be computed accordingly. Return true
-      iff at least one state was pruned.
-    */
-    bool prune(
-        int index,
-        bool prune_unreachable_states,
-        bool prune_irrelevant_states,
         Verbosity verbosity);
 
     /*

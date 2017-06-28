@@ -31,8 +31,8 @@ extern std::pair<int, int> compute_shrink_sizes(
   This method checks if the transition system of the factor at index violates
   the size limit given via new_size (e.g. as computed by compute_shrink_sizes)
   or the threshold shrink_threshold_before_merge that triggers shrinking even
-  if the size limit is not violated. If so, call fts.shrink() to shrink the
-  factor. Return true iff the factor was actually shrunk.
+  if the size limit is not violated. If so, trigger the shrinking process.
+  Return true iff the factor was actually shrunk.
 */
 extern bool shrink_factor(
     FactoredTransitionSystem &fts,
@@ -40,6 +40,18 @@ extern bool shrink_factor(
     int new_size,
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
+    Verbosity verbosity);
+
+/*
+  Prune unreachable and/or irrelevant states of the factor at index. This
+  requires that init and/or goal distances have been computed accordingly.
+  Return rue iff any states have been pruned.
+*/
+extern bool prune_factor(
+    FactoredTransitionSystem &fts,
+    int index,
+    bool prune_unreachable_states,
+    bool prune_irrelevant_states,
     Verbosity verbosity);
 
 extern bool is_goal_relevant(const TransitionSystem &ts);
