@@ -231,7 +231,8 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     */
     for (int index = 0; index < fts.get_size(); ++index) {
         if (prune_unreachable_states || prune_irrelevant_states) {
-            fts.prune(
+            prune_factor(
+                fts,
                 index,
                 prune_unreachable_states,
                 prune_irrelevant_states,
@@ -268,8 +269,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
 
             // Label reduction (before shrinking)
             if (label_reduction && label_reduction->reduce_before_shrinking()) {
-                bool reduced =
-                    fts.apply_label_reduction(*label_reduction, merge_indices, verbosity);
+                bool reduced = label_reduction->reduce(merge_indices, fts, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
@@ -284,8 +284,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
 
             // Label reduction (before merging)
             if (label_reduction && label_reduction->reduce_before_merging()) {
-                bool reduced =
-                    fts.apply_label_reduction(*label_reduction, merge_indices, verbosity);
+                bool reduced = label_reduction->reduce(merge_indices, fts, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
@@ -306,7 +305,8 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
 
             // Pruning
             if (prune_unreachable_states || prune_irrelevant_states) {
-                bool pruned = fts.prune(
+                bool pruned = prune_factor(
+                    fts,
                     merged_index,
                     prune_unreachable_states,
                     prune_irrelevant_states,

@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
@@ -71,9 +72,60 @@ bool shrink_factor(
                 cout << " (shrink threshold: " << shrink_threshold_before_merge;
             cout << ")" << endl;
         }
-        return fts.shrink(index, new_size, shrink_strategy, verbosity);
+
+        const Distances &dist = fts.get_dist(index);
+        StateEquivalenceRelation equivalence_relation =
+            shrink_strategy.compute_equivalence_relation(ts, dist, new_size);
+        // TODO: We currently violate this; see issue250
+        //assert(equivalence_relation.size() <= target_size);
+        return fts.apply_abstraction(index, equivalence_relation, verbosity);
     }
     return false;
+}
+
+bool prune_factor(
+    FactoredTransitionSystem &fts,
+    int index,
+    bool prune_unreachable_states,
+    bool prune_irrelevant_states,
+    Verbosity verbosity) {
+    assert(prune_unreachable_states || prune_irrelevant_states);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &dist = fts.get_dist(index);
+    int num_states = ts.get_size();
+    StateEquivalenceRelation state_equivalence_relation;
+    state_equivalence_relation.reserve(num_states);
+    int unreachable_count = 0;
+    int irrelevant_count = 0;
+    int inactive_count = 0;
+    for (int state = 0; state < num_states; ++state) {
+        /* If pruning both unreachable and irrelevant states, a state which is
+           counted for both statistics! */
+        bool prune_state = false;
+        if (prune_unreachable_states && dist.get_init_distance(state) == INF) {
+            ++unreachable_count;
+            prune_state = true;
+        }
+        if (prune_irrelevant_states && dist.get_goal_distance(state) == INF) {
+            ++irrelevant_count;
+            prune_state = true;
+        }
+        if (prune_state) {
+            ++inactive_count;
+        } else {
+            StateEquivalenceClass state_equivalence_class;
+            state_equivalence_class.push_front(state);
+            state_equivalence_relation.push_back(state_equivalence_class);
+        }
+    }
+    if (verbosity >= Verbosity::VERBOSE &&
+        (unreachable_count || irrelevant_count)) {
+        cout << ts.tag()
+             << "unreachable: " << unreachable_count << " states, "
+             << "irrelevant: " << irrelevant_count << " states ("
+             << "total inactive: " << inactive_count << ")" << endl;
+    }
+    return fts.apply_abstraction(index, state_equivalence_relation, verbosity);
 }
 
 bool is_goal_relevant(const TransitionSystem &ts) {

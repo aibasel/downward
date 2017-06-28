@@ -4,7 +4,6 @@
 #include "label_reduction.h"
 #include "labels.h"
 #include "merge_and_shrink_representation.h"
-#include "shrink_strategy.h"
 #include "transition_system.h"
 
 #include "../utils/collections.h"
@@ -82,7 +81,7 @@ bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
     Verbosity verbosity) {
-    assert(is_active(index));
+    assert(is_component_valid(index));
 
     int new_num_states = state_equivalence_relation.size();
     if (new_num_states == transition_systems[index]->get_size()) {
@@ -158,28 +157,6 @@ void FactoredTransitionSystem::apply_label_mapping(
     }
 }
 
-bool FactoredTransitionSystem::apply_label_reduction(
-    const LabelReduction &label_reduction,
-    const pair<int, int> &merge_indices,
-    Verbosity verbosity) {
-    return label_reduction.reduce(merge_indices, *this, verbosity);
-}
-
-bool FactoredTransitionSystem::shrink(
-    int index,
-    int target_size,
-    const ShrinkStrategy &shrink_strategy,
-    Verbosity verbosity) {
-    const TransitionSystem &ts = *transition_systems[index];
-    assert(ts.is_solvable());
-    const Distances &dist = *distances[index];
-    StateEquivalenceRelation equivalence_relation =
-        shrink_strategy.compute_equivalence_relation(ts, dist, target_size);
-    // TODO: We currently violate this; see issue250
-    //assert(equivalence_relation.size() <= target_size);
-    return apply_abstraction(index, equivalence_relation, verbosity);
-}
-
 int FactoredTransitionSystem::merge(
     int index1,
     int index2,
@@ -213,50 +190,6 @@ int FactoredTransitionSystem::merge(
     --num_active_entries;
     assert(is_component_valid(new_index));
     return new_index;
-}
-
-bool FactoredTransitionSystem::prune(
-    int index,
-    bool prune_unreachable_states,
-    bool prune_irrelevant_states,
-    Verbosity verbosity) {
-    assert(is_component_valid(index));
-    assert(prune_unreachable_states || prune_irrelevant_states);
-    const Distances &dist = *distances[index];
-    int num_states = transition_systems[index]->get_size();
-    StateEquivalenceRelation state_equivalence_relation;
-    state_equivalence_relation.reserve(num_states);
-    int unreachable_count = 0;
-    int irrelevant_count = 0;
-    int inactive_count = 0;
-    for (int state = 0; state < num_states; ++state) {
-        /* If pruning both unreachable and irrelevant states, a state which is
-           counted for both statistics! */
-        bool prune_state = false;
-        if (prune_unreachable_states && dist.get_init_distance(state) == INF) {
-            ++unreachable_count;
-            prune_state = true;
-        }
-        if (prune_irrelevant_states && dist.get_goal_distance(state) == INF) {
-            ++irrelevant_count;
-            prune_state = true;
-        }
-        if (prune_state) {
-            ++inactive_count;
-        } else {
-            StateEquivalenceClass state_equivalence_class;
-            state_equivalence_class.push_front(state);
-            state_equivalence_relation.push_back(state_equivalence_class);
-        }
-    }
-    if (verbosity >= Verbosity::VERBOSE &&
-        (unreachable_count || irrelevant_count)) {
-        cout << transition_systems[index]->tag()
-             << "unreachable: " << unreachable_count << " states, "
-             << "irrelevant: " << irrelevant_count << " states ("
-             << "total inactive: " << inactive_count << ")" << endl;
-    }
-    return apply_abstraction(index, state_equivalence_relation, verbosity);
 }
 
 pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
