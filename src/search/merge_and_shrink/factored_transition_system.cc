@@ -142,9 +142,18 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
            && transition_systems[index]->are_transitions_sorted_unique();
 }
 
+void FactoredTransitionSystem::assert_all_components_valid() const {
+    for (size_t index = 0; index < transition_systems.size(); ++index) {
+        if (transition_systems[index]) {
+            assert(is_component_valid(index));
+        }
+    }
+}
+
 void FactoredTransitionSystem::apply_label_mapping(
     const vector<pair<int, vector<int>>> &label_mapping,
     int combinable_index) {
+    assert_all_components_valid();
     for (const auto &new_label_old_labels : label_mapping) {
         assert(new_label_old_labels.first == labels->get_size());
         labels->reduce_labels(new_label_old_labels.second);
@@ -155,6 +164,7 @@ void FactoredTransitionSystem::apply_label_mapping(
                 label_mapping, static_cast<int>(i) != combinable_index);
         }
     }
+    assert_all_components_valid();
 }
 
 int FactoredTransitionSystem::merge(
@@ -200,7 +210,7 @@ FactoredTransitionSystem::extract_factor(int index) {
 }
 
 void FactoredTransitionSystem::statistics(int index) const {
-    assert(is_active(index));
+    assert(is_component_valid(index));
     const TransitionSystem &ts = *transition_systems[index];
     ts.statistics();
     const Distances &dist = *distances[index];
@@ -208,7 +218,7 @@ void FactoredTransitionSystem::statistics(int index) const {
 }
 
 void FactoredTransitionSystem::dump(int index) const {
-    assert(transition_systems[index]);
+    assert_index_valid(index);
     transition_systems[index]->dump_labels_and_transitions();
     mas_representations[index]->dump();
 }
