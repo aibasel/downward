@@ -181,6 +181,7 @@ void Distances::compute_distances(
     bool compute_init_distances,
     bool compute_goal_distances,
     Verbosity verbosity) {
+    assert(compute_init_distances || compute_goal_distances);
     /*
       This method does the following:
       - Computes the distances of abstract states from the abstract
@@ -237,9 +238,9 @@ void Distances::compute_distances(
 
 void Distances::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
-    Verbosity verbosity,
     bool compute_init_distances,
-    bool compute_goal_distances) {
+    bool compute_goal_distances,
+    Verbosity verbosity) {
     assert(are_distances_computed());
     if (compute_init_distances) {
         assert(state_equivalence_relation.size() < init_distances.size());

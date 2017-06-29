@@ -112,9 +112,9 @@ bool FactoredTransitionSystem::apply_abstraction(
     if (compute_init_distances || compute_goal_distances) {
         distances[index]->apply_abstraction(
             state_equivalence_relation,
-            verbosity,
             compute_init_distances,
-            compute_goal_distances);
+            compute_goal_distances,
+            verbosity);
     }
     mas_representations[index]->apply_abstraction_to_lookup_table(
         abstraction_mapping);
