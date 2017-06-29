@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
@@ -71,9 +72,77 @@ bool shrink_factor(
                 cout << " (shrink threshold: " << shrink_threshold_before_merge;
             cout << ")" << endl;
         }
-        return fts.shrink(index, new_size, shrink_strategy, verbosity);
+
+        const Distances &dist = fts.get_dist(index);
+        StateEquivalenceRelation equivalence_relation =
+            shrink_strategy.compute_equivalence_relation(ts, dist, new_size);
+        // TODO: We currently violate this; see issue250
+        //assert(equivalence_relation.size() <= target_size);
+        return fts.apply_abstraction(index, equivalence_relation, verbosity);
     }
     return false;
+}
+
+bool prune_factor(
+    FactoredTransitionSystem &fts,
+    int index,
+    bool prune_unreachable_states,
+    bool prune_irrelevant_states,
+    Verbosity verbosity) {
+    assert(prune_unreachable_states || prune_irrelevant_states);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &dist = fts.get_dist(index);
+    int num_states = ts.get_size();
+    StateEquivalenceRelation state_equivalence_relation;
+    state_equivalence_relation.reserve(num_states);
+    int unreachable_count = 0;
+    int irrelevant_count = 0;
+    int inactive_count = 0;
+    for (int state = 0; state < num_states; ++state) {
+        /* If pruning both unreachable and irrelevant states, a state which is
+           counted for both statistics! */
+        bool prune_state = false;
+        if (prune_unreachable_states && dist.get_init_distance(state) == INF) {
+            ++unreachable_count;
+            prune_state = true;
+        }
+        if (prune_irrelevant_states && dist.get_goal_distance(state) == INF) {
+            ++irrelevant_count;
+            prune_state = true;
+        }
+        if (prune_state) {
+            ++inactive_count;
+        } else {
+            StateEquivalenceClass state_equivalence_class;
+            state_equivalence_class.push_front(state);
+            state_equivalence_relation.push_back(state_equivalence_class);
+        }
+    }
+    if (verbosity >= Verbosity::VERBOSE &&
+        (unreachable_count || irrelevant_count)) {
+        cout << ts.tag()
+             << "unreachable: " << unreachable_count << " states, "
+             << "irrelevant: " << irrelevant_count << " states ("
+             << "total inactive: " << inactive_count << ")" << endl;
+    }
+    return fts.apply_abstraction(index, state_equivalence_relation, verbosity);
+}
+
+vector<int> compute_abstraction_mapping(
+    int num_states,
+    const StateEquivalenceRelation &equivalence_relation) {
+    vector<int> abstraction_mapping(num_states, PRUNED_STATE);
+    for (size_t class_no = 0; class_no < equivalence_relation.size(); ++class_no) {
+        const StateEquivalenceClass &state_equivalence_class =
+            equivalence_relation[class_no];
+        for (auto pos = state_equivalence_class.begin();
+             pos != state_equivalence_class.end(); ++pos) {
+            int state = *pos;
+            assert(abstraction_mapping[state] == PRUNED_STATE);
+            abstraction_mapping[state] = class_no;
+        }
+    }
+    return abstraction_mapping;
 }
 
 bool is_goal_relevant(const TransitionSystem &ts) {
@@ -84,49 +153,5 @@ bool is_goal_relevant(const TransitionSystem &ts) {
         }
     }
     return false;
-}
-
-int shrink_and_merge_temporarily(
-    FactoredTransitionSystem &fts,
-    int ts_index1,
-    int ts_index2,
-    const ShrinkStrategy &shrink_strategy,
-    int max_states,
-    int max_states_before_merge,
-    int shrink_threshold_before_merge) {
-    // Copy the transition systems (distances etc).
-    int copy_ts_index1 = fts.copy_factor_without_representation(ts_index1);
-    int copy_ts_index2 = fts.copy_factor_without_representation(ts_index2);
-    pair<int, int> shrink_sizes =
-        compute_shrink_sizes(fts.get_ts(copy_ts_index1).get_size(),
-                             fts.get_ts(copy_ts_index2).get_size(),
-                             max_states,
-                             max_states_before_merge);
-
-    // Shrink before merge.
-    Verbosity verbosity = Verbosity::SILENT;
-    shrink_factor(
-        fts,
-        copy_ts_index1,
-        shrink_sizes.first,
-        shrink_threshold_before_merge,
-        shrink_strategy,
-        verbosity);
-    shrink_factor(
-        fts,
-        copy_ts_index2,
-        shrink_sizes.second,
-        shrink_threshold_before_merge,
-        shrink_strategy,
-        verbosity);
-
-    // Perform the merge and temporarily add it to FTS.
-    const bool invalidating_merge = true;
-    int merge_index = fts.merge(
-        copy_ts_index1,
-        copy_ts_index2,
-        verbosity,
-        invalidating_merge);
-    return merge_index;
 }
 }
