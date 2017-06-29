@@ -3,6 +3,8 @@
 
 #include "merge_scoring_function.h"
 
+#include "types.h"
+
 #include <memory>
 
 namespace options {
@@ -10,6 +12,7 @@ class Options;
 }
 
 namespace merge_and_shrink {
+class Distances;
 class ShrinkStrategy;
 class TransitionSystem;
 class MergeScoringFunctionMIASM : public MergeScoringFunction {
@@ -17,6 +20,12 @@ class MergeScoringFunctionMIASM : public MergeScoringFunction {
     const int max_states;
     const int max_states_before_merge;
     const int shrink_threshold_before_merge;
+
+    void shrink_factor(
+        TransitionSystem &ts,
+        const Distances &dist,
+        int new_size,
+        Verbosity verbosity) const;
 protected:
     virtual std::string name() const override;
 public:

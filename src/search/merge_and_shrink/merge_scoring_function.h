@@ -24,6 +24,14 @@ public:
         initialized = true;
     }
     void dump_options() const;
+
+    virtual bool requires_init_distances() const {
+        return false;
+    }
+
+    virtual bool requires_goal_distances() const {
+        return false;
+    }
 };
 }
 

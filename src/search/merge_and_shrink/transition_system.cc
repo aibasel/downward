@@ -263,28 +263,20 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     }
 }
 
-bool TransitionSystem::apply_abstraction(
+void TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
     Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
 
     int new_num_states = state_equivalence_relation.size();
-    if (new_num_states == get_size()) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << tag()
-                 << "not applying abstraction (same number of states)" << endl;
-        }
-        return false;
-    }
-
+    assert(new_num_states < num_states);
     if (verbosity >= Verbosity::VERBOSE) {
         cout << tag() << "applying abstraction (" << get_size()
              << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
-
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
         const StateEquivalenceClass &state_equivalence_class =
             state_equivalence_relation[new_state];
@@ -297,7 +289,6 @@ bool TransitionSystem::apply_abstraction(
             }
         }
     }
-
     goal_states = move(new_goal_states);
 
     // Update all transitions.
@@ -335,7 +326,6 @@ bool TransitionSystem::apply_abstraction(
     }
 
     assert(are_transitions_sorted_unique());
-    return true;
 }
 
 void TransitionSystem::apply_label_reduction(
@@ -443,7 +433,28 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 }
 
 bool TransitionSystem::is_solvable() const {
-    return init_state != PRUNED_STATE;
+    /*
+      There are two conditions under which the transition systems is not
+      solvable: there are no goal states or no goal state can be reached.
+
+      If pruning irrelevant states, the initial state will be irrelevant in
+      both cases and hence the transition system is solvable iff the initial
+      states has been pruned.
+
+      Otherweise, because the initital state may be irrelevant but not pruned,
+      we need to check if there are goal states.
+    */
+    if (init_state == PRUNED_STATE) {
+        return false;
+    }
+    bool has_goal = false;
+    for (int state = 0; state < num_states; ++state) {
+        if (goal_states[state]) {
+            has_goal = true;
+            break;
+        }
+    }
+    return has_goal;
 }
 
 int TransitionSystem::compute_total_transitions() const {
