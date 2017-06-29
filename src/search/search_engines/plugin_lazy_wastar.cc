@@ -9,7 +9,7 @@ using namespace std;
 namespace plugin_lazy_wastar {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
-static SearchEngine *_parse(OptionParser &parser) {
+static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "(Weighted) A* search (lazy)",
         "Weighted A* is a special case of lazy best first search.");
@@ -70,10 +70,10 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     opts.verify_list_non_empty<Evaluator *>("evals");
 
-    lazy_search::LazySearch *engine = nullptr;
+    shared_ptr<lazy_search::LazySearch> engine;
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_wastar_open_list_factory(opts));
-        engine = new lazy_search::LazySearch(opts);
+        engine = make_shared<lazy_search::LazySearch>(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
@@ -81,5 +81,5 @@ static SearchEngine *_parse(OptionParser &parser) {
     return engine;
 }
 
-static Plugin<SearchEngine> _plugin("lazy_wastar", _parse);
+static PluginShared<SearchEngine> _plugin("lazy_wastar", _parse);
 }
