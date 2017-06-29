@@ -5,15 +5,13 @@
 #include "merge_tree_factory.h"
 #include "transition_system.h"
 
-#include "../causal_graph.h"
 #include "../task_proxy.h"
 
 #include "../algorithms/sccs.h"
-
 #include "../options/option_parser.h"
 #include "../options/options.h"
 #include "../options/plugin.h"
-
+#include "../task_utils/causal_graph.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
@@ -48,7 +46,7 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &optio
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     const TaskProxy &task_proxy,
-    FactoredTransitionSystem &fts) {
+    const FactoredTransitionSystem &fts) {
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
@@ -159,16 +157,16 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-            "Proceedings of the xxth Internation Conference on Planning and "
+            "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
             "AAAI Press 2016") +
-        "In a nutshel, it computes the maximal SCCs of the causal graph, "
+        "In a nutshell, it computes the maximal SCCs of the causal graph, "
         "obtaining a partitioning of the task's variables. Every such "
-        "partition is then merged individually, using the specified fallback"
+        "partition is then merged individually, using the specified fallback "
         "merge strategy, considering the SCCs in a configurable order. "
-        "Afterwards, all resulting composite abstractions are merged to form"
-        "the final abstraction, again using the specified fallback merge"
+        "Afterwards, all resulting composite abstractions are merged to form "
+        "the final abstraction, again using the specified fallback merge "
         "strategy and the configurable order of the SCCs.");
     vector<string> order_of_sccs;
     order_of_sccs.push_back("topological");
@@ -187,27 +185,30 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "topological");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
-        "the fallback merge strategy to use if a precomputed strategy should"
+        "the fallback merge strategy to use if a precomputed strategy should "
         "be used.",
         options::OptionParser::NONE);
     parser.add_option<shared_ptr<MergeSelector>>(
         "merge_selector",
-        "the fallback merge strategy to use if a stateless strategy should"
+        "the fallback merge strategy to use if a stateless strategy should "
         "be used.",
         options::OptionParser::NONE);
 
     options::Options options = parser.parse();
-    bool merge_tree = options.contains("merge_tree");
-    bool merge_selector = options.contains("merge_selector");
-    if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
-        cerr << "You have to specify exactly one of the options merge_tree "
-            "and merge_selector!" << endl;
-        utils::exit_with(utils::ExitCode::INPUT_ERROR);
-    }
-    if (parser.dry_run())
+    if (parser.help_mode()) {
         return nullptr;
-    else
+    } else if (parser.dry_run()) {
+        bool merge_tree = options.contains("merge_tree");
+        bool merge_selector = options.contains("merge_selector");
+        if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
+            cerr << "You have to specify exactly one of the options merge_tree "
+                "and merge_selector!" << endl;
+            utils::exit_with(utils::ExitCode::INPUT_ERROR);
+        }
+        return nullptr;
+    } else {
         return make_shared<MergeStrategyFactorySCCs>(options);
+    }
 }
 
 static options::PluginShared<MergeStrategyFactory> _plugin("merge_sccs", _parse);

@@ -1,99 +1,101 @@
 #include "doc_store.h"
 
+#include "option_parser.h"
+
 #include <algorithm>
 
 using namespace std;
 
 namespace options {
-void DocStore::register_object(string k, string type) {
-    transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
-    registered[k] = DocStruct();
-    registered[k].type = type;
-    registered[k].full_name = k;
-    registered[k].synopsis = "";
-    registered[k].hidden = false;
+void PluginInfo::fill_docs() {
+    OptionParser parser(name, true, true);
+    doc_factory(parser);
 }
 
-void DocStore::add_arg(string k,
-                       string arg_name,
-                       string help,
-                       string type,
-                       string default_value,
-                       Bounds bounds,
-                       ValueExplanations value_explanations) {
-    registered[k].arg_help.push_back(
-        ArgumentInfo(arg_name, help, type, default_value, bounds,
-                     value_explanations));
+string PluginInfo::get_type_name() const {
+    return type_name_factory();
 }
 
-void DocStore::add_value_explanations(string k,
-                                      string arg_name,
-                                      ValueExplanations value_explanations) {
-    vector<ArgumentInfo> &args = registered[k].arg_help;
+
+void DocStore::register_plugin(
+    const string &key, DocFactory doc_factory, PluginTypeNameGetter type_name_factory) {
+    if (plugin_infos.count(key)) {
+        ABORT("DocStore already contains a plugin with name \"" + key + "\"");
+    }
+    PluginInfo doc;
+    doc.doc_factory = doc_factory;
+    doc.type_name_factory = type_name_factory;
+    doc.name = key;
+    doc.synopsis = "";
+    doc.hidden = false;
+    plugin_infos[key] = doc;
+}
+
+void DocStore::add_arg(
+    const string &key,
+    const string &arg_name,
+    const string &help,
+    const string &type_name,
+    const string &default_value,
+    const Bounds &bounds,
+    const ValueExplanations &value_explanations) {
+    get(key).arg_help.emplace_back(
+        arg_name, help, type_name, default_value, bounds, value_explanations);
+}
+
+void DocStore::add_value_explanations(
+    const string &key,
+    const string &arg_name,
+    const ValueExplanations &value_explanations) {
+    vector<ArgumentInfo> &args = get(key).arg_help;
     for (size_t i = 0; i < args.size(); ++i) {
-        if (args[i].kwd.compare(arg_name) == 0) {
+        if (args[i].key == arg_name) {
             args[i].value_explanations = value_explanations;
             break;
         }
     }
 }
 
-
-void DocStore::set_synopsis(string k,
-                            string name, string description) {
-    registered[k].full_name = name;
-    registered[k].synopsis = description;
+void DocStore::set_synopsis(
+    const string &key, const string &name, const string &description) {
+    get(key).name = name;
+    get(key).synopsis = description;
 }
 
-void DocStore::add_property(string k,
-                            string name, string description) {
-    registered[k].property_help.push_back(PropertyInfo(name, description));
+void DocStore::add_property(
+    const string &key, const string &name, const string &description) {
+    get(key).property_help.emplace_back(name, description);
 }
 
-void DocStore::add_feature(string k,
-                           string feature, string description) {
-    registered[k].support_help.push_back(LanguageSupportInfo(feature,
-                                                             description));
+void DocStore::add_feature(
+    const string &key, const string &feature, const string &description) {
+    get(key).support_help.emplace_back(feature, description);
 }
 
-void DocStore::add_note(string k,
-                        string name, string description, bool long_text) {
-    registered[k].notes.push_back(NoteInfo(name, description, long_text));
+void DocStore::add_note(
+    const string &key, const string &name, const string &description, bool long_text) {
+    get(key).notes.emplace_back(name, description, long_text);
 }
 
-void DocStore::hide(string k) {
-    registered[k].hidden = true;
+void DocStore::hide(const string &key) {
+    get(key).hidden = true;
 }
 
-
-bool DocStore::contains(string k) {
-    return registered.find(k) != registered.end();
+bool DocStore::contains(const string &key) {
+    return plugin_infos.find(key) != plugin_infos.end();
 }
 
-DocStruct DocStore::get(string k) {
-    return registered[k];
+PluginInfo &DocStore::get(const string &key) {
+    /* Use at() to get an error when trying to modify a plugin that has not been
+       registered with register_plugin. */
+    return plugin_infos.at(key);
 }
 
 vector<string> DocStore::get_keys() {
     vector<string> keys;
-    for (map<string, DocStruct>::iterator it =
-             registered.begin();
-         it != registered.end(); ++it) {
-        keys.push_back(it->first);
+    for (const auto it : plugin_infos) {
+        keys.push_back(it.first);
     }
     return keys;
-}
-
-vector<string> DocStore::get_types() {
-    vector<string> types;
-    for (map<string, DocStruct>::iterator it =
-             registered.begin();
-         it != registered.end(); ++it) {
-        if (find(types.begin(), types.end(), it->second.type)
-            == types.end()) {
-            types.push_back(it->second.type);
-        }
-    }
-    return types;
 }
 }

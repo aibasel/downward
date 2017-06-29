@@ -21,8 +21,10 @@ MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
 }
 
 vector<double> MergeScoringFunctionMIASM::compute_scores(
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {
+    const FactoredTransitionSystem* ptr_fts = &fts;
+    FactoredTransitionSystem* non_const_ptr_fts = const_cast<FactoredTransitionSystem *>(ptr_fts);
     vector<double> scores;
     scores.reserve(merge_candidates.size());
     for (pair<int, int> merge_candidate : merge_candidates) {
@@ -30,18 +32,18 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         int ts_index2 = merge_candidate.second;
 
         int merge_index = shrink_and_merge_temporarily(
-            fts, ts_index1, ts_index2, *shrink_strategy, max_states,
+            *non_const_ptr_fts, ts_index1, ts_index2, *shrink_strategy, max_states,
             max_states_before_merge, shrink_threshold_before_merge);
 
         // Return 0 if the merge is unsolvable (i.e. empty transition system).
         double score = 0;
-        if (fts.get_ts(merge_index).is_solvable()) {
+        if (non_const_ptr_fts->get_ts(merge_index).is_solvable()) {
             /* NOTE: due to shrinking, it is guaranteed that the product size
                cannot overflow. */
-            int expected_size = fts.get_ts(ts_index1).get_size() *
-                                fts.get_ts(ts_index2).get_size();
+            int expected_size = non_const_ptr_fts->get_ts(ts_index1).get_size() *
+                                non_const_ptr_fts->get_ts(ts_index2).get_size();
             assert(expected_size);
-            int new_size = fts.get_ts(merge_index).get_size();
+            int new_size = non_const_ptr_fts->get_ts(merge_index).get_size();
             assert(new_size <= expected_size);
             score = static_cast<double>(new_size) /
                     static_cast<double>(expected_size);
@@ -49,7 +51,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         scores.push_back(score);
 
         // Delete the merge and reset.
-        fts.delete_last_three_entries();
+        non_const_ptr_fts->delete_last_three_entries();
     }
     return scores;
 }
