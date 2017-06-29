@@ -10,6 +10,9 @@ set -x
 ./test-standard-configs.py
 ./test-translator.py ../../misc/tests/benchmarks all
 
+command -v py.test >/dev/null 2>&1 || {
+    echo >&2 "Please install py.test (sudo apt-get install python-pytest). Aborting."; exit 1;
+}
 py.test ../../driver/tests.py
 
 echo

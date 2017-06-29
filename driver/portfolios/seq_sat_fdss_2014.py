@@ -83,7 +83,7 @@ CONFIGS = [
     # add_eager_wastar
     (77, ["--heuristic", "hadd=add(transform=H_COST_TRANSFORM)",
           "--search",
-          "eager(alt([single(sum([g(), weight(hadd, 3)])),single(sum([g(), weight(hadd,3)]),pref_only=true)]),preferred=hadd,cost_type=S_COST_TYPE,bound=BOUND)"]),
+          "eager(alt([single(sum([g(), weight(hadd, 3)])),single(sum([g(), weight(hadd,3)]),pref_only=true)]),preferred=[hadd],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # cea_ff_eager_wastar
     (40, ["--heuristic", "hff=ff(transform=H_COST_TRANSFORM)", "--heuristic",
          "hcea=cea(transform=H_COST_TRANSFORM)", "--search",
@@ -95,7 +95,7 @@ CONFIGS = [
     # cea_eager_greedy
     (40, ["--heuristic", "hcea=cea(transform=H_COST_TRANSFORM)",
          "--search",
-         "eager_greedy(hcea,preferred=hcea,cost_type=S_COST_TYPE,bound=BOUND)"]),
+         "eager_greedy([hcea],preferred=[hcea],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # cg_lm_lazy_wastar
     (39, ["--heuristic", "hcg=cg(transform=H_COST_TRANSFORM)", "--heuristic",
          "hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2),transform=H_COST_TRANSFORM)", "--search",
@@ -103,23 +103,23 @@ CONFIGS = [
     # cea_lazy_wastar
     (40, ["--heuristic", "hcea=cea(transform=H_COST_TRANSFORM)",
           "--search",
-          "lazy_wastar(hcea, w=3, preferred=hcea,cost_type=S_COST_TYPE,bound=BOUND)"]),
+          "lazy_wastar([hcea], w=3, preferred=[hcea],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # ff_eager_wastar
     (72, ["--heuristic", "hff=ff(transform=H_COST_TRANSFORM)",
           "--search",
-          "eager(alt([single(sum([g(), weight(hff, 3)])),single(sum([g(),weight(hff,3)]),pref_only=true)]),preferred=hff,cost_type=S_COST_TYPE,bound=BOUND)"]),
+          "eager(alt([single(sum([g(), weight(hff, 3)])),single(sum([g(),weight(hff,3)]),pref_only=true)]),preferred=[hff],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # cg_eager_wastar
     (38, ["--heuristic", "hcg=cg(transform=H_COST_TRANSFORM)",
           "--search",
-          "eager(alt([single(sum([g(), weight(hcg, 3)])),single(sum([g(),weight(hcg,3)]),pref_only=true)]),preferred=hcg,cost_type=S_COST_TYPE,bound=BOUND)"]),
+          "eager(alt([single(sum([g(), weight(hcg, 3)])),single(sum([g(),weight(hcg,3)]),pref_only=true)]),preferred=[hcg],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # ff_lazy_wastar
     (38, ["--heuristic", "hff=ff(transform=H_COST_TRANSFORM)",
           "--search",
-          "lazy_wastar(hff, w=3, preferred=hff,cost_type=S_COST_TYPE,bound=BOUND)"]),
+          "lazy_wastar([hff], w=3, preferred=[hff],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # cg_lazy_greedy
     (116, ["--heuristic", "hcg=cg(transform=H_COST_TRANSFORM)",
           "--search",
-          "lazy_greedy(hcg,preferred=hcg,cost_type=S_COST_TYPE,bound=BOUND)"]),
+          "lazy_greedy([hcg],preferred=[hcg],cost_type=S_COST_TYPE,bound=BOUND)"]),
      ]
 
 # ff_lm_eager_wastar
@@ -128,4 +128,4 @@ FINAL_CONFIG = [
     "--heuristic",
     "hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2),transform=H_COST_TRANSFORM)",
     "--search",
-    "iterated(eager(alt([single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hff,hlm],cost_type=S_COST_TYPE,bound=BOUND),bound=BOUND,repeat_last=true)"]
+    "iterated([eager(alt([single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hff,hlm],cost_type=S_COST_TYPE,bound=BOUND)],bound=BOUND,repeat_last=true)"]

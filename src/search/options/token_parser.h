@@ -3,6 +3,8 @@
 
 #include "predefinitions.h"
 
+#include <sstream>
+
 class Evaluator;
 class Heuristic;
 
@@ -12,11 +14,10 @@ class OptionParser;
 /*
   TokenParser<T> wraps functions to parse supported types T.
 */
-
 template<typename T>
 class TokenParser {
 public:
-    static inline T parse(OptionParser &p);
+    static inline T parse(OptionParser &parser);
 };
 
 /*
@@ -30,22 +31,20 @@ public:
 template<typename T>
 class TokenParser<T *> {
 public:
-    static inline T *parse(OptionParser &p);
+    static inline T *parse(OptionParser &parser);
 };
 
 template<typename T>
 class TokenParser<std::shared_ptr<T>> {
 public:
-    static inline std::shared_ptr<T> parse(OptionParser &p);
+    static inline std::shared_ptr<T> parse(OptionParser &parser);
 };
 
 template<typename T>
 class TokenParser<std::vector<T>> {
 public:
-    static inline std::vector<T> parse(OptionParser &p);
+    static inline std::vector<T> parse(OptionParser &parser);
 };
-
-//Definitions of TokenParser<T>:
 
 /*
   If T has no template specialization, try to parse it directly from
@@ -53,27 +52,27 @@ public:
   used only for string and bool.
 */
 template<typename T>
-inline T TokenParser<T>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    std::stringstream str_stream(pt->value);
+inline T TokenParser<T>::parse(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    std::istringstream stream(value);
     T x;
-    if ((str_stream >> std::boolalpha >> x).fail()) {
-        p.error("could not parse argument " + pt->value + " of type " + TypeNamer<T>::name());
+    if ((stream >> std::boolalpha >> x).fail()) {
+        parser.error("could not parse argument " + value + " of type " + TypeNamer<T>::name());
     }
     return x;
 }
 
 // int needs a specialization to allow "infinity".
 template<>
-inline int TokenParser<int>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (pt->value.compare("infinity") == 0) {
+inline int TokenParser<int>::parse(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    if (value == "infinity") {
         return std::numeric_limits<int>::max();
     } else {
-        std::stringstream str_stream(pt->value);
+        std::istringstream stream(value);
         int x;
-        if ((str_stream >> x).fail()) {
-            p.error("could not parse int argument " + pt->value);
+        if ((stream >> x).fail()) {
+            parser.error("could not parse int argument " + value);
         }
         return x;
     }
@@ -81,60 +80,64 @@ inline int TokenParser<int>::parse(OptionParser &p) {
 
 // double needs a specialization to allow "infinity".
 template<>
-inline double TokenParser<double>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (pt->value.compare("infinity") == 0) {
+inline double TokenParser<double>::parse(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    if (value == "infinity") {
         return std::numeric_limits<double>::infinity();
     } else {
-        std::stringstream str_stream(pt->value);
+        std::istringstream stream(value);
         double x;
-        if ((str_stream >> x).fail()) {
-            p.error("could not parse double argument " + pt->value);
+        if ((stream >> x).fail()) {
+            parser.error("could not parse double argument " + value);
         }
         return x;
     }
 }
 
-//helper functions for the TokenParser-specializations
+// Helper functions for the TokenParser-specializations.
+
+/*
+  This function is legacy code. It can go away once all plugins use shared_ptr.
+*/
 template<typename T>
-static T *lookup_in_registry(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<T *>::instance()->contains(pt->value)) {
-        return Registry<T *>::instance()->get(pt->value) (p);
+static T *lookup_in_registry(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    if (Registry<T *>::instance()->contains(value)) {
+        return Registry<T *>::instance()->get(value)(parser);
     }
-    p.error(TypeNamer<T *>::name() + " " + pt->value + " not found");
-    return 0;
+    parser.error(TypeNamer<T *>::name() + " " + value + " not found");
+    return nullptr;
 }
 
-// TODO: This function will replace lookup_in_registry() once we no longer need to support raw pointers.
+// TODO: Rename to lookup_in_registry() once all plugins use shared_ptr.
 template<typename T>
-static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<std::shared_ptr<T>>::instance()->contains(pt->value)) {
-        return Registry<std::shared_ptr<T>>::instance()->get(pt->value) (p);
+static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    if (Registry<std::shared_ptr<T>>::instance()->contains(value)) {
+        return Registry<std::shared_ptr<T>>::instance()->get(value)(parser);
     }
-    p.error(TypeNamer<std::shared_ptr<T>>::name() + " " + pt->value + " not found");
-    return 0;
+    parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
+    return nullptr;
 }
 
 template<typename T>
-static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<T *>::instance()->contains(pt->value)) {
+static T *lookup_in_predefinitions(OptionParser &parser, bool &found) {
+    const std::string &value = parser.get_root_value();
+    if (Predefinitions<T *>::instance()->contains(value)) {
         found = true;
-        return Predefinitions<T *>::instance()->get(pt->value);
+        return Predefinitions<T *>::instance()->get(value);
     }
     found = false;
-    return 0;
+    return nullptr;
 }
 
 template<typename T>
-static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &p, bool &found) {
+static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<TPtr>::instance()->contains(pt->value)) {
+    const std::string &value = parser.get_root_value();
+    if (Predefinitions<TPtr>::instance()->contains(value)) {
         found = true;
-        return Predefinitions<TPtr>::instance()->get(pt->value);
+        return Predefinitions<TPtr>::instance()->get(value);
     }
     found = false;
     return nullptr;
@@ -144,63 +147,59 @@ static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &p, bool 
 /*
   TODO (post-issue586): We should decide how to handle subclasses more generally.
   See http://issues.fast-downward.org/msg4686 (which is part of that issue).
+
+  For now, we use C-style casts since C++-style casts need complete types.
 */
 template<>
-inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
-        return (Evaluator *)
-               Predefinitions<Heuristic *>::instance()->get(pt->value);
-    } else if (Registry<Evaluator *>::instance()->contains(pt->value)) {
-        return Registry<Evaluator *>::instance()->get(pt->value) (p);
-    } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
-        return (Evaluator *)
-               Registry<Heuristic *>::instance()->get(pt->value) (p);
+inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    if (Predefinitions<Heuristic *>::instance()->contains(value)) {
+        return (Evaluator *)Predefinitions<Heuristic *>::instance()->get(value);
+    } else if (Registry<Evaluator *>::instance()->contains(value)) {
+        return Registry<Evaluator *>::instance()->get(value)(parser);
+    } else if (Registry<Heuristic *>::instance()->contains(value)) {
+        return (Evaluator *)Registry<Heuristic *>::instance()->get(value)(parser);
     }
-    p.error("Evaluator " + pt->value + " not found");
-    return 0;
+    parser.error("Evaluator " + value + " not found");
+    return nullptr;
 }
 
 // TODO: The following method can go away once we use shared pointers for all plugins.
 template<typename T>
-inline T *TokenParser<T *>::parse(OptionParser &p) {
+inline T *TokenParser<T *>::parse(OptionParser &parser) {
     bool predefined;
-    T *result = lookup_in_predefinitions<T>(p, predefined);
+    T *result = lookup_in_predefinitions<T>(parser, predefined);
     if (predefined)
         return result;
-    return lookup_in_registry<T>(p);
+    return lookup_in_registry<T>(parser);
 }
 
 template<typename T>
-inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &p) {
+inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &parser) {
     bool predefined;
-    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(p, predefined);
+    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(parser, predefined);
     if (predefined)
         return result;
-    return lookup_in_registry_shared<T>(p);
+    return lookup_in_registry_shared<T>(parser);
 }
 
+// Needed for iterated search.
 template<>
-inline ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
-    return *p.get_parse_tree();
+inline ParseTree TokenParser<ParseTree>::parse(OptionParser &parser) {
+    return *parser.get_parse_tree();
 }
 
 template<typename T>
-inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
+inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
+    if (parser.get_parse_tree()->begin()->value != "list") {
+        parser.error("expected list");
+    }
     std::vector<T> results;
-    if (pt->value.compare("list") != 0) {
-        //try to parse the next token as list of length 1 given without brackets
-        results.push_back(TokenParser<T>::parse(p));
-    } else {
-        for (ParseTree::sibling_iterator pti =
-                 first_child_of_root(*p.get_parse_tree());
-             pti != end_of_roots_children(*p.get_parse_tree());
-             ++pti) {
-            OptionParser subparser(subtree(*p.get_parse_tree(), pti), p.dry_run());
-            results.push_back(
-                TokenParser<T>::parse(subparser));
-        }
+    for (auto tree_it = first_child_of_root(*parser.get_parse_tree());
+         tree_it != end_of_roots_children(*parser.get_parse_tree());
+         ++tree_it) {
+        OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it), parser.dry_run());
+        results.push_back(TokenParser<T>::parse(subparser));
     }
     return results;
 }
