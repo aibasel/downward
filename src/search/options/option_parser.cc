@@ -144,7 +144,7 @@ void OptionParser::check_bounds<double>(
     _check_bounds(*this, key, value, lower_bound, upper_bound);
 }
 
-SearchEngine *OptionParser::parse_cmd_line(
+shared_ptr<SearchEngine> OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
@@ -182,9 +182,9 @@ int OptionParser::parse_int_arg(const string &name, const string &value) {
 }
 
 
-SearchEngine *OptionParser::parse_cmd_line_aux(
+shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
     const vector<string> &args, bool dry_run) {
-    SearchEngine *engine = nullptr;
+    shared_ptr<SearchEngine> engine;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = args[i];
@@ -204,7 +204,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 throw ArgError("missing argument after --search");
             ++i;
             OptionParser parser(args[i], dry_run);
-            engine = parser.start_parsing<SearchEngine *>();
+            engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
