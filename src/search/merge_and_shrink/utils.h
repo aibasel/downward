@@ -67,4 +67,5 @@ extern std::vector<int> compute_abstraction_mapping(
 
 extern bool is_goal_relevant(const TransitionSystem &ts);
 }
+
 #endif
