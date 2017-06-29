@@ -49,7 +49,6 @@ class FactoredTransitionSystem {
     const bool compute_init_distances;
     const bool compute_goal_distances;
     int num_active_entries;
-    bool ignore_representation;
 
     /*
       Assert that the factor at the given index is in a consistent state, i.e.
@@ -159,16 +158,6 @@ public:
     }
 
     bool is_active(int index) const;
-
-    // Copy TS and Distances at index and append it, increasing the size by one.
-    int copy_factor_without_representation(int index);
-    /*
-      Delete the last three indices. This assumes and requires that the
-      entry at the last index represents a merge of the entries of the
-      second and third to last indices, which in turn have been copied
-      before, using copy_without_representation.
-     */
-    void delete_last_three_entries();
 };
 }
 
