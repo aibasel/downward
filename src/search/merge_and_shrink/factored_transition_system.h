@@ -62,6 +62,8 @@ class FactoredTransitionSystem {
       labels.
     */
     bool is_component_valid(int index) const;
+
+    void assert_all_components_valid() const;
 public:
     FactoredTransitionSystem(
         std::unique_ptr<Labels> labels,
