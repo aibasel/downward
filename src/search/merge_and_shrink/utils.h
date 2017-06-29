@@ -1,13 +1,14 @@
 #ifndef MERGE_AND_SHRINK_UTILS_H
 #define MERGE_AND_SHRINK_UTILS_H
 
+#include "types.h"
+
 #include <vector>
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class ShrinkStrategy;
 class TransitionSystem;
-enum class Verbosity;
 
 /*
   Compute target sizes for shrinking two transition systems with sizes size1
@@ -46,6 +47,8 @@ extern bool shrink_factor(
   Prune unreachable and/or irrelevant states of the factor at index. This
   requires that init and/or goal distances have been computed accordingly.
   Return rue iff any states have been pruned.
+
+  TODO: maybe this functionality belongs to a new class PruningStrategy.
 */
 extern bool prune_factor(
     FactoredTransitionSystem &fts,
@@ -53,6 +56,14 @@ extern bool prune_factor(
     bool prune_unreachable_states,
     bool prune_irrelevant_states,
     Verbosity verbosity);
+
+/*
+  Compute the abstraction mapping based on the given state equivalence
+  relation.
+*/
+extern std::vector<int> compute_abstraction_mapping(
+    int num_states,
+    const StateEquivalenceRelation &equivalence_relation);
 
 extern bool is_goal_relevant(const TransitionSystem &ts);
 }

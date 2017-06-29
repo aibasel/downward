@@ -4,6 +4,7 @@
 #include "labels.h"
 #include "merge_and_shrink_representation.h"
 #include "transition_system.h"
+#include "utils.h"
 
 #include "../utils/collections.h"
 #include "../utils/memory.h"
@@ -91,20 +92,8 @@ bool FactoredTransitionSystem::apply_abstraction(
         return false;
     }
 
-    /* Compute the abstraction mapping based on the given state equivalence
-       relation. */
-    vector<int> abstraction_mapping(
-        transition_systems[index]->get_size(), PRUNED_STATE);
-    for (size_t class_no = 0; class_no < state_equivalence_relation.size(); ++class_no) {
-        const StateEquivalenceClass &state_equivalence_class =
-            state_equivalence_relation[class_no];
-        for (auto pos = state_equivalence_class.begin();
-             pos != state_equivalence_class.end(); ++pos) {
-            int state = *pos;
-            assert(abstraction_mapping[state] == PRUNED_STATE);
-            abstraction_mapping[state] = class_no;
-        }
-    }
+    vector<int> abstraction_mapping = compute_abstraction_mapping(
+        transition_systems[index]->get_size(), state_equivalence_relation);
 
     transition_systems[index]->apply_abstraction(
         state_equivalence_relation, abstraction_mapping, verbosity);
