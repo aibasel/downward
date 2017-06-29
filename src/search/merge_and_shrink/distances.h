@@ -11,17 +11,6 @@
 
   (Many of these would need performance tests, as distance computation
   can be one of the bottlenecks in our code.)
-
-  TODO: Possible performance improvements:
-  - We currently try to keep the distance information after shrinking
-    (going quite far to avoid recomputation). Does this really serve a
-    purpose? *After* shrinking, why are we interested in the distances
-    in the first place? The main point of the distances is to inform
-    the shrink strategies. (OK, I guess some merge strategies care
-    about them, too -- but should *all* merge strategies pay for that?
-    And if these merge strategies only care about h values, which we
-    usually preserve, wouldn't it be better to invalidate g values
-    then?)
 */
 
 namespace merge_and_shrink {
@@ -66,9 +55,9 @@ public:
     */
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity,
         bool compute_init_distances,
-        bool compute_goal_distances);
+        bool compute_goal_distances,
+        Verbosity verbosity);
 
     int get_init_distance(int state) const {
         return init_distances[state];
