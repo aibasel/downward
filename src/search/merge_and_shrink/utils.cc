@@ -128,6 +128,23 @@ bool prune_factor(
     return fts.apply_abstraction(index, state_equivalence_relation, verbosity);
 }
 
+vector<int> compute_abstraction_mapping(
+    int num_states,
+    const StateEquivalenceRelation &equivalence_relation) {
+    vector<int> abstraction_mapping(num_states, PRUNED_STATE);
+    for (size_t class_no = 0; class_no < equivalence_relation.size(); ++class_no) {
+        const StateEquivalenceClass &state_equivalence_class =
+            equivalence_relation[class_no];
+        for (auto pos = state_equivalence_class.begin();
+             pos != state_equivalence_class.end(); ++pos) {
+            int state = *pos;
+            assert(abstraction_mapping[state] == PRUNED_STATE);
+            abstraction_mapping[state] = class_no;
+        }
+    }
+    return abstraction_mapping;
+}
+
 bool is_goal_relevant(const TransitionSystem &ts) {
     int num_states = ts.get_size();
     for (int state = 0; state < num_states; ++state) {
