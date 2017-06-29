@@ -1,9 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
@@ -46,10 +43,10 @@ CONFIGS = [
 ]
 SUITE = DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = MaiaEnvironment(
-    priority=-100, email='silvan.sievers@unibas.ch')
+    priority=0, email='silvan.sievers@unibas.ch')
 
 if is_test_run():
-    SUITE = ['depot:p01.pddl', 'depot:p02.pddl', 'parcprinter-opt11-strips:p01.pddl', 'parcprinter-opt11-strips:p02.pddl', 'mystery:prob04.pddl', 'mystery:prob07.pddl']
+    SUITE = ['depot:p01.pddl', 'depot:p02.pddl', 'parcprinter-opt11-strips:p01.pddl', 'parcprinter-opt11-strips:p02.pddl', 'mystery:prob07.pddl']
     ENVIRONMENT = LocalEnvironment(processes=4)
 
 exp = IssueExperiment(
