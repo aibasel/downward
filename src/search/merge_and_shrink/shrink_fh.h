@@ -29,20 +29,19 @@ private:
     const HighLow f_start;
     const HighLow h_start;
 
-    void ordered_buckets_use_vector(const FactoredTransitionSystem &fts,
-                                    int index,
-                                    std::vector<Bucket> &buckets) const;
-    void ordered_buckets_use_map(const FactoredTransitionSystem &fts,
-                                 int index,
-                                 std::vector<Bucket> &buckets) const;
+    std::vector<Bucket> ordered_buckets_use_vector(
+        const TransitionSystem &ts,
+        const Distances &distances) const;
+    std::vector<Bucket> ordered_buckets_use_map(
+        const TransitionSystem &ts,
+        const Distances &distances) const;
 protected:
     virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 
-    virtual void partition_into_buckets(
-        const FactoredTransitionSystem &fts,
-        int index,
-        std::vector<Bucket> &buckets) const override;
+    virtual std::vector<Bucket> partition_into_buckets(
+        const TransitionSystem &ts,
+        const Distances &distances) const override;
 
 public:
     explicit ShrinkFH(const options::Options &opts);

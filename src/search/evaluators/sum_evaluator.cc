@@ -10,10 +10,10 @@ using namespace std;
 
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(const Options &opts)
-    : CombiningEvaluator(opts.get_list<ScalarEvaluator *>("evals")) {
+    : CombiningEvaluator(opts.get_list<Evaluator *>("evals")) {
 }
 
-SumEvaluator::SumEvaluator(const vector<ScalarEvaluator *> &evals)
+SumEvaluator::SumEvaluator(const vector<Evaluator *> &evals)
     : CombiningEvaluator(evals) {
 }
 
@@ -30,15 +30,14 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Evaluator *_parse(OptionParser &parser) {
     parser.document_synopsis("Sum evaluator",
                              "Calculates the sum of the sub-evaluators.");
 
-    parser.add_list_option<ScalarEvaluator *>("evals",
-                                              "at least one scalar evaluator");
+    parser.add_list_option<Evaluator *>("evals", "at least one evaluator");
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
+    opts.verify_list_non_empty<Evaluator *>("evals");
 
     if (parser.dry_run())
         return 0;
@@ -46,5 +45,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new SumEvaluator(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("sum", _parse);
+static Plugin<Evaluator> _plugin("sum", _parse);
 }

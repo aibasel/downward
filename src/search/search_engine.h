@@ -58,7 +58,12 @@ public:
     const SearchStatistics &get_statistics() const {return statistics; }
     void set_bound(int b) {bound = b; }
     int get_bound() {return bound; }
+
+    /* The following three methods should become functions as they
+       do not require access to private/protected class members. */
+    static void add_pruning_option(options::OptionParser &parser);
     static void add_options_to_parser(options::OptionParser &parser);
+    static void add_succ_order_options(options::OptionParser &parser);
 };
 
 /*
@@ -66,7 +71,7 @@ public:
 */
 extern void print_initial_h_values(const EvaluationContext &eval_context);
 
-extern ordered_set::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
     const std::vector<Heuristic *> &preferred_operator_heuristics);
 

@@ -11,7 +11,7 @@ class MergeStrategyStateless : public MergeStrategy {
     const std::shared_ptr<MergeSelector> merge_selector;
 public:
     MergeStrategyStateless(
-        FactoredTransitionSystem &fts,
+        const FactoredTransitionSystem &fts,
         const std::shared_ptr<MergeSelector> &merge_selector);
     virtual ~MergeStrategyStateless() override = default;
     virtual std::pair<int, int> get_next() override;

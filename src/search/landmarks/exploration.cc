@@ -2,8 +2,7 @@
 
 #include "util.h"
 
-#include "../task_tools.h"
-
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
 
@@ -313,7 +312,7 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
                 && unary_op->depth == 0
                 && !unary_op->is_induced_by_axiom(task_proxy)) {
                 set_preferred(get_operator_or_axiom(task_proxy, op_or_axiom_id));
-                assert(is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
+                assert(task_properties::is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
             }
         }
     }
@@ -400,7 +399,7 @@ void Exploration::collect_helpful_actions(
             && unary_op->depth == 0
             && !unary_op->is_induced_by_axiom(task_proxy)) {
             exported_op_ids.push_back(op_or_axiom_id); // This is a helpful action.
-            assert(is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
+            assert(task_properties::is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
         }
     }
 }

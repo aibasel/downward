@@ -15,8 +15,8 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/memory.h"
@@ -60,7 +60,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     utils::Timer timer;
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     starting_peak_memory = utils::get_peak_memory_in_kb();
-    verify_no_axioms(task_proxy);
+    task_properties::verify_no_axioms(task_proxy);
     dump_options();
     warn_on_unusual_options();
     cout << endl;
@@ -157,7 +157,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
+bool MergeAndShrinkHeuristic::shrink_before_merge(
     FactoredTransitionSystem &fts, int index1, int index2) {
     /*
       Compute the size limit for both transition systems as imposed by
@@ -176,21 +176,27 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
       for the second shrinking if the first shrinking was larger than
       required.
     */
-    bool shrunk1 = shrink_transition_system(
+    bool shrunk1 = shrink_factor(
         fts,
         index1,
         new_sizes.first,
         shrink_threshold_before_merge,
         *shrink_strategy,
         verbosity);
-    bool shrunk2 = shrink_transition_system(
+    if (verbosity >= Verbosity::VERBOSE && shrunk1) {
+        fts.statistics(index1);
+    }
+    bool shrunk2 = shrink_factor(
         fts,
         index2,
         new_sizes.second,
         shrink_threshold_before_merge,
         *shrink_strategy,
         verbosity);
-    return make_pair(shrunk1, shrunk2);
+    if (verbosity >= Verbosity::VERBOSE && shrunk2) {
+        fts.statistics(index2);
+    }
+    return shrunk1 || shrunk2;
 }
 
 void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
@@ -227,32 +233,23 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             // Label reduction (before shrinking)
             if (label_reduction && label_reduction->reduce_before_shrinking()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, fts, verbosity);
+                    fts.apply_label_reduction(*label_reduction, merge_indices, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
             }
 
             // Shrinking
-            pair<bool, bool> shrunk = shrink_before_merge(
+            bool shrunk = shrink_before_merge(
                 fts, merge_index1, merge_index2);
-            if (verbosity >= Verbosity::NORMAL &&
-                (shrunk.first || shrunk.second)) {
-                if (verbosity >= Verbosity::VERBOSE) {
-                    if (shrunk.first) {
-                        fts.statistics(merge_index1);
-                    }
-                    if (shrunk.second) {
-                        fts.statistics(merge_index2);
-                    }
-                }
+            if (verbosity >= Verbosity::NORMAL && shrunk) {
                 print_time(timer, "after shrinking");
             }
 
             // Label reduction (before merging)
             if (label_reduction && label_reduction->reduce_before_merging()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, fts, verbosity);
+                    fts.apply_label_reduction(*label_reduction, merge_indices, verbosity);
                 if (verbosity >= Verbosity::NORMAL && reduced) {
                     print_time(timer, "after label reduction");
                 }
@@ -409,9 +406,8 @@ static Heuristic *_parse(OptionParser &parser) {
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
             "AAAI Press 2016") + "\n" +
-        "Note that the two new merge strategies have not yet been integrated "
-        "into the official code base of Fast Downward. They are available on "
-        "request.");
+        "Note that dyn-MIASM has not been integrated into the official code "
+        "base of Fast Downward and is available on request.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
@@ -430,12 +426,13 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_note(
         "Note",
         "A currently recommended good configuration uses bisimulation "
-        "based shrinking, DFP merging, and the appropriate label "
-        "reduction setting (max_states has been altered to be between "
+        "based shrinking, the merge strategy SCC-DFP, and the appropriate "
+        "label reduction setting (max_states has been altered to be between "
         "10000 and 200000 in the literature):\n"
         "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
-        "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[goal_relevance,dfp,total_order])),"
+        "merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
+        "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
+        "total_order])),"
         "label_reduction=exact(before_shrinking=true,"
         "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}\n"
         "Note that for versions of Fast Downward prior to 2016-08-19, the "
@@ -446,22 +443,24 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<shared_ptr<MergeStrategyFactory>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
-        "We currently recommend DFP, which can be achieved using "
-        "{{{merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[goal_relevance,dfp,total_order]))}}}");
+        "We currently recommend SCC-DFP, which can be achieved using "
+        "{{{merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
+        "score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order"
+        "]))}}}");
 
     // Shrink strategy option.
     parser.add_option<shared_ptr<ShrinkStrategy>>(
         "shrink_strategy",
         "See detailed documentation for shrink strategies. "
-        "We currently recommend shrink_bisimulation.");
+        "We currently recommend non-greedy shrink_bisimulation, which can be "
+        "achieved using {{{shrink_strategy=shrink_bisimulation(greedy=false)}}}");
 
     // Label reduction option.
     parser.add_option<shared_ptr<LabelReduction>>(
         "label_reduction",
         "See detailed documentation for labels. There is currently only "
-        "one 'option' to use label_reduction. Also note the interaction "
-        "with shrink strategies.",
+        "one 'option' to use label_reduction, which is {{{label_reduction=exact}}} "
+        "Also note the interaction with shrink strategies.",
         OptionParser::NONE);
 
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);

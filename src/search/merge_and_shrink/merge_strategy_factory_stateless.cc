@@ -20,7 +20,7 @@ MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
     const TaskProxy &task_proxy,
-    FactoredTransitionSystem &fts) {
+    const FactoredTransitionSystem &fts) {
     merge_selector->initialize(task_proxy);
     return utils::make_unique_ptr<MergeStrategyStateless>(fts, merge_selector);
 }

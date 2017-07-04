@@ -9,7 +9,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyPrecomputed::MergeStrategyPrecomputed(
-    FactoredTransitionSystem &fts, unique_ptr<MergeTree> merge_tree)
+    const FactoredTransitionSystem &fts, unique_ptr<MergeTree> merge_tree)
     : MergeStrategy(fts), merge_tree(move(merge_tree)) {
 }
 

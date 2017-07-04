@@ -3,16 +3,13 @@
 #include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../successor_generator.h"
-
-#include "../evaluators/g_evaluator.h"
-#include "../evaluators/pref_evaluator.h"
-
-#include "../open_lists/standard_scalar_open_list.h"
-#include "../open_lists/tiebreaking_open_list.h"
 
 #include "../algorithms/ordered_set.h"
-
+#include "../evaluators/g_evaluator.h"
+#include "../evaluators/pref_evaluator.h"
+#include "../open_lists/standard_scalar_open_list.h"
+#include "../open_lists/tiebreaking_open_list.h"
+#include "../task_utils/successor_generator.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -29,7 +26,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    ScalarEvaluator *g_evaluator = new GEval();
+    Evaluator *g_evaluator = new GEval();
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -44,7 +41,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         Options options;
         options.set("eval", g_evaluator);
         options.set("pref_only", false);
-        return make_shared<StandardScalarOpenListFactory>(options);
+        return make_shared<standard_scalar_open_list::StandardScalarOpenListFactory>(options);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
@@ -54,12 +51,12 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<ScalarEvaluator *> evals = {g_evaluator, new PrefEval()};
+        vector<Evaluator *> evals = {g_evaluator, new PrefEval()};
         Options options;
         options.set("evals", evals);
         options.set("pref_only", false);
         options.set("unsafe_pruning", true);
-        return make_shared<TieBreakingOpenListFactory>(options);
+        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
     }
 }
 
@@ -145,27 +142,28 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
     int node_g = node.get_g();
 
-    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators;
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
         preferred_operators = collect_preferred_operators(
             eval_context, preferred_operator_heuristics);
     }
 
     if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
-        for (const GlobalOperator *op : preferred_operators) {
+        for (OperatorID op_id : preferred_operators) {
             insert_successor_into_open_list(
-                eval_context, node_g, op, preferred_operators.contains(op));
+                eval_context, node_g, &g_operators[op_id.get_index()], true);
         }
     } else {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
            by the open list. */
-        vector<const GlobalOperator *> successor_operators;
+        vector<OperatorID> successor_operators;
         g_successor_generator->generate_applicable_ops(
             eval_context.get_state(), successor_operators);
-        for (const GlobalOperator *op : successor_operators) {
-            bool preferred = use_preferred && preferred_operators.contains(op);
+        for (OperatorID op_id : successor_operators) {
+            bool preferred = use_preferred &&
+                             preferred_operators.contains(op_id);
             insert_successor_into_open_list(
-                eval_context, node_g, op, preferred);
+                eval_context, node_g, &g_operators[op_id.get_index()], preferred);
         }
     }
 
@@ -262,7 +260,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
-static SearchEngine *_parse(OptionParser &parser) {
+static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Lazy enforced hill-climbing", "");
     parser.add_option<Heuristic *>("h", "heuristic");
     vector<string> preferred_usages;
@@ -283,8 +281,8 @@ static SearchEngine *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new EnforcedHillClimbingSearch(opts);
+        return make_shared<EnforcedHillClimbingSearch>(opts);
 }
 
-static Plugin<SearchEngine> _plugin("ehc", _parse);
+static PluginShared<SearchEngine> _plugin("ehc", _parse);
 }
