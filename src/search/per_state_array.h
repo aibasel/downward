@@ -3,12 +3,6 @@
 
 #include "global_state.h"
 #include "per_state_information.h"
-#include "per_state_bitset.h"
-#include "algorithms/segmented_vector.h"
-#include "state_id.h"
-#include "state_registry.h"
-
-#include "utils/collections.h"
 
 #include <cassert>
 #include <iterator>
