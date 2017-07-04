@@ -2,7 +2,6 @@
 #define PER_STATE_ARRAY_INFORMATION_H
 
 #include "global_state.h"
-#include "globals.h"
 #include "per_state_information.h"
 #include "per_state_bitset.h"
 #include "algorithms/segmented_vector.h"
@@ -17,23 +16,20 @@
 
 template<class T>
 class ArrayView {
-    template<typename>
-    friend class PerStateArray;
     T *const p;
     const int array_size;
-    ArrayView(T *p, size_t size) : p(p), array_size(size) {}
 public:
-    // TODO: is return *this correct?
+    ArrayView(T *p, size_t size) : p(p), array_size(size) {}
     ArrayView<T> &operator=(const std::vector<T> &data) {
         assert(data.size() == array_size);
-        for(size_t i = 0; i < data.size; ++i) {
+        for(int i = 0; i < array_size; ++i) {
             p[i] = data[i];
         }
         return *this;
     }
     ArrayView<T> &operator=(const ArrayView<T> &data) {
         assert(data.array_size == array_size);
-        for(size_t i = 0; i < array_size; ++i) {
+        for(int i = 0; i < array_size; ++i) {
             p[i] = data.p[i];
         }
         return *this;
@@ -56,15 +52,14 @@ public:
 /*
   PerStateArrayInformation is used to associate information with states.
   PerStateArrayInformation<Entry> logically behaves somewhat like an unordered map
-  from states to arrays of class Entry. However, lookup of unknown states is
+  from states to equal-length arrays of class Entry. However, lookup of unknown states is
   supported and leads to insertion of a default value (similar to the
   defaultdict class in Python).
 
-  For example, landmark heuristics can use it to store the set of landmarks
-  with every state reached during search, or search algorithms can use it to
-  associate g values or creating operators with a state.
+  For example, landmark heuristics can use it to store the set of reached landmarks
+  for every state encountered during search.
 
-  Implementation notes: PerStateInformation is essentially implemented as a
+  Implementation notes: PerStateArrayInformation is essentially implemented as a
   kind of two-level map:
     1. Find the correct SegmentedArrayVector for the registry of the given state.
     2. Look up the associated entry in the SegmentedArrayVector based on the ID of
@@ -85,8 +80,9 @@ class PerStateArray : public PerStateInformationBase {
     friend class PerStateBitset;
     size_t array_size;
     const std::vector<Element> default_array;
-    typedef std::unordered_map<const StateRegistry *,
-                               segmented_vector::SegmentedArrayVector<Element> * > EntryArrayVectorMap;
+    using EntryArrayVectorMap = std::unordered_map<const StateRegistry *,
+                                                   segmented_vector::SegmentedArrayVector<Element> * >;
+    // TODO: use unique_ptr
     EntryArrayVectorMap entry_arrays_by_registry;
 
     mutable const StateRegistry *cached_registry;
@@ -101,7 +97,7 @@ class PerStateArray : public PerStateInformationBase {
     segmented_vector::SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) {
         if (cached_registry != registry) {
             cached_registry = registry;
-            typename EntryArrayVectorMap::const_iterator it = entry_arrays_by_registry.find(registry);
+            const auto it = entry_arrays_by_registry.find(registry);
             if (it == entry_arrays_by_registry.end()) {
                 cached_entries = new segmented_vector::SegmentedArrayVector<Element>(array_size);
                 entry_arrays_by_registry[registry] = cached_entries;
@@ -116,7 +112,7 @@ class PerStateArray : public PerStateInformationBase {
 
     /*
       Returns the SegmentedArrayVector associated with the given StateRegistry.
-      Returns 0, if no vector is associated with this registry yet.
+      Returns nullptr, if no vector is associated with this registry yet.
       Otherwise, both the registry and the returned vector are cached to speed
       up consecutive calls with the same registry.
     */
@@ -124,7 +120,7 @@ class PerStateArray : public PerStateInformationBase {
         if (cached_registry != registry) {
             typename EntryArrayVectorMap::const_iterator it = entry_arrays_by_registry.find(registry);
             if (it == entry_arrays_by_registry.end()) {
-                return 0;
+                return nullptr;
             } else {
                 cached_registry = registry;
                 cached_entries = const_cast<segmented_vector::SegmentedArrayVector<Element> *>(it->second);
@@ -134,25 +130,21 @@ class PerStateArray : public PerStateInformationBase {
         return cached_entries;
     }
 
-    // No implementation to forbid copies and assignment
-    PerStateArray(const PerStateArray<Element> &);
-    PerStateArray &operator=(const PerStateArray<Element> &);
-
 public:
-    PerStateArray(size_t array_size_)
-        : array_size(array_size_),
-          default_array(std::vector<Element>(array_size_)),
-          cached_registry(0),
-          cached_entries(0) {
-    }
 
-    explicit PerStateArray(size_t array_size_, const std::vector<Element> &default_array_)
-        : array_size(array_size_),
-          default_array(default_array_),
-          cached_registry(0),
-          cached_entries(0) {
+    explicit PerStateArray(size_t array_size, const std::vector<Element> &default_array)
+        : array_size(array_size),
+          default_array(default_array),
+          cached_registry(nullptr),
+          cached_entries(nullptr) {
         assert(default_array.size() == array_size);
     }
+
+    PerStateArray(size_t array_size) : PerStateArray(array_size, std::vector<Element>(array_size)) {}
+
+    // No implementation to forbid copies and assignment
+    PerStateArray(const PerStateArray<Element> &) = delete;
+    PerStateArray &operator=(const PerStateArray<Element> &) = delete;
 
     ~PerStateArray() {
         for (typename EntryArrayVectorMap::iterator it = entry_arrays_by_registry.begin();
@@ -169,8 +161,9 @@ public:
         size_t virtual_size = registry->size();
         assert(utils::in_bounds(state_id, *registry));
         if (entries->size() < virtual_size) {
-            entries->push_back(&default_array[0]);
+            entries->resize(virtual_size, &default_array[0]);
         }
+        assert(entries->size() >= virtual_size); // TODO: remove this assert
         return ArrayView<Element>((*cached_entries)[state_id], array_size);
     }
 
@@ -178,8 +171,8 @@ public:
         delete entry_arrays_by_registry[registry];
         entry_arrays_by_registry.erase(registry);
         if (registry == cached_registry) {
-            cached_registry = 0;
-            cached_entries = 0;
+            cached_registry = nullptr;
+            cached_entries = nullptr;
         }
     }
 };

@@ -1,34 +1,29 @@
 #include "per_state_bitset.h"
 
-#include <climits> // used for calculating bitsize of int
-#include <cmath> // used for rounding up int_array_size
+#include <climits>
+#include <cmath>
 
+using Block = unsigned int;
+static_assert(
+    !std::numeric_limits<Block>::is_signed,
+    "Block type must be unsigned");
+static const int INT_BITSIZE = std::numeric_limits<Block>::digits;
 
-int INT_BITSIZE =  sizeof(int) * CHAR_BIT;
-
-BitsetView::BitsetView(unsigned int *p, const int size) : p(p), array_size(size) {}
+BitsetView::BitsetView(unsigned int *p, const int size, const int int_array_size) :
+    p(p), array_size(size), int_array_size(int_array_size) {}
 
 BitsetView &BitsetView::operator=(const std::vector<bool> &data) {
     assert(data.size() == array_size);
-    int int_array_size = std::ceil(static_cast<double>(array_size)/INT_BITSIZE);
-    int pos = 0;
-    for(int i = 0; i < int_array_size; ++i) {
-        for(int j = 0; j < INT_BITSIZE; ++j) {
-            if(data[pos]) {
-                p[i] += (1U << j); // TODO: is this correct?
-            }
-            if(pos == array_size-1) {
-                break;
-            } else {
-                pos++;
-            }
+    reset();
+    for (int i = 0; i < int_array_size; ++i) {
+        if (data[i]) {
+            set(i);
         }
     }
     return *this;
 }
 BitsetView &BitsetView::operator=(const BitsetView &data) {
     assert(data.array_size == array_size);
-    int int_array_size = std::ceil(static_cast<double>(array_size)/INT_BITSIZE);
     for(int i = 0; i < int_array_size; ++i) {
         p[i] = data.p[i];
     }
@@ -36,36 +31,32 @@ BitsetView &BitsetView::operator=(const BitsetView &data) {
 }
 
 void BitsetView::set(int index) {
-    assert(index >= 0 && index < array_size);
+    assert(utils::in_bounds(index, *this));
     int array_pos = index / INT_BITSIZE;
     int offset = index % INT_BITSIZE;
     p[array_pos] |= (1U << offset);
 }
 
 void BitsetView::reset(int index) {
-    assert(index >= 0 && index < array_size);
+    assert(utils::in_bounds(index, *this));
     int array_pos = index / INT_BITSIZE;
     int offset = index % INT_BITSIZE;
     p[array_pos] &= ~(1U << offset);
 }
 
-void BitsetView::reset_all() {
-    int int_array_size = std::ceil(static_cast<double>(array_size)/INT_BITSIZE);
-    for(int i = 0; i < int_array_size; ++i) {
-        p[i] = 0;
-    }
+void BitsetView::reset() {
+    std::fill(&p[0], &p[int_array_size], 0);
 }
 
 bool BitsetView::test(int index) const {
-    assert(index >= 0 && index < array_size);
+    assert(utils::in_bounds(index, *this));
     int array_pos = index / INT_BITSIZE;
     int offset = index % INT_BITSIZE;
     return ( (p[array_pos] & (1U << offset)) != 0 );
 }
 
-void BitsetView::intersect(BitsetView &other) {
+void BitsetView::intersect(const BitsetView &other) {
     assert(array_size == other.array_size);
-    int int_array_size = std::ceil(static_cast<double>(array_size)/INT_BITSIZE);
     for(int i = 0; i < int_array_size; ++i) {
         p[i] &= other.p[i];
     }
@@ -81,41 +72,33 @@ segmented_vector::SegmentedArrayVector<unsigned int> *PerStateBitset::get_entrie
 }
 
 const segmented_vector::SegmentedArrayVector<unsigned int> *PerStateBitset::get_entries(const StateRegistry *registry) const {
-    return data.get_entries(registry); // TODO: will this call the right method (the one that returns const)?
+    return data.get_entries(registry);
 }
 
 PerStateBitset::PerStateBitset(int array_size_)
-    : array_size(array_size_),
-      int_array_size(std::ceil(double(array_size)/INT_BITSIZE)),
-      data(PerStateArray<unsigned int>(int_array_size)) {
+    : bitset_size(array_size_),
+      int_array_size(std::ceil(double(bitset_size)/INT_BITSIZE)),
+      data(int_array_size) {
 }
 
-std::vector<unsigned int> build_default_array(const std::vector<bool> &default_array, int int_array_size) {
+std::vector<unsigned int> build_default_array(const std::vector<bool> &default_array,
+                                              int int_array_size) {
     std::vector<unsigned int> tmp = std::vector<unsigned int>(int_array_size,0);
-    int pos = 0;
-    for(int i = 0; i < int_array_size; ++i) {
-        for(int j = 0; j < INT_BITSIZE; ++j) {
-            if(default_array[pos]) {
-                tmp[i] += (1U << j);
-            }
-            if(pos == static_cast<int>(default_array.size())-1) {
-                break;
-            } else {
-                pos++;
-            }
+    BitsetView tmp_view = BitsetView(tmp.data(), default_array.size(), int_array_size);
+    for(int i = 0; i < (int) default_array.size(); ++i) {
+        if(default_array[i]) {
+            tmp_view.set(i);
         }
     }
-    return std::move(tmp);
+    return tmp;
 }
 
-PerStateBitset::PerStateBitset(int array_size_, const std::vector<bool> &default_array_)
-    : array_size(array_size_),
+PerStateBitset::PerStateBitset(int array_size, const std::vector<bool> &default_array)
+    : bitset_size(array_size),
       int_array_size(std::ceil(double(array_size)/INT_BITSIZE)),
-      data(int_array_size, build_default_array(default_array_, int_array_size)) {
-    assert(array_size_ == default_array_.size());
+      data(int_array_size, build_default_array(default_array, int_array_size)) {
+    assert(array_size == default_array.size());
 }
-
-PerStateBitset::~PerStateBitset() {} // TODO: is it correct to do nothing here?
 
 // TODO: can we avoid code duplication from PerStateArray here?
 BitsetView PerStateBitset::operator[](const GlobalState &state) {
@@ -127,8 +110,7 @@ BitsetView PerStateBitset::operator[](const GlobalState &state) {
     if (entries->size() < virtual_size) {
         entries->resize(virtual_size, &data.default_array[0]);
     }
-    // TODO: this was cached_entries before... but shouldnt matter?
-    return BitsetView((*entries)[state_id], array_size);
+    return BitsetView((*entries)[state_id], bitset_size, int_array_size);
 }
 
 void PerStateBitset::remove_state_registry(StateRegistry *registry) {

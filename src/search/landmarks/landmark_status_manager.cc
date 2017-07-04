@@ -5,10 +5,13 @@
 using namespace std;
 
 namespace landmarks {
+
+/*
+  By default we set all landmarks as reached, since we do an intersection when
+  computing new landmark information. This however necessitates to treat the
+  initial state differently; there we first must "reset" the vector
+*/
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    // By default we set all landmarks as reached, since we do an intersection when
-    // computing new landmark information. This however necessitates to treat the
-    // initial state differently; there we first must "reset" the vector.
     : reached_lms(graph.number_of_landmarks(),
                   vector<bool>(graph.number_of_landmarks(), true)),
       lm_graph(graph),
@@ -22,7 +25,7 @@ BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state
 void LandmarkStatusManager::set_landmarks_for_initial_state(
     const GlobalState &initial_state) {
     BitsetView reached = reached_lms[initial_state];
-    reached.reset_all(); // This is necessary since the default ist "true for all" (see comment above)
+    reached.reset(); // This is necessary since the default ist "true for all" (see comment above)
 
     int inserted = 0;
     int num_goal_lms = 0;
@@ -66,13 +69,13 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
                                                const GlobalOperator &,
                                                const GlobalState &global_state) {
-    BitsetView parent_reached = reached_lms[parent_global_state];
-    BitsetView reached = reached_lms[global_state];
-
     if (global_state.get_id() == parent_global_state.get_id()) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }
+
+    const BitsetView parent_reached = reached_lms[parent_global_state];
+    BitsetView reached = reached_lms[global_state];
 
     int num_landmarks = lm_graph.number_of_landmarks();
     assert(reached.size() == num_landmarks);
@@ -118,7 +121,7 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
 }
 
 bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    BitsetView reached = reached_lms[global_state];
+    const BitsetView reached = reached_lms[global_state];
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
@@ -179,7 +182,7 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
     return false;
 }
 
-bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node, BitsetView &reached) const {
+bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node, const BitsetView &reached) const {
     //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
