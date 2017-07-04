@@ -13,7 +13,7 @@ BitsetView::BitsetView(unsigned int *p, const int size, const int int_array_size
     p(p), array_size(size), int_array_size(int_array_size) {}
 
 BitsetView &BitsetView::operator=(const std::vector<bool> &data) {
-    assert(data.size() == array_size);
+    assert(static_cast<int>(data.size()) == array_size);
     reset();
     for (int i = 0; i < int_array_size; ++i) {
         if (data[i]) {
@@ -77,7 +77,7 @@ const segmented_vector::SegmentedArrayVector<unsigned int> *PerStateBitset::get_
 
 PerStateBitset::PerStateBitset(int array_size_)
     : bitset_size(array_size_),
-      int_array_size(std::ceil(double(bitset_size)/INT_BITSIZE)),
+      int_array_size(std::ceil(double(bitset_size) / INT_BITSIZE)),
       data(int_array_size) {
 }
 
