@@ -83,9 +83,10 @@ PerStateBitset::PerStateBitset(int array_size_)
 
 std::vector<unsigned int> build_default_array(const std::vector<bool> &default_array,
                                               int int_array_size) {
+    int array_size = default_array.size();
     std::vector<unsigned int> tmp = std::vector<unsigned int>(int_array_size,0);
-    BitsetView tmp_view = BitsetView(tmp.data(), default_array.size(), int_array_size);
-    for(int i = 0; i < (int) default_array.size(); ++i) {
+    BitsetView tmp_view = BitsetView(tmp.data(), array_size, int_array_size);
+    for(int i = 0; i < array_size; ++i) {
         if(default_array[i]) {
             tmp_view.set(i);
         }
@@ -97,7 +98,7 @@ PerStateBitset::PerStateBitset(int array_size, const std::vector<bool> &default_
     : bitset_size(array_size),
       int_array_size(std::ceil(double(array_size)/INT_BITSIZE)),
       data(int_array_size, build_default_array(default_array, int_array_size)) {
-    assert(array_size == default_array.size());
+    assert(array_size == static_cast<int>(default_array.size()));
 }
 
 // TODO: can we avoid code duplication from PerStateArray here?
