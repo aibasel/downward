@@ -4,10 +4,6 @@
 #include "global_state.h"
 #include "per_state_information.h"
 #include "per_state_array.h"
-#include "algorithms/segmented_vector.h"
-#include "algorithms/dynamic_bitset.h"
-#include "state_id.h"
-#include "state_registry.h"
 
 #include "utils/collections.h"
 
