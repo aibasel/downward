@@ -81,23 +81,24 @@ PerStateBitset::PerStateBitset(int array_size_)
       data(int_array_size) {
 }
 
-std::vector<unsigned int> build_default_array(const std::vector<bool> &default_array,
-                                              int int_array_size) {
-    int array_size = default_array.size();
-    std::vector<unsigned int> tmp = std::vector<unsigned int>(int_array_size,0);
-    BitsetView tmp_view = BitsetView(tmp.data(), array_size, int_array_size);
-    for(int i = 0; i < array_size; ++i) {
-        if(default_array[i]) {
-            tmp_view.set(i);
+std::vector<unsigned int> pack_bit_vector(const std::vector<bool> &bits) {
+    int num_bits = bits.size();
+    int num_blocks = num_bits / bits_per_block +
+           static_cast<int>(num_bits % bits_per_block != 0);
+    std::vector<unsigned int> packed_bits = std::vector<unsigned int>(num_blocks, 0);
+    BitsetView bitset_view = BitsetView(packed_bits.data(), num_bits, num_blocks);
+    for(int i = 0; i < num_bits; ++i) {
+        if(bits[i]) {
+            bitset_view.set(i);
         }
     }
-    return tmp;
+    return packed_bits;
 }
 
 PerStateBitset::PerStateBitset(int array_size, const std::vector<bool> &default_array)
     : bitset_size(array_size),
       int_array_size(std::ceil(double(array_size)/INT_BITSIZE)),
-      data(int_array_size, build_default_array(default_array, int_array_size)) {
+      data(int_array_size, pack_bit_vector(default_array)) {
     assert(array_size == static_cast<int>(default_array.size()));
 }
 
