@@ -10,7 +10,6 @@
 #include "utils/collections.h"
 
 #include <cassert>
-#include <iterator>
 #include <unordered_map>
 
 class PerStateInformationBase {
@@ -104,59 +103,6 @@ class PerStateInformation : public PerStateInformationBase {
     PerStateInformation(const PerStateInformation<Entry> &);
     PerStateInformation &operator=(const PerStateInformation<Entry> &);
 public:
-    // TODO this iterates over StateIDs not over entries. Move it to StateRegistry?
-    //      A better implementation would allow to iterate over pair<StateID, Entry>.
-    class const_iterator : public std::iterator<std::forward_iterator_tag,
-                                                StateID> {
-        friend class PerStateInformation<Entry>;
-        const PerStateInformation<Entry> &owner;
-        const StateRegistry *registry;
-        StateID pos;
-
-        const_iterator(const PerStateInformation<Entry> &owner_,
-                       const StateRegistry *registry_, size_t start)
-            : owner(owner_), registry(registry_), pos(start) {}
-public:
-        const_iterator(const const_iterator &other)
-            : owner(other.owner), registry(other.registry), pos(other.pos) {}
-
-        ~const_iterator() {}
-
-        const_iterator &operator++() {
-            ++pos.value;
-            return *this;
-        }
-
-        const_iterator operator++(int) {
-            const_iterator tmp(*this);
-            operator++();
-            return tmp;
-        }
-
-        bool operator==(const const_iterator &rhs) {
-            return &owner == &rhs.owner && registry == rhs.registry && pos == rhs.pos;
-        }
-
-        bool operator!=(const const_iterator &rhs) {
-            return !(*this == rhs);
-        }
-
-        StateID operator*() {
-            return pos;
-        }
-
-        StateID *operator->() {
-            return &pos;
-        }
-    };
-
-    const_iterator begin(const StateRegistry *registry) const {
-        return const_iterator(*this, registry, 0);
-    }
-    const_iterator end(const StateRegistry *registry) const {
-        return const_iterator(*this, registry, registry->size());
-    }
-
     PerStateInformation()
         : default_value(),
           cached_registry(0),

@@ -3,11 +3,11 @@
 #include "validation.h"
 #include "zero_one_pdbs.h"
 
-#include "../causal_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
@@ -112,7 +112,7 @@ void PatternCollectionGeneratorGenetic::remove_irrelevant_variables(
           there is a pre->eff arc from the variable to a relevant variable.
           Note that there is no point in considering eff->eff arcs here.
         */
-        const CausalGraph &cg = task_proxy.get_causal_graph();
+        const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
 
         const vector<int> &rel = cg.get_eff_to_pre(var);
         for (size_t i = 0; i < rel.size(); ++i) {

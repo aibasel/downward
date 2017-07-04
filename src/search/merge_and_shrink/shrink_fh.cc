@@ -26,21 +26,17 @@ ShrinkFH::ShrinkFH(const Options &opts)
       h_start(HighLow(opts.get_enum("shrink_h"))) {
 }
 
-void ShrinkFH::partition_into_buckets(
-    const FactoredTransitionSystem &fts,
-    int index,
-    vector<Bucket> &buckets) const {
-    assert(buckets.empty());
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
+vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
+    const TransitionSystem &ts,
+    const Distances &distances) const {
     int max_f = distances.get_max_f();
     // Calculate with double to avoid overflow.
     if (static_cast<double>(max_f) * max_f / 2.0 > ts.get_size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
-        ordered_buckets_use_map(fts, index, buckets);
+        return ordered_buckets_use_map(ts, distances);
     } else {
-        ordered_buckets_use_vector(fts, index, buckets);
+        return ordered_buckets_use_vector(ts, distances);
     }
 }
 
@@ -74,12 +70,9 @@ static void collect_f_h_buckets(
     }
 }
 
-void ShrinkFH::ordered_buckets_use_map(
-    const FactoredTransitionSystem &fts,
-    int index,
-    vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
+vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_map(
+    const TransitionSystem &ts,
+    const Distances &distances) const {
     map<int, map<int, Bucket>> states_by_f_and_h;
     int bucket_count = 0;
     int num_states = ts.get_size();
@@ -95,6 +88,7 @@ void ShrinkFH::ordered_buckets_use_map(
         }
     }
 
+    vector<Bucket> buckets;
     buckets.reserve(bucket_count);
     if (f_start == HIGH) {
         collect_f_h_buckets(
@@ -106,14 +100,12 @@ void ShrinkFH::ordered_buckets_use_map(
             h_start, buckets);
     }
     assert(static_cast<int>(buckets.size()) == bucket_count);
+    return buckets;
 }
 
-void ShrinkFH::ordered_buckets_use_vector(
-    const FactoredTransitionSystem &fts,
-    int index,
-    vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
+vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_vector(
+    const TransitionSystem &ts,
+    const Distances &distances) const {
     vector<vector<Bucket>> states_by_f_and_h;
     states_by_f_and_h.resize(distances.get_max_f() + 1);
     for (int f = 0; f <= distances.get_max_f(); ++f)
@@ -134,6 +126,7 @@ void ShrinkFH::ordered_buckets_use_vector(
         }
     }
 
+    vector<Bucket> buckets;
     buckets.reserve(bucket_count);
     int f_init = (f_start == HIGH ? distances.get_max_f() : 0);
     int f_end = (f_start == HIGH ? 0 : distances.get_max_f());
@@ -151,6 +144,7 @@ void ShrinkFH::ordered_buckets_use_vector(
         }
     }
     assert(static_cast<int>(buckets.size()) == bucket_count);
+    return buckets;
 }
 
 string ShrinkFH::name() const {
