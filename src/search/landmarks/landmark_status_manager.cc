@@ -12,8 +12,7 @@ namespace landmarks {
   initial state differently; there we first must "reset" the vector
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    : reached_lms(graph.number_of_landmarks(),
-                  vector<bool>(graph.number_of_landmarks(), true)),
+    : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
       lm_graph(graph),
       do_intersection(true) {
 }
