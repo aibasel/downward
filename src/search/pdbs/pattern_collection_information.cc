@@ -40,23 +40,23 @@ bool PatternCollectionInformation::information_is_valid() const {
         }
     }
     if (max_additive_subsets) {
-        utils::UnorderedSet<PatternDatabase *> pdbs_in_union;
+        unordered_set<PatternDatabase *> pdbs_in_union;
         for (const PDBCollection &additive_subset : *max_additive_subsets) {
             for (const shared_ptr<PatternDatabase> &pdb : additive_subset) {
                 pdbs_in_union.insert(pdb.get());
             }
         }
-        utils::UnorderedSet<Pattern> patterns_in_union;
+        unordered_set<Pattern> patterns_in_union;
         for (PatternDatabase *pdb : pdbs_in_union) {
             patterns_in_union.insert(pdb->get_pattern());
         }
-        utils::UnorderedSet<Pattern> patterns_in_list(patterns->begin(),
-                                                      patterns->end());
+        unordered_set<Pattern> patterns_in_list(patterns->begin(),
+                                                patterns->end());
         if (patterns_in_list != patterns_in_union) {
             return false;
         }
         if (pdbs) {
-            utils::UnorderedSet<PatternDatabase *> pdbs_in_list;
+            unordered_set<PatternDatabase *> pdbs_in_list;
             for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
                 pdbs_in_list.insert(pdb.get());
             }

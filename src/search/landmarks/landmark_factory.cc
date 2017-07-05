@@ -161,7 +161,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
                                      numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
-    utils::UnorderedSet<int> exclude_op_ids;
+    unordered_set<int> exclude_op_ids;
     vector<FactPair> exclude_props;
     if (exclude) {
         for (OperatorProxy op : operators) {
@@ -210,7 +210,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
         lvl_var[var.get_id()].resize(var.get_domain_size(),
                                      numeric_limits<int>::max());
     }
-    utils::UnorderedSet<int> exclude_op_ids;
+    unordered_set<int> exclude_op_ids;
     vector<FactPair> exclude_props;
     for (OperatorProxy op : task_proxy.get_operators()) {
         if (is_landmark_precondition(op, &landmark)) {
@@ -489,7 +489,7 @@ void LandmarkFactory::approximate_reasonable_orders(
         } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
-            utils::UnorderedSet<LandmarkNode *> interesting_nodes(variables_size);
+            unordered_set<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2 = *child.first;
                 const EdgeType &edge2 = child.second;
@@ -526,14 +526,14 @@ void LandmarkFactory::approximate_reasonable_orders(
 }
 
 void LandmarkFactory::collect_ancestors(
-    utils::UnorderedSet<LandmarkNode *> &result,
+    unordered_set<LandmarkNode *> &result,
     LandmarkNode &node,
     bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
 
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;
-    utils::UnorderedSet<LandmarkNode *> closed_nodes;
+    unordered_set<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
         const EdgeType &edge = p.second;
@@ -682,7 +682,7 @@ void LandmarkFactory::discard_all_orderings() {
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
-    utils::UnorderedSet<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
     for (LandmarkNode *node : lm_graph->get_nodes()) {
         if (acyclic_node_set.find(node) == acyclic_node_set.end())
@@ -727,11 +727,11 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
 }
 
 int LandmarkFactory::loop_acyclic_graph(
-    LandmarkNode &lmn, utils::UnorderedSet<LandmarkNode *> &acyclic_node_set) {
+    LandmarkNode &lmn, unordered_set<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, EdgeType>> path;
-    utils::UnorderedSet<LandmarkNode *> visited(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> visited(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());

@@ -51,7 +51,7 @@ public:
     landmark_status status;
     bool is_derived;
 
-    utils::UnorderedSet<FactPair> forward_orders;
+    std::unordered_set<FactPair> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
@@ -126,7 +126,7 @@ struct LandmarkNodeComparer {
 };
 
 
-using LandmarkSet = utils::UnorderedSet<const LandmarkNode *>;
+using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:

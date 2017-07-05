@@ -48,7 +48,7 @@ static utils::UnorderedMap<const AbstractTask *,
 */
 
 class IntRelationBuilder {
-    typedef utils::UnorderedSet<int> IntSet;
+    typedef unordered_set<int> IntSet;
     vector<IntSet> int_sets;
 
     int get_range() const;

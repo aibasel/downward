@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace landmarks {
-using lm_set = utils::UnorderedSet<FactPair>;
+using lm_set = std::unordered_set<FactPair>;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactory {
     class plan_graph_node {

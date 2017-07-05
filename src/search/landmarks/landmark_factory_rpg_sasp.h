@@ -12,7 +12,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
 
     // dtg_successors[var_id][val] contains all successor values of val in the
     // domain transition graph for the variable
-    std::vector<std::vector<utils::UnorderedSet<int>>> dtg_successors;
+    std::vector<std::vector<std::unordered_set<int>>> dtg_successors;
 
     void build_dtg_successors(const TaskProxy &task_proxy);
     void add_dtg_successor(int var_id, int pre, int post);
@@ -50,7 +50,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
                                       LandmarkNode *lmp);
     bool domain_connectivity(const State &initial_state,
                              const FactPair &landmark,
-                             const utils::UnorderedSet<int> &exclude);
+                             const std::unordered_set<int> &exclude);
 
     void build_disjunction_classes(const TaskProxy &task_proxy);
 public:

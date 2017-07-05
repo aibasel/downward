@@ -365,12 +365,12 @@ void TransitionSystem::apply_label_reduction(
           we cannot find out the group id of reduced labels anymore.
         */
         utils::UnorderedMap<int, vector<Transition>> new_label_to_transitions;
-        utils::UnorderedSet<int> affected_group_ids;
+        unordered_set<int> affected_group_ids;
         for (const pair<int, vector<int>> &mapping: label_mapping) {
             int new_label_no = mapping.first;
             const vector<int> &old_label_nos = mapping.second;
             assert(old_label_nos.size() >= 2);
-            utils::UnorderedSet<int> seen_group_ids;
+            unordered_set<int> seen_group_ids;
             set<Transition> new_label_transitions;
             for (int old_label_no : old_label_nos) {
                 int group_id = label_equivalence_relation->get_group_id(old_label_no);

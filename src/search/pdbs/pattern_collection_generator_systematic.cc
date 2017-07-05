@@ -57,7 +57,7 @@ void PatternCollectionGeneratorSystematic::compute_eff_pre_neighbors(
       Compute all variables that are reachable from pattern by an
       (eff, pre) arc and are not already contained in the pattern.
     */
-    utils::UnorderedSet<int> candidates;
+    unordered_set<int> candidates;
 
     // Compute neighbors.
     for (int var : pattern) {
@@ -92,7 +92,7 @@ void PatternCollectionGeneratorSystematic::compute_connection_points(
       optimizations that help reduce the number of candidates to
       consider.
     */
-    utils::UnorderedSet<int> candidates;
+    unordered_set<int> candidates;
 
     // Handle rule 1.
     for (int var : pattern) {
