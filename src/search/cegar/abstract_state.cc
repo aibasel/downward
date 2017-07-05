@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <unordered_set>
 
 using namespace std;
 

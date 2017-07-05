@@ -9,7 +9,6 @@
 #include "../successor_generator.h"
 #include "../task_tools.h"
 
-#include "../utils/hash.h"
 #include "../utils/markup.h"
 
 #include <limits>

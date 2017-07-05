@@ -7,7 +7,6 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../utils/hash.h"
 #include "../utils/markup.h"
 
 #include <algorithm>

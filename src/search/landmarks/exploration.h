@@ -8,6 +8,8 @@
 #include "../priority_queue.h"
 
 #include <cassert>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class OperatorProxy;

@@ -284,9 +284,10 @@ struct Hash {
 };
 
 /*
-  Aliases for hash sets and hash maps in user code. All user code should use
-  std::unordered_set and std::unordered_map instead of std::unordered_set and
-  std::unordered_map.
+  Aliases for hash sets and hash maps in user code.
+
+  Use these aliases for hashing types T that don't have a standard std::hash<T>
+  specialization.
 
   To hash types that are not supported out of the box, implement utils::feed.
 */
@@ -301,7 +302,7 @@ using HashSet = std::unordered_set<T, Hash<T>>;
   Legacy hash functions.
 
   We plan to remove these legacy hash functions since they produce too many
-  collisions and implementing std::hash for non-user-defined types causes
+  collisions and implementing std::hash<T> for non-user-defined types T causes
   undefined behaviour
   (http://en.cppreference.com/w/cpp/language/extending_std).
 */

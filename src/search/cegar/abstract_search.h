@@ -1,13 +1,12 @@
 #ifndef CEGAR_ABSTRACT_SEARCH_H
 #define CEGAR_ABSTRACT_SEARCH_H
 
-#include "transition.h"
-
 #include "../priority_queue.h"
 
-#include "../utils/hash.h"
+#include "transition.h"
 
 #include <deque>
+#include <unordered_set>
 #include <vector>
 
 namespace cegar {

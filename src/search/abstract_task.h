@@ -45,13 +45,6 @@ struct FactPair {
 
 std::ostream &operator<<(std::ostream &os, const FactPair &fact_pair);
 
-namespace utils {
-inline void feed(HashState &hash_state, const FactPair &fact) {
-    feed(hash_state, fact.var);
-    feed(hash_state, fact.value);
-}
-}
-
 namespace std {
 template<>
 struct hash<FactPair> {

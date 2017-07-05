@@ -9,7 +9,6 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
-#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -17,6 +16,7 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 
 using namespace std;
 

@@ -184,8 +184,8 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
     return true;
 }
 
-void LandmarkFactory::add_operator_and_propositions_to_list(
-    const OperatorProxy &op, vector<unordered_map<FactPair, int>> &lvl_op) const {
+void LandmarkFactory::add_operator_and_propositions_to_list(const OperatorProxy &op,
+                                                            vector<unordered_map<FactPair, int>> &lvl_op) const {
     int op_or_axiom_id = get_operator_or_axiom_id(op);
     for (EffectProxy effect : op.get_effects()) {
         lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
@@ -726,12 +726,12 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     return true;
 }
 
-int LandmarkFactory::loop_acyclic_graph(
-    LandmarkNode &lmn, unordered_set<LandmarkNode *> &acyclic_node_set) {
+int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
+                                        unordered_set<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, EdgeType>> path;
-    unordered_set<LandmarkNode *> visited(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());

@@ -5,6 +5,7 @@
 
 #include <limits>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -39,12 +40,6 @@ extern std::vector<int> get_domain_sizes(const TaskProxy &task);
   shouldn't be stored in containers. Once we find a way to avoid
   storing them in containers, we should remove this hashing function.
 */
-namespace utils {
-inline void feed(HashState &hash_state, const FactProxy &fact) {
-    feed(hash_state, fact.get_pair());
-}
-}
-
 namespace std {
 template<>
 struct hash<FactProxy> {

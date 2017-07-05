@@ -1,8 +1,6 @@
 #ifndef STATE_ID_H
 #define STATE_ID_H
 
-#include "utils/hash.h"
-
 #include <iostream>
 
 // For documentation on classes relevant to storing and working with registered
@@ -41,12 +39,6 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &os, StateID id);
-
-namespace utils {
-inline void feed(HashState &hash_state, StateID id) {
-    feed(hash_state, id.hash());
-}
-}
 
 namespace std {
 template<>

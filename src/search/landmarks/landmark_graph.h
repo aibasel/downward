@@ -4,12 +4,12 @@
 #include "../global_state.h"
 #include "../task_proxy.h"
 
-#include "../utils/hash.h"
-
 #include <cassert>
 #include <list>
 #include <map>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace landmarks {

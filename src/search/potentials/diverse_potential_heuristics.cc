@@ -7,10 +7,11 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/hash.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
+
+#include <unordered_set>
 
 using namespace std;
 

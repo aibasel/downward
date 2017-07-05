@@ -12,7 +12,6 @@
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
-#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -21,6 +20,7 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 using namespace std;
 using utils::ExitCode;

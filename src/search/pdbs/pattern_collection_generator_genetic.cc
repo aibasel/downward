@@ -8,7 +8,6 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
@@ -18,6 +17,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
