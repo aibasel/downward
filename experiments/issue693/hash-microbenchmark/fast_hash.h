@@ -144,7 +144,6 @@ using UnorderedMap = std::unordered_map<T1, T2>;
 
 template <typename T>
 using UnorderedSet = std::unordered_set<T>;
-
 }
 
 #endif
