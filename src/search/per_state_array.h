@@ -8,27 +8,22 @@
 #include <iterator>
 #include <unordered_map>
 
+
 template<class T>
 class ArrayView {
-    T *const p;
-    const int array_size;
+    T * p;
+    int array_size;
 public:
     ArrayView(T *p, size_t size) : p(p), array_size(size) {}
-    ArrayView<T> &operator=(const std::vector<T> &data) {
-        assert(data.size() == array_size);
-        for(int i = 0; i < array_size; ++i) {
-            p[i] = data[i];
-        }
-        return *this;
-    }
-    ArrayView<T> &operator=(const ArrayView<T> &data) {
-        assert(data.array_size == array_size);
-        for(int i = 0; i < array_size; ++i) {
-            p[i] = data.p[i];
-        }
-        return *this;
-    }
+    // TODO: is this necessary (is it equal to the implicit copy constructor)?
+    ArrayView(const ArrayView<T> &other) : p(other.p), array_size(other.array_size) {}
 
+    ArrayView<T> &operator=(const ArrayView<T> &other) {
+        p = other.p;
+        array_size = other.array_size;
+        return *this;
+    }
+    //TODO: we could implement a deep copy, but we currently don't need it
 
     T &operator[](int index) {
         return p[index];

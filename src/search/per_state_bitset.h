@@ -44,13 +44,14 @@ public:
 
 
 class BitsetView {
-    unsigned int *const p;
-    const std::size_t array_size;
-    const int int_array_size;
+    // TODO: we should either make Block templated or consistent with PerStateBitset
+    using Block = unsigned int;
+    ArrayView<Block> data;
+    int num_bits;
 public:
-    BitsetView(unsigned int *p, const std::size_t size, const int int_array_size);
-    BitsetView &operator=(const std::vector<bool> &data);
-    BitsetView &operator=(const BitsetView &data);
+    BitsetView(ArrayView<Block> data, int num_bits);
+    BitsetView(const BitsetView &other);
+    BitsetView &operator=(const BitsetView &other);
     void set(std::size_t index);
     void reset(std::size_t index);
     void reset();
@@ -67,23 +68,6 @@ class PerStateBitset : public PerStateInformationBase {
     // TODO rename?
     int int_array_size;
     PerStateArray<unsigned int> data;
-
-
-    /*
-      Returns the SegmentedArrayVector associated with the given StateRegistry.
-      If no vector is associated with this registry yet, an empty one is created.
-      Both the registry and the returned vector are cached to speed up
-      consecutive calls with the same registry.
-    */
-    segmented_vector::SegmentedArrayVector<unsigned int> *get_entries(const StateRegistry *registry);
-
-    /*
-      Returns the SegmentedArrayVector associated with the given StateRegistry.
-      Returns nullptr, if no vector is associated with this registry yet.
-      Otherwise, both the registry and the returned vector are cached to speed
-      up consecutive calls with the same registry.
-    */
-    const segmented_vector::SegmentedArrayVector<unsigned int> *get_entries(const StateRegistry *registry) const;
 
 public:
     PerStateBitset(int array_size_);
