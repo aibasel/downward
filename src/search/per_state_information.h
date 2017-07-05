@@ -132,7 +132,7 @@ public:
         if (entries->size() < virtual_size) {
             entries->resize(virtual_size, default_value);
         }
-        return (*cached_entries)[state_id];
+        return (*entries)[state_id];
     }
 
     const Entry &operator[](const GlobalState &state) const {
