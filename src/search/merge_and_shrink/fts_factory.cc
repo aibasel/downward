@@ -60,10 +60,10 @@ class FTSFactory {
                         int src_value, int dest_value);
     bool is_relevant(int var_no, int label_no) const;
     void mark_as_relevant(int var_no, int label_no);
-    utils::UnorderedMap<int, int> compute_preconditions(OperatorProxy op);
+    unordered_map<int, int> compute_preconditions(OperatorProxy op);
     void handle_operator_effect(
         OperatorProxy op, EffectProxy effect,
-        const utils::UnorderedMap<int, int> &pre_val,
+        const unordered_map<int, int> &pre_val,
         vector<bool> &has_effect_on_var);
     void handle_operator_precondition(
         OperatorProxy op, FactProxy precondition,
@@ -171,8 +171,8 @@ void FTSFactory::mark_as_relevant(int var_no, int label_no) {
     transition_system_data_by_var[var_no].relevant_labels[label_no] = true;
 }
 
-utils::UnorderedMap<int, int> FTSFactory::compute_preconditions(OperatorProxy op) {
-    utils::UnorderedMap<int, int> pre_val;
+unordered_map<int, int> FTSFactory::compute_preconditions(OperatorProxy op) {
+    unordered_map<int, int> pre_val;
     for (FactProxy precondition : op.get_preconditions())
         pre_val[precondition.get_variable().get_id()] =
             precondition.get_value();
@@ -181,7 +181,7 @@ utils::UnorderedMap<int, int> FTSFactory::compute_preconditions(OperatorProxy op
 
 void FTSFactory::handle_operator_effect(
     OperatorProxy op, EffectProxy effect,
-    const utils::UnorderedMap<int, int> &pre_val, vector<bool> &has_effect_on_var) {
+    const unordered_map<int, int> &pre_val, vector<bool> &has_effect_on_var) {
     int label_no = op.get_id();
     FactProxy fact = effect.get_fact();
     VariableProxy var = fact.get_variable();
@@ -269,7 +269,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
         to variables on which it has a precondition or effect.
       - Add transitions induced by op in these transition systems.
     */
-    utils::UnorderedMap<int, int> pre_val = compute_preconditions(op);
+    unordered_map<int, int> pre_val = compute_preconditions(op);
     vector<bool> has_effect_on_var(task_proxy.get_variables().size(), false);
 
     for (EffectProxy effect : op.get_effects())

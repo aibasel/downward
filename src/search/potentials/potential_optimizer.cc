@@ -112,7 +112,7 @@ void PotentialOptimizer::construct_lp() {
     for (OperatorProxy op : task_proxy.get_operators()) {
         // Create constraint:
         // Sum_{V in vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)
-        utils::UnorderedMap<int, int> var_to_precondition;
+        unordered_map<int, int> var_to_precondition;
         for (FactProxy pre : op.get_preconditions()) {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }

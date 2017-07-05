@@ -16,7 +16,7 @@ class Heuristic;
 
 
 class SearchProgress {
-    utils::UnorderedMap<const Heuristic *, int> best_heuristic_values;
+    std::unordered_map<const Heuristic *, int> best_heuristic_values;
 
     bool process_heuristic_value(const Heuristic *heuristic, int h);
 
