@@ -5,7 +5,6 @@
 #include "labels.h"
 
 #include "../utils/collections.h"
-#include "../utils/hash.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -16,6 +15,8 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 using utils::ExitCode;

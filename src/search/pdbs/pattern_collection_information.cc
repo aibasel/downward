@@ -4,10 +4,9 @@
 #include "max_additive_pdb_sets.h"
 #include "validation.h"
 
-#include "../utils/hash.h"
-
 #include <algorithm>
 #include <cassert>
+#include <unordered_set>
 #include <utility>
 
 using namespace std;

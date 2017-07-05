@@ -1,9 +1,8 @@
 #ifndef TASKS_DOMAIN_ABSTRACTED_TASK_FACTORY_H
 #define TASKS_DOMAIN_ABSTRACTED_TASK_FACTORY_H
 
-#include "../utils/hash.h"
-
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 class AbstractTask;

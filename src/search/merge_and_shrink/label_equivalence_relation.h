@@ -3,9 +3,8 @@
 
 #include "types.h"
 
-#include "../utils/hash.h"
-
 #include <list>
+#include <unordered_set>
 #include <vector>
 
 namespace merge_and_shrink {

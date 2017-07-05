@@ -6,13 +6,13 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
-#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;

@@ -31,7 +31,7 @@ int CanonicalPDBs::get_value(const State &state) const {
         int subset_h = 0;
         for (const shared_ptr<PatternDatabase> &pdb : subset) {
             /* Experiments showed that it is faster to recompute the
-               h values than to cache them in a hash map. */
+               h values than to cache them in an unordered_map. */
             int h = pdb->get_value(state);
             if (h == numeric_limits<int>::max())
                 return numeric_limits<int>::max();

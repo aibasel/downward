@@ -1,7 +1,7 @@
 #ifndef SEARCH_PROGRESS_H
 #define SEARCH_PROGRESS_H
 
-#include "../utils/hash.h"
+#include <unordered_map>
 
 class EvaluationContext;
 class Heuristic;

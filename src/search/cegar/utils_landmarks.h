@@ -1,9 +1,8 @@
 #ifndef CEGAR_UTILS_LANDMARKS_H
 #define CEGAR_UTILS_LANDMARKS_H
 
-#include "../utils/hash.h"
-
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 class AbstractTask;

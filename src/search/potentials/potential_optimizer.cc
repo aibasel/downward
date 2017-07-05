@@ -6,11 +6,11 @@
 #include "../task_tools.h"
 
 #include "../utils/collections.h"
-#include "../utils/hash.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <limits>
+#include <unordered_map>
 
 using namespace std;
 using utils::ExitCode;

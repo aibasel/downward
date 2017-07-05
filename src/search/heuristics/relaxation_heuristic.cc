@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -105,8 +106,8 @@ void RelaxationHeuristic::simplify() {
 
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
-    using Key = pair<vector<Proposition *>, Proposition *>;
-    using Map = unordered_map<Key, int>;
+    typedef pair<vector<Proposition *>, Proposition *> Key;
+    typedef unordered_map<Key, int> Map;
     Map unary_operator_index;
     unary_operator_index.reserve(unary_operators.size());
 

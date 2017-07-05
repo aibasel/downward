@@ -561,6 +561,11 @@ public:
         return !(*this == other);
     }
 
+    std::size_t hash() const {
+        std::hash<std::vector<int>> hasher;
+        return hasher(values);
+    }
+
     std::size_t size() const {
         return values.size();
     }
@@ -601,18 +606,11 @@ public:
 };
 
 
-namespace utils {
-inline void feed(HashState &hash_state, const State &state) {
-    feed(hash_state, state.get_values());
-}
-}
-
 namespace std {
 template<>
 struct hash<State> {
     size_t operator()(const State &state) const {
-        std::hash<std::vector<int>> hasher;
-        return hasher(state.get_values());
+        return state.hash();
     }
 };
 }

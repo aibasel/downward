@@ -1,8 +1,7 @@
 #ifndef LANDMARKS_UTIL_H
 #define LANDMARKS_UTIL_H
 
-#include "../utils/hash.h"
-
+#include <unordered_map>
 #include <vector>
 
 class OperatorProxy;

@@ -3,8 +3,7 @@
 
 #include "landmark_factory.h"
 
-#include "../utils/hash.h"
-
+#include <unordered_set>
 #include <utility>
 #include <vector>
 

@@ -5,7 +5,7 @@
 #include "global_state.h"
 #include "heuristic.h"
 
-#include "../utils/hash.h"
+#include <unordered_map>
 
 class ScalarEvaluator;
 

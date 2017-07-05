@@ -6,7 +6,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/hash.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -14,6 +13,7 @@
 #include <cassert>
 #include <deque>
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 

@@ -229,17 +229,18 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
     // Remove labels with duplicate or dominated conditions.
 
     /*
-      Algorithm: Put all transitions into a hash map
+      Algorithm: Put all transitions into an unordered_map
       (key: condition, value: index in label list).
       This already gets rid of transitions with identical conditions.
 
-      Then go through the hash map, checking for each element if
-      none of the subset conditions are part of the hash map.
+      Then go through the unordered_map, checking for each element if
+      none of the subset conditions are part of the unordered_map.
       Put the element into the new labels list iff this is the case.
      */
 
     using HashKey = vector<FactPair>;
-    unordered_map<HashKey, int> label_index;
+    using HashMap = unordered_map<HashKey, int>;
+    HashMap label_index;
     label_index.reserve(labels.size());
 
     for (size_t i = 0; i < labels.size(); ++i) {
@@ -265,7 +266,7 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
                 for (size_t i = 0; i < key.size(); ++i)
                     if (mask & (1 << i))
                         subset.push_back(key[i]);
-                auto found = label_index.find(subset);
+                HashMap::iterator found = label_index.find(subset);
                 if (found != label_index.end()) {
                     const ValueTransitionLabel &f_label = old_labels[found->second];
                     OperatorProxy f_op = get_op_for_label(f_label);
