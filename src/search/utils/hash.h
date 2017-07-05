@@ -297,12 +297,14 @@ template <typename T>
 using HashSet = std::unordered_set<T, Hash<T>>;
 
 
-/* Transitional aliases and functions */
-template <typename T1, typename T2>
-using UnorderedMap = std::unordered_map<T1, T2>;
+/*
+  Legacy hash functions.
 
-template <typename T>
-using UnorderedSet = std::unordered_set<T>;
+  We plan to remove these legacy hash functions since they produce too many
+  collisions and implementing std::hash for non-user-defined types causes
+  undefined behaviour
+  (http://en.cppreference.com/w/cpp/language/extending_std).
+*/
 
 template<typename T>
 inline void hash_combine(size_t &hash, const T &value) {
