@@ -85,12 +85,12 @@ private:
         const TaskProxy &task_proxy, bool obedient_orders);
     void mk_acyclic_graph();
     int loop_acyclic_graph(LandmarkNode &lmn,
-                           utils::UnorderedSet<LandmarkNode *> &acyclic_node_set);
+                           std::unordered_set<LandmarkNode *> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
                                          std::list<std::pair<LandmarkNode *, EdgeType>> &path,
                                          std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
     int calculate_lms_cost() const;
-    void collect_ancestors(utils::UnorderedSet<LandmarkNode *> &result, LandmarkNode &node,
+    void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                std::vector<std::vector<int>> &lvl_var,

@@ -16,7 +16,7 @@ namespace algorithms {
 template <typename T>
 class OrderedSet {
     std::vector<T> ordered_items;
-    utils::UnorderedSet<T> unordered_items;
+    std::unordered_set<T> unordered_items;
 
 public:
     bool empty() const {

@@ -285,7 +285,7 @@ struct Hash {
 
 /*
   Aliases for hash sets and hash maps in user code. All user code should use
-  utils::UnorderedSet and utils::UnorderedMap instead of std::unordered_set and
+  std::unordered_set and utils::UnorderedMap instead of std::unordered_set and
   std::unordered_map.
 
   To hash types that are not supported out of the box, implement utils::feed.

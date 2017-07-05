@@ -96,7 +96,7 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
     assert(!triggers.empty());
 
     PropositionLayer current_prop_layer;
-    utils::UnorderedSet<int> triggered(task_proxy.get_operators().size() + task_proxy.get_axioms().size());
+    unordered_set<int> triggered(task_proxy.get_operators().size() + task_proxy.get_axioms().size());
 
     // set initial layer
     State initial_state = task_proxy.get_initial_state();
@@ -121,7 +121,7 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
     bool changes = true;
     while (changes) {
         PropositionLayer next_prop_layer(current_prop_layer);
-        utils::UnorderedSet<int> next_triggered;
+        unordered_set<int> next_triggered;
         changes = false;
         for (int op_or_axiom_id : triggered) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);

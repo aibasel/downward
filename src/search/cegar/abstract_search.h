@@ -13,7 +13,7 @@
 namespace cegar {
 class AbstractState;
 
-using AbstractStates = utils::UnorderedSet<AbstractState *>;
+using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Transition>;
 
 /*

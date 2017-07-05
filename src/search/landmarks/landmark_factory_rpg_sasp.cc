@@ -483,7 +483,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     // Collect in "unreached" all values of the LM variable that cannot be reached
     // before the LM value (in the relaxed plan graph)
     int domain_size = variables[lmk.var].get_domain_size();
-    utils::UnorderedSet<int> unreached(domain_size);
+    unordered_set<int> unreached(domain_size);
     for (int value = 0; value < domain_size; ++value)
         if (lvl_var[lmk.var][value] == numeric_limits<int>::max() && lmk.value != value)
             unreached.insert(value);
@@ -493,7 +493,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     State initial_state = task_proxy.get_initial_state();
     for (int value = 0; value < domain_size; ++value)
         if (unreached.find(value) == unreached.end() && lmk.value != value) {
-            utils::UnorderedSet<int> exclude(domain_size);
+            unordered_set<int> exclude(domain_size);
             exclude = unreached;
             exclude.insert(value);
             // If that value is crucial for achieving the LM from the initial state,
@@ -506,7 +506,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
 
 bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
                                                  const FactPair &landmark,
-                                                 const utils::UnorderedSet<int> &exclude) {
+                                                 const unordered_set<int> &exclude) {
     /* Tests whether in the domain transition graph of the LM variable, there is
      a path from the initial state value to the LM value, without passing through
      any value in "exclude". If not, that means that one of the values in "exclude"
@@ -520,11 +520,11 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
     if (exclude.find(initial_state[var].get_value()) != exclude.end())
         return false;
     list<int> open;
-    utils::UnorderedSet<int> closed(initial_state[var].get_variable().get_domain_size());
+    unordered_set<int> closed(initial_state[var].get_variable().get_domain_size());
     closed = exclude;
     open.push_back(initial_state[var].get_value());
     closed.insert(initial_state[var].get_value());
-    const vector<utils::UnorderedSet<int>> &successors = dtg_successors[var];
+    const vector<unordered_set<int>> &successors = dtg_successors[var];
     while (closed.find(landmark.value) == closed.end()) {
         if (open.empty()) // landmark not in closed and nothing more to insert
             return false;
