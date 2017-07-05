@@ -126,28 +126,28 @@ int main(int, char **) {
     for (int i = 0; i < REPETITIONS; ++i) {
         benchmark("nothing", NUM_CALLS, [] () {});
         cout << endl;
-        benchmark("insert int into std::unordered_set", NUM_CALLS,
+        benchmark("insert int with BoostHash", NUM_CALLS,
                   [&]() {
             unordered_set<int> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 s.insert(scramble(i));
             }
         });
-        benchmark("insert int into FastHashSet", NUM_CALLS,
+        benchmark("insert int with BoostHashFeed", NUM_CALLS,
                   [&]() {
             fast_hash::HashSet<int> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 s.insert(scramble(i));
             }
         });
-        benchmark("insert int into utils::HashSet", NUM_CALLS,
+        benchmark("insert int with BurtleFeed", NUM_CALLS,
                   [&]() {
             utils::HashSet<int> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 s.insert(scramble(i));
             }
         });
-        benchmark("insert int into SpookyHash", NUM_CALLS,
+        benchmark("insert int with SpookyHash", NUM_CALLS,
                   [&]() {
             std::unordered_set<int, SpookyV2HashInt> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
@@ -156,21 +156,21 @@ int main(int, char **) {
         });
         cout << endl;
 
-        benchmark("insert pair<int, int> into std::unordered_set", NUM_CALLS,
+        benchmark("insert pair<int, int> with BoostHash", NUM_CALLS,
                   [&]() {
             unordered_set<pair<int, int>> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 s.insert(make_pair(scramble(i), scramble(i + 1)));
             }
         });
-        benchmark("insert pair<int, int> into FastHashSet", NUM_CALLS,
+        benchmark("insert pair<int, int> with BoostHashFeed", NUM_CALLS,
                   [&]() {
             fast_hash::HashSet<pair<int, int>> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
                 s.insert(make_pair(scramble(i), scramble(i + 1)));
             }
         });
-        benchmark("insert pair<int, int> into utils::HashSet", NUM_CALLS,
+        benchmark("insert pair<int, int> with BurtleFeed", NUM_CALLS,
                   [&]() {
             utils::HashSet<pair<int, int>> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
@@ -183,7 +183,7 @@ int main(int, char **) {
              ) {
             benchmark(
                 "insert vector<int> of size " + to_string(length) +
-                " into std::unordered_set", NUM_CALLS,
+                " with BoostHash", NUM_CALLS,
                 [&]() {
                 unordered_set<vector<int>> s;
                 for (int i = 0; i < NUM_INSERTIONS; ++i) {
@@ -197,7 +197,7 @@ int main(int, char **) {
             });
             benchmark(
                 "insert vector<int> of size " + to_string(length) +
-                " into FastHashSet", NUM_CALLS,
+                " with BoostHashFeed", NUM_CALLS,
                 [&]() {
                 fast_hash::HashSet<vector<int>> s;
                 for (int i = 0; i < NUM_INSERTIONS; ++i) {
@@ -211,7 +211,7 @@ int main(int, char **) {
             });
             benchmark(
                 "insert vector<int> of size " + to_string(length) +
-                " into BurtleBurtleHashSet", NUM_CALLS,
+                " with BurtleVector", NUM_CALLS,
                 [&]() {
                 BurtleBurtleHashSet s;
                 for (int i = 0; i < NUM_INSERTIONS; ++i) {
@@ -225,7 +225,7 @@ int main(int, char **) {
             });
             benchmark(
                 "insert vector<int> of size " + to_string(length) +
-                " into utils::HashSet", NUM_CALLS,
+                " with BurtleFeed", NUM_CALLS,
                 [&]() {
                 utils::HashSet<vector<int>> s;
                 for (int i = 0; i < NUM_INSERTIONS; ++i) {
@@ -239,7 +239,7 @@ int main(int, char **) {
             });
             benchmark(
                 "insert vector<int> of size " + to_string(length) +
-                " into HashWordHash", NUM_CALLS,
+                " with BurtleFeedVector", NUM_CALLS,
                 [&]() {
                 std::unordered_set<vector<int>, HashWordHash> s;
                 for (int i = 0; i < NUM_INSERTIONS; ++i) {
@@ -253,7 +253,7 @@ int main(int, char **) {
             });
             benchmark(
                 "insert vector<int> of size " + to_string(length) +
-                " into SpookyV2HashSet", NUM_CALLS,
+                " with SpookyHash", NUM_CALLS,
                 [&]() {
                 std::unordered_set<vector<int>, SpookyV2Hash> s;
                 for (int i = 0; i < NUM_INSERTIONS; ++i) {
