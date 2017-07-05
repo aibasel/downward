@@ -81,7 +81,7 @@ class PerStateInformation : public PerStateInformationBase {
 
     /*
       Returns the SegmentedVector associated with the given StateRegistry.
-      Returns 0, if no vector is associated with this registry yet.
+      Returns nullptr, if no vector is associated with this registry yet.
       Otherwise, both the registry and the returned vector are cached to speed
       up consecutive calls with the same registry.
     */
@@ -89,7 +89,7 @@ class PerStateInformation : public PerStateInformationBase {
         if (cached_registry != registry) {
             typename EntryVectorMap::const_iterator it = entries_by_registry.find(registry);
             if (it == entries_by_registry.end()) {
-                return 0;
+                return nullptr;
             } else {
                 cached_registry = registry;
                 cached_entries = const_cast<segmented_vector::SegmentedVector<Entry> *>(it->second);
@@ -105,14 +105,14 @@ class PerStateInformation : public PerStateInformationBase {
 public:
     PerStateInformation()
         : default_value(),
-          cached_registry(0),
-          cached_entries(0) {
+          cached_registry(nullptr),
+          cached_entries(nullptr) {
     }
 
     explicit PerStateInformation(const Entry &default_value_)
         : default_value(default_value_),
-          cached_registry(0),
-          cached_entries(0) {
+          cached_registry(nullptr),
+          cached_entries(nullptr) {
     }
 
     ~PerStateInformation() {
@@ -154,8 +154,8 @@ public:
         delete entries_by_registry[registry];
         entries_by_registry.erase(registry);
         if (registry == cached_registry) {
-            cached_registry = 0;
-            cached_entries = 0;
+            cached_registry = nullptr;
+            cached_entries = nullptr;
         }
     }
 };
