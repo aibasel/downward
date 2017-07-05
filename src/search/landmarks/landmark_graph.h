@@ -42,8 +42,8 @@ public:
     std::vector<FactPair> facts;
     bool disjunctive;
     bool conjunctive;
-    utils::UnorderedMap<LandmarkNode *, EdgeType> parents;
-    utils::UnorderedMap<LandmarkNode *, EdgeType> children;
+    std::unordered_map<LandmarkNode *, EdgeType> parents;
+    std::unordered_map<LandmarkNode *, EdgeType> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;
@@ -200,8 +200,8 @@ private:
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
-    utils::UnorderedMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
-    utils::UnorderedMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
+    std::unordered_map<FactPair, LandmarkNode *> simple_lms_to_nodes;
+    std::unordered_map<FactPair, LandmarkNode *> disj_lms_to_nodes;
     std::set<LandmarkNode *> nodes;
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;

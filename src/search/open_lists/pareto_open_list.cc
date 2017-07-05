@@ -26,7 +26,7 @@ class ParetoOpenList : public OpenList<Entry> {
 
     typedef deque<Entry> Bucket;
     typedef vector<int> KeyType;
-    typedef utils::UnorderedMap<KeyType, Bucket> BucketMap;
+    typedef unordered_map<KeyType, Bucket> BucketMap;
     typedef set<KeyType> KeySet;
 
     BucketMap buckets;

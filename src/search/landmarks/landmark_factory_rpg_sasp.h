@@ -24,9 +24,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     void get_greedy_preconditions_for_lm(const TaskProxy &task_proxy,
                                          const LandmarkNode *lmp,
                                          const OperatorProxy &op,
-                                         utils::UnorderedMap<int, int> &result) const;
+                                         std::unordered_map<int, int> &result) const;
     void compute_shared_preconditions(const TaskProxy &task_proxy,
-                                      utils::UnorderedMap<int, int> &shared_pre,
+                                      std::unordered_map<int, int> &shared_pre,
                                       std::vector<std::vector<int>> &lvl_var,
                                       LandmarkNode *bp);
     void compute_disjunctive_preconditions(

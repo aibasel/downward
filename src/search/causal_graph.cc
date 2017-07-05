@@ -27,8 +27,8 @@ using namespace std;
   (causal graphs, successor generators and axiom evlauators, DTGs, ...) and can
   maybe deal with all of them in the same way.
 */
-static utils::UnorderedMap<const AbstractTask *,
-                           unique_ptr<CausalGraph>> causal_graph_cache;
+static unordered_map<const AbstractTask *,
+                     unique_ptr<CausalGraph>> causal_graph_cache;
 
 /*
   An IntRelationBuilder constructs an IntRelation by adding one pair

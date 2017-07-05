@@ -70,7 +70,7 @@ void LabelReduction::compute_label_mapping(
     for (BlockListConstIter group_it = relation->begin();
          group_it != relation->end(); ++group_it) {
         const Block &block = *group_it;
-        utils::UnorderedMap<int, vector<int>> equivalent_label_nos;
+        unordered_map<int, vector<int>> equivalent_label_nos;
         for (ElementListConstIter label_it = block.begin();
              label_it != block.end(); ++label_it) {
             assert(*label_it < next_new_label_no);

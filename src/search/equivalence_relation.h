@@ -54,7 +54,7 @@ class EquivalenceRelation {
       block and points to the element within it.
     */
     using ElementPosition = std::pair<BlockListIter, ElementListIter>;
-    using ElementPositionMap = utils::UnorderedMap<int, ElementPosition>;
+    using ElementPositionMap = std::unordered_map<int, ElementPosition>;
     ElementPositionMap element_positions;
 
     /*

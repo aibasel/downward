@@ -158,7 +158,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
 
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
-        utils::UnorderedMap<int, vector<int>> buckets;
+        unordered_map<int, vector<int>> buckets;
         for (int label_no : group1) {
             int group2_id = ts2.label_equivalence_relation->get_group_id(label_no);
             buckets[group2_id].push_back(label_no);
@@ -364,7 +364,7 @@ void TransitionSystem::apply_label_reduction(
           updating label_equivalence_relation, because after updating it,
           we cannot find out the group id of reduced labels anymore.
         */
-        utils::UnorderedMap<int, vector<Transition>> new_label_to_transitions;
+        unordered_map<int, vector<Transition>> new_label_to_transitions;
         unordered_set<int> affected_group_ids;
         for (const pair<int, vector<int>> &mapping: label_mapping) {
             int new_label_no = mapping.first;

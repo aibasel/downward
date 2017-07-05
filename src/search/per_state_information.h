@@ -52,7 +52,7 @@ template<class Entry>
 class PerStateInformation : public PerStateInformationBase {
     const Entry default_value;
     using EntryVectorMap =
-              utils::UnorderedMap<const StateRegistry *, SegmentedVector<Entry> *>;
+              std::unordered_map<const StateRegistry *, SegmentedVector<Entry> *>;
     EntryVectorMap entries_by_registry;
 
     mutable const StateRegistry *cached_registry;

@@ -9,7 +9,7 @@
 
 class ScalarEvaluator;
 
-using EvaluationResults = utils::UnorderedMap<ScalarEvaluator *, EvaluationResult>;
+using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
 
 /*
   Store a state and evaluation results for this state.
