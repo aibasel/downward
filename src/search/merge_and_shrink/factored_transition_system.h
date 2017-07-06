@@ -84,7 +84,7 @@ public:
     // Merge-and-shrink transformations.
     /*
       Apply the given label mapping to the factored transition system by
-      updating all transistions of all transition systems. Only for the factor
+      updating all transitions of all transition systems. Only for the factor
       at combinable_index, the local equivalence relation over labels must be
       recomputed; for all factors, all labels that are combined by the label
       mapping have been locally equivalent already before.
@@ -101,7 +101,7 @@ public:
 
       Note that this method is also suitable to be used for a prune
       transformation. All states not mentioned in the state equivalence
-      relation are considered to be pruned.
+      relation are pruned.
     */
     bool apply_abstraction(
         int index,

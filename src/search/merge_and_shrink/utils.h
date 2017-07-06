@@ -46,7 +46,7 @@ extern bool shrink_factor(
 /*
   Prune unreachable and/or irrelevant states of the factor at index. This
   requires that init and/or goal distances have been computed accordingly.
-  Return rue iff any states have been pruned.
+  Return true iff any states have been pruned.
 
   TODO: maybe this functionality belongs to a new class PruningStrategy.
 */

@@ -429,7 +429,7 @@ bool TransitionSystem::is_solvable() const {
       both cases and hence the transition system is solvable iff the initial
       states has been pruned.
 
-      Otherweise, because the initital state may be irrelevant but not pruned,
+      Otherwise, because the initial state may be irrelevant but not pruned,
       we need to check if there are goal states.
     */
     if (init_state == PRUNED_STATE) {

@@ -185,7 +185,7 @@ void Distances::compute_distances(
     /*
       This method does the following:
       - Computes the distances of abstract states from the abstract
-        initial state ("abstract g") and from the abstract goal states
+        initial state ("abstract g") and to the abstract goal states
         ("abstract h"), depending on the given flags.
     */
 
