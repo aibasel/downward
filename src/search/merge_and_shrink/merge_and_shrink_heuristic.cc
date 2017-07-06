@@ -319,13 +319,10 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                     cout << endl;
                 }
                 /*
-                  NOTE: both the shrinking strategy classes and the construction
-                  of the composite require input transition systems to be
-                  solvable in the sense that the initial state is not pruned and
-                  not all goal states are pruned. A transition system is
-                  allowed to be semantically unsolvable as long as pruning is
-                  (partially) turned off and there is at least one "real" state
-                  in the transition system.
+                  NOTE: both the shrink strategy classes and the construction
+                  of the composite transition system require the input
+                  transition systems to be non-empty, i.e. the initial state
+                  not to be pruned.
                 */
                 if (!fts.is_factor_solvable(merged_index)) {
                     unsolvable_index = merged_index;
@@ -351,7 +348,10 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
         cout << "Final transition system size: "
              << fts.get_ts(final_index).get_size() << endl;
     } else {
-        // unsolvable_index points to an unsolvable transition system.
+        /*
+          unsolvable_index points to an unsolvable transition system (this
+          happens if we exited the main loop prior to its regular termination).
+        */
         final_index = unsolvable_index;
         cout << "Abstract problem is unsolvable!" << endl;
     }

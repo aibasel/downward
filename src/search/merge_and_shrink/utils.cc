@@ -61,7 +61,6 @@ bool shrink_factor(
     const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity) {
     const TransitionSystem &ts = fts.get_ts(index);
-    assert(ts.is_solvable());
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
         if (verbosity >= Verbosity::VERBOSE) {

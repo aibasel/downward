@@ -199,7 +199,6 @@ public:
     */
     bool are_transitions_sorted_unique() const;
 
-    bool is_solvable() const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
     void statistics() const;
