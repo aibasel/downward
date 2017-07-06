@@ -201,6 +201,7 @@ void Distances::compute_distances(
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "empty transition system, no distances to compute" << endl;
         }
+        distances_computed = true;
         return;
     }
 

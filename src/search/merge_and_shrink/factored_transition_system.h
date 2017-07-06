@@ -129,7 +129,7 @@ public:
         return *transition_systems[index];
     }
 
-    const Distances &get_dist(int index) const {
+    const Distances &get_distances(int index) const {
         return *distances[index];
     }
 

@@ -73,9 +73,9 @@ bool shrink_factor(
             cout << ")" << endl;
         }
 
-        const Distances &dist = fts.get_dist(index);
+        const Distances &distances = fts.get_distances(index);
         StateEquivalenceRelation equivalence_relation =
-            shrink_strategy.compute_equivalence_relation(ts, dist, new_size);
+            shrink_strategy.compute_equivalence_relation(ts, distances, new_size);
         // TODO: We currently violate this; see issue250
         //assert(equivalence_relation.size() <= target_size);
         return fts.apply_abstraction(index, equivalence_relation, verbosity);
@@ -91,7 +91,7 @@ bool prune_factor(
     Verbosity verbosity) {
     assert(prune_unreachable_states || prune_irrelevant_states);
     const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &dist = fts.get_dist(index);
+    const Distances &distances = fts.get_distances(index);
     int num_states = ts.get_size();
     StateEquivalenceRelation state_equivalence_relation;
     state_equivalence_relation.reserve(num_states);
@@ -102,11 +102,11 @@ bool prune_factor(
         /* If pruning both unreachable and irrelevant states, a state which is
            dead is counted for both statistics! */
         bool prune_state = false;
-        if (prune_unreachable_states && dist.get_init_distance(state) == INF) {
+        if (prune_unreachable_states && distances.get_init_distance(state) == INF) {
             ++unreachable_count;
             prune_state = true;
         }
-        if (prune_irrelevant_states && dist.get_goal_distance(state) == INF) {
+        if (prune_irrelevant_states && distances.get_goal_distance(state) == INF) {
             ++irrelevant_count;
             prune_state = true;
         }
