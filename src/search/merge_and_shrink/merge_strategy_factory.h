@@ -21,14 +21,8 @@ public:
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
         const FactoredTransitionSystem &fts) = 0;
-
-    virtual bool requires_init_distances() const {
-        return false;
-    }
-
-    virtual bool requires_goal_distances() const {
-        return false;
-    }
+    virtual bool requires_init_distances() const = 0;
+    virtual bool requires_goal_distances() const = 0;
 };
 }
 
