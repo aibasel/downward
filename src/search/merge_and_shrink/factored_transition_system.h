@@ -133,6 +133,12 @@ public:
         return *distances[index];
     }
 
+    /*
+      A factor is solvabe iff the distance of the initial state to some goal
+      state is not infinity. Technically, the distance is infinity either if
+      the information of Distances is infinity or if the initial state is
+      pruned.
+    */
     bool is_factor_solvable(int index) const;
 
     int get_num_active_entries() const {

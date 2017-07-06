@@ -112,7 +112,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
              << ts2.get_description() << endl;
     }
 
-    assert(ts1.is_solvable() && ts2.is_solvable());
+    assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
 
     int num_variables = ts1.num_variables;
@@ -419,31 +419,6 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
             return false;
     }
     return true;
-}
-
-bool TransitionSystem::is_solvable() const {
-    /*
-      There are two conditions under which the transition systems is not
-      solvable: there are no goal states or no goal state can be reached.
-
-      If pruning irrelevant states, the initial state will be irrelevant in
-      both cases and hence the transition system is solvable iff the initial
-      states has been pruned.
-
-      Otherwise, because the initial state may be irrelevant but not pruned,
-      we need to check if there are goal states.
-    */
-    if (init_state == PRUNED_STATE) {
-        return false;
-    }
-    bool has_goal = false;
-    for (int state = 0; state < num_states; ++state) {
-        if (goal_states[state]) {
-            has_goal = true;
-            break;
-        }
-    }
-    return has_goal;
 }
 
 int TransitionSystem::compute_total_transitions() const {
