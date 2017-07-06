@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <iostream>
 #include <memory>
 #include <unordered_map>
@@ -30,6 +31,15 @@ namespace merge_and_shrink {
    successor). The bisimulation algorithm requires that the vector is
    sorted and uniquified. */
 using SuccessorSignature = vector<pair<int, int>>;
+
+/*
+  As we use SENTINEL numeric_limits<int>::max() as a sentinel signature and
+  irrelevant states have a distance of INF = numeric_limits<int>::max(), we
+  use INF - 1 as the distance value for all irrelevant states. This guarantees
+  that also irrelevant states are always ordered before the sentinel.
+*/
+const int SENTINEL = numeric_limits<int>::max();
+const int IRRELEVANT = SENTINEL - 1;
 
 /*
   The following class encodes all we need to know about a state for
@@ -109,15 +119,8 @@ int ShrinkBisimulation::initialize_groups(
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
         if (h == INF) {
-            /*
-              For irrelevant abstract states, we use dist = INF - 1 because
-              the end sentinal signature uses INF as h_and_goal value.
-              Otherwise, the end sentinal could be "merged" with irrelevant
-              states.
-            */
-            h = INF - 1;
+            h = IRRELEVANT;
         }
-
         if (ts.is_goal_state(state)) {
             assert(h == 0);
             state_to_group[state] = 0;
@@ -146,20 +149,14 @@ void ShrinkBisimulation::compute_signatures(
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
         if (h == INF) {
-            /*
-              For irrelevant abstract states, we use dist = INF - 1 because
-              the end sentinal signature uses INF as h_and_goal value.
-              Otherwise, the end sentinal could be "merged" with irrelevant
-              states.
-            */
-            h = INF - 1;
+            h = IRRELEVANT;
         }
         Signature signature(h, ts.is_goal_state(state),
                             state_to_group[state], SuccessorSignature(),
                             state);
         signatures.push_back(signature);
     }
-    signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
+    signatures.push_back(Signature(SENTINEL, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
     int label_group_counter = 0;
@@ -207,7 +204,7 @@ void ShrinkBisimulation::compute_signatures(
             }
             if (!skip_transition) {
                 int target_group = state_to_group[transition.target];
-                assert(target_group != -1 && target_group != INF);
+                assert(target_group != -1 && target_group != SENTINEL);
                 signatures[transition.src + 1].succ_signature.push_back(
                     make_pair(label_group_counter, target_group));
             }
@@ -267,12 +264,12 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
         // Verify size of signatures and presence of sentinels.
         assert(static_cast<int>(signatures.size()) == num_states + 2);
         assert(signatures[0].h_and_goal == -2);
-        assert(signatures[num_states + 1].h_and_goal == INF);
+        assert(signatures[num_states + 1].h_and_goal == SENTINEL);
 
         int sig_start = 1; // Skip over initial sentinel.
         while (true) {
             int h_and_goal = signatures[sig_start].h_and_goal;
-            if (h_and_goal == INF) {
+            if (h_and_goal == SENTINEL) {
                 // We have hit the end sentinel.
                 assert(sig_start + 1 == static_cast<int>(signatures.size()));
                 break;
