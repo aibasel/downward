@@ -34,7 +34,22 @@ vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
     for (int state = 0; state < ts.get_size(); ++state) {
         int g = distances.get_init_distance(state);
         int h = distances.get_goal_distance(state);
-        int f = g + h;
+        int f;
+        if (g == INF || h == INF) {
+            /*
+              If not pruning unreachable or irrelevant states, we may have
+              states with g- or h-values of infinity, which we need to treat
+              manually here to avoid overflow.
+
+              Also note that not using full pruning means that if there is at
+              least one dead state, this strategy will always use the
+              map-based approach for partitioning. This is important because
+              the vector-based approach requires that there are no dead states.
+            */
+            f = INF;
+        } else {
+            f = g + h;
+        }
         max_h = max(max_h, h);
         max_f = max(max_f, f);
     }
@@ -87,13 +102,16 @@ vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_map(
     for (int state = 0; state < num_states; ++state) {
         int g = distances.get_init_distance(state);
         int h = distances.get_goal_distance(state);
-        if (g != INF && h != INF) {
-            int f = g + h;
-            Bucket &bucket = states_by_f_and_h[f][h];
-            if (bucket.empty())
-                ++bucket_count;
-            bucket.push_back(state);
+        int f;
+        if (g == INF || h == INF) {
+            f = INF;
+        } else {
+            f = g + h;
         }
+        Bucket &bucket = states_by_f_and_h[f][h];
+        if (bucket.empty())
+            ++bucket_count;
+        bucket.push_back(state);
     }
 
     vector<Bucket> buckets;
@@ -125,15 +143,15 @@ vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_vector(
     for (int state = 0; state < num_states; ++state) {
         int g = distances.get_init_distance(state);
         int h = distances.get_goal_distance(state);
-        if (g != INF && h != INF) {
-            int f = g + h;
-            assert(utils::in_bounds(f, states_by_f_and_h));
-            assert(utils::in_bounds(h, states_by_f_and_h[f]));
-            Bucket &bucket = states_by_f_and_h[f][h];
-            if (bucket.empty())
-                ++bucket_count;
-            bucket.push_back(state);
-        }
+        // If the state is dead, we should use ordered_buckets_use_map instead.
+        assert(g != INF && h != INF);
+        int f = g + h;
+        assert(utils::in_bounds(f, states_by_f_and_h));
+        assert(utils::in_bounds(h, states_by_f_and_h[f]));
+        Bucket &bucket = states_by_f_and_h[f][h];
+        if (bucket.empty())
+            ++bucket_count;
+        bucket.push_back(state);
     }
 
     vector<Bucket> buckets;
@@ -191,7 +209,13 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before merging (and no label reduction before "
-        "shrinking).");
+        "shrinking)."
+        "We also recommend using full pruning with this shrink strategy, "
+        "because both distances from the initial state and to the goal states "
+        "must be computed anyways, and because the existence of only one "
+        "dead state causes this shrink strategy to always use the map-based "
+        "approach for partitioning states rather than the more memory-"
+        "efficient vector-based approach.");
     ShrinkBucketBased::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");
