@@ -331,9 +331,8 @@ void Distances::statistics() const {
         int init_state = transition_system.get_init_state();
         if (init_state == PRUNED_STATE) {
             cout << "initial state has been pruned, transition system is "
-                    "unsolvable";
-        }
-        else {
+                "unsolvable";
+        } else {
             cout << "init h=" << get_goal_distance(init_state);
         }
     }

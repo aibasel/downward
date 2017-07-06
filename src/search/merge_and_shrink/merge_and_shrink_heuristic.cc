@@ -134,8 +134,8 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
-                "iteration, both before shrinking and merging. This double computation effort\n"
-                "does not pay off for most configurations!"
+            "iteration, both before shrinking and merging. This double computation effort\n"
+            "does not pay off for most configurations!"
              << endl << dashes << endl;
     } else {
         if (label_reduction->reduce_before_shrinking() &&
@@ -143,14 +143,14 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
              || shrink_strategy->get_name() == "random")) {
             cerr << dashes << endl
                  << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
-                    "best if used with label reduction before merging, not before shrinking!"
+                "best if used with label reduction before merging, not before shrinking!"
                  << endl << dashes << endl;
         }
         if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
             cerr << dashes << endl
                  << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
-                    "reduction before shrinking, not before merging!"
+                "reduction before shrinking, not before merging!"
                  << endl << dashes << endl;
         }
     }

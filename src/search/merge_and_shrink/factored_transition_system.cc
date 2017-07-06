@@ -215,7 +215,7 @@ bool FactoredTransitionSystem::is_factor_solvable(int index) const {
     assert(is_component_valid(index));
     int init_state = transition_systems[index]->get_init_state();
     return init_state != PRUNED_STATE &&
-        distances[index]->get_goal_distance(init_state) != INF;
+           distances[index]->get_goal_distance(init_state) != INF;
 }
 
 bool FactoredTransitionSystem::is_active(int index) const {
