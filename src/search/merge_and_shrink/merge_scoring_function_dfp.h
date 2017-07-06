@@ -17,6 +17,10 @@ public:
         const FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
 
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
+
     virtual bool requires_goal_distances() const override {
         return true;
     }
