@@ -135,9 +135,7 @@ vector<int> compute_abstraction_mapping(
     for (size_t class_no = 0; class_no < equivalence_relation.size(); ++class_no) {
         const StateEquivalenceClass &state_equivalence_class =
             equivalence_relation[class_no];
-        for (auto pos = state_equivalence_class.begin();
-             pos != state_equivalence_class.end(); ++pos) {
-            int state = *pos;
+        for (int state : state_equivalence_class) {
             assert(abstraction_mapping[state] == PRUNED_STATE);
             abstraction_mapping[state] = class_no;
         }
