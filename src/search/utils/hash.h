@@ -77,12 +77,10 @@ namespace utils {
   type.
 */
 
-static_assert(sizeof(unsigned int) == 4, "unsigned int has unexpected size");
-
 /*
   Circular rotation (http://stackoverflow.com/a/31488147/224132).
 */
-inline unsigned int rotate(unsigned int value, unsigned int offset) {
+inline uint32_t rotate(uint32_t value, uint32_t offset) {
     return (value << offset) | (value >> (32 - offset));
 }
 
