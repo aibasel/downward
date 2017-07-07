@@ -188,6 +188,7 @@ unique_ptr<GeneratorBase> construct_recursive(
     int switch_var_id, list<OperatorID> &&operator_queue);
 
 unique_ptr<GeneratorBase> construct_leaf(list<OperatorID> &&operators) {
+    assert(!operators.empty());
     if (operators.size() == 1) {
         return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
     } else {
