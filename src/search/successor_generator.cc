@@ -37,6 +37,8 @@ using namespace std;
      add GeneratorImmediateSingle.
 */
 
+using Condition = std::vector<FactProxy>;
+
 bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
     return f1.get_variable().get_id() < f2.get_variable().get_id();
 }
@@ -78,6 +80,12 @@ int estimate_unordered_map_size(int num_entries) {
     size += num_buckets * sizeof(void *);             // pointer to next bucket
     return size;
 }
+
+GeneratorBase *construct_recursive(
+    const TaskProxy &task_proxy,
+    vector<Condition> &conditions,
+    vector<Condition::const_iterator> &next_condition_by_op,
+    int switch_var_id, list<OperatorID> &&operator_queue);
 
 class GeneratorBase {
 public:
@@ -362,13 +370,14 @@ void GeneratorLeafSingle::generate_applicable_ops(
     applicable_ops.push_back(applicable_operator);
 }
 
-SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy) {
+SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
     utils::Timer construction_timer;
     int peak_memory_before = utils::get_peak_memory_in_kb();
 
     OperatorsProxy operators = task_proxy.get_operators();
     // We need the iterators to conditions to be stable:
+    vector<Condition> conditions;
+    vector<Condition::const_iterator> next_condition_by_op;
     conditions.reserve(operators.size());
     list<OperatorID> all_operators;
     for (OperatorProxy op : operators) {
@@ -384,15 +393,13 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
         next_condition_by_op.push_back(conditions.back().begin());
     }
 
-    root = unique_ptr<GeneratorBase>(construct_recursive(0, move(all_operators)));
+    root = unique_ptr<GeneratorBase>(construct_recursive(task_proxy, conditions, next_condition_by_op, 0, move(all_operators)));
     if (!root) {
         /* Task is trivially unsolvable. Create dummy leaf,
            so we don't have to check root for nullptr everywhere. */
         list<OperatorID> no_applicable_operators;
         root = utils::make_unique_ptr<GeneratorLeafList>(move(no_applicable_operators));
     }
-    utils::release_vector_memory(conditions);
-    utils::release_vector_memory(next_condition_by_op);
 
     int peak_memory_after = utils::get_peak_memory_in_kb();
     int memory_diff = 1024 * (peak_memory_after - peak_memory_before);
@@ -404,8 +411,7 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
 SuccessorGenerator::~SuccessorGenerator() {
 }
 
-GeneratorBase *SuccessorGenerator::construct_leaf(
-    list<OperatorID> &&operators) {
+GeneratorBase *construct_leaf(list<OperatorID> &&operators) {
     if (operators.size() == 1) {
         return new GeneratorLeafSingle(operators.front());
     } else {
@@ -413,7 +419,10 @@ GeneratorBase *SuccessorGenerator::construct_leaf(
     }
 }
 
-GeneratorBase *SuccessorGenerator::construct_switch(
+GeneratorBase *construct_switch(
+    const TaskProxy &task_proxy,
+    vector<Condition> &conditions,
+    vector<Condition::const_iterator> &next_condition_by_op,
     int switch_var_id,
     vector<list<OperatorID>> &&operators_for_value) {
     int num_values = operators_for_value.size();
@@ -422,7 +431,7 @@ GeneratorBase *SuccessorGenerator::construct_switch(
     int num_non_zero = 0;
     for (list<OperatorID> &ops : operators_for_value) {
         GeneratorBase *value_generator =
-            construct_recursive(switch_var_id + 1, move(ops));
+            construct_recursive(task_proxy, conditions, next_condition_by_op, switch_var_id + 1, move(ops));
         if (value_generator) {
             ++num_non_zero;
         }
@@ -453,13 +462,16 @@ GeneratorBase *SuccessorGenerator::construct_switch(
     }
 }
 
-GeneratorBase *SuccessorGenerator::construct_branch(
+GeneratorBase *construct_branch(
+    const TaskProxy &task_proxy,
+    vector<Condition> &conditions,
+    vector<Condition::const_iterator> &next_condition_by_op,
     int switch_var_id,
     vector<list<OperatorID>> &&operators_for_value,
     list<OperatorID> &&default_operators,
     list<OperatorID> &&applicable_operators) {
     GeneratorBase *switch_generator =
-        construct_switch(switch_var_id, move(operators_for_value));
+        construct_switch(task_proxy, conditions, next_condition_by_op, switch_var_id, move(operators_for_value));
     assert(switch_generator);
 
     GeneratorBase *non_immediate_generator = nullptr;
@@ -467,7 +479,7 @@ GeneratorBase *SuccessorGenerator::construct_branch(
         non_immediate_generator = switch_generator;
     } else {
         GeneratorBase *default_generator = construct_recursive(
-            switch_var_id + 1, move(default_operators));
+            task_proxy, conditions, next_condition_by_op, switch_var_id + 1, move(default_operators));
         non_immediate_generator = new GeneratorFork(switch_generator, default_generator);
     }
 
@@ -478,7 +490,10 @@ GeneratorBase *SuccessorGenerator::construct_branch(
     }
 }
 
-GeneratorBase *SuccessorGenerator::construct_recursive(
+GeneratorBase *construct_recursive(
+    const TaskProxy &task_proxy,
+    vector<Condition> &conditions,
+    vector<Condition::const_iterator> &next_condition_by_op,
     int switch_var_id, list<OperatorID> &&operator_queue) {
     if (operator_queue.empty())
         return nullptr;
@@ -533,6 +548,9 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
             return construct_leaf(move(applicable_operators));
         } else if (var_is_interesting) {
             return construct_branch(
+                task_proxy,
+                conditions,
+                next_condition_by_op,
                 switch_var_id,
                 move(operators_for_val),
                 move(default_operators),
