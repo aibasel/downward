@@ -83,7 +83,6 @@ int estimate_unordered_map_size(int num_entries) {
 
 class GeneratorBase {
 public:
-    virtual ~GeneratorBase() = default;
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const = 0;
     // Transitional method, used until the search is switched to the new task interface.
@@ -93,11 +92,10 @@ public:
 
 class GeneratorImmediate : public GeneratorBase {
     list<OperatorID> immediate_operators;
-    GeneratorBase *next_generator;
+    unique_ptr<GeneratorBase> next_generator;
 public:
-    ~GeneratorImmediate();
     GeneratorImmediate(list<OperatorID> &&immediate_operators,
-                       GeneratorBase *next_generator);
+                       unique_ptr<GeneratorBase> next_generator);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -106,11 +104,12 @@ public:
 };
 
 class GeneratorFork : public GeneratorBase {
-    GeneratorBase *generator1;
-    GeneratorBase *generator2;
+    unique_ptr<GeneratorBase> generator1;
+    unique_ptr<GeneratorBase> generator2;
 public:
-    ~GeneratorFork();
-    GeneratorFork(GeneratorBase *generator1, GeneratorBase *generator2);
+    GeneratorFork(
+        unique_ptr<GeneratorBase> generator1,
+        unique_ptr<GeneratorBase> generator2);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -120,12 +119,11 @@ public:
 
 class GeneratorSwitchVector : public GeneratorBase {
     int switch_var_id;
-    vector<GeneratorBase *> generator_for_value;
+    vector<unique_ptr<GeneratorBase>> generator_for_value;
 public:
-    ~GeneratorSwitchVector();
     GeneratorSwitchVector(
         int switch_var_id,
-        const vector<GeneratorBase *> &&generator_for_value);
+        vector<unique_ptr<GeneratorBase>> &&generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -135,12 +133,11 @@ public:
 
 class GeneratorSwitchHash : public GeneratorBase {
     int switch_var_id;
-    unordered_map<int, GeneratorBase *> generator_for_value;
+    unordered_map<int, unique_ptr<GeneratorBase>> generator_for_value;
 public:
-    ~GeneratorSwitchHash();
     GeneratorSwitchHash(
         int switch_var_id,
-        unordered_map<int, GeneratorBase *> &&generator_for_value);
+        unordered_map<int, unique_ptr<GeneratorBase>> &&generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -151,11 +148,11 @@ public:
 class GeneratorSwitchSingle : public GeneratorBase {
     int switch_var_id;
     int value;
-    GeneratorBase *generator_for_value;
+    unique_ptr<GeneratorBase> generator_for_value;
 public:
-    ~GeneratorSwitchSingle();
     GeneratorSwitchSingle(
-        int switch_var_id, int value, GeneratorBase *generator_for_value);
+        int switch_var_id, int value,
+        unique_ptr<GeneratorBase> generator_for_value);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorID> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -185,64 +182,67 @@ public:
         const GlobalState &state, vector<OperatorID> &applicable_ops) const;
 };
 
-GeneratorBase *construct_recursive(
+unique_ptr<GeneratorBase> construct_recursive(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
     int switch_var_id, list<OperatorID> &&operator_queue);
 
-GeneratorBase *construct_leaf(list<OperatorID> &&operators) {
+unique_ptr<GeneratorBase> construct_leaf(list<OperatorID> &&operators) {
     if (operators.size() == 1) {
-        return new GeneratorLeafSingle(operators.front());
+        return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
     } else {
-        return new GeneratorLeafList(move(operators));
+        return utils::make_unique_ptr<GeneratorLeafList>(move(operators));
     }
 }
 
-GeneratorBase *construct_switch(
+unique_ptr<GeneratorBase> construct_switch(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
     int switch_var_id,
     vector<list<OperatorID>> &&operators_for_value) {
     int num_values = operators_for_value.size();
-    vector<GeneratorBase *> generator_for_value;
+    vector<unique_ptr<GeneratorBase> > generator_for_value;
     generator_for_value.reserve(num_values);
     int num_non_zero = 0;
     for (list<OperatorID> &ops : operators_for_value) {
-        GeneratorBase *value_generator = construct_recursive(
-            task_proxy, conditions, next_condition_by_op, switch_var_id + 1, move(ops));
+        unique_ptr<GeneratorBase> value_generator = construct_recursive(
+            task_proxy, conditions, next_condition_by_op, switch_var_id + 1,
+            move(ops));
         if (value_generator) {
             ++num_non_zero;
         }
-        generator_for_value.push_back(value_generator);
+        generator_for_value.push_back(move(value_generator));
     }
 
     if (num_non_zero == 1) {
         for (int value = 0; value < num_values; ++value) {
             if (generator_for_value[value]) {
-                return new GeneratorSwitchSingle(
-                    switch_var_id, value, generator_for_value[value]);
+                return utils::make_unique_ptr<GeneratorSwitchSingle>(
+                    switch_var_id, value, move(generator_for_value[value]));
             }
         }
         assert(false);
     }
-    int vector_size = estimate_vector_size<GeneratorBase *>(num_values);
-    int hash_size = estimate_unordered_map_size<int, GeneratorBase *>(num_non_zero);
+    int vector_size = estimate_vector_size<unique_ptr<GeneratorBase>>(num_values);
+    int hash_size = estimate_unordered_map_size<int, unique_ptr<GeneratorBase>>(num_non_zero);
     if (hash_size < vector_size) {
-        unordered_map<int, GeneratorBase *> map;
+        unordered_map<int, unique_ptr<GeneratorBase>> map;
         for (int value = 0; value < num_values; ++value) {
             if (generator_for_value[value]) {
-                map[value] = generator_for_value[value];
+                map[value] = move(generator_for_value[value]);
             }
         }
-        return new GeneratorSwitchHash(switch_var_id, move(map));
+        return utils::make_unique_ptr<GeneratorSwitchHash>(
+            switch_var_id, move(map));
     } else {
-        return new GeneratorSwitchVector(switch_var_id, move(generator_for_value));
+        return utils::make_unique_ptr<GeneratorSwitchVector>(
+            switch_var_id, move(generator_for_value));
     }
 }
 
-GeneratorBase *construct_branch(
+unique_ptr<GeneratorBase> construct_branch(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
@@ -250,29 +250,31 @@ GeneratorBase *construct_branch(
     vector<list<OperatorID>> &&operators_for_value,
     list<OperatorID> &&default_operators,
     list<OperatorID> &&applicable_operators) {
-    GeneratorBase *switch_generator = construct_switch(
+    unique_ptr<GeneratorBase> switch_generator = construct_switch(
         task_proxy, conditions, next_condition_by_op,
         switch_var_id, move(operators_for_value));
     assert(switch_generator);
 
-    GeneratorBase *non_immediate_generator = nullptr;
+    unique_ptr<GeneratorBase> non_immediate_generator = nullptr;
     if (default_operators.empty()) {
-        non_immediate_generator = switch_generator;
+        non_immediate_generator = move(switch_generator);
     } else {
-        GeneratorBase *default_generator = construct_recursive(
+        unique_ptr<GeneratorBase> default_generator = construct_recursive(
             task_proxy, conditions, next_condition_by_op,
             switch_var_id + 1, move(default_operators));
-        non_immediate_generator = new GeneratorFork(switch_generator, default_generator);
+        non_immediate_generator = utils::make_unique_ptr<GeneratorFork>(
+            move(switch_generator), move(default_generator));
     }
 
     if (applicable_operators.empty()) {
         return non_immediate_generator;
     } else {
-        return new GeneratorImmediate(move(applicable_operators), non_immediate_generator);
+        return utils::make_unique_ptr<GeneratorImmediate>(
+            move(applicable_operators), move(non_immediate_generator));
     }
 }
 
-GeneratorBase *construct_recursive(
+unique_ptr<GeneratorBase> construct_recursive(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
@@ -310,7 +312,8 @@ GeneratorBase *construct_recursive(
                 applicable_operators.push_back(op_id);
             } else {
                 assert(utils::in_bounds(
-                           cond_iter - conditions[op_index].begin(), conditions[op_index]));
+                    cond_iter - conditions[op_index].begin(),
+                    conditions[op_index]));
                 all_ops_are_immediate = false;
                 FactProxy fact = *cond_iter;
                 if (fact.get_variable() == switch_var) {
@@ -347,16 +350,12 @@ GeneratorBase *construct_recursive(
 
 GeneratorImmediate::GeneratorImmediate(
     list<OperatorID> &&immediate_operators,
-    GeneratorBase *next_generator)
+    unique_ptr<GeneratorBase> next_generator_)
     : immediate_operators(move(immediate_operators)),
-      next_generator(next_generator) {
+      next_generator(move(next_generator_)) {
     /* There is no reason to to use GeneratorImmediate if there is no next generator.
        Use GeneratorLeaf instead in such situtations. */
     assert(next_generator);
-}
-
-GeneratorImmediate::~GeneratorImmediate() {
-    delete next_generator;
 }
 
 void GeneratorImmediate::generate_applicable_ops(
@@ -378,19 +377,16 @@ void GeneratorImmediate::generate_applicable_ops(
     next_generator->generate_applicable_ops(state, applicable_ops);
 }
 
-GeneratorFork::GeneratorFork(GeneratorBase *generator1, GeneratorBase *generator2)
-    : generator1(generator1),
-      generator2(generator2) {
+GeneratorFork::GeneratorFork(
+    unique_ptr<GeneratorBase> generator1_,
+    unique_ptr<GeneratorBase> generator2_)
+    : generator1(move(generator1_)),
+      generator2(move(generator2_)) {
     /* There is no reason to use a fork if only one of the generators exists.
        Use the existing generator directly if one of them exists or a nullptr
        otherwise. */
     assert(generator1);
     assert(generator2);
-}
-
-GeneratorFork::~GeneratorFork() {
-    delete generator1;
-    delete generator2;
 }
 
 void GeneratorFork::generate_applicable_ops(
@@ -406,20 +402,15 @@ void GeneratorFork::generate_applicable_ops(
 }
 
 GeneratorSwitchVector::GeneratorSwitchVector(
-    int switch_var_id, const vector<GeneratorBase *> &&generator_for_value)
+    int switch_var_id, vector<unique_ptr<GeneratorBase>> &&generator_for_value)
     : switch_var_id(switch_var_id),
       generator_for_value(move(generator_for_value)) {
-}
-
-GeneratorSwitchVector::~GeneratorSwitchVector() {
-    for (GeneratorBase *generator : generator_for_value)
-        delete generator;
 }
 
 void GeneratorSwitchVector::generate_applicable_ops(
     const State &state, vector<OperatorID> &applicable_ops) const {
     int val = state[switch_var_id].get_value();
-    GeneratorBase *generator_for_val = generator_for_value[val];
+    const unique_ptr<GeneratorBase> &generator_for_val = generator_for_value[val];
     if (generator_for_val) {
         generator_for_val->generate_applicable_ops(state, applicable_ops);
     }
@@ -428,21 +419,16 @@ void GeneratorSwitchVector::generate_applicable_ops(
 void GeneratorSwitchVector::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
     int val = state[switch_var_id];
-    GeneratorBase *generator_for_val = generator_for_value[val];
+    const unique_ptr<GeneratorBase> &generator_for_val = generator_for_value[val];
     if (generator_for_val) {
         generator_for_val->generate_applicable_ops(state, applicable_ops);
     }
 }
 
-GeneratorSwitchHash::GeneratorSwitchHash(
-    int switch_var_id, unordered_map<int, GeneratorBase *> &&generator_for_value)
+GeneratorSwitchHash::GeneratorSwitchHash(int switch_var_id,
+    unordered_map<int, unique_ptr<GeneratorBase>> &&generator_for_value)
     : switch_var_id(switch_var_id),
       generator_for_value(move(generator_for_value)) {
-}
-
-GeneratorSwitchHash::~GeneratorSwitchHash() {
-    for (auto child : generator_for_value)
-        delete child.second;
 }
 
 void GeneratorSwitchHash::generate_applicable_ops(
@@ -450,7 +436,7 @@ void GeneratorSwitchHash::generate_applicable_ops(
     int val = state[switch_var_id].get_value();
     const auto &child = generator_for_value.find(val);
     if (child != generator_for_value.end()) {
-        GeneratorBase *generator_for_val = child->second;
+        const unique_ptr<GeneratorBase> &generator_for_val = child->second;
         generator_for_val->generate_applicable_ops(state, applicable_ops);
     }
 }
@@ -460,20 +446,16 @@ void GeneratorSwitchHash::generate_applicable_ops(
     int val = state[switch_var_id];
     const auto &child = generator_for_value.find(val);
     if (child != generator_for_value.end()) {
-        GeneratorBase *generator_for_val = child->second;
+        const unique_ptr<GeneratorBase> &generator_for_val = child->second;
         generator_for_val->generate_applicable_ops(state, applicable_ops);
     }
 }
 
 GeneratorSwitchSingle::GeneratorSwitchSingle(
-    int switch_var_id, int value, GeneratorBase *generator_for_value)
+    int switch_var_id, int value, unique_ptr<GeneratorBase> generator_for_value)
     : switch_var_id(switch_var_id),
       value(value),
-      generator_for_value(generator_for_value) {
-}
-
-GeneratorSwitchSingle::~GeneratorSwitchSingle() {
-    delete generator_for_value;
+      generator_for_value(move(generator_for_value)) {
 }
 
 void GeneratorSwitchSingle::generate_applicable_ops(
@@ -553,7 +535,8 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
         /* Task is trivially unsolvable. Create dummy leaf,
            so we don't have to check root for nullptr everywhere. */
         list<OperatorID> no_applicable_operators;
-        root = utils::make_unique_ptr<GeneratorLeafList>(move(no_applicable_operators));
+        root = utils::make_unique_ptr<GeneratorLeafList>(
+            move(no_applicable_operators));
     }
 
     int peak_memory_after = utils::get_peak_memory_in_kb();

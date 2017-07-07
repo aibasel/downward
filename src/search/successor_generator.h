@@ -13,9 +13,13 @@ class GlobalState;
 class SuccessorGenerator {
     std::unique_ptr<GeneratorBase> root;
 
-    SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
     SuccessorGenerator(const TaskProxy &task_proxy);
+    /*
+      Note that the destructor cannot be set to the default destructor here
+      (~SuccessorGenerator() = default;) because GeneratorBase is a forward
+      declaration and the incomplete type cannot be destroyed.
+    */
     ~SuccessorGenerator();
 
     void generate_applicable_ops(
