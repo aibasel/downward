@@ -36,7 +36,7 @@ using namespace std;
      add GeneratorImmediateSingle.
 */
 
-using Condition = std::vector<FactProxy>;
+using Condition = vector<FactProxy>;
 
 bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
     return f1.get_variable().get_id() < f2.get_variable().get_id();
