@@ -303,8 +303,8 @@ unique_ptr<GeneratorBase> construct_recursive(
 
         while (!operator_queue.empty()) {
             OperatorID op_id = operator_queue.front();
-            int op_index = op_id.get_index();
             operator_queue.pop_front();
+            int op_index = op_id.get_index();
             assert(utils::in_bounds(op_index, next_condition_by_op));
             Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
             if (cond_iter == conditions[op_index].end()) {
