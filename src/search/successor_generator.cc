@@ -210,8 +210,8 @@ GeneratorBase *construct_switch(
     generator_for_value.reserve(num_values);
     int num_non_zero = 0;
     for (list<OperatorID> &ops : operators_for_value) {
-        GeneratorBase *value_generator =
-            construct_recursive(task_proxy, conditions, next_condition_by_op, switch_var_id + 1, move(ops));
+        GeneratorBase *value_generator = construct_recursive(
+            task_proxy, conditions, next_condition_by_op, switch_var_id + 1, move(ops));
         if (value_generator) {
             ++num_non_zero;
         }
@@ -250,8 +250,9 @@ GeneratorBase *construct_branch(
     vector<list<OperatorID>> &&operators_for_value,
     list<OperatorID> &&default_operators,
     list<OperatorID> &&applicable_operators) {
-    GeneratorBase *switch_generator =
-        construct_switch(task_proxy, conditions, next_condition_by_op, switch_var_id, move(operators_for_value));
+    GeneratorBase *switch_generator = construct_switch(
+        task_proxy, conditions, next_condition_by_op,
+        switch_var_id, move(operators_for_value));
     assert(switch_generator);
 
     GeneratorBase *non_immediate_generator = nullptr;
@@ -259,7 +260,8 @@ GeneratorBase *construct_branch(
         non_immediate_generator = switch_generator;
     } else {
         GeneratorBase *default_generator = construct_recursive(
-            task_proxy, conditions, next_condition_by_op, switch_var_id + 1, move(default_operators));
+            task_proxy, conditions, next_condition_by_op,
+            switch_var_id + 1, move(default_operators));
         non_immediate_generator = new GeneratorFork(switch_generator, default_generator);
     }
 
@@ -545,7 +547,8 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
         next_condition_by_op.push_back(conditions.back().begin());
     }
 
-    root = unique_ptr<GeneratorBase>(construct_recursive(task_proxy, conditions, next_condition_by_op, 0, move(all_operators)));
+    root = unique_ptr<GeneratorBase>(construct_recursive(
+        task_proxy, conditions, next_condition_by_op, 0, move(all_operators)));
     if (!root) {
         /* Task is trivially unsolvable. Create dummy leaf,
            so we don't have to check root for nullptr everywhere. */
