@@ -203,7 +203,7 @@ unique_ptr<GeneratorBase> construct_switch(
     int switch_var_id,
     vector<list<OperatorID>> &&operators_for_value) {
     int num_values = operators_for_value.size();
-    vector<unique_ptr<GeneratorBase> > generator_for_value;
+    vector<unique_ptr<GeneratorBase>> generator_for_value;
     generator_for_value.reserve(num_values);
     int num_non_zero = 0;
     for (list<OperatorID> &ops : operators_for_value) {
@@ -312,8 +312,8 @@ unique_ptr<GeneratorBase> construct_recursive(
                 applicable_operators.push_back(op_id);
             } else {
                 assert(utils::in_bounds(
-                    cond_iter - conditions[op_index].begin(),
-                    conditions[op_index]));
+                           cond_iter - conditions[op_index].begin(),
+                           conditions[op_index]));
                 all_ops_are_immediate = false;
                 FactProxy fact = *cond_iter;
                 if (fact.get_variable() == switch_var) {
@@ -425,7 +425,8 @@ void GeneratorSwitchVector::generate_applicable_ops(
     }
 }
 
-GeneratorSwitchHash::GeneratorSwitchHash(int switch_var_id,
+GeneratorSwitchHash::GeneratorSwitchHash(
+    int switch_var_id,
     unordered_map<int, unique_ptr<GeneratorBase>> &&generator_for_value)
     : switch_var_id(switch_var_id),
       generator_for_value(move(generator_for_value)) {
@@ -526,8 +527,9 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
         next_condition_by_op.push_back(conditions.back().begin());
     }
 
-    root = unique_ptr<GeneratorBase>(construct_recursive(
-        task_proxy, conditions, next_condition_by_op, 0, move(all_operators)));
+    root = unique_ptr<GeneratorBase>(
+        construct_recursive(
+            task_proxy, conditions, next_condition_by_op, 0, move(all_operators)));
     if (!root) {
         /* Task is trivially unsolvable. Create dummy leaf,
            so we don't have to check root for nullptr everywhere. */
