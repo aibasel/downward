@@ -168,6 +168,11 @@ public:
         }
     }
 
+    /*
+      After calling this method, it is illegal to use the HashState object
+      further, i.e., make further calls to feed, get_hash32 or get_hash64. We
+      set pending_values = -1 to catch such illegal usage in debug mode.
+    */
     std::uint32_t get_hash32() {
         assert(pending_values != -1);
         if (pending_values) {
@@ -183,6 +188,9 @@ public:
         return c;
     }
 
+    /*
+      See comment for get_hash32.
+    */
     std::uint64_t get_hash64() {
         assert(pending_values != -1);
         if (pending_values) {
