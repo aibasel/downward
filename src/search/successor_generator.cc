@@ -97,10 +97,10 @@ public:
     GeneratorImmediate(list<OperatorID> &&immediate_operators,
                        unique_ptr<GeneratorBase> next_generator);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
 class GeneratorFork : public GeneratorBase {
@@ -111,10 +111,10 @@ public:
         unique_ptr<GeneratorBase> generator1,
         unique_ptr<GeneratorBase> generator2);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
 class GeneratorSwitchVector : public GeneratorBase {
@@ -125,10 +125,10 @@ public:
         int switch_var_id,
         vector<unique_ptr<GeneratorBase>> &&generator_for_value);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
 class GeneratorSwitchHash : public GeneratorBase {
@@ -139,10 +139,10 @@ public:
         int switch_var_id,
         unordered_map<int, unique_ptr<GeneratorBase>> &&generator_for_value);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
 class GeneratorSwitchSingle : public GeneratorBase {
@@ -154,10 +154,10 @@ public:
         int switch_var_id, int value,
         unique_ptr<GeneratorBase> generator_for_value);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
 class GeneratorLeafList : public GeneratorBase {
@@ -165,10 +165,10 @@ class GeneratorLeafList : public GeneratorBase {
 public:
     GeneratorLeafList(list<OperatorID> &&applicable_operators);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
 class GeneratorLeafSingle : public GeneratorBase {
@@ -176,10 +176,10 @@ class GeneratorLeafSingle : public GeneratorBase {
 public:
     GeneratorLeafSingle(OperatorID applicable_operator);
     virtual void generate_applicable_ops(
-        const State &state, vector<OperatorID> &applicable_ops) const;
+        const State &state, vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
     virtual void generate_applicable_ops(
-        const GlobalState &state, vector<OperatorID> &applicable_ops) const;
+        const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
 unique_ptr<GeneratorBase> construct_recursive(
