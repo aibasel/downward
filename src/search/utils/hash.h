@@ -301,10 +301,10 @@ using HashSet = std::unordered_set<T, Hash<T>>;
 /*
   Legacy hash functions.
 
-  We plan to remove these legacy hash functions since they produce too many
-  collisions and implementing std::hash<T> for non-user-defined types T causes
-  undefined behaviour
-  (http://en.cppreference.com/w/cpp/language/extending_std).
+  We plan to remove these legacy hash functions since implementing std::hash<T>
+  for non-user-defined types T causes undefined behaviour
+  (http://en.cppreference.com/w/cpp/language/extending_std) and maintaining
+  only one set of user-defined hash functions is easier.
 */
 
 template<typename T>
