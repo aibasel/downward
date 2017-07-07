@@ -100,25 +100,6 @@
 
 class PerStateInformationBase;
 
-// Wrapper that can be passed to the hash function.
-struct PackedStateWrapper {
-    const unsigned int *data;
-    int length;
-
-    PackedStateWrapper(const unsigned int *data, int length)
-        : data(data),
-          length(length) {
-    }
-};
-
-namespace utils {
-inline void feed(HashState &hash_state, const PackedStateWrapper &wrapper) {
-    for (int i = 0; i < wrapper.length; ++i) {
-        hash_state.feed(wrapper.data[i]);
-    }
-}
-}
-
 class StateRegistry {
     struct StateIDSemanticHash {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
@@ -131,8 +112,11 @@ class StateRegistry {
         }
 
         size_t operator()(StateID id) const {
-            return utils::get_hash(
-                PackedStateWrapper(state_data_pool[id.value], state_size));
+            utils::HashState hash_state;
+            for (int i = 0; i < state_size; ++i) {
+                hash_state.feed(state_data_pool[id.value][i]);
+            }
+            return hash_state.get_hash64();
         }
     };
 
