@@ -5,7 +5,6 @@
 
 #include "utils/collections.h"
 #include "utils/memory.h"
-#include "utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -507,9 +506,6 @@ void GeneratorLeafSingle::generate_applicable_ops(
 }
 
 SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
-    utils::Timer construction_timer;
-    int peak_memory_before = utils::get_peak_memory_in_kb();
-
     OperatorsProxy operators = task_proxy.get_operators();
     // We need the iterators to conditions to be stable:
     vector<Condition> conditions;
@@ -538,12 +534,6 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
         root = utils::make_unique_ptr<GeneratorLeafList>(
             move(no_applicable_operators));
     }
-
-    int peak_memory_after = utils::get_peak_memory_in_kb();
-    int memory_diff = 1024 * (peak_memory_after - peak_memory_before);
-    cout << endl;
-    cout << "SG construction time: " << construction_timer << endl;
-    cout << "SG construction peak memory difference: " << memory_diff << endl;
 }
 
 SuccessorGenerator::~SuccessorGenerator() {
