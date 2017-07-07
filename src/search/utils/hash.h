@@ -85,8 +85,10 @@ inline uint32_t rotate(uint32_t value, uint32_t offset) {
 }
 
 /*
-  Internal class storing the state of the hashing process. It should only be
-  instantiated by functions in this file.
+  Store the state of the hashing process.
+
+  This class can either be used by specializing the template function
+  utils::feed() (recommended, see below), or by working with it directly.
 */
 class HashState {
     std::uint32_t a, b, c;
