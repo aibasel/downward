@@ -423,7 +423,7 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 
 bool TransitionSystem::is_solvable(const Distances &distances) const {
     return init_state != PRUNED_STATE &&
-        distances.get_goal_distance(init_state) != INF;
+           distances.get_goal_distance(init_state) != INF;
 }
 
 int TransitionSystem::compute_total_transitions() const {
