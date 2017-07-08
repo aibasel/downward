@@ -327,13 +327,10 @@ void Distances::statistics() const {
     cout << transition_system.tag();
     if (!are_distances_computed()) {
         cout << "distances not computed";
+    } else if (transition_system.is_solvable(*this)) {
+        cout << "init h=" << get_goal_distance(transition_system.get_init_state());
     } else {
-        int init_state = transition_system.get_init_state();
-        if (init_state == PRUNED_STATE || get_goal_distance(init_state) == INF) {
-            cout << "transition system is unsolvable";
-        } else {
-            cout << "init h=" << get_goal_distance(init_state);
-        }
+        cout << "transition system is unsolvable";
     }
     cout << endl;
 }
