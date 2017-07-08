@@ -67,8 +67,6 @@ public:
         return goal_distances[state];
     }
 
-    bool is_solvable() const;
-
     void dump() const;
     void statistics() const;
 };
