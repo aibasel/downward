@@ -212,10 +212,10 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "shrinking)."
         "We also recommend using full pruning with this shrink strategy, "
         "because both distances from the initial state and to the goal states "
-        "must be computed anyways, and because the existence of only one "
+        "must be computed anyway, and because the existence of only one "
         "dead state causes this shrink strategy to always use the map-based "
-        "approach for partitioning states rather than the more memory-"
-        "efficient vector-based approach.");
+        "approach for partitioning states rather than the more efficient "
+        "vector-based approach.");
     ShrinkBucketBased::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");
