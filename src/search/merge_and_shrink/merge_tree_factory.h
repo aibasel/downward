@@ -39,6 +39,8 @@ public:
         const TaskProxy &task_proxy,
         const FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset);
+    virtual bool requires_init_distances() const = 0;
+    virtual bool requires_goal_distances() const = 0;
     // Derived classes must call this method in their parsing methods.
     static void add_options_to_parser(options::OptionParser &parser);
 };
