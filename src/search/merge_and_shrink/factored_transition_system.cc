@@ -213,7 +213,7 @@ void FactoredTransitionSystem::dump(int index) const {
 
 bool FactoredTransitionSystem::is_factor_solvable(int index) const {
     assert(is_component_valid(index));
-    return transition_systems[index]->is_solvable();
+    return transition_systems[index]->is_solvable(*distances[index]);
 }
 
 bool FactoredTransitionSystem::is_active(int index) const {

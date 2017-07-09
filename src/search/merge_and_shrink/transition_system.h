@@ -10,6 +10,7 @@
 #include <vector>
 
 namespace merge_and_shrink {
+class Distances;
 class LabelEquivalenceRelation;
 class LabelGroup;
 class Labels;
@@ -200,7 +201,7 @@ public:
     */
     bool are_transitions_sorted_unique() const;
 
-    bool is_solvable() const;
+    bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
     void statistics() const;

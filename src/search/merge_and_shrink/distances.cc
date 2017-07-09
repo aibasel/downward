@@ -192,7 +192,7 @@ void Distances::compute_distances(
     /*
       This method does the following:
       - Computes the distances of abstract states from the abstract
-        initial state ("abstract g") and from the abstract goal states
+        initial state ("abstract g") and to the abstract goal states
         ("abstract h"), depending on the given flags.
     */
 
@@ -208,6 +208,7 @@ void Distances::compute_distances(
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "empty transition system, no distances to compute" << endl;
         }
+        distances_computed = true;
         return;
     }
 
@@ -333,7 +334,7 @@ void Distances::statistics() const {
     cout << transition_system.tag();
     if (!are_distances_computed()) {
         cout << "distances not computed";
-    } else if (transition_system.is_solvable()) {
+    } else if (transition_system.is_solvable(*this)) {
         cout << "init h=" << get_goal_distance(transition_system.get_init_state());
     } else {
         cout << "transition system is unsolvable";

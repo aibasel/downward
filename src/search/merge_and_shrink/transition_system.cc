@@ -124,7 +124,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
              << ts2.get_description() << endl;
     }
 
-    assert(ts1.is_solvable() && ts2.is_solvable());
+    assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
 
     int num_variables = ts1.num_variables;
@@ -226,6 +226,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         label_equivalence_relation->add_label_group(dead_labels);
     }
 
+    const bool compute_label_equivalence_relation = false;
     return utils::make_unique_ptr<TransitionSystem>(
         num_variables,
         move(incorporated_variables),
@@ -234,7 +235,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         num_states,
         move(goal_states),
         init_state,
-        false
+        compute_label_equivalence_relation
         );
 }
 
@@ -432,29 +433,9 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
     return true;
 }
 
-bool TransitionSystem::is_solvable() const {
-    /*
-      There are two conditions under which the transition systems is not
-      solvable: there are no goal states or no goal state can be reached.
-
-      If pruning irrelevant states, the initial state will be irrelevant in
-      both cases and hence the transition system is solvable iff the initial
-      states has been pruned.
-
-      Otherweise, because the initital state may be irrelevant but not pruned,
-      we need to check if there are goal states.
-    */
-    if (init_state == PRUNED_STATE) {
-        return false;
-    }
-    bool has_goal = false;
-    for (int state = 0; state < num_states; ++state) {
-        if (goal_states[state]) {
-            has_goal = true;
-            break;
-        }
-    }
-    return has_goal;
+bool TransitionSystem::is_solvable(const Distances &distances) const {
+    return init_state != PRUNED_STATE &&
+           distances.get_goal_distance(init_state) != INF;
 }
 
 int TransitionSystem::compute_total_transitions() const {
