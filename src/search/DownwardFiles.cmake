@@ -181,6 +181,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME INT_HASH_SET
+    HELP "Hash set storing non-negative integers"
+    SOURCES
+        algorithms/int_hash_set.h
+)
+
+fast_downward_plugin(
     NAME INT_PACKER
     HELP "Greedy bin packing algorithm to pack integer variables with small domains tightly into memory"
     SOURCES
