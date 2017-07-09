@@ -51,44 +51,37 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
     for (pair<int, int> merge_candidate : merge_candidates) {
         int index1 = merge_candidate.first;
         int index2 = merge_candidate.second;
+
+        // Copy the transition systems for further processing.
         TransitionSystem ts1(fts.get_ts(index1));
         TransitionSystem ts2(fts.get_ts(index2));
-        /*
-          Compute the size limit for both transition systems as imposed by
-          max_states and max_states_before_merge.
-        */
+
+        // Imitate shrinking and merging as done in the merge-and-shrink loop.
         pair<int, int> new_sizes = compute_shrink_sizes(
             ts1.get_size(),
             ts2.get_size(),
             max_states_before_merge,
             max_states);
-
-        /*
-          For both transition systems, possibly compute and apply an
-          abstraction.
-          TODO: we could better use the given limit by increasing the size limit
-          for the second shrinking if the first shrinking was larger than
-          required.
-        */
         Verbosity verbosity = Verbosity::SILENT;
-
         if (ts1.get_size() > min(new_sizes.first, shrink_threshold_before_merge)) {
             Distances dist1(ts1, fts.get_distances(index1));
             shrink_factor(ts1, dist1, new_sizes.first, verbosity);
         }
-
         if (ts2.get_size() > min(new_sizes.second, shrink_threshold_before_merge)) {
             Distances dist2(ts2, fts.get_distances(index2));
             shrink_factor(ts2, dist2, new_sizes.second, verbosity);
         }
 
+        /*
+          Compute the product of the two copied transition systems and compute
+          distance information to count the number of alive states.
+        */
         unique_ptr<TransitionSystem> product = TransitionSystem::merge(
             fts.get_labels(), ts1, ts2, verbosity);
         unique_ptr<Distances> dist = utils::make_unique_ptr<Distances>(*product);
         const bool compute_init_distances = true;
         const bool compute_goal_distances = true;
         dist->compute_distances(compute_init_distances, compute_goal_distances, verbosity);
-
         int num_states = product->get_size();
         int alive_states_count = 0;
         for (int state = 0; state < num_states; ++state) {
@@ -97,7 +90,15 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
                 ++alive_states_count;
             }
         }
-        // HACK! the previous version had a bug which we emulate here:
+
+        /*
+          Compute the score as the ratio of alive states of the product
+          compared to the number of states of the full product.
+
+          HACK! The version used in the paper accidentally used the sizes of
+          the non-shrunk transition systems for computing the ratio of
+          pruned states in the product. We emulate this behavior here.
+        */
         num_states = fts.get_ts(index1).get_size() * fts.get_ts(index2).get_size();
         double score = static_cast<double>(alive_states_count) /
             static_cast<double>(num_states);
@@ -113,12 +114,14 @@ string MergeScoringFunctionMIASM::name() const {
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "miasm",
-        "This scoring function computes the actual product (after applying "
-        "shrinking before merging) for every candidate merge and then computes "
-        "the ratio of its real size to its expected size if the full product "
-        "was computed. This ratio immediately corresponds to the score, hence "
-        "preferring merges where more pruning of unreachable/irrelevant states "
-        "and/or perfect happened.");
+        "This scoring function favors merging transition systems such that in "
+        "their product, there are many dead states, which can then be pruned "
+        "without sacrificing information. To do so, for every candidate pair "
+        "of transition systems, this class copies the two transition systems, "
+        "possibly shrinks them (using the same shrink strategy as the overall "
+        "merge-and-shrink computation), and then computes their product. The "
+        "score for the merge candidate is the ratio of alive states of this "
+        "product compared to the number of states in the full product.");
 
     // TODO: use shrink strategy and limit options from MergeAndShrinkHeuristic
     // instead of having the identical options here again.
