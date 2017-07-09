@@ -10,21 +10,20 @@
 
 namespace algorithms {
 /*
-  Hash set using a single vector for storing integer keys.
+  Hash set using a single vector for storing non-negative integer keys.
 
   During key insertion we use ideas from hopscotch hashing to ensure
   that each key is at most "max_distance" buckets away from its ideal
   bucket. This ensures constant lookup times.
-
-  The hash set allows storing only non-negative integers.
 */
-template <typename Hasher, typename Equal>
+template<typename Hasher, typename Equal>
 class IntHashSet {
+    // Allow using -1 for empty buckets.
     using KeyType = int;
     using HashType = unsigned int;
 
     // Max distance from the ideal bucket to the actual bucket for each key.
-    static const int max_distance;
+    static const int max_distance = 64;
 
     struct Bucket {
         static const KeyType empty_bucket_key = -1;
@@ -72,13 +71,17 @@ class IntHashSet {
         return wrap_unsigned(n);
     }
 
-    int get_distance(int left_index, int right_index) const {
-        assert(utils::in_bounds(left_index, buckets));
-        assert(utils::in_bounds(right_index, buckets));
-        if (right_index >= left_index) {
-            return right_index - left_index;
+    /*
+      Return distance from bucket 1 to bucket 2, only moving right and wrapping
+      from the last to the first bucket.
+    */
+    int get_distance(int index1, int index2) const {
+        assert(utils::in_bounds(index1, buckets));
+        assert(utils::in_bounds(index2, buckets));
+        if (index2 >= index1) {
+            return index2 - index1;
         } else {
-            return get_capacity() - left_index + right_index;
+            return get_capacity() + index2 - index1;
         }
     }
 
@@ -177,7 +180,7 @@ public:
           num_resizes(0) {
     }
 
-    int size() const {
+    int get_num_entries() const {
         return num_entries;
     }
 
@@ -233,16 +236,13 @@ public:
         assert(!buckets.empty());
         int capacity = get_capacity();
         assert(capacity != 0);
-        std::cout << "Hash set load factor: " << num_entries << "/"
+        std::cout << "Int hash set load factor: " << num_entries << "/"
                   << capacity << " = "
                   << static_cast<double>(num_entries) / capacity
                   << std::endl;
-        std::cout << "Hash set resizings: " << num_resizes << std::endl;
+        std::cout << "Int hash set resizes: " << num_resizes << std::endl;
     }
 };
-
-template <typename Hasher, typename Equal>
-const int IntHashSet<Hasher, Equal>::max_distance = 64;
 }
 
 #endif

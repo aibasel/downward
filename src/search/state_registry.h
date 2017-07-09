@@ -209,7 +209,7 @@ public:
       Returns the number of states registered so far.
     */
     size_t size() const {
-        return registered_states.size();
+        return registered_states.get_num_entries();
     }
 
     int get_state_size_in_bytes() const;
