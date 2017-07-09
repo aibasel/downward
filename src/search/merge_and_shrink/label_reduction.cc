@@ -6,11 +6,11 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../equivalence_relation.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../algorithms/equivalence_relation.h"
 #include "../utils/collections.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
@@ -30,8 +30,8 @@ LabelReduction::LabelReduction(const Options &options)
     : lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(LabelReductionMethod(options.get_enum("method"))),
-      lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
-    rng = utils::parse_rng_from_options(options);
+      lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))),
+      rng(utils::parse_rng_from_options(options)) {
 }
 
 bool LabelReduction::initialized() const {
@@ -41,7 +41,7 @@ bool LabelReduction::initialized() const {
 void LabelReduction::initialize(const TaskProxy &task_proxy) {
     assert(!initialized());
 
-    // Compute the transition system order
+    // Compute the transition system order.
     size_t max_transition_system_count = task_proxy.get_variables().size() * 2 - 1;
     transition_system_order.reserve(max_transition_system_count);
     if (lr_system_order == REGULAR
@@ -59,19 +59,19 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
 }
 
 void LabelReduction::compute_label_mapping(
-    const EquivalenceRelation *relation,
+    const equivalence_relation::EquivalenceRelation *relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
-    Verbosity verbosity) {
+    Verbosity verbosity) const {
     const Labels &labels = fts.get_labels();
     int next_new_label_no = labels.get_size();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (BlockListConstIter group_it = relation->begin();
+    for (auto group_it = relation->begin();
          group_it != relation->end(); ++group_it) {
-        const Block &block = *group_it;
+        const equivalence_relation::Block &block = *group_it;
         unordered_map<int, vector<int>> equivalent_label_nos;
-        for (ElementListConstIter label_it = block.begin();
+        for (auto label_it = block.begin();
              label_it != block.end(); ++label_it) {
             assert(*label_it < next_new_label_no);
             int label_no = *label_it;
@@ -103,7 +103,8 @@ void LabelReduction::compute_label_mapping(
     }
 }
 
-EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
+equivalence_relation::EquivalenceRelation
+*LabelReduction::compute_combinable_equivalence_relation(
     int ts_index,
     const FactoredTransitionSystem &fts) const {
     /*
@@ -111,9 +112,8 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
       iff l and l' are locally equivalent in all transition systems
       T' \neq T. (They may or may not be locally equivalent in T.)
     */
-    //cout << transition_system.tag() << "compute combinable labels" << endl;
 
-    // create the equivalence relation where all labels are equivalent
+    // Create the equivalence relation where all labels are equivalent.
     const Labels &labels = fts.get_labels();
     int num_labels = labels.get_size();
     vector<pair<int, int>> annotated_labels;
@@ -123,8 +123,9 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
             annotated_labels.push_back(make_pair(0, label_no));
         }
     }
-    EquivalenceRelation *relation =
-        EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
+    equivalence_relation::EquivalenceRelation *relation =
+        equivalence_relation::EquivalenceRelation::from_annotated_elements<int>(
+            num_labels, annotated_labels);
 
     for (int index : fts) {
         if (index != ts_index) {
@@ -139,33 +140,32 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
 }
 
 bool LabelReduction::reduce(
-    pair<int, int> next_merge,
+    const pair<int, int> &next_merge,
     FactoredTransitionSystem &fts,
-    Verbosity verbosity) {
+    Verbosity verbosity) const {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = fts.get_size();
 
     if (lr_method == TWO_TRANSITION_SYSTEMS) {
-        /* Note:
-           We compute the combinable relation for labels for the two transition systems
-           in the order given by the merge strategy. We conducted experiments
-           testing the impact of always starting with the larger transitions system
-           (in terms of variables) or with the smaller transition system and found
-           no significant differences.
+        /*
+           Note:
+           We compute the combinable relation for labels for the two transition
+           systems in the order given by the merge strategy. We conducted
+           experiments testing the impact of always starting with the larger
+           transitions system (in terms of variables) or with the smaller
+           transition system and found no significant differences.
          */
         assert(fts.is_active(next_merge.first));
         assert(fts.is_active(next_merge.second));
 
         bool reduced = false;
-        EquivalenceRelation *relation = compute_combinable_equivalence_relation(
-            next_merge.first,
-            fts);
+        equivalence_relation::EquivalenceRelation *relation =
+            compute_combinable_equivalence_relation(next_merge.first, fts);
         vector<pair<int, vector<int>>> label_mapping;
         compute_label_mapping(relation, fts, label_mapping, verbosity);
         if (!label_mapping.empty()) {
-            fts.apply_label_reduction(label_mapping,
-                                      next_merge.first);
+            fts.apply_label_mapping(label_mapping, next_merge.first);
             reduced = true;
         }
         delete relation;
@@ -177,16 +177,15 @@ bool LabelReduction::reduce(
             fts);
         compute_label_mapping(relation, fts, label_mapping, verbosity);
         if (!label_mapping.empty()) {
-            fts.apply_label_reduction(label_mapping,
-                                      next_merge.second);
+            fts.apply_label_mapping(label_mapping, next_merge.second);
             reduced = true;
         }
         delete relation;
         return reduced;
     }
 
-    // Make sure that we start with an index not ouf of range for
-    // all_transition_systems
+    /* Make sure that we start with an index not ouf of range for
+       all_transition_systems. */
     size_t tso_index = 0;
     assert(!transition_system_order.empty());
     while (transition_system_order[tso_index] >= num_transition_systems) {
@@ -211,21 +210,20 @@ bool LabelReduction::reduce(
 
         vector<pair<int, vector<int>>> label_mapping;
         if (fts.is_active(ts_index)) {
-            EquivalenceRelation *relation =
-                compute_combinable_equivalence_relation(ts_index,
-                                                        fts);
+            equivalence_relation::EquivalenceRelation *relation =
+                compute_combinable_equivalence_relation(ts_index, fts);
             compute_label_mapping(relation, fts, label_mapping, verbosity);
             delete relation;
         }
 
         if (label_mapping.empty()) {
-            // Even if the transition system has been removed, we need to count
-            // it as unsuccessful iterations (the size of the vector matters).
+            /* Even if the transition system has been removed, we need to count
+               it as unsuccessful iterations (the size of the vector matters). */
             ++num_unsuccessful_iterations;
         } else {
             reduced = true;
             num_unsuccessful_iterations = 0;
-            fts.apply_label_reduction(label_mapping, ts_index);
+            fts.apply_label_mapping(label_mapping, ts_index);
         }
         if (num_unsuccessful_iterations == num_transition_systems - 1)
             break;
@@ -349,7 +347,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
                            "label_reduction_method.",
                            "RANDOM",
                            label_reduction_system_order_doc);
-    // add random_seed option
+    // Add random_seed option.
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();

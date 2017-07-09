@@ -7,7 +7,7 @@ HeuristicCache::HeuristicCache(const GlobalState &state)
     : state(state) {
 }
 
-EvaluationResult &HeuristicCache::operator[](ScalarEvaluator *heur) {
+EvaluationResult &HeuristicCache::operator[](Evaluator *heur) {
     return eval_results[heur];
 }
 

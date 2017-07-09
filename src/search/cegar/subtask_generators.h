@@ -6,7 +6,6 @@
 
 class AbstractTask;
 struct FactPair;
-class TaskProxy;
 
 namespace landmarks {
 class LandmarkGraph;
@@ -14,6 +13,10 @@ class LandmarkGraph;
 
 namespace options {
 class Options;
+}
+
+namespace utils {
+class RandomNumberGenerator;
 }
 
 namespace cegar {
@@ -58,6 +61,7 @@ public:
 */
 class GoalDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 public:
     explicit GoalDecomposition(const options::Options &options);
@@ -74,6 +78,7 @@ public:
 class LandmarkDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
     bool combine_facts;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     /* Perform domain abstraction by combining facts that have to be
        achieved before a given landmark can be made true. */

@@ -3,10 +3,9 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
 
 #include "../lp/lp_solver.h"
-
+#include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -73,8 +72,8 @@ void StateEquationConstraints::initialize_constraints(
     double infinity) {
     cout << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);
-    verify_no_axioms(task_proxy);
-    verify_no_conditional_effects(task_proxy);
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
     build_propositions(task_proxy);
     add_constraints(constraints, infinity);
 

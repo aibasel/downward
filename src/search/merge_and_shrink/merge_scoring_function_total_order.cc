@@ -23,12 +23,12 @@ MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     : atomic_ts_order(AtomicTSOrder(options.get_enum("atomic_ts_order"))),
       product_ts_order(ProductTSOrder(options.get_enum("product_ts_order"))),
       atomic_before_product(options.get<bool>("atomic_before_product")),
-      random_seed(options.get<int>("random_seed")) {
-    rng = utils::parse_rng_from_options(options);
+      random_seed(options.get<int>("random_seed")),
+      rng(utils::parse_rng_from_options(options)) {
 }
 
 vector<double> MergeScoringFunctionTotalOrder::compute_scores(
-    FactoredTransitionSystem &,
+    const FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
     assert(initialized);
     vector<double> scores;

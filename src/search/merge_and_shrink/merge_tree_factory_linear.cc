@@ -21,13 +21,13 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
     : MergeTreeFactory(options),
-      variable_order_type(static_cast<VariableOrderType>(
+      variable_order_type(static_cast<variable_order_finder::VariableOrderType>(
                               options.get_enum("variable_order"))) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const TaskProxy &task_proxy) {
-    VariableOrderFinder vof(task_proxy, variable_order_type);
+    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type);
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
@@ -39,7 +39,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const TaskProxy &task_proxy,
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) {
     /*
       Compute a mapping from state variables to transition system indices
@@ -70,7 +70,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
      skipping all indices not in indices_subset, because these have been set
      to "used" above.
     */
-    VariableOrderFinder vof(task_proxy, variable_order_type);
+    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type);
 
     int next_var = vof.next();
     int ts_index = var_to_ts_index[next_var];
