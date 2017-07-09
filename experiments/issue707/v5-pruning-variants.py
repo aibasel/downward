@@ -9,7 +9,7 @@ from lab.reports import Attribute, geometric_mean
 from common_setup import IssueConfig, IssueExperiment, DEFAULT_OPTIMAL_SUITE, is_test_run
 
 BENCHMARKS_DIR=os.path.expanduser('~/repos/downward/benchmarks')
-REVISIONS = ["issue707-v4"]
+REVISIONS = ["issue707-v5"]
 CONFIGS = [
     IssueConfig('rl-b50k-nopruneunreachable', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_precomputed(merge_tree=linear(variable_order=reverse_level)),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1,prune_unreachable_states=false))']),
     IssueConfig('dfp-b50k-nopruneunreachable', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_stateless(merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1,prune_unreachable_states=false))']),

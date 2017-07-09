@@ -128,39 +128,36 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     string dashes(79, '=');
     if (!label_reduction) {
         cerr << dashes << endl
-             << "WARNING! You did not enable label reduction. \nThis may "
+             << "WARNING! You did not enable label reduction.\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
         cerr << dashes << endl
-             << "WARNING! You set label reduction to be applied twice in "
-            "each merge-and-shrink iteration, both before shrinking and\n"
-            "merging. This double computation effort does not pay off "
-            "for most configurations!"
+             << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
+            "iteration, both before shrinking and merging. This double computation effort\n"
+            "does not pay off for most configurations!"
              << endl << dashes << endl;
     } else {
         if (label_reduction->reduce_before_shrinking() &&
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
             cerr << dashes << endl
-                 << "WARNING! Bucket-based shrink strategies such as\n"
-                "f-preserving random perform best if used with label\n"
-                "reduction before merging, not before shrinking!"
+                 << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
+                "best if used with label reduction before merging, not before shrinking!"
                  << endl << dashes << endl;
         }
         if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
             cerr << dashes << endl
-                 << "WARNING! Shrinking based on bisimulation performs best\n"
-                "if used with label reduction before shrinking, not\n"
-                "before merging!"
+                 << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
+                "reduction before shrinking, not before merging!"
                  << endl << dashes << endl;
         }
     }
 
     if (!prune_unreachable_states || !prune_irrelevant_states) {
         cerr << dashes << endl
-             << "WARNING! Pruning is (partially) turned off! \nThis may "
+             << "WARNING! Pruning is (partially) turned off!\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
     }
@@ -322,13 +319,10 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                     cout << endl;
                 }
                 /*
-                  NOTE: both the shrinking strategy classes and the construction
-                  of the composite require input transition systems to be
-                  solvable in the sense that the initial state is not pruned and
-                  not all goal states are pruned. A transition system is
-                  allowed to be semantically unsolvable as long as pruning is
-                  (partially) turned off and there is at least one "real" state
-                  in the transition system.
+                  NOTE: both the shrink strategy classes and the construction
+                  of the composite transition system require the input
+                  transition systems to be non-empty, i.e. the initial state
+                  not to be pruned.
                 */
                 if (!fts.is_factor_solvable(merged_index)) {
                     unsolvable_index = merged_index;
@@ -354,7 +348,10 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
         cout << "Final transition system size: "
              << fts.get_ts(final_index).get_size() << endl;
     } else {
-        // unsolvable_index points to an unsolvable transition system.
+        /*
+          unsolvable_index points to an unsolvable transition system (this
+          happens if we exited the main loop prior to its regular termination).
+        */
         final_index = unsolvable_index;
         cout << "Abstract problem is unsolvable!" << endl;
     }

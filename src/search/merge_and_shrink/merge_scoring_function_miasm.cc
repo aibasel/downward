@@ -73,12 +73,12 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         Verbosity verbosity = Verbosity::SILENT;
 
         if (ts1.get_size() > min(new_sizes.first, shrink_threshold_before_merge)) {
-            Distances dist1(ts1, fts.get_dist(index1));
+            Distances dist1(ts1, fts.get_distances(index1));
             shrink_factor(ts1, dist1, new_sizes.first, verbosity);
         }
 
         if (ts2.get_size() > min(new_sizes.second, shrink_threshold_before_merge)) {
-            Distances dist2(ts2, fts.get_dist(index2));
+            Distances dist2(ts2, fts.get_distances(index2));
             shrink_factor(ts2, dist2, new_sizes.second, verbosity);
         }
 
