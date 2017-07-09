@@ -8,7 +8,7 @@
 #include <cassert>
 #include <vector>
 
-namespace algorithms {
+namespace int_hash_set {
 /*
   Hash set using a single vector for storing non-negative integer keys.
 
