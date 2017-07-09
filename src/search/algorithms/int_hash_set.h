@@ -23,7 +23,7 @@ class IntHashSet {
     using HashType = unsigned int;
 
     // Max distance from the ideal bucket to the actual bucket for each key.
-    static const int max_distance = 64;
+    static const int max_distance = 32;
 
     struct Bucket {
         static const KeyType empty_bucket_key = -1;
