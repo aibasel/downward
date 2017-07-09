@@ -101,7 +101,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         */
         num_states = fts.get_ts(index1).get_size() * fts.get_ts(index2).get_size();
         double score = static_cast<double>(alive_states_count) /
-            static_cast<double>(num_states);
+                       static_cast<double>(num_states);
         scores.push_back(score);
     }
     return scores;
