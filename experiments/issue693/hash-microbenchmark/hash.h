@@ -77,18 +77,18 @@ namespace utils {
   type.
 */
 
+static_assert(sizeof(unsigned int) == 4, "unsigned int has unexpected size");
+
 /*
   Circular rotation (http://stackoverflow.com/a/31488147/224132).
 */
-inline uint32_t rotate(uint32_t value, uint32_t offset) {
+inline unsigned int rotate(unsigned int value, unsigned int offset) {
     return (value << offset) | (value >> (32 - offset));
 }
 
 /*
-  Store the state of the hashing process.
-
-  This class can either be used by specializing the template function
-  utils::feed() (recommended, see below), or by working with it directly.
+  Internal class storing the state of the hashing process. It should only be
+  instantiated by functions in this file.
 */
 class HashState {
     std::uint32_t a, b, c;
@@ -152,6 +152,32 @@ public:
           pending_values(0) {
     }
 
+    void feed_ints(const int *values, int length) {
+        // Handle most of the key.
+        while (length > 3) {
+            a += values[0];
+            b += values[1];
+            c += values[2];
+            mix();
+            length -= 3;
+            values += 3;
+        }
+
+        // Handle the last 3 unsigned ints. All case statements fall through.
+        switch (length) {
+        case 3:
+            c += values[2];
+        case 2:
+            b += values[1];
+        case 1:
+            a += values[0];
+            final_mix();
+        // case 0: nothing left to add.
+        case 0:
+            break;
+        }
+    }
+
     void feed(std::uint32_t value) {
         assert(pending_values != -1);
         if (pending_values == 3) {
@@ -170,11 +196,6 @@ public:
         }
     }
 
-    /*
-      After calling this method, it is illegal to use the HashState object
-      further, i.e., make further calls to feed, get_hash32 or get_hash64. We
-      set pending_values = -1 to catch such illegal usage in debug mode.
-    */
     std::uint32_t get_hash32() {
         assert(pending_values != -1);
         if (pending_values) {
@@ -190,9 +211,6 @@ public:
         return c;
     }
 
-    /*
-      See comment for get_hash32.
-    */
     std::uint64_t get_hash64() {
         assert(pending_values != -1);
         if (pending_values) {
@@ -292,10 +310,9 @@ struct Hash {
 };
 
 /*
-  Aliases for hash sets and hash maps in user code.
-
-  Use these aliases for hashing types T that don't have a standard std::hash<T>
-  specialization.
+  Aliases for hash sets and hash maps in user code. All user code should use
+  utils::UnorderedSet and utils::UnorderedMap instead of std::unordered_set and
+  std::unordered_map.
 
   To hash types that are not supported out of the box, implement utils::feed.
 */
@@ -306,14 +323,12 @@ template<typename T>
 using HashSet = std::unordered_set<T, Hash<T>>;
 
 
-/*
-  Legacy hash functions.
+/* Transitional aliases and functions */
+template<typename T1, typename T2>
+using UnorderedMap = std::unordered_map<T1, T2>;
 
-  We plan to remove these legacy hash functions since implementing std::hash<T>
-  for non-user-defined types T causes undefined behaviour
-  (http://en.cppreference.com/w/cpp/language/extending_std) and maintaining
-  only one set of user-defined hash functions is easier.
-*/
+template<typename T>
+using UnorderedSet = std::unordered_set<T>;
 
 template<typename T>
 inline void hash_combine(size_t &hash, const T &value) {

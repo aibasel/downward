@@ -112,8 +112,12 @@ class StateRegistry {
         }
 
         size_t operator()(StateID id) const {
-            return utils::hash_sequence(state_data_pool[id.value],
-                                        state_size);
+            const PackedStateBin *data = state_data_pool[id.value];
+            utils::HashState hash_state;
+            for (int i = 0; i < state_size; ++i) {
+                hash_state.feed(data[i]);
+            }
+            return hash_state.get_hash64();
         }
     };
 
@@ -139,9 +143,7 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    typedef std::unordered_set<StateID,
-                               StateIDSemanticHash,
-                               StateIDSemanticEqual> StateIDSet;
+    using StateIDSet = std::unordered_set<StateID, StateIDSemanticHash, StateIDSemanticEqual>;
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */
