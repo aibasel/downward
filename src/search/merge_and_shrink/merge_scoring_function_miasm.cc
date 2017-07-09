@@ -122,6 +122,13 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "merge-and-shrink computation), and then computes their product. The "
         "score for the merge candidate is the ratio of alive states of this "
         "product compared to the number of states in the full product.");
+    parser.document_note(
+        "miasm()",
+        "We recommend using full pruning, i.e. pruning of both unreachable "
+        "and irrelevant states, when using this merge scoring function, so "
+        "that the ranking of merge candidates based on the ratio of alive "
+        "to all states actually corresponds to the amount of pruning that "
+        "happens after choosing a merge candidate.");
 
     // TODO: use shrink strategy and limit options from MergeAndShrinkHeuristic
     // instead of having the identical options here again.
