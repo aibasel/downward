@@ -19,7 +19,7 @@ namespace merge_and_shrink {
 vector<int> MergeScoringFunctionDFP::compute_label_ranks(
     const FactoredTransitionSystem &fts, int index) const {
     const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
+    const Distances &distances = fts.get_distances(index);
     int num_labels = fts.get_labels().get_size();
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     vector<int> label_ranks(num_labels, -1);
