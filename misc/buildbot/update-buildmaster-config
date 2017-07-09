@@ -1,6 +1,6 @@
 #! /bin/bash
 
-## Run this script on cs-aidev whenever the buildmaster config has
+## Run this script on dmi-aidev whenever the buildmaster config has
 ## changed. This needs to be run by someone with sudo privileges.
 ##
 ## NOTE on using this script:

@@ -16,12 +16,12 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     const options::Options &options)
-    : random_seed(options.get<int>("random_seed")) {
-    rng = utils::parse_rng_from_options(options);
+    : random_seed(options.get<int>("random_seed")),
+      rng(utils::parse_rng_from_options(options)) {
 }
 
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(
-    FactoredTransitionSystem &,
+    const FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
     int chosen_index = (*rng)(merge_candidates.size());
     vector<double> scores;

@@ -1,7 +1,5 @@
 #include "registries.h"
 
-#include "../utils/system.h"
-
 using namespace std;
 using utils::ExitCode;
 
@@ -21,6 +19,10 @@ void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
 }
 
 const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
+    if (!registry.count(type)) {
+        ABORT("attempt to retrieve non-existing type info from registry: " +
+              string(type.name()));
+    }
     return registry.at(type);
 }
 }

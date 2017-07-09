@@ -9,7 +9,7 @@ using namespace std;
 
 namespace max_evaluator {
 MaxEvaluator::MaxEvaluator(const Options &opts)
-    : CombiningEvaluator(opts.get_list<ScalarEvaluator *>("evals")) {
+    : CombiningEvaluator(opts.get_list<Evaluator *>("evals")) {
 }
 
 MaxEvaluator::~MaxEvaluator() {
@@ -24,17 +24,17 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Evaluator *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Max evaluator",
         "Calculates the maximum of the sub-evaluators.");
-    parser.add_list_option<ScalarEvaluator *>(
+    parser.add_list_option<Evaluator *>(
         "evals",
-        "at least one scalar evaluator");
+        "at least one evaluator");
 
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
+    opts.verify_list_non_empty<Evaluator *>("evals");
 
     if (parser.dry_run()) {
         return nullptr;
@@ -42,5 +42,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return new MaxEvaluator(opts);
 }
 
-static Plugin<ScalarEvaluator> plugin("max", _parse);
+static Plugin<Evaluator> plugin("max", _parse);
 }

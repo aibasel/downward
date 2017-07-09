@@ -1,9 +1,10 @@
 #include "max_additive_pdb_sets.h"
 
-#include "max_cliques.h"
 #include "pattern_database.h"
 
 #include "../task_proxy.h"
+
+#include "../algorithms/max_cliques.h"
 
 using namespace std;
 
@@ -57,7 +58,7 @@ shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
     }
 
     vector<vector<int>> max_cliques;
-    compute_max_cliques(cgraph, max_cliques);
+    max_cliques::compute_max_cliques(cgraph, max_cliques);
 
     shared_ptr<MaxAdditivePDBSubsets> max_additive_sets =
         make_shared<MaxAdditivePDBSubsets>();

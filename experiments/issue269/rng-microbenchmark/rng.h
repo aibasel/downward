@@ -24,7 +24,7 @@ public:
     double get_double_old();
     int get_int_old(int bound);
 
-    template <class T>
+    template<class T>
     void shuffle(std::vector<T> &vec) {
         std::shuffle(vec.begin(), vec.end(), rng);
     }

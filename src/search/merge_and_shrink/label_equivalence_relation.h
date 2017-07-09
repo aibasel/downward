@@ -59,7 +59,7 @@ class LabelEquivalenceRelation {
       This class groups labels together and allows easy acces to the group
       and position within a group for every label. It is used by the class
       TransitionSystem to group locally equivalent labels. Label groups
-      have implicit ids defined by their index in grouped_labels.
+      have implicit IDs defined by their index in grouped_labels.
     */
 
     const Labels &labels;
@@ -71,7 +71,7 @@ class LabelEquivalenceRelation {
       make sure to reserve enough memory so reallocation is never needed.
     */
     std::vector<LabelGroup> grouped_labels;
-    // maps each label to its group's id and its iterator within the group.
+    // maps each label to its group's ID and its iterator within the group.
     std::vector<std::pair<int, LabelIter>> label_to_positions;
 
     void add_label_to_group(int group_id, int label_no);

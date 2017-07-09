@@ -1,15 +1,14 @@
 #ifndef ABSTRACT_TASK_H
 #define ABSTRACT_TASK_H
 
+#include "operator_id.h"
+
 #include "utils/hash.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-class GlobalOperator;
-class GlobalState;
 
 namespace options {
 class Options;
@@ -81,7 +80,7 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const = 0;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const = 0;
-    virtual const GlobalOperator *get_global_operator(int index, bool is_axiom) const = 0;
+    virtual OperatorID get_global_operator_id(OperatorID id) const = 0;
 
     virtual int get_num_axioms() const = 0;
 
