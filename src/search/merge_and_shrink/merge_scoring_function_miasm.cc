@@ -22,27 +22,6 @@ MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
       shrink_threshold_before_merge(options.get<int>("threshold_before_merge")) {
 }
 
-void MergeScoringFunctionMIASM::shrink_factor(
-    TransitionSystem &ts,
-    const Distances &dist,
-    int new_size,
-    Verbosity verbosity) const {
-    StateEquivalenceRelation equivalence_relation =
-        shrink_strategy->compute_equivalence_relation(ts, dist, new_size);
-    // TODO: We currently violate this; see issue250
-    //assert(equivalence_relation.size() <= target_size);
-    int new_num_states = equivalence_relation.size();
-    if (new_num_states < ts.get_size()) {
-        /* Compute the abstraction mapping based on the given state equivalence
-           relation. */
-        vector<int> abstraction_mapping = compute_abstraction_mapping(
-            ts.get_size(), equivalence_relation);
-        ts.apply_abstraction(
-            equivalence_relation, abstraction_mapping, verbosity);
-        // Not applying abstraction to distances because we don't need to.
-    }
-}
-
 vector<double> MergeScoringFunctionMIASM::compute_scores(
     const FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {
@@ -51,42 +30,26 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
     for (pair<int, int> merge_candidate : merge_candidates) {
         int index1 = merge_candidate.first;
         int index2 = merge_candidate.second;
-
-        // Copy the transition systems for further processing.
-        TransitionSystem ts1(fts.get_ts(index1));
-        TransitionSystem ts2(fts.get_ts(index2));
-
-        // Imitate shrinking and merging as done in the merge-and-shrink loop.
-        pair<int, int> new_sizes = compute_shrink_sizes(
-            ts1.get_size(),
-            ts2.get_size(),
+        unique_ptr<TransitionSystem> product = shrink_before_merge_externally(
+            fts,
+            index1,
+            index2,
+            *shrink_strategy,
+            max_states,
             max_states_before_merge,
-            max_states);
-        Verbosity verbosity = Verbosity::SILENT;
-        if (ts1.get_size() > min(new_sizes.first, shrink_threshold_before_merge)) {
-            Distances dist1(ts1, fts.get_distances(index1));
-            shrink_factor(ts1, dist1, new_sizes.first, verbosity);
-        }
-        if (ts2.get_size() > min(new_sizes.second, shrink_threshold_before_merge)) {
-            Distances dist2(ts2, fts.get_distances(index2));
-            shrink_factor(ts2, dist2, new_sizes.second, verbosity);
-        }
+            shrink_threshold_before_merge);
 
-        /*
-          Compute the product of the two copied transition systems and compute
-          distance information to count the number of alive states.
-        */
-        unique_ptr<TransitionSystem> product = TransitionSystem::merge(
-            fts.get_labels(), ts1, ts2, verbosity);
-        unique_ptr<Distances> dist = utils::make_unique_ptr<Distances>(*product);
+        // Compute distances for the product and count the alive states.
+        unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
         const bool compute_init_distances = true;
         const bool compute_goal_distances = true;
-        dist->compute_distances(compute_init_distances, compute_goal_distances, verbosity);
+        const Verbosity verbosity = Verbosity::SILENT;
+        distances->compute_distances(compute_init_distances, compute_goal_distances, verbosity);
         int num_states = product->get_size();
         int alive_states_count = 0;
         for (int state = 0; state < num_states; ++state) {
-            if (dist->get_init_distance(state) != INF &&
-                dist->get_goal_distance(state) != INF) {
+            if (distances->get_init_distance(state) != INF &&
+                distances->get_goal_distance(state) != INF) {
                 ++alive_states_count;
             }
         }
@@ -147,5 +110,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         return make_shared<MergeScoringFunctionMIASM>(options);
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("miasm", _parse);
+static options::PluginShared<MergeScoringFunction> _plugin("sf_miasm", _parse);
 }
