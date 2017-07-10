@@ -163,48 +163,6 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-bool MergeAndShrinkHeuristic::shrink_before_merge(
-    FactoredTransitionSystem &fts, int index1, int index2) {
-    /*
-      Compute the size limit for both transition systems as imposed by
-      max_states and max_states_before_merge.
-    */
-    pair<int, int> new_sizes = compute_shrink_sizes(
-        fts.get_ts(index1).get_size(),
-        fts.get_ts(index2).get_size(),
-        max_states_before_merge,
-        max_states);
-
-    /*
-      For both transition systems, possibly compute and apply an
-      abstraction.
-      TODO: we could better use the given limit by increasing the size limit
-      for the second shrinking if the first shrinking was larger than
-      required.
-    */
-    bool shrunk1 = shrink_factor(
-        fts,
-        index1,
-        new_sizes.first,
-        shrink_threshold_before_merge,
-        *shrink_strategy,
-        verbosity);
-    if (verbosity >= Verbosity::VERBOSE && shrunk1) {
-        fts.statistics(index1);
-    }
-    bool shrunk2 = shrink_factor(
-        fts,
-        index2,
-        new_sizes.second,
-        shrink_threshold_before_merge,
-        *shrink_strategy,
-        verbosity);
-    if (verbosity >= Verbosity::VERBOSE && shrunk2) {
-        fts.statistics(index2);
-    }
-    return shrunk1 || shrunk2;
-}
-
 void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     const bool compute_init_distances =
         shrink_strategy->requires_init_distances() ||
@@ -228,7 +186,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     */
     for (int index = 0; index < fts.get_size(); ++index) {
         if (prune_unreachable_states || prune_irrelevant_states) {
-            prune_factor(
+            prune_step(
                 fts,
                 index,
                 prune_unreachable_states,
@@ -273,8 +231,15 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             }
 
             // Shrinking
-            bool shrunk = shrink_before_merge(
-                fts, merge_index1, merge_index2);
+            bool shrunk = shrink_before_merge_step(
+                fts,
+                merge_index1,
+                merge_index2,
+                max_states,
+                max_states_before_merge,
+                shrink_threshold_before_merge,
+                *shrink_strategy,
+                verbosity);
             if (verbosity >= Verbosity::NORMAL && shrunk) {
                 print_time(timer, "after shrinking");
             }
@@ -302,7 +267,7 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
 
             // Pruning
             if (prune_unreachable_states || prune_irrelevant_states) {
-                bool pruned = prune_factor(
+                bool pruned = prune_step(
                     fts,
                     merged_index,
                     prune_unreachable_states,

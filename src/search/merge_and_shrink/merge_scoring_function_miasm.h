@@ -20,12 +20,6 @@ class MergeScoringFunctionMIASM : public MergeScoringFunction {
     const int max_states;
     const int max_states_before_merge;
     const int shrink_threshold_before_merge;
-
-    void shrink_factor(
-        TransitionSystem &ts,
-        const Distances &dist,
-        int new_size,
-        Verbosity verbosity) const;
 protected:
     virtual std::string name() const override;
 public:
