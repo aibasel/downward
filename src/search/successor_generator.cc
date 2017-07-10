@@ -181,13 +181,13 @@ public:
         const GlobalState &state, vector<OperatorID> &applicable_ops) const override;
 };
 
-unique_ptr<GeneratorBase> construct_recursive(
+static unique_ptr<GeneratorBase> construct_recursive(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
     int switch_var_id, list<OperatorID> &&operator_queue);
 
-unique_ptr<GeneratorBase> construct_leaf(list<OperatorID> &&operators) {
+static unique_ptr<GeneratorBase> construct_leaf(list<OperatorID> &&operators) {
     assert(!operators.empty());
     if (operators.size() == 1) {
         return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
@@ -196,7 +196,7 @@ unique_ptr<GeneratorBase> construct_leaf(list<OperatorID> &&operators) {
     }
 }
 
-unique_ptr<GeneratorBase> construct_switch(
+static unique_ptr<GeneratorBase> construct_switch(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
@@ -242,7 +242,7 @@ unique_ptr<GeneratorBase> construct_switch(
     }
 }
 
-unique_ptr<GeneratorBase> construct_branch(
+static unique_ptr<GeneratorBase> construct_branch(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
@@ -274,7 +274,7 @@ unique_ptr<GeneratorBase> construct_branch(
     }
 }
 
-unique_ptr<GeneratorBase> construct_recursive(
+static unique_ptr<GeneratorBase> construct_recursive(
     const TaskProxy &task_proxy,
     vector<Condition> &conditions,
     vector<Condition::const_iterator> &next_condition_by_op,
