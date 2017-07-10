@@ -301,6 +301,13 @@ static unique_ptr<GeneratorBase> construct_recursive(
         bool all_ops_are_immediate = true;
         bool var_is_interesting = false;
 
+        /*
+          TODO: Look into more efficient algorithms that don't iterate over all
+          operators in the subtree at each layer of recursion. It also seems
+          that we currently consider variables "interesting" as soon as there
+          are immediately applicable operators, even if no preconditions on the
+          variable exist. This could be improved.
+        */
         while (!operator_queue.empty()) {
             OperatorID op_id = operator_queue.front();
             operator_queue.pop_front();
