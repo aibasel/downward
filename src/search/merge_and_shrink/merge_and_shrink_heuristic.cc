@@ -450,9 +450,7 @@ static Heuristic *_parse(OptionParser &parser) {
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
-            "AAAI Press 2016") + "\n" +
-        "Note that dyn-MIASM has not been integrated into the official code "
-        "base of Fast Downward and is available on request.");
+            "AAAI Press 2016"));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
@@ -477,8 +475,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
         "merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
         "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
-        "total_order])),"
-        "label_reduction=exact(before_shrinking=true,"
+        "total_order])),label_reduction=exact(before_shrinking=true,"
         "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}\n"
         "Note that for versions of Fast Downward prior to 2016-08-19, the "
         "syntax differs. See the recommendation in the file "
