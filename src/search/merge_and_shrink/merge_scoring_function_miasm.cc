@@ -11,6 +11,8 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/markup.h"
+
 using namespace std;
 
 namespace merge_and_shrink {
@@ -84,21 +86,41 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "possibly shrinks them (using the same shrink strategy as the overall "
         "merge-and-shrink computation), and then computes their product. The "
         "score for the merge candidate is the ratio of alive states of this "
-        "product compared to the number of states in the full product.");
+        "product compared to the number of states in the full product."
+        "The merge strategy using this scoring function, called dyn-MIASM, "
+        "is described in the following (and see the note below for "
+        "corresponding configurations):"
+        + utils::format_paper_reference(
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+            "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "Proceedings of the 26th International Conference on Planning and "
+            "Scheduling (ICAPS 2016)",
+            "2358-2366",
+            "AAAI Press 2016"));
     parser.document_note(
-        "miasm()",
-        "We recommend using full pruning, i.e. pruning of both unreachable "
-        "and irrelevant states, when using this merge scoring function, so "
-        "that the ranking of merge candidates based on the ratio of alive "
-        "to all states actually corresponds to the amount of pruning that "
-        "happens after choosing a merge candidate.");
+        "Note",
+        "To obtain the configurations called dyn-MIASM described in the paper, "
+        "use this scoring function within a stateless merge strategy using a "
+        "score based filtering approach, with additional tie-breaking, i.e.: "
+        "{{{merge_strategy=merge_stateless(merge_selector=score_based_filtering"
+        "(scoring_functions=[sf_miasm,total_order]))}}}");
+    parser.document_note(
+        "Note",
+        "Reasonable configurations use the same options related to shrinking"
+        "for miasm as for merge_and_shrink, i.e. the options {{{"
+        "shrink_strategy}}}, {{{max_states}}}, and {{{threshold_before_merge}}} "
+        "should be set identically. Furthermore, as this scoring functions "
+        "maximizes the amount of possible pruning, merge-and-shrink should be "
+        "configured to use full pruning, i.e. {{{prune_unreachable_states=true"
+        "}}} and {{{prune_irrelevant_states=true}}} (the default).");
 
     // TODO: use shrink strategy and limit options from MergeAndShrinkHeuristic
     // instead of having the identical options here again.
     parser.add_option<shared_ptr<ShrinkStrategy>>(
         "shrink_strategy",
         "The given shrink strategy configuration should match the one "
-        "given to merge_and_shrink.");
+        "given to {{{merge_and_shrink}}}, cf the note below.");
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
 
     options::Options options = parser.parse();
