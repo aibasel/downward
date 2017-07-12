@@ -313,7 +313,7 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
     return TransitionSystem::merge(
         fts.get_labels(),
         (ts1 ? *ts1 : original_ts1),
-        (ts2 ? *ts2: original_ts2),
+        (ts2 ? *ts2 : original_ts2),
         verbosity);
 }
 }
