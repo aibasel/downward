@@ -80,7 +80,7 @@ exp.add_report(ComparativeReport(attributes=attributes,algorithm_pairs=[
     ('%s-sbf-miasm-rnd-otn-pba-b50k' % 'issue668-v2','%s-sbf-miasm-rnd-otn-pba-b50k' % 'issue668-v4'),
     ('%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v2','%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v4'),
     ('%s-sbf-miasm-rnd-rnd-pba-b50k' % 'issue668-v2','%s-sbf-miasm-rnd-rnd-pba-b50k' % 'issue668-v4'),
-]),name='issue668-v4-pba.html')
+]),name='issue668-v2-v4-compare-pba.html')
 exp.add_report(ComparativeReport(attributes=attributes,algorithm_pairs=[
     ('%s-sbf-miasm-rl-nto-abp-b50k' % 'issue668-v2','%s-sbf-miasm-rl-nto-abp-b50k' % 'issue668-v4'),
     ('%s-sbf-miasm-l-nto-abp-b50k' % 'issue668-v2','%s-sbf-miasm-l-nto-abp-b50k' % 'issue668-v4'),
@@ -89,7 +89,7 @@ exp.add_report(ComparativeReport(attributes=attributes,algorithm_pairs=[
     ('%s-sbf-miasm-l-nto-pba-b50k' % 'issue668-v2','%s-sbf-miasm-l-nto-pba-b50k' % 'issue668-v4'),
     ('%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v2','%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v4'),
     ('%s-sbf-miasm-allrnd-b50k' % 'issue668-v2','%s-sbf-miasm-allrnd-b50k' % 'issue668-v4'),
-]),name='issue668-v4-paper.html')
+]),name='issue668-v2-v4-compare-paper.html')
 
 exp.run_steps()
 
