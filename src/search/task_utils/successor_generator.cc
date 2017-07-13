@@ -1,10 +1,9 @@
 #include "successor_generator.h"
 
-#include "global_state.h"
-#include "task_tools.h"
+#include "../global_state.h"
 
-#include "utils/collections.h"
-#include "utils/memory.h"
+#include "../utils/collections.h"
+#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -36,6 +35,7 @@ using namespace std;
      add GeneratorImmediateSingle.
 */
 
+namespace successor_generator {
 using Condition = vector<FactProxy>;
 
 bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
@@ -558,4 +558,5 @@ void SuccessorGenerator::generate_applicable_ops(
 void SuccessorGenerator::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
+}
 }

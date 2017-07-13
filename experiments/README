@@ -4,7 +4,7 @@ Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
 the creation of experiments. We recommend using common_setup.py (and
-related files for usage) from issue662 for new experiments since it is
+related files for usage) from issue704 for new experiments since it is
 the most recent version.
 
 Previously, most experiments imported lab's downward/configs.py module.
@@ -42,7 +42,7 @@ performed. Some of them use lab's deprecated DownwardExperiment:
   * issue77/issue77-v7-opt.py
 
 * M&S: configs and additional parsing and a check for availability of matplotlib
-  * issue666/v1.py and issue666/ms-parser.py
+  * issue707/v3.py and issue707/ms-parser.py
 
 * Run experiment in debug mode (with assertions):
   * issue650/v2.py

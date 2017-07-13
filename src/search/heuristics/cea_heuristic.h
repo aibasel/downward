@@ -1,7 +1,8 @@
 #ifndef HEURISTICS_CEA_HEURISTIC_H
 #define HEURISTICS_CEA_HEURISTIC_H
 
-#include "../domain_transition_graph.h"
+#include "domain_transition_graph.h"
+
 #include "../heuristic.h"
 
 #include "../algorithms/priority_queues.h"
@@ -16,7 +17,7 @@ struct LocalProblemNode;
 struct LocalTransition;
 
 class ContextEnhancedAdditiveHeuristic : public Heuristic {
-    std::vector<DomainTransitionGraph *> transition_graphs;
+    std::vector<domain_transition_graph::DomainTransitionGraph *> transition_graphs;
     std::vector<LocalProblem *> local_problems;
     std::vector<std::vector<LocalProblem *>> local_problem_index;
     LocalProblem *goal_problem;

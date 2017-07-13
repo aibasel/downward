@@ -1,16 +1,22 @@
-#ifndef DOMAIN_TRANSITION_GRAPH_H
-#define DOMAIN_TRANSITION_GRAPH_H
+#ifndef HEURISTICS_DOMAIN_TRANSITION_GRAPH_H
+#define HEURISTICS_DOMAIN_TRANSITION_GRAPH_H
 
-#include "task_proxy.h"
+#include "../task_proxy.h"
 
 #include <cassert>
 #include <unordered_map>
 #include <vector>
 
+
+namespace cea_heuristic {
+class ContextEnhancedAdditiveHeuristic;
+}
+
 namespace cg_heuristic {
 class CGHeuristic;
 }
 
+namespace domain_transition_graph {
 struct LocalAssignment;
 struct ValueNode;
 struct ValueTransition;
@@ -107,10 +113,6 @@ struct ValueNode {
         : parent_graph(parent), value(val), reached_from(0), reached_by(0) {}
 };
 
-namespace cea_heuristic {
-class ContextEnhancedAdditiveHeuristic;
-}
-
 class DomainTransitionGraph {
     friend class cg_heuristic::CGHeuristic;
     friend class cea_heuristic::ContextEnhancedAdditiveHeuristic;
@@ -129,5 +131,6 @@ class DomainTransitionGraph {
 public:
     DomainTransitionGraph(int var_index, int node_count);
 };
+}
 
 #endif
