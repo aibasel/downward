@@ -5,15 +5,13 @@
 #include "merge_tree_factory.h"
 #include "transition_system.h"
 
-#include "../causal_graph.h"
 #include "../task_proxy.h"
 
 #include "../algorithms/sccs.h"
-
 #include "../options/option_parser.h"
 #include "../options/options.h"
 #include "../options/plugin.h"
-
+#include "../task_utils/causal_graph.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
@@ -48,7 +46,7 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &optio
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     const TaskProxy &task_proxy,
-    FactoredTransitionSystem &fts) {
+    const FactoredTransitionSystem &fts) {
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
@@ -159,7 +157,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-            "Proceedings of the xxth Internation Conference on Planning and "
+            "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
             "AAAI Press 2016") +

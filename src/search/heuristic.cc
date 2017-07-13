@@ -6,8 +6,8 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task_tools.h"
 
+#include "task_utils/task_properties.h"
 #include "tasks/cost_adapted_task.h"
 
 #include <cassert>
@@ -103,7 +103,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)
-            assert(is_applicable(global_operators[op_id], global_state));
+            assert(task_properties::is_applicable(global_operators[op_id], global_state));
     }
 #endif
 

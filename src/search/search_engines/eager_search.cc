@@ -1,17 +1,14 @@
 #include "eager_search.h"
 
-#include "search_common.h"
-
 #include "../evaluation_context.h"
 #include "../globals.h"
 #include "../heuristic.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
-#include "../plugin.h"
 #include "../pruning_method.h"
-#include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
+#include "../task_utils/successor_generator.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -314,155 +311,4 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
         statistics.report_f_value_progress(f_value);
     }
 }
-
-/* TODO: merge this into SearchEngine::add_options_to_parser when all search
-         engines support pruning. */
-void add_pruning_option(OptionParser &parser) {
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "Pruning methods can prune or reorder the set of applicable operators in "
-        "each state and thereby influence the number and order of successor states "
-        "that are considered.",
-        "null()");
-}
-
-static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Eager best-first search", "");
-
-    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
-    parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes", "false");
-    parser.add_option<Evaluator *>(
-        "f_eval",
-        "set evaluator for jump statistics. "
-        "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
-        OptionParser::NONE);
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-
-    add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        opts.set<bool>("mpd", false);
-        engine = new EagerSearch(opts);
-    }
-
-    return engine;
-}
-
-static SearchEngine *_parse_astar(OptionParser &parser) {
-    parser.document_synopsis(
-        "A* search (eager)",
-        "A* is a special case of eager best first search that uses g+h "
-        "as f-function. "
-        "We break ties using the evaluator. Closed nodes are re-opened.");
-    parser.document_note(
-        "mpd option",
-        "This option is currently only present for the A* algorithm and not "
-        "for the more general eager search, "
-        "because the current implementation of multi-path depedence "
-        "does not support general open lists.");
-    parser.document_note(
-        "Equivalent statements using general eager search",
-        "\n```\n--search astar(evaluator)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h=evaluator\n"
-        "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
-        "               reopen_closed=true, f_eval=sum([g(), h]))\n"
-        "```\n", true);
-    parser.add_option<Evaluator *>("eval", "evaluator for h-value");
-    parser.add_option<bool>("mpd",
-                            "use multi-path dependence (LM-A*)", "false");
-
-    add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts);
-        opts.set("open", temp.first);
-        opts.set("f_eval", temp.second);
-        opts.set("reopen_closed", true);
-        vector<Heuristic *> preferred_list;
-        opts.set("preferred", preferred_list);
-        engine = new EagerSearch(opts);
-    }
-
-    return engine;
-}
-
-static SearchEngine *_parse_greedy(OptionParser &parser) {
-    parser.document_synopsis("Greedy search (eager)", "");
-    parser.document_note(
-        "Open list",
-        "In most cases, eager greedy best first search uses "
-        "an alternation open list with one queue for each evaluator. "
-        "If preferred operator heuristics are used, it adds an extra queue "
-        "for each of these evaluators that includes only the nodes that "
-        "are generated with a preferred operator. "
-        "If only one evaluator and no preferred operator heuristic is used, "
-        "the search does not use an alternation open list but a "
-        "standard open list with only one queue.");
-    parser.document_note(
-        "Closed nodes",
-        "Closed node are not re-opened");
-    parser.document_note(
-        "Equivalent statements using general eager search",
-        "\n```\n--heuristic h2=eval2\n"
-        "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
-        "--search eager(alt([single(h1), single(h1, pref_only=true), single(h2), \n"
-        "                    single(h2, pref_only=true)], boost=100),\n"
-        "               preferred=h2)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search eager_greedy([eval1, eval2])\n```\n"
-        "is equivalent to\n"
-        "```\n--search eager(alt([single(eval1), single(eval2)]))\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--heuristic h1=eval1\n"
-        "--search eager_greedy(h1, preferred=h1)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h1=eval1\n"
-        "--search eager(alt([single(h1), single(h1, pref_only=true)]),\n"
-        "               preferred=h1)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search eager_greedy(eval1)\n```\n"
-        "is equivalent to\n"
-        "```\n--search eager(single(eval1))\n```\n", true);
-
-    parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-    parser.add_option<int>(
-        "boost",
-        "boost value for preferred operator open lists", "0");
-
-    add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<Evaluator *>("evals");
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        opts.set("open", search_common::create_greedy_open_list_factory(opts));
-        opts.set("reopen_closed", false);
-        opts.set("mpd", false);
-        Evaluator *evaluator = nullptr;
-        opts.set("f_eval", evaluator);
-        engine = new EagerSearch(opts);
-    }
-    return engine;
-}
-
-static Plugin<SearchEngine> _plugin("eager", _parse);
-static Plugin<SearchEngine> _plugin_astar("astar", _parse_astar);
-static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_greedy);
 }

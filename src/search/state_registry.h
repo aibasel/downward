@@ -112,8 +112,12 @@ class StateRegistry {
         }
 
         size_t operator()(StateID id) const {
-            return utils::hash_sequence(state_data_pool[id.value],
-                                        state_size);
+            const PackedStateBin *data = state_data_pool[id.value];
+            utils::HashState hash_state;
+            for (int i = 0; i < state_size; ++i) {
+                hash_state.feed(data[i]);
+            }
+            return hash_state.get_hash64();
         }
     };
 
@@ -139,9 +143,7 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    typedef std::unordered_set<StateID,
-                               StateIDSemanticHash,
-                               StateIDSemanticEqual> StateIDSet;
+    using StateIDSet = std::unordered_set<StateID, StateIDSemanticHash, StateIDSemanticEqual>;
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */
@@ -220,6 +222,53 @@ public:
     */
     void subscribe(PerStateInformationBase *psi) const;
     void unsubscribe(PerStateInformationBase *psi) const;
+
+    class const_iterator : public std::iterator<
+                               std::forward_iterator_tag, StateID> {
+        /*
+          We intentionally omit parts of the forward iterator concept
+          (e.g. default construction, copy assignment, post-increment)
+          to reduce boilerplate. Supported compilers may complain about
+          this, in which case we will add the missing methods.
+        */
+
+        friend class StateRegistry;
+        const StateRegistry &registry;
+        StateID pos;
+
+        const_iterator(const StateRegistry &registry, size_t start)
+            : registry(registry), pos(start) {}
+public:
+        const_iterator &operator++() {
+            ++pos.value;
+            return *this;
+        }
+
+        bool operator==(const const_iterator &rhs) {
+            assert(&registry == &rhs.registry);
+            return pos == rhs.pos;
+        }
+
+        bool operator!=(const const_iterator &rhs) {
+            return !(*this == rhs);
+        }
+
+        StateID operator*() {
+            return pos;
+        }
+
+        StateID *operator->() {
+            return &pos;
+        }
+    };
+
+    const_iterator begin() const {
+        return const_iterator(*this, 0);
+    }
+
+    const_iterator end() const {
+        return const_iterator(*this, size());
+    }
 };
 
 #endif

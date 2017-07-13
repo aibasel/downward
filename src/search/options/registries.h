@@ -3,52 +3,59 @@
 
 #include "../utils/system.h"
 
+#include <algorithm>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <string>
 #include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 namespace options {
 class OptionParser;
 
-//a registry<T> maps a string to a T-factory
+// A Registry<T> maps a string to a T-factory.
 template<typename T>
 class Registry {
 public:
-    typedef T (*Factory)(OptionParser &);
+    using Factory = std::function<T(OptionParser &)>;
+
+    void insert(const std::string &key, Factory factory) {
+        if (registered.count(key)) {
+            std::cerr << "duplicate key in registry: " << key << std::endl;
+            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+        }
+        registered[key] = factory;
+    }
+
+    bool contains(const std::string &key) const {
+        return registered.find(key) != registered.end();
+    }
+
+    Factory get(const std::string &key) const {
+        return registered.at(key);
+    }
+
+    std::vector<std::string> get_sorted_keys() const {
+        std::vector<std::string> keys;
+        for (auto it : registered) {
+            keys.push_back(it.first);
+        }
+        sort(keys.begin(), keys.end());
+        return keys;
+    }
+
     static Registry<T> *instance() {
         static Registry<T> instance_;
         return &instance_;
     }
 
-    void insert(const std::string &k, Factory f) {
-        if (registered.count(k)) {
-            std::cerr << "duplicate key in registry: " << k << std::endl;
-            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
-        }
-        registered[k] = f;
-    }
-
-    bool contains(const std::string &k) {
-        return registered.find(k) != registered.end();
-    }
-
-    Factory get(const std::string &k) {
-        return registered[k];
-    }
-
-    std::vector<std::string> get_keys() {
-        std::vector<std::string> keys;
-        for (auto it : registered) {
-            keys.push_back(it.first);
-        }
-        return keys;
-    }
-
 private:
+    // Define this below public methods since it needs "Factory" typedef.
+    std::unordered_map<std::string, Factory> registered;
+
     Registry() = default;
-    std::map<std::string, Factory> registered;
 };
 
 
@@ -95,6 +102,10 @@ public:
     const std::string &get_documentation() const {
         return documentation;
     }
+
+    bool operator<(const PluginTypeInfo &other) const {
+        return make_pair(type_name, type) < make_pair(other.type_name, other.type);
+    }
 };
 
 /*
@@ -115,26 +126,20 @@ class PluginTypeRegistry {
     ~PluginTypeRegistry() = default;
     Map registry;
 public:
-    static PluginTypeRegistry *instance();
     void insert(const PluginTypeInfo &info);
+
     const PluginTypeInfo &get(const std::type_index &type) const;
 
-    Map::const_iterator begin() const {
-        /*
-          TODO (post-issue586): We want plugin types sorted by name in
-          output. One way to achieve this is by defining the map's
-          comparison function to sort first by the name and then by
-          the type_index, but this is actually a bit difficult if the
-          name isn't part of the key. One option to work around this
-          is to use a set instead of a map as the internal data
-          structure here.
-        */
-        return registry.cbegin();
+    std::vector<PluginTypeInfo> get_sorted_types() const {
+        std::vector<PluginTypeInfo> types;
+        for (auto it : registry) {
+            types.push_back(it.second);
+        }
+        sort(types.begin(), types.end());
+        return types;
     }
 
-    Map::const_iterator end() const {
-        return registry.cend();
-    }
+    static PluginTypeRegistry *instance();
 };
 }
 

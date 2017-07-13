@@ -7,10 +7,10 @@
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../successor_generator.h"
-#include "../task_tools.h"
 
 #include "../lp/lp_solver.h"
+#include "../task_utils/successor_generator.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -40,8 +40,8 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       admissible(opts.get<bool>("admissible")),
       dead_ends_reliable(
           admissible ||
-          (!has_axioms(task_proxy) &&
-           (!has_conditional_effects(task_proxy) || conditional_effects_supported))),
+          (!task_properties::has_axioms(task_proxy) &&
+           (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
@@ -53,19 +53,23 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         if (reasonable_orders) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::INPUT_ERROR);
-        } else if (has_axioms(task_proxy)) {
+        } else if (task_properties::has_axioms(task_proxy)) {
             cerr << "cost partitioning does not support axioms" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
-        } else if (has_conditional_effects(task_proxy) && !conditional_effects_supported) {
+        } else if (task_properties::has_conditional_effects(task_proxy) &&
+                   !conditional_effects_supported) {
             cerr << "conditional effects not supported by the landmark generation method" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
-                get_operator_costs(task_proxy), *lgraph, static_cast<lp::LPSolverType>(opts.get_enum("lpsolver")));
+                task_properties::get_operator_costs(task_proxy),
+                *lgraph,
+                static_cast<lp::LPSolverType>(opts.get_enum("lpsolver")));
         } else {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
-                get_operator_costs(task_proxy), *lgraph, opts.get<bool>("alm"));
+                task_properties::get_operator_costs(task_proxy),
+                *lgraph, opts.get<bool>("alm"));
         }
     } else {
         lm_cost_assignment = nullptr;
@@ -74,7 +78,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main task in cases
            where it's compatible. See issue564. */
-        successor_generator = utils::make_unique_ptr<SuccessorGenerator>(task_proxy);
+        successor_generator = utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy);
     }
 }
 
@@ -127,7 +131,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
 int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
 
-    if (is_goal_state(task_proxy, state))
+    if (task_properties::is_goal_state(task_proxy, state))
         return 0;
 
     int h = get_heuristic_value(global_state);

@@ -1,11 +1,12 @@
 #include "cg_heuristic.h"
 
 #include "cg_cache.h"
+#include "domain_transition_graph.h"
 
-#include "../domain_transition_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
+
+#include "../task_utils/task_properties.h"
 
 #include <algorithm>
 #include <cassert>
@@ -13,6 +14,7 @@
 #include <vector>
 
 using namespace std;
+using namespace domain_transition_graph;
 
 // TODO: Turn this into an option and check its impact.
 #define USE_CACHE true
@@ -22,7 +24,7 @@ CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
       cache(new CGCache(task_proxy)), cache_hits(0), cache_misses(0),
       helpful_transition_extraction_counter(0),
-      min_action_cost(get_min_operator_cost(task_proxy)) {
+      min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing causal graph heuristic..." << endl;
 
     unsigned int num_vars = task_proxy.get_variables().size();
@@ -80,7 +82,8 @@ void CGHeuristic::setup_domain_transition_graphs() {
 }
 
 int CGHeuristic::get_transition_cost(const State &state,
-                                     DomainTransitionGraph *dtg, int start_val,
+                                     DomainTransitionGraph *dtg,
+                                     int start_val,
                                      int goal_val) {
     if (start_val == goal_val)
         return 0;
@@ -267,7 +270,9 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     OperatorProxy op = helpful->is_axiom ?
                        task_proxy.get_axioms()[helpful->op_id] :
                        task_proxy.get_operators()[helpful->op_id];
-    if (cost == op.get_cost() && !op.is_axiom() && is_applicable(op, state)) {
+    if (cost == op.get_cost() &&
+        !op.is_axiom() &&
+        task_properties::is_applicable(op, state)) {
         // Transition immediately applicable, all preconditions true.
         set_preferred(op);
     } else {
