@@ -1,10 +1,10 @@
 class SuccessorGeneratorFactory {
+    using GeneratorPtr = unique_ptr<GeneratorBase>;
     using Condition = vector<FactPair>;
     using OperatorList = list<OperatorID>;
     // TODO: Later switch to the following pair-based representation?
-    // using ValuesAndOperators = vector<pair<int, OperatorList>>;
-    using ValuesAndOperators = vector<OperatorList>;
-    using GeneratorPtr = unique_ptr<GeneratorBase>;
+    // using ValuesAndGenerators = vector<pair<int, GeneratorPtr>>;
+    using ValuesAndGenerators = vector<GeneratorPtr>;
 
     const TaskProxy &task_proxy;
     vector<Condition> conditions;
@@ -30,20 +30,14 @@ class SuccessorGeneratorFactory {
     }
 
     GeneratorPtr construct_switch(
-        int switch_var_id, ValuesAndOperators operators_for_value) {
-        int num_values = operators_for_value.size();
-        vector<GeneratorPtr> generator_for_value;
-        generator_for_value.reserve(num_values);
-        int num_non_zero = 0;
-        for (OperatorList &ops : operators_for_value) {
-            GeneratorPtr value_generator = construct_recursive(move(ops));
-            if (value_generator) {
-                ++num_non_zero;
-            }
-            generator_for_value.push_back(move(value_generator));
-        }
+        int switch_var_id, ValuesAndGenerators generator_for_value) {
+        int num_values = generator_for_value.size();
+        int num_null = count(generator_for_value.begin(),
+                             generator_for_value.end(), nullptr);
+        int num_non_null = num_values - num_null;
+        assert(num_non_null > 0);
 
-        if (num_non_zero == 1) {
+        if (num_non_null == 1) {
             for (int value = 0; value < num_values; ++value) {
                 if (generator_for_value[value]) {
                     return utils::make_unique_ptr<GeneratorSwitchSingle>(
@@ -52,8 +46,9 @@ class SuccessorGeneratorFactory {
             }
             assert(false);
         }
+
         int vector_size = estimate_vector_size<GeneratorPtr>(num_values);
-        int hash_size = estimate_unordered_map_size<int, GeneratorPtr>(num_non_zero);
+        int hash_size = estimate_unordered_map_size<int, GeneratorPtr>(num_non_null);
         if (hash_size < vector_size) {
             unordered_map<int, GeneratorPtr> map;
             for (int value = 0; value < num_values; ++value) {
@@ -69,8 +64,7 @@ class SuccessorGeneratorFactory {
         }
     }
 
-    GeneratorPtr construct_recursive(
-        OperatorList &&operator_queue) {
+    GeneratorPtr construct_recursive(OperatorList operator_queue) {
         /*
           TODO: the new implementation doesn't need switch_var_id any
           more, so get rid of it.
@@ -93,7 +87,7 @@ class SuccessorGeneratorFactory {
         int last_value = -1;
         OperatorList immediate_operators;
         OperatorList current_operators;
-        ValuesAndOperators current_values_and_operators;
+        ValuesAndGenerators current_values_and_generators;
         for (OperatorID op : operator_queue) {
             int op_index = op.get_index();
 
@@ -120,7 +114,8 @@ class SuccessorGeneratorFactory {
                     if (cond_value != last_value) {
                         assert(cond_value > last_value);
                         assert(!current_operators.empty());
-                        current_values_and_operators[last_value] = move(current_operators);
+                        current_values_and_generators[last_value] = construct_recursive(
+                            move(current_operators));
                         last_value = cond_value;
                     }
                 } else {
@@ -128,7 +123,9 @@ class SuccessorGeneratorFactory {
 
                     if (!current_operators.empty()) {
                         // It can only be empty if last_var == -1.
-                        current_values_and_operators[last_value] = move(current_operators);
+                        // TODO: Reduce code duplication with above.
+                        current_values_and_generators[last_value] = construct_recursive(
+                            move(current_operators));
                     }
 
                     if (last_var == -1) {
@@ -138,16 +135,16 @@ class SuccessorGeneratorFactory {
                     } else {
                         nodes.push_back(
                             construct_switch(
-                                last_var, move(current_values_and_operators)));
+                                last_var, move(current_values_and_generators)));
                     }
 
                     last_var = cond_var;
                     last_value = cond_value;
 
-                    assert(current_values_and_operators.empty());
+                    assert(current_values_and_generators.empty());
 
                     int var_domain = variables[cond_var].get_domain_size();
-                    current_values_and_operators.resize(var_domain);
+                    current_values_and_generators.resize(var_domain);
                 }
                 current_operators.push_back(op);
             }
@@ -156,7 +153,8 @@ class SuccessorGeneratorFactory {
         // TODO: Deal with code duplication, perhaps by using a sentinel past the last var_no?
         if (!current_operators.empty()) {
             // It can only be empty if last_var == -1.
-            current_values_and_operators[last_value] = move(current_operators);
+            current_values_and_generators[last_value] = construct_recursive(
+                move(current_operators));
         }
 
         if (last_var == -1) {
@@ -166,7 +164,7 @@ class SuccessorGeneratorFactory {
         } else {
             nodes.push_back(
                 construct_switch(
-                    last_var, move(current_values_and_operators)));
+                    last_var, move(current_values_and_generators)));
         }
 
         return construct_chain(nodes);
