@@ -37,10 +37,10 @@ using namespace std;
 */
 
 namespace successor_generator {
-using Condition = vector<FactProxy>;
+using Condition = vector<FactPair>;
 
-bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
-    return f1.get_variable().get_id() < f2.get_variable().get_id();
+bool smaller_variable_id(const FactPair &f1, const FactPair &f2) {
+    return f1.var < f2.var;
 }
 
 template<typename T>
@@ -323,14 +323,14 @@ static unique_ptr<GeneratorBase> construct_recursive(
                            cond_iter - conditions[op_index].begin(),
                            conditions[op_index]));
                 all_ops_are_immediate = false;
-                FactProxy fact = *cond_iter;
-                if (fact.get_variable() == switch_var) {
+                FactPair fact = *cond_iter;
+                if (fact.var == switch_var.get_id()) {
                     var_is_interesting = true;
                     while (cond_iter != conditions[op_index].end() &&
-                           cond_iter->get_variable() == switch_var) {
+                           cond_iter->var == switch_var.get_id()) {
                         ++cond_iter;
                     }
-                    operators_for_val[fact.get_value()].push_back(op_id);
+                    operators_for_val[fact.value].push_back(op_id);
                 } else {
                     default_operators.push_back(op_id);
                 }
@@ -526,7 +526,7 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
         Condition cond;
         cond.reserve(op.get_preconditions().size());
         for (FactProxy pre : op.get_preconditions()) {
-            cond.push_back(pre);
+            cond.push_back(pre.get_pair());
         }
         // Conditions must be ordered by variable id.
         sort(cond.begin(), cond.end(), smaller_variable_id);
