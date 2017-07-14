@@ -1,3 +1,5 @@
+using Condition = vector<FactPair>;
+
 class SuccessorGeneratorFactory {
     const TaskProxy &task_proxy;
     vector<Condition> conditions;
@@ -175,7 +177,7 @@ public:
                 cond.push_back(pre.get_pair());
             }
             // Conditions must be ordered by variable id.
-            sort(cond.begin(), cond.end(), smaller_variable_id);
+            sort(cond.begin(), cond.end());
             all_operators.push_back(OperatorID(op.get_id()));
             conditions.push_back(cond);
             next_condition_by_op.push_back(conditions.back().begin());

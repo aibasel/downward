@@ -37,11 +37,6 @@ using namespace std;
 */
 
 namespace successor_generator {
-using Condition = vector<FactPair>;
-
-bool smaller_variable_id(const FactPair &f1, const FactPair &f2) {
-    return f1.var < f2.var;
-}
 
 template<typename T>
 int estimate_vector_size(int num_elements) {
