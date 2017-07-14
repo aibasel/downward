@@ -16,12 +16,13 @@ class SuccessorGeneratorFactory {
         } else {
             GeneratorPtr result = move(nodes.at(0));
             for (size_t i = 1; i < nodes.size(); ++i)
-                result = utils::make_unique_ptr<GeneratorFork>(move(result), move(nodes.at(i)));
+                result = utils::make_unique_ptr<GeneratorFork>(
+                    move(result), move(nodes.at(i)));
             return result;
         }
     }
 
-    GeneratorPtr construct_immediate(OperatorList &&operators) {
+    GeneratorPtr construct_immediate(OperatorList operators) {
         assert(!operators.empty());
         if (operators.size() == 1)
             return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
@@ -65,106 +66,105 @@ class SuccessorGeneratorFactory {
     }
 
     GeneratorPtr construct_recursive(OperatorList operator_queue) {
-        /*
-          TODO: the new implementation doesn't need switch_var_id any
-          more, so get rid of it.
-        */
-
-        /*
-          TODO: Does the new implementation need this test? I think we
-          usually won't call this function with an empty operator
-          queue, except perhaps at the root, and hence we probably
-          don't need to speed this case up.
-        */
-        if (operator_queue.empty())
-            return nullptr;
-
         VariablesProxy variables = task_proxy.get_variables();
 
         vector<GeneratorPtr> nodes;
 
         int last_var = -1;
         int last_value = -1;
-        OperatorList immediate_operators;
         OperatorList current_operators;
         ValuesAndGenerators current_values_and_generators;
         for (OperatorID op : operator_queue) {
             int op_index = op.get_index();
 
             Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
+
+            int cond_var;
+            int cond_value;
+
+            /*
+              Consume next condition of op (if any) and set cond_var/cond_value.
+              Set both to -1 if there are no further conditions.
+            */
             if (cond_iter == conditions[op_index].end()) {
-                /*
-                  TODO: Can we handle this by setting cond_var = -1 and cond_value = -1
-                  and then handle both cases uniformly?
-                */
-                // No more conditions for this operator.
                 assert(last_var == -1 && last_value == -1);
-                immediate_operators.push_back(op);
+                cond_var = -1;
+                cond_value = -1;
             } else {
                 // Obtain condition and consume it.
                 assert(utils::in_bounds(
                            cond_iter - conditions[op_index].begin(),
                            conditions[op_index]));
-                int cond_var = cond_iter->var;
-                int cond_value = cond_iter->value;
+                cond_var = cond_iter->var;
+                cond_value = cond_iter->value;
+                assert(make_pair(cond_var, cond_value) >=
+                       make_pair(last_var, last_value));
                 ++cond_iter;
                 assert(cond_iter == conditions[op_index].end() ||
                        cond_iter->var > cond_var);
-                if (cond_var == last_var) {
-                    if (cond_value != last_value) {
-                        assert(cond_value > last_value);
-                        assert(!current_operators.empty());
-                        current_values_and_generators[last_value] = construct_recursive(
-                            move(current_operators));
-                        last_value = cond_value;
-                    }
-                } else {
-                    assert(cond_var > last_var);
+            }
 
-                    if (!current_operators.empty()) {
-                        // It can only be empty if last_var == -1.
-                        // TODO: Reduce code duplication with above.
-                        current_values_and_generators[last_value] = construct_recursive(
-                            move(current_operators));
-                    }
+            if (cond_var != last_var || cond_value != last_value) {
+                if (last_var != -1) {
+                    /*
+                      We just finished the operator range for last_var/last_value.
+                      Recursively generate a successor generator for the range.
+                    */
+                    assert(!current_operators.empty());
+                    current_values_and_generators[last_value] = construct_recursive(
+                        move(current_operators));
+                    assert(current_operators.empty());
+                }
 
+                if (cond_var != last_var) {
                     if (last_var == -1) {
-                        if (!immediate_operators.empty())
+                        /*
+                          We just finished the operator range with the immediate operators.
+                          Create a successor generator for them.
+                        */
+                        assert(cond_var != last_var && cond_value != last_value);
+                        if (!current_operators.empty()) {
                             nodes.push_back(construct_immediate(
-                                                move(immediate_operators)));
+                                                move(current_operators)));
+                        }
+                        assert(current_operators.empty());
                     } else {
+                        /*
+                          We just finished the whole operator range for last_var.
+                          Create a switch generator for the variable.
+                        */
                         nodes.push_back(
                             construct_switch(
                                 last_var, move(current_values_and_generators)));
+                        assert(current_values_and_generators.empty());
                     }
-
-                    last_var = cond_var;
-                    last_value = cond_value;
-
-                    assert(current_values_and_generators.empty());
 
                     int var_domain = variables[cond_var].get_domain_size();
                     current_values_and_generators.resize(var_domain);
+                    last_var = cond_var;
                 }
-                current_operators.push_back(op);
+                last_value = cond_value;
             }
+            current_operators.push_back(op);
         }
 
-        // TODO: Deal with code duplication, perhaps by using a sentinel past the last var_no?
-        if (!current_operators.empty()) {
-            // It can only be empty if last_var == -1.
+        /*
+          TODO: The following is code duplication. Deal with this,
+          perhaps by using a sentinel past the last var_no?
+        */
+        if (last_var == -1) {
+            if (!current_operators.empty()) {
+                nodes.push_back(construct_immediate(
+                                    move(current_operators)));
+            }
+        } else {
             current_values_and_generators[last_value] = construct_recursive(
                 move(current_operators));
-        }
-
-        if (last_var == -1) {
-            if (!immediate_operators.empty())
-                nodes.push_back(construct_immediate(
-                                    move(immediate_operators)));
-        } else {
+            assert(current_operators.empty());
             nodes.push_back(
                 construct_switch(
                     last_var, move(current_values_and_generators)));
+            assert(current_values_and_generators.empty());
         }
 
         return construct_chain(nodes);
@@ -218,11 +218,10 @@ public:
 
         GeneratorPtr root = construct_recursive(move(all_operators));
         if (!root) {
-            /* Task is trivially unsolvable. Create dummy leaf,
+            /* Task has no operators. Create dummy leaf,
                so we don't have to check root for nullptr everywhere. */
-            OperatorList no_applicable_operators;
-            root = utils::make_unique_ptr<GeneratorLeafList>(
-                move(no_applicable_operators));
+            OperatorList no_operators;
+            root = construct_immediate(no_operators);
         }
         return move(root);
     }
