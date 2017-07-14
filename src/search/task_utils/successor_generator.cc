@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <list>
 #include <memory>
 #include <unordered_map>
 

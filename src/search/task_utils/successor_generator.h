@@ -3,7 +3,6 @@
 
 #include "../task_proxy.h"
 
-#include <list>
 #include <memory>
 #include <vector>
 
