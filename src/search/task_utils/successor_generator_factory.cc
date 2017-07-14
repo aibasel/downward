@@ -4,28 +4,24 @@ class SuccessorGeneratorFactory {
     // TODO: Later switch to the following pair-based representation?
     // using ValuesAndOperators = vector<pair<int, OperatorList>>;
     using ValuesAndOperators = vector<OperatorList>;
+    using GeneratorPtr = unique_ptr<GeneratorBase>;
 
     const TaskProxy &task_proxy;
     vector<Condition> conditions;
     vector<Condition::const_iterator> next_condition_by_op;
 
-    unique_ptr<GeneratorBase> construct_chain(vector<unique_ptr<GeneratorBase>> &&nodes) {
+    GeneratorPtr construct_chain(vector<GeneratorPtr> &nodes) {
         if (nodes.empty()) {
             return nullptr;
         } else {
-            unique_ptr<GeneratorBase> result = move(nodes.at(0));
+            GeneratorPtr result = move(nodes.at(0));
             for (size_t i = 1; i < nodes.size(); ++i)
                 result = utils::make_unique_ptr<GeneratorFork>(move(result), move(nodes.at(i)));
             return result;
         }
     }
 
-    unique_ptr<GeneratorBase> construct_immediate(list<OperatorID> &&operators) {
-        /*
-          TODO: This is identical to the old construct_leaf. Don't
-          keep both methods, and think some more about the names of
-          the methods and the different successor generator versions.
-        */
+    GeneratorPtr construct_immediate(OperatorList &&operators) {
         assert(!operators.empty());
         if (operators.size() == 1)
             return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
@@ -33,32 +29,14 @@ class SuccessorGeneratorFactory {
             return utils::make_unique_ptr<GeneratorLeafList>(move(operators));
     }
 
-    unique_ptr<GeneratorBase> construct_branch_new(
-        int variable,
-        ValuesAndOperators values_and_operators) {
-        return construct_branch(variable, move(values_and_operators),
-                                OperatorList(), OperatorList());
-    }
-
-    unique_ptr<GeneratorBase> construct_leaf(list<OperatorID> &&operators) {
-        assert(!operators.empty());
-        if (operators.size() == 1) {
-            return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
-        } else {
-            return utils::make_unique_ptr<GeneratorLeafList>(move(operators));
-        }
-    }
-
-    unique_ptr<GeneratorBase> construct_switch(
-        int switch_var_id,
-        vector<list<OperatorID>> &&operators_for_value) {
+    GeneratorPtr construct_switch(
+        int switch_var_id, ValuesAndOperators operators_for_value) {
         int num_values = operators_for_value.size();
-        vector<unique_ptr<GeneratorBase>> generator_for_value;
+        vector<GeneratorPtr> generator_for_value;
         generator_for_value.reserve(num_values);
         int num_non_zero = 0;
-        for (list<OperatorID> &ops : operators_for_value) {
-            unique_ptr<GeneratorBase> value_generator = construct_recursive(
-                switch_var_id + 1, move(ops));
+        for (OperatorList &ops : operators_for_value) {
+            GeneratorPtr value_generator = construct_recursive(move(ops));
             if (value_generator) {
                 ++num_non_zero;
             }
@@ -74,10 +52,10 @@ class SuccessorGeneratorFactory {
             }
             assert(false);
         }
-        int vector_size = estimate_vector_size<unique_ptr<GeneratorBase>>(num_values);
-        int hash_size = estimate_unordered_map_size<int, unique_ptr<GeneratorBase>>(num_non_zero);
+        int vector_size = estimate_vector_size<GeneratorPtr>(num_values);
+        int hash_size = estimate_unordered_map_size<int, GeneratorPtr>(num_non_zero);
         if (hash_size < vector_size) {
-            unordered_map<int, unique_ptr<GeneratorBase>> map;
+            unordered_map<int, GeneratorPtr> map;
             for (int value = 0; value < num_values; ++value) {
                 if (generator_for_value[value]) {
                     map[value] = move(generator_for_value[value]);
@@ -91,35 +69,8 @@ class SuccessorGeneratorFactory {
         }
     }
 
-    unique_ptr<GeneratorBase> construct_branch(
-        int switch_var_id,
-        vector<list<OperatorID>> &&operators_for_value,
-        list<OperatorID> &&default_operators,
-        list<OperatorID> &&applicable_operators) {
-        unique_ptr<GeneratorBase> switch_generator = construct_switch(
-            switch_var_id, move(operators_for_value));
-        assert(switch_generator);
-
-        unique_ptr<GeneratorBase> non_immediate_generator = nullptr;
-        if (default_operators.empty()) {
-            non_immediate_generator = move(switch_generator);
-        } else {
-            unique_ptr<GeneratorBase> default_generator = construct_recursive(
-                switch_var_id + 1, move(default_operators));
-            non_immediate_generator = utils::make_unique_ptr<GeneratorFork>(
-                move(switch_generator), move(default_generator));
-        }
-
-        if (applicable_operators.empty()) {
-            return non_immediate_generator;
-        } else {
-            return utils::make_unique_ptr<GeneratorImmediate>(
-                move(applicable_operators), move(non_immediate_generator));
-        }
-    }
-
-    unique_ptr<GeneratorBase> construct_recursive(
-        int /*switch_var_id*/, list<OperatorID> &&operator_queue) {
+    GeneratorPtr construct_recursive(
+        OperatorList &&operator_queue) {
         /*
           TODO: the new implementation doesn't need switch_var_id any
           more, so get rid of it.
@@ -136,7 +87,7 @@ class SuccessorGeneratorFactory {
 
         VariablesProxy variables = task_proxy.get_variables();
 
-        vector<unique_ptr<GeneratorBase>> nodes;
+        vector<GeneratorPtr> nodes;
 
         int last_var = -1;
         int last_value = -1;
@@ -166,20 +117,11 @@ class SuccessorGeneratorFactory {
                 assert(cond_iter == conditions[op_index].end() ||
                        cond_iter->var > cond_var);
                 if (cond_var == last_var) {
-                    if (cond_value == last_value) {
-                        current_operators.push_back(op);
-                    } else {
+                    if (cond_value != last_value) {
                         assert(cond_value > last_value);
-                        /*
-                          TODO: With other data structures, this would
-                          be the time to finalize the previous operator list
-                          if it needs finalization.
-                        */
                         assert(!current_operators.empty());
                         current_values_and_operators[last_value] = move(current_operators);
                         last_value = cond_value;
-                        // TODO: Reduce code duplication.
-                        current_operators.push_back(op);
                     }
                 } else {
                     assert(cond_var > last_var);
@@ -195,7 +137,7 @@ class SuccessorGeneratorFactory {
                                                 move(immediate_operators)));
                     } else {
                         nodes.push_back(
-                            construct_branch_new(
+                            construct_switch(
                                 last_var, move(current_values_and_operators)));
                     }
 
@@ -206,10 +148,8 @@ class SuccessorGeneratorFactory {
 
                     int var_domain = variables[cond_var].get_domain_size();
                     current_values_and_operators.resize(var_domain);
-
-                    // TODO: Reduce code duplication.
-                    current_operators.push_back(op);
                 }
+                current_operators.push_back(op);
             }
         }
 
@@ -225,11 +165,11 @@ class SuccessorGeneratorFactory {
                                     move(immediate_operators)));
         } else {
             nodes.push_back(
-                construct_branch_new(
+                construct_switch(
                     last_var, move(current_values_and_operators)));
         }
 
-        return construct_chain(move(nodes));
+        return construct_chain(nodes);
     }
 public:
     explicit SuccessorGeneratorFactory(const TaskProxy &task_proxy)
@@ -243,7 +183,7 @@ public:
         OperatorsProxy operators = task_proxy.get_operators();
         // We need the iterators to conditions to be stable:
         conditions.reserve(operators.size());
-        list<OperatorID> all_operators;
+        OperatorList all_operators;
         for (OperatorProxy op : operators) {
             Condition cond;
             cond.reserve(op.get_preconditions().size());
@@ -278,11 +218,11 @@ public:
           iterator/incrementing a counter.)
         */
 
-        unique_ptr<GeneratorBase> root = construct_recursive(0, move(all_operators));
+        GeneratorPtr root = construct_recursive(move(all_operators));
         if (!root) {
             /* Task is trivially unsolvable. Create dummy leaf,
                so we don't have to check root for nullptr everywhere. */
-            list<OperatorID> no_applicable_operators;
+            OperatorList no_applicable_operators;
             root = utils::make_unique_ptr<GeneratorLeafList>(
                 move(no_applicable_operators));
         }
