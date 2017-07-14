@@ -1,9 +1,44 @@
-using Condition = vector<FactPair>;
-
 class SuccessorGeneratorFactory {
+    using Condition = vector<FactPair>;
+    using OperatorList = list<OperatorID>;
+    // TODO: Later switch to the following pair-based representation?
+    // using ValuesAndOperators = vector<pair<int, OperatorList>>;
+    using ValuesAndOperators = vector<OperatorList>;
+
     const TaskProxy &task_proxy;
     vector<Condition> conditions;
     vector<Condition::const_iterator> next_condition_by_op;
+
+    unique_ptr<GeneratorBase> construct_chain(vector<unique_ptr<GeneratorBase>> &&nodes) {
+        if (nodes.empty()) {
+            return nullptr;
+        } else {
+            unique_ptr<GeneratorBase> result = move(nodes.at(0));
+            for (size_t i = 1; i < nodes.size(); ++i)
+                result = utils::make_unique_ptr<GeneratorFork>(move(result), move(nodes.at(i)));
+            return result;
+        }
+    }
+
+    unique_ptr<GeneratorBase> construct_immediate(list<OperatorID> &&operators) {
+        /*
+          TODO: This is identical to the old construct_leaf. Don't
+          keep both methods, and think some more about the names of
+          the methods and the different successor generator versions.
+        */
+        assert(!operators.empty());
+        if (operators.size() == 1)
+            return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
+        else
+            return utils::make_unique_ptr<GeneratorLeafList>(move(operators));
+    }
+
+    unique_ptr<GeneratorBase> construct_branch_new(
+        int variable,
+        ValuesAndOperators values_and_operators) {
+        return construct_branch(variable, move(values_and_operators),
+                                OperatorList(), OperatorList());
+    }
 
     unique_ptr<GeneratorBase> construct_leaf(list<OperatorID> &&operators) {
         assert(!operators.empty());
@@ -84,78 +119,117 @@ class SuccessorGeneratorFactory {
     }
 
     unique_ptr<GeneratorBase> construct_recursive(
-        int switch_var_id, list<OperatorID> &&operator_queue) {
+        int /*switch_var_id*/, list<OperatorID> &&operator_queue) {
+        /*
+          TODO: the new implementation doesn't need switch_var_id any
+          more, so get rid of it.
+        */
+
+        /*
+          TODO: Does the new implementation need this test? I think we
+          usually won't call this function with an empty operator
+          queue, except perhaps at the root, and hence we probably
+          don't need to speed this case up.
+        */
         if (operator_queue.empty())
             return nullptr;
 
         VariablesProxy variables = task_proxy.get_variables();
-        int num_variables = variables.size();
 
-        while (true) {
-            // Test if no further switch is necessary (or possible).
-            if (switch_var_id == num_variables) {
-                return construct_leaf(move(operator_queue));
-            }
+        vector<unique_ptr<GeneratorBase>> nodes;
 
-            VariableProxy switch_var = variables[switch_var_id];
-            int number_of_children = switch_var.get_domain_size();
+        int last_var = -1;
+        int last_value = -1;
+        OperatorList immediate_operators;
+        OperatorList current_operators;
+        ValuesAndOperators current_values_and_operators;
+        for (OperatorID op : operator_queue) {
+            int op_index = op.get_index();
 
-            vector<list<OperatorID>> operators_for_val(number_of_children);
-            list<OperatorID> default_operators;
-            list<OperatorID> applicable_operators;
-
-            bool all_ops_are_immediate = true;
-            bool var_is_interesting = false;
-
-            /*
-              TODO: Look into more efficient algorithms that don't iterate over all
-              operators in the subtree at each layer of recursion. It also seems
-              that we currently consider variables "interesting" as soon as there
-              are immediately applicable operators, even if no preconditions on the
-              variable exist. This could be improved.
-            */
-            while (!operator_queue.empty()) {
-                OperatorID op_id = operator_queue.front();
-                operator_queue.pop_front();
-                int op_index = op_id.get_index();
-                assert(utils::in_bounds(op_index, next_condition_by_op));
-                Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
-                if (cond_iter == conditions[op_index].end()) {
-                    var_is_interesting = true;
-                    applicable_operators.push_back(op_id);
-                } else {
-                    assert(utils::in_bounds(
-                               cond_iter - conditions[op_index].begin(),
-                               conditions[op_index]));
-                    all_ops_are_immediate = false;
-                    FactPair fact = *cond_iter;
-                    if (fact.var == switch_var.get_id()) {
-                        var_is_interesting = true;
-                        while (cond_iter != conditions[op_index].end() &&
-                               cond_iter->var == switch_var.get_id()) {
-                            ++cond_iter;
-                        }
-                        operators_for_val[fact.value].push_back(op_id);
+            Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
+            if (cond_iter == conditions[op_index].end()) {
+                /*
+                  TODO: Can we handle this by setting cond_var = -1 and cond_value = -1
+                  and then handle both cases uniformly?
+                */
+                // No more conditions for this operator.
+                assert(last_var == -1 && last_value == -1);
+                immediate_operators.push_back(op);
+            } else {
+                // Obtain condition and consume it.
+                assert(utils::in_bounds(
+                           cond_iter - conditions[op_index].begin(),
+                           conditions[op_index]));
+                int cond_var = cond_iter->var;
+                int cond_value = cond_iter->value;
+                ++cond_iter;
+                assert(cond_iter == conditions[op_index].end() ||
+                       cond_iter->var > cond_var);
+                if (cond_var == last_var) {
+                    if (cond_value == last_value) {
+                        current_operators.push_back(op);
                     } else {
-                        default_operators.push_back(op_id);
+                        assert(cond_value > last_value);
+                        /*
+                          TODO: With other data structures, this would
+                          be the time to finalize the previous operator list
+                          if it needs finalization.
+                        */
+                        assert(!current_operators.empty());
+                        current_values_and_operators[last_value] = move(current_operators);
+                        last_value = cond_value;
+                        // TODO: Reduce code duplication.
+                        current_operators.push_back(op);
                     }
+                } else {
+                    assert(cond_var > last_var);
+
+                    if (!current_operators.empty()) {
+                        // It can only be empty if last_var == -1.
+                        current_values_and_operators[last_value] = move(current_operators);
+                    }
+
+                    if (last_var == -1) {
+                        if (!immediate_operators.empty())
+                            nodes.push_back(construct_immediate(
+                                                move(immediate_operators)));
+                    } else {
+                        nodes.push_back(
+                            construct_branch_new(
+                                last_var, move(current_values_and_operators)));
+                    }
+
+                    last_var = cond_var;
+                    last_value = cond_value;
+
+                    assert(current_values_and_operators.empty());
+
+                    int var_domain = variables[cond_var].get_domain_size();
+                    current_values_and_operators.resize(var_domain);
+
+                    // TODO: Reduce code duplication.
+                    current_operators.push_back(op);
                 }
             }
-
-            if (all_ops_are_immediate) {
-                return construct_leaf(move(applicable_operators));
-            } else if (var_is_interesting) {
-                return construct_branch(
-                    switch_var_id,
-                    move(operators_for_val),
-                    move(default_operators),
-                    move(applicable_operators));
-            } else {
-                // this switch var can be left out because no operator depends on it
-                ++switch_var_id;
-                default_operators.swap(operator_queue);
-            }
         }
+
+        // TODO: Deal with code duplication, perhaps by using a sentinel past the last var_no?
+        if (!current_operators.empty()) {
+            // It can only be empty if last_var == -1.
+            current_values_and_operators[last_value] = move(current_operators);
+        }
+
+        if (last_var == -1) {
+            if (!immediate_operators.empty())
+                nodes.push_back(construct_immediate(
+                                    move(immediate_operators)));
+        } else {
+            nodes.push_back(
+                construct_branch_new(
+                    last_var, move(current_values_and_operators)));
+        }
+
+        return construct_chain(move(nodes));
     }
 public:
     explicit SuccessorGeneratorFactory(const TaskProxy &task_proxy)
@@ -185,6 +259,24 @@ public:
         all_operators.sort([&](OperatorID op1, OperatorID op2) {
                 return conditions[op1.get_index()] < conditions[op2.get_index()];
             });
+
+        /*
+          TODO: conditions and next_condition_by_op are organized by
+          the actual operator number, but for better cache locality,
+          it would probably make sense to organize them in the order
+          we process them instead, i.e., by the order imposed by
+          "all_operators".
+
+          This is perhaps most easily done by using our own internal
+          operator representation, and perhaps we should use one that
+          supports popping conditions from the front, so that we don't
+          need next_condition_by_op any more. (But perhaps it's better
+          to stick with vectors and an index for efficiency reasons.
+          Can hide this inside the implementation of the internal
+          operator representation by giving it a pop_front method that
+          may be implemented lazily by advancing an
+          iterator/incrementing a counter.)
+        */
 
         unique_ptr<GeneratorBase> root = construct_recursive(0, move(all_operators));
         if (!root) {
