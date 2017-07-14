@@ -214,6 +214,21 @@ public:
           operator representation by giving it a pop_front method that
           may be implemented lazily by advancing an
           iterator/incrementing a counter.)
+
+          We need to move far less data around if we exploit that
+
+          A) all operator lists we create are contiguous subsequences
+             of all_operators, so it would be sufficient to store
+             indices into all_operators (which should then be a
+             vector) rather than create lots of explicit lists. (We
+             can create explicit lists as we build the immediate
+             generators, but before that, we don't really need to.)
+
+          B) all iterators in next_condition_by_op that are used in
+             one call to construct_recursive() are advanced by the
+             same amount, so it would be sufficient for
+             construct_recursive to store this one number rather than
+             maintaining a separate iterator for each operator.
         */
 
         GeneratorPtr root = construct_recursive(move(all_operators));
