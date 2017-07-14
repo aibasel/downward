@@ -534,10 +534,12 @@ SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy) {
         conditions.push_back(cond);
         next_condition_by_op.push_back(conditions.back().begin());
     }
+    all_operators.sort([&](OperatorID op1, OperatorID op2) {
+            return conditions[op1.get_index()] < conditions[op2.get_index()];
+        });
 
-    root = unique_ptr<GeneratorBase>(
-        construct_recursive(
-            task_proxy, conditions, next_condition_by_op, 0, move(all_operators)));
+    root = construct_recursive(
+        task_proxy, conditions, next_condition_by_op, 0, move(all_operators));
     if (!root) {
         /* Task is trivially unsolvable. Create dummy leaf,
            so we don't have to check root for nullptr everywhere. */
