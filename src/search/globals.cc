@@ -268,13 +268,16 @@ void read_everything(istream &in) {
     cout << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();
     TaskProxy task_proxy(*g_root_task());
+    utils::Timer successor_generator_timer;
     g_successor_generator = new successor_generator::SuccessorGenerator(task_proxy);
+    successor_generator_timer.stop();
     cout << "done! [t=" << utils::g_timer << "]" << endl;
     int peak_memory_after = utils::get_peak_memory_in_kb();
     int memory_diff = peak_memory_after - peak_memory_before;
-    cout << "peak memory difference during successor generator creation: "
-         << memory_diff << " KB" << endl;
-
+    cout << "peak memory difference for root successor generator creation: "
+         << memory_diff << " KB" << endl
+         << "time for root successor generation creation: "
+         << successor_generator_timer << endl;
     cout << "done initializing global data [t=" << utils::g_timer << "]" << endl;
 }
 
