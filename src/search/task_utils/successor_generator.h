@@ -10,7 +10,6 @@ class State;
 class TaskProxy;
 
 namespace successor_generator {
-
 class GeneratorBase;
 
 class SuccessorGenerator {
@@ -31,7 +30,6 @@ public:
     void generate_applicable_ops(
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const;
 };
-
 }
 
 #endif

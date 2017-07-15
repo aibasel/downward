@@ -13,7 +13,6 @@ class GlobalState;
 class State;
 
 namespace successor_generator {
-
 class GeneratorBase {
 public:
     virtual void generate_applicable_ops(
@@ -154,7 +153,6 @@ int estimate_unordered_map_size(int num_entries) {
     size += num_buckets * sizeof(void *);                  // pointer to next bucket
     return size;
 }
-
 }
 
 #endif

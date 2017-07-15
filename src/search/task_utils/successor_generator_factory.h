@@ -10,7 +10,6 @@ class OperatorID;
 class TaskProxy;
 
 namespace successor_generator {
-
 class GeneratorBase;
 
 using GeneratorPtr = std::unique_ptr<GeneratorBase>;
@@ -35,7 +34,6 @@ public:
     explicit SuccessorGeneratorFactory(const TaskProxy &task_proxy);
     GeneratorPtr create();
 };
-
 }
 
 #endif

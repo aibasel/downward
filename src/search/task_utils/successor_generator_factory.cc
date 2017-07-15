@@ -12,7 +12,6 @@
 using namespace std;
 
 namespace successor_generator {
-
 GeneratorPtr SuccessorGeneratorFactory::construct_chain(
     vector<GeneratorPtr> &nodes) const {
     if (nodes.empty()) {
@@ -247,5 +246,4 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
     }
     return move(root);
 }
-
 }
