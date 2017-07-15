@@ -1,14 +1,16 @@
 #ifndef TASK_UTILS_SUCCESSOR_GENERATOR_H
 #define TASK_UTILS_SUCCESSOR_GENERATOR_H
 
-#include "../task_proxy.h"
-
 #include <memory>
 #include <vector>
 
 class GlobalState;
+class OperatorID;
+class State;
+class TaskProxy;
 
 namespace successor_generator {
+
 class GeneratorBase;
 
 class SuccessorGenerator {
@@ -29,6 +31,7 @@ public:
     void generate_applicable_ops(
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const;
 };
+
 }
 
 #endif
