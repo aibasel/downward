@@ -19,9 +19,9 @@ class SuccessorGenerator {
 public:
     explicit SuccessorGenerator(const TaskProxy &task_proxy);
     /*
-      Note that the destructor cannot be set to the default destructor here
-      (~SuccessorGenerator() = default;) because GeneratorBase is a forward
-      declaration and the incomplete type cannot be destroyed.
+      We cannot use the default destructor (implicitly or explicitly)
+      here because GeneratorBase is a forward declaration and the
+      incomplete type cannot be destroyed.
     */
     ~SuccessorGenerator();
 
