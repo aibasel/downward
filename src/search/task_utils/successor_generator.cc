@@ -9,7 +9,6 @@
 using namespace std;
 
 namespace successor_generator {
-
 SuccessorGenerator::SuccessorGenerator(const TaskProxy &task_proxy)
     : root(SuccessorGeneratorFactory(task_proxy).create()) {
 }
@@ -25,5 +24,4 @@ void SuccessorGenerator::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
 }
-
 }

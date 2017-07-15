@@ -30,7 +30,6 @@ using namespace std;
 */
 
 namespace successor_generator {
-
 GeneratorImmediate::GeneratorImmediate(
     list<OperatorID> &&immediate_operators,
     unique_ptr<GeneratorBase> next_generator_)
@@ -189,5 +188,4 @@ void GeneratorLeafSingle::generate_applicable_ops(
     const GlobalState &, vector<OperatorID> &applicable_ops) const {
     applicable_ops.push_back(applicable_operator);
 }
-
 }
