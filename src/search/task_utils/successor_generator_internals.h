@@ -127,8 +127,10 @@ int estimate_vector_size(int num_elements) {
 template<typename Key, typename Value>
 int estimate_unordered_map_size(int num_entries) {
     // See issue705 for a discussion of this estimation.
-    int num_buckets = 2;
-    if (num_entries < 5) {
+    int num_buckets;
+    if (num_entries < 2) {
+        num_buckets = 2;
+    } else if (num_entries < 5) {
         num_buckets = 5;
     } else if (num_entries < 11) {
         num_buckets = 11;
