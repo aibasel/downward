@@ -294,10 +294,6 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                     fts.statistics(merged_index);
                 }
                 print_time(timer, "after merging");
-                if (verbosity >= Verbosity::VERBOSE) {
-                    report_peak_memory_delta();
-                }
-                cout << endl;
             }
 
             // Pruning
@@ -313,21 +309,24 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
                         fts.statistics(merged_index);
                     }
                     print_time(timer, "after pruning");
-                    if (verbosity >= Verbosity::VERBOSE) {
-                        report_peak_memory_delta();
-                    }
-                    cout << endl;
                 }
-                /*
-                  NOTE: both the shrink strategy classes and the construction
-                  of the composite transition system require the input
-                  transition systems to be non-empty, i.e. the initial state
-                  not to be pruned.
-                */
-                if (!fts.is_factor_solvable(merged_index)) {
-                    unsolvable_index = merged_index;
-                    break;
-                }
+            }
+
+            // End-of-iteration output.
+            if (verbosity >= Verbosity::VERBOSE) {
+                report_peak_memory_delta();
+            }
+            cout << endl;
+
+            /*
+              NOTE: both the shrink strategy classes and the construction
+              of the composite transition system require the input
+              transition systems to be non-empty, i.e. the initial state
+              not to be pruned/not to be evaluated as infinity.
+            */
+            if (!fts.is_factor_solvable(merged_index)) {
+                unsolvable_index = merged_index;
+                break;
             }
         }
     }
