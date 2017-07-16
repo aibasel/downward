@@ -4,7 +4,7 @@
 import os
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
-from lab.reports import Attribute, arithmetic_mean, geometric_mean
+from lab.reports import Attribute, arithmetic_mean, finite_sum, geometric_mean
 
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
@@ -53,11 +53,13 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_resource('sg_parser', 'sg-parser.py', dest='sg-parser.py')
 exp.add_command('sg-parser', ['{sg_parser}'])
 
-exp.add_absolute_report_step(attributes=[
-    Attribute("sg_construction_time", functions=[arithmetic_mean], min_wins=True),
-    Attribute("sg_peak_mem_diff", functions=[arithmetic_mean], min_wins=True),
+attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [
+    Attribute("sg_construction_time", functions=[finite_sum], min_wins=True),
+    Attribute("sg_peak_mem_diff", functions=[finite_sum], min_wins=True),
     "error",
     "run_dir",
-])
+]
+
+exp.add_absolute_report_step(attributes=attributes)
 
 exp.run_steps()
