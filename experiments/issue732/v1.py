@@ -37,7 +37,7 @@ CONFIGS = [
 SUITE = list(sorted(set(common_setup.DEFAULT_OPTIMAL_SUITE) |
                     set(common_setup.DEFAULT_SATISFICING_SUITE)))
 ENVIRONMENT = MaiaEnvironment(
-    priority=0, email="florian.pommerening@unibas.ch")
+    priority=0, email="malte.helmert@unibas.ch")
 
 if common_setup.is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
