@@ -25,6 +25,10 @@ GeneratorPtr SuccessorGeneratorFactory::construct_chain(
     }
 }
 
+GeneratorPtr SuccessorGeneratorFactory::construct_empty() const {
+    return utils::make_unique_ptr<GeneratorLeafList>(OperatorList());
+}
+
 GeneratorPtr SuccessorGeneratorFactory::construct_immediate(
     OperatorList operators) const {
     assert(!operators.empty());
@@ -239,10 +243,9 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
 
     GeneratorPtr root = construct_recursive(move(all_operators));
     if (!root) {
-        /* Task has no operators. Create dummy leaf,
+        /* Task has no operators. Create empty successor generator
            so we don't have to check root for nullptr everywhere. */
-        OperatorList no_operators;
-        root = construct_immediate(no_operators);
+        root = construct_empty();
     }
     return move(root);
 }
