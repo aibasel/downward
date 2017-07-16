@@ -26,6 +26,7 @@ class SuccessorGeneratorFactory {
     std::vector<Condition::const_iterator> next_condition_by_op;
 
     GeneratorPtr construct_chain(std::vector<GeneratorPtr> &nodes) const;
+    GeneratorPtr construct_empty() const;
     GeneratorPtr construct_immediate(OperatorList operators) const;
     GeneratorPtr construct_switch(
         int switch_var_id, ValuesAndGenerators generator_for_value) const;
