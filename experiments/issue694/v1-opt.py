@@ -14,7 +14,7 @@ from common_setup import IssueConfig, IssueExperiment, RelativeScatterPlotReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue694-v1", "issue694-v1-base"]
+REVISIONS = ["issue694-v1-base", "issue694-v1"]
 BUILDS = ["release32", "release64"]
 SEARCHES = [
     ("blind", "astar(blind())"),
