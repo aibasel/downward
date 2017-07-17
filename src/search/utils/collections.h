@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <functional>
 #include <iterator>
@@ -74,6 +75,46 @@ std::vector<T> sorted(Collection &&collection) {
     std::vector<T> vec(std::forward<Collection>(collection));
     std::sort(vec.begin(), vec.end());
     return vec;
+}
+
+template<typename T>
+int estimate_vector_size(int num_elements) {
+    int size = 0;
+    size += 2 * sizeof(void *);       // overhead for dynamic memory management
+    size += sizeof(std::vector<T>);   // size of empty vector
+    size += num_elements * sizeof(T); // size of actual entries
+    return size;
+}
+
+template<typename Key, typename Value>
+int estimate_unordered_map_size(int num_entries) {
+    // See issue705 for a discussion of this estimation.
+    int num_buckets;
+    if (num_entries < 2) {
+        num_buckets = 2;
+    } else if (num_entries < 5) {
+        num_buckets = 5;
+    } else if (num_entries < 11) {
+        num_buckets = 11;
+    } else if (num_entries < 23) {
+        num_buckets = 23;
+    } else if (num_entries < 47) {
+        num_buckets = 47;
+    } else if (num_entries < 97) {
+        num_buckets = 97;
+    } else {
+        int n = std::log2((num_entries + 1) / 3);
+        num_buckets = 3 * std::pow(2, n + 1) - 1;
+    }
+
+    int size = 0;
+    size += 2 * sizeof(void *);                            // overhead for dynamic memory management
+    size += sizeof(std::unordered_map<Key, Value>);        // empty map
+    size += num_entries * sizeof(std::pair<Key, Value>);   // actual entries
+    size += num_entries * sizeof(std::pair<Key, Value> *); // pointer to values
+    size += num_entries * sizeof(void *);                  // pointer to next node
+    size += num_buckets * sizeof(void *);                  // pointer to next bucket
+    return size;
 }
 }
 
