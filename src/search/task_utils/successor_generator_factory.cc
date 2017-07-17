@@ -4,6 +4,7 @@
 
 #include "../task_proxy.h"
 
+#include "../utils/collections.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -56,8 +57,8 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
         assert(false);
     }
 
-    int vector_size = estimate_vector_size<GeneratorPtr>(num_values);
-    int hash_size = estimate_unordered_map_size<int, GeneratorPtr>(num_non_null);
+    int vector_size = utils::estimate_vector_size<GeneratorPtr>(num_values);
+    int hash_size = utils::estimate_unordered_map_size<int, GeneratorPtr>(num_non_null);
     if (hash_size < vector_size) {
         unordered_map<int, GeneratorPtr> map;
         for (int value = 0; value < num_values; ++value) {
