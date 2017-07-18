@@ -209,7 +209,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before merging (and no label reduction before "
-        "shrinking)."
+        "shrinking). "
         "We also recommend using full pruning with this shrink strategy, "
         "because both distances from the initial state and to the goal states "
         "must be computed anyway, and because the existence of only one "
