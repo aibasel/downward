@@ -239,7 +239,7 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
      */
 
     using HashKey = vector<FactPair>;
-    using HashMap = unordered_map<HashKey, int>;
+    using HashMap = utils::HashMap<HashKey, int>;
     HashMap label_index;
     label_index.reserve(labels.size());
 
