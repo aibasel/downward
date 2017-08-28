@@ -133,7 +133,7 @@ void DTGFactory::revert_new_local_vars(DomainTransitionGraph *dtg,
 
 ValueTransition *DTGFactory::get_transition(int origin, int target,
                                             DomainTransitionGraph *dtg) {
-    unordered_map<pair<int, int>, int> &trans_map = transition_index[dtg->var];
+    utils::HashMap<pair<int, int>, int> &trans_map = transition_index[dtg->var];
     pair<int, int> arc = make_pair(origin, target);
     ValueNode &origin_node = dtg->nodes[origin];
     // create new transition if necessary

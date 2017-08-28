@@ -32,7 +32,7 @@ class DTGFactory {
     bool collect_transition_side_effects;
     std::function<bool(int, int)> pruning_condition;
 
-    std::vector<std::unordered_map<std::pair<int, int>, int>> transition_index;
+    std::vector<utils::HashMap<std::pair<int, int>, int>> transition_index;
     std::vector<std::unordered_map<int, int>> global_to_local_var;
 
     void allocate_graphs_and_nodes(std::vector<DomainTransitionGraph *> &dtgs);
