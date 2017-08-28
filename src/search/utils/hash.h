@@ -343,16 +343,6 @@ struct hash<std::vector<T>> {
         return utils::hash_sequence(vec, vec.size());
     }
 };
-
-template<typename TA, typename TB>
-struct hash<std::pair<TA, TB>> {
-    size_t operator()(const std::pair<TA, TB> &pair) const {
-        size_t hash = 0;
-        utils::hash_combine(hash, pair.first);
-        utils::hash_combine(hash, pair.second);
-        return hash;
-    }
-};
 }
 
 #endif
