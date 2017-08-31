@@ -3,6 +3,7 @@
 import itertools
 import os
 import platform
+import subprocess
 import sys
 
 from lab.experiment import ARGPARSER
@@ -132,6 +133,14 @@ def is_running_on_cluster():
         "cluster" in node or
         node.startswith("gkigrid") or
         node in ["habakuk", "turtur"])
+
+
+def is_running_on_cluster_login_node():
+    return platform.node() == "login20.cluster.bc2.ch"
+
+
+def can_publish():
+    return is_running_on_cluster_login_node() or not is_running_on_cluster()
 
 
 def is_test_run():
@@ -289,7 +298,10 @@ class IssueExperiment(FastDownwardExperiment):
         outfile = os.path.join(
             self.eval_dir,
             get_experiment_name() + "." + report.output_format)
-        self.add_report(report, outfile=outfile)
+        self.add_report(report, name="make-absolute-report", outfile=outfile)
+        if can_publish():
+            self.add_step(
+                "publish-absolute-report", subprocess.call, ["publish", outfile])
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -308,8 +320,15 @@ class IssueExperiment(FastDownwardExperiment):
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
 
-        def make_comparison_tables():
+        def get_revision_pairs_and_files():
             for rev1, rev2 in itertools.combinations(self._revisions, 2):
+                outfile = os.path.join(
+                    self.eval_dir,
+                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
+                yield (rev1, rev2, outfile)
+
+        def make_comparison_tables():
+            for rev1, rev2, outfile in get_revision_pairs_and_files():
                 compared_configs = []
                 for config in self._configs:
                     config_nick = config.nick
@@ -318,13 +337,16 @@ class IssueExperiment(FastDownwardExperiment):
                          "%s-%s" % (rev2, config_nick),
                          "Diff (%s)" % config_nick))
                 report = ComparativeReport(compared_configs, **kwargs)
-                outfile = os.path.join(
-                    self.eval_dir,
-                    "%s-%s-%s-compare.%s" % (
-                        self.name, rev1, rev2, report.output_format))
                 report(self.eval_dir, outfile)
 
+        def publish_comparison_tables():
+            for _, _, outfile in get_revision_pairs_and_files():
+                subprocess.call(["publish", outfile])
+
         self.add_step("make-comparison-tables", make_comparison_tables)
+        if can_publish():
+            self.add_step(
+                "publish-comparison-tables", publish_comparison_tables)
 
     def add_scatter_plot_step(self, relative=False, attributes=None):
         """Add step creating (relative) scatter plots for all revision pairs.
