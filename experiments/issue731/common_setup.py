@@ -143,6 +143,13 @@ def can_publish():
     return is_running_on_cluster_login_node() or not is_running_on_cluster()
 
 
+def publish(report_file):
+    if can_publish():
+        subprocess.call(["publish", report_file])
+    else:
+        print "publishing reports is not supported on this node"
+
+
 def is_test_run():
     return ARGS.test_run == "yes" or (
         ARGS.test_run == "auto" and not is_running_on_cluster())
@@ -299,9 +306,7 @@ class IssueExperiment(FastDownwardExperiment):
             self.eval_dir,
             get_experiment_name() + "." + report.output_format)
         self.add_report(report, name="make-absolute-report", outfile=outfile)
-        if can_publish():
-            self.add_step(
-                "publish-absolute-report", subprocess.call, ["publish", outfile])
+        self.add_step("publish-absolute-report", publish, outfile)
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -341,12 +346,10 @@ class IssueExperiment(FastDownwardExperiment):
 
         def publish_comparison_tables():
             for _, _, outfile in get_revision_pairs_and_files():
-                subprocess.call(["publish", outfile])
+                publish(outfile)
 
         self.add_step("make-comparison-tables", make_comparison_tables)
-        if can_publish():
-            self.add_step(
-                "publish-comparison-tables", publish_comparison_tables)
+        self.add_step("publish-comparison-tables", publish_comparison_tables)
 
     def add_scatter_plot_step(self, relative=False, attributes=None):
         """Add step creating (relative) scatter plots for all revision pairs.
