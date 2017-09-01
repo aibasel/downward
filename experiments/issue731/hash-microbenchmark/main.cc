@@ -70,7 +70,7 @@ int main(int, char **) {
         });
         cout << endl;
 
-            benchmark("insert, then read sequential int with BoostHash", NUM_CALLS,
+        benchmark("insert, then read sequential int with BoostHash", NUM_CALLS,
                   [&]() {
             unordered_set<int> s;
             for (int i = 0; i < NUM_INSERTIONS; ++i) {
