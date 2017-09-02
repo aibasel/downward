@@ -32,16 +32,16 @@ struct OperatorRange {
 
 
 class OperatorInfo {
-    /* op_index and precondition are not const because we need
-       assignment/swapping to sort vector<OperatorInfo>. */
+    /*
+      The attributes are not const because we must support
+      assignment/swapping to sort vector<OperatorInfo>.
+    */
     OperatorID op;
     vector<FactPair> precondition;
-    vector<FactPair>::const_iterator next_condition;
 public:
     OperatorInfo(OperatorID op, vector<FactPair> precondition)
         : op(op),
-          precondition(move(precondition)),
-          next_condition(this->precondition.begin()) {
+          precondition(move(precondition)) {
     }
 
     bool operator<(const OperatorInfo &other) const {
@@ -52,24 +52,17 @@ public:
         return op;
     }
 
-    // Returns -1 if there are no further conditions.
-    int get_current_var() const {
-        if (next_condition == precondition.end()) {
+    // Returns -1 as a past-the-end sentinel.
+    int get_var(int depth) const {
+        if (depth == static_cast<int>(precondition.size())) {
             return -1;
         } else {
-            return next_condition->var;
+            return precondition[depth].var;
         }
     }
 
-    // It is illegal to call this if there are no further conditions.
-    int get_current_value() const {
-        assert(next_condition != precondition.end());
-        return next_condition->value;
-    }
-
-    void advance_condition() {
-        assert(next_condition != precondition.end());
-        ++next_condition;
+    int get_value(int depth) const {
+        return precondition[depth].value;
     }
 };
 
@@ -82,6 +75,7 @@ enum class GroupOperatorsBy {
 
 class OperatorGrouper {
     const vector<OperatorInfo> &operator_infos;
+    const int depth;
     const GroupOperatorsBy group_by;
     OperatorRange range;
 
@@ -93,18 +87,20 @@ class OperatorGrouper {
     int get_current_group_key() const {
         const OperatorInfo &op_info = get_current_op_info();
         if (group_by == GroupOperatorsBy::VAR) {
-            return op_info.get_current_var();
+            return op_info.get_var(depth);
         } else {
             assert(group_by == GroupOperatorsBy::VALUE);
-            return op_info.get_current_value();
+            return op_info.get_value(depth);
         }
     }
 public:
     explicit OperatorGrouper(
         const vector<OperatorInfo> &operator_infos,
+        int depth,
         GroupOperatorsBy group_by,
         OperatorRange range)
         : operator_infos(operator_infos),
+          depth(depth),
           group_by(group_by),
           range(range) {
     }
@@ -202,7 +198,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
 
 
 GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
-    OperatorRange range) {
+    int depth, OperatorRange range) {
     VariablesProxy variables = task_proxy.get_variables();
 
     vector<GeneratorPtr> nodes;
@@ -213,7 +209,8 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     */
     ValuesAndGenerators current_values_and_generators;
 
-    OperatorGrouper grouper_by_var(operator_infos, GroupOperatorsBy::VAR, range);
+    OperatorGrouper grouper_by_var(
+        operator_infos, depth, GroupOperatorsBy::VAR, range);
     while (!grouper_by_var.done()) {
         auto var_group = grouper_by_var.next();
         int cond_var = var_group.first;
@@ -228,25 +225,15 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
             int var_domain = variables[cond_var].get_domain_size();
             current_values_and_generators.resize(var_domain);
 
-            OperatorGrouper grouper_by_value(operator_infos, GroupOperatorsBy::VALUE, var_range);
+            OperatorGrouper grouper_by_value(
+                operator_infos, depth, GroupOperatorsBy::VALUE, var_range);
             while (!grouper_by_value.done()) {
                 auto value_group = grouper_by_value.next();
                 int cond_value = value_group.first;
                 OperatorRange value_range = value_group.second;
 
-                // Advance the condition iterators.
-                /*
-                  TODO: This (along with the corresponding attribute
-                  in OperatorInfo) can be optimized away if we
-                  maintain the recursion depth instead: at depth k, we
-                  have already consumed exactly k conditions. This
-                  probably also means that we can make the operator
-                  infos conceptually const.
-                */
-                for (int i = value_range.begin; i < value_range.end; ++i)
-                    operator_infos[i].advance_condition();
-
-                current_values_and_generators[cond_value] = construct_recursive(value_range);
+                current_values_and_generators[cond_value] = construct_recursive(
+                    depth + 1, value_range);
             }
 
             nodes.push_back(construct_switch(
@@ -279,7 +266,7 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
     stable_sort(operator_infos.begin(), operator_infos.end());
 
     OperatorRange full_range(0, operator_infos.size());
-    GeneratorPtr root = construct_recursive(full_range);
+    GeneratorPtr root = construct_recursive(0, full_range);
     return move(root);
 }
 }
