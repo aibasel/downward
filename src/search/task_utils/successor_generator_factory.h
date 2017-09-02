@@ -11,7 +11,6 @@ class GeneratorBase;
 
 using GeneratorPtr = std::unique_ptr<GeneratorBase>;
 
-// TODO: Consider declaring these two within SuccessorGeneratorFactory.
 struct OperatorRange;
 class OperatorInfo;
 
