@@ -13,11 +13,6 @@
 using namespace std;
 
 namespace successor_generator {
-// TODO: Decide where to declare this, and declare it only once.
-using Condition = vector<FactPair>;
-using OperatorInfos = vector<OperatorInfo>;
-
-
 struct OperatorRange {
     int begin;
     int end;
@@ -40,10 +35,10 @@ class OperatorInfo {
     /* op_index and precondition are not const because we need
        assignment/swapping to sort vector<OperatorInfo>. */
     OperatorID op;
-    Condition precondition;
-    Condition::const_iterator next_condition;
+    vector<FactPair> precondition;
+    vector<FactPair>::const_iterator next_condition;
 public:
-    OperatorInfo(OperatorID op, Condition precondition)
+    OperatorInfo(OperatorID op, vector<FactPair> precondition)
         : op(op),
           precondition(move(precondition)),
           next_condition(this->precondition.begin()) {
@@ -86,7 +81,7 @@ enum class GroupOperatorsBy {
 
 
 class OperatorGrouper {
-    const OperatorInfos &operator_infos;
+    const vector<OperatorInfo> &operator_infos;
     const GroupOperatorsBy group_by;
     OperatorRange range;
 
@@ -106,7 +101,7 @@ class OperatorGrouper {
     }
 public:
     explicit OperatorGrouper(
-        const OperatorInfos &operator_infos,
+        const vector<OperatorInfo> &operator_infos,
         GroupOperatorsBy group_by,
         OperatorRange range)
         : operator_infos(operator_infos),
@@ -219,7 +214,6 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     ValuesAndGenerators current_values_and_generators;
 
     OperatorGrouper grouper_by_var(operator_infos, GroupOperatorsBy::VAR, range);
-    // TODO: Replace done()/next() interface with something one can iterate over?
     while (!grouper_by_var.done()) {
         auto var_group = grouper_by_var.next();
         int cond_var = var_group.first;
@@ -229,7 +223,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
             // Handle a group of immediately applicable operators.
             nodes.push_back(construct_leaf(var_range));
         } else {
-            // Handle a group of operators who share the first precondition variable.
+            // Handle a group of operators sharing the first precondition variable.
 
             int var_domain = variables[cond_var].get_domain_size();
             current_values_and_generators.resize(var_domain);
@@ -262,8 +256,8 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     return construct_fork(move(nodes));
 }
 
-static Condition build_sorted_precondition(const OperatorProxy &op) {
-    Condition cond;
+static vector<FactPair> build_sorted_precondition(const OperatorProxy &op) {
+    vector<FactPair> cond;
     cond.reserve(op.get_preconditions().size());
     for (FactProxy pre : op.get_preconditions())
         cond.emplace_back(pre.get_pair());
