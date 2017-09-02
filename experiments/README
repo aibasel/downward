@@ -51,6 +51,9 @@ performed. Some of them use lab's deprecated DownwardExperiment:
   * issue671/v1.py runs simple configs on the entire set of suites and
     reports also translator-specific attributes
 
+* Translator-only experiment:
+  * issue733/v1.py compares translator time and memory under Python 2 and 3
+
 
 Microbenchmarks
 ===============
