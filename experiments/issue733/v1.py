@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 import os
@@ -25,6 +25,7 @@ SUITE = set(common_setup.DEFAULT_OPTIMAL_SUITE + common_setup.DEFAULT_SATISFICIN
 BaselSlurmEnvironment.ENVIRONMENT_SETUP = (
     'module purge\n'
     'module load Python/3.5.2-goolf-1.7.20\n'
+    'module load matplotlib/1.5.1-goolf-1.7.20-Python-3.5.2\n'
     'PYTHONPATH="%s:$PYTHONPATH"' % tools.get_lab_path())
 ENVIRONMENT = BaselSlurmEnvironment(
     priority=0, email="jendrik.seipp@unibas.ch")
@@ -47,6 +48,7 @@ exp = PythonVersionExperiment(
     configs=CONFIGS,
     environment=ENVIRONMENT,
 )
+del exp.commands["parse-search"]
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_comparison_table_step(attributes=["translator_time_done", "translator_peak_memory"])
 
