@@ -26,16 +26,14 @@ class SuccessorGeneratorFactory {
     const TaskProxy &task_proxy;
     std::vector<OperatorInfo> operator_infos;
 
-    GeneratorPtr construct_chain(std::vector<GeneratorPtr> &nodes) const;
-    GeneratorPtr construct_empty() const;
-    GeneratorPtr construct_immediate(OperatorRange range) const;
+    GeneratorPtr construct_fork(std::vector<GeneratorPtr> nodes) const;
+    GeneratorPtr construct_leaf(OperatorRange range) const;
     GeneratorPtr construct_switch(
         int switch_var_id, ValuesAndGenerators generator_for_value) const;
     GeneratorPtr construct_recursive(OperatorRange range);
 public:
     explicit SuccessorGeneratorFactory(const TaskProxy &task_proxy);
-    /* We cannot leave the destructor implicit because we only have a
-       forward declaration of OperatorInfo. */
+    // Destructor cannot be implicit because OperatorInfo is forward-declared.
     ~SuccessorGeneratorFactory();
     GeneratorPtr create();
 };

@@ -34,13 +34,24 @@ public:
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const override;
 };
 
-class GeneratorFork : public GeneratorBase {
+class GeneratorForkBinary : public GeneratorBase {
     std::unique_ptr<GeneratorBase> generator1;
     std::unique_ptr<GeneratorBase> generator2;
 public:
-    GeneratorFork(
+    GeneratorForkBinary(
         std::unique_ptr<GeneratorBase> generator1,
         std::unique_ptr<GeneratorBase> generator2);
+    virtual void generate_applicable_ops(
+        const State &state, std::vector<OperatorID> &applicable_ops) const override;
+    // Transitional method, used until the search is switched to the new task interface.
+    virtual void generate_applicable_ops(
+        const GlobalState &state, std::vector<OperatorID> &applicable_ops) const override;
+};
+
+class GeneratorForkMulti : public GeneratorBase {
+    std::vector<std::unique_ptr<GeneratorBase>> children;
+public:
+    GeneratorForkMulti(std::vector<std::unique_ptr<GeneratorBase>> children);
     virtual void generate_applicable_ops(
         const State &state, std::vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.
