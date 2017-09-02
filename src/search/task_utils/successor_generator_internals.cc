@@ -30,35 +30,6 @@ using namespace std;
 */
 
 namespace successor_generator {
-GeneratorImmediate::GeneratorImmediate(
-    list<OperatorID> &&immediate_operators,
-    unique_ptr<GeneratorBase> next_generator_)
-    : immediate_operators(move(immediate_operators)),
-      next_generator(move(next_generator_)) {
-    /* There is no reason to to use GeneratorImmediate if there is no next generator.
-       Use GeneratorLeaf instead in such situtations. */
-    assert(next_generator);
-}
-
-void GeneratorImmediate::generate_applicable_ops(
-    const State &state, vector<OperatorID> &applicable_ops) const {
-    /* A loop over push_back is faster than using insert in this situation
-       because the lists are typically very small. We measured this in issue688. */
-    for (OperatorID id : immediate_operators) {
-        applicable_ops.push_back(id);
-    }
-    next_generator->generate_applicable_ops(state, applicable_ops);
-}
-
-void GeneratorImmediate::generate_applicable_ops(
-    const GlobalState &state, vector<OperatorID> &applicable_ops) const {
-    // See above for the reason for using push_back instead of insert.
-    for (OperatorID id : immediate_operators) {
-        applicable_ops.push_back(id);
-    }
-    next_generator->generate_applicable_ops(state, applicable_ops);
-}
-
 GeneratorForkBinary::GeneratorForkBinary(
     unique_ptr<GeneratorBase> generator1_,
     unique_ptr<GeneratorBase> generator2_)

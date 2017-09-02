@@ -21,19 +21,6 @@ public:
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const = 0;
 };
 
-class GeneratorImmediate : public GeneratorBase {
-    std::list<OperatorID> immediate_operators;
-    std::unique_ptr<GeneratorBase> next_generator;
-public:
-    GeneratorImmediate(std::list<OperatorID> &&immediate_operators,
-                       std::unique_ptr<GeneratorBase> next_generator);
-    virtual void generate_applicable_ops(
-        const State &state, std::vector<OperatorID> &applicable_ops) const override;
-    // Transitional method, used until the search is switched to the new task interface.
-    virtual void generate_applicable_ops(
-        const GlobalState &state, std::vector<OperatorID> &applicable_ops) const override;
-};
-
 class GeneratorForkBinary : public GeneratorBase {
     std::unique_ptr<GeneratorBase> generator1;
     std::unique_ptr<GeneratorBase> generator2;
