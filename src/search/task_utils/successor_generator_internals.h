@@ -3,7 +3,6 @@
 
 #include "../operator_id.h"
 
-#include <list>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -89,10 +88,10 @@ public:
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const override;
 };
 
-class GeneratorLeafList : public GeneratorBase {
-    std::list<OperatorID> applicable_operators;
+class GeneratorLeafVector : public GeneratorBase {
+    std::vector<OperatorID> applicable_operators;
 public:
-    GeneratorLeafList(std::list<OperatorID> &&applicable_operators);
+    GeneratorLeafVector(std::vector<OperatorID> &&applicable_operators);
     virtual void generate_applicable_ops(
         const State &state, std::vector<OperatorID> &applicable_ops) const override;
     // Transitional method, used until the search is switched to the new task interface.

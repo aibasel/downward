@@ -36,13 +36,13 @@ using namespace std;
       where map_no is an index into a separate vector of hash maps
       (represented out of band)
     - single leaf: [SINGLE_LEAF, op_id]
-    - list leaf: [LIST_LEAF, n, op_id_1, ..., op_id_n]
+    - vector leaf: [VECTOR_LEAF, n, op_id_1, ..., op_id_n]
 
     We could compact this further by permitting to use operator IDs
     directly wherever child nodes are used, by using e.g. negative
     numbers for operatorIDs and positive numbers for node IDs,
-    obviating the need for SINGLE_LEAF. This would also make list leaf
-    redundant, as multi-fork could be used instead.
+    obviating the need for SINGLE_LEAF. This would also make
+    VECTOR_LEAF redundant, as MULTI_FORK could be used instead.
 
     Further, if the other symbolic constants are negative numbers,
     we could represent forks just as [n, child_1, ..., child_n] without
@@ -59,9 +59,9 @@ using namespace std;
     size of the variable in question.)
 
   - More modestly, we could stick with the current polymorphic code,
-    but just use more types of nodes, such as switch nodes that store
-    a list/vector of (value, child) pairs to be scanned linearly or
-    with binary search.
+    but just use more types of nodes, such as switch nodes that stores
+    a vector of (value, child) pairs to be scanned linearly or with
+    binary search.
 
   - We can also try to optimize memory usage of the existing nodes
     further, e.g. by replacing vectors with something smaller, like a
@@ -186,11 +186,11 @@ void GeneratorSwitchSingle::generate_applicable_ops(
     }
 }
 
-GeneratorLeafList::GeneratorLeafList(list<OperatorID> &&applicable_operators)
+GeneratorLeafVector::GeneratorLeafVector(vector<OperatorID> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
 
-void GeneratorLeafList::generate_applicable_ops(
+void GeneratorLeafVector::generate_applicable_ops(
     const State &, vector<OperatorID> &applicable_ops) const {
     // See above for the reason for using push_back instead of insert.
     for (OperatorID id : applicable_operators) {
@@ -198,7 +198,7 @@ void GeneratorLeafList::generate_applicable_ops(
     }
 }
 
-void GeneratorLeafList::generate_applicable_ops(
+void GeneratorLeafVector::generate_applicable_ops(
     const GlobalState &, vector<OperatorID> &applicable_ops) const {
     // See above for the reason for using push_back instead of insert.
     for (OperatorID id : applicable_operators) {

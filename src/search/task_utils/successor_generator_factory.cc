@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <list>
 
 using namespace std;
 
@@ -29,6 +28,10 @@ struct OperatorRange {
 
     bool empty() const {
         return begin == end;
+    }
+
+    int span() const {
+        return end - begin;
     }
 };
 
@@ -153,7 +156,8 @@ GeneratorPtr SuccessorGeneratorFactory::construct_fork(
 GeneratorPtr SuccessorGeneratorFactory::construct_leaf(
     OperatorRange range) const {
     assert(!range.empty());
-    list<OperatorID> operators;
+    vector<OperatorID> operators;
+    operators.reserve(range.span());
     while (range.begin != range.end) {
         operators.emplace_back(operator_infos[range.begin].get_op());
         ++range.begin;
@@ -162,7 +166,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_leaf(
     if (operators.size() == 1) {
         return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
     } else {
-        return utils::make_unique_ptr<GeneratorLeafList>(move(operators));
+        return utils::make_unique_ptr<GeneratorLeafVector>(move(operators));
     }
 }
 
