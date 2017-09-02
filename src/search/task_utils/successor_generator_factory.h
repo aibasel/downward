@@ -16,9 +16,7 @@ class OperatorInfo;
 
 
 class SuccessorGeneratorFactory {
-    // TODO: Consider using this representation instead:
-    // using ValuesAndGenerators = std::vector<std::pair<int, GeneratorPtr>>;
-    using ValuesAndGenerators = std::vector<GeneratorPtr>;
+    using ValuesAndGenerators = std::vector<std::pair<int, GeneratorPtr>>;
 
     const TaskProxy &task_proxy;
     std::vector<OperatorInfo> operator_infos;

@@ -162,82 +162,66 @@ GeneratorPtr SuccessorGeneratorFactory::construct_leaf(
 }
 
 GeneratorPtr SuccessorGeneratorFactory::construct_switch(
-    int switch_var_id, ValuesAndGenerators generator_for_value) const {
-    int num_values = generator_for_value.size();
-    int num_null = count(generator_for_value.begin(),
-                         generator_for_value.end(), nullptr);
-    int num_non_null = num_values - num_null;
-    assert(num_non_null > 0);
+    int switch_var_id, ValuesAndGenerators values_and_generators) const {
+    VariablesProxy variables = task_proxy.get_variables();
+    int var_domain = variables[switch_var_id].get_domain_size();
+    int num_children = values_and_generators.size();
 
-    if (num_non_null == 1) {
-        for (int value = 0; value < num_values; ++value) {
-            if (generator_for_value[value]) {
-                return utils::make_unique_ptr<GeneratorSwitchSingle>(
-                    switch_var_id, value, move(generator_for_value[value]));
-            }
-        }
-        assert(false);
+    assert(num_children > 0);
+
+    if (num_children == 1) {
+        int value = values_and_generators[0].first;
+        GeneratorPtr generator = move(values_and_generators[0].second);
+        return utils::make_unique_ptr<GeneratorSwitchSingle>(
+            switch_var_id, value, move(generator));
     }
 
-    int vector_size = utils::estimate_vector_size<GeneratorPtr>(num_values);
-    int hash_size = utils::estimate_unordered_map_size<int, GeneratorPtr>(num_non_null);
+    int vector_size = utils::estimate_vector_size<GeneratorPtr>(var_domain);
+    int hash_size = utils::estimate_unordered_map_size<int, GeneratorPtr>(num_children);
     if (hash_size < vector_size) {
-        unordered_map<int, GeneratorPtr> map;
-        for (int value = 0; value < num_values; ++value) {
-            if (generator_for_value[value]) {
-                map[value] = move(generator_for_value[value]);
-            }
-        }
+        unordered_map<int, GeneratorPtr> generator_by_value;
+        for (auto &item : values_and_generators)
+            generator_by_value[item.first] = move(item.second);
         return utils::make_unique_ptr<GeneratorSwitchHash>(
-            switch_var_id, move(map));
+            switch_var_id, move(generator_by_value));
     } else {
+        vector<GeneratorPtr> generator_by_value(var_domain);
+        for (auto &item : values_and_generators)
+            generator_by_value[item.first] = move(item.second);
         return utils::make_unique_ptr<GeneratorSwitchVector>(
-            switch_var_id, move(generator_for_value));
+            switch_var_id, move(generator_by_value));
     }
 }
 
-
 GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     int depth, OperatorRange range) {
-    VariablesProxy variables = task_proxy.get_variables();
-
     vector<GeneratorPtr> nodes;
-
-    /*
-      TODO: This could be declared more locally (where we have the resize call).
-      We currently have it here to reuse the object for efficiency.
-    */
-    ValuesAndGenerators current_values_and_generators;
-
     OperatorGrouper grouper_by_var(
         operator_infos, depth, GroupOperatorsBy::VAR, range);
     while (!grouper_by_var.done()) {
         auto var_group = grouper_by_var.next();
-        int cond_var = var_group.first;
+        int var = var_group.first;
         OperatorRange var_range = var_group.second;
 
-        if (cond_var == -1) {
+        if (var == -1) {
             // Handle a group of immediately applicable operators.
             nodes.push_back(construct_leaf(var_range));
         } else {
             // Handle a group of operators sharing the first precondition variable.
-
-            int var_domain = variables[cond_var].get_domain_size();
-            current_values_and_generators.resize(var_domain);
-
+            ValuesAndGenerators values_and_generators;
             OperatorGrouper grouper_by_value(
                 operator_infos, depth, GroupOperatorsBy::VALUE, var_range);
             while (!grouper_by_value.done()) {
                 auto value_group = grouper_by_value.next();
-                int cond_value = value_group.first;
+                int value = value_group.first;
                 OperatorRange value_range = value_group.second;
 
-                current_values_and_generators[cond_value] = construct_recursive(
-                    depth + 1, value_range);
+                values_and_generators.emplace_back(
+                    value, construct_recursive(depth + 1, value_range));
             }
 
             nodes.push_back(construct_switch(
-                                cond_var, move(current_values_and_generators)));
+                                var, move(values_and_generators)));
         }
     }
     return construct_fork(move(nodes));
@@ -248,7 +232,7 @@ static vector<FactPair> build_sorted_precondition(const OperatorProxy &op) {
     cond.reserve(op.get_preconditions().size());
     for (FactProxy pre : op.get_preconditions())
         cond.emplace_back(pre.get_pair());
-    // Conditions must be ordered by variable id.
+    // Conditions must be sorted by variable.
     sort(cond.begin(), cond.end());
     return cond;
 }
