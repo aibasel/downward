@@ -27,7 +27,7 @@ class SuccessorGeneratorFactory {
     GeneratorPtr construct_leaf(OperatorRange range) const;
     GeneratorPtr construct_switch(
         int switch_var_id, ValuesAndGenerators generator_for_value) const;
-    GeneratorPtr construct_recursive(OperatorRange range);
+    GeneratorPtr construct_recursive(int depth, OperatorRange range);
 public:
     explicit SuccessorGeneratorFactory(const TaskProxy &task_proxy);
     // Destructor cannot be implicit because OperatorInfo is forward-declared.
