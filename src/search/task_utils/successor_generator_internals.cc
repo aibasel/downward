@@ -7,26 +7,65 @@
 
 using namespace std;
 
-/* Notes on possible optimizations:
-   Allocators
-   * Using specialized allocators (e.g. an arena allocator) could improve
-     cache locality and reduce the memory management overhead. We could then
-     also use indices instead of pointers to reduce the overhead in 64-bit
-     builds.
+/*
+  Notes on possible optimizations:
 
-   Switch nodes
-   * For small numbers of entries (2-3) it could be worth it
-     to store a list/vector of (value, generator) tuples and do a linear scan
-     instead of using a hash map.
+  - Using specialized allocators (e.g. an arena allocator) could
+    improve cache locality and reduce memory.
 
-   Immediate and leaf nodes
-   * Using forward_list instead of list led to a further 10% speedup on the
-     largest Logistics instance, logistics-98/prob28.pddl, when we tested this
-     (way back when). It would of course also reduce memory usage.
-   * We could also experiment with other types (e.g. vector) to see if they
-     perform better.
-   * Analogously to GeneratorSwitchSingle and GeneratorLeafSingle, we could
-     add GeneratorImmediateSingle.
+  - We could keep the different nodes in a single vector (for example
+    of type unique_ptr<GeneratorBase>) and then use indices rather
+    than pointers for representing child nodes. This would reduce the
+    memory overhead for pointers in 64-bit builds. However, this
+    overhead is not as bad as it used to be.
+
+  - Going further down this route, on the more extreme end of the
+    spectrum, we could use a "byte-code" style representation, where
+    the successor generator is just a long vector of ints combining
+    information about node type with node payload.
+
+    For example, we could represent different node types as follows,
+    where BINARY_FORK etc. are symbolic constants for tagging node
+    types:
+
+    - binary fork: [BINARY_FORK, child_1, child_2]
+    - multi-fork:  [MULTI_FORK, n, child_1, ..., child_n]
+    - vector switch: [VECTOR_SWITCH, var_id, child_1, ..., child_k]
+    - single switch: [SINGLE_SWITCH, var_id, value, child_index]
+    - hash switch: [HASH_SWITCH, var_id, map_no]
+      where map_no is an index into a separate vector of hash maps
+      (represented out of band)
+    - single leaf: [SINGLE_LEAF, op_id]
+    - list leaf: [LIST_LEAF, n, op_id_1, ..., op_id_n]
+
+    We could compact this further by permitting to use operator IDs
+    directly wherever child nodes are used, by using e.g. negative
+    numbers for operatorIDs and positive numbers for node IDs,
+    obviating the need for SINGLE_LEAF. This would also make list leaf
+    redundant, as multi-fork could be used instead.
+
+    Further, if the other symbolic constants are negative numbers,
+    we could represent forks just as [n, child_1, ..., child_n] without
+    symbolic constant at the start, unifying binary and multi-forks.
+
+    To completely unify the representation, not needing hash values
+    out of band, we might consider switches of the form [SWITCH, k,
+    var_id, value_1, child_1, ..., value_k, child_k] that permit
+    binary searching. This would only leave switch and fork nodes, and
+    we could do away with the type tags by just using +k for one node
+    type and -k for the other. (But it may be useful to leave the
+    possibility of the current vector switches for very dense switch
+    nodes, which could be used in the case where k equals the domain
+    size of the variable in question.)
+
+  - More modestly, we could stick with the current polymorphic code,
+    but just use more types of nodes, such as switch nodes that store
+    a list/vector of (value, child) pairs to be scanned linearly or
+    with binary search.
+
+  - We can also try to optimize memory usage of the existing nodes
+    further, e.g. by replacing vectors with something smaller, like a
+    zero-terminated heap-allocated array.
 */
 
 namespace successor_generator {
