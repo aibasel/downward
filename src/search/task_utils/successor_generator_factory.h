@@ -1,7 +1,6 @@
 #ifndef TASK_UTILS_SUCCESSOR_GENERATOR_FACTORY_H
 #define TASK_UTILS_SUCCESSOR_GENERATOR_FACTORY_H
 
-#include <list>
 #include <memory>
 #include <vector>
 
@@ -14,28 +13,30 @@ class GeneratorBase;
 
 using GeneratorPtr = std::unique_ptr<GeneratorBase>;
 
-class SuccessorGeneratorFactory {
-    // TODO: Get rid of the friend.
-    friend class OperatorGrouper;
+// TODO: Consider declaring these two within SuccessorGeneratorFactory.
+struct OperatorRange;
+class OperatorInfo;
 
-    using Condition = std::vector<FactPair>;
-    using OperatorList = std::list<OperatorID>;
-    // TODO: Later switch to the following pair-based representation?
+
+class SuccessorGeneratorFactory {
+    // TODO: Consider using this representation instead:
     // using ValuesAndGenerators = std::vector<std::pair<int, GeneratorPtr>>;
     using ValuesAndGenerators = std::vector<GeneratorPtr>;
 
     const TaskProxy &task_proxy;
-    std::vector<Condition> conditions;
-    std::vector<Condition::const_iterator> next_condition_by_op;
+    std::vector<OperatorInfo> operator_infos;
 
     GeneratorPtr construct_chain(std::vector<GeneratorPtr> &nodes) const;
     GeneratorPtr construct_empty() const;
-    GeneratorPtr construct_immediate(OperatorList operators) const;
+    GeneratorPtr construct_immediate(OperatorRange range) const;
     GeneratorPtr construct_switch(
         int switch_var_id, ValuesAndGenerators generator_for_value) const;
-    GeneratorPtr construct_recursive(OperatorList operator_queue);
+    GeneratorPtr construct_recursive(OperatorRange range);
 public:
     explicit SuccessorGeneratorFactory(const TaskProxy &task_proxy);
+    /* We cannot leave the destructor implicit because we only have a
+       forward declaration of OperatorInfo. */
+    ~SuccessorGeneratorFactory();
     GeneratorPtr create();
 };
 }
