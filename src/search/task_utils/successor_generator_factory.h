@@ -15,6 +15,10 @@ class GeneratorBase;
 using GeneratorPtr = std::unique_ptr<GeneratorBase>;
 
 class SuccessorGeneratorFactory {
+    // TODO: Get rid of the friends.
+    friend class VariablePartitioner;
+    friend class ValuePartitioner;
+
     using Condition = std::vector<FactPair>;
     using OperatorList = std::list<OperatorID>;
     // TODO: Later switch to the following pair-based representation?
