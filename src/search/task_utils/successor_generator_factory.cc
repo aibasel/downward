@@ -74,109 +74,143 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
     }
 }
 
+/*
+  TODO: The two partitioning classes are quite similar. We could
+  change "var" and "variable" to "value" everywhere in the first one
+  and would get an acceptable implementation of the second. It would
+  contain unnecessary code for the case value == -1, which cannot
+  arise, but that's not a big deal.
+
+  Hence, should we templatize this? Needs benchmarking.
+*/
+
+class VariablePartitioner {
+    // TODO: Remove duplication of these using declarations.
+    using OperatorList = std::list<OperatorID>;
+
+    const SuccessorGeneratorFactory &factory;
+    const OperatorList operators;
+    OperatorList::const_iterator pos;
+
+    int get_current_var() const {
+        assert(!done());
+        int op_index = pos->get_index();
+        const auto &cond_iter = factory.next_condition_by_op[op_index];
+        if (cond_iter == factory.conditions[op_index].end()) {
+            return -1;
+        } else {
+            return cond_iter->var;
+        }
+    }
+public:
+    explicit VariablePartitioner(const SuccessorGeneratorFactory &factory, OperatorList operators)
+        : factory(factory),
+          operators(move(operators)),
+          pos(this->operators.begin()) {
+    }
+
+    bool done() const {
+        return pos == operators.end();
+    }
+
+    pair<int, OperatorList> next() {
+        assert(!done());
+        int var = get_current_var();
+        OperatorList op_group;
+        do {
+            op_group.push_back(*pos);
+            ++pos;
+        } while (!done() && get_current_var() == var);
+        return make_pair(var, move(op_group));
+    }
+};
+
+
+class ValuePartitioner {
+    // TODO: Remove duplication of these using declarations.
+    using OperatorList = std::list<OperatorID>;
+
+    const SuccessorGeneratorFactory &factory;
+    const OperatorList operators;
+    OperatorList::const_iterator pos;
+
+    int get_current_value() const {
+        assert(!done());
+        int op_index = pos->get_index();
+        const auto &cond_iter = factory.next_condition_by_op[op_index];
+        assert(cond_iter != factory.conditions[op_index].end());
+        return cond_iter->value;
+    }
+public:
+    explicit ValuePartitioner(const SuccessorGeneratorFactory &factory, OperatorList operators)
+        : factory(factory),
+          operators(move(operators)),
+          pos(this->operators.begin()) {
+    }
+
+    bool done() const {
+        return pos == operators.end();
+    }
+
+    pair<int, OperatorList> next() {
+        assert(!done());
+        int value = get_current_value();
+        OperatorList op_group;
+        do {
+            op_group.push_back(*pos);
+            ++pos;
+        } while (!done() && get_current_value() == value);
+        return make_pair(value, move(op_group));
+    }
+};
+
+
 GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     OperatorList operator_queue) {
     VariablesProxy variables = task_proxy.get_variables();
 
     vector<GeneratorPtr> nodes;
 
-    int last_var = -1;
-    int last_value = -1;
-    OperatorList current_operators;
-    ValuesAndGenerators current_values_and_generators;
-    for (OperatorID op : operator_queue) {
-        int op_index = op.get_index();
-
-        Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
-
-        int cond_var;
-        int cond_value;
-
-        /*
-          Consume next condition of op (if any) and set cond_var/cond_value.
-          Set both to -1 if there are no further conditions.
-        */
-        if (cond_iter == conditions[op_index].end()) {
-            assert(last_var == -1 && last_value == -1);
-            cond_var = -1;
-            cond_value = -1;
-        } else {
-            // Obtain condition and consume it.
-            assert(utils::in_bounds(
-                       cond_iter - conditions[op_index].begin(),
-                       conditions[op_index]));
-            cond_var = cond_iter->var;
-            cond_value = cond_iter->value;
-            assert(make_pair(cond_var, cond_value) >=
-                   make_pair(last_var, last_value));
-            ++cond_iter;
-            assert(cond_iter == conditions[op_index].end() ||
-                   cond_iter->var > cond_var);
-        }
-
-        if (cond_var != last_var || cond_value != last_value) {
-            if (last_var != -1) {
-                /*
-                  We just finished the operator range for last_var/last_value.
-                  Recursively generate a successor generator for the range.
-                */
-                assert(!current_operators.empty());
-                current_values_and_generators[last_value] = construct_recursive(
-                    move(current_operators));
-                assert(current_operators.empty());
-            }
-
-            if (cond_var != last_var) {
-                if (last_var == -1) {
-                    /*
-                      We just finished the operator range with the immediate operators.
-                      Create a successor generator for them.
-                    */
-                    assert(cond_var != last_var && cond_value != last_value);
-                    if (!current_operators.empty()) {
-                        nodes.push_back(construct_immediate(
-                                            move(current_operators)));
-                    }
-                    assert(current_operators.empty());
-                } else {
-                    /*
-                      We just finished the whole operator range for last_var.
-                      Create a switch generator for the variable.
-                    */
-                    nodes.push_back(
-                        construct_switch(
-                            last_var, move(current_values_and_generators)));
-                    assert(current_values_and_generators.empty());
-                }
-
-                int var_domain = variables[cond_var].get_domain_size();
-                current_values_and_generators.resize(var_domain);
-                last_var = cond_var;
-            }
-            last_value = cond_value;
-        }
-        current_operators.push_back(op);
-    }
-
     /*
-      TODO: The following is code duplication. Deal with this,
-      perhaps by using a sentinel past the last var_no?
+      TODO: This could be declared more locally (where we have the resize call).
+      We currently have it here to reuse the object for efficiency.
     */
-    if (last_var == -1) {
-        if (!current_operators.empty()) {
-            nodes.push_back(construct_immediate(
-                                move(current_operators)));
-        }
-    } else {
-        current_values_and_generators[last_value] = construct_recursive(
-            move(current_operators));
-        assert(current_operators.empty());
-        nodes.push_back(
-            construct_switch(
-                last_var, move(current_values_and_generators)));
-        assert(current_values_and_generators.empty());
-    }
+    ValuesAndGenerators current_values_and_generators;
 
+    VariablePartitioner var_partitioner(*this, operator_queue);
+    // TODO: Replace done()/next() interface with something one can iterate over?
+    while (!var_partitioner.done()) {
+        auto var_group = var_partitioner.next();
+        int cond_var = var_group.first;
+        OperatorList var_operators = move(var_group.second);
+
+        if (cond_var == -1) {
+            // Handle a group of immediately applicable operators.
+            nodes.push_back(construct_immediate(move(var_operators)));
+        } else {
+            // Handle a group of operators who share the first precondition variable.
+
+            int var_domain = variables[cond_var].get_domain_size();
+            current_values_and_generators.resize(var_domain);
+
+            ValuePartitioner value_partitioner(*this, var_operators);
+            while (!value_partitioner.done()) {
+                auto value_group = value_partitioner.next();
+                int cond_value = value_group.first;
+                OperatorList value_operators = move(value_group.second);
+
+                // Advance the condition iterators. TODO: Can optimize this away later?
+                for (OperatorID op : value_operators)
+                    ++next_condition_by_op[op.get_index()];
+
+                current_values_and_generators[cond_value] = construct_recursive(
+                    move(value_operators));
+            }
+
+            nodes.push_back(construct_switch(
+                                cond_var, move(current_values_and_generators)));
+        }
+    }
     return construct_chain(nodes);
 }
 
