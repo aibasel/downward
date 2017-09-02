@@ -36,12 +36,12 @@ struct OperatorRange {
 class OperatorInfo {
     /* op_index and precondition are not const because we need
        assignment/swapping to sort vector<OperatorInfo>. */
-    int op_index;
+    OperatorID op;
     Condition precondition;
     Condition::const_iterator next_condition;
 public:
-    OperatorInfo(int op_index, Condition precondition)
-        : op_index(op_index),
+    OperatorInfo(OperatorID op, Condition precondition)
+        : op(op),
           precondition(move(precondition)),
           next_condition(this->precondition.begin()) {
     }
@@ -51,7 +51,7 @@ public:
     }
 
     OperatorID get_op() const {
-        return OperatorID(op_index);
+        return op;
     }
 
     // Returns -1 if there are no further conditions.
@@ -274,7 +274,7 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
     operator_infos.reserve(operators.size());
     for (OperatorProxy op : operators) {
         operator_infos.emplace_back(
-            op.get_id(), build_sorted_precondition(op));
+            OperatorID(op.get_id()), build_sorted_precondition(op));
     }
     /* Use stable_sort rather than sort for reproducibility.
        This amounts to breaking ties by operator ID. */

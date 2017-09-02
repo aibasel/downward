@@ -4,8 +4,6 @@
 #include <memory>
 #include <vector>
 
-struct FactPair;
-class OperatorID;
 class TaskProxy;
 
 namespace successor_generator {
