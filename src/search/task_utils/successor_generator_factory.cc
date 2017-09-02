@@ -245,7 +245,15 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
                 int cond_value = value_group.first;
                 OperatorRange value_range = value_group.second;
 
-                // Advance the condition iterators. TODO: Optimize this away later?
+                // Advance the condition iterators.
+                /*
+                  TODO: This (along with the corresponding attribute
+                  in OperatorInfo) can be optimized away if we
+                  maintain the recursion depth instead: at depth k, we
+                  have already consumed exactly k conditions. This
+                  probably also means that we can make the operator
+                  infos conceptually const.
+                */
                 for (int i = value_range.begin; i < value_range.end; ++i)
                     operator_infos[i].advance_condition();
 
@@ -287,39 +295,6 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
     /* Use stable_sort rather than sort for reproducibility.
        This amounts to breaking ties by operator ID. */
     stable_sort(operator_infos.begin(), operator_infos.end());
-
-    /*
-      TODO: conditions and next_condition_by_op are organized by
-      the actual operator number, but for better cache locality,
-      it would probably make sense to organize them in the order
-      we process them instead, i.e., by the order imposed by
-      "all_operators".
-
-      This is perhaps most easily done by using our own internal
-      operator representation, and perhaps we should use one that
-      supports popping conditions from the front, so that we don't
-      need next_condition_by_op any more. (But perhaps it's better
-      to stick with vectors and an index for efficiency reasons.
-      Can hide this inside the implementation of the internal
-      operator representation by giving it a pop_front method that
-      may be implemented lazily by advancing an
-      iterator/incrementing a counter.)
-
-      We need to move far less data around if we exploit that
-
-      A) all operator lists we create are contiguous subsequences
-      of all_operators, so it would be sufficient to store
-      indices into all_operators (which should then be a
-      vector) rather than create lots of explicit lists. (We
-      can create explicit lists as we build the immediate
-      generators, but before that, we don't really need to.)
-
-      B) all iterators in next_condition_by_op that are used in
-      one call to construct_recursive() are advanced by the
-      same amount, so it would be sufficient for
-      construct_recursive to store this one number rather than
-      maintaining a separate iterator for each operator.
-    */
 
     OperatorRange full_range(0, operator_infos.size());
     GeneratorPtr root = construct_recursive(full_range);
