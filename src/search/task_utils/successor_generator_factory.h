@@ -15,9 +15,8 @@ class GeneratorBase;
 using GeneratorPtr = std::unique_ptr<GeneratorBase>;
 
 class SuccessorGeneratorFactory {
-    // TODO: Get rid of the friends.
-    friend class VariablePartitioner;
-    friend class ValuePartitioner;
+    // TODO: Get rid of the friend.
+    friend class OperatorGrouper;
 
     using Condition = std::vector<FactPair>;
     using OperatorList = std::list<OperatorID>;

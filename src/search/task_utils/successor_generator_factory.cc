@@ -84,27 +84,40 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
   Hence, should we templatize this? Needs benchmarking.
 */
 
-class VariablePartitioner {
+enum class GroupOperatorsBy {
+    VAR,
+    VALUE
+};
+
+class OperatorGrouper {
     // TODO: Remove duplication of these using declarations.
     using OperatorList = std::list<OperatorID>;
 
     const SuccessorGeneratorFactory &factory;
+    const GroupOperatorsBy group_by;
     const OperatorList operators;
     OperatorList::const_iterator pos;
 
-    int get_current_var() const {
+    int get_current_group_key() const {
         assert(!done());
         int op_index = pos->get_index();
         const auto &cond_iter = factory.next_condition_by_op[op_index];
         if (cond_iter == factory.conditions[op_index].end()) {
             return -1;
-        } else {
+        } else if (group_by == GroupOperatorsBy::VAR) {
             return cond_iter->var;
+        } else {
+            assert(group_by == GroupOperatorsBy::VALUE);
+            return cond_iter->value;
         }
     }
 public:
-    explicit VariablePartitioner(const SuccessorGeneratorFactory &factory, OperatorList operators)
+    explicit OperatorGrouper(
+        const SuccessorGeneratorFactory &factory,
+        GroupOperatorsBy group_by,
+        OperatorList operators)
         : factory(factory),
+          group_by(group_by),
           operators(move(operators)),
           pos(this->operators.begin()) {
     }
@@ -115,52 +128,13 @@ public:
 
     pair<int, OperatorList> next() {
         assert(!done());
-        int var = get_current_var();
+        int key = get_current_group_key();
         OperatorList op_group;
         do {
             op_group.push_back(*pos);
             ++pos;
-        } while (!done() && get_current_var() == var);
-        return make_pair(var, move(op_group));
-    }
-};
-
-
-class ValuePartitioner {
-    // TODO: Remove duplication of these using declarations.
-    using OperatorList = std::list<OperatorID>;
-
-    const SuccessorGeneratorFactory &factory;
-    const OperatorList operators;
-    OperatorList::const_iterator pos;
-
-    int get_current_value() const {
-        assert(!done());
-        int op_index = pos->get_index();
-        const auto &cond_iter = factory.next_condition_by_op[op_index];
-        assert(cond_iter != factory.conditions[op_index].end());
-        return cond_iter->value;
-    }
-public:
-    explicit ValuePartitioner(const SuccessorGeneratorFactory &factory, OperatorList operators)
-        : factory(factory),
-          operators(move(operators)),
-          pos(this->operators.begin()) {
-    }
-
-    bool done() const {
-        return pos == operators.end();
-    }
-
-    pair<int, OperatorList> next() {
-        assert(!done());
-        int value = get_current_value();
-        OperatorList op_group;
-        do {
-            op_group.push_back(*pos);
-            ++pos;
-        } while (!done() && get_current_value() == value);
-        return make_pair(value, move(op_group));
+        } while (!done() && get_current_group_key() == key);
+        return make_pair(key, move(op_group));
     }
 };
 
@@ -177,10 +151,10 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     */
     ValuesAndGenerators current_values_and_generators;
 
-    VariablePartitioner var_partitioner(*this, operator_queue);
+    OperatorGrouper grouper_by_var(*this, GroupOperatorsBy::VAR, operator_queue);
     // TODO: Replace done()/next() interface with something one can iterate over?
-    while (!var_partitioner.done()) {
-        auto var_group = var_partitioner.next();
+    while (!grouper_by_var.done()) {
+        auto var_group = grouper_by_var.next();
         int cond_var = var_group.first;
         OperatorList var_operators = move(var_group.second);
 
@@ -193,9 +167,9 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
             int var_domain = variables[cond_var].get_domain_size();
             current_values_and_generators.resize(var_domain);
 
-            ValuePartitioner value_partitioner(*this, var_operators);
-            while (!value_partitioner.done()) {
-                auto value_group = value_partitioner.next();
+            OperatorGrouper grouper_by_value(*this, GroupOperatorsBy::VALUE, var_operators);
+            while (!grouper_by_value.done()) {
+                auto value_group = grouper_by_value.next();
                 int cond_value = value_group.first;
                 OperatorList value_operators = move(value_group.second);
 
