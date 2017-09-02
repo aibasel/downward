@@ -14,7 +14,6 @@
 using namespace std;
 
 namespace successor_generator {
-
 // TODO: Decide where to declare this, and declare it only once.
 using Condition = vector<FactPair>;
 using OperatorInfos = vector<OperatorInfo>;
@@ -35,11 +34,8 @@ struct OperatorRange {
 
 
 class OperatorInfo {
-    /*
-      op_index and precondition are "conceptually const", but we
-      need to support assignment/swapping to support sorting
-      vector<OperatorInfo>.
-    */
+    /* op_index and precondition are not const because we need
+       assignment/swapping to sort vector<OperatorInfo>. */
     int op_index;
     Condition precondition;
     Condition::const_iterator next_condition;
@@ -54,12 +50,11 @@ public:
         return precondition < other.precondition;
     }
 
-    void advance_condition() {
-        assert(next_condition != precondition.end());
-        ++next_condition;
+    OperatorID get_op() const {
+        return OperatorID(op_index);
     }
 
-    // If there are no further conditions, this returns -1.
+    // Returns -1 if there are no further conditions.
     int get_current_var() const {
         if (next_condition == precondition.end()) {
             return -1;
@@ -74,32 +69,88 @@ public:
         return next_condition->value;
     }
 
-    OperatorID get_op() const {
-        return OperatorID(op_index);
+    void advance_condition() {
+        assert(next_condition != precondition.end());
+        ++next_condition;
     }
 };
 
 
+enum class GroupOperatorsBy {
+    VAR,
+    VALUE
+};
+
+
+class OperatorGrouper {
+    const OperatorInfos &operator_infos;
+    const GroupOperatorsBy group_by;
+    OperatorRange range;
+
+    const OperatorInfo &get_current_op_info() const {
+        assert(!range.empty());
+        return operator_infos[range.begin];
+    }
+
+    int get_current_group_key() const {
+        const OperatorInfo &op_info = get_current_op_info();
+        if (group_by == GroupOperatorsBy::VAR) {
+            return op_info.get_current_var();
+        } else {
+            assert(group_by == GroupOperatorsBy::VALUE);
+            return op_info.get_current_value();
+        }
+    }
+public:
+    explicit OperatorGrouper(
+        const OperatorInfos &operator_infos,
+        GroupOperatorsBy group_by,
+        OperatorRange range)
+        : operator_infos(operator_infos),
+          group_by(group_by),
+          range(range) {
+    }
+
+    bool done() const {
+        return range.empty();
+    }
+
+    pair<int, OperatorRange> next() {
+        assert(!range.empty());
+        int key = get_current_group_key();
+        int group_begin = range.begin;
+        do {
+            ++range.begin;
+        } while (!range.empty() && get_current_group_key() == key);
+        OperatorRange group_range(group_begin, range.begin);
+        return make_pair(key, group_range);
+    }
+};
+
+
+SuccessorGeneratorFactory::SuccessorGeneratorFactory(
+    const TaskProxy &task_proxy)
+    : task_proxy(task_proxy) {
+}
+
 SuccessorGeneratorFactory::~SuccessorGeneratorFactory() = default;
 
-GeneratorPtr SuccessorGeneratorFactory::construct_chain(
-    vector<GeneratorPtr> &nodes) const {
-    if (nodes.empty()) {
-        return nullptr;
+GeneratorPtr SuccessorGeneratorFactory::construct_fork(
+    vector<GeneratorPtr> nodes) const {
+    int size = nodes.size();
+    if (size == 1) {
+        return move(nodes.at(0));
+    } else if (size == 2) {
+        return utils::make_unique_ptr<GeneratorForkBinary>(
+            move(nodes.at(0)), move(nodes.at(1)));
     } else {
-        GeneratorPtr result = move(nodes.at(0));
-        for (size_t i = 1; i < nodes.size(); ++i)
-            result = utils::make_unique_ptr<GeneratorFork>(
-                move(result), move(nodes.at(i)));
-        return result;
+        /* This general case includes the case size == 0, which can
+           (only) happen for the root for tasks with no operators. */
+        return utils::make_unique_ptr<GeneratorForkMulti>(move(nodes));
     }
 }
 
-GeneratorPtr SuccessorGeneratorFactory::construct_empty() const {
-    return utils::make_unique_ptr<GeneratorLeafList>(list<OperatorID>());
-}
-
-GeneratorPtr SuccessorGeneratorFactory::construct_immediate(
+GeneratorPtr SuccessorGeneratorFactory::construct_leaf(
     OperatorRange range) const {
     assert(!range.empty());
     list<OperatorID> operators;
@@ -150,66 +201,6 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
     }
 }
 
-/*
-  TODO: The two partitioning classes are quite similar. We could
-  change "var" and "variable" to "value" everywhere in the first one
-  and would get an acceptable implementation of the second. It would
-  contain unnecessary code for the case value == -1, which cannot
-  arise, but that's not a big deal.
-
-  Hence, should we templatize this? Needs benchmarking.
-*/
-
-enum class GroupOperatorsBy {
-    VAR,
-    VALUE
-};
-
-class OperatorGrouper {
-    const OperatorInfos &operator_infos;
-    const GroupOperatorsBy group_by;
-    OperatorRange range;
-
-    const OperatorInfo &get_current_op_info() const {
-        assert(!range.empty());
-        return operator_infos[range.begin];
-    }
-
-    int get_current_group_key() const {
-        const OperatorInfo &op_info = get_current_op_info();
-        if (group_by == GroupOperatorsBy::VAR) {
-            return op_info.get_current_var();
-        } else {
-            assert(group_by == GroupOperatorsBy::VALUE);
-            return op_info.get_current_value();
-        }
-    }
-public:
-    explicit OperatorGrouper(
-        const OperatorInfos &operator_infos,
-        GroupOperatorsBy group_by,
-        OperatorRange range)
-        : operator_infos(operator_infos),
-          group_by(group_by),
-          range(range) {
-    }
-
-    bool done() const {
-        return range.empty();
-    }
-
-    pair<int, OperatorRange> next() {
-        assert(!range.empty());
-        int key = get_current_group_key();
-        int group_begin = range.begin;
-        do {
-            ++range.begin;
-        } while (!range.empty() && get_current_group_key() == key);
-        OperatorRange group_range(group_begin, range.begin);
-        return make_pair(key, group_range);
-    }
-};
-
 
 GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     OperatorRange range) {
@@ -232,7 +223,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
 
         if (cond_var == -1) {
             // Handle a group of immediately applicable operators.
-            nodes.push_back(construct_immediate(var_range));
+            nodes.push_back(construct_leaf(var_range));
         } else {
             // Handle a group of operators who share the first precondition variable.
 
@@ -264,12 +255,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
                                 cond_var, move(current_values_and_generators)));
         }
     }
-    return construct_chain(nodes);
-}
-
-SuccessorGeneratorFactory::SuccessorGeneratorFactory(
-    const TaskProxy &task_proxy)
-    : task_proxy(task_proxy) {
+    return construct_fork(move(nodes));
 }
 
 static Condition build_sorted_precondition(const OperatorProxy &op) {
@@ -283,10 +269,8 @@ static Condition build_sorted_precondition(const OperatorProxy &op) {
 }
 
 GeneratorPtr SuccessorGeneratorFactory::create() {
-    operator_infos.clear();
-
     OperatorsProxy operators = task_proxy.get_operators();
-    // We need the iterators to conditions to be stable:
+    operator_infos.clear();
     operator_infos.reserve(operators.size());
     for (OperatorProxy op : operators) {
         operator_infos.emplace_back(
@@ -298,11 +282,6 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
 
     OperatorRange full_range(0, operator_infos.size());
     GeneratorPtr root = construct_recursive(full_range);
-    if (!root) {
-        /* Task has no operators. Create empty successor generator
-           so we don't have to check root for nullptr everywhere. */
-        root = construct_empty();
-    }
     return move(root);
 }
 }

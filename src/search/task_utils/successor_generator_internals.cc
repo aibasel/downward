@@ -59,7 +59,7 @@ void GeneratorImmediate::generate_applicable_ops(
     next_generator->generate_applicable_ops(state, applicable_ops);
 }
 
-GeneratorFork::GeneratorFork(
+GeneratorForkBinary::GeneratorForkBinary(
     unique_ptr<GeneratorBase> generator1_,
     unique_ptr<GeneratorBase> generator2_)
     : generator1(move(generator1_)),
@@ -71,16 +71,37 @@ GeneratorFork::GeneratorFork(
     assert(generator2);
 }
 
-void GeneratorFork::generate_applicable_ops(
+void GeneratorForkBinary::generate_applicable_ops(
     const State &state, vector<OperatorID> &applicable_ops) const {
     generator1->generate_applicable_ops(state, applicable_ops);
     generator2->generate_applicable_ops(state, applicable_ops);
 }
 
-void GeneratorFork::generate_applicable_ops(
+void GeneratorForkBinary::generate_applicable_ops(
     const GlobalState &state, vector<OperatorID> &applicable_ops) const {
     generator1->generate_applicable_ops(state, applicable_ops);
     generator2->generate_applicable_ops(state, applicable_ops);
+}
+
+GeneratorForkMulti::GeneratorForkMulti(vector<unique_ptr<GeneratorBase>> children)
+    : children(move(children)) {
+    /* Note that we permit 0-ary forks as a way to define empty
+       successor generators (for tasks with no operators). It is
+       the responsibility of the factory code to make sure they
+       are not generated in other circumstances. */
+    assert(this->children.empty() || this->children.size() >= 2);
+}
+
+void GeneratorForkMulti::generate_applicable_ops(
+    const State &state, vector<OperatorID> &applicable_ops) const {
+    for (const auto &generator : children)
+        generator->generate_applicable_ops(state, applicable_ops);
+}
+
+void GeneratorForkMulti::generate_applicable_ops(
+    const GlobalState &state, vector<OperatorID> &applicable_ops) const {
+    for (const auto &generator : children)
+        generator->generate_applicable_ops(state, applicable_ops);
 }
 
 GeneratorSwitchVector::GeneratorSwitchVector(
