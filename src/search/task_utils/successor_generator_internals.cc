@@ -192,7 +192,13 @@ GeneratorLeafVector::GeneratorLeafVector(vector<OperatorID> &&applicable_operato
 
 void GeneratorLeafVector::generate_applicable_ops(
     const State &, vector<OperatorID> &applicable_ops) const {
-    // See above for the reason for using push_back instead of insert.
+    /*
+      In our experiments (issue688), a loop over push_back was faster
+      here than doing this with a single insert call because the
+      containers are typically very small. However, we have changed
+      the container type from list to vector since then, so this might
+      no longer apply.
+    */
     for (OperatorID id : applicable_operators) {
         applicable_ops.push_back(id);
     }
