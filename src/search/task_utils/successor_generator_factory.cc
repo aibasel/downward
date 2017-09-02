@@ -9,10 +9,79 @@
 
 #include <algorithm>
 #include <cassert>
+#include <list>
 
 using namespace std;
 
 namespace successor_generator {
+
+// TODO: Decide where to declare this, and declare it only once.
+using Condition = vector<FactPair>;
+using OperatorInfos = vector<OperatorInfo>;
+
+
+struct OperatorRange {
+    int begin;
+    int end;
+
+    OperatorRange(int begin, int end)
+        : begin(begin), end(end) {
+    }
+
+    bool empty() const {
+        return begin == end;
+    }
+};
+
+
+class OperatorInfo {
+    /*
+      op_index and precondition are "conceptually const", but we
+      need to support assignment/swapping to support sorting
+      vector<OperatorInfo>.
+    */
+    int op_index;
+    Condition precondition;
+    Condition::const_iterator next_condition;
+public:
+    OperatorInfo(int op_index, Condition precondition)
+        : op_index(op_index),
+          precondition(move(precondition)),
+          next_condition(this->precondition.begin()) {
+    }
+
+    bool operator<(const OperatorInfo &other) const {
+        return precondition < other.precondition;
+    }
+
+    void advance_condition() {
+        assert(next_condition != precondition.end());
+        ++next_condition;
+    }
+
+    // If there are no further conditions, this returns -1.
+    int get_current_var() const {
+        if (next_condition == precondition.end()) {
+            return -1;
+        } else {
+            return next_condition->var;
+        }
+    }
+
+    // It is illegal to call this if there are no further conditions.
+    int get_current_value() const {
+        assert(next_condition != precondition.end());
+        return next_condition->value;
+    }
+
+    OperatorID get_op() const {
+        return OperatorID(op_index);
+    }
+};
+
+
+SuccessorGeneratorFactory::~SuccessorGeneratorFactory() = default;
+
 GeneratorPtr SuccessorGeneratorFactory::construct_chain(
     vector<GeneratorPtr> &nodes) const {
     if (nodes.empty()) {
@@ -27,16 +96,23 @@ GeneratorPtr SuccessorGeneratorFactory::construct_chain(
 }
 
 GeneratorPtr SuccessorGeneratorFactory::construct_empty() const {
-    return utils::make_unique_ptr<GeneratorLeafList>(OperatorList());
+    return utils::make_unique_ptr<GeneratorLeafList>(list<OperatorID>());
 }
 
 GeneratorPtr SuccessorGeneratorFactory::construct_immediate(
-    OperatorList operators) const {
-    assert(!operators.empty());
-    if (operators.size() == 1)
+    OperatorRange range) const {
+    assert(!range.empty());
+    list<OperatorID> operators;
+    while (range.begin != range.end) {
+        operators.emplace_back(operator_infos[range.begin].get_op());
+        ++range.begin;
+    }
+
+    if (operators.size() == 1) {
         return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
-    else
+    } else {
         return utils::make_unique_ptr<GeneratorLeafList>(move(operators));
+    }
 }
 
 GeneratorPtr SuccessorGeneratorFactory::construct_switch(
@@ -90,57 +166,53 @@ enum class GroupOperatorsBy {
 };
 
 class OperatorGrouper {
-    // TODO: Remove duplication of these using declarations.
-    using OperatorList = std::list<OperatorID>;
-
-    const SuccessorGeneratorFactory &factory;
+    const OperatorInfos &operator_infos;
     const GroupOperatorsBy group_by;
-    const OperatorList operators;
-    OperatorList::const_iterator pos;
+    OperatorRange range;
+
+    const OperatorInfo &get_current_op_info() const {
+        assert(!range.empty());
+        return operator_infos[range.begin];
+    }
 
     int get_current_group_key() const {
-        assert(!done());
-        int op_index = pos->get_index();
-        const auto &cond_iter = factory.next_condition_by_op[op_index];
-        if (cond_iter == factory.conditions[op_index].end()) {
-            return -1;
-        } else if (group_by == GroupOperatorsBy::VAR) {
-            return cond_iter->var;
+        const OperatorInfo &op_info = get_current_op_info();
+        if (group_by == GroupOperatorsBy::VAR) {
+            return op_info.get_current_var();
         } else {
             assert(group_by == GroupOperatorsBy::VALUE);
-            return cond_iter->value;
+            return op_info.get_current_value();
         }
     }
 public:
     explicit OperatorGrouper(
-        const SuccessorGeneratorFactory &factory,
+        const OperatorInfos &operator_infos,
         GroupOperatorsBy group_by,
-        OperatorList operators)
-        : factory(factory),
+        OperatorRange range)
+        : operator_infos(operator_infos),
           group_by(group_by),
-          operators(move(operators)),
-          pos(this->operators.begin()) {
+          range(range) {
     }
 
     bool done() const {
-        return pos == operators.end();
+        return range.empty();
     }
 
-    pair<int, OperatorList> next() {
-        assert(!done());
+    pair<int, OperatorRange> next() {
+        assert(!range.empty());
         int key = get_current_group_key();
-        OperatorList op_group;
+        int group_begin = range.begin;
         do {
-            op_group.push_back(*pos);
-            ++pos;
-        } while (!done() && get_current_group_key() == key);
-        return make_pair(key, move(op_group));
+            ++range.begin;
+        } while (!range.empty() && get_current_group_key() == key);
+        OperatorRange group_range(group_begin, range.begin);
+        return make_pair(key, group_range);
     }
 };
 
 
 GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
-    OperatorList operator_queue) {
+    OperatorRange range) {
     VariablesProxy variables = task_proxy.get_variables();
 
     vector<GeneratorPtr> nodes;
@@ -151,34 +223,33 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
     */
     ValuesAndGenerators current_values_and_generators;
 
-    OperatorGrouper grouper_by_var(*this, GroupOperatorsBy::VAR, operator_queue);
+    OperatorGrouper grouper_by_var(operator_infos, GroupOperatorsBy::VAR, range);
     // TODO: Replace done()/next() interface with something one can iterate over?
     while (!grouper_by_var.done()) {
         auto var_group = grouper_by_var.next();
         int cond_var = var_group.first;
-        OperatorList var_operators = move(var_group.second);
+        OperatorRange var_range = var_group.second;
 
         if (cond_var == -1) {
             // Handle a group of immediately applicable operators.
-            nodes.push_back(construct_immediate(move(var_operators)));
+            nodes.push_back(construct_immediate(var_range));
         } else {
             // Handle a group of operators who share the first precondition variable.
 
             int var_domain = variables[cond_var].get_domain_size();
             current_values_and_generators.resize(var_domain);
 
-            OperatorGrouper grouper_by_value(*this, GroupOperatorsBy::VALUE, var_operators);
+            OperatorGrouper grouper_by_value(operator_infos, GroupOperatorsBy::VALUE, var_range);
             while (!grouper_by_value.done()) {
                 auto value_group = grouper_by_value.next();
                 int cond_value = value_group.first;
-                OperatorList value_operators = move(value_group.second);
+                OperatorRange value_range = value_group.second;
 
-                // Advance the condition iterators. TODO: Can optimize this away later?
-                for (OperatorID op : value_operators)
-                    ++next_condition_by_op[op.get_index()];
+                // Advance the condition iterators. TODO: Optimize this away later?
+                for (int i = value_range.begin; i < value_range.end; ++i)
+                    operator_infos[i].advance_condition();
 
-                current_values_and_generators[cond_value] = construct_recursive(
-                    move(value_operators));
+                current_values_and_generators[cond_value] = construct_recursive(value_range);
             }
 
             nodes.push_back(construct_switch(
@@ -193,29 +264,29 @@ SuccessorGeneratorFactory::SuccessorGeneratorFactory(
     : task_proxy(task_proxy) {
 }
 
+static Condition build_sorted_precondition(const OperatorProxy &op) {
+    Condition cond;
+    cond.reserve(op.get_preconditions().size());
+    for (FactProxy pre : op.get_preconditions())
+        cond.emplace_back(pre.get_pair());
+    // Conditions must be ordered by variable id.
+    sort(cond.begin(), cond.end());
+    return cond;
+}
+
 GeneratorPtr SuccessorGeneratorFactory::create() {
-    conditions.clear();
-    next_condition_by_op.clear();
+    operator_infos.clear();
 
     OperatorsProxy operators = task_proxy.get_operators();
     // We need the iterators to conditions to be stable:
-    conditions.reserve(operators.size());
-    OperatorList all_operators;
+    operator_infos.reserve(operators.size());
     for (OperatorProxy op : operators) {
-        Condition cond;
-        cond.reserve(op.get_preconditions().size());
-        for (FactProxy pre : op.get_preconditions()) {
-            cond.push_back(pre.get_pair());
-        }
-        // Conditions must be ordered by variable id.
-        sort(cond.begin(), cond.end());
-        all_operators.push_back(OperatorID(op.get_id()));
-        conditions.push_back(cond);
-        next_condition_by_op.push_back(conditions.back().begin());
+        operator_infos.emplace_back(
+            op.get_id(), build_sorted_precondition(op));
     }
-    all_operators.sort([&](OperatorID op1, OperatorID op2) {
-            return conditions[op1.get_index()] < conditions[op2.get_index()];
-        });
+    /* Use stable_sort rather than sort for reproducibility.
+       This amounts to breaking ties by operator ID. */
+    stable_sort(operator_infos.begin(), operator_infos.end());
 
     /*
       TODO: conditions and next_condition_by_op are organized by
@@ -250,7 +321,8 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
       maintaining a separate iterator for each operator.
     */
 
-    GeneratorPtr root = construct_recursive(move(all_operators));
+    OperatorRange full_range(0, operator_infos.size());
+    GeneratorPtr root = construct_recursive(full_range);
     if (!root) {
         /* Task has no operators. Create empty successor generator
            so we don't have to check root for nullptr everywhere. */
