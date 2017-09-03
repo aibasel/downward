@@ -12,6 +12,49 @@
 
 using namespace std;
 
+/*
+  The key ideas of the construction algorithm are as follows.
+
+  Initially, we sort the preconditions of the operators
+  lexicographically.
+
+  We then group the operators by the *first variable* to be tested,
+  forming a group for each variable and possibly a special group for
+  operators with no precondition. (This special group forms the base
+  case of the recursion, leading to a leaf node in the successor
+  generator.) Each group forms a contiguous subrange of the overall
+  operator sequence.
+
+  We then further group each subsequence (except for the special one)
+  by the *value* that the given variable is tested against, again
+  obtaining contiguous subranges of the original operator sequence.
+
+  For each of these subranges, we "pop" the first condition and then
+  recursively apply the same construction algorithm to compute a child
+  successor generator for this subset of operators.
+
+  Successor generators for different values of the same variable are
+  then combined into a switch node, and the generated switch nodes for
+  different variables are combined into a fork node.
+
+  The important property of lexicographic sorting that we exploit here
+  is that if the original sequence is sorted, then all subsequences we
+  must consider recursively are also sorted. Crucially, this remains
+  true when we pop the first condition, because this popping always
+  happens within a subsequence where all operators have the *same*
+  first condition.
+
+  To make the implementation more efficient, we do not physically pop
+  conditions but only keep track of how many conditions have been
+  dealt with so far, which is simply the recursion depth of the
+  "construct_recursive" function.
+
+  Because we only consider contiguous subranges of the operator
+  sequence and never need to modify any of the data describing the
+  operators, we can simply keep track of the current operator sequence
+  by a begin and end index into the overall operator sequence.
+*/
+
 namespace successor_generator {
 struct OperatorRange {
     int begin;
@@ -194,7 +237,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
 }
 
 GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
-    int depth, OperatorRange range) {
+    int depth, OperatorRange range) const {
     vector<GeneratorPtr> nodes;
     OperatorGrouper grouper_by_var(
         operator_infos, depth, GroupOperatorsBy::VAR, range);
@@ -228,18 +271,17 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
 }
 
 static vector<FactPair> build_sorted_precondition(const OperatorProxy &op) {
-    vector<FactPair> cond;
-    cond.reserve(op.get_preconditions().size());
+    vector<FactPair> precond;
+    precond.reserve(op.get_preconditions().size());
     for (FactProxy pre : op.get_preconditions())
-        cond.emplace_back(pre.get_pair());
-    // Conditions must be sorted by variable.
-    sort(cond.begin(), cond.end());
-    return cond;
+        precond.emplace_back(pre.get_pair());
+    // Preconditions must be sorted by variable.
+    sort(precond.begin(), precond.end());
+    return precond;
 }
 
 GeneratorPtr SuccessorGeneratorFactory::create() {
     OperatorsProxy operators = task_proxy.get_operators();
-    operator_infos.clear();
     operator_infos.reserve(operators.size());
     for (OperatorProxy op : operators) {
         operator_infos.emplace_back(
@@ -251,6 +293,7 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
 
     OperatorRange full_range(0, operator_infos.size());
     GeneratorPtr root = construct_recursive(0, full_range);
+    operator_infos.clear();
     return move(root);
 }
 }
