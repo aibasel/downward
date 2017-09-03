@@ -219,9 +219,9 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
             switch_var_id, value, move(generator));
     }
 
-    int vector_size = utils::estimate_vector_size<GeneratorPtr>(var_domain);
-    int hash_size = utils::estimate_unordered_map_size<int, GeneratorPtr>(num_children);
-    if (hash_size < vector_size) {
+    int vector_bytes = utils::estimate_vector_bytes<GeneratorPtr>(var_domain);
+    int hash_bytes = utils::estimate_unordered_map_bytes<int, GeneratorPtr>(num_children);
+    if (hash_bytes < vector_bytes) {
         unordered_map<int, GeneratorPtr> generator_by_value;
         for (auto &item : values_and_generators)
             generator_by_value[item.first] = move(item.second);
