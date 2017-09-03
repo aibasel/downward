@@ -9,7 +9,6 @@
 class AbstractTask;
 class Axiom;
 class AxiomEvaluator;
-class CausalGraph;
 struct FactPair;
 class GlobalOperator;
 class GlobalState;
