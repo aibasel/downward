@@ -78,7 +78,7 @@ std::vector<T> sorted(Collection &&collection) {
 }
 
 template<typename T>
-int estimate_vector_size(int num_elements) {
+int estimate_vector_bytes(int num_elements) {
     /*
       This estimate is based on a study of the C++ standard library
       that shipped with gcc around the year 2017. It does not claim to
@@ -93,9 +93,9 @@ int estimate_vector_size(int num_elements) {
 }
 
 template<typename T>
-int _estimate_hash_table_size(int num_entries) {
+int _estimate_hash_table_bytes(int num_entries) {
     /*
-      The same comments as for estimate_vector_size apply.
+      The same comments as for estimate_vector_bytes apply.
       Additionally, there may be alignment issues, especially on
       64-bit systems, that make this estimate too optimistic for
       certain cases.
@@ -135,15 +135,15 @@ int _estimate_hash_table_size(int num_entries) {
 }
 
 template<typename T>
-int estimate_unordered_set_size(int num_entries) {
-    // See comments for _estimate_hash_table_size.
-    return _estimate_hash_table_size<std::unordered_set<T>>(num_entries);
+int estimate_unordered_set_bytes(int num_entries) {
+    // See comments for _estimate_hash_table_bytes.
+    return _estimate_hash_table_bytes<std::unordered_set<T>>(num_entries);
 }
 
 template<typename Key, typename Value>
-int estimate_unordered_map_size(int num_entries) {
-    // See comments for _estimate_hash_table_size.
-    return _estimate_hash_table_size<std::unordered_map<Key, Value>>(num_entries);
+int estimate_unordered_map_bytes(int num_entries) {
+    // See comments for _estimate_hash_table_bytes.
+    return _estimate_hash_table_bytes<std::unordered_map<Key, Value>>(num_entries);
 }
 
 }
