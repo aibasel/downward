@@ -6,6 +6,8 @@ import os
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab import tools
 
+from downward.reports.compare import ComparativeReport
+
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
 
@@ -48,6 +50,13 @@ exp = PythonVersionExperiment(
     environment=ENVIRONMENT,
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
-exp.add_comparison_table_step(attributes=["translator_time_done", "translator_peak_memory"])
+
+attributes = ["translator_time_done", "translator_peak_memory"]
+exp.add_comparison_table_step(attributes=attributes)
+compared_configs = [
+    ("issue733-v1-python2.7", "issue733-v1-python3.5", "Diff")]
+exp.add_report(
+    ComparativeReport(compared_configs, attributes=attributes),
+    name="compare-python-versions")
 
 exp.run_steps()
