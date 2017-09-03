@@ -53,8 +53,9 @@ attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [
     Attribute("sg_peak_mem_diff", functions=[finite_sum], min_wins=True),
 ]
 
-exp.add_comparison_table_step(attributes=attributes)
-
+# Instead of comparing all revision pairs in separate reports, create a
+# single report comparing neighboring revisions.
+# exp.add_comparison_table_step(attributes=attributes)
 compared_configs = []
 for rev1, rev2 in zip(REVISIONS[:-1], REVISIONS[1:]):
     for config in CONFIGS:
@@ -65,6 +66,6 @@ for rev1, rev2 in zip(REVISIONS[:-1], REVISIONS[1:]):
              "Diff ({config_nick})".format(**locals())))
 exp.add_report(
     ComparativeReport(compared_configs, attributes=attributes),
-    name="comapre-all-tags")
+    name="compare-all-tags")
 
 exp.run_steps()
