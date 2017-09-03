@@ -7,6 +7,7 @@
 #include <functional>
 #include <iterator>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace utils {
@@ -91,8 +92,8 @@ int estimate_vector_size(int num_elements) {
     return size;
 }
 
-template<typename Key, typename Value>
-int estimate_unordered_map_size(int num_entries) {
+template<typename T>
+int _estimate_hash_table_size(int num_entries) {
     /*
       The same comments as for estimate_vector_size apply.
       Additionally, there may be alignment issues, especially on
@@ -102,17 +103,20 @@ int estimate_unordered_map_size(int num_entries) {
 
     assert(num_entries < (1 << 28));
     /*
-      Having num_entries less than 2^28 is necessary but not
-      sufficient for the result value to not overflow. If we ever
-      change this function to allow for larger data structures (using
-      a size_t return value), we must update the list of bounds below
-      (taken from the gcc library source).
+      Having num_entries < 2^28 is necessary but not sufficient for
+      the result value to not overflow. If we ever change this
+      function to support larger data structures (using a size_t
+      return value), we must update the list of bounds below (taken
+      from the gcc library source).
     */
     int num_buckets = 0;
-    for (int bound : {2, 5, 11, 23, 47, 97, 199, 409, 823, 1741, 3469,
-                6949, 14033, 28411, 57557, 116731, 236897, 480881,
-                976369, 1982627, 4026031, 8175383, 16601593, 33712729,
-                68460391, 139022417, 282312799}) {
+    const auto bounds = {
+        2, 5, 11, 23, 47, 97, 199, 409, 823, 1741, 3469, 6949, 14033,
+        28411, 57557, 116731, 236897, 480881, 976369, 1982627, 4026031,
+        8175383, 16601593, 33712729, 68460391, 139022417, 282312799
+    };
+
+    for (int bound : bounds) {
         if (num_entries < bound) {
             num_buckets = bound;
             break;
@@ -121,13 +125,27 @@ int estimate_unordered_map_size(int num_entries) {
 
     int size = 0;
     size += 2 * sizeof(void *);                            // overhead for dynamic memory management
-    size += sizeof(std::unordered_map<Key, Value>);        // empty map
-    size += num_entries * sizeof(std::pair<Key, Value>);   // actual entries
-    size += num_entries * sizeof(std::pair<Key, Value> *); // pointer to values
+    size += sizeof(T);                                     // empty container
+    using Entry = typename T::value_type;
+    size += num_entries * sizeof(Entry);                   // actual entries
+    size += num_entries * sizeof(Entry *);                 // pointer to values
     size += num_entries * sizeof(void *);                  // pointer to next node
     size += num_buckets * sizeof(void *);                  // pointer to next bucket
     return size;
 }
+
+template<typename T>
+int estimate_unordered_set_size(int num_entries) {
+    // See comments for _estimate_hash_table_size.
+    return _estimate_hash_table_size<std::unordered_set<T>>(num_entries);
+}
+
+template<typename Key, typename Value>
+int estimate_unordered_map_size(int num_entries) {
+    // See comments for _estimate_hash_table_size.
+    return _estimate_hash_table_size<std::unordered_map<Key, Value>>(num_entries);
+}
+
 }
 
 #endif
