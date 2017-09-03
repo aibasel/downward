@@ -205,6 +205,17 @@ bool LabelReduction::reduce(
     int num_unsuccessful_iterations = 0;
 
     bool reduced = false;
+    /*
+      If using ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT, this loop stops under
+      the following conditions: if there are no combinable labels for all
+      transition systems, we have num_unsuccessful_iterations =
+      num_transition_systems and break the loop.
+
+      Whenever there is a transition system for which we reduce labels, we
+      reset the counter num_unsuccessful_iterations to 1 (not to 0!) because
+      we only need to consider all remaining transitions systems, but not the
+      one itself again.
+    */
     for (int i = 0; i < max_iterations; ++i) {
         int ts_index = transition_system_order[tso_index];
 
@@ -217,16 +228,23 @@ bool LabelReduction::reduce(
         }
 
         if (label_mapping.empty()) {
-            /* Even if the transition system has been removed, we need to count
-               it as unsuccessful iterations (the size of the vector matters). */
+            /*
+              Even if the index is inactive, we need to count it as
+              unsuccessful iterations, because the number of indices, i.e.
+              the size of the vector in the factored transition system
+              matters.
+            */
             ++num_unsuccessful_iterations;
         } else {
             reduced = true;
-            num_unsuccessful_iterations = 0;
+            // See comment for the loop and its exit conditions.
+            num_unsuccessful_iterations = 1;
             fts.apply_label_mapping(label_mapping, ts_index);
         }
-        if (num_unsuccessful_iterations == num_transition_systems - 1)
+        if (num_unsuccessful_iterations == num_transition_systems) {
+            // See comment for the loop and its exit conditions.
             break;
+        }
 
         ++tso_index;
         if (tso_index == transition_system_order.size()) {

@@ -331,10 +331,13 @@ def compute_model(prog):
 
 if __name__ == "__main__":
     import pddl_parser
+    import normalize
     import pddl_to_prolog
 
     print("Parsing...")
     task = pddl_parser.open()
+    print("Normalizing...")
+    normalize.normalize(task)
     print("Writing rules...")
     prog = pddl_to_prolog.translate(task)
 
