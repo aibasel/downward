@@ -145,7 +145,6 @@ int estimate_unordered_map_bytes(int num_entries) {
     // See comments for _estimate_hash_table_bytes.
     return _estimate_hash_table_bytes<std::unordered_map<Key, Value>>(num_entries);
 }
-
 }
 
 #endif
