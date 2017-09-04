@@ -294,6 +294,6 @@ GeneratorPtr SuccessorGeneratorFactory::create() {
     OperatorRange full_range(0, operator_infos.size());
     GeneratorPtr root = construct_recursive(0, full_range);
     operator_infos.clear();
-    return move(root);
+    return root;
 }
 }
