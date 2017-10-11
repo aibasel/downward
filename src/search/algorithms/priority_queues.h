@@ -127,7 +127,7 @@ public:
 template<typename Value>
 class BucketQueue : public AbstractQueue<Value> {
     static const int MIN_BUCKETS_BEFORE_SWITCH = 100;
-    const bool debug = false;
+    static const bool debug = false;
 
     typedef typename AbstractQueue<Value>::Entry Entry;
 
