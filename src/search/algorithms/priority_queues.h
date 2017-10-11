@@ -127,7 +127,7 @@ public:
 template<typename Value>
 class BucketQueue : public AbstractQueue<Value> {
     static const int MIN_BUCKETS_BEFORE_SWITCH = 100;
-    static const bool debug = false;
+    static const bool DEBUG = false;
 
     typedef typename AbstractQueue<Value>::Entry Entry;
 
@@ -207,7 +207,7 @@ public:
 
     virtual AbstractQueue<Value> *convert_if_necessary(int key) {
         if (key >= MIN_BUCKETS_BEFORE_SWITCH && key > num_pushes) {
-            if (debug) {
+            if (DEBUG) {
                 std::cout << "Switch from bucket-based to heap-based queue "
                           << "at key = " << key
                           << ", num_pushes = " << num_pushes << std::endl;
