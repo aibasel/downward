@@ -696,6 +696,8 @@ if __name__ == "__main__":
     try:
         main()
     except MemoryError:
-        print("Translator ran out of memory")
+        print("Translator ran out of memory, traceback:")
+        print("="*80)
         traceback.print_exc(file=sys.stdout)
+        print("="*80)
         exit(100)
