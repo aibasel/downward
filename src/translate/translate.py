@@ -703,4 +703,4 @@ if __name__ == "__main__":
         print("=" * 79)
         traceback.print_exc(file=sys.stdout)
         print("=" * 79)
-        exit(EXIT_MEMORY_ERROR)
+        sys.exit(EXIT_MEMORY_ERROR)
