@@ -3,7 +3,7 @@
 
 from __future__ import print_function
 
-import sys
+import sys, traceback
 
 def python_version_supported():
     major, minor = sys.version_info[:2]
@@ -693,4 +693,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except MemoryError:
+        print("Translator ran out of memory")
+        traceback.print_exc(file=sys.stdout)
+        exit(100)
