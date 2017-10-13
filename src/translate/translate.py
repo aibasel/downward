@@ -3,7 +3,8 @@
 
 from __future__ import print_function
 
-import sys, traceback
+import sys
+import traceback
 
 def python_version_supported():
     major, minor = sys.version_info[:2]
@@ -41,6 +42,8 @@ import variable_order
 # non-derived).
 
 DEBUG = False
+
+EXIT_MEMORY_ERROR = 100
 
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -697,7 +700,7 @@ if __name__ == "__main__":
         main()
     except MemoryError:
         print("Translator ran out of memory, traceback:")
-        print("="*80)
+        print("=" * 79)
         traceback.print_exc(file=sys.stdout)
-        print("="*80)
-        exit(100)
+        print("=" * 79)
+        exit(EXIT_MEMORY_ERROR)
