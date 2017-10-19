@@ -91,9 +91,19 @@ def run_translate(args):
         "translator", args.translate_inputs, args.translate_options,
         time_limit, memory_limit)
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
-    call_component(
-        translate, args.translate_inputs + args.translate_options,
-        time_limit=time_limit, memory_limit=memory_limit)
+    logging.info("translator executable: %s" % translate)
+
+    try:
+        call_component(
+            translate, args.translate_inputs + args.translate_options,
+            time_limit=time_limit, memory_limit=memory_limit)
+    except subprocess.CalledProcessError as err:
+        if err.returncode in returncodes.EXPECTED_TRANSLATOR_EXITCODES:
+            return err.returncode
+        else:
+            raise
+    else:
+        return 0
 
 
 def run_search(args):
@@ -130,7 +140,7 @@ def run_search(args):
                 stdin=args.search_input,
                 time_limit=time_limit, memory_limit=memory_limit)
         except subprocess.CalledProcessError as err:
-            if err.returncode in returncodes.EXPECTED_EXITCODES:
+            if err.returncode in returncodes.EXPECTED_SEARCH_EXITCODES:
                 return err.returncode
             else:
                 raise
