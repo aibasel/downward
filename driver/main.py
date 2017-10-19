@@ -31,7 +31,7 @@ def main():
     for component in args.components:
         try:
             if component == "translate":
-                run_components.run_translate(args)
+                exitcode = run_components.run_translate(args)
             elif component == "search":
                 exitcode = run_components.run_search(args)
             elif component == "validate":
