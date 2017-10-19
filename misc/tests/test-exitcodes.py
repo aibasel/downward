@@ -11,18 +11,12 @@ REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
 DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
-TASKS = {
-    "strips": "miconic/s1-0.pddl",
-    "axioms": "philosophers/p01-phil2.pddl",
-    "cond-eff": "miconic-simpleadl/s1-0.pddl",
-}
-
-EXIT_PLAN_FOUND = 0
-EXIT_CRITICAL_ERROR = 1
-EXIT_INPUT_ERROR = 2
-EXIT_UNSUPPORTED = 3
-EXIT_UNSOLVABLE = 4
-EXIT_UNSOLVED_INCOMPLETE = 5
+EXIT_SEARCH_PLAN_FOUND = 0
+EXIT_SEARCH_CRITICAL_ERROR = 1
+EXIT_SEARCH_INPUT_ERROR = 2
+EXIT_SEARCH_UNSUPPORTED = 3
+EXIT_SEARCH_UNSOLVABLE = 4
+EXIT_SEARCH_UNSOLVED_INCOMPLETE = 5
 
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'merge_strategy=merge_stateless(merge_selector='
@@ -36,45 +30,51 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'max_states=50000,threshold_before_merge=1'
 '))')
 
-TESTS = [
-    ("strips", "astar(add())", EXIT_PLAN_FOUND),
-    ("strips", "astar(hm())", EXIT_PLAN_FOUND),
-    ("strips", "ehc(hm())", EXIT_PLAN_FOUND),
-    ("strips", "astar(ipdb())", EXIT_PLAN_FOUND),
-    ("strips", "astar(lmcut())", EXIT_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_hm(), admissible=false))", EXIT_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_hm(), admissible=true))", EXIT_PLAN_FOUND),
-    ("strips", MERGE_AND_SHRINK, EXIT_PLAN_FOUND),
-    ("axioms", "astar(add())", EXIT_PLAN_FOUND),
-    ("axioms", "astar(hm())", EXIT_UNSOLVED_INCOMPLETE),
-    ("axioms", "ehc(hm())", EXIT_UNSOLVED_INCOMPLETE),
-    ("axioms", "astar(ipdb())", EXIT_UNSUPPORTED),
-    ("axioms", "astar(lmcut())", EXIT_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_PLAN_FOUND),
-    ("axioms", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_zg(), admissible=false))", EXIT_PLAN_FOUND),
-    ("axioms", "astar(lmcount(lm_zg(), admissible=true))", EXIT_UNSUPPORTED),
+SEARCH_TASKS = {
+    "strips": "miconic/s1-0.pddl",
+    "axioms": "philosophers/p01-phil2.pddl",
+    "cond-eff": "miconic-simpleadl/s1-0.pddl",
+}
+
+SEARCH_TESTS = [
+    ("strips", "astar(add())", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(hm())", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "ehc(hm())", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(ipdb())", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcut())", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_hm(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_hm(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
+    ("strips", MERGE_AND_SHRINK, EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(add())", EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(hm())", EXIT_SEARCH_UNSOLVED_INCOMPLETE),
+    ("axioms", "ehc(hm())", EXIT_SEARCH_UNSOLVED_INCOMPLETE),
+    ("axioms", "astar(ipdb())", EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcut())", EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_zg(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_zg(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
     # h^m landmark factory explicitly forbids axioms.
-    ("axioms", "astar(lmcount(lm_hm(), admissible=false))", EXIT_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_hm(), admissible=true))", EXIT_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_PLAN_FOUND),
-    ("axioms", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_UNSUPPORTED),
-    ("axioms", MERGE_AND_SHRINK, EXIT_UNSUPPORTED),
-    ("cond-eff", "astar(add())", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(hm())", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(ipdb())", EXIT_UNSUPPORTED),
-    ("cond-eff", "astar(lmcut())", EXIT_UNSUPPORTED),
-    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_zg(), admissible=false))", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_zg(), admissible=true))", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_hm(), admissible=false))", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_hm(), admissible=true))", EXIT_UNSUPPORTED),
-    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_UNSUPPORTED),
-    ("cond-eff", MERGE_AND_SHRINK, EXIT_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_hm(), admissible=false))", EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_hm(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", MERGE_AND_SHRINK, EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(add())", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(hm())", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(ipdb())", EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(lmcut())", EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_zg(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_zg(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_hm(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_hm(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", MERGE_AND_SHRINK, EXIT_SEARCH_PLAN_FOUND),
 ]
 
 
@@ -90,16 +90,10 @@ def cleanup():
     subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
 
-def main():
-    # On Windows, ./build.py has to be called from the correct environment.
-    # Since we want this script to work even when we are in a regular
-    # shell, we do not build on Windows. If the planner is not yet built,
-    # the driver script will complain about this.
-    if os.name == "posix":
-        subprocess.check_call(["./build.py"], cwd=REPO_BASE)
+def run_search_tests():
     failures = []
-    for task_type, search, expected in TESTS:
-        relpath = TASKS[task_type]
+    for task_type, search, expected in SEARCH_TESTS:
+        relpath = SEARCH_TASKS[task_type]
         exitcode = run_plan_script(task_type, relpath, search)
         if not exitcode == expected:
             failures.append((task_type, search, expected, exitcode))
@@ -111,8 +105,19 @@ def main():
             print("%(search)s on %(task_type)s task: expected %(expected)d, "
                    "got %(exitcode)d" % locals())
         sys.exit(1)
-    else:
-        print("\nNo errors detected.")
+
+
+def main():
+    # On Windows, ./build.py has to be called from the correct environment.
+    # Since we want this script to work even when we are in a regular
+    # shell, we do not build on Windows. If the planner is not yet built,
+    # the driver script will complain about this.
+    if os.name == "posix":
+        subprocess.check_call(["./build.py"], cwd=REPO_BASE)
+
+    run_search_tests()
+
+    print("\nNo errors detected.")
 
 
 main()
