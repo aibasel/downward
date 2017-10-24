@@ -174,3 +174,5 @@ def run_validate(args):
             sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
         else:
             raise
+    else:
+        return 0
