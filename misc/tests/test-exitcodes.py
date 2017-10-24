@@ -5,18 +5,13 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
+sys.path.insert(1, '../../')
+from driver import returncodes
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
 DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
-
-EXIT_SEARCH_PLAN_FOUND = 0
-EXIT_SEARCH_CRITICAL_ERROR = 1
-EXIT_SEARCH_INPUT_ERROR = 2
-EXIT_SEARCH_UNSUPPORTED = 3
-EXIT_SEARCH_UNSOLVABLE = 4
-EXIT_SEARCH_UNSOLVED_INCOMPLETE = 5
 
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'merge_strategy=merge_stateless(merge_selector='
@@ -37,44 +32,44 @@ SEARCH_TASKS = {
 }
 
 SEARCH_TESTS = [
-    ("strips", "astar(add())", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "astar(hm())", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "ehc(hm())", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "astar(ipdb())", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "astar(lmcut())", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_hm(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", "astar(lmcount(lm_hm(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
-    ("strips", MERGE_AND_SHRINK, EXIT_SEARCH_PLAN_FOUND),
-    ("axioms", "astar(add())", EXIT_SEARCH_PLAN_FOUND),
-    ("axioms", "astar(hm())", EXIT_SEARCH_UNSOLVED_INCOMPLETE),
-    ("axioms", "ehc(hm())", EXIT_SEARCH_UNSOLVED_INCOMPLETE),
-    ("axioms", "astar(ipdb())", EXIT_SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcut())", EXIT_SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("axioms", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_zg(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("axioms", "astar(lmcount(lm_zg(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
+    ("strips", "astar(add())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(hm())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "ehc(hm())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(ipdb())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcut())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_rhw(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_rhw(), admissible=true))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_hm(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", "astar(lmcount(lm_hm(), admissible=true))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("strips", MERGE_AND_SHRINK, returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(add())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(hm())", returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE),
+    ("axioms", "ehc(hm())", returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE),
+    ("axioms", "astar(ipdb())", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcut())", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_rhw(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_rhw(), admissible=true))", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_zg(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_zg(), admissible=true))", returncodes.EXIT_SEARCH_UNSUPPORTED),
     # h^m landmark factory explicitly forbids axioms.
-    ("axioms", "astar(lmcount(lm_hm(), admissible=false))", EXIT_SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_hm(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("axioms", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
-    ("axioms", MERGE_AND_SHRINK, EXIT_SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(add())", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(hm())", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(ipdb())", EXIT_SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(lmcut())", EXIT_SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_zg(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_zg(), admissible=true))", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_hm(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_hm(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_SEARCH_PLAN_FOUND),
-    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_SEARCH_UNSUPPORTED),
-    ("cond-eff", MERGE_AND_SHRINK, EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_hm(), admissible=false))", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_hm(), admissible=true))", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("axioms", "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("axioms", MERGE_AND_SHRINK, returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(add())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(hm())", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(ipdb())", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(lmcut())", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=true))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_zg(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_zg(), admissible=true))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_hm(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_hm(), admissible=true))", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.EXIT_SEARCH_PLAN_FOUND),
+    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.EXIT_SEARCH_UNSUPPORTED),
+    ("cond-eff", MERGE_AND_SHRINK, returncodes.EXIT_SEARCH_PLAN_FOUND),
 ]
 
 
