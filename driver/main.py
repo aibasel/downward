@@ -27,7 +27,7 @@ def main():
         sys.exit()
 
     # If validation succeeds, exit with the search component's exitcode.
-    exitcode = None
+    component_to_exitcode = {}
     for component in args.components:
         try:
             if component == "translate":
@@ -35,13 +35,18 @@ def main():
             elif component == "search":
                 exitcode = run_components.run_search(args)
             elif component == "validate":
-                run_components.run_validate(args)
+                exitcode = run_components.run_validate(args)
             else:
                 assert False
         except subprocess.CalledProcessError as err:
             print(err)
             exitcode = err.returncode
+        component_to_exitcode[component] = exitcode
+        if exitcode != 0:
+            print("Stopping after non-zero exit code of {}".format(component))
             break
+
+    #if ""
     sys.exit(exitcode)
 
 
