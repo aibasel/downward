@@ -145,14 +145,10 @@ void SearchSpace::trace_path(const GlobalState &goal_state,
     reverse(path.begin(), path.end());
 }
 
-void SearchSpace::dump(const TaskProxy &task_proxy) const {
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (PerStateInformation<SearchNodeInfo>::const_iterator it =
-             search_node_infos.begin(&state_registry);
-         it != search_node_infos.end(&state_registry); ++it) {
+void SearchSpace::dump() const {
+    for (StateID id : state_registry) {
         /* The body duplicates SearchNode::dump() but we cannot create
            a search node without discarding the const qualifier. */
-        StateID id = *it;
         GlobalState state = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state];
         cout << id << ": ";

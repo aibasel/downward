@@ -21,10 +21,10 @@ IteratedSearch::IteratedSearch(const Options &opts)
       iterated_found_solution(false) {
 }
 
-unique_ptr<SearchEngine> IteratedSearch::get_search_engine(
+shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     int engine_configs_index) {
     OptionParser parser(engine_configs[engine_configs_index], false);
-    unique_ptr<SearchEngine> engine(parser.start_parsing<SearchEngine *>());
+    shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
 
     cout << "Starting search: ";
     kptree::print_tree_bracketed(engine_configs[engine_configs_index], cout);
@@ -33,7 +33,7 @@ unique_ptr<SearchEngine> IteratedSearch::get_search_engine(
     return engine;
 }
 
-unique_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
+shared_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
     int num_phases = engine_configs.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
@@ -54,7 +54,7 @@ unique_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
 }
 
 SearchStatus IteratedSearch::step() {
-    unique_ptr<SearchEngine> current_search = create_phase(phase);
+    shared_ptr<SearchEngine> current_search = create_phase(phase);
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -124,7 +124,7 @@ void IteratedSearch::save_plan_if_necessary() const {
     // each successful search iteration.
 }
 
-static SearchEngine *_parse(OptionParser &parser) {
+static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Iterated search", "");
     parser.document_note(
         "Note 1",
@@ -178,13 +178,13 @@ static SearchEngine *_parse(OptionParser &parser) {
         //check if the supplied search engines can be parsed
         for (const ParseTree &config : opts.get_list<ParseTree>("engine_configs")) {
             OptionParser test_parser(config, true);
-            test_parser.start_parsing<SearchEngine *>();
+            test_parser.start_parsing<shared_ptr<SearchEngine>>();
         }
         return nullptr;
     } else {
-        return new IteratedSearch(opts);
+        return make_shared<IteratedSearch>(opts);
     }
 }
 
-static Plugin<SearchEngine> _plugin("iterated", _parse);
+static PluginShared<SearchEngine> _plugin("iterated", _parse);
 }

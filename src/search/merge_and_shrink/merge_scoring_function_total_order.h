@@ -39,10 +39,18 @@ public:
     explicit MergeScoringFunctionTotalOrder(const options::Options &options);
     virtual ~MergeScoringFunctionTotalOrder() override = default;
     virtual std::vector<double> compute_scores(
-        FactoredTransitionSystem &fts,
+        const FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
     virtual void initialize(const TaskProxy &task_proxy) override;
     static void add_options_to_parser(options::OptionParser &parser);
+
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
+
+    virtual bool requires_goal_distances() const override {
+        return false;
+    }
 };
 }
 
