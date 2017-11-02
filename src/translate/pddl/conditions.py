@@ -222,6 +222,7 @@ class Literal(Condition):
     # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
     __hash__ = Condition.__hash__
     parts = []
+    __slots__ = ["predicate", "args", "hash"]
     def __init__(self, predicate, args):
         self.predicate = predicate
         self.args = tuple(args)

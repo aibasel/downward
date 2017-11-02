@@ -24,7 +24,7 @@ class MergeStrategySCCs : public MergeStrategy {
     std::vector<int> current_ts_indices;
 public:
     MergeStrategySCCs(
-        FactoredTransitionSystem &fts,
+        const FactoredTransitionSystem &fts,
         const TaskProxy &task_proxy,
         const std::shared_ptr<MergeTreeFactory> &merge_tree_factory,
         const std::shared_ptr<MergeSelector> &merge_selector,
