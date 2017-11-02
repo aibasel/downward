@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalOperator;
 class GlobalState;
 class TaskProxy;
 
@@ -87,7 +86,7 @@ public:
     }
 
     virtual bool notify_state_transition(
-        const GlobalState &parent_state, const GlobalOperator &op,
+        const GlobalState &parent_state, OperatorID op_id,
         const GlobalState &state);
 
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
