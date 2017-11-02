@@ -297,8 +297,6 @@ class Queue:
         result = self.queue[self.queue_pos]
         self.queue_pos += 1
         return result
-    def popped_elements(self):
-        return self.queue[:self.queue_pos]
 
 def compute_model(prog):
     with timers.timing("Preparing model"):
