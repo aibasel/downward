@@ -32,13 +32,24 @@ using namespace std;
 namespace pdbs {
 struct HillClimbingTimeout : public exception {};
 
+static vector<int> get_goal_variables(const TaskProxy &task_proxy) {
+    vector<int> goal_vars;
+    GoalsProxy goals = task_proxy.get_goals();
+    goal_vars.reserve(goals.size());
+    for (FactProxy goal : goals) {
+        goal_vars.push_back(goal.get_variable().get_id());
+    }
+    assert(utils::is_sorted_unique(goal_vars));
+    return goal_vars;
+}
+
 PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
-      consider_co_effect_vars(opts.get<bool>("consider_co_effect_vars")),
+      use_co_effect_goal_variables(opts.get<bool>("use_co_effect_goal_variables")),
       rng(utils::parse_rng_from_options(opts)),
       num_rejected(0),
       hill_climbing_timer(0) {
@@ -50,12 +61,7 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     set<Pattern> &generated_patterns,
     PDBCollection &candidate_pdbs) {
     const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
-    vector<int> goal_vars;
-    goal_vars.reserve(task_proxy.get_goals().size());
-    for (FactProxy fact : task_proxy.get_goals()) {
-        goal_vars.push_back(fact.get_variable().get_id());
-    }
-    assert(utils::is_sorted_unique(goal_vars));
+    const vector<int> goal_vars = get_goal_variables(task_proxy);
     const Pattern &pattern = pdb.get_pattern();
     int pdb_size = pdb.get_size();
     int max_pdb_size = 0;
@@ -64,23 +70,23 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
         const vector<int> &precondition_vars = causal_graph.get_eff_to_pre(pattern_var);
 
         vector<int> co_effect_goal_vars;
-        if (consider_co_effect_vars) {
+        if (use_co_effect_goal_variables) {
             // Consider goal variables connected via co-effect arcs.
             const vector<int> &co_effect_vars = causal_graph.get_eff_to_eff(pattern_var);
-
             set_intersection(
                 co_effect_vars.begin(), co_effect_vars.end(),
                 goal_vars.begin(), goal_vars.end(),
                 back_inserter(co_effect_goal_vars));
         }
 
+        // Combine precondition variables and co-effect variables (if any).
         vector<int> connected_vars;
         set_union(
             precondition_vars.begin(), precondition_vars.end(),
             co_effect_goal_vars.begin(), co_effect_goal_vars.end(),
             back_inserter(connected_vars));
 
-        // Only use connected variables which are not already in pattern.
+        // Only use variables which are not already in the pattern.
         vector<int> relevant_vars;
         set_difference(
             connected_vars.begin(), connected_vars.end(),
@@ -388,8 +394,8 @@ void add_hillclimbing_options(OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
     parser.add_option<bool>(
-        "consider_co_effect_vars",
-        "consider variables connected via co-effect arcs",
+        "use_co_effect_goal_variables",
+        "consider goal variables connected via co-effect arcs",
         "true");
     utils::add_rng_options(parser);
 }
