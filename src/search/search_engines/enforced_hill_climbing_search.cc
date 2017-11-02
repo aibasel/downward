@@ -90,9 +90,9 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 
 void EnforcedHillClimbingSearch::reach_state(
-    const GlobalState &parent, const GlobalOperator &op, const GlobalState &state) {
+    const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
     for (Heuristic *heur : heuristics) {
-        heur->notify_state_transition(parent, op, state);
+        heur->notify_state_transition(parent, op_id, state);
     }
 }
 
@@ -127,11 +127,12 @@ void EnforcedHillClimbingSearch::initialize() {
 void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     const EvaluationContext &eval_context,
     int parent_g,
-    const GlobalOperator *op,
+    OperatorID op_id,
     bool preferred) {
-    int succ_g = parent_g + get_adjusted_cost(*op);
+    const GlobalOperator &op = g_operators[op_id.get_index()];
+    int succ_g = parent_g + get_adjusted_cost(op);
     EdgeOpenListEntry entry = make_pair(
-        eval_context.get_state().get_id(), get_op_index_hacked(op));
+        eval_context.get_state().get_id(), op_id);
     EvaluationContext new_eval_context(
         eval_context.get_cache(), succ_g, preferred, &statistics);
     open_list->insert(new_eval_context, entry);
@@ -151,7 +152,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
         for (OperatorID op_id : preferred_operators) {
             insert_successor_into_open_list(
-                eval_context, node_g, &g_operators[op_id.get_index()], true);
+                eval_context, node_g, op_id, true);
         }
     } else {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
@@ -163,7 +164,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
             bool preferred = use_preferred &&
                              preferred_operators.contains(op_id);
             insert_successor_into_open_list(
-                eval_context, node_g, &g_operators[op_id.get_index()], preferred);
+                eval_context, node_g, op_id, preferred);
         }
     }
 
@@ -187,7 +188,8 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         EdgeOpenListEntry entry = open_list->remove_min();
         StateID parent_state_id = entry.first;
-        const GlobalOperator *last_op = &g_operators[entry.second];
+        OperatorID last_op_id = entry.second;
+        const GlobalOperator *last_op = &g_operators[last_op_id.get_index()];
 
         GlobalState parent_state = state_registry.lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
@@ -206,7 +208,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         if (node.is_new()) {
             EvaluationContext eval_context(state, &statistics);
-            reach_state(parent_state, *last_op, state);
+            reach_state(parent_state, last_op_id, state);
             statistics.inc_evaluated_states();
 
             if (eval_context.is_heuristic_infinite(heuristic)) {

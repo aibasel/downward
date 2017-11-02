@@ -3,6 +3,7 @@
 #include "global_operator.h"
 #include "global_state.h"
 #include "globals.h"
+#include "task_proxy.h"
 
 #include <cassert>
 #include "search_node_info.h"
@@ -55,7 +56,7 @@ void SearchNode::open_initial() {
     info.g = 0;
     info.real_g = 0;
     info.parent_state_id = StateID::no_state;
-    info.creating_operator = -1;
+    info.creating_operator = OperatorID::no_operator;
 }
 
 void SearchNode::open(const SearchNode &parent_node,
@@ -65,7 +66,7 @@ void SearchNode::open(const SearchNode &parent_node,
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state_id = parent_node.get_state_id();
-    info.creating_operator = get_op_index_hacked(parent_op);
+    info.creating_operator = get_op_id_hacked(parent_op);
 }
 
 void SearchNode::reopen(const SearchNode &parent_node,
@@ -79,7 +80,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state_id = parent_node.get_state_id();
-    info.creating_operator = get_op_index_hacked(parent_op);
+    info.creating_operator = get_op_id_hacked(parent_op);
 }
 
 // like reopen, except doesn't change status
@@ -92,7 +93,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state_id = parent_node.get_state_id();
-    info.creating_operator = get_op_index_hacked(parent_op);
+    info.creating_operator = get_op_id_hacked(parent_op);
 }
 
 void SearchNode::close() {
@@ -104,11 +105,13 @@ void SearchNode::mark_as_dead_end() {
     info.status = SearchNodeInfo::DEAD_END;
 }
 
-void SearchNode::dump() const {
+void SearchNode::dump(const TaskProxy &task_proxy) const {
     cout << state_id << ": ";
     get_state().dump_fdr();
-    if (info.creating_operator != -1) {
-        cout << " created by " << g_operators[info.creating_operator].get_name()
+    if (info.creating_operator != OperatorID::no_operator) {
+        OperatorsProxy operators = task_proxy.get_operators();
+        OperatorProxy op = operators[info.creating_operator.get_index()];
+        cout << " created by " << op.get_name()
              << " from " << info.parent_state_id << endl;
     } else {
         cout << " no parent" << endl;
@@ -126,32 +129,35 @@ SearchNode SearchSpace::get_node(const GlobalState &state) {
 }
 
 void SearchSpace::trace_path(const GlobalState &goal_state,
-                             vector<const GlobalOperator *> &path) const {
+                             vector<OperatorID> &path) const {
     GlobalState current_state = goal_state;
     assert(path.empty());
     for (;;) {
         const SearchNodeInfo &info = search_node_infos[current_state];
-        if (info.creating_operator == -1) {
+        if (info.creating_operator == OperatorID::no_operator) {
             assert(info.parent_state_id == StateID::no_state);
             break;
         }
-        assert(utils::in_bounds(info.creating_operator, g_operators));
-        const GlobalOperator *op = &g_operators[info.creating_operator];
-        path.push_back(op);
+        assert(utils::in_bounds(info.creating_operator.get_index(), g_operators));
+        path.push_back(info.creating_operator);
         current_state = state_registry.lookup_state(info.parent_state_id);
     }
     reverse(path.begin(), path.end());
 }
 
-void SearchSpace::dump() const {
+void SearchSpace::dump(const TaskProxy &task_proxy) const {
+    OperatorsProxy operators = task_proxy.get_operators();
     for (StateID id : state_registry) {
+        /* The body duplicates SearchNode::dump() but we cannot create
+           a search node without discarding the const qualifier. */
         GlobalState state = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state];
         cout << id << ": ";
         state.dump_fdr();
-        if (node_info.creating_operator != -1 &&
+        if (node_info.creating_operator != OperatorID::no_operator &&
             node_info.parent_state_id != StateID::no_state) {
-            cout << " created by " << g_operators[node_info.creating_operator].get_name()
+            OperatorProxy op = operators[node_info.creating_operator.get_index()];
+            cout << " created by " << op.get_name()
                  << " from " << node_info.parent_state_id << endl;
         } else {
             cout << "has no parent" << endl;

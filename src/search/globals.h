@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include "operator_id.h"
+
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -13,6 +15,7 @@ struct FactPair;
 class GlobalOperator;
 class GlobalState;
 class StateRegistry;
+class TaskProxy;
 
 namespace int_packer {
 class IntPacker;
@@ -32,9 +35,10 @@ bool test_goal(const GlobalState &state);
   Set generates_multiple_plan_files to true if the planner can find more than
   one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
 */
-void save_plan(const std::vector<const GlobalOperator *> &plan,
+void save_plan(const std::vector<OperatorID> &plan,
+               const TaskProxy &task_proxy,
                bool generates_multiple_plan_files = false);
-int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
+int calculate_plan_cost(const std::vector<OperatorID> &plan, const TaskProxy &task_proxy);
 
 void read_everything(std::istream &in);
 void dump_everything();

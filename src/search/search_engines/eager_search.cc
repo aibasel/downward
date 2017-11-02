@@ -81,7 +81,7 @@ void EagerSearch::initialize() {
 
     print_initial_h_values(eval_context);
 
-    pruning_method->initialize(g_root_task());
+    pruning_method->initialize(task);
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -143,7 +143,7 @@ SearchStatus EagerSearch::step() {
               don't break out of the for loop early.
             */
             for (Heuristic *heuristic : heuristics) {
-                heuristic->notify_state_transition(s, *op, succ_state);
+                heuristic->notify_state_transition(s, op_id, succ_state);
             }
         }
 
@@ -288,7 +288,7 @@ void EagerSearch::reward_progress() {
 }
 
 void EagerSearch::dump_search_space() const {
-    search_space.dump();
+    search_space.dump(task_proxy);
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
