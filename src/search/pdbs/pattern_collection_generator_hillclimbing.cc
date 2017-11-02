@@ -43,6 +43,43 @@ static vector<int> get_goal_variables(const TaskProxy &task_proxy) {
     return goal_vars;
 }
 
+static vector<vector<int>> compute_connected_variables(
+    const TaskProxy &task_proxy, bool use_co_effect_goal_variables) {
+    const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
+    const vector<int> goal_vars = get_goal_variables(task_proxy);
+
+    vector<vector<int>> connected_vars;
+    VariablesProxy variables = task_proxy.get_variables();
+    connected_vars.reserve(variables.size());
+    for (VariableProxy var : variables) {
+        int var_id = var.get_id();
+
+        // Consider variables connected via precondition arcs.
+        const vector<int> &precondition_vars = causal_graph.get_eff_to_pre(var_id);
+
+        vector<int> co_effect_goal_vars;
+        if (use_co_effect_goal_variables) {
+            // Consider goal variables connected via co-effect arcs.
+            const vector<int> &co_effect_vars = causal_graph.get_eff_to_eff(var_id);
+            set_intersection(
+                co_effect_vars.begin(), co_effect_vars.end(),
+                goal_vars.begin(), goal_vars.end(),
+                back_inserter(co_effect_goal_vars));
+        }
+
+        // Combine precondition variables and co-effect variables (if any).
+        vector<int> precondition_and_co_effect_vars;
+        set_union(
+            precondition_vars.begin(), precondition_vars.end(),
+            co_effect_goal_vars.begin(), co_effect_goal_vars.end(),
+            back_inserter(precondition_and_co_effect_vars));
+
+        connected_vars.push_back(move(precondition_and_co_effect_vars));
+    }
+    return connected_vars;
+}
+
+
 PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
@@ -57,34 +94,16 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
 
 int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     const TaskProxy &task_proxy,
+    const vector<vector<int>> &connected_variables,
     const PatternDatabase &pdb,
     set<Pattern> &generated_patterns,
     PDBCollection &candidate_pdbs) {
-    const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
-    const vector<int> goal_vars = get_goal_variables(task_proxy);
     const Pattern &pattern = pdb.get_pattern();
     int pdb_size = pdb.get_size();
     int max_pdb_size = 0;
     for (int pattern_var : pattern) {
-        // Consider variables connected via precondition arcs.
-        const vector<int> &precondition_vars = causal_graph.get_eff_to_pre(pattern_var);
-
-        vector<int> co_effect_goal_vars;
-        if (use_co_effect_goal_variables) {
-            // Consider goal variables connected via co-effect arcs.
-            const vector<int> &co_effect_vars = causal_graph.get_eff_to_eff(pattern_var);
-            set_intersection(
-                co_effect_vars.begin(), co_effect_vars.end(),
-                goal_vars.begin(), goal_vars.end(),
-                back_inserter(co_effect_goal_vars));
-        }
-
-        // Combine precondition variables and co-effect variables (if any).
-        vector<int> connected_vars;
-        set_union(
-            precondition_vars.begin(), precondition_vars.end(),
-            co_effect_goal_vars.begin(), co_effect_goal_vars.end(),
-            back_inserter(connected_vars));
+        assert(utils::in_bounds(pattern_var, connected_variables));
+        const vector<int> &connected_vars = connected_variables[pattern_var];
 
         // Only use variables which are not already in the pattern.
         vector<int> relevant_vars;
@@ -247,6 +266,9 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     double average_operator_cost = task_properties::get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
+    const vector<vector<int>> connected_variables = compute_connected_variables(
+        task_proxy, use_co_effect_goal_variables);
+
     // Candidate patterns generated so far (used to avoid duplicates).
     set<Pattern> generated_patterns;
     // The PDBs for the patterns in generated_patterns that satisfy the size
@@ -257,7 +279,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     for (const shared_ptr<PatternDatabase> &current_pdb :
          *(current_pdbs->get_pattern_databases())) {
         int new_max_pdb_size = generate_candidate_pdbs(
-            task_proxy, *current_pdb, generated_patterns, candidate_pdbs);
+            task_proxy, connected_variables, *current_pdb, generated_patterns,
+            candidate_pdbs);
         max_pdb_size = max(max_pdb_size, new_max_pdb_size);
     }
     /*
@@ -311,7 +334,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
             // Generate candidate patterns and PDBs for next iteration.
             int new_max_pdb_size = generate_candidate_pdbs(
-                task_proxy, *best_pdb, generated_patterns, candidate_pdbs);
+                task_proxy, connected_variables, *best_pdb, generated_patterns,
+                candidate_pdbs);
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
             // Remove the added PDB from candidate_pdbs.

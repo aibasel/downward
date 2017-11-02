@@ -57,6 +57,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     */
     int generate_candidate_pdbs(
         const TaskProxy &task_proxy,
+        const std::vector<std::vector<int>> &connected_variables,
         const PatternDatabase &pdb,
         std::set<Pattern> &generated_patterns,
         PDBCollection &candidate_pdbs);
