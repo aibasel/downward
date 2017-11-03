@@ -43,8 +43,7 @@ static vector<int> get_goal_variables(const TaskProxy &task_proxy) {
     return goal_vars;
 }
 
-static vector<vector<int>> compute_connected_variables(
-    const TaskProxy &task_proxy, bool use_co_effect_goal_variables) {
+static vector<vector<int>> compute_connected_variables(const TaskProxy &task_proxy) {
     const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const vector<int> goal_vars = get_goal_variables(task_proxy);
 
@@ -58,16 +57,14 @@ static vector<vector<int>> compute_connected_variables(
         const vector<int> &precondition_vars = causal_graph.get_eff_to_pre(var_id);
 
         vector<int> co_effect_goal_vars;
-        if (use_co_effect_goal_variables) {
-            // Consider goal variables connected via co-effect arcs.
-            const vector<int> &co_effect_vars = causal_graph.get_eff_to_eff(var_id);
-            set_intersection(
-                co_effect_vars.begin(), co_effect_vars.end(),
-                goal_vars.begin(), goal_vars.end(),
-                back_inserter(co_effect_goal_vars));
-        }
+        // Consider goal variables connected via co-effect arcs.
+        const vector<int> &co_effect_vars = causal_graph.get_eff_to_eff(var_id);
+        set_intersection(
+            co_effect_vars.begin(), co_effect_vars.end(),
+            goal_vars.begin(), goal_vars.end(),
+            back_inserter(co_effect_goal_vars));
 
-        // Combine precondition variables and co-effect variables (if any).
+        // Combine precondition variables and co-effect goal variables.
         vector<int> precondition_and_co_effect_vars;
         set_union(
             precondition_vars.begin(), precondition_vars.end(),
@@ -86,7 +83,6 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
-      use_co_effect_goal_variables(opts.get<bool>("use_co_effect_goal_variables")),
       rng(utils::parse_rng_from_options(opts)),
       num_rejected(0),
       hill_climbing_timer(0) {
@@ -266,8 +262,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     double average_operator_cost = task_properties::get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
-    const vector<vector<int>> connected_variables = compute_connected_variables(
-        task_proxy, use_co_effect_goal_variables);
+    const vector<vector<int>> connected_variables =
+        compute_connected_variables(task_proxy);
 
     // Candidate patterns generated so far (used to avoid duplicates).
     set<Pattern> generated_patterns;
@@ -417,10 +413,6 @@ void add_hillclimbing_options(OptionParser &parser) {
         "is performed at all.",
         "infinity",
         Bounds("0.0", "infinity"));
-    parser.add_option<bool>(
-        "use_co_effect_goal_variables",
-        "consider goal variables connected via co-effect arcs",
-        "true");
     utils::add_rng_options(parser);
 }
 
