@@ -22,7 +22,8 @@ Distances::~Distances() {
 }
 
 void Distances::clear_distances() {
-    distances_computed = false;
+    init_distances_computed = false;
+    goal_distances_computed = false;
     init_distances.clear();
     goal_distances.clear();
 }
@@ -192,7 +193,7 @@ void Distances::compute_distances(
     if (verbosity >= Verbosity::VERBOSE) {
         cout << transition_system.tag();
     }
-    assert(!are_distances_computed());
+    assert(!are_init_distances_computed());
     assert(init_distances.empty() && goal_distances.empty());
 
     int num_states = get_num_states();
@@ -201,7 +202,7 @@ void Distances::compute_distances(
         if (verbosity >= Verbosity::VERBOSE) {
             cout << "empty transition system, no distances to compute" << endl;
         }
-        distances_computed = true;
+        init_distances_computed = true;
         return;
     }
 
@@ -233,8 +234,13 @@ void Distances::compute_distances(
         }
     }
 
-    distances_computed = true;
-    assert(are_distances_computed());
+    if (compute_init_distances) {
+        init_distances_computed = true;
+    }
+    if (compute_goal_distances) {
+        goal_distances_computed = true;
+    }
+    assert(are_init_distances_computed());
 }
 
 void Distances::apply_abstraction(
@@ -242,7 +248,7 @@ void Distances::apply_abstraction(
     bool compute_init_distances,
     bool compute_goal_distances,
     Verbosity verbosity) {
-    assert(are_distances_computed());
+    assert(are_init_distances_computed());
     if (compute_init_distances) {
         assert(state_equivalence_relation.size() < init_distances.size());
     }
@@ -312,7 +318,7 @@ void Distances::apply_abstraction(
         goal_distances = move(new_goal_distances);
     }
 
-    assert(are_distances_computed());
+    assert(are_init_distances_computed());
 }
 
 void Distances::dump() const {
@@ -325,8 +331,8 @@ void Distances::dump() const {
 
 void Distances::statistics() const {
     cout << transition_system.tag();
-    if (!are_distances_computed()) {
-        cout << "distances not computed";
+    if (!are_goal_distances_computed()) {
+        cout << "goal distances not computed";
     } else if (transition_system.is_solvable(*this)) {
         cout << "init h=" << get_goal_distance(transition_system.get_init_state());
     } else {
