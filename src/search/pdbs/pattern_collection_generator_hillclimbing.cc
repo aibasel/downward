@@ -56,8 +56,8 @@ static vector<vector<int>> compute_connected_variables(const TaskProxy &task_pro
         // Consider variables connected via precondition arcs.
         const vector<int> &precondition_vars = causal_graph.get_eff_to_pre(var_id);
 
-        vector<int> co_effect_goal_vars;
         // Consider goal variables connected via co-effect arcs.
+        vector<int> co_effect_goal_vars;
         const vector<int> &co_effect_vars = causal_graph.get_eff_to_eff(var_id);
         set_intersection(
             co_effect_vars.begin(), co_effect_vars.end(),
@@ -511,8 +511,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "search neighbourhood of patterns can be restricted to variables that "
         "are somewhat relevant to the variables already included in the "
         "pattern by analyzing causal graphs. This is also implemented in Fast "
-        "Downward, but we only consider precondition-to-effect arcs of the "
-        "causal graph, ignoring effect-to-effect arcs. The second approach "
+        "Downward. The second approach "
         "described in the paper (statistical confidence interval) is not "
         "applicable to this implementation, as it doesn't use A* search but "
         "constructs the entire pattern databases for all candidate patterns "
