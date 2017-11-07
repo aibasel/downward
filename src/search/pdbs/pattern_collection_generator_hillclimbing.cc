@@ -61,13 +61,7 @@ static vector<vector<int>> compute_connected_variables(const TaskProxy &task_pro
         const vector<int> &pre_to_eff_vars = causal_graph.get_eff_to_pre(var_id);
 
         // Consider goal variables connected via eff->eff and eff->pre arcs.
-        const vector<int> &eff_to_eff_vars = causal_graph.get_eff_to_eff(var_id);
-        const vector<int> &eff_to_pre_vars = causal_graph.get_pre_to_eff(var_id);
-        vector<int> effect_vars;
-        set_union(
-            eff_to_eff_vars.begin(), eff_to_eff_vars.end(),
-            eff_to_pre_vars.begin(), eff_to_pre_vars.end(),
-            back_inserter(effect_vars));
+        const vector<int> &effect_vars = causal_graph.get_successors(var_id);
         vector<int> connected_goal_vars;
         set_intersection(
             effect_vars.begin(), effect_vars.end(),
