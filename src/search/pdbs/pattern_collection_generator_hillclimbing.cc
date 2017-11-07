@@ -43,37 +43,47 @@ static vector<int> get_goal_variables(const TaskProxy &task_proxy) {
     return goal_vars;
 }
 
+/*
+  Consider pre->eff predecessors, and consider *any* neighbour (pre->eff,
+  eff->pre, eff--eff) that is a goal variable.
+*/
 static vector<vector<int>> compute_connected_variables(const TaskProxy &task_proxy) {
     const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const vector<int> goal_vars = get_goal_variables(task_proxy);
 
-    vector<vector<int>> connected_vars;
+    vector<vector<int>> connected_vars_by_variable;
     VariablesProxy variables = task_proxy.get_variables();
-    connected_vars.reserve(variables.size());
+    connected_vars_by_variable.reserve(variables.size());
     for (VariableProxy var : variables) {
         int var_id = var.get_id();
 
-        // Consider variables connected via precondition arcs.
-        const vector<int> &precondition_vars = causal_graph.get_eff_to_pre(var_id);
+        // Consider variables connected via pre->eff arcs.
+        const vector<int> &pre_to_eff_vars = causal_graph.get_eff_to_pre(var_id);
 
-        // Consider goal variables connected via co-effect arcs.
-        vector<int> co_effect_goal_vars;
-        const vector<int> &co_effect_vars = causal_graph.get_eff_to_eff(var_id);
-        set_intersection(
-            co_effect_vars.begin(), co_effect_vars.end(),
-            goal_vars.begin(), goal_vars.end(),
-            back_inserter(co_effect_goal_vars));
-
-        // Combine precondition variables and co-effect goal variables.
-        vector<int> precondition_and_co_effect_vars;
+        // Consider goal variables connected via eff->eff and eff->pre arcs.
+        const vector<int> &eff_to_eff_vars = causal_graph.get_eff_to_eff(var_id);
+        const vector<int> &eff_to_pre_vars = causal_graph.get_pre_to_eff(var_id);
+        vector<int> effect_vars;
         set_union(
-            precondition_vars.begin(), precondition_vars.end(),
-            co_effect_goal_vars.begin(), co_effect_goal_vars.end(),
-            back_inserter(precondition_and_co_effect_vars));
+            eff_to_eff_vars.begin(), eff_to_eff_vars.end(),
+            eff_to_pre_vars.begin(), eff_to_pre_vars.end(),
+            back_inserter(effect_vars));
+        vector<int> connected_goal_vars;
+        set_intersection(
+            effect_vars.begin(), effect_vars.end(),
+            goal_vars.begin(), goal_vars.end(),
+            back_inserter(connected_goal_vars));
 
-        connected_vars.push_back(move(precondition_and_co_effect_vars));
+        // Combine relevant goal and non-goal variables.
+        vector<int> connected_vars;
+        set_union(
+            pre_to_eff_vars.begin(), pre_to_eff_vars.end(),
+            connected_goal_vars.begin(), connected_goal_vars.end(),
+            back_inserter(connected_vars));
+
+        connected_vars_by_variable.push_back(move(connected_vars));
     }
-    return connected_vars;
+    return connected_vars_by_variable;
 }
 
 
