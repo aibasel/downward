@@ -44,10 +44,37 @@ static vector<int> get_goal_variables(const TaskProxy &task_proxy) {
 }
 
 /*
-  Consider pre->eff predecessors, and consider *any* neighbour (pre->eff,
-  eff->pre, eff--eff) that is a goal variable.
+  When growing a pattern, we only want to consider successor patterns
+  that are *interesting*. A pattern is interesting if the subgraph of
+  the causal graph induced by the pattern satisfies the following two
+  properties:
+  A. it is weakly connected (considering all kinds of arcs)
+  B. from every variable in the pattern, a goal variable is reachable by a
+     path that only uses pre->eff arcs
+
+  We can use the assumption that the pattern we want to extend is
+  already interesting, so the question is how an interesting pattern
+  can be obtained from an interesting pattern by adding one variable.
+
+  There are two ways to do this:
+  1. Add a *predecessor* of an existing variable along a pre->eff arc.
+  2. Add any *goal variable* that is a weakly connected neighbour of an
+     existing variable (using any kind of arc).
+
+  Note that in the iPDB paper, the second case was missed. Adding it
+  significantly helps with performance in our experiments (see
+  issue743, msg6595).
+
+  In our implementation, for efficiency we replace condition 2. by
+  only considering causal graph *successors* (along either pre->eff or
+  eff--eff arcs), because these can be obtained directly, and the
+  missing case (predecessors along pre->eff arcs) is already covered
+  by the first condition anyway.
+
+  This method precomputes all variables which satisfy conditions 1. or
+  2. for a given neighbour variable already in the pattern.
 */
-static vector<vector<int>> compute_connected_variables(const TaskProxy &task_proxy) {
+static vector<vector<int>> compute_relevant_neighbours(const TaskProxy &task_proxy) {
     const causal_graph::CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const vector<int> goal_vars = get_goal_variables(task_proxy);
 
@@ -57,25 +84,25 @@ static vector<vector<int>> compute_connected_variables(const TaskProxy &task_pro
     for (VariableProxy var : variables) {
         int var_id = var.get_id();
 
-        // Consider variables connected via pre->eff arcs.
-        const vector<int> &pre_to_eff_vars = causal_graph.get_eff_to_pre(var_id);
+        // Consider variables connected backwards via pre->eff arcs.
+        const vector<int> &pre_to_eff_predecessors = causal_graph.get_eff_to_pre(var_id);
 
-        // Consider goal variables connected via eff->eff and eff->pre arcs.
+        // Consider goal variables connected (forwards) via eff--eff and pre->eff arcs.
         const vector<int> &causal_graph_successors = causal_graph.get_successors(var_id);
-        vector<int> connected_goal_vars;
+        vector<int> goal_variable_successors;
         set_intersection(
             causal_graph_successors.begin(), causal_graph_successors.end(),
-            goal_vars.begin(), goal_vars.end(),
-            back_inserter(connected_goal_vars));
+            goal_variable_successors.begin(), goal_variable_successors.end(),
+            back_inserter(goal_variable_successors));
 
         // Combine relevant goal and non-goal variables.
-        vector<int> connected_vars;
+        vector<int> relevant_neighbours;
         set_union(
-            pre_to_eff_vars.begin(), pre_to_eff_vars.end(),
-            connected_goal_vars.begin(), connected_goal_vars.end(),
-            back_inserter(connected_vars));
+            pre_to_eff_predecessors.begin(), pre_to_eff_predecessors.end(),
+            goal_variable_successors.begin(), goal_variable_successors.end(),
+            back_inserter(relevant_neighbours));
 
-        connected_vars_by_variable.push_back(move(connected_vars));
+        connected_vars_by_variable.push_back(move(relevant_neighbours));
     }
     return connected_vars_by_variable;
 }
@@ -94,7 +121,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
 
 int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     const TaskProxy &task_proxy,
-    const vector<vector<int>> &connected_variables,
+    const vector<vector<int>> &relevant_neighbours,
     const PatternDatabase &pdb,
     set<Pattern> &generated_patterns,
     PDBCollection &candidate_pdbs) {
@@ -102,8 +129,8 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
     int pdb_size = pdb.get_size();
     int max_pdb_size = 0;
     for (int pattern_var : pattern) {
-        assert(utils::in_bounds(pattern_var, connected_variables));
-        const vector<int> &connected_vars = connected_variables[pattern_var];
+        assert(utils::in_bounds(pattern_var, relevant_neighbours));
+        const vector<int> &connected_vars = relevant_neighbours[pattern_var];
 
         // Only use variables which are not already in the pattern.
         vector<int> relevant_vars;
@@ -266,8 +293,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     double average_operator_cost = task_properties::get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
-    const vector<vector<int>> connected_variables =
-        compute_connected_variables(task_proxy);
+    const vector<vector<int>> relevant_neighbours =
+        compute_relevant_neighbours(task_proxy);
 
     // Candidate patterns generated so far (used to avoid duplicates).
     set<Pattern> generated_patterns;
@@ -279,7 +306,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     for (const shared_ptr<PatternDatabase> &current_pdb :
          *(current_pdbs->get_pattern_databases())) {
         int new_max_pdb_size = generate_candidate_pdbs(
-            task_proxy, connected_variables, *current_pdb, generated_patterns,
+            task_proxy, relevant_neighbours, *current_pdb, generated_patterns,
             candidate_pdbs);
         max_pdb_size = max(max_pdb_size, new_max_pdb_size);
     }
@@ -334,7 +361,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
             // Generate candidate patterns and PDBs for next iteration.
             int new_max_pdb_size = generate_candidate_pdbs(
-                task_proxy, connected_variables, *best_pdb, generated_patterns,
+                task_proxy, relevant_neighbours, *best_pdb, generated_patterns,
                 candidate_pdbs);
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
@@ -490,8 +517,9 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "The algorithm is basically a local search (hill climbing) which "
         "searches the \"pattern neighbourhood\" (starting initially with a "
         "pattern for each goal variable) for improving the pattern collection. "
-        "This is done exactly as described in the section \"pattern "
-        "construction as search\" in the paper. For evaluating the "
+        "This is done as described in the section \"pattern construction as "
+        "search\" in the paper, except for the corrected search "
+        "neighbourhood discussed below. For evaluating the "
         "neighbourhood, the \"counting approximation\" as introduced in the "
         "paper was implemented. An important difference however consists in "
         "the fact that this implementation computes all pattern databases for "
@@ -514,7 +542,10 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "The section \"avoiding redundant evaluations\" describes how the "
         "search neighbourhood of patterns can be restricted to variables that "
         "are relevant to the variables already included in the pattern by "
-        "analyzing causal graphs. This is also implemented in Fast Downward. "
+        "analyzing causal graphs. There is a mistake in the paper that leads "
+        "to some relevant neighbouring patterns being ignored. See the [errata "
+        "http://ai.cs.unibas.ch/research/publications.html] for details. This "
+        "mistake has been addressed in this implementation. "
         "The second approach described in the paper (statistical confidence "
         "interval) is not applicable to this implementation, as it doesn't use "
         "A* search but constructs the entire pattern databases for all "
