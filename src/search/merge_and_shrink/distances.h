@@ -7,33 +7,10 @@
 
 /*
   TODO: Possible interface improvements for this class:
-
-  - Rather than have compute_distances() return a vector<bool>,
-    store it inside as an attribute (just like init_distances and
-    goal_distances).
   - Check TODOs in implementation file.
 
   (Many of these would need performance tests, as distance computation
   can be one of the bottlenecks in our code.)
-
-  TODO: Possible performance improvements:
-  - Make the interface more fine-grained, so that it becomes possible
-    to only compute the things that we actually want to use. For
-    example, in many configurations we do not really care about g
-    values (although we might still want to prune unreachable
-    states... we might want to make this configurable).
-  - Get rid of the vector<bool> of prunable states; this can be
-    deduced from init_distances and goal_distances anyway. Not clear
-    which of these options would be better.
-  - We currently try to keep the distance information after shrinking
-    (going quite far to avoid recomputation). Does this really serve a
-    purpose? *After* shrinking, why are we interested in the distances
-    in the first place? The main point of the distances is to inform
-    the shrink strategies. (OK, I guess some merge strategies care
-    about them, too -- but should *all* merge strategies pay for that?
-    And if these merge strategies only care about h values, which we
-    usually preserve, wouldn't it be better to invalidate g values
-    then?)
 */
 
 namespace merge_and_shrink {
@@ -41,15 +18,10 @@ class TransitionSystem;
 
 class Distances {
     static const int DISTANCE_UNKNOWN = -1;
-
     const TransitionSystem &transition_system;
-
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
-
-    int max_f;
-    int max_g;
-    int max_h;
+    bool distances_computed;
 
     void clear_distances();
     int get_num_states() const;
@@ -63,8 +35,14 @@ public:
     explicit Distances(const TransitionSystem &transition_system);
     ~Distances();
 
-    bool are_distances_computed() const;
-    std::vector<bool> compute_distances(Verbosity verbosity);
+    bool are_distances_computed() const {
+        return distances_computed;
+    }
+
+    void compute_distances(
+        bool compute_init_distances,
+        bool compute_goal_distances,
+        Verbosity verbosity);
 
     /*
       Update distances according to the given abstraction. If the abstraction
@@ -77,23 +55,18 @@ public:
     */
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
+        bool compute_init_distances,
+        bool compute_goal_distances,
         Verbosity verbosity);
 
-    int get_max_f() const { // used by shrink_fh
-        return max_f;
-    }
-    int get_max_g() const { // unused
-        return max_g;
-    }
-    int get_max_h() const { // used by shrink strategies
-        return max_h;
-    }
-    int get_init_distance(int state) const { // used by shrink_fh
+    int get_init_distance(int state) const {
         return init_distances[state];
     }
-    int get_goal_distance(int state) const { // used by shrink strategies and DFP
+
+    int get_goal_distance(int state) const {
         return goal_distances[state];
     }
+
     void dump() const;
     void statistics() const;
 };

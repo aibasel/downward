@@ -83,7 +83,10 @@ public:
       Note: create() may only be called once. We don't worry about
       misuse because the class is only used internally in this file.
     */
-    FactoredTransitionSystem create(Verbosity verbosity, bool finalize_if_unsolvable);
+    FactoredTransitionSystem create(
+        const bool compute_init_distances,
+        const bool compute_goal_distances,
+        Verbosity verbosity);
 };
 
 
@@ -392,7 +395,9 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 }
 
 FactoredTransitionSystem FTSFactory::create(
-    Verbosity verbosity, bool finalize_if_unsolvable) {
+    const bool compute_init_distances,
+    const bool compute_goal_distances,
+    Verbosity verbosity) {
     if (verbosity >= Verbosity::NORMAL) {
         cout << "Building atomic transition systems... " << endl;
     }
@@ -413,14 +418,19 @@ FactoredTransitionSystem FTSFactory::create(
         move(transition_systems),
         move(mas_representations),
         move(distances),
-        verbosity,
-        finalize_if_unsolvable);
+        compute_init_distances,
+        compute_goal_distances,
+        verbosity);
 }
 
 FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
-    Verbosity verbosity,
-    bool finalize_if_unsolvable) {
-    return FTSFactory(task_proxy).create(verbosity, finalize_if_unsolvable);
+    const bool compute_init_distances,
+    const bool compute_goal_distances,
+    Verbosity verbosity) {
+    return FTSFactory(task_proxy).create(
+        compute_init_distances,
+        compute_goal_distances,
+        verbosity);
 }
 }

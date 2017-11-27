@@ -3,7 +3,6 @@
 
 #include "../pruning_method.h"
 
-class GlobalOperator;
 class GlobalState;
 
 namespace null_pruning_method {
