@@ -7,21 +7,11 @@
 #include <vector>
 
 namespace merge_and_shrink {
-class FactoredTransitionSystem;
+class Distances;
 class TransitionSystem;
 
 class ShrinkStrategy {
 protected:
-    /*
-      Shrink the given transition system (index in fts) with the given
-      equivalence relation. This method should be called by all inheriting
-      shrink methods at the end of the method "shrink".
-    */
-    bool shrink_fts(
-        FactoredTransitionSystem &fts,
-        int index,
-        const StateEquivalenceRelation &equivalence_relation,
-        Verbosity verbosity) const;
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
@@ -29,19 +19,25 @@ public:
     virtual ~ShrinkStrategy() = default;
 
     /*
-      Shrink the given transition system (index in fts) so that its size is
-      at most target (currently violated; see issue250).
+      Compute a state equivalence relation over the states of the given
+      transition system such that its new number of states after abstracting
+      it according to this equivalence relation is at most target_size
+      (currently violated; see issue250). dist must be the distances
+      information associated with the given transition system.
 
-      Note that if target equals the current size of the fts, the shrink
-      strategy is not required to actually shrink the size of the transition
-      system. However, it may attempt to e.g. shrink the transition system in
-      an information preserving way.
+      Note that if target_size equals the current size of the transition system,
+      the shrink strategy is not required to compute an equivalence relation
+      that results in actually shrinking the size of the transition system.
+      However, it may attempt to e.g. compute an equivalence relation that
+      results in shrinking the transition system in an information-preserving
+      way.
     */
-    virtual bool shrink(
-        FactoredTransitionSystem &fts,
-        int index,
-        int target,
-        Verbosity verbosity) const = 0;
+    virtual StateEquivalenceRelation compute_equivalence_relation(
+        const TransitionSystem &ts,
+        const Distances &distances,
+        int target_size) const = 0;
+    virtual bool requires_init_distances() const = 0;
+    virtual bool requires_goal_distances() const = 0;
 
     void dump_options() const;
     std::string get_name() const;

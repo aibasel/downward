@@ -50,8 +50,8 @@ BASELINE = cached_revision.get_global_rev(REPO, rev='eb9f8c86918f')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
-    ('lazy-greedy-ff', ['--heuristic', 'h=ff()', '--search', 'lazy_greedy(h, preferred=h)']),
-    ('lazy-greedy-cea', ['--heuristic', 'h=cea()', '--search', 'lazy_greedy(h, preferred=h)']),
+    ('lazy-greedy-ff', ['--heuristic', 'h=ff()', '--search', 'lazy_greedy([h], preferred=[h])']),
+    ('lazy-greedy-cea', ['--heuristic', 'h=cea()', '--search', 'lazy_greedy([h], preferred=[h])']),
     ('lazy-greedy-ff-cea', ['--heuristic', 'hff=ff()', '--heuristic',  'hcea=cea()',
                             '--search', 'lazy_greedy([hff, hcea], preferred=[hff, hcea])']),
     ('blind', ['--search', 'astar(blind())']),

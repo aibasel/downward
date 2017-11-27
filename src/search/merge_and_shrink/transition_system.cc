@@ -112,7 +112,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
              << ts2.get_description() << endl;
     }
 
-    assert(ts1.is_solvable() && ts2.is_solvable());
+    assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
 
     int num_variables = ts1.num_variables;
@@ -214,6 +214,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         label_equivalence_relation->add_label_group(dead_labels);
     }
 
+    const bool compute_label_equivalence_relation = false;
     return utils::make_unique_ptr<TransitionSystem>(
         num_variables,
         move(incorporated_variables),
@@ -222,7 +223,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         num_states,
         move(goal_states),
         init_state,
-        false
+        compute_label_equivalence_relation
         );
 }
 
@@ -251,28 +252,20 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     }
 }
 
-bool TransitionSystem::apply_abstraction(
+void TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
     Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
 
     int new_num_states = state_equivalence_relation.size();
-    if (new_num_states == get_size()) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << tag()
-                 << "not applying abstraction (same number of states)" << endl;
-        }
-        return false;
-    }
-
+    assert(new_num_states < num_states);
     if (verbosity >= Verbosity::VERBOSE) {
         cout << tag() << "applying abstraction (" << get_size()
              << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
-
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
         const StateEquivalenceClass &state_equivalence_class =
             state_equivalence_relation[new_state];
@@ -285,7 +278,6 @@ bool TransitionSystem::apply_abstraction(
             }
         }
     }
-
     goal_states = move(new_goal_states);
 
     // Update all transitions.
@@ -323,7 +315,6 @@ bool TransitionSystem::apply_abstraction(
     }
 
     assert(are_transitions_sorted_unique());
-    return true;
 }
 
 void TransitionSystem::apply_label_reduction(
@@ -430,8 +421,9 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
     return true;
 }
 
-bool TransitionSystem::is_solvable() const {
-    return init_state != PRUNED_STATE;
+bool TransitionSystem::is_solvable(const Distances &distances) const {
+    return init_state != PRUNED_STATE &&
+           distances.get_goal_distance(init_state) != INF;
 }
 
 int TransitionSystem::compute_total_transitions() const {

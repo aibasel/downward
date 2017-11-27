@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <iostream>
 #include <memory>
 #include <unordered_map>
@@ -30,6 +31,15 @@ namespace merge_and_shrink {
    successor). The bisimulation algorithm requires that the vector is
    sorted and uniquified. */
 using SuccessorSignature = vector<pair<int, int>>;
+
+/*
+  As we use SENTINEL numeric_limits<int>::max() as a sentinel signature and
+  irrelevant states have a distance of INF = numeric_limits<int>::max(), we
+  use INF - 1 as the distance value for all irrelevant states. This guarantees
+  that also irrelevant states are always ordered before the sentinel.
+*/
+const int SENTINEL = numeric_limits<int>::max();
+const int IRRELEVANT = SENTINEL - 1;
 
 /*
   The following class encodes all we need to know about a state for
@@ -89,9 +99,10 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
-int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
-                                          int index,
-                                          vector<int> &state_to_group) const {
+int ShrinkBisimulation::initialize_groups(
+    const TransitionSystem &ts,
+    const Distances &distances,
+    vector<int> &state_to_group) const {
     /* Group 0 holds all goal states.
 
        Each other group holds all states with one particular h value.
@@ -102,15 +113,14 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
        unsolvable.
     */
 
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
     typedef unordered_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
-        assert(h >= 0 && h != INF);
-
+        if (h == INF) {
+            h = IRRELEVANT;
+        }
         if (ts.is_goal_state(state)) {
             assert(h == 0);
             state_to_group[state] = 0;
@@ -128,25 +138,25 @@ int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
 }
 
 void ShrinkBisimulation::compute_signatures(
-    const FactoredTransitionSystem &fts,
-    int index,
+    const TransitionSystem &ts,
+    const Distances &distances,
     vector<Signature> &signatures,
     const vector<int> &state_to_group) const {
     assert(signatures.empty());
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
 
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = distances.get_goal_distance(state);
-        assert(h >= 0 && h <= distances.get_max_h());
+        if (h == INF) {
+            h = IRRELEVANT;
+        }
         Signature signature(h, ts.is_goal_state(state),
                             state_to_group[state], SuccessorSignature(),
                             state);
         signatures.push_back(signature);
     }
-    signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
+    signatures.push_back(Signature(SENTINEL, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
     int label_group_counter = 0;
@@ -183,12 +193,18 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = distances.get_goal_distance(transition.src);
                 int target_h = distances.get_goal_distance(transition.target);
-                int cost = label_group.get_cost();
-                assert(target_h + cost >= src_h);
-                skip_transition = (target_h + cost != src_h);
+                if (src_h == INF || target_h == INF) {
+                    // We skip transitions connected to an irrelevant state.
+                    skip_transition = true;
+                } else {
+                    int cost = label_group.get_cost();
+                    assert(target_h + cost >= src_h);
+                    skip_transition = (target_h + cost != src_h);
+                }
             }
             if (!skip_transition) {
                 int target_group = state_to_group[transition.target];
+                assert(target_group != -1 && target_group != SENTINEL);
                 signatures[transition.src + 1].succ_signature.push_back(
                     make_pair(label_group_counter, target_group));
             }
@@ -221,27 +237,21 @@ void ShrinkBisimulation::compute_signatures(
     ::sort(signatures.begin(), signatures.end());
 }
 
-bool ShrinkBisimulation::shrink(
-    FactoredTransitionSystem &fts,
-    int index,
-    int target_size,
-    Verbosity verbosity) const {
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
+StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
+    const TransitionSystem &ts,
+    const Distances &distances,
+    int target_size) const {
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
     vector<Signature> signatures;
     signatures.reserve(num_states + 2);
 
-    int num_groups = initialize_groups(fts, index, state_to_group);
+    int num_groups = initialize_groups(ts, distances, state_to_group);
     // cout << "number of initial groups: " << num_groups << endl;
 
     // TODO: We currently violate this; see issue250
     // assert(num_groups <= target_size);
-
-    int max_h = distances.get_max_h();
-    assert(max_h >= 0 && max_h != INF);
 
     bool stable = false;
     bool stop_requested = false;
@@ -249,19 +259,18 @@ bool ShrinkBisimulation::shrink(
         stable = true;
 
         signatures.clear();
-        compute_signatures(fts, index, signatures, state_to_group);
+        compute_signatures(ts, distances, signatures, state_to_group);
 
         // Verify size of signatures and presence of sentinels.
         assert(static_cast<int>(signatures.size()) == num_states + 2);
         assert(signatures[0].h_and_goal == -2);
-        assert(signatures[num_states + 1].h_and_goal == INF);
+        assert(signatures[num_states + 1].h_and_goal == SENTINEL);
 
         int sig_start = 1; // Skip over initial sentinel.
         while (true) {
             int h_and_goal = signatures[sig_start].h_and_goal;
-            if (h_and_goal > max_h) {
+            if (h_and_goal == SENTINEL) {
                 // We have hit the end sentinel.
-                assert(h_and_goal == INF);
                 assert(sig_start + 1 == static_cast<int>(signatures.size()));
                 break;
             }
@@ -271,14 +280,16 @@ bool ShrinkBisimulation::shrink(
             int num_new_groups = 0;
             int sig_end;
             for (sig_end = sig_start; true; ++sig_end) {
-                if (signatures[sig_end].h_and_goal != h_and_goal)
+                if (signatures[sig_end].h_and_goal != h_and_goal) {
                     break;
+                }
 
                 const Signature &prev_sig = signatures[sig_end - 1];
                 const Signature &curr_sig = signatures[sig_end];
 
-                if (sig_end == sig_start)
+                if (sig_end == sig_start) {
                     assert(prev_sig.group != curr_sig.group);
+                }
 
                 if (prev_sig.group != curr_sig.group) {
                     ++num_old_groups;
@@ -343,7 +354,7 @@ bool ShrinkBisimulation::shrink(
         }
     }
 
-    return shrink_fts(fts, index, equivalence_relation, verbosity);
+    return equivalence_relation;
 }
 
 string ShrinkBisimulation::name() const {

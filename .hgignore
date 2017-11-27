@@ -1,5 +1,4 @@
 \.pyc$
-^.*build_configs.py$
 ^driver/.cache/v/cache/lastfailed$
 ^experiments/issue[0-9]*/data/
 ^experiments/issue[0-9]*/.*.-microbenchmark/\.obj/
