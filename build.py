@@ -2,6 +2,7 @@
 
 import errno
 import glob
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -19,9 +20,11 @@ DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 CMAKE = "cmake"
 if os.name == "posix":
     MAKE = "make"
+    DEFAULT_MAKE_PARAMETERS = ['-j{}'.format(multiprocessing.cpu_count())]
     CMAKE_GENERATOR = "Unix Makefiles"
 elif os.name == "nt":
     MAKE = "nmake"
+    DEFAULT_MAKE_PARAMETERS = []
     CMAKE_GENERATOR = "NMake Makefiles"
 else:
     print("Unsupported OS: " + os.name)
@@ -60,6 +63,7 @@ Make options
   All other parameters are forwarded to {make_name}.
 
 Example usage:
+  ./{script_name}                     # build {default_config_name} in #cores threads
   ./{script_name} -j4                 # build {default_config_name} in 4 threads
   ./{script_name} -j4 downward        # as above, but only build the planner
   ./{script_name} debug32 -j4         # build debug32 in 4 threads
@@ -118,7 +122,7 @@ def build(config_name, cmake_parameters, make_parameters):
 
 def main():
     config_names = set()
-    make_parameters = []
+    make_parameters = DEFAULT_MAKE_PARAMETERS
     for arg in sys.argv[1:]:
         if arg == "--help" or arg == "-h":
             print_usage()
