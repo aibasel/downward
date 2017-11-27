@@ -97,19 +97,20 @@ def get_build_path(config_name):
     return os.path.join(get_builds_path(), config_name)
 
 def try_run(cmd, cwd):
+    print('Executing command "{}" in directory "{}".'.format(" ".join(cmd), cwd))
     try:
         subprocess.check_call(cmd, cwd=cwd)
     except OSError as exc:
         if exc.errno == errno.ENOENT:
             print("Could not find '%s' on your PATH. For installation instructions, "
-                  "see http://www.fast-downward.org/ObtainingAndRunningFastDownward" %
+                  "see http://www.fast-downward.org/ObtainingAndRunningFastDownward." %
                   cmd[0])
             sys.exit(1)
         else:
             raise
 
 def build(config_name, cmake_parameters, make_parameters):
-    print("Building configuration " + config_name)
+    print("Building configuration {config_name}.".format(**locals()))
     build_path = get_build_path(config_name)
     rel_src_path = os.path.relpath(get_src_path(), build_path)
     try:
@@ -124,7 +125,7 @@ def build(config_name, cmake_parameters, make_parameters):
             cwd=build_path)
     try_run([MAKE] + make_parameters, cwd=build_path)
 
-    print("Built configuration " + config_name + " successfully")
+    print("Built configuration {config_name} successfully.".format(**locals()))
 
 
 def main():
