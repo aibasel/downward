@@ -2,7 +2,6 @@
 
 #include "domain_transition_graph.h"
 
-#include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
