@@ -6,6 +6,7 @@
 
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -123,8 +124,9 @@ SearchStatus LazySearch::fetch_next_state() {
     current_operator_id = next.second;
     GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
     const GlobalOperator &current_operator = g_operators[current_operator_id.get_index()];
-    assert(current_operator.is_applicable(current_predecessor));
     OperatorProxy current_operator_proxy = task_proxy.get_operators()[current_operator_id];
+    assert(task_properties::is_applicable(current_operator_proxy,
+        State(*g_root_task(), current_predecessor.get_values())));
     current_state = state_registry.get_successor_state(current_predecessor, current_operator_proxy);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);
