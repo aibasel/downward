@@ -2,6 +2,7 @@
 #define GLOBAL_OPERATOR_H
 
 #include "global_state.h"
+#include "operator_id.h"
 
 #include <iostream>
 #include <string>
@@ -75,6 +76,6 @@ public:
     int get_cost() const {return cost; }
 };
 
-extern int get_op_index_hacked(const GlobalOperator *op);
+extern OperatorID get_op_id_hacked(const GlobalOperator *op);
 
 #endif

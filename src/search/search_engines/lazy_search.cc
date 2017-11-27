@@ -1,11 +1,8 @@
 #include "lazy_search.h"
 
-#include "search_common.h"
-
 #include "../heuristic.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
-#include "../plugin.h"
 
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
@@ -19,8 +16,6 @@
 using namespace std;
 
 namespace lazy_search {
-static const int DEFAULT_LAZY_BOOST = 1000;
-
 LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
@@ -31,7 +26,7 @@ LazySearch::LazySearch(const Options &opts)
       rng(utils::parse_rng_from_options(opts)),
       current_state(state_registry.get_initial_state()),
       current_predecessor_id(StateID::no_state),
-      current_operator(nullptr),
+      current_operator_id(OperatorID::no_operator),
       current_g(0),
       current_real_g(0),
       current_eval_context(current_state, 0, true, &statistics) {
@@ -111,7 +106,7 @@ void LazySearch::generate_successors() {
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);
-            open_list->insert(new_eval_context, make_pair(current_state.get_id(), get_op_index_hacked(op)));
+            open_list->insert(new_eval_context, make_pair(current_state.get_id(), op_id));
         }
     }
 }
@@ -125,14 +120,15 @@ SearchStatus LazySearch::fetch_next_state() {
     EdgeOpenListEntry next = open_list->remove_min();
 
     current_predecessor_id = next.first;
-    current_operator = &g_operators[next.second];
+    current_operator_id = next.second;
     GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
-    assert(current_operator->is_applicable(current_predecessor));
-    current_state = state_registry.get_successor_state(current_predecessor, *current_operator);
+    const GlobalOperator &current_operator = g_operators[current_operator_id.get_index()];
+    assert(current_operator.is_applicable(current_predecessor));
+    current_state = state_registry.get_successor_state(current_predecessor, current_operator);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);
-    current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
-    current_real_g = pred_node.get_real_g() + current_operator->get_cost();
+    current_g = pred_node.get_g() + get_adjusted_cost(current_operator);
+    current_real_g = pred_node.get_real_g() + current_operator.get_cost();
 
     /*
       Note: We mark the node in current_eval_context as "preferred"
@@ -170,10 +166,13 @@ SearchStatus LazySearch::step() {
         GlobalState parent_state = state_registry.lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        if (current_operator) {
+        GlobalOperator *current_operator = nullptr;
+        if (current_operator_id != OperatorID::no_operator) {
+            assert(utils::in_bounds(current_operator_id.get_index(), g_operators));
+            current_operator = &g_operators[current_operator_id.get_index()];
             for (Heuristic *heuristic : heuristics)
                 heuristic->notify_state_transition(
-                    parent_state, *current_operator, current_state);
+                    parent_state, current_operator_id, current_state);
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
@@ -222,188 +221,4 @@ void LazySearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
 }
-
-
-static void _add_succ_order_options(OptionParser &parser) {
-    vector<string> options;
-    parser.add_option<bool>(
-        "randomize_successors",
-        "randomize the order in which successors are generated",
-        "false");
-    parser.add_option<bool>(
-        "preferred_successors_first",
-        "consider preferred operators first",
-        "false");
-    parser.document_note(
-        "Successor ordering",
-        "When using randomize_successors=true and "
-        "preferred_successors_first=true, randomization happens before "
-        "preferred operators are moved to the front.");
-    utils::add_rng_options(parser);
-}
-
-static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Lazy best-first search", "");
-    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
-    parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-    _add_succ_order_options(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    LazySearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        engine = new LazySearch(opts);
-        /*
-          TODO: The following two lines look fishy. If they serve a
-          purpose, shouldn't the constructor take care of this?
-        */
-        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
-    }
-
-    return engine;
-}
-
-
-static SearchEngine *_parse_greedy(OptionParser &parser) {
-    parser.document_synopsis("Greedy search (lazy)", "");
-    parser.document_note(
-        "Open lists",
-        "In most cases, lazy greedy best first search uses "
-        "an alternation open list with one queue for each evaluator. "
-        "If preferred operator heuristics are used, it adds an "
-        "extra queue for each of these evaluators that includes "
-        "only the nodes that are generated with a preferred operator. "
-        "If only one evaluator and no preferred operator heuristic is used, "
-        "the search does not use an alternation open list "
-        "but a standard open list with only one queue.");
-    parser.document_note(
-        "Equivalent statements using general lazy search",
-        "\n```\n--heuristic h2=eval2\n"
-        "--search lazy_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
-        "--search lazy(alt([single(h1), single(h1, pref_only=true), single(h2),\n"
-        "                  single(h2, pref_only=true)], boost=100),\n"
-        "              preferred=h2)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search lazy_greedy([eval1, eval2], boost=100)\n```\n"
-        "is equivalent to\n"
-        "```\n--search lazy(alt([single(eval1), single(eval2)], boost=100))\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--heuristic h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h1=eval1\n"
-        "--search lazy(alt([single(h1), single(h1, pref_only=true)], boost=1000),\n"
-        "              preferred=h1)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search lazy_greedy(eval1)\n```\n"
-        "is equivalent to\n"
-        "```\n--search lazy(single(eval1))\n```\n",
-        true);
-
-    parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-    parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes", "false");
-    parser.add_option<int>(
-        "boost",
-        "boost value for alternation queues that are restricted "
-        "to preferred operator nodes",
-        OptionParser::to_str(DEFAULT_LAZY_BOOST));
-    _add_succ_order_options(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    LazySearch *engine = 0;
-    if (!parser.dry_run()) {
-        opts.set("open", search_common::create_greedy_open_list_factory(opts));
-        engine = new LazySearch(opts);
-        // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
-    }
-    return engine;
-}
-
-static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
-    parser.document_synopsis(
-        "(Weighted) A* search (lazy)",
-        "Weighted A* is a special case of lazy best first search.");
-    parser.document_note(
-        "Open lists",
-        "In the general case, it uses an alternation open list "
-        "with one queue for each evaluator h that ranks the nodes "
-        "by g + w * h. If preferred operator heuristics are used, "
-        "it adds for each of the evaluators another such queue that "
-        "only inserts nodes that are generated by preferred operators. "
-        "In the special case with only one evaluator and no preferred "
-        "operator heuristics, it uses a single queue that "
-        "is ranked by g + w * h. ");
-    parser.document_note(
-        "Equivalent statements using general lazy search",
-        "\n```\n--heuristic h1=eval1\n"
-        "--search lazy_wastar([h1, eval2], w=2, preferred=h1,\n"
-        "                     bound=100, boost=500)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
-        "--search lazy(alt([single(sum([g(), weight(h1, 2)])),\n"
-        "                   single(sum([g(), weight(h1, 2)]), pref_only=true),\n"
-        "                   single(sum([g(), weight(h2, 2)])),\n"
-        "                   single(sum([g(), weight(h2, 2)]), pref_only=true)],\n"
-        "                  boost=500),\n"
-        "              preferred=h1, reopen_closed=true, bound=100)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search lazy_wastar([eval1, eval2], w=2, bound=100)\n```\n"
-        "is equivalent to\n"
-        "```\n--search lazy(alt([single(sum([g(), weight(eval1, 2)])),\n"
-        "                   single(sum([g(), weight(eval2, 2)]))],\n"
-        "                  boost=1000),\n"
-        "              reopen_closed=true, bound=100)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search lazy_wastar([eval1, eval2], bound=100, boost=0)\n```\n"
-        "is equivalent to\n"
-        "```\n--search lazy(alt([single(sum([g(), eval1])),\n"
-        "                   single(sum([g(), eval2]))])\n"
-        "              reopen_closed=true, bound=100)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search lazy_wastar(eval1, w=2)\n```\n"
-        "is equivalent to\n"
-        "```\n--search lazy(single(sum([g(), weight(eval1, 2)])), reopen_closed=true)\n```\n",
-        true);
-
-    parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-    parser.add_option<bool>("reopen_closed", "reopen closed nodes", "true");
-    parser.add_option<int>("boost",
-                           "boost value for preferred operator open lists",
-                           OptionParser::to_str(DEFAULT_LAZY_BOOST));
-    parser.add_option<int>("w", "heuristic weight", "1");
-    _add_succ_order_options(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    opts.verify_list_non_empty<Evaluator *>("evals");
-
-    LazySearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        opts.set("open", search_common::create_wastar_open_list_factory(opts));
-        engine = new LazySearch(opts);
-        // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
-    }
-    return engine;
-}
-
-static Plugin<SearchEngine> _plugin("lazy", _parse);
-static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_greedy);
-static Plugin<SearchEngine> _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);
 }

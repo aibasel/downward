@@ -39,7 +39,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const TaskProxy &task_proxy,
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) {
     /*
       Compute a mapping from state variables to transition system indices

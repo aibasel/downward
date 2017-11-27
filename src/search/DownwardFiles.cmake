@@ -97,7 +97,6 @@ fast_downward_plugin(
         options/registries
         options/synergy
         options/token_parser
-        options/type_documenter
         options/type_namer
     CORE_PLUGIN
 )
@@ -319,7 +318,56 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
+    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SUCCESSOR_GENERATOR
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_ASTAR
+    HELP "A* search"
+    SOURCES
+        search_engines/plugin_astar
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_EAGER
+    HELP "Eager (i.e., normal) best-first search"
+    SOURCES
+        search_engines/plugin_eager
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_EAGER_GREEDY
+    HELP "Eager greedy best-first search"
+    SOURCES
+        search_engines/plugin_eager_greedy
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_LAZY
+    HELP "Best-first search with deferred evaluation (lazy)"
+    SOURCES
+        search_engines/plugin_lazy
+    DEPENDS LAZY_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_LAZY_GREEDY
+    HELP "Greedy best-first search with deferred evaluation (lazy)"
+    SOURCES
+        search_engines/plugin_lazy_greedy
+    DEPENDS LAZY_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_LAZY_WASTAR
+    HELP "Weighted A* search with deferred evaluation (lazy)"
+    SOURCES
+        search_engines/plugin_lazy_wastar
+    DEPENDS LAZY_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -342,7 +390,8 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         search_engines/lazy_search
-    DEPENDS ORDERED_SET SEARCH_COMMON SUCCESSOR_GENERATOR
+    DEPENDS ORDERED_SET SUCCESSOR_GENERATOR
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -486,6 +535,8 @@ fast_downward_plugin(
     HELP "Successor generator"
     SOURCES
         task_utils/successor_generator
+        task_utils/successor_generator_factory
+        task_utils/successor_generator_internals
     DEPENDS TASK_PROPERTIES
     DEPENDENCY_ONLY
 )
