@@ -178,13 +178,13 @@ SearchStatus LazySearch::step() {
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
             // TODO: Generalize code for using multiple heuristics.
-            if (reopen) {
-                node.reopen(parent_node, current_operator);
-                statistics.inc_reopened();
-            } else if (current_predecessor_id == StateID::no_state) {
+            if (current_predecessor_id == StateID::no_state) {
                 node.open_initial();
                 if (search_progress.check_progress(current_eval_context))
                     print_checkpoint_line(current_g);
+            } else if (reopen) {
+                node.reopen(parent_node, current_operator);
+                statistics.inc_reopened();
             } else {
                 node.open(parent_node, current_operator);
             }
