@@ -182,11 +182,13 @@ SearchStatus LazySearch::step() {
                 node.open_initial();
                 if (search_progress.check_progress(current_eval_context))
                     print_checkpoint_line(current_g);
-            } else if (reopen) {
-                node.reopen(parent_node, current_operator);
-                statistics.inc_reopened();
             } else {
-                node.open(parent_node, current_operator);
+                if (reopen) {
+                    node.reopen(parent_node, current_operator);
+                    statistics.inc_reopened();
+                } else {
+                    node.open(parent_node, current_operator);
+                }
             }
             node.close();
             if (check_goal_and_set_plan(current_state))
