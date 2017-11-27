@@ -1,6 +1,5 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -129,7 +128,7 @@ void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     int parent_g,
     OperatorID op_id,
     bool preferred) {
-    const GlobalOperator &op = g_operators[op_id.get_index()];
+    OperatorProxy op = task_proxy.get_operators()[op_id];
     int succ_g = parent_g + get_adjusted_cost(op);
     EdgeOpenListEntry entry = make_pair(
         eval_context.get_state().get_id(), op_id);
@@ -189,20 +188,19 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         EdgeOpenListEntry entry = open_list->remove_min();
         StateID parent_state_id = entry.first;
         OperatorID last_op_id = entry.second;
-        const GlobalOperator *last_op = &g_operators[last_op_id.get_index()];
+        OperatorProxy last_op = task_proxy.get_operators()[last_op_id];
 
         GlobalState parent_state = state_registry.lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         // d: distance from initial node in this EHC phase
         int d = parent_node.get_g() - current_phase_start_g +
-                get_adjusted_cost(*last_op);
+                get_adjusted_cost(last_op);
 
-        if (parent_node.get_real_g() + last_op->get_cost() >= bound)
+        if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
 
-        OperatorProxy last_op_proxy = task_proxy.get_operators()[entry.second];
-        GlobalState state = state_registry.get_successor_state(parent_state, last_op_proxy);
+        GlobalState state = state_registry.get_successor_state(parent_state, last_op);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state);
