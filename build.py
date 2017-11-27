@@ -20,7 +20,12 @@ DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 CMAKE = "cmake"
 if os.name == "posix":
     MAKE = "make"
-    DEFAULT_MAKE_PARAMETERS = ['-j{}'.format(multiprocessing.cpu_count())]
+    try:
+        num_cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        DEFAULT_MAKE_PARAMETERS = []
+    else:
+        DEFAULT_MAKE_PARAMETERS = ['-j{}'.format(num_cpus)]
     CMAKE_GENERATOR = "Unix Makefiles"
 elif os.name == "nt":
     MAKE = "nmake"
