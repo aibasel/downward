@@ -122,12 +122,11 @@ SearchStatus EagerSearch::step() {
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (OperatorID op_id : applicable_ops) {
-        const GlobalOperator *op = &g_operators[op_id.get_index()];
-        if ((node.get_real_g() + op->get_cost()) >= bound)
+        OperatorProxy op = task_proxy.get_operators()[op_id];
+        if ((node.get_real_g() + op.get_cost()) >= bound)
             continue;
 
-        OperatorProxy op_proxy = task_proxy.get_operators()[op_id];
-        GlobalState succ_state = state_registry.get_successor_state(s, op_proxy);
+        GlobalState succ_state = state_registry.get_successor_state(s, op);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
@@ -155,7 +154,7 @@ SearchStatus EagerSearch::step() {
             // Careful: succ_node.get_g() is not available here yet,
             // hence the stupid computation of succ_g.
             // TODO: Make this less fragile.
-            int succ_g = node.get_g() + get_adjusted_cost(*op);
+            int succ_g = node.get_g() + get_adjusted_cost(op);
 
             EvaluationContext eval_context(
                 succ_state, succ_g, is_preferred, &statistics);
@@ -173,7 +172,7 @@ SearchStatus EagerSearch::step() {
                 print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }
-        } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(*op)) {
+        } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(op)) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
                 if (succ_node.is_closed()) {

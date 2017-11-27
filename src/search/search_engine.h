@@ -1,7 +1,6 @@
 #ifndef SEARCH_ENGINE_H
 #define SEARCH_ENGINE_H
 
-#include "global_operator.h"
 #include "operator_cost.h"
 #include "operator_id.h"
 #include "search_progress.h"
@@ -52,7 +51,7 @@ protected:
 
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const GlobalState &state);
-    int get_adjusted_cost(const GlobalOperator &op) const;
+    int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchEngine(const options::Options &opts);
     virtual ~SearchEngine();

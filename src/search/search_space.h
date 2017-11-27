@@ -8,8 +8,8 @@
 
 #include <vector>
 
-class GlobalOperator;
 class GlobalState;
+class OperatorProxy;
 class TaskProxy;
 
 
@@ -39,11 +39,11 @@ public:
 
     void open_initial();
     void open(const SearchNode &parent_node,
-              const GlobalOperator *parent_op);
+              const OperatorProxy &parent_op);
     void reopen(const SearchNode &parent_node,
-                const GlobalOperator *parent_op);
+                const OperatorProxy &parent_op);
     void update_parent(const SearchNode &parent_node,
-                       const GlobalOperator *parent_op);
+                       const OperatorProxy &parent_op);
     void close();
     void mark_as_dead_end();
 

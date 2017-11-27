@@ -98,7 +98,7 @@ void SearchEngine::save_plan_if_necessary() const {
     }
 }
 
-int SearchEngine::get_adjusted_cost(const GlobalOperator &op) const {
+int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
