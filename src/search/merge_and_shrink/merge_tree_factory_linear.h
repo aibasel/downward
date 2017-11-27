@@ -18,8 +18,17 @@ public:
         const TaskProxy &task_proxy) override;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy,
-        FactoredTransitionSystem &fts,
+        const FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset) override;
+
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
+
+    virtual bool requires_goal_distances() const override {
+        return false;
+    }
+
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

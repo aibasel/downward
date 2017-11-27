@@ -3,10 +3,12 @@
 
 #include "global_operator.h"
 #include "operator_cost.h"
+#include "operator_id.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
 #include "state_registry.h"
+#include "task_proxy.h"
 
 #include <vector>
 
@@ -26,12 +28,17 @@ enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
 public:
-    typedef std::vector<const GlobalOperator *> Plan;
+    using Plan = std::vector<OperatorID>;
 private:
     SearchStatus status;
     bool solution_found;
     Plan plan;
 protected:
+    // Hold a reference to the task implementation and pass it to objects that need it.
+    const std::shared_ptr<AbstractTask> task;
+    // Use task_proxy to access task information.
+    TaskProxy task_proxy;
+
     StateRegistry state_registry;
     SearchSpace search_space;
     SearchProgress search_progress;
@@ -58,7 +65,12 @@ public:
     const SearchStatistics &get_statistics() const {return statistics; }
     void set_bound(int b) {bound = b; }
     int get_bound() {return bound; }
+
+    /* The following three methods should become functions as they
+       do not require access to private/protected class members. */
+    static void add_pruning_option(options::OptionParser &parser);
     static void add_options_to_parser(options::OptionParser &parser);
+    static void add_succ_order_options(options::OptionParser &parser);
 };
 
 /*

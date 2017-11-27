@@ -34,12 +34,21 @@ class MergeAndShrinkHeuristic : public Heuristic {
        max_states and max_states_before_merge are not violated. */
     const int shrink_threshold_before_merge;
 
+    // Options for pruning
+    const bool prune_unreachable_states;
+    const bool prune_irrelevant_states;
+
     const Verbosity verbosity;
     long starting_peak_memory;
     // The final merge-and-shrink representation, storing goal distances.
     std::unique_ptr<MergeAndShrinkRepresentation> mas_representation;
 
-    std::pair<bool, bool> shrink_before_merge(
+    /*
+      Shrink the factors at indices index1 and index2, if necessary according
+      to the limits max_states* of this class. Return true iff at least one
+      of the factors needed to be shrunk.
+    */
+    bool shrink_before_merge(
         FactoredTransitionSystem &fts, int index1, int index2);
     void build(const utils::Timer &timer);
 

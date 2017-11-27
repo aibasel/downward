@@ -63,38 +63,38 @@ def configs_satisficing_core():
             "--heuristic",
             "h=ff()",
             "--search",
-            "eager_greedy(h, preferred=h)"],
+            "eager_greedy([h],preferred=[h])"],
         "eager_greedy_add": [
             "--heuristic",
             "h=add()",
             "--search",
-            "eager_greedy(h, preferred=h)"],
+            "eager_greedy([h],preferred=[h])"],
         "eager_greedy_cg": [
             "--heuristic",
             "h=cg()",
             "--search",
-            "eager_greedy(h, preferred=h)"],
+            "eager_greedy([h],preferred=[h])"],
         "eager_greedy_cea": [
             "--heuristic",
             "h=cea()",
             "--search",
-            "eager_greedy(h, preferred=h)"],
+            "eager_greedy([h],preferred=[h])"],
         # lazy greedy
         "lazy_greedy_ff": [
             "--heuristic",
             "h=ff()",
             "--search",
-            "lazy_greedy(h, preferred=h)"],
+            "lazy_greedy([h],preferred=[h])"],
         "lazy_greedy_add": [
             "--heuristic",
             "h=add()",
             "--search",
-            "lazy_greedy(h, preferred=h)"],
+            "lazy_greedy([h],preferred=[h])"],
         "lazy_greedy_cg": [
             "--heuristic",
             "h=cg()",
             "--search",
-            "lazy_greedy(h, preferred=h)"],
+            "lazy_greedy([h],preferred=[h])"],
     }
 
 
@@ -134,10 +134,10 @@ def configs_satisficing_extended():
             "--heuristic",
             "hcg=cg()",
             "--search",
-            "eager_greedy(hff,hcg,preferred=[hff,hcg])"],
+            "eager_greedy([hff,hcg],preferred=[hff,hcg])"],
         "eager_greedy_ff_no_pref": [
             "--search",
-            "eager_greedy(ff())"],
+            "eager_greedy([ff()])"],
         # lazy greedy
         "lazy_greedy_alt_cea_cg": [
             "--heuristic",
@@ -145,27 +145,27 @@ def configs_satisficing_extended():
             "--heuristic",
             "hcg=cg()",
             "--search",
-            "lazy_greedy(hcea,hcg,preferred=[hcea,hcg])"],
+            "lazy_greedy([hcea,hcg],preferred=[hcea,hcg])"],
         "lazy_greedy_ff_no_pref": [
             "--search",
-            "lazy_greedy(ff())"],
+            "lazy_greedy([ff()])"],
         "lazy_greedy_cea": [
             "--heuristic",
             "h=cea()",
             "--search",
-            "lazy_greedy(h, preferred=h)"],
+            "lazy_greedy([h],preferred=[h])"],
         # lazy wA*
         "lazy_wa3_ff": [
             "--heuristic",
             "h=ff()",
             "--search",
-            "lazy_wastar(h,w=3,preferred=h)"],
+            "lazy_wastar([h],w=3,preferred=[h])"],
         # eager wA*
         "eager_wa3_cg": [
             "--heuristic",
             "h=cg()",
             "--search",
-            "eager(single(sum([g(),weight(h,3)])),preferred=h)"],
+            "eager(single(sum([g(),weight(h,3)])),preferred=[h])"],
         # ehc
         "ehc_ff": [
             "--search",
@@ -175,8 +175,8 @@ def configs_satisficing_extended():
             "--heuristic",
             "h=ff()",
             "--search",
-            "iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3),"
-            "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])"],
+            "iterated([lazy_wastar([h],w=10), lazy_wastar([h],w=5), lazy_wastar([h],w=3),"
+            "lazy_wastar([h],w=2), lazy_wastar([h],w=1)])"],
         # pareto open list
         "pareto_ff": [
             "--heuristic",
@@ -190,11 +190,11 @@ def configs_satisficing_extended():
 def task_transformation_test_configs():
     return {
         "root_task": [
-            "--search", "lazy_greedy(ff())"],
+            "--search", "lazy_greedy([ff()])"],
         "root_task_no_transform": [
-            "--search", "lazy_greedy(ff(transform=no_transform()))"],
+            "--search", "lazy_greedy([ff(transform=no_transform())])"],
         "adapt_costs": [
-            "--search", "lazy_greedy(ff(transform=adapt_costs(cost_type=plusone)))"],
+            "--search", "lazy_greedy([ff(transform=adapt_costs(cost_type=plusone))])"],
     }
 
 def regression_test_configs():
