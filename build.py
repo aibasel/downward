@@ -2,6 +2,7 @@
 
 import errno
 import glob
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -17,8 +18,15 @@ DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 
 CMAKE = "cmake"
+DEFAULT_MAKE_PARAMETERS = []
 if os.name == "posix":
     MAKE = "make"
+    try:
+        num_cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        pass
+    else:
+        DEFAULT_MAKE_PARAMETERS.append('-j{}'.format(num_cpus))
     CMAKE_GENERATOR = "Unix Makefiles"
 elif os.name == "nt":
     MAKE = "nmake"
@@ -48,6 +56,9 @@ def print_usage():
 Build one or more predefined build configurations of Fast Downward. Each build
 uses {cmake_name} to generate {generator_name} and then uses {make_name} to compile the
 code. Build configurations differ in the parameters they pass to {cmake_name}.
+By default, the build uses N threads on a machine with N cores if the number of
+cores can be determined. Use the "-j" option for {cmake_name} to override this default
+behaviour.
 
 Build configurations
   {configs_string}
@@ -60,10 +71,10 @@ Make options
   All other parameters are forwarded to {make_name}.
 
 Example usage:
+  ./{script_name}                     # build {default_config_name} in #cores threads
   ./{script_name} -j4                 # build {default_config_name} in 4 threads
-  ./{script_name} -j4 downward        # as above, but only build the planner
-  ./{script_name} debug32 -j4         # build debug32 in 4 threads
-  ./{script_name} --debug -j4         # build {debug_config_name} in 4 threads
+  ./{script_name} debug32             # build debug32
+  ./{script_name} --debug             # build {debug_config_name}
   ./{script_name} release64 debug64   # build both 64-bit build configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
 """.format(**locals()))
@@ -118,7 +129,7 @@ def build(config_name, cmake_parameters, make_parameters):
 
 def main():
     config_names = set()
-    make_parameters = []
+    make_parameters = DEFAULT_MAKE_PARAMETERS
     for arg in sys.argv[1:]:
         if arg == "--help" or arg == "-h":
             print_usage()
