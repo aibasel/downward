@@ -158,19 +158,9 @@ SearchStatus LazySearch::step() {
                   !node.is_dead_end() && (current_g < node.get_g());
 
     if (node.is_new() || reopen) {
-        StateID dummy_id = current_predecessor_id;
-        // HACK! HACK! we do this because SearchNode has no default/copy constructor
-        if (dummy_id == StateID::no_state) {
-            const GlobalState &initial_state = state_registry.get_initial_state();
-            dummy_id = initial_state.get_id();
-        }
-        GlobalState parent_state = state_registry.lookup_state(dummy_id);
-        SearchNode parent_node = search_space.get_node(parent_state);
-
-        GlobalOperator *current_operator = nullptr;
         if (current_operator_id != OperatorID::no_operator) {
-            assert(utils::in_bounds(current_operator_id.get_index(), g_operators));
-            current_operator = &g_operators[current_operator_id.get_index()];
+            assert(current_predecessor_id != StateID::no_state);
+            GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
             for (Heuristic *heuristic : heuristics)
                 heuristic->notify_state_transition(
                     parent_state, current_operator_id, current_state);
@@ -178,15 +168,21 @@ SearchStatus LazySearch::step() {
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
             // TODO: Generalize code for using multiple heuristics.
-            if (reopen) {
-                node.reopen(parent_node, current_operator);
-                statistics.inc_reopened();
-            } else if (current_predecessor_id == StateID::no_state) {
+            if (current_predecessor_id == StateID::no_state) {
                 node.open_initial();
                 if (search_progress.check_progress(current_eval_context))
                     print_checkpoint_line(current_g);
             } else {
-                node.open(parent_node, current_operator);
+                GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
+                SearchNode parent_node = search_space.get_node(parent_state);
+                assert(utils::in_bounds(current_operator_id.get_index(), g_operators));
+                GlobalOperator *current_operator = &g_operators[current_operator_id.get_index()];
+                if (reopen) {
+                    node.reopen(parent_node, current_operator);
+                    statistics.inc_reopened();
+                } else {
+                    node.open(parent_node, current_operator);
+                }
             }
             node.close();
             if (check_goal_and_set_plan(current_state))
