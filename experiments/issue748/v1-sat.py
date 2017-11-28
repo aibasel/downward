@@ -19,7 +19,7 @@ CONFIGS = [
     IssueConfig("ehc-ff", ["--search", "ehc(ff())"]),
 ]
 SUITE = common_setup.DEFAULT_SATISFICING_SUITE
-ENVIRONMENT = BaselSlurmEnvironment(email="florian.pommerening@unibas.ch")
+ENVIRONMENT = BaselSlurmEnvironment(email="florian.pommerening@unibas.ch", export=["PATH", "DOWNWARD_BENCHMARKS"])
 
 if common_setup.is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
