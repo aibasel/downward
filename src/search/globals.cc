@@ -141,44 +141,6 @@ bool is_unit_cost() {
     return g_min_action_cost == 1 && g_max_action_cost == 1;
 }
 
-bool has_axioms() {
-    return !g_axioms.empty();
-}
-
-void verify_no_axioms() {
-    if (has_axioms()) {
-        cerr << "Heuristic does not support axioms!" << endl << "Terminating."
-             << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
-    }
-}
-
-static int get_first_conditional_effects_op_id() {
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        const vector<GlobalEffect> &effects = g_operators[i].get_effects();
-        for (size_t j = 0; j < effects.size(); ++j) {
-            const vector<GlobalCondition> &cond = effects[j].conditions;
-            if (!cond.empty())
-                return i;
-        }
-    }
-    return -1;
-}
-
-bool has_conditional_effects() {
-    return get_first_conditional_effects_op_id() != -1;
-}
-
-void verify_no_conditional_effects() {
-    int op_id = get_first_conditional_effects_op_id();
-    if (op_id != -1) {
-        cerr << "Heuristic does not support conditional effects "
-             << "(operator " << g_operators[op_id].get_name() << ")" << endl
-             << "Terminating." << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
-    }
-}
-
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;

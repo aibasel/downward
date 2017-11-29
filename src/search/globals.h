@@ -46,10 +46,6 @@ void dump_everything();
 
 // The following six functions are deprecated. Use task_properties.h instead.
 bool is_unit_cost();
-bool has_axioms();
-void verify_no_axioms();
-bool has_conditional_effects();
-void verify_no_conditional_effects();
 
 void check_magic(std::istream &in, std::string magic);
 
