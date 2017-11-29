@@ -13,7 +13,6 @@ class AbstractTask;
 class Axiom;
 class AxiomEvaluator;
 struct FactPair;
-class GlobalOperator;
 class GlobalState;
 class StateRegistry;
 class TaskProxy;
