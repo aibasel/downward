@@ -18,6 +18,71 @@ using namespace std;
 using utils::ExitCode;
 
 namespace tasks {
+/*
+  Eventually, this should parse the task from a stream.
+  this is currently done by the methods read_* in globals.
+  We have to keep them as long as there is still code that
+  accesses the global variables that store the task. For
+  now, we let those methods do the parsing and access the
+  parsed task here.
+*/
+std::shared_ptr<RootTask> create_root_task(
+    const std::vector<std::string> &variable_name,
+    const std::vector<int> &variable_domain,
+    const std::vector<std::vector<std::string>> &fact_names,
+    const std::vector<int> &axiom_layers,
+    const std::vector<int> &default_axiom_values,
+    const std::vector<std::vector<std::set<FactPair>>> &inconsistent_facts,
+    const std::vector<int> &initial_state_data,
+    const std::vector<std::pair<int, int>> &goal,
+    const std::vector<GlobalOperator> &operators,
+    const std::vector<GlobalOperator> &axioms);
+
+
+/*
+  The following classes are meant for internal use only. We currently cannot
+  move them into the cc file because we have vectors of them in RootTask.
+*/
+
+struct ExplicitVariable {
+    const int domain_size;
+    const std::string name;
+    const std::vector<std::string> fact_names;
+    const int axiom_layer;
+    const int axiom_default_value;
+
+    ExplicitVariable(
+        int domain_size,
+        std::string &&name,
+        std::vector<std::string> &&fact_names,
+        int axiom_layer,
+        int axiom_default_value);
+};
+
+
+struct ExplicitEffect {
+    const FactPair fact;
+    const std::vector<FactPair> conditions;
+
+    ExplicitEffect(int var, int value, std::vector<FactPair> &&conditions);
+};
+
+
+struct ExplicitOperator {
+    const std::vector<FactPair> preconditions;
+    const std::vector<ExplicitEffect> effects;
+    const int cost;
+    const std::string name;
+    const bool is_an_axiom;
+
+    ExplicitOperator(
+        std::vector<FactPair> &&preconditions,
+        std::vector<ExplicitEffect> &&effects,
+        int cost,
+        const std::string &name,
+        bool is_an_axiom);
+};
+
 static const int PRE_FILE_VERSION = 3;
 
 // TODO: This needs a proper type and should be moved to a separate
