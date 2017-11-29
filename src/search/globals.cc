@@ -100,11 +100,36 @@ void dump_goal(const TaskProxy &task_proxy) {
 }
 
 void read_everything(istream &in) {
-    g_root_task = tasks::parse_root_task(in);
+    cout << "reading input... [t=" << utils::g_timer << "]" << endl;
+    g_root_task = make_shared<tasks::RootTask>(in);
+    cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
+
+    TaskProxy task_proxy(*g_root_task);
+    g_axiom_evaluator = new AxiomEvaluator(task_proxy);
+
+    cout << "packing state variables..." << flush;
+    VariablesProxy variables = task_proxy.get_variables();
+    vector<int> variable_ranges;
+    variable_ranges.reserve(variables.size());
+    for (VariableProxy var : variables) {
+        variable_ranges.push_back(var.get_domain_size());
+    }
+    g_state_packer = new int_packer::IntPacker(variable_ranges);
+    cout << "done! [t=" << utils::g_timer << "]" << endl;
+
+    int num_facts = 0;
+    for (VariableProxy var : variables)
+        num_facts += var.get_domain_size();
+
+    cout << "Variables: " << variables.size() << endl;
+    cout << "FactPairs: " << num_facts << endl;
+    cout << "Bytes per state: "
+         << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
+         << endl;
+
 
     cout << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();
-    TaskProxy task_proxy(*g_root_task);
     utils::Timer successor_generator_timer;
     g_successor_generator = new successor_generator::SuccessorGenerator(task_proxy);
     successor_generator_timer.stop();
