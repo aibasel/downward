@@ -1,7 +1,7 @@
 #include "search_progress.h"
 
 #include "evaluation_context.h"
-#include "heuristic.h"
+#include "evaluator.h"
 
 #include <iostream>
 #include <string>

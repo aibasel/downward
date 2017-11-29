@@ -1,7 +1,7 @@
 #include "evaluation_context.h"
 
+#include "evaluator.h"
 #include "evaluation_result.h"
-#include "heuristic.h"
 #include "search_statistics.h"
 
 #include <cassert>
