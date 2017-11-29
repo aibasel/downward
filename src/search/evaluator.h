@@ -59,6 +59,8 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
 
+    void report_progress(int value) const;
+
     const std::string &get_description() const;
 };
 
