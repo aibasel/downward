@@ -29,27 +29,17 @@ def main():
 
     exitcode = None
     for component in args.components:
-        try:
-            if component == "translate":
-                exitcode = run_components.run_translate(args)
-            elif component == "search":
-                exitcode = run_components.run_search(args)
-            elif component == "validate":
-                exitcode = run_components.run_validate(args)
-            else:
-                assert False
-        except subprocess.CalledProcessError as err:
-            print(err)
-            exitcode = err.returncode
+        if component == "translate":
+            (exitcode, continue_execution) = run_components.run_translate(args)
+        elif component == "search":
+            (exitcode, continue_execution) = run_components.run_search(args)
+        elif component == "validate":
+            (exitcode, continue_execution) = run_components.run_validate(args)
+        else:
+            assert False
         print("{} exit code: {}".format(component, exitcode))
-        if component == "translate" and exitcode != returncodes.EXIT_SUCCESS:
-            break
-        elif component == "search" and exitcode not in returncodes.EXPECTED_SEARCH_EXITCODES:
-            # Only potentially run validate if no error was encountered
-            break
-
-        if exitcode != 0: # Stop execution as soon as one component fails.
-            print("Stopping after non-zero exit code of {}".format(component))
+        if not continue_execution:
+            print("Stopping driver after {}".format(component))
             break
     # Exit with the exit code of the last component that ran successfully.
     # This means for example that if no plan was found, validate is not run,

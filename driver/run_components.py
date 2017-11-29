@@ -69,6 +69,13 @@ def print_callstring(executable, options, stdin):
     logging.info("callstring: %s" % " ".join(parts))
 
 
+def allows_continuing(exitcode):
+    # Exit codes from 0 to 5 are those that represent a successful execution
+    # of a component, e.g. a completed translator run or a completed search
+    # for a plan.
+    return exitcode in range(6)
+
+
 def call_component(executable, options, stdin=None,
                    time_limit=None, memory_limit=None):
     if executable.endswith(".py"):
@@ -76,9 +83,20 @@ def call_component(executable, options, stdin=None,
         executable = sys.executable
         assert executable, "Path to interpreter could not be found"
     print_callstring(executable, options, stdin)
-    call.check_call(
-        [executable] + options,
-        stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
+    try:
+        call.check_call(
+            [executable] + options,
+            stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
+    except subprocess.CalledProcessError as err:
+        print(err)
+        return (err.returncode, allows_continuing(exitcode))
+    except OSError as err:
+        if err.errno == errno.ENOENT:
+            sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
+        else:
+            return (err.returncode, False)
+    else:
+        return (0, True)
 
 
 def run_translate(args):
@@ -93,17 +111,9 @@ def run_translate(args):
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
     logging.info("translator executable: %s" % translate)
 
-    try:
-        call_component(
-            translate, args.translate_inputs + args.translate_options,
-            time_limit=time_limit, memory_limit=memory_limit)
-    except subprocess.CalledProcessError as err:
-        if err.returncode in returncodes.EXPECTED_TRANSLATOR_EXITCODES:
-            return err.returncode
-        else:
-            raise
-    else:
-        return 0
+    return call_component(
+        translate, args.translate_inputs + args.translate_options,
+        time_limit=time_limit, memory_limit=memory_limit)
 
 
 def run_search(args):
@@ -125,7 +135,7 @@ def run_search(args):
     if args.portfolio:
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
-        portfolio_runner.run(
+        return portfolio_runner.run(
             args.portfolio, search, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
@@ -134,18 +144,11 @@ def run_search(args):
                 "search needs --alias, --portfolio, or search options")
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
-        try:
-            call_component(
-                search, args.search_options,
-                stdin=args.search_input,
-                time_limit=time_limit, memory_limit=memory_limit)
-        except subprocess.CalledProcessError as err:
-            if err.returncode in returncodes.EXPECTED_SEARCH_EXITCODES:
-                return err.returncode
-            else:
-                raise
-        else:
-            return 0
+
+        return call_component(
+            search, args.search_options,
+            stdin=args.search_input,
+            time_limit=time_limit, memory_limit=memory_limit)
 
 
 def run_validate(args):
@@ -167,12 +170,4 @@ def run_validate(args):
         "validate", validate_inputs, [],
         time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
 
-    try:
-        call_component(VALIDATE, validate_inputs)
-    except OSError as err:
-        if err.errno == errno.ENOENT:
-            sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
-        else:
-            raise
-    else:
-        return 0
+    return call_component(VALIDATE, validate_inputs)
