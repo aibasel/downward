@@ -7,11 +7,15 @@ using namespace std;
 
 Evaluator::Evaluator(const string &description)
     : description(description){
-
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
     return true;
+}
+
+void Evaluator::report_progress(int value) const {
+    cout << "New best heuristic value for "
+         << description << ": " << value << endl;
 }
 
 const string &Evaluator::get_description() const {

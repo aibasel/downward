@@ -37,8 +37,7 @@ bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
         [this, &progress](const Evaluator *eval, const EvaluationResult &result) {
         int h = result.get_h_value();
         if (process_heuristic_value(eval, h)) {
-            cout << "New best heuristic value for "
-                 << eval->get_description() << ": " << h << endl;
+            eval->report_progress(h);
             progress = true;
         }
     }
