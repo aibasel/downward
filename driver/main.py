@@ -41,10 +41,10 @@ def main():
             print(err)
             exitcode = err.returncode
         print("{} exit code: {}".format(component, exitcode))
-        if exitcode != 0:
+        if exitcode != 0: # Stop execution as soon as one component fails.
             print("Stopping after non-zero exit code of {}".format(component))
             break
-    # Exit with the exit code of the last component that ran succesfully.
+    # Exit with the exit code of the last component that ran successfully.
     # This means for example that if no plan was found, validate is not run,
     # so the return code is that of the search.
     sys.exit(exitcode)
