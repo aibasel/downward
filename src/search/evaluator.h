@@ -59,7 +59,7 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
 
-    std::string get_description() const;
+    const std::string &get_description() const;
 };
 
 #endif
