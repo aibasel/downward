@@ -31,12 +31,7 @@ public:
         for (const auto &element : eval_results) {
             const Evaluator *eval = element.first;
             const EvaluationResult &result = element.second;
-            const Heuristic *heuristic = dynamic_cast<const Heuristic *>(eval);
-            if (heuristic) {
-                /* We want to consider only Heuristic instances, not other
-                   Evaluator instances. */
-                callback(heuristic, result);
-            }
+            callback(eval, result);
         }
     }
 };
