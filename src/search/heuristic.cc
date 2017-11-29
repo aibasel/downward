@@ -2,7 +2,6 @@
 
 #include "evaluation_context.h"
 #include "evaluation_result.h"
-#include "global_operator.h"
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
@@ -33,7 +32,7 @@ void Heuristic::set_preferred(const OperatorProxy &op) {
 
 bool Heuristic::notify_state_transition(
     const GlobalState & /*parent_state*/,
-    const GlobalOperator & /*op*/,
+    OperatorID /*op_id*/,
     const GlobalState & /*state*/) {
     return false;
 }

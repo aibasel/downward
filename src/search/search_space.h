@@ -8,8 +8,9 @@
 
 #include <vector>
 
-class GlobalOperator;
 class GlobalState;
+class OperatorProxy;
+class TaskProxy;
 
 
 class SearchNode {
@@ -38,15 +39,15 @@ public:
 
     void open_initial();
     void open(const SearchNode &parent_node,
-              const GlobalOperator *parent_op);
+              const OperatorProxy &parent_op);
     void reopen(const SearchNode &parent_node,
-                const GlobalOperator *parent_op);
+                const OperatorProxy &parent_op);
     void update_parent(const SearchNode &parent_node,
-                       const GlobalOperator *parent_op);
+                       const OperatorProxy &parent_op);
     void close();
     void mark_as_dead_end();
 
-    void dump() const;
+    void dump(const TaskProxy &task_proxy) const;
 };
 
 
@@ -60,9 +61,9 @@ public:
 
     SearchNode get_node(const GlobalState &state);
     void trace_path(const GlobalState &goal_state,
-                    std::vector<const GlobalOperator *> &path) const;
+                    std::vector<OperatorID> &path) const;
 
-    void dump() const;
+    void dump(const TaskProxy &task_proxy) const;
     void print_statistics() const;
 };
 
