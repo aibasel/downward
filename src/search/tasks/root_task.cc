@@ -20,10 +20,12 @@ namespace tasks {
 static const int PRE_FILE_VERSION = 3;
 
 static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
-    if (!(utils::in_bounds(fact.var, variables) &&
-            fact.value >= 0 &&
-            fact.value < variables[fact.var].domain_size)) {
-        cerr << "Fact " << fact << " does not exist in the task!" << endl;
+    if (!utils::in_bounds(fact.var, variables)) {
+        cerr << "Invalid variable id: " << fact.var << endl;
+        utils::exit_with(ExitCode::INPUT_ERROR);
+    }
+    if (fact.value < 0 || fact.value >= g_variable_domain[var]) {
+        cerr << "Invalid value for variable " << fact.var << ": " << fact.value << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
 }
