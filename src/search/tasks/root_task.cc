@@ -16,6 +16,13 @@
 using namespace std;
 
 namespace tasks {
+std::shared_ptr<RootTask> parse_root_task(std::istream &/*in*/) {
+    return create_root_task(
+        g_variable_name, g_variable_domain, g_fact_names, g_axiom_layers,
+        g_default_axiom_values, g_inconsistent_facts, g_initial_state_data,
+        g_goal, g_operators, g_axioms);
+}
+
 #ifndef NDEBUG
 static bool check_fact(const FactPair &fact) {
     /*
@@ -338,7 +345,7 @@ static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return g_root_task();
+        return g_root_task;
 }
 
 static PluginShared<AbstractTask> _plugin("no_transform", _parse);

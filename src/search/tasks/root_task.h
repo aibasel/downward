@@ -77,6 +77,12 @@ public:
         const AbstractTask *ancestor_task) const override;
 };
 
+/*
+  Transitional method. Replace by a constructor of RootTask, once everything is
+  in place.
+*/
+std::shared_ptr<RootTask> parse_root_task(std::istream &in);
+
 
 /*
   Eventually, this should parse the task from a stream.

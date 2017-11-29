@@ -100,13 +100,13 @@ GlobalOperator::GlobalOperator(istream &in, bool axiom) {
 }
 
 void GlobalCondition::dump() const {
-    TaskProxy task_proxy(*g_root_task());
+    TaskProxy task_proxy(*g_root_task);
     VariablesProxy variables = task_proxy.get_variables();
     cout << variables[var].get_name() << ": " << val;
 }
 
 void GlobalEffect::dump() const {
-    TaskProxy task_proxy(*g_root_task());
+    TaskProxy task_proxy(*g_root_task);
     VariablesProxy variables = task_proxy.get_variables();
     cout << variables[var].get_name() << ":= " << val;
     if (!conditions.empty()) {
