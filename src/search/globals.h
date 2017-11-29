@@ -62,16 +62,15 @@ extern std::shared_ptr<AbstractTask> g_root_task;
 extern utils::Log g_log;
 
 
-// TODO: the following variables are deprecated and will be removed soon.
-
-// still used to check FactPair validity in GlobalOperator
-extern std::vector<int> g_variable_domain;
-
 /*
   This vector holds the initial values *before* the axioms have been evaluated.
   Use a state registry to obtain the real initial state.
 */
-// still needed by the search engine to create a registry (should come from the task)
+/*
+  TODO: This variable is deprecated and will be removed soon.
+  Currently, it is still needed by the search engine to create a registry.
+  (The state data should come from the task instead.)
+*/
 extern std::vector<int> g_initial_state_data;
 
 #endif
