@@ -20,6 +20,20 @@ using utils::ExitCode;
 namespace tasks {
 static const int PRE_FILE_VERSION = 3;
 
+// TODO: This needs a proper type and should be moved to a separate
+//       mutexes.cc file or similar, accessed via something called
+//       g_mutexes. (Right now, the interface is via global function
+//       are_mutex, which is at least better than exposing the data
+//       structure globally.)
+vector<vector<set<FactPair>>> g_inconsistent_facts;
+vector<vector<string>> g_fact_names;
+vector<int> g_axiom_layers;
+vector<int> g_default_axiom_values;
+vector<string> g_variable_name;
+vector<pair<int, int>> g_goal;
+vector<GlobalOperator> g_axioms;
+vector<GlobalOperator> g_operators;
+
 void read_and_verify_version(istream &in) {
     int version;
     check_magic(in, "begin_version");
