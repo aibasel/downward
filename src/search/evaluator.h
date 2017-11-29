@@ -69,6 +69,8 @@ public:
     void report_progress(int value) const;
 
     const std::string &get_description() const;
+
+    bool statistics_are_enabled() const;
 };
 
 #endif
