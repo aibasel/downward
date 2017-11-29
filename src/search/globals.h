@@ -82,7 +82,5 @@ extern std::vector<int> g_variable_domain;
 */
 // still needed by the search engine to create a registry (should come from the task)
 extern std::vector<int> g_initial_state_data;
-// still needed by the pruning code, root task, get_op_index_hacked, and search space
-extern std::vector<GlobalOperator> g_operators;
 
 #endif
