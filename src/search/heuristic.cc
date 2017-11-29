@@ -2,7 +2,6 @@
 
 #include "evaluation_context.h"
 #include "evaluation_result.h"
-#include "global_operator.h"
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
