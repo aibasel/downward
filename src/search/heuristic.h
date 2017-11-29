@@ -32,8 +32,6 @@ class Heuristic : public Evaluator {
     };
     static_assert(sizeof(HEntry) == 4, "HEntry has unexpected size.");
 
-    std::string description;
-
     /*
       TODO: We might want to get rid of the preferred_operators
       attribute. It is currently only used by compute_result() and the
@@ -102,8 +100,6 @@ public:
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
-
-    std::string get_description() const;
 };
 
 #endif
