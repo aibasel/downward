@@ -238,6 +238,4 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
         exitcodes = run_sat(
             configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory)
-    exitcode = returncodes.generate_portfolio_exitcode(exitcodes)
-    if exitcode != 0:
-        raise subprocess.CalledProcessError(exitcode, ["run-portfolio", portfolio])
+    return returncodes.generate_portfolio_exitcode(exitcodes)

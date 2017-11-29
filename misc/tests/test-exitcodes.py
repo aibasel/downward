@@ -100,21 +100,13 @@ def run_translator(task_type, relpath, command):
     return subprocess.call(cmd)
 
 
-def run_translator_tests():
-    failures = []
+def run_translator_tests(failures):
     for task_type, command, expected in TRANSLATE_TESTS:
         relpath = TRANSLATE_TASKS[task_type]
         exitcode = run_translator(task_type, relpath, command)
         if not exitcode == expected:
             failures.append((task_type, command, expected, exitcode))
         cleanup()
-
-    if failures:
-        print("\nFailures:")
-        for task_type, command, expected, exitcode in failures:
-            print("%(command)s on %(task_type)s task: expected %(expected)d, "
-                   "got %(exitcode)d" % locals())
-        sys.exit(1)
 
 
 def run_search(task_type, relpath, search):
@@ -125,21 +117,13 @@ def run_search(task_type, relpath, search):
         [sys.executable, DRIVER, problem, "--search", search])
 
 
-def run_search_tests():
-    failures = []
+def run_search_tests(failures):
     for task_type, search, expected in SEARCH_TESTS:
         relpath = SEARCH_TASKS[task_type]
         exitcode = run_search(task_type, relpath, search)
         if not exitcode == expected:
             failures.append((task_type, search, expected, exitcode))
         cleanup()
-
-    if failures:
-        print("\nFailures:")
-        for task_type, search, expected, exitcode in failures:
-            print("%(search)s on %(task_type)s task: expected %(expected)d, "
-                   "got %(exitcode)d" % locals())
-        sys.exit(1)
 
 
 def main():
@@ -150,8 +134,15 @@ def main():
     if os.name == "posix":
         subprocess.check_call(["./build.py"], cwd=REPO_BASE)
 
-    run_translator_tests()
-    run_search_tests()
+    failures = []
+    run_translator_tests(failures)
+    run_search_tests(failures)
+    if failures:
+        print("\nFailures:")
+        for task_type, command, expected, exitcode in failures:
+            print("%(command)s on %(task_type)s task: expected %(expected)d, "
+                   "got %(exitcode)d" % locals())
+        sys.exit(1)
 
     print("\nNo errors detected.")
 
