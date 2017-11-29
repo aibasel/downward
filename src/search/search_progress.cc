@@ -35,7 +35,7 @@ bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
     bool progress = false;
     eval_context.get_cache().for_each_evaluator_result(
         [this, &progress](const Evaluator *eval, const EvaluationResult &result) {
-        if (process_value(eval, result.get_h_value())) {
+        if (eval->statistics_are_enabled() && process_value(eval, result.get_h_value())) {
             eval->report_progress(result);
             progress = true;
         }
