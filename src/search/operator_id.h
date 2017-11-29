@@ -29,6 +29,8 @@ public:
         : index(index) {
     }
 
+    static const OperatorID no_operator;
+
     int get_index() const {
         return index;
     }
