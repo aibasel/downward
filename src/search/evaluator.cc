@@ -2,6 +2,8 @@
 
 #include "plugin.h"
 
+#include <cassert>
+
 using namespace std;
 
 
@@ -15,21 +17,19 @@ bool Evaluator::dead_ends_are_reliable() const {
 }
 
 void Evaluator::report_value_for_initial_state(const EvaluationResult &result) const {
-    if (enable_statistics) {
-        cout << "Initial heuristic value for " << description << ": ";
-        if (result.is_infinite())
-            cout << "infinity";
-        else
-            cout << result.get_h_value();
-        cout << endl;
-    }
+    assert(enable_statistics);
+    cout << "Initial heuristic value for " << description << ": ";
+    if (result.is_infinite())
+        cout << "infinity";
+    else
+        cout << result.get_h_value();
+    cout << endl;
 }
 
 void Evaluator::report_progress(const EvaluationResult &result) const {
-    if (enable_statistics) {
-        cout << "New best heuristic value for " << description << ": "
-             << result.get_h_value() << endl;
-    }
+    assert(enable_statistics);
+    cout << "New best heuristic value for " << description << ": "
+         << result.get_h_value() << endl;
 }
 
 const string &Evaluator::get_description() const {
