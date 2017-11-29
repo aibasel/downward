@@ -25,10 +25,10 @@ void Evaluator::report_value_for_initial_state(const EvaluationResult &result) c
     }
 }
 
-void Evaluator::report_progress(int value) const {
+void Evaluator::report_progress(const EvaluationResult &result) const {
     if (enable_statistics) {
         cout << "New best heuristic value for " << description << ": "
-             << value << endl;
+             << result.get_h_value() << endl;
     }
 }
 
