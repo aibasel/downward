@@ -91,11 +91,12 @@ void check_magic(istream &in, string magic) {
     }
 }
 
-void dump_goal() {
+void dump_goal(const TaskProxy &task_proxy) {
     cout << "Goal Conditions:" << endl;
-    for (size_t i = 0; i < g_goal.size(); ++i)
-        cout << "  " << g_variable_name[g_goal[i].first] << ": "
-             << g_goal[i].second << endl;
+    for (FactProxy goal : task_proxy.get_goals()) {
+        cout << "  " << goal.get_variable().get_name() << ": "
+             << goal.get_value() << endl;
+    }
 }
 
 void read_everything(istream &in) {
@@ -121,21 +122,23 @@ void dump_everything() {
     cout << "Use metric? " << g_use_metric << endl;
     cout << "Min Action Cost: " << g_min_action_cost << endl;
     cout << "Max Action Cost: " << g_max_action_cost << endl;
-    // TODO: Dump the actual fact names.
-    cout << "Variables (" << g_variable_name.size() << "):" << endl;
-    for (size_t i = 0; i < g_variable_name.size(); ++i)
-        cout << "  " << g_variable_name[i]
-             << " (range " << g_variable_domain[i] << ")" << endl;
-    State initial_state = TaskProxy(*g_root_task).get_initial_state();
+
+    TaskProxy task_proxy(*g_root_task);
+    VariablesProxy variables = task_proxy.get_variables();
+    cout << "Variables (" << variables.size() << "):" << endl;
+    for (VariableProxy var : variables) {
+        cout << "  " << var.get_name()
+             << " (range " << var.get_domain_size() << ")" << endl;
+        for (int val = 0; val < var.get_domain_size(); ++val) {
+            cout << "    " << val << ": " << var.get_fact(val).get_name() << endl;
+        }
+    }
+    State initial_state = task_proxy.get_initial_state();
     cout << "Initial State (PDDL):" << endl;
     initial_state.dump_pddl();
     cout << "Initial State (FDR):" << endl;
     initial_state.dump_fdr();
-    dump_goal();
-    /*
-    for(int i = 0; i < g_variable_domain.size(); ++i)
-      g_transition_graphs[i]->dump();
-    */
+    dump_goal(task_proxy);
 }
 
 bool is_unit_cost() {
