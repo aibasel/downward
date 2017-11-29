@@ -9,10 +9,10 @@ class EvaluationContext;
 class Heuristic;
 
 class Evaluator {
-    std::string description;
+    const std::string description;
 
 protected:
-    bool enable_statistics;
+    const bool enable_statistics;
 
 public:
     Evaluator(
