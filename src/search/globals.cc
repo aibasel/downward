@@ -179,11 +179,6 @@ void verify_no_conditional_effects() {
     }
 }
 
-void verify_no_axioms_no_conditional_effects() {
-    verify_no_axioms();
-    verify_no_conditional_effects();
-}
-
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
