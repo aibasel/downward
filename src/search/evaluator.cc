@@ -36,6 +36,10 @@ const string &Evaluator::get_description() const {
     return description;
 }
 
+bool Evaluator::statistics_are_enabled() const {
+    return enable_statistics;
+}
+
 
 static PluginTypePlugin<Evaluator> _type_plugin(
     "Evaluator",
