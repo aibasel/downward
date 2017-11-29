@@ -33,7 +33,7 @@ bool SearchProgress::process_heuristic_value(const Evaluator *evaluator, int h) 
 
 bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
     bool progress = false;
-    eval_context.get_cache().for_each_heuristic_value(
+    eval_context.get_cache().for_each_evaluator_result(
         [this, &progress](const Evaluator *eval, const EvaluationResult &result) {
         int h = result.get_h_value();
         if (process_heuristic_value(eval, h)) {
