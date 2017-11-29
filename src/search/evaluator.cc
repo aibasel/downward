@@ -13,6 +13,15 @@ bool Evaluator::dead_ends_are_reliable() const {
     return true;
 }
 
+void Evaluator::report_value_for_initial_state(const EvaluationResult &result) const {
+    cout << "Initial heuristic value for " << description << ": ";
+    if (result.is_infinite())
+        cout << "infinity";
+    else
+        cout << result.get_h_value();
+    cout << endl;
+}
+
 void Evaluator::report_progress(int value) const {
     cout << "New best heuristic value for "
          << description << ": " << value << endl;
