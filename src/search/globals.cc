@@ -26,11 +26,6 @@
 using namespace std;
 using utils::ExitCode;
 
-static const int PRE_FILE_VERSION = 3;
-
-
-
-
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
         if (state[g_goal[i].first] != g_goal[i].second) {
@@ -95,111 +90,6 @@ void check_magic(istream &in, string magic) {
     }
 }
 
-void read_and_verify_version(istream &in) {
-    int version;
-    check_magic(in, "begin_version");
-    in >> version;
-    check_magic(in, "end_version");
-    if (version != PRE_FILE_VERSION) {
-        cerr << "Expected preprocessor file version " << PRE_FILE_VERSION
-             << ", got " << version << "." << endl;
-        cerr << "Exiting." << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
-    }
-}
-
-void read_metric(istream &in) {
-    check_magic(in, "begin_metric");
-    in >> g_use_metric;
-    check_magic(in, "end_metric");
-}
-
-void read_variables(istream &in) {
-    int count;
-    in >> count;
-    for (int i = 0; i < count; ++i) {
-        check_magic(in, "begin_variable");
-        string name;
-        in >> name;
-        g_variable_name.push_back(name);
-        int layer;
-        in >> layer;
-        g_axiom_layers.push_back(layer);
-        int range;
-        in >> range;
-        g_variable_domain.push_back(range);
-        in >> ws;
-        vector<string> fact_names(range);
-        for (size_t j = 0; j < fact_names.size(); ++j)
-            getline(in, fact_names[j]);
-        g_fact_names.push_back(fact_names);
-        check_magic(in, "end_variable");
-    }
-}
-
-void read_mutexes(istream &in) {
-    g_inconsistent_facts.resize(g_variable_domain.size());
-    for (size_t i = 0; i < g_variable_domain.size(); ++i)
-        g_inconsistent_facts[i].resize(g_variable_domain[i]);
-
-    int num_mutex_groups;
-    in >> num_mutex_groups;
-
-    /* NOTE: Mutex groups can overlap, in which case the same mutex
-       should not be represented multiple times. The current
-       representation takes care of that automatically by using sets.
-       If we ever change this representation, this is something to be
-       aware of. */
-
-    for (int i = 0; i < num_mutex_groups; ++i) {
-        check_magic(in, "begin_mutex_group");
-        int num_facts;
-        in >> num_facts;
-        vector<FactPair> invariant_group;
-        invariant_group.reserve(num_facts);
-        for (int j = 0; j < num_facts; ++j) {
-            int var;
-            int value;
-            in >> var >> value;
-            invariant_group.emplace_back(var, value);
-        }
-        check_magic(in, "end_mutex_group");
-        for (const FactPair &fact1 : invariant_group) {
-            for (const FactPair &fact2 : invariant_group) {
-                if (fact1.var != fact2.var) {
-                    /* The "different variable" test makes sure we
-                       don't mark a fact as mutex with itself
-                       (important for correctness) and don't include
-                       redundant mutexes (important to conserve
-                       memory). Note that the translator (at least
-                       with default settings) removes mutex groups
-                       that contain *only* redundant mutexes, but it
-                       can of course generate mutex groups which lead
-                       to *some* redundant mutexes, where some but not
-                       all facts talk about the same variable. */
-                    g_inconsistent_facts[fact1.var][fact1.value].insert(fact2);
-                }
-            }
-        }
-    }
-}
-
-void read_goal(istream &in) {
-    check_magic(in, "begin_goal");
-    int count;
-    in >> count;
-    if (count < 1) {
-        cerr << "Task has no goal condition!" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
-    }
-    for (int i = 0; i < count; ++i) {
-        int var, val;
-        in >> var >> val;
-        g_goal.push_back(make_pair(var, val));
-    }
-    check_magic(in, "end_goal");
-}
-
 void dump_goal() {
     cout << "Goal Conditions:" << endl;
     for (size_t i = 0; i < g_goal.size(); ++i)
@@ -207,61 +97,7 @@ void dump_goal() {
              << g_goal[i].second << endl;
 }
 
-void read_operators(istream &in) {
-    int count;
-    in >> count;
-    for (int i = 0; i < count; ++i)
-        g_operators.push_back(GlobalOperator(in, false));
-}
-
-void read_axioms(istream &in) {
-    int count;
-    in >> count;
-    for (int i = 0; i < count; ++i)
-        g_axioms.push_back(GlobalOperator(in, true));
-
-    g_axiom_evaluator = new AxiomEvaluator(TaskProxy(*g_root_task));
-}
-
 void read_everything(istream &in) {
-    cout << "reading input... [t=" << utils::g_timer << "]" << endl;
-    read_and_verify_version(in);
-    read_metric(in);
-    read_variables(in);
-    read_mutexes(in);
-    g_initial_state_data.resize(g_variable_domain.size());
-    check_magic(in, "begin_state");
-    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-        in >> g_initial_state_data[i];
-    }
-    check_magic(in, "end_state");
-    g_default_axiom_values = g_initial_state_data;
-
-    read_goal(in);
-    read_operators(in);
-    read_axioms(in);
-
-    /* TODO: We should be stricter here and verify that we
-       have reached the end of "in". */
-
-    cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
-
-    cout << "packing state variables..." << flush;
-    assert(!g_variable_domain.empty());
-    g_state_packer = new int_packer::IntPacker(g_variable_domain);
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
-
-    int num_vars = g_variable_domain.size();
-    int num_facts = 0;
-    for (int var = 0; var < num_vars; ++var)
-        num_facts += g_variable_domain[var];
-
-    cout << "Variables: " << num_vars << endl;
-    cout << "FactPairs: " << num_facts << endl;
-    cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
-         << endl;
-
     g_root_task = tasks::parse_root_task(in);
 
     cout << "Building successor generator..." << flush;
