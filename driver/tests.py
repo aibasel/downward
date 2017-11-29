@@ -20,7 +20,7 @@ def translate():
     """Create translated task."""
     cmd = ["./fast-downward.py", "--translate",
            "misc/tests/benchmarks/gripper/prob01.pddl"]
-    assert subprocess.check_call(cmd, cwd=REPO_ROOT_DIR) == 0
+    assert subprocess.check_call(cmd, cwd=REPO_ROOT_DIR) == returncodes.EXIT_SUCCESS
 
 
 def cleanup():
@@ -38,8 +38,7 @@ def test_commandline_args():
     for description, cmd in EXAMPLES:
         cmd = [x.strip('"') for x in cmd]
         assert run_driver(cmd) in [
-            returncodes.EXIT_TRANSLATE_COMPLETE,
-            returncodes.EXIT_SEARCH_PLAN_FOUND,
+            returncodes.EXIT_SUCCESS,
             returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
 
 
@@ -47,7 +46,7 @@ def test_aliases():
     for alias, config in ALIASES.items():
         cmd = ["./fast-downward.py", "--alias", alias, "output.sas"]
         assert run_driver(cmd) in [
-            returncodes.EXIT_SEARCH_PLAN_FOUND, returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
+            returncodes.EXIT_SUCCESS, returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
 
 
 def test_portfolios():
@@ -55,7 +54,7 @@ def test_portfolios():
         cmd = ["./fast-downward.py", "--portfolio", portfolio,
                "--search-time-limit", "30m", "output.sas"]
         assert run_driver(cmd) in [
-            returncodes.EXIT_SEARCH_PLAN_FOUND, returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
+            returncodes.EXIT_SUCCESS, returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
 
 
 def test_time_limits():

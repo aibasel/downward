@@ -132,7 +132,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
             if exitcode == returncodes.EXIT_SEARCH_UNSOLVABLE:
                 return
 
-            if exitcode == returncodes.EXIT_SEARCH_PLAN_FOUND:
+            if exitcode == returncodes.EXIT_SUCCESS:
                 configs_next_round.append((relative_time, args))
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
@@ -177,7 +177,7 @@ def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
                               run_time, memory)
         yield exitcode
 
-        if exitcode in [returncodes.EXIT_SEARCH_PLAN_FOUND, returncodes.EXIT_SEARCH_UNSOLVABLE]:
+        if exitcode in [returncodes.EXIT_SUCCESS, returncodes.EXIT_SEARCH_UNSOLVABLE]:
             break
 
 

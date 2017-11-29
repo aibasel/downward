@@ -4,14 +4,15 @@ from __future__ import print_function
 
 import signal
 
-EXIT_TRANSLATE_COMPLETE = 0
+EXIT_SUCCESS = 0 # translator and search (or only translator if no search is run) successfully completed
+
+EXIT_TRANSLATE_SCRITICAL = 1
 EXIT_TRANSLATE_OUT_OF_MEMORY = 100
 EXIT_TRANSLATE_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
 
 EXPECTED_TRANSLATOR_EXITCODES = set([
-    EXIT_TRANSLATE_COMPLETE, EXIT_TRANSLATE_OUT_OF_MEMORY, EXIT_TRANSLATE_SIGXCPU])
+    EXIT_SUCCESS, EXIT_TRANSLATE_OUT_OF_MEMORY, EXIT_TRANSLATE_SIGXCPU])
 
-EXIT_SEARCH_PLAN_FOUND = 0
 EXIT_SEARCH_CRITICAL_ERROR = 1
 EXIT_SEARCH_INPUT_ERROR = 2
 EXIT_SEARCH_UNSUPPORTED = 3
@@ -23,7 +24,7 @@ EXIT_SEARCH_TIMEOUT_AND_MEMORY = 8
 EXIT_SEARCH_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
 
 EXPECTED_SEARCH_EXITCODES = set([
-    EXIT_SEARCH_PLAN_FOUND, EXIT_SEARCH_UNSOLVABLE, EXIT_SEARCH_UNSOLVED_INCOMPLETE,
+    EXIT_SUCCESS, EXIT_SEARCH_UNSOLVABLE, EXIT_SEARCH_UNSOLVED_INCOMPLETE,
     EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_TIMEOUT, EXIT_SEARCH_SIGXCPU])
 
 
@@ -32,7 +33,7 @@ def generate_portfolio_exitcode(exitcodes):
 
     There is exactly one type of unexpected exit code -> use it.
     There are multiple types of unexpected exit codes -> EXIT_SEARCH_CRITICAL_ERROR.
-    [..., EXIT_SEARCH_PLAN_FOUND, ...] -> EXIT_SEARCH_PLAN_FOUND
+    [..., EXIT_SUCCESS, ...] -> EXIT_SUCCESS
     [..., EXIT_SEARCH_UNSOLVABLE, ...] -> EXIT_SEARCH_UNSOLVABLE
     [..., EXIT_SEARCH_UNSOLVED_INCOMPLETE, ...] -> EXIT_SEARCH_UNSOLVED_INCOMPLETE
     [..., EXIT_SEARCH_OUT_OF_MEMORY, ..., EXIT_SEARCH_TIMEOUT, ...] -> EXIT_SEARCH_TIMEOUT_AND_MEMORY
@@ -51,7 +52,7 @@ def generate_portfolio_exitcode(exitcodes):
             return unexpected_codes.pop()
         else:
             return EXIT_SEARCH_CRITICAL_ERROR
-    for code in [EXIT_SEARCH_PLAN_FOUND, EXIT_SEARCH_UNSOLVABLE, EXIT_SEARCH_UNSOLVED_INCOMPLETE]:
+    for code in [EXIT_SUCCESS, EXIT_SEARCH_UNSOLVABLE, EXIT_SEARCH_UNSOLVED_INCOMPLETE]:
         if code in exitcodes:
             return code
     for code in [EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_TIMEOUT]:
