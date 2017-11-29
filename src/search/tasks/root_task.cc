@@ -19,15 +19,28 @@ using utils::ExitCode;
 namespace tasks {
 static const int PRE_FILE_VERSION = 3;
 
-#ifndef NDEBUG
-static bool check_fact(const FactPair &fact) {
-    /*
-      We don't put this check into the FactPair ctor to allow (-1, -1)
-      facts. Here, we want to make sure that the fact is valid.
-    */
-    return fact.var >= 0 && fact.value >= 0;
+static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
+    if (!(utils::in_bounds(fact.var, variables) &&
+            fact.value >= 0 &&
+            fact.value < variables[fact.var].domain_size)) {
+        cerr << "Fact " << fact << " does not exist in the task!" << endl;
+        utils::exit_with(ExitCode::INPUT_ERROR);
+    }
 }
-#endif
+
+static void check_facts(const vector<FactPair> &facts, const vector<ExplicitVariable> &variables) {
+    for (FactPair p : facts) {
+        check_fact(p, variables);
+    }
+}
+
+static void check_facts(const ExplicitOperator &action, const vector<ExplicitVariable> &variables) {
+    check_facts(action.preconditions, variables);
+    for (const ExplicitEffect &eff : action.effects) {
+        check_fact(eff.fact, variables);
+        check_facts(eff.conditions, variables);
+    }
+}
 
 void check_magic(istream &in, string magic) {
     string word;
@@ -52,7 +65,6 @@ vector<FactPair> read_facts(istream &in) {
     for (int i = 0; i < count; ++i) {
         FactPair condition = FactPair::no_fact;
         in >> condition.var >> condition.value;
-        assert(check_fact(condition));
         conditions.push_back(condition);
     }
     return conditions;
@@ -74,8 +86,6 @@ ExplicitVariable::ExplicitVariable(istream &in) {
 ExplicitEffect::ExplicitEffect(
     int var, int value, vector<FactPair> &&conditions)
     : fact(var, value), conditions(move(conditions)) {
-    assert(check_fact(FactPair(var, value)));
-    assert(all_of(this->conditions.begin(), this->conditions.end(), check_fact));
 }
 
 
@@ -86,7 +96,6 @@ void ExplicitOperator::read_pre_post(istream &in) {
 
     if (value_pre != -1) {
         FactPair pre(var, value_pre);
-        assert(check_fact(pre));
         preconditions.push_back(pre);
     }
     effects.emplace_back(var, value_post, move(conditions));
@@ -214,28 +223,18 @@ vector<FactPair> read_goal(istream &in) {
     return goals;
 }
 
-vector<ExplicitOperator> read_operators(istream &in) {
+vector<ExplicitOperator> read_actions(
+    istream &in, bool is_axiom, const vector<ExplicitVariable> &variables) {
     int count;
     in >> count;
-    vector<ExplicitOperator> operators;
-    operators.reserve(count);
+    vector<ExplicitOperator> actions;
+    actions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        operators.emplace_back(in, false);
+        actions.emplace_back(in, is_axiom);
+        check_facts(actions.back(), variables);
     }
-    return operators;
+    return actions;
 }
-
-vector<ExplicitOperator> read_axioms(istream &in) {
-    int count;
-    in >> count;
-    vector<ExplicitOperator> axioms;
-    axioms.reserve(count);
-    for (int i = 0; i < count; ++i) {
-        axioms.emplace_back(in, true);
-    }
-    return axioms;
-}
-
 
 RootTask::RootTask(std::istream &in) {
     read_and_verify_version(in);
@@ -258,8 +257,9 @@ RootTask::RootTask(std::istream &in) {
     }
 
     goals = read_goal(in);
-    operators = read_operators(in);
-    axioms = read_axioms(in);
+    check_facts(goals, variables);
+    operators = read_actions(in, false, variables);
+    axioms = read_actions(in, true, variables);
     /* TODO: We should be stricter here and verify that we
        have reached the end of "in". */
 }
