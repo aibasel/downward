@@ -26,9 +26,10 @@
 using namespace std;
 using utils::ExitCode;
 
-bool test_goal(const GlobalState &state) {
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        if (state[g_goal[i].first] != g_goal[i].second) {
+bool test_goal(const GlobalState &state, const TaskProxy &task_proxy) {
+    for (FactProxy goal : task_proxy.get_goals()) {
+        FactPair goal_fact = goal.get_pair();
+        if (state[goal_fact.var] != goal_fact.value) {
             return false;
         }
     }
