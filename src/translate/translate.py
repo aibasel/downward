@@ -696,9 +696,14 @@ def main():
 
 
 if __name__ == "__main__":
+    # reserve ca. 10 MB (in python 2) of emergency memory
+    # https://stackoverflow.com/questions/19469608/how-to-log-a-python-memoryerror-when-im-out-of-memory
+    emergency_memory = "x" * 10**7 # ca. 10 MB
     try:
         main()
     except MemoryError:
+        emergency_memory = ""
+        print()
         print("Translator ran out of memory, traceback:")
         print("=" * 79)
         traceback.print_exc(file=sys.stdout)
