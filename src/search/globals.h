@@ -31,7 +31,12 @@ struct Log;
 class RandomNumberGenerator;
 }
 
-bool test_goal(const GlobalState &state);
+/*
+  TODO: get rid of this method and use task_properties::is_goal_state instead.
+  To make this efficient however, the search should work with unpacked States
+  instead of packed GlobalStates internally.
+*/
+bool test_goal(const GlobalState &state, const TaskProxy &task_proxy);
 /*
   Set generates_multiple_plan_files to true if the planner can find more than
   one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
