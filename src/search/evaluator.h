@@ -11,8 +11,13 @@ class Heuristic;
 class Evaluator {
     std::string description;
 
+protected:
+    bool enable_statistics;
+
 public:
-    explicit Evaluator(const std::string &description = "<none>");
+    explicit Evaluator(
+        const std::string &description = "<none>",
+        bool enable_statistics = false);
     virtual ~Evaluator() = default;
 
     /*
