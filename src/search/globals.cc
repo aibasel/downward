@@ -184,14 +184,6 @@ void verify_no_axioms_no_conditional_effects() {
     verify_no_conditional_effects();
 }
 
-bool are_mutex(const FactPair &a, const FactPair &b) {
-    if (a.var == b.var) {
-        // Same variable: mutex iff different value.
-        return a.value != b.value;
-    }
-    return bool(g_inconsistent_facts[a.var][a.value].count(b));
-}
-
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
