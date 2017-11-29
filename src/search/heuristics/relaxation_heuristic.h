@@ -14,7 +14,7 @@ struct Proposition;
 struct UnaryOperator;
 
 struct UnaryOperator {
-    int operator_no; // -1 for axioms; index into g_operators otherwise
+    int operator_no; // -1 for axioms; index into the task's operators otherwise
     std::vector<Proposition *> precondition;
     Proposition *effect;
     int base_cost;

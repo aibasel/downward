@@ -44,6 +44,8 @@ static vector<string> g_variable_name;
 
 static vector<std::pair<int, int>> g_goal;
 static vector<GlobalOperator> g_axioms;
+static vector<GlobalOperator> g_operators;
+
 
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -382,7 +384,6 @@ int g_max_action_cost = 0;
 vector<int> g_variable_domain;
 int_packer::IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
-vector<GlobalOperator> g_operators;
 AxiomEvaluator *g_axiom_evaluator;
 successor_generator::SuccessorGenerator *g_successor_generator;
 
