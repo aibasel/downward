@@ -74,6 +74,4 @@ public:
     int get_cost() const {return cost; }
 };
 
-extern OperatorID get_op_id_hacked(const GlobalOperator *op);
-
 #endif
