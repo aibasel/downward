@@ -50,7 +50,6 @@ bool has_axioms();
 void verify_no_axioms();
 bool has_conditional_effects();
 void verify_no_conditional_effects();
-void verify_no_axioms_no_conditional_effects();
 
 void check_magic(std::istream &in, std::string magic);
 
