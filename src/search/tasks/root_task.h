@@ -2,7 +2,6 @@
 #define TASKS_ROOT_TASK_H
 
 #include "../abstract_task.h"
-#include "../global_operator.h"
 
 #include "../utils/collections.h"
 
