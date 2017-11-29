@@ -5,8 +5,17 @@
 using namespace std;
 
 
+Evaluator::Evaluator(const string &description)
+    : description(description){
+
+}
+
 bool Evaluator::dead_ends_are_reliable() const {
     return true;
+}
+
+string Evaluator::get_description() const {
+    return description;
 }
 
 

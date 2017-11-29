@@ -9,8 +9,10 @@ class EvaluationContext;
 class Heuristic;
 
 class Evaluator {
+    std::string description;
+
 public:
-    Evaluator() = default;
+    explicit Evaluator(const std::string &description = "<none>");
     virtual ~Evaluator() = default;
 
     /*
@@ -56,6 +58,8 @@ public:
     */
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
+
+    std::string get_description() const;
 };
 
 #endif
