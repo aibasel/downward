@@ -10,17 +10,43 @@
 #include <vector>
 
 namespace tasks {
-struct ExplicitEffect;
-struct ExplicitOperator;
-struct ExplicitVariable;
+struct ExplicitVariable {
+    int domain_size;
+    std::string name;
+    std::vector<std::string> fact_names;
+    int axiom_layer;
+    int axiom_default_value;
+
+    ExplicitVariable(std::istream &in);
+};
+
+
+struct ExplicitEffect {
+    FactPair fact;
+    std::vector<FactPair> conditions;
+
+    ExplicitEffect(int var, int value, std::vector<FactPair> &&conditions);
+};
+
+
+struct ExplicitOperator {
+    std::vector<FactPair> preconditions;
+    std::vector<ExplicitEffect> effects;
+    int cost;
+    std::string name;
+    bool is_an_axiom;
+
+    void read_pre_post(std::istream &in);
+    ExplicitOperator(std::istream &in, bool is_an_axiom);
+};
 
 class RootTask : public AbstractTask {
-    const std::vector<ExplicitVariable> variables;
-    const std::vector<std::vector<std::set<FactPair>>> mutexes;
-    const std::vector<ExplicitOperator> operators;
-    const std::vector<ExplicitOperator> axioms;
+    std::vector<ExplicitVariable> variables;
+    std::vector<std::vector<std::set<FactPair>>> mutexes;
+    std::vector<ExplicitOperator> operators;
+    std::vector<ExplicitOperator> axioms;
     mutable std::vector<int> initial_state_values;
-    const std::vector<FactPair> goals;
+    std::vector<FactPair> goals;
     mutable bool evaluated_axioms_on_initial_state;
 
     const ExplicitVariable &get_variable(int var) const;
@@ -31,6 +57,7 @@ class RootTask : public AbstractTask {
     void evaluate_axioms_on_initial_state() const;
 
 public:
+    RootTask(std::istream &in);
     RootTask(
         std::vector<ExplicitVariable> &&variables,
         std::vector<std::vector<std::set<FactPair>>> &&mutexes,

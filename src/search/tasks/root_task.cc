@@ -18,86 +18,97 @@ using namespace std;
 using utils::ExitCode;
 
 namespace tasks {
-/*
-  Eventually, this should parse the task from a stream.
-  this is currently done by the methods read_* in globals.
-  We have to keep them as long as there is still code that
-  accesses the global variables that store the task. For
-  now, we let those methods do the parsing and access the
-  parsed task here.
-*/
-std::shared_ptr<RootTask> create_root_task(
-    const std::vector<std::string> &variable_name,
-    const std::vector<int> &variable_domain,
-    const std::vector<std::vector<std::string>> &fact_names,
-    const std::vector<int> &axiom_layers,
-    const std::vector<int> &default_axiom_values,
-    const std::vector<std::vector<std::set<FactPair>>> &inconsistent_facts,
-    const std::vector<int> &initial_state_data,
-    const std::vector<std::pair<int, int>> &goal,
-    const std::vector<GlobalOperator> &operators,
-    const std::vector<GlobalOperator> &axioms);
-
-
-/*
-  The following classes are meant for internal use only. We currently cannot
-  move them into the cc file because we have vectors of them in RootTask.
-*/
-
-struct ExplicitVariable {
-    const int domain_size;
-    const std::string name;
-    const std::vector<std::string> fact_names;
-    const int axiom_layer;
-    const int axiom_default_value;
-
-    ExplicitVariable(
-        int domain_size,
-        std::string &&name,
-        std::vector<std::string> &&fact_names,
-        int axiom_layer,
-        int axiom_default_value);
-};
-
-
-struct ExplicitEffect {
-    const FactPair fact;
-    const std::vector<FactPair> conditions;
-
-    ExplicitEffect(int var, int value, std::vector<FactPair> &&conditions);
-};
-
-
-struct ExplicitOperator {
-    const std::vector<FactPair> preconditions;
-    const std::vector<ExplicitEffect> effects;
-    const int cost;
-    const std::string name;
-    const bool is_an_axiom;
-
-    ExplicitOperator(
-        std::vector<FactPair> &&preconditions,
-        std::vector<ExplicitEffect> &&effects,
-        int cost,
-        const std::string &name,
-        bool is_an_axiom);
-};
-
 static const int PRE_FILE_VERSION = 3;
 
-// TODO: This needs a proper type and should be moved to a separate
-//       mutexes.cc file or similar, accessed via something called
-//       g_mutexes. (Right now, the interface is via global function
-//       are_mutex, which is at least better than exposing the data
-//       structure globally.)
-vector<vector<set<FactPair>>> g_inconsistent_facts;
-vector<vector<string>> g_fact_names;
-vector<int> g_axiom_layers;
-vector<int> g_default_axiom_values;
-vector<string> g_variable_name;
-vector<pair<int, int>> g_goal;
-vector<GlobalOperator> g_axioms;
-vector<GlobalOperator> g_operators;
+#ifndef NDEBUG
+static bool check_fact(const FactPair &fact) {
+    /*
+      We don't put this check into the FactPair ctor to allow (-1, -1)
+      facts. Here, we want to make sure that the fact is valid.
+    */
+    return fact.var >= 0 && fact.value >= 0;
+}
+#endif
+
+vector<FactPair> read_facts(istream &in) {
+    int count;
+    in >> count;
+    vector<FactPair> conditions;
+    conditions.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        FactPair condition = FactPair::no_fact;
+        in >> condition.var >> condition.value;
+        check_fact(condition);
+        conditions.push_back(condition);
+    }
+    return conditions;
+}
+
+ExplicitVariable::ExplicitVariable(istream &in) {
+    check_magic(in, "begin_variable");
+    in >> name;
+    in >> axiom_layer;
+    in >> domain_size;
+    in >> ws;
+    fact_names.resize(domain_size);
+    for (size_t j = 0; j < fact_names.size(); ++j)
+        getline(in, fact_names[j]);
+    check_magic(in, "end_variable");
+}
+
+
+ExplicitEffect::ExplicitEffect(
+    int var, int value, vector<FactPair> &&conditions)
+    : fact(var, value), conditions(move(conditions)) {
+    assert(check_fact(FactPair(var, value)));
+    assert(all_of(this->conditions.begin(), this->conditions.end(), check_fact));
+}
+
+
+void ExplicitOperator::read_pre_post(istream &in) {
+    int count;
+    in >> count;
+    effects.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        vector<FactPair> conditions = read_facts(in);
+        int var, value_pre, value_post;
+        in >> var >> value_pre >> value_post;
+
+        if (value_pre != -1) {
+            FactPair pre(var, value_pre);
+            check_fact(pre);
+            preconditions.push_back(pre);
+        }
+        effects.emplace_back(var, value_post, move(conditions));
+    }
+}
+
+ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom)
+    : is_an_axiom(is_an_axiom) {
+    if (!is_an_axiom) {
+        check_magic(in, "begin_operator");
+        in >> ws;
+        getline(in, name);
+        preconditions = read_facts(in);
+        read_pre_post(in);
+
+        int op_cost;
+        in >> op_cost;
+        cost = g_use_metric ? op_cost : 1;
+
+        g_min_action_cost = min(g_min_action_cost, cost);
+        g_max_action_cost = max(g_max_action_cost, cost);
+
+        check_magic(in, "end_operator");
+    } else {
+        name = "<axiom>";
+        cost = 0;
+        check_magic(in, "begin_rule");
+        read_pre_post(in);
+        check_magic(in, "end_rule");
+    }
+    assert(cost >= 0);
+}
 
 void read_and_verify_version(istream &in) {
     int version;
@@ -118,43 +129,32 @@ void read_metric(istream &in) {
     check_magic(in, "end_metric");
 }
 
-void read_variables(istream &in) {
+vector<ExplicitVariable> read_variables(istream &in) {
     int count;
     in >> count;
+    vector<ExplicitVariable> variables;
+    variables.reserve(count);
     for (int i = 0; i < count; ++i) {
-        check_magic(in, "begin_variable");
-        string name;
-        in >> name;
-        g_variable_name.push_back(name);
-        int layer;
-        in >> layer;
-        g_axiom_layers.push_back(layer);
-        int range;
-        in >> range;
-        g_variable_domain.push_back(range);
-        in >> ws;
-        vector<string> fact_names(range);
-        for (size_t j = 0; j < fact_names.size(); ++j)
-            getline(in, fact_names[j]);
-        g_fact_names.push_back(fact_names);
-        check_magic(in, "end_variable");
+        variables.emplace_back(in);
     }
+    return variables;
 }
 
-void read_mutexes(istream &in) {
-    g_inconsistent_facts.resize(g_variable_domain.size());
-    for (size_t i = 0; i < g_variable_domain.size(); ++i)
-        g_inconsistent_facts[i].resize(g_variable_domain[i]);
+vector<vector<set<FactPair>>> read_mutexes(istream &in, const vector<ExplicitVariable> &variables) {
+    vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
+    for (size_t i = 0; i < variables.size(); ++i)
+        inconsistent_facts[i].resize(variables[i].domain_size);
 
     int num_mutex_groups;
     in >> num_mutex_groups;
 
-    /* NOTE: Mutex groups can overlap, in which case the same mutex
-       should not be represented multiple times. The current
-       representation takes care of that automatically by using sets.
-       If we ever change this representation, this is something to be
-       aware of. */
-
+    /*
+      NOTE: Mutex groups can overlap, in which case the same mutex
+      should not be represented multiple times. The current
+      representation takes care of that automatically by using sets.
+      If we ever change this representation, this is something to be
+      aware of.
+    */
     for (int i = 0; i < num_mutex_groups; ++i) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
@@ -181,115 +181,73 @@ void read_mutexes(istream &in) {
                        can of course generate mutex groups which lead
                        to *some* redundant mutexes, where some but not
                        all facts talk about the same variable. */
-                    g_inconsistent_facts[fact1.var][fact1.value].insert(fact2);
+                    inconsistent_facts[fact1.var][fact1.value].insert(fact2);
                 }
             }
         }
     }
+    return inconsistent_facts;
 }
 
-void read_goal(istream &in) {
+vector<FactPair> read_goal(istream &in) {
     check_magic(in, "begin_goal");
-    int count;
-    in >> count;
-    if (count < 1) {
+    vector<FactPair> goals = read_facts(in);
+    check_magic(in, "end_goal");
+    if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
+    return goals;
+}
+
+vector<ExplicitOperator> read_operators(istream &in) {
+    int count;
+    in >> count;
+    vector<ExplicitOperator> operators;
+    operators.reserve(count);
     for (int i = 0; i < count; ++i) {
-        int var, val;
-        in >> var >> val;
-        g_goal.push_back(make_pair(var, val));
+        operators.emplace_back(in, false);
     }
-    check_magic(in, "end_goal");
+    return operators;
 }
 
-void read_operators(istream &in) {
+vector<ExplicitOperator> read_axioms(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; ++i)
-        g_operators.push_back(GlobalOperator(in, false));
+    vector<ExplicitOperator> axioms;
+    axioms.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        axioms.emplace_back(in, true);
+    }
+    return axioms;
 }
 
-void read_axioms(istream &in) {
-    int count;
-    in >> count;
-    for (int i = 0; i < count; ++i)
-        g_axioms.push_back(GlobalOperator(in, true));
 
-    g_axiom_evaluator = new AxiomEvaluator(TaskProxy(*g_root_task));
-}
-
-std::shared_ptr<RootTask> parse_root_task(std::istream &in) {
-    cout << "reading input... [t=" << utils::g_timer << "]" << endl;
+RootTask::RootTask(std::istream &in) {
     read_and_verify_version(in);
     read_metric(in);
-    read_variables(in);
-    read_mutexes(in);
-    g_initial_state_data.resize(g_variable_domain.size());
+    variables = read_variables(in);
+    mutexes = read_mutexes(in, variables);
+
+
+    initial_state_values.resize(variables.size());
     check_magic(in, "begin_state");
-    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-        in >> g_initial_state_data[i];
+    for (size_t i = 0; i < variables.size(); ++i) {
+        in >> initial_state_values[i];
     }
     check_magic(in, "end_state");
-    g_default_axiom_values = g_initial_state_data;
+    // TODO: this global variable should disappear eventually.
+    g_initial_state_data = initial_state_values;
 
-    read_goal(in);
-    read_operators(in);
-    read_axioms(in);
+    for (size_t i = 0; i < variables.size(); ++i) {
+        variables[i].axiom_default_value = initial_state_values[i];
+    }
 
+    goals = read_goal(in);
+    operators = read_operators(in);
+    axioms = read_axioms(in);
     /* TODO: We should be stricter here and verify that we
        have reached the end of "in". */
-
-    cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
-
-    cout << "packing state variables..." << flush;
-    assert(!g_variable_domain.empty());
-    g_state_packer = new int_packer::IntPacker(g_variable_domain);
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
-
-    int num_vars = g_variable_domain.size();
-    int num_facts = 0;
-    for (int var = 0; var < num_vars; ++var)
-        num_facts += g_variable_domain[var];
-
-    cout << "Variables: " << num_vars << endl;
-    cout << "FactPairs: " << num_facts << endl;
-    cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
-         << endl;
-
-    return create_root_task(
-        g_variable_name, g_variable_domain, g_fact_names, g_axiom_layers,
-        g_default_axiom_values, g_inconsistent_facts, g_initial_state_data,
-        g_goal, g_operators, g_axioms);
-}
-
-#ifndef NDEBUG
-static bool check_fact(const FactPair &fact) {
-    /*
-      We don't put this check into the FactPair ctor to allow (-1, -1)
-      facts. Here, we want to make sure that the fact is valid.
-    */
-    return fact.var >= 0 && fact.value >= 0;
-}
-#endif
-
-RootTask::RootTask(
-    vector<ExplicitVariable> &&variables,
-    vector<vector<set<FactPair>>> &&mutexes,
-    vector<ExplicitOperator> &&operators,
-    vector<ExplicitOperator> &&axioms,
-    vector<int> &&initial_state_values,
-    vector<FactPair> &&goals)
-    : variables(move(variables)),
-      mutexes(move(mutexes)),
-      operators(move(operators)),
-      axioms(move(axioms)),
-      initial_state_values(move(initial_state_values)),
-      goals(move(goals)),
-      evaluated_axioms_on_initial_state(false) {
-    assert(run_sanity_check());
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
@@ -453,134 +411,6 @@ void RootTask::convert_state_values(
     if (this != ancestor_task) {
         ABORT("Invalid state conversion");
     }
-}
-
-
-ExplicitVariable::ExplicitVariable(
-    int domain_size,
-    string &&name,
-    vector<string> &&fact_names,
-    int axiom_layer,
-    int axiom_default_value)
-    : domain_size(domain_size),
-      name(move(name)),
-      fact_names(move(fact_names)),
-      axiom_layer(axiom_layer),
-      axiom_default_value(axiom_default_value) {
-    assert(domain_size >= 1);
-    assert(static_cast<int>(this->fact_names.size()) == domain_size);
-    assert(axiom_layer >= -1);
-    assert(axiom_default_value >= -1);
-}
-
-
-ExplicitEffect::ExplicitEffect(
-    int var, int value, vector<FactPair> &&conditions)
-    : fact(var, value), conditions(move(conditions)) {
-    assert(check_fact(FactPair(var, value)));
-    assert(all_of(
-               this->conditions.begin(), this->conditions.end(), check_fact));
-}
-
-
-ExplicitOperator::ExplicitOperator(
-    vector<FactPair> &&preconditions,
-    vector<ExplicitEffect> &&effects,
-    int cost,
-    const string &name,
-    bool is_an_axiom)
-    : preconditions(move(preconditions)),
-      effects(move(effects)),
-      cost(cost),
-      name(name),
-      is_an_axiom(is_an_axiom) {
-    assert(all_of(
-               this->preconditions.begin(),
-               this->preconditions.end(),
-               check_fact));
-    assert(cost >= 0);
-}
-
-ExplicitOperator explicit_operator_from_global_operator(const GlobalOperator &op, bool is_axiom) {
-    vector<FactPair> preconditions;
-    preconditions.reserve(op.get_preconditions().size());
-    for (const GlobalCondition &condition : op.get_preconditions()) {
-        preconditions.emplace_back(condition.var, condition.val);
-    }
-
-    vector<ExplicitEffect> effects;
-    effects.reserve(op.get_effects().size());
-    for (const GlobalEffect &eff : op.get_effects()) {
-        vector<FactPair> eff_conditions;
-        eff_conditions.reserve(eff.conditions.size());
-        for (const GlobalCondition &condition : eff.conditions) {
-            eff_conditions.emplace_back(condition.var, condition.val);
-        }
-        effects.emplace_back(eff.var, eff.val, move(eff_conditions));
-    }
-
-    return ExplicitOperator(
-        move(preconditions),
-        move(effects),
-        op.get_cost(),
-        op.get_name(),
-        is_axiom);
-}
-
-shared_ptr<RootTask> create_root_task(
-    const vector<string> &variable_name,
-    const vector<int> &variable_domain,
-    const vector<vector<string>> &fact_names,
-    const vector<int> &axiom_layers,
-    const vector<int> &default_axiom_values,
-    const vector<vector<set<FactPair>>> &inconsistent_facts,
-    const vector<int> &initial_state_data,
-    const vector<pair<int, int>> &goal,
-    const vector<GlobalOperator> &global_operators,
-    const vector<GlobalOperator> &global_axioms) {
-    vector<ExplicitVariable> variables;
-    variables.reserve(variable_domain.size());
-    for (int i = 0; i < static_cast<int>(variable_domain.size()); ++i) {
-        string name = variable_name[i];
-        vector<string> var_fact_names = fact_names[i];
-        variables.emplace_back(
-            variable_domain[i],
-            move(name),
-            move(var_fact_names),
-            axiom_layers[i],
-            default_axiom_values[i]);
-    }
-
-    vector<vector<set<FactPair>>> mutexes = inconsistent_facts;
-
-
-    vector<ExplicitOperator> operators;
-    operators.reserve(operators.size());
-    for (const GlobalOperator &op : global_operators) {
-        operators.push_back(explicit_operator_from_global_operator(op, false));
-    }
-
-    vector<ExplicitOperator> axioms;
-    axioms.reserve(axioms.size());
-    for (const GlobalOperator &axiom : global_axioms) {
-        axioms.push_back(explicit_operator_from_global_operator(axiom, true));
-    }
-
-    vector<int> initial_state_values = initial_state_data;
-
-    vector<FactPair> goals;
-    goals.reserve(goal.size());
-    for (pair<int, int> g : goal) {
-        goals.emplace_back(g.first, g.second);
-    }
-
-    return make_shared<RootTask>(
-        move(variables),
-        move(mutexes),
-        move(operators),
-        move(axioms),
-        move(initial_state_values),
-        move(goals));
 }
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
