@@ -24,7 +24,7 @@ static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &var
         cerr << "Invalid variable id: " << fact.var << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
-    if (fact.value < 0 || fact.value >= g_variable_domain[var]) {
+    if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
         cerr << "Invalid value for variable " << fact.var << ": " << fact.value << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
