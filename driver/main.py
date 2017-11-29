@@ -8,6 +8,7 @@ import sys
 from . import aliases
 from . import arguments
 from . import cleanup
+from . import returncodes
 from . import run_components
 
 
@@ -41,6 +42,12 @@ def main():
             print(err)
             exitcode = err.returncode
         print("{} exit code: {}".format(component, exitcode))
+        if component == "translate" and exitcode != returncodes.EXIT_SUCCESS:
+            break
+        elif component == "search" and exitcode not in returncodes.EXPECTED_SEARCH_EXITCODES:
+            # Only potentially run validate if no error was encountered
+            break
+
         if exitcode != 0: # Stop execution as soon as one component fails.
             print("Stopping after non-zero exit code of {}".format(component))
             break
