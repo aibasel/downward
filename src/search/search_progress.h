@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 class EvaluationContext;
-class Heuristic;
+class Evaluator;
 
 /*
   This class helps track search progress.
@@ -16,9 +16,9 @@ class Heuristic;
 
 
 class SearchProgress {
-    std::unordered_map<const Heuristic *, int> best_heuristic_values;
+    std::unordered_map<const Evaluator *, int> best_heuristic_values;
 
-    bool process_heuristic_value(const Heuristic *heuristic, int h);
+    bool process_heuristic_value(const Evaluator *evaluator, int h);
 
 public:
     SearchProgress() = default;

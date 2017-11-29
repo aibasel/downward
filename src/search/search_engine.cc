@@ -155,9 +155,9 @@ void SearchEngine::add_succ_order_options(OptionParser &parser) {
 
 void print_initial_h_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_heuristic_value(
-        [] (const Heuristic *heur, const EvaluationResult &result) {
+        [] (const Evaluator *eval, const EvaluationResult &result) {
         cout << "Initial heuristic value for "
-             << heur->get_description() << ": ";
+             << eval->get_description() << ": ";
         if (result.is_infinite())
             cout << "infinity";
         else
