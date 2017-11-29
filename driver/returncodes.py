@@ -4,28 +4,56 @@ from __future__ import print_function
 
 import signal
 
-EXIT_SUCCESS = 0 # translator and search (or only translator if no search is run) successfully completed
+## Exit codes denoting success: translator completed, or a plan was found, or
+## no plan can provably exist.
 
-EXIT_TRANSLATE_SCRITICAL = 1
-EXIT_TRANSLATE_OUT_OF_MEMORY = 100
+EXIT_SUCCESS = 0 # translator completed, or search found a plan, or validate validated a plan.
+EXIT_TRANSLATE_UNSOLVABLE = 1
+EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY = 2 # only for anytime search configurations
+EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME = 3 # only for anytime search configurations
+EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME = 4 # only for anytime search configurations
+EXIT_SEARCH_UNSOLVABLE = 5
+EXIT_SEARCH_UNSOLVABLE_INCOMPLETE = 6
+
+## Exit codes denoting "expected failures" such as running out of memory or
+## time.
+
+EXIT_TRANSLATE_OUT_OF_MEMORY = 10
+EXIT_TRANSLATE_OUT_OF_TIME = 11 # not used at the moment because we use SIGXCPU instead if applicable
 EXIT_TRANSLATE_SIGXCPU = 256-signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
+EXIT_SEARCH_OUT_OF_MEMORY = 12
+EXIT_SEARCH_OUT_OF_TIME = 13 # currently only used by anytime configurations because with use SIGXCPU for single searches if applicable
+EXIT_SEARCH_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
+EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME = 14 # only for anytime search configurations
+
+## Exit codes denoting unrecoverable errors
+
+EXIT_TRANSLATE_CRITICAL = 20
+EXIT_SEARCH_CRITICAL_ERROR = 21
+EXIT_SEARCH_INPUT_ERROR = 22
+EXIT_SEARCH_UNSUPPORTED = 23
+
 
 EXPECTED_TRANSLATOR_EXITCODES = set([
-    EXIT_SUCCESS, EXIT_TRANSLATE_OUT_OF_MEMORY, EXIT_TRANSLATE_SIGXCPU])
-
-EXIT_SEARCH_CRITICAL_ERROR = 1
-EXIT_SEARCH_INPUT_ERROR = 2
-EXIT_SEARCH_UNSUPPORTED = 3
-EXIT_SEARCH_UNSOLVABLE = 4
-EXIT_SEARCH_UNSOLVED_INCOMPLETE = 5
-EXIT_SEARCH_OUT_OF_MEMORY = 6
-EXIT_SEARCH_TIMEOUT = 7
-EXIT_SEARCH_TIMEOUT_AND_MEMORY = 8
-EXIT_SEARCH_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
+    EXIT_SUCCESS,
+    EXIT_TRANSLATE_UNSOLVABLE,
+    EXIT_TRANSLATE_OUT_OF_MEMORY,
+    EXIT_TRANSLATE_OUT_OF_TIME,
+    EXIT_TRANSLATE_SIGXCPU]
+)
 
 EXPECTED_SEARCH_EXITCODES = set([
-    EXIT_SUCCESS, EXIT_SEARCH_UNSOLVABLE, EXIT_SEARCH_UNSOLVED_INCOMPLETE,
-    EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_TIMEOUT, EXIT_SEARCH_SIGXCPU])
+    EXIT_SUCCESS,
+    EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY,
+    EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME,
+    EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME,
+    EXIT_SEARCH_UNSOLVABLE,
+    EXIT_SEARCH_UNSOLVED_INCOMPLETE,
+    EXIT_SEARCH_OUT_OF_MEMORY,
+    EXIT_SEARCH_OUT_OF_TIME,
+    EXIT_SEARCH_SIGXCPU,
+    EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME]
+)
 
 
 def generate_portfolio_exitcode(exitcodes):
@@ -36,15 +64,15 @@ def generate_portfolio_exitcode(exitcodes):
     [..., EXIT_SUCCESS, ...] -> EXIT_SUCCESS
     [..., EXIT_SEARCH_UNSOLVABLE, ...] -> EXIT_SEARCH_UNSOLVABLE
     [..., EXIT_SEARCH_UNSOLVED_INCOMPLETE, ...] -> EXIT_SEARCH_UNSOLVED_INCOMPLETE
-    [..., EXIT_SEARCH_OUT_OF_MEMORY, ..., EXIT_SEARCH_TIMEOUT, ...] -> EXIT_SEARCH_TIMEOUT_AND_MEMORY
-    [..., EXIT_SEARCH_TIMEOUT, ...] -> EXIT_SEARCH_TIMEOUT
+    [..., EXIT_SEARCH_OUT_OF_MEMORY, ..., EXIT_SEARCH_OUT_OF_TIME, ...] -> EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME
+    [..., EXIT_SEARCH_OUT_OF_TIME, ...] -> EXIT_SEARCH_OUT_OF_TIME
     [..., EXIT_SEARCH_OUT_OF_MEMORY, ...] -> EXIT_SEARCH_OUT_OF_MEMORY
     """
     print("Exit codes: %s" % exitcodes)
     exitcodes = set(exitcodes)
     if EXIT_SEARCH_SIGXCPU in exitcodes:
         exitcodes.remove(EXIT_SEARCH_SIGXCPU)
-        exitcodes.add(EXIT_SEARCH_TIMEOUT)
+        exitcodes.add(EXIT_SEARCH_OUT_OF_TIME)
     unexpected_codes = exitcodes - EXPECTED_SEARCH_EXITCODES
     if unexpected_codes:
         print("Error: Unexpected exit codes: %s" % list(unexpected_codes))
@@ -55,10 +83,10 @@ def generate_portfolio_exitcode(exitcodes):
     for code in [EXIT_SUCCESS, EXIT_SEARCH_UNSOLVABLE, EXIT_SEARCH_UNSOLVED_INCOMPLETE]:
         if code in exitcodes:
             return code
-    for code in [EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_TIMEOUT]:
+    for code in [EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_OUT_OF_TIME]:
         if exitcodes == set([code]):
             return code
-    if exitcodes == set([EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_TIMEOUT]):
-        return EXIT_SEARCH_TIMEOUT_AND_MEMORY
+    if exitcodes == set([EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_OUT_OF_TIME]):
+        return EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME
     print("Error: Unhandled exit codes: %s" % exitcodes)
     return EXIT_SEARCH_CRITICAL_ERROR
