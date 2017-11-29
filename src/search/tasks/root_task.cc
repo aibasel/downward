@@ -287,25 +287,6 @@ const ExplicitOperator &RootTask::get_operator_or_axiom(
     }
 }
 
-bool RootTask::run_sanity_check() const {
-    assert(initial_state_values.size() == variables.size());
-
-    function<bool(const ExplicitOperator &op)> is_axiom =
-        [](const ExplicitOperator &op) {
-            return op.is_an_axiom;
-        };
-    assert(none_of(operators.begin(), operators.end(), is_axiom));
-    assert(all_of(axioms.begin(), axioms.end(), is_axiom));
-
-    // Check that each variable occurs at most once in the goal.
-    unordered_set<int> goal_vars;
-    for (const FactPair &goal: goals) {
-        goal_vars.insert(goal.var);
-    }
-    assert(goal_vars.size() == goals.size());
-    return true;
-}
-
 void RootTask::evaluate_axioms_on_initial_state() const {
     if (!axioms.empty()) {
         // HACK this should not have to go through a state registry.

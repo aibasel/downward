@@ -52,7 +52,6 @@ class RootTask : public AbstractTask {
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
     const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
 
-    bool run_sanity_check() const;
     void evaluate_axioms_on_initial_state() const;
 
 public:
