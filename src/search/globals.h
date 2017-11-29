@@ -3,18 +3,13 @@
 
 #include "operator_id.h"
 
-#include <iosfwd>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
 class AbstractTask;
-class Axiom;
 class AxiomEvaluator;
-struct FactPair;
 class GlobalState;
-class StateRegistry;
 class TaskProxy;
 
 namespace int_packer {
@@ -27,7 +22,6 @@ class SuccessorGenerator;
 
 namespace utils {
 struct Log;
-class RandomNumberGenerator;
 }
 
 /*
@@ -51,8 +45,6 @@ void dump_everything();
 
 // The following six functions are deprecated. Use task_properties.h instead.
 bool is_unit_cost();
-
-void check_magic(std::istream &in, std::string magic);
 
 extern bool g_use_metric;
 extern int g_min_action_cost;

@@ -75,21 +75,6 @@ void save_plan(const vector<OperatorID> &plan,
     ++g_num_previously_generated_plans;
 }
 
-void check_magic(istream &in, string magic) {
-    string word;
-    in >> word;
-    if (word != magic) {
-        cout << "Failed to match magic word '" << magic << "'." << endl;
-        cout << "Got '" << word << "'." << endl;
-        if (magic == "begin_version") {
-            cerr << "Possible cause: you are running the planner "
-                 << "on a preprocessor file from " << endl
-                 << "an older version." << endl;
-        }
-        utils::exit_with(ExitCode::INPUT_ERROR);
-    }
-}
-
 void dump_goal(const TaskProxy &task_proxy) {
     cout << "Goal Conditions:" << endl;
     for (FactProxy goal : task_proxy.get_goals()) {

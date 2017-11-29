@@ -29,6 +29,21 @@ static bool check_fact(const FactPair &fact) {
 }
 #endif
 
+void check_magic(istream &in, string magic) {
+    string word;
+    in >> word;
+    if (word != magic) {
+        cout << "Failed to match magic word '" << magic << "'." << endl;
+        cout << "Got '" << word << "'." << endl;
+        if (magic == "begin_version") {
+            cerr << "Possible cause: you are running the planner "
+                 << "on a preprocessor file from " << endl
+                 << "an older version." << endl;
+        }
+        utils::exit_with(ExitCode::INPUT_ERROR);
+    }
+}
+
 vector<FactPair> read_facts(istream &in) {
     int count;
     in >> count;
