@@ -83,22 +83,4 @@ extern std::vector<int> g_variable_domain;
 // still needed by the search engine to create a registry (should come from the task)
 extern std::vector<int> g_initial_state_data;
 
-/*
-  Temporarily made global again to move the parsing method.
-*/
-// TODO: This needs a proper type and should be moved to a separate
-//       mutexes.cc file or similar, accessed via something called
-//       g_mutexes. (Right now, the interface is via global function
-//       are_mutex, which is at least better than exposing the data
-//       structure globally.)
-extern std::vector<std::vector<std::set<FactPair>>> g_inconsistent_facts;
-extern std::vector<std::vector<std::string>> g_fact_names;
-extern std::vector<int> g_axiom_layers;
-extern std::vector<int> g_default_axiom_values;
-extern std::vector<std::string> g_variable_name;
-extern std::vector<std::pair<int, int>> g_goal;
-extern std::vector<GlobalOperator> g_axioms;
-extern std::vector<GlobalOperator> g_operators;
-
-
 #endif

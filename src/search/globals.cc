@@ -160,13 +160,4 @@ bool g_is_part_of_anytime_portfolio = false;
 
 utils::Log g_log;
 
-
-vector<std::vector<std::set<FactPair>>> g_inconsistent_facts;
-vector<std::vector<std::string>> g_fact_names;
-vector<int> g_axiom_layers;
-vector<int> g_default_axiom_values;
-vector<std::string> g_variable_name;
-vector<std::pair<int, int>> g_goal;
-vector<GlobalOperator> g_axioms;
-vector<GlobalOperator> g_operators;
 shared_ptr<AbstractTask> g_root_task;
