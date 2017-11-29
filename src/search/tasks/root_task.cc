@@ -52,7 +52,7 @@ vector<FactPair> read_facts(istream &in) {
     for (int i = 0; i < count; ++i) {
         FactPair condition = FactPair::no_fact;
         in >> condition.var >> condition.value;
-        check_fact(condition);
+        assert(check_fact(condition));
         conditions.push_back(condition);
     }
     return conditions;
@@ -80,21 +80,16 @@ ExplicitEffect::ExplicitEffect(
 
 
 void ExplicitOperator::read_pre_post(istream &in) {
-    int count;
-    in >> count;
-    effects.reserve(count);
-    for (int i = 0; i < count; ++i) {
-        vector<FactPair> conditions = read_facts(in);
-        int var, value_pre, value_post;
-        in >> var >> value_pre >> value_post;
+    vector<FactPair> conditions = read_facts(in);
+    int var, value_pre, value_post;
+    in >> var >> value_pre >> value_post;
 
-        if (value_pre != -1) {
-            FactPair pre(var, value_pre);
-            check_fact(pre);
-            preconditions.push_back(pre);
-        }
-        effects.emplace_back(var, value_post, move(conditions));
+    if (value_pre != -1) {
+        FactPair pre(var, value_pre);
+        assert(check_fact(pre));
+        preconditions.push_back(pre);
     }
+    effects.emplace_back(var, value_post, move(conditions));
 }
 
 ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom)
@@ -104,7 +99,12 @@ ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom)
         in >> ws;
         getline(in, name);
         preconditions = read_facts(in);
-        read_pre_post(in);
+        int count;
+        in >> count;
+        effects.reserve(count);
+        for (int i = 0; i < count; ++i) {
+            read_pre_post(in);
+        }
 
         int op_cost;
         in >> op_cost;
