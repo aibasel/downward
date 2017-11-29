@@ -47,6 +47,7 @@ void save_plan(const std::vector<OperatorID> &plan,
 int calculate_plan_cost(const std::vector<OperatorID> &plan, const TaskProxy &task_proxy);
 
 void read_everything(std::istream &in);
+// TODO: move this to task_utils?
 void dump_everything();
 
 // The following six functions are deprecated. Use task_properties.h instead.
