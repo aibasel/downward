@@ -39,6 +39,7 @@ struct ExplicitOperator {
     ExplicitOperator(std::istream &in, bool is_an_axiom);
 };
 
+
 class RootTask : public AbstractTask {
     std::vector<ExplicitVariable> variables;
     std::vector<std::vector<std::set<FactPair>>> mutexes;
@@ -56,13 +57,6 @@ class RootTask : public AbstractTask {
 
 public:
     RootTask(std::istream &in);
-    RootTask(
-        std::vector<ExplicitVariable> &&variables,
-        std::vector<std::vector<std::set<FactPair>>> &&mutexes,
-        std::vector<ExplicitOperator> &&operators,
-        std::vector<ExplicitOperator> &&axioms,
-        std::vector<int> &&initial_state_values,
-        std::vector<FactPair> &&goals);
 
     virtual int get_num_variables() const override;
     virtual std::string get_variable_name(int var) const override;
