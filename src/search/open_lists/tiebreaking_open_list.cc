@@ -1,5 +1,6 @@
 #include "tiebreaking_open_list.h"
 
+#include "../evaluator.h"
 #include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
