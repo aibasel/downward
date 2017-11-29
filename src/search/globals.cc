@@ -29,22 +29,6 @@ using utils::ExitCode;
 static const int PRE_FILE_VERSION = 3;
 
 
-// TODO: This needs a proper type and should be moved to a separate
-//       mutexes.cc file or similar, accessed via something called
-//       g_mutexes. (Right now, the interface is via global function
-//       are_mutex, which is at least better than exposing the data
-//       structure globally.)
-
-static vector<vector<set<FactPair>>> g_inconsistent_facts;
-
-static vector<vector<string>> g_fact_names;
-static vector<int> g_axiom_layers;
-static vector<int> g_default_axiom_values;
-static vector<string> g_variable_name;
-
-static vector<std::pair<int, int>> g_goal;
-static vector<GlobalOperator> g_axioms;
-static vector<GlobalOperator> g_operators;
 
 
 bool test_goal(const GlobalState &state) {
@@ -236,7 +220,7 @@ void read_axioms(istream &in) {
     for (int i = 0; i < count; ++i)
         g_axioms.push_back(GlobalOperator(in, true));
 
-    g_axiom_evaluator = new AxiomEvaluator(TaskProxy(*g_root_task()));
+    g_axiom_evaluator = new AxiomEvaluator(TaskProxy(*g_root_task));
 }
 
 void read_everything(istream &in) {
@@ -278,9 +262,11 @@ void read_everything(istream &in) {
          << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
          << endl;
 
+    g_root_task = tasks::parse_root_task(in);
+
     cout << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();
-    TaskProxy task_proxy(*g_root_task());
+    TaskProxy task_proxy(*g_root_task);
     utils::Timer successor_generator_timer;
     g_successor_generator = new successor_generator::SuccessorGenerator(task_proxy);
     successor_generator_timer.stop();
@@ -303,7 +289,7 @@ void dump_everything() {
     for (size_t i = 0; i < g_variable_name.size(); ++i)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
-    State initial_state = TaskProxy(*g_root_task()).get_initial_state();
+    State initial_state = TaskProxy(*g_root_task).get_initial_state();
     cout << "Initial State (PDDL):" << endl;
     initial_state.dump_pddl();
     cout << "Initial State (FDR):" << endl;
@@ -370,14 +356,6 @@ bool are_mutex(const FactPair &a, const FactPair &b) {
     return bool(g_inconsistent_facts[a.var][a.value].count(b));
 }
 
-const shared_ptr<AbstractTask> g_root_task() {
-    static shared_ptr<AbstractTask> root_task = tasks::create_root_task(
-        g_variable_name, g_variable_domain, g_fact_names, g_axiom_layers,
-        g_default_axiom_values, g_inconsistent_facts, g_initial_state_data,
-        g_goal, g_operators, g_axioms);
-    return root_task;
-}
-
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
@@ -392,3 +370,14 @@ int g_num_previously_generated_plans = 0;
 bool g_is_part_of_anytime_portfolio = false;
 
 utils::Log g_log;
+
+
+vector<std::vector<std::set<FactPair>>> g_inconsistent_facts;
+vector<std::vector<std::string>> g_fact_names;
+vector<int> g_axiom_layers;
+vector<int> g_default_axiom_values;
+vector<std::string> g_variable_name;
+vector<std::pair<int, int>> g_goal;
+vector<GlobalOperator> g_axioms;
+vector<GlobalOperator> g_operators;
+shared_ptr<AbstractTask> g_root_task;

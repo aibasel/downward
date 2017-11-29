@@ -14,7 +14,7 @@ using utils::ExitCode;
 
 namespace tasks {
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
-    : DelegatingTask(g_root_task()),
+    : DelegatingTask(g_root_task),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
       is_unit_cost(compute_is_unit_cost()) {
 }
