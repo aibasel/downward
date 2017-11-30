@@ -90,8 +90,8 @@ static void predefine_lmgraph(const string &arg, bool dry_run) {
     string rhs = arg.substr(split_pos + 1);
     OptionParser op(rhs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
-            definees[0], op.start_parsing<landmarks::LandmarkFactory *>());
+        Predefinitions<shared_ptr<landmarks::LandmarkFactory>>::instance()->predefine(
+            definees[0], op.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
     } else {
         op.error("predefinition has invalid left side");
     }

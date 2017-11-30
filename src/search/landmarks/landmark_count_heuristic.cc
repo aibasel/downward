@@ -36,7 +36,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       use_preferred_operators(opts.get<bool>("pref")),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
-          opts.get<LandmarkFactory *>("lm_factory")->supports_conditional_effects()),
+          opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
       admissible(opts.get<bool>("admissible")),
       dead_ends_reliable(
           admissible ||
@@ -44,7 +44,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
-    LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
+    shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
@@ -328,7 +328,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators",
                              "yes (if enabled; see ``pref`` option)");
 
-    parser.add_option<LandmarkFactory *>(
+    parser.add_option<shared_ptr<LandmarkFactory>>(
         "lm_factory",
         "the set of landmarks to use for this heuristic. "
         "The set of landmarks can be specified here, "
