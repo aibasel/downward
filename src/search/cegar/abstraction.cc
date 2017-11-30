@@ -4,8 +4,8 @@
 #include "utils.h"
 
 #include "../globals.h"
-#include "../task_tools.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
 
@@ -79,7 +79,7 @@ Abstraction::Abstraction(
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
       use_general_costs(use_general_costs),
-      abstract_search(get_operator_costs(task_proxy), states),
+      abstract_search(task_properties::get_operator_costs(task_proxy), states),
       split_selector(task, pick),
       transition_updater(task_proxy.get_operators()),
       timer(max_time),
@@ -199,8 +199,10 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.insert(v1);
     states.insert(v2);
 
-    /* Since the search is always started from the abstract initial state, v2
-       is never the new initial state and v1 is never a goal state. */
+    /*
+      Due to the way we split the state into v1 and v2, v2 is never the new
+      initial state and v1 is never a goal state.
+    */
     if (state == init) {
         assert(v1->includes(task_proxy.get_initial_state()));
         assert(!v2->includes(task_proxy.get_initial_state()));
@@ -241,7 +243,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             break;
         OperatorProxy op = task_proxy.get_operators()[step.op_id];
         AbstractState *next_abstract_state = step.target;
-        if (is_applicable(op, concrete_state)) {
+        if (task_properties::is_applicable(op, concrete_state)) {
             if (debug)
                 cout << "  Move to " << *next_abstract_state << " with "
                      << op.get_name() << endl;
@@ -269,7 +271,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         }
     }
     assert(is_goal(abstract_state));
-    if (is_goal_state(task_proxy, concrete_state)) {
+    if (task_properties::is_goal_state(task_proxy, concrete_state)) {
         // We found a concrete solution.
         return nullptr;
     } else {

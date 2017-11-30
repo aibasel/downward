@@ -15,7 +15,7 @@ protected:
     virtual int combine_values(const std::vector<int> &values) override;
 public:
     explicit SumEvaluator(const options::Options &opts);
-    explicit SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
+    explicit SumEvaluator(const std::vector<Evaluator *> &evals);
     virtual ~SumEvaluator() override;
 };
 }

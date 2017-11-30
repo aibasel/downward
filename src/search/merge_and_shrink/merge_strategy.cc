@@ -4,7 +4,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategy::MergeStrategy(
-    FactoredTransitionSystem &fts)
+    const FactoredTransitionSystem &fts)
     : fts(fts) {
 }
 }

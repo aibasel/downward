@@ -21,7 +21,7 @@ ALIASES["seq-sat-fd-autotune-1"] = [
 lazy(alt([single(sum([g(),weight(hff,10)])),
           single(sum([g(),weight(hff,10)]),pref_only=true)],
          boost=2000),
-     preferred=hff,reopen_closed=false,cost_type=one),
+     preferred=[hff],reopen_closed=false,cost_type=one),
 lazy(alt([single(sum([g(),weight(hAdd,7)])),
           single(sum([g(),weight(hAdd,7)]),pref_only=true),
           single(sum([g(),weight(hcg,7)])),
@@ -60,7 +60,7 @@ ALIASES["seq-sat-fd-autotune-2"] = [
     "--heuristic", "hgc=goalcount(transform=adapt_costs(plusone))",
     "--heuristic", "hff=ff()",
     "--search", """iterated([
-ehc(hcea,preferred=hcea,preferred_usage=0,cost_type=normal),
+ehc(hcea,preferred=[hcea],preferred_usage=0,cost_type=normal),
 lazy(alt([single(sum([weight(g(),2),weight(hff,3)])),
           single(sum([weight(g(),2),weight(hff,3)]),pref_only=true),
           single(sum([weight(g(),2),weight(hcg,3)])),

@@ -19,29 +19,40 @@ class ShrinkBisimulation : public ShrinkStrategy {
     const bool greedy;
     const AtLimit at_limit;
 
-    void compute_abstraction(const FactoredTransitionSystem &fts,
-                             int index,
-                             int target_size,
-                             StateEquivalenceRelation &equivalence_relation) const;
+    void compute_abstraction(
+        const TransitionSystem &ts,
+        const Distances &distances,
+        int target_size,
+        StateEquivalenceRelation &equivalence_relation) const;
 
-    int initialize_groups(const FactoredTransitionSystem &fts,
-                          int index,
-                          std::vector<int> &state_to_group) const;
-    void compute_signatures(const FactoredTransitionSystem &fts,
-                            int index,
-                            std::vector<Signature> &signatures,
-                            const std::vector<int> &state_to_group) const;
+    int initialize_groups(
+        const TransitionSystem &ts,
+        const Distances &distances,
+        std::vector<int> &state_to_group) const;
+
+    void compute_signatures(
+        const TransitionSystem &ts,
+        const Distances &distances,
+        std::vector<Signature> &signatures,
+        const std::vector<int> &state_to_group) const;
 protected:
     virtual void dump_strategy_specific_options() const override;
     virtual std::string name() const override;
 public:
     explicit ShrinkBisimulation(const options::Options &opts);
     virtual ~ShrinkBisimulation() override = default;
-    virtual bool shrink(
-        FactoredTransitionSystem &fts,
-        int index,
-        int target,
-        Verbosity verbosity) const override;
+    virtual StateEquivalenceRelation compute_equivalence_relation(
+        const TransitionSystem &ts,
+        const Distances &distances,
+        int target_size) const override;
+
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
+
+    virtual bool requires_goal_distances() const override {
+        return true;
+    }
 };
 }
 

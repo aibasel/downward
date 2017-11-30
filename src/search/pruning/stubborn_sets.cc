@@ -1,7 +1,6 @@
 #include "stubborn_sets.h"
 
-#include "../task_tools.h"
-
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 
 #include <algorithm>
@@ -33,13 +32,14 @@ bool contain_conflicting_fact(const vector<FactPair> &facts1,
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
     PruningMethod::initialize(task);
     TaskProxy task_proxy(*task);
-    verify_no_axioms(task_proxy);
-    verify_no_conditional_effects(task_proxy);
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
 
     num_operators = task_proxy.get_operators().size();
     num_unpruned_successors_generated = 0;
     num_pruned_successors_generated = 0;
-    sorted_goals = utils::sorted<FactPair>(get_fact_pairs(task_proxy.get_goals()));
+    sorted_goals = utils::sorted<FactPair>(
+        task_properties::get_fact_pairs(task_proxy.get_goals()));
 
     compute_sorted_operators(task_proxy);
     compute_achievers(task_proxy);
@@ -62,7 +62,8 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
 
     sorted_op_preconditions = utils::map_vector<vector<FactPair>>(
         operators, [](const OperatorProxy &op) {
-            return utils::sorted<FactPair>(get_fact_pairs(op.get_preconditions()));
+            return utils::sorted<FactPair>(
+                task_properties::get_fact_pairs(op.get_preconditions()));
         });
 
     sorted_op_effects = utils::map_vector<vector<FactPair>>(
@@ -98,7 +99,7 @@ bool StubbornSets::mark_as_stubborn(int op_no) {
 }
 
 void StubbornSets::prune_operators(
-    const State &state, vector<int> &op_ids) {
+    const State &state, vector<OperatorID> &op_ids) {
     num_unpruned_successors_generated += op_ids.size();
 
     // Clear stubborn set from previous call.
@@ -115,11 +116,11 @@ void StubbornSets::prune_operators(
     }
 
     // Now check which applicable operators are in the stubborn set.
-    vector<int> remaining_op_ids;
+    vector<OperatorID> remaining_op_ids;
     remaining_op_ids.reserve(op_ids.size());
-    for (int op_id : op_ids) {
-        if (stubborn[op_id]) {
-            remaining_op_ids.push_back(op_id);
+    for (OperatorID op_id : op_ids) {
+        if (stubborn[op_id.get_index()]) {
+            remaining_op_ids.emplace_back(op_id);
         }
     }
     op_ids.swap(remaining_op_ids);

@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include "operator_id.h"
+
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -9,15 +11,18 @@
 class AbstractTask;
 class Axiom;
 class AxiomEvaluator;
-class CausalGraph;
 struct FactPair;
 class GlobalOperator;
 class GlobalState;
 class StateRegistry;
-class SuccessorGenerator;
+class TaskProxy;
 
 namespace int_packer {
 class IntPacker;
+}
+
+namespace successor_generator {
+class SuccessorGenerator;
 }
 
 namespace utils {
@@ -30,14 +35,15 @@ bool test_goal(const GlobalState &state);
   Set generates_multiple_plan_files to true if the planner can find more than
   one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
 */
-void save_plan(const std::vector<const GlobalOperator *> &plan,
+void save_plan(const std::vector<OperatorID> &plan,
+               const TaskProxy &task_proxy,
                bool generates_multiple_plan_files = false);
-int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
+int calculate_plan_cost(const std::vector<OperatorID> &plan, const TaskProxy &task_proxy);
 
 void read_everything(std::istream &in);
 void dump_everything();
 
-// The following six functions are deprecated. Use task_tools.h instead.
+// The following six functions are deprecated. Use task_properties.h instead.
 bool is_unit_cost();
 bool has_axioms();
 void verify_no_axioms();
@@ -69,7 +75,7 @@ extern std::vector<std::pair<int, int>> g_goal;
 extern std::vector<GlobalOperator> g_operators;
 extern std::vector<GlobalOperator> g_axioms;
 extern AxiomEvaluator *g_axiom_evaluator;
-extern SuccessorGenerator *g_successor_generator;
+extern successor_generator::SuccessorGenerator *g_successor_generator;
 extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
 extern bool g_is_part_of_anytime_portfolio;

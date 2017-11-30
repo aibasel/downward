@@ -11,8 +11,11 @@
 #include <unordered_set>
 #include <vector>
 
-class CausalGraph;
 class TaskProxy;
+
+namespace causal_graph {
+class CausalGraph;
+}
 
 namespace options {
 class Options;
@@ -31,14 +34,14 @@ class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
     PatternSet pattern_set;  // Cleared after pattern computation.
 
     void enqueue_pattern_if_new(const Pattern &pattern);
-    void compute_eff_pre_neighbors(const CausalGraph &cg,
+    void compute_eff_pre_neighbors(const causal_graph::CausalGraph &cg,
                                    const Pattern &pattern,
                                    std::vector<int> &result) const;
-    void compute_connection_points(const CausalGraph &cg,
+    void compute_connection_points(const causal_graph::CausalGraph &cg,
                                    const Pattern &pattern,
                                    std::vector<int> &result) const;
 
-    void build_sga_patterns(const TaskProxy &task_proxy, const CausalGraph &cg);
+    void build_sga_patterns(const TaskProxy &task_proxy, const causal_graph::CausalGraph &cg);
     void build_patterns(const TaskProxy &task_proxy);
     void build_patterns_naive(const TaskProxy &task_proxy);
 public:
