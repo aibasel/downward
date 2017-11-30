@@ -92,37 +92,34 @@ def cleanup():
 
 def run_translator(task_type, relpath, command):
     problem = os.path.join(BENCHMARKS_DIR, relpath)
-    print("\nRun %(command)s on %(task_type)s task:" % locals())
+    print("\nRun {command} on {task_type} task:".format(**locals()))
     sys.stdout.flush()
-    cmd = [sys.executable, DRIVER]
-    cmd.extend(command)
-    cmd.append(problem)
-    return subprocess.call(cmd)
+    return subprocess.call([sys.executable, DRIVER] + command + [problem])
 
 
-def run_translator_tests(failures):
+def run_translator_tests():
     for task_type, command, expected in TRANSLATE_TESTS:
         relpath = TRANSLATE_TASKS[task_type]
         exitcode = run_translator(task_type, relpath, command)
         if not exitcode == expected:
-            failures.append((task_type, command, expected, exitcode))
+            yield (task_type, command, expected, exitcode)
         cleanup()
 
 
 def run_search(task_type, relpath, search):
     problem = os.path.join(BENCHMARKS_DIR, relpath)
-    print("\nRun %(search)s on %(task_type)s task:" % locals())
+    print("\nRun {search} on {task_type} task:".format(**locals()))
     sys.stdout.flush()
     return subprocess.call(
         [sys.executable, DRIVER, problem, "--search", search])
 
 
-def run_search_tests(failures):
+def run_search_tests():
     for task_type, search, expected in SEARCH_TESTS:
         relpath = SEARCH_TASKS[task_type]
         exitcode = run_search(task_type, relpath, search)
         if not exitcode == expected:
-            failures.append((task_type, search, expected, exitcode))
+            yield (task_type, search, expected, exitcode)
         cleanup()
 
 
@@ -135,13 +132,13 @@ def main():
         subprocess.check_call(["./build.py"], cwd=REPO_BASE)
 
     failures = []
-    run_translator_tests(failures)
-    run_search_tests(failures)
+    failures += run_translator_tests()
+    failures += run_search_tests()
     if failures:
         print("\nFailures:")
         for task_type, command, expected, exitcode in failures:
-            print("%(command)s on %(task_type)s task: expected %(expected)d, "
-                   "got %(exitcode)d" % locals())
+            print("{command} on {task_type} task: expected {expected}, "
+                   "got {exitcode}".format(**locals()))
         sys.exit(1)
 
     print("\nNo errors detected.")
