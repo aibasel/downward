@@ -30,7 +30,7 @@ protected:
     bool preferred_successors_first;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
-    std::vector<Heuristic *> heuristics;
+    std::vector<Heuristic *> path_dependent_evaluators;
     std::vector<Heuristic *> preferred_operator_heuristics;
     std::vector<Heuristic *> estimate_heuristics;
 

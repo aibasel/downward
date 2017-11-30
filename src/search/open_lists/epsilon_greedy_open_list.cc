@@ -54,7 +54,7 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(set<Heuristic *> &hset) override;
     virtual bool empty() const override;
     virtual void clear() override;
 };
@@ -123,8 +123,9 @@ bool EpsilonGreedyOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-void EpsilonGreedyOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
-    evaluator->get_involved_heuristics(hset);
+void EpsilonGreedyOpenList<Entry>::get_path_dependent_evaluators(
+    set<Heuristic *> &hset) {
+    evaluator->get_path_dependent_evaluators(hset);
 }
 
 template<class Entry>

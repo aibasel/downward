@@ -40,8 +40,8 @@ EvaluationResult WeightedEvaluator::compute_result(
     return result;
 }
 
-void WeightedEvaluator::get_involved_heuristics(set<Heuristic *> &hset) {
-    evaluator->get_involved_heuristics(hset);
+void WeightedEvaluator::get_path_dependent_evaluators(set<Heuristic *> &hset) {
+    evaluator->get_path_dependent_evaluators(hset);
 }
 
 static Evaluator *_parse(OptionParser &parser) {

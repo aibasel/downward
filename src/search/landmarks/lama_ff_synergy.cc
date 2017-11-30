@@ -59,6 +59,11 @@ public:
         return synergy->lama_result;
     }
 
+    virtual void get_path_dependent_evaluators(
+            std::set<Heuristic *> &hset) override {
+        hset.insert(this);
+    }
+
     virtual void notify_initial_state(const GlobalState &initial_state) override {
         synergy->lama_notify_initial_state(initial_state);
     }

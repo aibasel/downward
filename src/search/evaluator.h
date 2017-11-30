@@ -5,6 +5,7 @@
 
 #include <set>
 
+class GlobalState;
 class EvaluationContext;
 class Heuristic;
 
@@ -22,9 +23,9 @@ public:
     virtual bool dead_ends_are_reliable() const;
 
     /*
-      get_involved_heuristics should insert all heuristics that this
-      evaluator directly or indirectly depends on into the result set,
-      including itself if it is a heuristic.
+      get_path_dependent_evaluators should insert all path-dependent evaluators
+      that this evaluator directly or indirectly depends on into the result set,
+      including itself if necessary.
 
       TODO: We wanted to get rid of this at some point, and perhaps we
       still should try to do that. Currently, the only legitimate use
@@ -32,7 +33,22 @@ public:
       (There is also one "illegitimate" use, the remaining reference
       to heuristics[0] in EagerSearch.)
     */
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(std::set<Heuristic *> &hset) = 0;
+
+
+    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
+    }
+
+    /*
+      TODO: I don't think we use the return value any more, in which
+      case we should make this void.
+    */
+    virtual bool notify_state_transition(
+            const GlobalState & /*parent_state*/,
+            OperatorID /*op_id*/,
+            const GlobalState & /*state*/) {
+        return false;
+    }
 
     /*
       compute_result should compute the estimate and possibly

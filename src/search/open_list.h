@@ -90,12 +90,12 @@ public:
     virtual void boost_preferred();
 
     /*
-      Add all heuristics that this open lists uses (directly or
+      Add all path-dependent evaluators that this open lists uses (directly or
       indirectly) into the result set.
 
       TODO: This method can probably go away at some point.
     */
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(std::set<Heuristic *> &hset) = 0;
 
     /*
       Accessor method for only_preferred.
