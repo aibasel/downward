@@ -51,7 +51,7 @@ void exit_with(ExitCode exitcode) {
 
 void exit_with_signal_handler(ExitCode exitcode) {
     /*
-      In signal handlers, we have to use the "safe function" _exit() rather
+      In signal handlers, we have to use the "safe function" _Exit() rather
       than the unsafe function exit().
     */
     report_exit_code_reentrant(exitcode);
