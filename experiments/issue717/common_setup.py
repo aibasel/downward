@@ -12,7 +12,7 @@ from lab import tools
 
 from downward.experiment import FastDownwardExperiment
 from downward.reports.absolute import AbsoluteReport
-from downward.reports.compare import CompareConfigsReport
+from downward.reports.compare import ComparativeReport as CompareConfigsReport
 from downward.reports.scatter import ScatterPlotReport
 
 from relativescatter import RelativeScatterPlotReport
