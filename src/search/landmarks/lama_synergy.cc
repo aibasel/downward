@@ -43,9 +43,9 @@ void LamaSynergyHeuristic::notify_initial_state(const GlobalState &initial_state
 
 bool LamaSynergyHeuristic::notify_state_transition(
     const GlobalState &parent_state,
-    const GlobalOperator &op,
+    OperatorID op_id,
     const GlobalState &state) {
-    if (lama_heuristic->notify_state_transition(parent_state, op, state)) {
+    if (lama_heuristic->notify_state_transition(parent_state, op_id, state)) {
         if (cache_h_values) {
             heuristic_cache[state].dirty = true;
         }

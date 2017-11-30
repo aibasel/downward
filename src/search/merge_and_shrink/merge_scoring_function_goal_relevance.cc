@@ -11,7 +11,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {
     int num_ts = fts.get_size();
     vector<bool> goal_relevant(num_ts, false);

@@ -1,18 +1,14 @@
 #include "eager_search.h"
 
-#include "search_common.h"
-
 #include "../evaluation_context.h"
 #include "../globals.h"
 #include "../heuristic.h"
+#include "../open_list_factory.h"
 #include "../option_parser.h"
-#include "../plugin.h"
 #include "../pruning_method.h"
-#include "../successor_generator.h"
 
 #include "../algorithms/ordered_set.h"
-
-#include "../open_lists/open_list_factory.h"
+#include "../task_utils/successor_generator.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -28,7 +24,7 @@ EagerSearch::EagerSearch(const Options &opts)
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
-      f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
+      f_evaluator(opts.get<Evaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
@@ -85,7 +81,7 @@ void EagerSearch::initialize() {
 
     print_initial_h_values(eval_context);
 
-    pruning_method->initialize(g_root_task());
+    pruning_method->initialize(task);
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -111,7 +107,7 @@ SearchStatus EagerSearch::step() {
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
-    vector<const GlobalOperator *> applicable_ops;
+    vector<OperatorID> applicable_ops;
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
 
     /*
@@ -122,16 +118,17 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    ordered_set::OrderedSet<const GlobalOperator *> preferred_operators =
+    ordered_set::OrderedSet<OperatorID> preferred_operators =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
-    for (const GlobalOperator *op : applicable_ops) {
+    for (OperatorID op_id : applicable_ops) {
+        const GlobalOperator *op = &g_operators[op_id.get_index()];
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
         GlobalState succ_state = state_registry.get_successor_state(s, *op);
         statistics.inc_generated();
-        bool is_preferred = preferred_operators.contains(op);
+        bool is_preferred = preferred_operators.contains(op_id);
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
@@ -146,7 +143,7 @@ SearchStatus EagerSearch::step() {
               don't break out of the for loop early.
             */
             for (Heuristic *heuristic : heuristics) {
-                heuristic->notify_state_transition(s, *op, succ_state);
+                heuristic->notify_state_transition(s, op_id, succ_state);
             }
         }
 
@@ -291,7 +288,7 @@ void EagerSearch::reward_progress() {
 }
 
 void EagerSearch::dump_search_space() const {
-    search_space.dump();
+    search_space.dump(task_proxy);
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
@@ -314,155 +311,4 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
         statistics.report_f_value_progress(f_value);
     }
 }
-
-/* TODO: merge this into SearchEngine::add_options_to_parser when all search
-         engines support pruning. */
-void add_pruning_option(OptionParser &parser) {
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "Pruning methods can prune or reorder the set of applicable operators in "
-        "each state and thereby influence the number and order of successor states "
-        "that are considered.",
-        "null()");
-}
-
-static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Eager best-first search", "");
-
-    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
-    parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes", "false");
-    parser.add_option<ScalarEvaluator *>(
-        "f_eval",
-        "set evaluator for jump statistics. "
-        "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
-        OptionParser::NONE);
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-
-    add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        opts.set<bool>("mpd", false);
-        engine = new EagerSearch(opts);
-    }
-
-    return engine;
-}
-
-static SearchEngine *_parse_astar(OptionParser &parser) {
-    parser.document_synopsis(
-        "A* search (eager)",
-        "A* is a special case of eager best first search that uses g+h "
-        "as f-function. "
-        "We break ties using the evaluator. Closed nodes are re-opened.");
-    parser.document_note(
-        "mpd option",
-        "This option is currently only present for the A* algorithm and not "
-        "for the more general eager search, "
-        "because the current implementation of multi-path depedence "
-        "does not support general open lists.");
-    parser.document_note(
-        "Equivalent statements using general eager search",
-        "\n```\n--search astar(evaluator)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h=evaluator\n"
-        "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
-        "               reopen_closed=true, f_eval=sum([g(), h]))\n"
-        "```\n", true);
-    parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
-    parser.add_option<bool>("mpd",
-                            "use multi-path dependence (LM-A*)", "false");
-
-    add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts);
-        opts.set("open", temp.first);
-        opts.set("f_eval", temp.second);
-        opts.set("reopen_closed", true);
-        vector<Heuristic *> preferred_list;
-        opts.set("preferred", preferred_list);
-        engine = new EagerSearch(opts);
-    }
-
-    return engine;
-}
-
-static SearchEngine *_parse_greedy(OptionParser &parser) {
-    parser.document_synopsis("Greedy search (eager)", "");
-    parser.document_note(
-        "Open list",
-        "In most cases, eager greedy best first search uses "
-        "an alternation open list with one queue for each evaluator. "
-        "If preferred operator heuristics are used, it adds an extra queue "
-        "for each of these evaluators that includes only the nodes that "
-        "are generated with a preferred operator. "
-        "If only one evaluator and no preferred operator heuristic is used, "
-        "the search does not use an alternation open list but a "
-        "standard open list with only one queue.");
-    parser.document_note(
-        "Closed nodes",
-        "Closed node are not re-opened");
-    parser.document_note(
-        "Equivalent statements using general eager search",
-        "\n```\n--heuristic h2=eval2\n"
-        "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
-        "--search eager(alt([single(h1), single(h1, pref_only=true), single(h2), \n"
-        "                    single(h2, pref_only=true)], boost=100),\n"
-        "               preferred=h2)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search eager_greedy([eval1, eval2])\n```\n"
-        "is equivalent to\n"
-        "```\n--search eager(alt([single(eval1), single(eval2)]))\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--heuristic h1=eval1\n"
-        "--search eager_greedy(h1, preferred=h1)\n```\n"
-        "is equivalent to\n"
-        "```\n--heuristic h1=eval1\n"
-        "--search eager(alt([single(h1), single(h1, pref_only=true)]),\n"
-        "               preferred=h1)\n```\n"
-        "------------------------------------------------------------\n"
-        "```\n--search eager_greedy(eval1)\n```\n"
-        "is equivalent to\n"
-        "```\n--search eager(single(eval1))\n```\n", true);
-
-    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
-    parser.add_list_option<Heuristic *>(
-        "preferred",
-        "use preferred operators of these heuristics", "[]");
-    parser.add_option<int>(
-        "boost",
-        "boost value for preferred operator open lists", "0");
-
-    add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
-
-    EagerSearch *engine = nullptr;
-    if (!parser.dry_run()) {
-        opts.set("open", search_common::create_greedy_open_list_factory(opts));
-        opts.set("reopen_closed", false);
-        opts.set("mpd", false);
-        ScalarEvaluator *evaluator = nullptr;
-        opts.set("f_eval", evaluator);
-        engine = new EagerSearch(opts);
-    }
-    return engine;
-}
-
-static Plugin<SearchEngine> _plugin("eager", _parse);
-static Plugin<SearchEngine> _plugin_astar("astar", _parse_astar);
-static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_greedy);
 }

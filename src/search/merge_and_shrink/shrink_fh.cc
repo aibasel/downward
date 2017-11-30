@@ -26,21 +26,40 @@ ShrinkFH::ShrinkFH(const Options &opts)
       h_start(HighLow(opts.get_enum("shrink_h"))) {
 }
 
-void ShrinkFH::partition_into_buckets(
-    const FactoredTransitionSystem &fts,
-    int index,
-    vector<Bucket> &buckets) const {
-    assert(buckets.empty());
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
-    int max_f = distances.get_max_f();
+vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
+    const TransitionSystem &ts,
+    const Distances &distances) const {
+    int max_h = 0;
+    int max_f = 0;
+    for (int state = 0; state < ts.get_size(); ++state) {
+        int g = distances.get_init_distance(state);
+        int h = distances.get_goal_distance(state);
+        int f;
+        if (g == INF || h == INF) {
+            /*
+              If not pruning unreachable or irrelevant states, we may have
+              states with g- or h-values of infinity, which we need to treat
+              manually here to avoid overflow.
+
+              Also note that not using full pruning means that if there is at
+              least one dead state, this strategy will always use the
+              map-based approach for partitioning. This is important because
+              the vector-based approach requires that there are no dead states.
+            */
+            f = INF;
+        } else {
+            f = g + h;
+        }
+        max_h = max(max_h, h);
+        max_f = max(max_f, f);
+    }
     // Calculate with double to avoid overflow.
     if (static_cast<double>(max_f) * max_f / 2.0 > ts.get_size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
-        ordered_buckets_use_map(fts, index, buckets);
+        return ordered_buckets_use_map(ts, distances);
     } else {
-        ordered_buckets_use_vector(fts, index, buckets);
+        return ordered_buckets_use_vector(ts, distances, max_f, max_h);
     }
 }
 
@@ -74,27 +93,28 @@ static void collect_f_h_buckets(
     }
 }
 
-void ShrinkFH::ordered_buckets_use_map(
-    const FactoredTransitionSystem &fts,
-    int index,
-    vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
+vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_map(
+    const TransitionSystem &ts,
+    const Distances &distances) const {
     map<int, map<int, Bucket>> states_by_f_and_h;
     int bucket_count = 0;
     int num_states = ts.get_size();
     for (int state = 0; state < num_states; ++state) {
         int g = distances.get_init_distance(state);
         int h = distances.get_goal_distance(state);
-        if (g != INF && h != INF) {
-            int f = g + h;
-            Bucket &bucket = states_by_f_and_h[f][h];
-            if (bucket.empty())
-                ++bucket_count;
-            bucket.push_back(state);
+        int f;
+        if (g == INF || h == INF) {
+            f = INF;
+        } else {
+            f = g + h;
         }
+        Bucket &bucket = states_by_f_and_h[f][h];
+        if (bucket.empty())
+            ++bucket_count;
+        bucket.push_back(state);
     }
 
+    vector<Bucket> buckets;
     buckets.reserve(bucket_count);
     if (f_start == HIGH) {
         collect_f_h_buckets(
@@ -106,37 +126,38 @@ void ShrinkFH::ordered_buckets_use_map(
             h_start, buckets);
     }
     assert(static_cast<int>(buckets.size()) == bucket_count);
+    return buckets;
 }
 
-void ShrinkFH::ordered_buckets_use_vector(
-    const FactoredTransitionSystem &fts,
-    int index,
-    vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts.get_ts(index);
-    const Distances &distances = fts.get_dist(index);
+vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_vector(
+    const TransitionSystem &ts,
+    const Distances &distances,
+    int max_f,
+    int max_h) const {
     vector<vector<Bucket>> states_by_f_and_h;
-    states_by_f_and_h.resize(distances.get_max_f() + 1);
-    for (int f = 0; f <= distances.get_max_f(); ++f)
-        states_by_f_and_h[f].resize(min(f, distances.get_max_h()) + 1);
+    states_by_f_and_h.resize(max_f + 1);
+    for (int f = 0; f <= max_f; ++f)
+        states_by_f_and_h[f].resize(min(f, max_h) + 1);
     int bucket_count = 0;
     int num_states = ts.get_size();
     for (int state = 0; state < num_states; ++state) {
         int g = distances.get_init_distance(state);
         int h = distances.get_goal_distance(state);
-        if (g != INF && h != INF) {
-            int f = g + h;
-            assert(utils::in_bounds(f, states_by_f_and_h));
-            assert(utils::in_bounds(h, states_by_f_and_h[f]));
-            Bucket &bucket = states_by_f_and_h[f][h];
-            if (bucket.empty())
-                ++bucket_count;
-            bucket.push_back(state);
-        }
+        // If the state is dead, we should use ordered_buckets_use_map instead.
+        assert(g != INF && h != INF);
+        int f = g + h;
+        assert(utils::in_bounds(f, states_by_f_and_h));
+        assert(utils::in_bounds(h, states_by_f_and_h[f]));
+        Bucket &bucket = states_by_f_and_h[f][h];
+        if (bucket.empty())
+            ++bucket_count;
+        bucket.push_back(state);
     }
 
+    vector<Bucket> buckets;
     buckets.reserve(bucket_count);
-    int f_init = (f_start == HIGH ? distances.get_max_f() : 0);
-    int f_end = (f_start == HIGH ? 0 : distances.get_max_f());
+    int f_init = (f_start == HIGH ? max_f : 0);
+    int f_end = (f_start == HIGH ? 0 : max_f);
     int f_incr = (f_init > f_end ? -1 : 1);
     for (int f = f_init; f != f_end + f_incr; f += f_incr) {
         int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
@@ -151,6 +172,7 @@ void ShrinkFH::ordered_buckets_use_vector(
         }
     }
     assert(static_cast<int>(buckets.size()) == bucket_count);
+    return buckets;
 }
 
 string ShrinkFH::name() const {
@@ -187,7 +209,13 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before merging (and no label reduction before "
-        "shrinking).");
+        "shrinking). "
+        "We also recommend using full pruning with this shrink strategy, "
+        "because both distances from the initial state and to the goal states "
+        "must be computed anyway, and because the existence of only one "
+        "dead state causes this shrink strategy to always use the map-based "
+        "approach for partitioning states rather than the more efficient "
+        "vector-based approach.");
     ShrinkBucketBased::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");

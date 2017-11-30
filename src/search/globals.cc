@@ -1,13 +1,13 @@
 #include "globals.h"
 
 #include "axioms.h"
-#include "causal_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
 #include "heuristic.h"
-#include "successor_generator.h"
 
 #include "algorithms/int_packer.h"
+#include "task_utils/causal_graph.h"
+#include "task_utils/successor_generator.h"
 #include "tasks/root_task.h"
 #include "utils/logging.h"
 #include "utils/rng.h"
@@ -46,18 +46,20 @@ bool test_goal(const GlobalState &state) {
     return true;
 }
 
-int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
+int calculate_plan_cost(const vector<OperatorID> &plan, const TaskProxy &task_proxy) {
     // TODO: Refactor: this is only used by save_plan (see below)
     //       and the SearchEngine classes and hence should maybe
     //       be moved into the SearchEngine (along with save_plan).
+    OperatorsProxy operators = task_proxy.get_operators();
     int plan_cost = 0;
-    for (size_t i = 0; i < plan.size(); ++i) {
-        plan_cost += plan[i]->get_cost();
+    for (OperatorID op_id : plan) {
+        plan_cost += operators[op_id].get_cost();
     }
     return plan_cost;
 }
 
-void save_plan(const vector<const GlobalOperator *> &plan,
+void save_plan(const vector<OperatorID> &plan,
+               const TaskProxy &task_proxy,
                bool generates_multiple_plan_files) {
     // TODO: Refactor: this is only used by the SearchEngine classes
     //       and hence should maybe be moved into the SearchEngine.
@@ -70,11 +72,12 @@ void save_plan(const vector<const GlobalOperator *> &plan,
         assert(plan_number == 1);
     }
     ofstream outfile(filename.str());
-    for (size_t i = 0; i < plan.size(); ++i) {
-        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
-        outfile << "(" << plan[i]->get_name() << ")" << endl;
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorID op_id : plan) {
+        cout << operators[op_id].get_name() << " (" << operators[op_id].get_cost() << ")" << endl;
+        outfile << "(" << operators[op_id].get_name() << ")" << endl;
     }
-    int plan_cost = calculate_plan_cost(plan);
+    int plan_cost = calculate_plan_cost(plan, task_proxy);
     outfile << "; cost = " << plan_cost << " ("
             << (is_unit_cost() ? "unit cost" : "general cost") << ")" << endl;
     outfile.close();
@@ -266,11 +269,19 @@ void read_everything(istream &in) {
          << endl;
 
     cout << "Building successor generator..." << flush;
+    int peak_memory_before = utils::get_peak_memory_in_kb();
     TaskProxy task_proxy(*g_root_task());
-    g_successor_generator = new SuccessorGenerator(task_proxy);
+    utils::Timer successor_generator_timer;
+    g_successor_generator = new successor_generator::SuccessorGenerator(task_proxy);
+    successor_generator_timer.stop();
     cout << "done! [t=" << utils::g_timer << "]" << endl;
-
-    cout << "done initalizing global data [t=" << utils::g_timer << "]" << endl;
+    int peak_memory_after = utils::get_peak_memory_in_kb();
+    int memory_diff = peak_memory_after - peak_memory_before;
+    cout << "peak memory difference for root successor generator creation: "
+         << memory_diff << " KB" << endl
+         << "time for root successor generation creation: "
+         << successor_generator_timer << endl;
+    cout << "done initializing global data [t=" << utils::g_timer << "]" << endl;
 }
 
 void dump_everything() {
@@ -368,7 +379,7 @@ vector<pair<int, int>> g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
-SuccessorGenerator *g_successor_generator;
+successor_generator::SuccessorGenerator *g_successor_generator;
 
 string g_plan_filename = "sas_plan";
 int g_num_previously_generated_plans = 0;

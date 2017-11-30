@@ -39,7 +39,7 @@ class LamaFFSynergy {
 
     void lama_notify_initial_state(const GlobalState &initial_state);
     bool lama_notify_state_transition(
-        const GlobalState &parent_state, const GlobalOperator &op,
+        const GlobalState &parent_state, OperatorID op_id,
         const GlobalState &state);
 
     void compute_heuristics(EvaluationContext &eval_context);

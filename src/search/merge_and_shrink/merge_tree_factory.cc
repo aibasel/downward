@@ -33,12 +33,13 @@ void MergeTreeFactory::dump_options() const {
         cout << "use random";
         break;
     }
+    cout << endl;
     dump_tree_specific_options();
 }
 
 unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     const TaskProxy &,
-    FactoredTransitionSystem &,
+    const FactoredTransitionSystem &,
     const vector<int> &) {
     cerr << "This merge tree does not support being computed on a subset "
         "of indices for a given factored transition system!" << endl;

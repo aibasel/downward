@@ -45,7 +45,7 @@ vector<pair<int, int>> MergeSelectorScoreBasedFiltering::get_remaining_candidate
 }
 
 pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
-    FactoredTransitionSystem &fts,
+    const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) const {
     vector<pair<int, int>> merge_candidates =
         compute_merge_candidates(fts, indices_subset);
@@ -86,6 +86,26 @@ void MergeSelectorScoreBasedFiltering::dump_specific_options() const {
          : merge_scoring_functions) {
         scoring_function->dump_options();
     }
+}
+
+bool MergeSelectorScoreBasedFiltering::requires_init_distances() const {
+    for (const shared_ptr<MergeScoringFunction> &scoring_function
+         : merge_scoring_functions) {
+        if (scoring_function->requires_init_distances()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
+    for (const shared_ptr<MergeScoringFunction> &scoring_function
+         : merge_scoring_functions) {
+        if (scoring_function->requires_goal_distances()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
