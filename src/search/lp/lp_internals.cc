@@ -33,6 +33,10 @@
 #include <OsiGrbSolverInterface.hpp>
 #endif
 
+#ifdef COIN_HAS_SPX
+#include <OsiSpxSolverInterface.hpp>
+#endif
+
 #ifdef __GNUG__
 #pragma GCC diagnostic pop
 #endif
@@ -115,6 +119,13 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         lp_solver = new OsiGrbSolverInterface;
 #else
         missing_symbol = "COIN_HAS_GRB";
+#endif
+        break;
+    case LPSolverType::SOPLEX:
+#ifdef COIN_HAS_SPX
+        lp_solver = new OsiSpxSolverInterface;
+#else
+        missing_symbol = "COIN_HAS_SPX";
 #endif
         break;
     default:
