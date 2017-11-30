@@ -136,11 +136,8 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_dead_end())
             continue;
 
-        // update new path
-        if (use_multi_path_dependence || succ_node.is_new()) {
-            for (Heuristic *heuristic : heuristics) {
+        for (Heuristic *heuristic : heuristics) {
                 heuristic->notify_state_transition(s, op_id, succ_state);
-            }
         }
 
         if (succ_node.is_new()) {
@@ -233,9 +230,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             SearchNode dummy_node = search_space.get_node(initial_state);
             return make_pair(dummy_node, false);
         }
-        vector<int> last_key_removed;
-        StateID id = open_list->remove_min(
-            use_multi_path_dependence ? &last_key_removed : nullptr);
+        // TODO: remove last key parameter from remove_min
+        StateID id = open_list->remove_min(nullptr);
         // TODO is there a way we can avoid creating the state here and then
         //      recreate it outside of this function with node.get_state()?
         //      One way would be to store GlobalState objects inside SearchNodes
@@ -247,25 +243,16 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             continue;
 
         if (use_multi_path_dependence) {
-            assert(last_key_removed.size() == 2);
             if (node.is_dead_end())
                 continue;
-            int pushed_h = last_key_removed[1];
 
-            if (!node.is_closed()) {
-                EvaluationContext eval_context(
-                    node.get_state(), node.get_g(), false, &statistics);
-
-                if (open_list->is_dead_end(eval_context)) {
-                    node.mark_as_dead_end();
-                    statistics.inc_dead_ends();
-                    continue;
-                }
-                if (pushed_h < eval_context.get_result(heuristics[0]).get_h_value()) {
-                    assert(node.is_open());
-                    open_list->insert(eval_context, node.get_state_id());
-                    continue;
-                }
+            EvaluationContext eval_context(
+                node.get_state(), node.get_g(), false, &statistics);
+            // TODO: remove heuristics[0]
+            if(eval_context.reevaluate_and_check_if_changed(heuristics[0]) && !open_list->is_dead_end(eval_context)) {
+                assert(node.is_open());
+                open_list->insert(eval_context, node.get_state_id());
+                continue;
             }
         }
 
