@@ -29,6 +29,7 @@ REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", default="release32")
+    parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
 
@@ -166,7 +167,14 @@ if __name__ == '__main__':
     logging.info("building planner...")
     build_planner(args.build)
     logging.info("getting new pages from planner...")
-    new_doc_pages = get_pages_from_planner()
+    new_doc_pages = get_pages_from_planner(args.build)
+    if args.dry_run:
+        for title, content in sorted(new_doc_pages.items()):
+            print "=" * 25, title, "=" * 25
+            print content
+            print
+            print
+        sys.exit()
     logging.info("getting existing page titles from wiki...")
     old_titles = attempt(get_all_titles_from_wiki)
     old_doc_titles = [title for title in old_titles if title.startswith(DOC_PREFIX)]
