@@ -7,13 +7,14 @@
 using namespace std;
 
 
-Evaluator::Evaluator(
-    const string &description,
+Evaluator::Evaluator(const string &description,
     bool use_for_reporting_minima,
-    bool use_for_boosting)
+    bool use_for_boosting,
+    bool use_for_counting_evaluations)
     : description(description),
       use_for_reporting_minima(use_for_reporting_minima),
-      use_for_boosting(use_for_boosting) {
+      use_for_boosting(use_for_boosting),
+      use_for_counting_evaluations(use_for_counting_evaluations) {
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
@@ -46,6 +47,10 @@ bool Evaluator::is_used_for_reporting_minima() const {
 
 bool Evaluator::is_used_for_boosting() const {
     return use_for_boosting;
+}
+
+bool Evaluator::is_used_for_counting_evaluations() const {
+    return use_for_counting_evaluations;
 }
 
 
