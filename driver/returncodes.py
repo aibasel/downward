@@ -22,7 +22,6 @@ TRANSLATE_OUT_OF_MEMORY = 20
 TRANSLATE_SIGXCPU = 256 - signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
 SEARCH_OUT_OF_MEMORY = 22
 SEARCH_OUT_OF_TIME = 23
-SEARCH_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
 SEARCH_OUT_OF_MEMORY_AND_TIME = 24
 
 SEARCH_CRITICAL_ERROR = 32
@@ -48,10 +47,6 @@ def generate_portfolio_exitcode(exitcodes):
     """
     print("Exit codes: %s" % exitcodes)
     exitcodes = set(exitcodes)
-    if SEARCH_SIGXCPU in exitcodes:
-        # TODO: why do we do this only for portfolios?
-        exitcodes.remove(SEARCH_SIGXCPU)
-        exitcodes.add(SEARCH_OUT_OF_TIME)
     unrecoverable_codes = [code for code in exitcodes if is_unrecoverable(code)]
 
     # There are unrecoverable exit codes.
