@@ -28,13 +28,14 @@ public:
       Call the following function after each state evaluation.
 
       It returns true if the evaluation context contains a new minimum value
-      for at least one evaluator used for boosting. (This includes the case
-      where the evaluation context includes an evaluator used for boosting that
-      has not been evaluated previously, e.g., after evaluating the initial
-      state.)
+      for at least one evaluator used for boosting.
 
-      Prints one line of output for all evaluators used for reporting minima
-      that have a new minimum value in the given evaluation context.
+      It also prints one line of output for all evaluators used for reporting
+      minima that have a new minimum value in the given evaluation context.
+
+      In both cases this includes the situation where the evaluator in question
+      has not been evaluated previously, e.g., after evaluating the initial
+      state.
     */
     bool check_progress(const EvaluationContext &eval_context);
 };
