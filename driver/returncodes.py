@@ -8,9 +8,9 @@ import signal
 ## components: translator completed and/or a plan was found
 
 EXIT_SUCCESS = 0 # translator completed, or search found a plan, or validate validated a plan.
-EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY = 1 # only for anytime search configurations
-EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME = 2 # only for anytime search configurations
-EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME = 3 # only for anytime search configurations
+EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY = 1 # only for portfolios
+EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME = 2 # only for portfolios
+EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME = 3 # only for portfolios
 
 ## Exit codes denoting no plan was found.
 
@@ -31,10 +31,11 @@ EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME = 24 # only for anytime search configurations
 
 ## Exit codes denoting unrecoverable errors
 
-EXIT_TRANSLATE_CRITICAL = 30
-EXIT_SEARCH_CRITICAL_ERROR = 31
-EXIT_SEARCH_INPUT_ERROR = 32
-EXIT_SEARCH_UNSUPPORTED = 33
+EXIT_TRANSLATE_CRITICAL_ERROR = 30
+EXIT_TRANSLATE_INPUT_ERROR = 31
+EXIT_SEARCH_CRITICAL_ERROR = 32
+EXIT_SEARCH_INPUT_ERROR = 33
+EXIT_SEARCH_UNSUPPORTED = 34
 
 
 def successful_execution(exitcode):
