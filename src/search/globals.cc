@@ -97,7 +97,7 @@ void check_magic(istream &in, string magic) {
                  << "on a preprocessor file from " << endl
                  << "an older version." << endl;
         }
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -110,7 +110,7 @@ void read_and_verify_version(istream &in) {
         cerr << "Expected preprocessor file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl;
         cerr << "Exiting." << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -196,7 +196,7 @@ void read_goal(istream &in) {
     in >> count;
     if (count < 1) {
         cerr << "Task has no goal condition!" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     for (int i = 0; i < count; ++i) {
         int var, val;
@@ -317,7 +317,7 @@ void verify_no_axioms() {
     if (has_axioms()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating."
              << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
 }
 
@@ -343,7 +343,7 @@ void verify_no_conditional_effects() {
         cerr << "Heuristic does not support conditional effects "
              << "(operator " << g_operators[op_id].get_name() << ")" << endl
              << "Terminating." << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
 }
 

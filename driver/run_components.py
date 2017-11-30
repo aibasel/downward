@@ -89,7 +89,7 @@ def call_component(executable, options, stdin=None,
             stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
     except subprocess.CalledProcessError as err:
         print(err)
-        return (err.returncode, allows_continuing(exitcode))
+        return (err.returncode, allows_continuing(err.returncode))
     except OSError as err:
         if err.errno == errno.ENOENT:
             sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
