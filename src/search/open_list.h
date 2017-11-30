@@ -7,7 +7,6 @@
 #include "evaluation_context.h"
 #include "operator_id.h"
 
-class Heuristic;
 class StateID;
 
 
@@ -95,7 +94,8 @@ public:
 
       TODO: This method can probably go away at some point.
     */
-    virtual void get_path_dependent_evaluators(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) = 0;
 
     /*
       Accessor method for only_preferred.

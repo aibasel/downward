@@ -45,8 +45,9 @@ EvaluationResult CombiningEvaluator::compute_result(
     return result;
 }
 
-void CombiningEvaluator::get_path_dependent_evaluators(set<Heuristic *> &hset) {
-    for (size_t i = 0; i < subevaluators.size(); ++i)
-        subevaluators[i]->get_path_dependent_evaluators(hset);
+void CombiningEvaluator::get_path_dependent_evaluators(
+    set<Evaluator *> &evals) {
+    for (auto &subevaluator : subevaluators)
+        subevaluator->get_path_dependent_evaluators(evals);
 }
 }

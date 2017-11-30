@@ -53,8 +53,8 @@ public:
     ~LandmarkCountHeuristic();
 
     virtual void get_path_dependent_evaluators(
-        std::set<Heuristic *> &hset) override {
-        hset.insert(this);
+        std::set<Evaluator *> &evals) override {
+        evals.insert(this);
     }
 
     virtual void notify_initial_state(const GlobalState &initial_state) override;

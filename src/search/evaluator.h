@@ -5,9 +5,8 @@
 
 #include <set>
 
-class GlobalState;
 class EvaluationContext;
-class Heuristic;
+class GlobalState;
 
 class Evaluator {
 public:
@@ -33,7 +32,8 @@ public:
       (There is also one "illegitimate" use, the remaining reference
       to heuristics[0] in EagerSearch.)
     */
-    virtual void get_path_dependent_evaluators(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) = 0;
 
 
     virtual void notify_initial_state(const GlobalState & /*initial_state*/) {

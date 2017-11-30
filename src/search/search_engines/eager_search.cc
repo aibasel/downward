@@ -38,26 +38,26 @@ void EagerSearch::initialize() {
         cout << "Using multi-path dependence (LM-A*)" << endl;
     assert(open_list);
 
-    set<Heuristic *> hset;
-    open_list->get_path_dependent_evaluators(hset);
+    set<Evaluator *> evals;
+    open_list->get_path_dependent_evaluators(evals);
 
     // Add heuristics that are used for preferred operators (in case they are
     // not also used in the open list).
-    hset.insert(preferred_operator_heuristics.begin(),
+    evals.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
     // Add heuristics that are used in the f_evaluator. They are usually also
     // used in the open list and are hence already included, but we want to be
     // sure.
     if (f_evaluator) {
-        f_evaluator->get_path_dependent_evaluators(hset);
+        f_evaluator->get_path_dependent_evaluators(evals);
     }
 
-    path_dependent_evaluators.assign(hset.begin(), hset.end());
+    path_dependent_evaluators.assign(evals.begin(), evals.end());
 
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : path_dependent_evaluators) {
-        heuristic->notify_initial_state(initial_state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
     }
 
     // Note: we consider the initial state as reached by a preferred
@@ -137,8 +137,8 @@ SearchStatus EagerSearch::step() {
 
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
-            for (Heuristic *heuristic : path_dependent_evaluators) {
-                heuristic->notify_state_transition(s, op_id, succ_state);
+            for (Evaluator *evaluator : path_dependent_evaluators) {
+                evaluator->notify_state_transition(s, op_id, succ_state);
             }
         }
 

@@ -34,7 +34,7 @@ public:
     virtual Entry remove_min(vector<int> *key = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
@@ -98,8 +98,8 @@ void StandardScalarOpenList<Entry>::clear() {
 
 template<class Entry>
 void StandardScalarOpenList<Entry>::get_path_dependent_evaluators(
-    set<Heuristic *> &hset) {
-    evaluator->get_path_dependent_evaluators(hset);
+    set<Evaluator *> &evals) {
+    evaluator->get_path_dependent_evaluators(evals);
 }
 
 template<class Entry>

@@ -74,8 +74,8 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
                       preferred_operator_heuristics.end());
     path_dependent_evaluators.insert(heuristic);
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : path_dependent_evaluators) {
-        heuristic->notify_initial_state(initial_state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_heuristics.begin(),
                          preferred_operator_heuristics.end(), heuristic) !=
@@ -90,8 +90,8 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 
 void EnforcedHillClimbingSearch::reach_state(
     const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
-    for (Heuristic *heur : path_dependent_evaluators) {
-        heur->notify_state_transition(parent, op_id, state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_state_transition(parent, op_id, state);
     }
 }
 
