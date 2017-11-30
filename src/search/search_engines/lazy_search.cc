@@ -51,8 +51,9 @@ void LazySearch::initialize() {
 
     // Add heuristics that are used for preferred operators (in case they are
     // not also used in the open list).
-    evals.insert(preferred_operator_heuristics.begin(),
-                 preferred_operator_heuristics.end());
+    for (auto heuristic:preferred_operator_heuristics) {
+        heuristic->get_path_dependent_evaluators(evals);
+    }
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
     const GlobalState &initial_state = state_registry.get_initial_state();

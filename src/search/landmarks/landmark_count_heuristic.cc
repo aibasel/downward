@@ -267,7 +267,7 @@ void LandmarkCountHeuristic::notify_state_transition(
     const GlobalState &state) {
     lm_status_manager->update_reached_lms(parent_state, op_id, state);
     /* TODO: It may be more efficient to check that the LM set
-     * has actually changed. */
+       has actually changed. */
     if (cache_h_values) {
         heuristic_cache[state].dirty = true;
     }
