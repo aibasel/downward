@@ -33,7 +33,7 @@ public:
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void boost_preferred() override;
-    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(set<Heuristic *> &hset) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
@@ -102,10 +102,10 @@ void AlternationOpenList<Entry>::boost_preferred() {
 }
 
 template<class Entry>
-void AlternationOpenList<Entry>::get_involved_heuristics(
+void AlternationOpenList<Entry>::get_path_dependent_evaluators(
     set<Heuristic *> &hset) {
     for (const auto &sublist : open_lists)
-        sublist->get_involved_heuristics(hset);
+        sublist->get_path_dependent_evaluators(hset);
 }
 
 template<class Entry>

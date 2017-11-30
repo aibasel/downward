@@ -39,7 +39,7 @@ void EagerSearch::initialize() {
     assert(open_list);
 
     set<Heuristic *> hset;
-    open_list->get_involved_heuristics(hset);
+    open_list->get_path_dependent_evaluators(hset);
 
     // Add heuristics that are used for preferred operators (in case they are
     // not also used in the open list).
@@ -50,14 +50,13 @@ void EagerSearch::initialize() {
     // used in the open list and are hence already included, but we want to be
     // sure.
     if (f_evaluator) {
-        f_evaluator->get_involved_heuristics(hset);
+        f_evaluator->get_path_dependent_evaluators(hset);
     }
 
-    heuristics.assign(hset.begin(), hset.end());
-    assert(!heuristics.empty());
+    path_dependent_evaluators.assign(hset.begin(), hset.end());
 
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : heuristics) {
+    for (Heuristic *heuristic : path_dependent_evaluators) {
         heuristic->notify_initial_state(initial_state);
     }
 
@@ -138,7 +137,7 @@ SearchStatus EagerSearch::step() {
 
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
-            for (Heuristic *heuristic : heuristics) {
+            for (Heuristic *heuristic : path_dependent_evaluators) {
                 heuristic->notify_state_transition(s, op_id, succ_state);
             }
         }
@@ -261,7 +260,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     statistics.inc_dead_ends();
                     continue;
                 }
-                if (pushed_h < eval_context.get_result(heuristics[0]).get_h_value()) {
+                if (pushed_h < eval_context.get_result(path_dependent_evaluators[0]).get_h_value()) {
                     assert(node.is_open());
                     open_list->insert(eval_context, node.get_state_id());
                     continue;

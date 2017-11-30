@@ -52,6 +52,11 @@ public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
     ~LandmarkCountHeuristic();
 
+    virtual void get_path_dependent_evaluators(
+        std::set<Heuristic *> &hset) override {
+        hset.insert(this);
+    }
+
     virtual void notify_initial_state(const GlobalState &initial_state) override;
     virtual bool notify_state_transition(const GlobalState &parent_state,
                                          OperatorID op_id,

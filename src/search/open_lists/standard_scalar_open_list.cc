@@ -34,7 +34,7 @@ public:
     virtual Entry remove_min(vector<int> *key = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(set<Heuristic *> &hset) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
@@ -97,9 +97,9 @@ void StandardScalarOpenList<Entry>::clear() {
 }
 
 template<class Entry>
-void StandardScalarOpenList<Entry>::get_involved_heuristics(
+void StandardScalarOpenList<Entry>::get_path_dependent_evaluators(
     set<Heuristic *> &hset) {
-    evaluator->get_involved_heuristics(hset);
+    evaluator->get_path_dependent_evaluators(hset);
 }
 
 template<class Entry>

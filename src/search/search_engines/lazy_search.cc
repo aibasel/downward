@@ -47,17 +47,16 @@ void LazySearch::initialize() {
 
     assert(open_list);
     set<Heuristic *> hset;
-    open_list->get_involved_heuristics(hset);
+    open_list->get_path_dependent_evaluators(hset);
 
     // Add heuristics that are used for preferred operators (in case they are
     // not also used in the open list).
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    heuristics.assign(hset.begin(), hset.end());
-    assert(!heuristics.empty());
+    path_dependent_evaluators.assign(hset.begin(), hset.end());
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : heuristics) {
+    for (Heuristic *heuristic : path_dependent_evaluators) {
         heuristic->notify_initial_state(initial_state);
     }
 }
@@ -162,7 +161,7 @@ SearchStatus LazySearch::step() {
         if (current_operator_id != OperatorID::no_operator) {
             assert(current_predecessor_id != StateID::no_state);
             GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
-            for (Heuristic *heuristic : heuristics)
+            for (Heuristic *heuristic : path_dependent_evaluators)
                 heuristic->notify_state_transition(
                     parent_state, current_operator_id, current_state);
         }
