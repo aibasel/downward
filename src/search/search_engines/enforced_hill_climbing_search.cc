@@ -71,7 +71,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       num_ehc_phases(0),
       last_num_expanded(-1) {
     path_dependent_evaluators.insert(preferred_operator_heuristics.begin(),
-                      preferred_operator_heuristics.end());
+                                     preferred_operator_heuristics.end());
     path_dependent_evaluators.insert(heuristic);
     const GlobalState &initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
