@@ -38,18 +38,21 @@ EXIT_SEARCH_INPUT_ERROR = 32
 EXIT_SEARCH_UNSUPPORTED = 33
 
 
-EXPECTED_SEARCH_EXITCODES = set([
-    EXIT_SUCCESS,
-    EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY,
-    EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME,
-    EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME,
-    EXIT_SEARCH_UNSOLVABLE,
-    EXIT_SEARCH_UNSOLVED_INCOMPLETE,
-    EXIT_SEARCH_OUT_OF_MEMORY,
-    EXIT_SEARCH_OUT_OF_TIME,
-    EXIT_SEARCH_SIGXCPU,
-    EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME]
-)
+def successful_execution(exitcode):
+    # Exit codes from 0 to 9 are those that represent a successful execution,
+    # i.e. a completed translator run or a found plan.
+    return exitcode in range(10)
+
+
+def unsolvable(exitcode):
+    # Exit codes in the range from 10 to 19 represent the cases where no
+    # error occured but no plan could be found.
+    return exitcode in range(10, 20)
+
+
+def unrecoverable_exitcodes():
+    # Exit codes in the range from 30 to 39 represent unrecoverable failures.
+    return range(30, 40)
 
 
 def generate_portfolio_exitcode(exitcodes):
@@ -70,7 +73,7 @@ def generate_portfolio_exitcode(exitcodes):
         # TODO: why do we do this only for portfolios?
         exitcodes.remove(EXIT_SEARCH_SIGXCPU)
         exitcodes.add(EXIT_SEARCH_OUT_OF_TIME)
-    unexpected_codes = exitcodes - EXPECTED_SEARCH_EXITCODES
+    unexpected_codes = exitcodes & set(unrecoverable_exitcodes())
 
     # Stop execution in the presence of unexpected exit codes.
     if unexpected_codes:

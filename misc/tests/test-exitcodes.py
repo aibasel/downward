@@ -22,7 +22,7 @@ TRANSLATE_TASKS = {
 TRANSLATE_TESTS = [
     ("small", ["--translate"], returncodes.EXIT_SUCCESS),
     ("time-intense", ["--translate-time-limit", "2s", "--translate"], returncodes.EXIT_TRANSLATE_SIGXCPU),
-    ("memory-intense", ["--translate-memory-limit", "1G", "--translate"], returncodes.EXIT_TRANSLATE_OUT_OF_MEMORY),
+    ("memory-intense", ["--translate-memory-limit", "100M", "--translate"], returncodes.EXIT_TRANSLATE_OUT_OF_MEMORY),
 ]
 
 SEARCH_TASKS = {
@@ -91,7 +91,6 @@ def cleanup():
 
 def run_translator(task_type, relpath, command):
     problem = os.path.join(BENCHMARKS_DIR, relpath)
-    print(problem)
     print("\nRun %(command)s on %(task_type)s task:" % locals())
     sys.stdout.flush()
     cmd = [sys.executable, DRIVER]
