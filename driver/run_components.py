@@ -70,8 +70,10 @@ def print_callstring(executable, options, stdin):
 
 def call_component(executable, options, stdin=None,
                    time_limit=None, memory_limit=None):
-    """ This method is not suited to run portfolios because it would not
-    determine the correct exit codes."""
+    """
+    This method is not suited to run portfolios because it would not
+    determine the correct exit codes.
+    """
     if executable.endswith(".py"):
         options.insert(0, executable)
         executable = sys.executable
@@ -87,12 +89,13 @@ def call_component(executable, options, stdin=None,
         # in the planner, this assertion no longer holds. Furthermore, we
         # would need to return (err.returncode, True) if the returncode is
         # in [0..10].
-        assert err.returncode >= 10
+        # Execution was not successful (negative exitcode to allow SIGXCPU).
+        assert err.returncode < 0 or err.returncode >= 10
         return (err.returncode, False)
     except OSError as err:
         # Mainly to handle the case where VAL is not on the path.
         if err.errno == errno.ENOENT:
-            sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
+            sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
         else:
             return (err.returncode, False)
     else:
