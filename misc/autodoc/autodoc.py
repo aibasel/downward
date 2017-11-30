@@ -129,8 +129,9 @@ def build_planner(build):
     subprocess.check_call(["./build.py", build, "downward"], cwd=REPO_ROOT_DIR)
 
 def get_pages_from_planner(build):
-    planner = os.path.join(REPO_ROOT_DIR, "builds", build, "bin", "downward")
-    out = subprocess.check_output([planner, "--help", "--txt2tags"])
+    out = subprocess.check_output(
+        ["./fast-downward.py", "--build", build, "--search", "--", "--help", "--txt2tags"],
+        cwd=REPO_ROOT_DIR)
     #split the output into tuples (title, markup_text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
     pages = dict()
