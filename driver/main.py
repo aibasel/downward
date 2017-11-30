@@ -35,13 +35,13 @@ def main():
             (exitcode, continue_execution) = run_components.run_validate(args)
         else:
             assert False
-        print("{} exit code: {}".format(component, exitcode))
+        print("{component} exit code: {exitcode}".format(**locals()))
         if not continue_execution:
-            print("Stopping driver after {}".format(component))
+            print("Driver aborting after {}".format(component))
             break
     # Exit with the exit code of the last component that ran successfully.
     # This means for example that if no plan was found, validate is not run,
-    # so the return code is that of the search.
+    # and therefore the return code is that of the search.
     sys.exit(exitcode)
 
 

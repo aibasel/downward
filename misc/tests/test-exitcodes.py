@@ -5,11 +5,13 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-sys.path.insert(1, '../../')
-from driver import returncodes
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
+
+sys.path.insert(1, REPO_BASE)
+from driver import returncodes
+
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
 DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
