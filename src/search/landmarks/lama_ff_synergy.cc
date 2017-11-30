@@ -60,7 +60,7 @@ public:
     }
 
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &evals) override {
+        set<Evaluator *> &evals) override {
         evals.insert(this);
     }
 
