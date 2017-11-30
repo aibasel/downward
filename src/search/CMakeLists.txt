@@ -46,9 +46,9 @@ option(
   TRUE)
 
 if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
-    find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
-    if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND))
-        foreach(SOLVER Cpx Clp Grb)
+    find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb Spx)
+    if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND OR OSI_Spx_FOUND))
+        foreach(SOLVER Cpx Clp Grb Spx)
             if(OSI_${SOLVER}_FOUND)
                 string(TOUPPER ${SOLVER} TMP_SOLVER_UPPER_CASE)
                 mark_as_advanced(TMP_SOLVER_UPPER_CASE)
