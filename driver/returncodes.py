@@ -4,9 +4,11 @@ from __future__ import print_function
 
 import signal
 
-"""For a documentation on exit codes we use, see
+"""
+We document Fast Downward exit codes at
 http://www.fast-downward.org/ExitCodes. Please update this documentation when
-making changes below."""
+making changes below.
+"""
 
 SUCCESS = 0
 SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY = 1
@@ -17,7 +19,7 @@ SEARCH_UNSOLVABLE = 11
 SEARCH_UNSOLVED_INCOMPLETE = 12
 
 TRANSLATE_OUT_OF_MEMORY = 20
-TRANSLATE_SIGXCPU = 256-signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
+TRANSLATE_SIGXCPU = 256 - signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
 SEARCH_OUT_OF_MEMORY = 22
 SEARCH_OUT_OF_TIME = 23
 SEARCH_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
@@ -27,9 +29,9 @@ SEARCH_CRITICAL_ERROR = 32
 SEARCH_UNSUPPORTED = 34
 
 
-def unrecoverable_exitcodes():
+def is_unrecoverable(exitcode):
     # Exit codes in the range from 30 to 39 represent unrecoverable failures.
-    return range(30, 40)
+    return 30 <= exitcode < 40
 
 
 def generate_portfolio_exitcode(exitcodes):
@@ -50,13 +52,13 @@ def generate_portfolio_exitcode(exitcodes):
         # TODO: why do we do this only for portfolios?
         exitcodes.remove(SEARCH_SIGXCPU)
         exitcodes.add(SEARCH_OUT_OF_TIME)
-    unrecoverable_codes = exitcodes & set(unrecoverable_exitcodes())
+    unrecoverable_codes = [code for code in exitcodes if is_unrecoverable(code)]
 
     # There are unrecoverable exit codes.
     if unrecoverable_codes:
         print("Error: Unexpected exit codes: %s" % list(unrecoverable_codes))
         if len(unrecoverable_codes) == 1:
-            return (unrecoverable_codes.pop(), False)
+            return (unrecoverable_codes[0], False)
         else:
             return (SEARCH_CRITICAL_ERROR, False)
 

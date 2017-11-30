@@ -696,9 +696,9 @@ def main():
 
 
 if __name__ == "__main__":
-    # reserve ca. 10 MB (in python 2) of emergency memory
-    # https://stackoverflow.com/questions/19469608/how-to-log-a-python-memoryerror-when-im-out-of-memory
-    emergency_memory = "x" * 10**7 # ca. 10 MB
+    # Reserve about 10 MB (in python 2) of emergency memory.
+    # https://stackoverflow.com/questions/19469608/
+    emergency_memory = "x" * 10**7
     try:
         main()
     except MemoryError:
