@@ -45,6 +45,7 @@ enum class ExitCode {
 
     // 20-29: "expected" failures
     SEARCH_OUT_OF_MEMORY = 22,
+    SEARCH_OUT_OF_TIME = 23,
 
     // 30-39: unrecoverable errors
     SEARCH_CRITICAL_ERROR = 32,
@@ -53,6 +54,7 @@ enum class ExitCode {
 };
 
 NO_RETURN extern void exit_with(ExitCode returncode);
+NO_RETURN extern void exit_with_signal_handler(ExitCode returncode);
 
 int get_peak_memory_in_kb();
 const char *get_exit_code_message_reentrant(ExitCode exitcode);
