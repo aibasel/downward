@@ -10,12 +10,8 @@ class Evaluator;
   This class helps track search progress.
 
   Evaluators can be configured to be used for reporting new minima, boosting
-  open lists, or both. We call evaluators that are used for either of these two
-  things "tracked".
-
-  This class maintains a record of minimum evaluator values for tracked
-  evaluators and can determine if an evaluated state has a lower value for at
-  least one of the tracked evaluators than all previously seen ones.
+  open lists, or both. This class maintains a record of minimum evaluator
+  values for evaluators that are used for either of these two things.
 */
 
 
@@ -32,11 +28,13 @@ public:
       Call the following function after each state evaluation.
 
       It returns true if the evaluation context contains a new minimum value
-      for at least one tracked evaluator. (This includes the case where the
-      evaluation context includes an evaluator that has not been evaluated
-      previously, e.g., after evaluating the initial state.)
+      for at least one evaluator used for boosting. (This includes the case
+      where the evaluation context includes an evaluator used for boosting that
+      has not been evaluated previously, e.g., after evaluating the initial
+      state.)
 
-      Prints one line of output for each new minimum evaluator value.
+      Prints one line of output for all evaluators used for reporting minima
+      that have a new minimum value in the given evaluation context.
     */
     bool check_progress(const EvaluationContext &eval_context);
 };
