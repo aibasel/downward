@@ -19,7 +19,7 @@ class Evaluator;
 class SearchProgress {
     std::unordered_map<const Evaluator *, int> min_values;
 
-    bool process_value(const Evaluator *evaluator, int value);
+    bool process_evaluator_value(const Evaluator *evaluator, int value);
 
 public:
     SearchProgress() = default;
