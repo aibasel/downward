@@ -56,6 +56,14 @@ public:
     */
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
+
+    /*
+      reevaluate_and_check_if_changed will recompute the evaluation if necessary and
+      return true if the stored value differs form the computed one.
+
+      If heuristic caching is not enabled it will return false.
+    */
+    virtual bool reevaluate_and_check_if_changed(EvaluationContext &eval_context);
 };
 
 #endif

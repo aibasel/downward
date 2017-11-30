@@ -25,6 +25,7 @@ class EagerSearch : public SearchEngine {
 
     std::vector<Heuristic *> heuristics;
     std::vector<Heuristic *> preferred_operator_heuristics;
+    Evaluator *lazy_heuristic;
 
     std::shared_ptr<PruningMethod> pruning_method;
 

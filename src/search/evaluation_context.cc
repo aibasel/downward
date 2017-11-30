@@ -88,7 +88,7 @@ bool EvaluationContext::get_calculate_preferred() const {
     return calculate_preferred;
 }
 
-bool EvaluationContext::reevaluate_and_check_if_changed(Heuristic *heur) {
+bool EvaluationContext::reevaluate_and_check_if_changed(Evaluator *heur) {
     bool ret = heur->reevaluate_and_check_if_changed(*this);
     if (statistics) {
         statistics->inc_evaluations();
