@@ -44,9 +44,9 @@ public:
       case we should make this void.
     */
     virtual bool notify_state_transition(
-            const GlobalState & /*parent_state*/,
-            OperatorID /*op_id*/,
-            const GlobalState & /*state*/) {
+        const GlobalState & /*parent_state*/,
+        OperatorID /*op_id*/,
+        const GlobalState & /*state*/) {
         return false;
     }
 
