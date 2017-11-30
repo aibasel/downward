@@ -38,7 +38,7 @@ const EvaluationResult &EvaluationContext::get_result(Evaluator *evaluator) {
         if (statistics &&
             evaluator->is_used_for_counting_evaluations() &&
             result.get_count_evaluation()) {
-                statistics->inc_evaluations();
+            statistics->inc_evaluations();
         }
     }
     return result;
