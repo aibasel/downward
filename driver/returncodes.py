@@ -8,7 +8,7 @@ EXIT_SUCCESS = 0 # translator and search (or only translator if no search is run
 
 EXIT_TRANSLATE_SCRITICAL = 1
 EXIT_TRANSLATE_OUT_OF_MEMORY = 100
-EXIT_TRANSLATE_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
+EXIT_TRANSLATE_SIGXCPU = 256-signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
 
 EXPECTED_TRANSLATOR_EXITCODES = set([
     EXIT_SUCCESS, EXIT_TRANSLATE_OUT_OF_MEMORY, EXIT_TRANSLATE_SIGXCPU])
