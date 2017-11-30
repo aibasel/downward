@@ -162,7 +162,7 @@ static Synergy *_parse(OptionParser &parser) {
         "This synergy can only be used via Predefinition "
         "(see OptionSyntax#Predefinitions), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
-    parser.add_option<LandmarkFactory *>("lm_factory");
+    parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
