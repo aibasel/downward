@@ -43,7 +43,7 @@ public:
     virtual Entry remove_min(vector<int> *key = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
@@ -107,9 +107,9 @@ int TieBreakingOpenList<Entry>::dimension() const {
 
 template<class Entry>
 void TieBreakingOpenList<Entry>::get_path_dependent_evaluators(
-    set<Heuristic *> &hset) {
+    set<Evaluator *> &evals) {
     for (Evaluator *evaluator : evaluators)
-        evaluator->get_path_dependent_evaluators(hset);
+        evaluator->get_path_dependent_evaluators(evals);
 }
 
 template<class Entry>
