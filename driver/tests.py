@@ -37,16 +37,13 @@ def run_driver(cmd):
 def test_commandline_args():
     for description, cmd in EXAMPLES:
         cmd = [x.strip('"') for x in cmd]
-        assert run_driver(cmd) in [
-            returncodes.EXIT_SUCCESS,
-            returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
+        assert run_driver(cmd) == returncodes.EXIT_SUCCESS
 
 
 def test_aliases():
     for alias, config in ALIASES.items():
         cmd = ["./fast-downward.py", "--alias", alias, "output.sas"]
-        assert run_driver(cmd) in [
-            returncodes.EXIT_SUCCESS, returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
+        assert run_driver(cmd) == returncodes.EXIT_SUCCESS
 
 
 def test_portfolios():

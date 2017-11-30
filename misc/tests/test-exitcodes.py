@@ -13,6 +13,24 @@ REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
 DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
+TRANSLATE_TASKS = {
+    "small": "gripper/prob01.pddl",
+    "time-intense": "trucks-strips/p10.pddl",
+    "memory-intense": "satellite/p33-HC-pfile13.pddl",
+}
+
+TRANSLATE_TESTS = [
+    ("small", ["--translate"], returncodes.EXIT_SUCCESS),
+    ("time-intense", ["--translate-time-limit", "2s", "--translate"], returncodes.EXIT_TRANSLATE_SIGXCPU),
+    ("memory-intense", ["--translate-memory-limit", "1G", "--translate"], returncodes.EXIT_TRANSLATE_OUT_OF_MEMORY),
+]
+
+SEARCH_TASKS = {
+    "strips": "miconic/s1-0.pddl",
+    "axioms": "philosophers/p01-phil2.pddl",
+    "cond-eff": "miconic-simpleadl/s1-0.pddl",
+}
+
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'merge_strategy=merge_stateless(merge_selector='
         'score_based_filtering(scoring_functions=[goal_relevance,'
@@ -24,12 +42,6 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
         'before_merging=false),'
     'max_states=50000,threshold_before_merge=1'
 '))')
-
-SEARCH_TASKS = {
-    "strips": "miconic/s1-0.pddl",
-    "axioms": "philosophers/p01-phil2.pddl",
-    "cond-eff": "miconic-simpleadl/s1-0.pddl",
-}
 
 SEARCH_TESTS = [
     ("strips", "astar(add())", returncodes.EXIT_SUCCESS),
@@ -73,7 +85,39 @@ SEARCH_TESTS = [
 ]
 
 
-def run_plan_script(task_type, relpath, search):
+def cleanup():
+    subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
+
+
+def run_translator(task_type, relpath, command):
+    problem = os.path.join(BENCHMARKS_DIR, relpath)
+    print(problem)
+    print("\nRun %(command)s on %(task_type)s task:" % locals())
+    sys.stdout.flush()
+    cmd = [sys.executable, DRIVER]
+    cmd.extend(command)
+    cmd.append(problem)
+    return subprocess.call(cmd)
+
+
+def run_translator_tests():
+    failures = []
+    for task_type, command, expected in TRANSLATE_TESTS:
+        relpath = TRANSLATE_TASKS[task_type]
+        exitcode = run_translator(task_type, relpath, command)
+        if not exitcode == expected:
+            failures.append((task_type, command, expected, exitcode))
+        cleanup()
+
+    if failures:
+        print("\nFailures:")
+        for task_type, command, expected, exitcode in failures:
+            print("%(command)s on %(task_type)s task: expected %(expected)d, "
+                   "got %(exitcode)d" % locals())
+        sys.exit(1)
+
+
+def run_search(task_type, relpath, search):
     problem = os.path.join(BENCHMARKS_DIR, relpath)
     print("\nRun %(search)s on %(task_type)s task:" % locals())
     sys.stdout.flush()
@@ -81,15 +125,11 @@ def run_plan_script(task_type, relpath, search):
         [sys.executable, DRIVER, problem, "--search", search])
 
 
-def cleanup():
-    subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
-
-
 def run_search_tests():
     failures = []
     for task_type, search, expected in SEARCH_TESTS:
         relpath = SEARCH_TASKS[task_type]
-        exitcode = run_plan_script(task_type, relpath, search)
+        exitcode = run_search(task_type, relpath, search)
         if not exitcode == expected:
             failures.append((task_type, search, expected, exitcode))
         cleanup()
@@ -110,6 +150,7 @@ def main():
     if os.name == "posix":
         subprocess.check_call(["./build.py"], cwd=REPO_BASE)
 
+    run_translator_tests()
     run_search_tests()
 
     print("\nNo errors detected.")
