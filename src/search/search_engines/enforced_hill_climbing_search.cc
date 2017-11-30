@@ -70,7 +70,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    for (auto heur:preferred_operator_heuristics) {
+    for (Heuristic *heur : preferred_operator_heuristics) {
         heur->get_path_dependent_evaluators(path_dependent_evaluators);
     }
     heuristic->get_path_dependent_evaluators(path_dependent_evaluators);

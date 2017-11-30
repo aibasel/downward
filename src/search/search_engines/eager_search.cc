@@ -43,7 +43,7 @@ void EagerSearch::initialize() {
 
     // Add heuristics that are used for preferred operators (in case they are
     // not also used in the open list).
-    for (auto heuristic:preferred_operator_heuristics) {
+    for (Heuristic *heuristic : preferred_operator_heuristics) {
         heuristic->get_path_dependent_evaluators(evals);
     }
 
