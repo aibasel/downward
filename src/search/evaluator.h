@@ -10,8 +10,6 @@ class Heuristic;
 
 class Evaluator {
     const std::string description;
-
-protected:
     const bool enable_statistics;
 
 public:
@@ -65,11 +63,9 @@ public:
         EvaluationContext &eval_context) = 0;
 
     void report_value_for_initial_state(const EvaluationResult &result) const;
-
     void report_progress(const EvaluationResult &result) const;
 
     const std::string &get_description() const;
-
     bool statistics_are_enabled() const;
 };
 
