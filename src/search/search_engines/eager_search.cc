@@ -26,6 +26,7 @@ EagerSearch::EagerSearch(const Options &opts)
                 create_state_open_list()),
       f_evaluator(opts.get<Evaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
+      lazy_heuristic(opts.get<Evaluator *>("lazy_heuristic", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
 
@@ -137,7 +138,7 @@ SearchStatus EagerSearch::step() {
             continue;
 
         for (Heuristic *heuristic : heuristics) {
-                heuristic->notify_state_transition(s, op_id, succ_state);
+            heuristic->notify_state_transition(s, op_id, succ_state);
         }
 
         if (succ_node.is_new()) {
@@ -249,8 +250,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             EvaluationContext eval_context(
                 node.get_state(), node.get_g(), false, &statistics);
             // TODO: remove heuristics[0]
-            if(eval_context.reevaluate_and_check_if_changed(heuristics[0]) && !open_list->is_dead_end(eval_context)) {
-                assert(node.is_open());
+            if(eval_context.reevaluate_and_check_if_changed(lazy_heuristic)
+                    && !open_list->is_dead_end(eval_context)) {
                 open_list->insert(eval_context, node.get_state_id());
                 continue;
             }
