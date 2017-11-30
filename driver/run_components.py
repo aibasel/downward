@@ -9,7 +9,6 @@ import sys
 from . import call
 from . import limits
 from . import portfolio_runner
-from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
@@ -71,6 +70,8 @@ def print_callstring(executable, options, stdin):
 
 def call_component(executable, options, stdin=None,
                    time_limit=None, memory_limit=None):
+    """ This method is not suited to run portfolios because it would not
+    determine the correct exit codes."""
     if executable.endswith(".py"):
         options.insert(0, executable)
         executable = sys.executable
@@ -82,7 +83,9 @@ def call_component(executable, options, stdin=None,
             stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
     except subprocess.CalledProcessError as err:
         print(err)
-        return (err.returncode, returncodes.successful_execution(err.returncode))
+        # Execution was not successful (negative exitcode to allow SIGXCPU)
+        assert err.returncode < 0 or err.returncode >= 10
+        return (err.returncode, False)
     except OSError as err:
         # Mainly to handle the case where VAL is not on the path.
         if err.errno == errno.ENOENT:

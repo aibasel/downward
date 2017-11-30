@@ -12,8 +12,7 @@ EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY = 1 # only for anytime search configura
 EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME = 2 # only for anytime search configurations
 EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME = 3 # only for anytime search configurations
 
-## Exit codes denoting no plan can exist and hence no execution of other
-## components is necessary.
+## Exit codes denoting no plan was found.
 
 EXIT_TRANSLATE_UNSOLVABLE = 10
 EXIT_SEARCH_UNSOLVABLE = 11
@@ -73,33 +72,38 @@ def generate_portfolio_exitcode(exitcodes):
         # TODO: why do we do this only for portfolios?
         exitcodes.remove(EXIT_SEARCH_SIGXCPU)
         exitcodes.add(EXIT_SEARCH_OUT_OF_TIME)
-    unexpected_codes = exitcodes & set(unrecoverable_exitcodes())
+    unrecoverable_codes = exitcodes & set(unrecoverable_exitcodes())
 
-    # Stop execution in the presence of unexpected exit codes.
-    if unexpected_codes:
-        print("Error: Unexpected exit codes: %s" % list(unexpected_codes))
-        if len(unexpected_codes) == 1:
-            return (unexpected_codes.pop(), False)
+    # There are unrecoverable exit codes.
+    if unrecoverable_codes:
+        print("Error: Unexpected exit codes: %s" % list(unrecoverable_codes))
+        if len(unrecoverable_codes) == 1:
+            return (unrecoverable_codes.pop(), False)
         else:
             return (EXIT_SEARCH_CRITICAL_ERROR, False)
 
-    # If at least one plan was found, continue execution.
-    for code in [EXIT_SUCCESS, EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY, EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME, EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME]:
-        if code in exitcodes:
-            return (code, True)
+    # At least one plan was found.
+    if EXIT_SUCCESS in exitcodes:
+        if EXIT_SEARCH_OUT_OF_MEMORY in exitcodes and EXIT_SEARCH_OUT_OF_TIME in exitcodes:
+            return (EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME, True)
+        elif EXIT_SEARCH_OUT_OF_MEMORY in exitcodes:
+            return (EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY, True)
+        elif EXIT_SEARCH_OUT_OF_TIME in exitcodes:
+            return (EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_TIME, True)
+        else:
+            return (EXIT_SUCCESS, True)
 
-    # If a config proved unsolvability, do not continue execution.
+    # A config proved unsolvability or did not find a plan.
     for code in [EXIT_SEARCH_UNSOLVABLE, EXIT_SEARCH_UNSOLVED_INCOMPLETE]:
         if code in exitcodes:
             return (code, False)
 
-    # If no plan was found due to hitting resource limits, do not continue execution.
-    for code in [EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_OUT_OF_TIME]:
-        if exitcodes == set([code]):
-            return (code, False)
-    if exitcodes == set([EXIT_SEARCH_OUT_OF_MEMORY, EXIT_SEARCH_OUT_OF_TIME]):
+    # No plan was found due to hitting resource limits.
+    if EXIT_SEARCH_OUT_OF_MEMORY in exitcodes and EXIT_SEARCH_OUT_OF_TIME in exitcodes:
         return (EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME, False)
+    elif EXIT_SEARCH_OUT_OF_MEMORY in exitcodes:
+        return (EXIT_SEARCH_OUT_OF_MEMORY, False)
+    elif EXIT_SEARCH_OUT_OF_TIME in exitcodes:
+        return (EXIT_SEARCH_OUT_OF_TIME, False)
 
-    # Do not continue execution if there are still unhandled exit codes.
-    print("Error: Unhandled exit codes: %s" % exitcodes)
-    return (EXIT_SEARCH_CRITICAL_ERROR, False)
+    assert False, "Error: Unhandled exit codes: %s" % exitcodes
