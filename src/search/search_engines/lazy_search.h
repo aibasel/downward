@@ -32,7 +32,6 @@ protected:
 
     std::vector<Evaluator *> path_dependent_evaluators;
     std::vector<Heuristic *> preferred_operator_heuristics;
-    std::vector<Heuristic *> estimate_heuristics;
 
     GlobalState current_state;
     StateID current_predecessor_id;
