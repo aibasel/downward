@@ -158,7 +158,7 @@ void SearchEngine::add_succ_order_options(OptionParser &parser) {
 void print_initial_h_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_evaluator_result(
         [] (const Evaluator *eval, const EvaluationResult &result) {
-        if (eval->statistics_are_enabled()) {
+        if (eval->is_used_for_reporting_minima()) {
             eval->report_value_for_initial_state(result);
         }
     }
