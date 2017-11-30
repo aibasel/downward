@@ -83,6 +83,10 @@ def call_component(executable, options, stdin=None,
             stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
     except subprocess.CalledProcessError as err:
         print(err)
+        # TODO: if we ever add support for SEARCH_PLAN_FOUND_AND_* directly
+        # in the planner, this assertion no longer holds. Furthermore, we
+        # would need to return (err.returncode, True) if the returncode is
+        # in [0..10].
         # Execution was not successful (negative exitcode to allow SIGXCPU)
         assert err.returncode < 0 or err.returncode >= 10
         return (err.returncode, False)
