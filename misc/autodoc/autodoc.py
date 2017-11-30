@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
 import logging
 import os
 from os.path import dirname, join
@@ -23,6 +24,12 @@ WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--build", default="release32")
+    return parser.parse_args()
 
 
 def read_password():
@@ -117,11 +124,11 @@ def insert_wiki_links(text, titles):
         text = re.sub(re_link % key, make_link, text)
     return text
 
-def build_planner():
-    subprocess.check_call(["./build.py", "release32", "downward"], cwd=REPO_ROOT_DIR)
+def build_planner(build):
+    subprocess.check_call(["./build.py", build, "downward"], cwd=REPO_ROOT_DIR)
 
-def get_pages_from_planner():
-    planner = os.path.join(REPO_ROOT_DIR, "builds", "release32", "bin", "downward")
+def get_pages_from_planner(build):
+    planner = os.path.join(REPO_ROOT_DIR, "builds", build, "bin", "downward")
     out = subprocess.check_output([planner, "--help", "--txt2tags"])
     #split the output into tuples (title, markup_text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
@@ -155,8 +162,9 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     return changed_pages
 
 if __name__ == '__main__':
+    args = parse_args()
     logging.info("building planner...")
-    build_planner()
+    build_planner(args.build)
     logging.info("getting new pages from planner...")
     new_doc_pages = get_pages_from_planner()
     logging.info("getting existing page titles from wiki...")
