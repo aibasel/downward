@@ -87,8 +87,7 @@ def call_component(executable, options, stdin=None,
         # in the planner, this assertion no longer holds. Furthermore, we
         # would need to return (err.returncode, True) if the returncode is
         # in [0..10].
-        # Execution was not successful (negative exitcode to allow SIGXCPU)
-        assert err.returncode < 0 or err.returncode >= 10
+        assert err.returncode >= 10
         return (err.returncode, False)
     except OSError as err:
         # Mainly to handle the case where VAL is not on the path.
