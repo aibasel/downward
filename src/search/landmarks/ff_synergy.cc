@@ -27,7 +27,7 @@ EvaluationResult FFSynergyHeuristic::compute_result(
     /*
        Asking for the master's heuristic value triggers both
        heuristic computations if they have not been computed yet.
-       If they have been computed yet, then both heuristic values
+       If they have already been computed, then both heuristic values
        are already cached, and this is just a quick lookup. In
        either case, the result is subsequently available in the
        master object.
