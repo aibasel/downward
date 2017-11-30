@@ -12,9 +12,9 @@ import subprocess
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
 from . import limits
+from . import returncodes
 from .util import REPO_ROOT_DIR, find_domain_filename
 
-import returncodes
 
 def translate():
     """Create translated task."""
@@ -37,21 +37,21 @@ def run_driver(cmd):
 def test_commandline_args():
     for description, cmd in EXAMPLES:
         cmd = [x.strip('"') for x in cmd]
-        assert run_driver(cmd) == 0
+        assert run_driver(cmd) == returncodes.EXIT_SUCCESS
 
 
 def test_aliases():
     for alias, config in ALIASES.items():
         cmd = ["./fast-downward.py", "--alias", alias, "output.sas"]
-        assert run_driver(cmd) == 0
+        assert run_driver(cmd) == returncodes.EXIT_SUCCESS
 
 
 def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
         cmd = ["./fast-downward.py", "--portfolio", portfolio,
                "--search-time-limit", "30m", "output.sas"]
-        assert run_driver(cmd) in [
-            returncodes.EXIT_SUCCESS, returncodes.EXIT_SEARCH_UNSOLVED_INCOMPLETE]
+        exitcode = run_driver(cmd)
+        assert returncodes.successful_execution(exitcode) or returncodes.unsolvable(exitcode)
 
 
 def test_time_limits():

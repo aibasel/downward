@@ -69,13 +69,6 @@ def print_callstring(executable, options, stdin):
     logging.info("callstring: %s" % " ".join(parts))
 
 
-def allows_continuing(exitcode):
-    # Exit codes from 0 to 5 are those that represent a successful execution
-    # of a component, e.g. a completed translator run or a completed search
-    # for a plan.
-    return exitcode in range(6)
-
-
 def call_component(executable, options, stdin=None,
                    time_limit=None, memory_limit=None):
     if executable.endswith(".py"):
@@ -89,8 +82,9 @@ def call_component(executable, options, stdin=None,
             stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
     except subprocess.CalledProcessError as err:
         print(err)
-        return (err.returncode, allows_continuing(err.returncode))
+        return (err.returncode, returncodes.successful_execution(err.returncode))
     except OSError as err:
+        # Mainly to handle the case where VAL is not on the path.
         if err.errno == errno.ENOENT:
             sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
         else:
