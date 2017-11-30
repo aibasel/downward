@@ -37,7 +37,7 @@ void DocPrinter::print_category(const string &plugin_type_name, const string &sy
     print_category_synopsis(synopsis);
     DocStore *doc_store = DocStore::instance();
     for (const string &key : doc_store->get_keys()) {
-        PluginInfo info = doc_store->get(key);
+        const PluginInfo &info = doc_store->get(key);
         if (info.get_type_name() == plugin_type_name && !info.hidden) {
             print_plugin(key, info);
         }
