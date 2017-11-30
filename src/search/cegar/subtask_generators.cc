@@ -75,7 +75,7 @@ static void order_facts(
         break;
     default:
         cerr << "Invalid task order: " << static_cast<int>(fact_order) << endl;
-        utils::exit_with(utils::ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 

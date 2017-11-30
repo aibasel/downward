@@ -162,7 +162,7 @@ void out_of_memory_handler() {
       memory for the stack of the signal handler and raising a signal here.
     */
     write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
-    exit_with(ExitCode::OUT_OF_MEMORY);
+    exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {

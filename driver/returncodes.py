@@ -15,27 +15,27 @@ EXIT_SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME = 3 # only for anytime search 
 ## Exit codes denoting no plan can exist and hence no execution of other
 ## components is necessary.
 
-EXIT_TRANSLATE_UNSOLVABLE = 5
-EXIT_SEARCH_UNSOLVABLE = 6
-EXIT_SEARCH_UNSOLVED_INCOMPLETE = 7
+EXIT_TRANSLATE_UNSOLVABLE = 10
+EXIT_SEARCH_UNSOLVABLE = 11
+EXIT_SEARCH_UNSOLVED_INCOMPLETE = 12
 
 ## Exit codes denoting "expected failures" such as running out of memory or
 ## time.
 
-EXIT_TRANSLATE_OUT_OF_MEMORY = 10
-EXIT_TRANSLATE_OUT_OF_TIME = 11 # not used at the moment because we use SIGXCPU instead if applicable
+EXIT_TRANSLATE_OUT_OF_MEMORY = 20
+EXIT_TRANSLATE_OUT_OF_TIME = 21 # not used at the moment because we use SIGXCPU instead if applicable
 EXIT_TRANSLATE_SIGXCPU = 256-signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
-EXIT_SEARCH_OUT_OF_MEMORY = 12
-EXIT_SEARCH_OUT_OF_TIME = 13 # currently only used by anytime configurations because with use SIGXCPU for single searches if applicable
+EXIT_SEARCH_OUT_OF_MEMORY = 22
+EXIT_SEARCH_OUT_OF_TIME = 23 # currently only used by anytime configurations because with use SIGXCPU for single searches if applicable
 EXIT_SEARCH_SIGXCPU = -signal.SIGXCPU if hasattr(signal, "SIGXCPU") else None
-EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME = 14 # only for anytime search configurations
+EXIT_SEARCH_OUT_OF_MEMORY_AND_TIME = 24 # only for anytime search configurations
 
 ## Exit codes denoting unrecoverable errors
 
-EXIT_TRANSLATE_CRITICAL = 20
-EXIT_SEARCH_CRITICAL_ERROR = 21
-EXIT_SEARCH_INPUT_ERROR = 22
-EXIT_SEARCH_UNSUPPORTED = 23
+EXIT_TRANSLATE_CRITICAL = 30
+EXIT_SEARCH_CRITICAL_ERROR = 31
+EXIT_SEARCH_INPUT_ERROR = 32
+EXIT_SEARCH_UNSUPPORTED = 33
 
 
 EXPECTED_SEARCH_EXITCODES = set([

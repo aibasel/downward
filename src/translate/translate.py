@@ -43,7 +43,7 @@ import variable_order
 
 DEBUG = False
 
-EXIT_MEMORY_ERROR = 100
+TRANSLATE_OUT_OF_MEMORY = 20
 
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -708,4 +708,4 @@ if __name__ == "__main__":
         print("=" * 79)
         traceback.print_exc(file=sys.stdout)
         print("=" * 79)
-        sys.exit(EXIT_MEMORY_ERROR)
+        sys.exit(TRANSLATE_OUT_OF_MEMORY)

@@ -425,13 +425,13 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
 
     if (max_states < 1) {
         cerr << "error: transition system size must be at least 1" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     if (max_states_before_merge < 1) {
         cerr << "error: transition system size before merge must be at least 1"
              << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     if (threshold == -1) {
@@ -439,7 +439,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
     }
     if (threshold < 1) {
         cerr << "error: threshold must be at least 1" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (threshold > max_states) {
         cerr << "warning: threshold exceeds max_states, correcting" << endl;
