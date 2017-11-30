@@ -113,6 +113,7 @@ public:
     const std::vector<OperatorID> &get_preferred_operators(
         Evaluator *heur);
     bool get_calculate_preferred() const;
+    bool reevaluate_and_check_if_changed(Heuristic *heur);
 };
 
 #endif
