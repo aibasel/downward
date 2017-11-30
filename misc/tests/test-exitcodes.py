@@ -15,14 +15,13 @@ DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
 TRANSLATE_TASKS = {
     "small": "gripper/prob01.pddl",
-    "time-intense": "trucks-strips/p10.pddl",
-    "memory-intense": "satellite/p33-HC-pfile13.pddl",
+    "large": "satellite/p25-HC-pfile5.pddl",
 }
 
 TRANSLATE_TESTS = [
     ("small", ["--translate"], returncodes.SUCCESS),
-    ("time-intense", ["--translate-time-limit", "2s", "--translate"], returncodes.TRANSLATE_SIGXCPU),
-    ("memory-intense", ["--translate-memory-limit", "100M", "--translate"], returncodes.TRANSLATE_OUT_OF_MEMORY),
+    ("large", ["--translate-time-limit", "1s", "--translate"], returncodes.TRANSLATE_SIGXCPU),
+    ("large", ["--translate-memory-limit", "50M", "--translate"], returncodes.TRANSLATE_OUT_OF_MEMORY),
 ]
 
 SEARCH_TASKS = {
