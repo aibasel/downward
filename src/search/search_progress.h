@@ -9,10 +9,13 @@ class Evaluator;
 /*
   This class helps track search progress.
 
-  It maintains a record of minimum evaluator values and can determine if an
-  evaluated state has a lower value for at least one of the evaluators than all
-  previously seen ones. It only tracks evaluators for which enable_statistics
-  is set to true. This usually only includes heuristics.
+  Evaluators can be configured to be used for reporting new minima, boosting
+  open lists, or both. We call evaluators that are used for either of these two
+  things "tracked".
+
+  This class maintains a record of minimum evaluator values for tracked
+  evaluators and can determine if an evaluated state has a lower value for at
+  least one of the tracked evaluators than all previously seen ones.
 */
 
 
@@ -28,11 +31,10 @@ public:
     /*
       Call the following function after each state evaluation.
 
-      It keeps track of the minimum result for each evaluator, returning true
-      if at least one value is the lowest value seen for this evaluator so far.
-      (This includes the case where the evaluation context includes an
-      evaluator that has not been evaluated previously, e.g., after evaluating
-      the initial state.)
+      It returns true if the evaluation context contains a new minimum value
+      for at least one tracked evaluator. (This includes the case where the
+      evaluation context includes an evaluator that has not been evaluated
+      previously, e.g., after evaluating the initial state.)
 
       Prints one line of output for each new minimum evaluator value.
     */
