@@ -33,7 +33,8 @@ namespace utils {
 enum class ExitCode {
     /*
       For a documentation on exit codes we use (not only for the search
-      component), see http://www.fast-downward.org/ExitCodes.
+      component), see http://www.fast-downward.org/ExitCodes. Please update
+      this documentation when making changes below.
     */
     // 0-9: exit codes denoting a plan was found
     SUCCESS = 0,
