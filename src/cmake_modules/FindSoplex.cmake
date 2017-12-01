@@ -35,6 +35,9 @@ foreach(BITWIDTH 32 64)
             ${DOWNWARD_SOPLEX_ROOT}
             $ENV{DOWNWARD_SOPLEX_ROOT}
         )
+        if(SOPLEX_HINT_PATHS_${BUILDMODE}${BITWIDTH})
+            list(APPEND SOPLEX_HINT_PATHS_${BUILDMODE}${BITWIDTH} NO_DEFAULT_PATH)
+        endif()
     endforeach()
 endforeach()
 
@@ -62,6 +65,8 @@ find_path(SOPLEX_INCLUDE_DIRS
     HINTS
     ${SOPLEX_HINT_PATHS_RELEASE}
     ${SOPLEX_HINT_PATHS_DEBUG}
+    PATH_SUFFIXES
+    include
 )
 
 find_library(SOPLEX_LIBRARY_RELEASE
@@ -69,6 +74,8 @@ find_library(SOPLEX_LIBRARY_RELEASE
     soplex
     HINTS
     ${SOPLEX_HINT_PATHS_RELEASE}
+    PATH_SUFFIXES
+    lib
 )
 
 find_library(SOPLEX_LIBRARY_DEBUG
@@ -76,6 +83,8 @@ find_library(SOPLEX_LIBRARY_DEBUG
     soplex
     HINTS
     ${SOPLEX_HINT_PATHS_DEBUG}
+    PATH_SUFFIXES
+    lib
 )
 
 if(SOPLEX_LIBRARY_RELEASE OR SOPLEX_LIBRARY_DEBUG)
