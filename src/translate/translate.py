@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 
+import os
 import sys
 import traceback
 
@@ -26,6 +27,7 @@ import options
 import pddl
 import pddl_parser
 import sas_tasks
+import signal
 import simplify
 import timers
 import tools
@@ -44,6 +46,7 @@ import variable_order
 DEBUG = False
 
 TRANSLATE_OUT_OF_MEMORY = 20
+TRANSLATE_OUT_OF_TIME = 21
 
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -695,10 +698,18 @@ def main():
     print("Done! %s" % timer)
 
 
+def handle_sigxcpu(signum, stackframe):
+    print("Translator hit the time limit")
+    # sys.exit() is not safe to be called from within signal handlers, but
+    # os._exit() is.
+    os._exit(TRANSLATE_OUT_OF_TIME)
+
+
 if __name__ == "__main__":
     # Reserve about 10 MB (in python 2) of emergency memory.
     # https://stackoverflow.com/questions/19469608/
     emergency_memory = "x" * 10**7
+    signal.signal(signal.SIGXCPU, handle_sigxcpu)
     try:
         main()
     except MemoryError:
