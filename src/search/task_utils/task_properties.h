@@ -1,8 +1,8 @@
 #ifndef TASK_UTILS_TASK_PROPERTIES_H
 #define TASK_UTILS_TASK_PROPERTIES_H
 
-#include "../task_proxy.h"
 #include "../global_state.h"
+#include "../task_proxy.h"
 
 namespace task_properties {
 inline bool is_applicable(OperatorProxy op, const State &state) {
