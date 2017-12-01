@@ -3,42 +3,13 @@
 
 #include "../abstract_task.h"
 
-#include "../utils/collections.h"
-
 #include <set>
 #include <vector>
 
 namespace tasks {
-struct ExplicitVariable {
-    int domain_size;
-    std::string name;
-    std::vector<std::string> fact_names;
-    int axiom_layer;
-    int axiom_default_value;
-
-    explicit ExplicitVariable(std::istream &in);
-};
-
-
-struct ExplicitEffect {
-    FactPair fact;
-    std::vector<FactPair> conditions;
-
-    ExplicitEffect(int var, int value, std::vector<FactPair> &&conditions);
-};
-
-
-struct ExplicitOperator {
-    std::vector<FactPair> preconditions;
-    std::vector<ExplicitEffect> effects;
-    int cost;
-    std::string name;
-    bool is_an_axiom;
-
-    void read_pre_post(std::istream &in);
-    ExplicitOperator(std::istream &in, bool is_an_axiom, bool use_metric);
-};
-
+struct ExplicitVariable;
+struct ExplicitOperator;
+struct ExplicitEffect;
 
 class RootTask : public AbstractTask {
     std::vector<ExplicitVariable> variables;
