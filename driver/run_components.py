@@ -49,7 +49,8 @@ def get_executable(build, rel_path):
 
     return abs_path
 
-def print_component_settings(nick, inputs, options, time_limit, memory_limit):
+def print_component_settings(nick, executable, inputs, options, time_limit, memory_limit):
+    logging.info("{} executable: {}".format(nick, executable))
     logging.info("{} input: {}".format(nick, inputs))
     logging.info("{} arguments: {}".format(nick, options))
     if time_limit is not None:
@@ -61,50 +62,12 @@ def print_component_settings(nick, inputs, options, time_limit, memory_limit):
     logging.info("{} memory limit: {}".format(nick, memory_limit))
 
 
-def print_callstring(executable, options, stdin):
+def print_callstring(executable, options, stdin=None):
     parts = [executable] + options
     parts = [util.shell_escape(x) for x in parts]
     if stdin is not None:
         parts.extend(["<", util.shell_escape(stdin)])
     logging.info("callstring: %s" % " ".join(parts))
-
-
-def call_component(executable, options, stdin=None,
-                   time_limit=None, memory_limit=None):
-    """
-    This method is not suited to run portfolios because it would not
-    determine the correct exit codes.
-    """
-    translator = False
-    if executable.endswith(".py"):
-        translator = True
-        options.insert(0, executable)
-        executable = sys.executable
-        assert executable, "Path to interpreter could not be found"
-    print_callstring(executable, options, stdin)
-    try:
-        call.check_call(
-            [executable] + options,
-            stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
-    except subprocess.CalledProcessError as err:
-        if translator and err.returncode == 1:
-            # Translator crashed.
-            return (returncodes.TRANSLATE_CRITICAL_ERROR, False)
-
-        # TODO: if we ever add support for SEARCH_PLAN_FOUND_AND_* directly
-        # in the planner, this assertion no longer holds. Furthermore, we
-        # would need to return (err.returncode, True) if the returncode is
-        # in [0..10].
-        assert err.returncode >= 10
-        return (err.returncode, False)
-    except OSError as err:
-        # Mainly to handle the case where VAL is not on the path.
-        if err.errno == errno.ENOENT:
-            sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
-        else:
-            return (err.returncode, False)
-    else:
-        return (0, True)
 
 
 def run_translate(args):
@@ -113,15 +76,29 @@ def run_translate(args):
         args.translate_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.translate_memory_limit, args.overall_memory_limit)
-    print_component_settings(
-        "translator", args.translate_inputs, args.translate_options,
-        time_limit, memory_limit)
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
-    logging.info("translator executable: %s" % translate)
+    print_component_settings(
+        "translator", translate, args.translate_inputs, args.translate_options,
+        time_limit, memory_limit)
 
-    return call_component(
-        translate, args.translate_inputs + args.translate_options,
-        time_limit=time_limit, memory_limit=memory_limit)
+    options = [translate] + args.translate_inputs + args.translate_options
+    executable = sys.executable
+    assert executable, "Path to interpreter could not be found"
+    print_callstring(executable, options)
+
+    try:
+        call.check_call(
+            [executable] + options,
+            time_limit=time_limit,
+            memory_limit=memory_limit)
+    except subprocess.CalledProcessError as err:
+        if err.returncode == 1:
+            return (returncodes.TRANSLATE_CRITICAL_ERROR, False)
+
+        assert err.returncode >= 10
+        return (err.returncode, False)
+    else:
+        return (0, True)
 
 
 def run_search(args):
@@ -130,21 +107,19 @@ def run_search(args):
         args.search_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.search_memory_limit, args.overall_memory_limit)
+    executable = get_executable(args.build, REL_SEARCH_PATH)
     print_component_settings(
-        "search", args.search_input, args.search_options,
+        "search", executable, args.search_input, args.search_options,
         time_limit, memory_limit)
 
     plan_manager = PlanManager(args.plan_file)
     plan_manager.delete_existing_plans()
 
-    search = get_executable(args.build, REL_SEARCH_PATH)
-    logging.info("search executable: %s" % search)
-
     if args.portfolio:
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
         return portfolio_runner.run(
-            args.portfolio, search, args.search_input, plan_manager,
+            args.portfolio, executable, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
         if not args.search_options:
@@ -153,10 +128,23 @@ def run_search(args):
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
 
-        return call_component(
-            search, args.search_options,
-            stdin=args.search_input,
-            time_limit=time_limit, memory_limit=memory_limit)
+        print_callstring(executable, args.search_options, args.search_input)
+
+        try:
+            call.check_call(
+                [executable] + args.search_options,
+                stdin=args.search_input,
+                time_limit=time_limit,
+                memory_limit=memory_limit)
+        except subprocess.CalledProcessError as err:
+            # TODO: if we ever add support for SEARCH_PLAN_FOUND_AND_* directly
+            # in the planner, this assertion no longer holds. Furthermore, we
+            # would need to return (err.returncode, True) if the returncode is
+            # in [0..10].
+            assert err.returncode >= 10
+            return (err.returncode, False)
+        else:
+            return (0, True)
 
 
 def run_validate(args):
@@ -171,11 +159,23 @@ def run_validate(args):
     else:
         raise ValueError("validate needs one or two PDDL input files.")
 
+    executable = VALIDATE
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     validate_inputs = [domain, task] + plan_files
 
     print_component_settings(
-        "validate", validate_inputs, [],
+        "validate", executable, validate_inputs, [],
         time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
+    print_callstring(executable, validate_inputs)
 
-    return call_component(VALIDATE, validate_inputs)
+    try:
+        call.check_call(
+            [executable] + validate_inputs,
+            memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
+    except OSError as err:
+        if err.errno == errno.ENOENT:
+            sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
+        else:
+            raise
+    else:
+        return (0, True)
