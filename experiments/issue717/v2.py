@@ -4,6 +4,7 @@
 import os
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
+from downward.reports.compare import ComparativeReport
 
 from common_setup import IssueConfig, IssueExperiment, is_test_run
 
@@ -64,7 +65,14 @@ exp = IssueExperiment(
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_absolute_report_step()
-exp.add_comparison_table_step()
+
+algorithm_pairs = [
+    ('issue717-v2-lama-first-original', 'issue717-v2-lama-first-new', 'Diff lama-first'),
+    ('issue717-v2-lama-original', 'issue717-v2-lama-new', 'Diff lama')]
+exp.add_report(ComparativeReport(
+    algorithm_pairs,
+    attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES))
+
 exp.add_scatter_plot_step(attributes=["total_time", "memory"])
 
-exp()
+exp.run_steps()
