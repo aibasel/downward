@@ -9,6 +9,7 @@ import sys
 from . import call
 from . import limits
 from . import portfolio_runner
+from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
@@ -74,7 +75,9 @@ def call_component(executable, options, stdin=None,
     This method is not suited to run portfolios because it would not
     determine the correct exit codes.
     """
+    translator = False
     if executable.endswith(".py"):
+        translator = True
         options.insert(0, executable)
         executable = sys.executable
         assert executable, "Path to interpreter could not be found"
@@ -84,13 +87,15 @@ def call_component(executable, options, stdin=None,
             [executable] + options,
             stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
     except subprocess.CalledProcessError as err:
-        print(err)
+        if translator and err.returncode == 1:
+            # Translator crashed.
+            return (returncodes.TRANSLATE_CRITICAL_ERROR, False)
+
         # TODO: if we ever add support for SEARCH_PLAN_FOUND_AND_* directly
         # in the planner, this assertion no longer holds. Furthermore, we
         # would need to return (err.returncode, True) if the returncode is
         # in [0..10].
-        # Execution was not successful (negative exitcode to allow SIGXCPU).
-        assert err.returncode < 0 or err.returncode >= 10
+        assert err.returncode >= 10
         return (err.returncode, False)
     except OSError as err:
         # Mainly to handle the case where VAL is not on the path.
