@@ -35,6 +35,7 @@
 
 #ifdef COIN_HAS_SPX
 #include <OsiSpxSolverInterface.hpp>
+#include <spxout.h>
 #endif
 
 #ifdef __GNUG__
@@ -123,7 +124,11 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         break;
     case LPSolverType::SOPLEX:
 #ifdef COIN_HAS_SPX
-        lp_solver = new OsiSpxSolverInterface;
+        {
+            OsiSpxSolverInterface *spx_solver = new OsiSpxSolverInterface;
+            spx_solver->getSPxOut()->setVerbosity(soplex::SPxOut::ERROR);
+            lp_solver = spx_solver;
+        }
 #else
         missing_symbol = "COIN_HAS_SPX";
 #endif
