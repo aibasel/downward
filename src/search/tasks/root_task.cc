@@ -31,8 +31,8 @@ static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &var
 }
 
 static void check_facts(const vector<FactPair> &facts, const vector<ExplicitVariable> &variables) {
-    for (FactPair p : facts) {
-        check_fact(p, variables);
+    for (FactPair fact : facts) {
+        check_fact(fact, variables);
     }
 }
 
@@ -135,9 +135,9 @@ void read_and_verify_version(istream &in) {
     in >> version;
     check_magic(in, "end_version");
     if (version != PRE_FILE_VERSION) {
-        cerr << "Expected preprocessor file version " << PRE_FILE_VERSION
-             << ", got " << version << "." << endl;
-        cerr << "Exiting." << endl;
+        cerr << "Expected translator output file version " << PRE_FILE_VERSION
+             << ", got " << version << "." << endl
+             << "Exiting." << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
 }
@@ -239,16 +239,18 @@ RootTask::RootTask(std::istream &in) {
     read_and_verify_version(in);
     bool use_metric = read_metric(in);
     variables = read_variables(in);
+    int num_variables = variables.size();
+
     mutexes = read_mutexes(in, variables);
 
-    initial_state_values.resize(variables.size());
+    initial_state_values.resize(num_variables);
     check_magic(in, "begin_state");
-    for (size_t i = 0; i < variables.size(); ++i) {
+    for (int i = 0; i < num_variables; ++i) {
         in >> initial_state_values[i];
     }
     check_magic(in, "end_state");
 
-    for (size_t i = 0; i < variables.size(); ++i) {
+    for (int i = 0; i < num_variables; ++i) {
         variables[i].axiom_default_value = initial_state_values[i];
     }
 
