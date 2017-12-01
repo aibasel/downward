@@ -22,32 +22,32 @@ shared_ptr<AbstractTask> g_root_task = nullptr;
 
 struct ExplicitVariable {
     int domain_size;
-    std::string name;
-    std::vector<std::string> fact_names;
+    string name;
+    vector<string> fact_names;
     int axiom_layer;
     int axiom_default_value;
 
-    explicit ExplicitVariable(std::istream &in);
+    explicit ExplicitVariable(istream &in);
 };
 
 
 struct ExplicitEffect {
     FactPair fact;
-    std::vector<FactPair> conditions;
+    vector<FactPair> conditions;
 
-    ExplicitEffect(int var, int value, std::vector<FactPair> &&conditions);
+    ExplicitEffect(int var, int value, vector<FactPair> &&conditions);
 };
 
 
 struct ExplicitOperator {
-    std::vector<FactPair> preconditions;
-    std::vector<ExplicitEffect> effects;
+    vector<FactPair> preconditions;
+    vector<ExplicitEffect> effects;
     int cost;
-    std::string name;
+    string name;
     bool is_an_axiom;
 
-    void read_pre_post(std::istream &in);
-    ExplicitOperator(std::istream &in, bool is_an_axiom, bool use_metric);
+    void read_pre_post(istream &in);
+    ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric);
 };
 
 
