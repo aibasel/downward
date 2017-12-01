@@ -6,7 +6,7 @@
 #include "plugin.h"
 
 #include "algorithms/ordered_set.h"
-
+#include "task_utils/task_properties.h"
 #include "utils/countdown_timer.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
@@ -82,7 +82,7 @@ void SearchEngine::search() {
 }
 
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
-    if (test_goal(state, task_proxy)) {
+    if (task_properties::is_goal_state(task_proxy, state)) {
         cout << "Solution found!" << endl;
         Plan plan;
         search_space.trace_path(state, plan);

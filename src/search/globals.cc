@@ -1,7 +1,6 @@
 #include "globals.h"
 
 #include "axioms.h"
-#include "global_state.h"
 #include "heuristic.h"
 
 #include "algorithms/int_packer.h"
@@ -24,16 +23,6 @@
 
 using namespace std;
 using utils::ExitCode;
-
-bool test_goal(const GlobalState &state, const TaskProxy &task_proxy) {
-    for (FactProxy goal : task_proxy.get_goals()) {
-        FactPair goal_fact = goal.get_pair();
-        if (state[goal_fact.var] != goal_fact.value) {
-            return false;
-        }
-    }
-    return true;
-}
 
 int calculate_plan_cost(const vector<OperatorID> &plan, const TaskProxy &task_proxy) {
     // TODO: Refactor: this is only used by save_plan (see below)
@@ -76,7 +65,7 @@ void save_plan(const vector<OperatorID> &plan,
 }
 
 void dump_goal(const TaskProxy &task_proxy) {
-    cout << "Goal Conditions:" << endl;
+    cout << "Goal conditions:" << endl;
     for (FactProxy goal : task_proxy.get_goals()) {
         cout << "  " << goal.get_variable().get_name() << ": "
              << goal.get_value() << endl;
@@ -110,7 +99,6 @@ void read_everything(istream &in) {
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
          << endl;
-
 
     cout << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();

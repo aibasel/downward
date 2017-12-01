@@ -16,7 +16,7 @@ struct ExplicitVariable {
     int axiom_layer;
     int axiom_default_value;
 
-    ExplicitVariable(std::istream &in);
+    explicit ExplicitVariable(std::istream &in);
 };
 
 
@@ -42,6 +42,7 @@ struct ExplicitOperator {
 
 class RootTask : public AbstractTask {
     std::vector<ExplicitVariable> variables;
+    // TODO: think about using hash sets here.
     std::vector<std::vector<std::set<FactPair>>> mutexes;
     std::vector<ExplicitOperator> operators;
     std::vector<ExplicitOperator> axioms;
@@ -56,7 +57,7 @@ class RootTask : public AbstractTask {
     void evaluate_axioms_on_initial_state() const;
 
 public:
-    RootTask(std::istream &in);
+    explicit RootTask(std::istream &in);
 
     virtual int get_num_variables() const override;
     virtual std::string get_variable_name(int var) const override;

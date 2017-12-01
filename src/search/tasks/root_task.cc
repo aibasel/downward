@@ -44,15 +44,15 @@ static void check_facts(const ExplicitOperator &action, const vector<ExplicitVar
     }
 }
 
-void check_magic(istream &in, string magic) {
+void check_magic(istream &in, const string &magic) {
     string word;
     in >> word;
     if (word != magic) {
-        cout << "Failed to match magic word '" << magic << "'." << endl;
-        cout << "Got '" << word << "'." << endl;
+        cerr << "Failed to match magic word '" << magic << "'." << endl
+             << "Got '" << word << "'." << endl;
         if (magic == "begin_version") {
             cerr << "Possible cause: you are running the planner "
-                 << "on a preprocessor file from " << endl
+                 << "on a translator output file from " << endl
                  << "an older version." << endl;
         }
         utils::exit_with(ExitCode::INPUT_ERROR);
@@ -79,8 +79,8 @@ ExplicitVariable::ExplicitVariable(istream &in) {
     in >> domain_size;
     in >> ws;
     fact_names.resize(domain_size);
-    for (size_t j = 0; j < fact_names.size(); ++j)
-        getline(in, fact_names[j]);
+    for (int i = 0; i < domain_size; ++i)
+        getline(in, fact_names[i]);
     check_magic(in, "end_variable");
 }
 
@@ -95,10 +95,8 @@ void ExplicitOperator::read_pre_post(istream &in) {
     vector<FactPair> conditions = read_facts(in);
     int var, value_pre, value_post;
     in >> var >> value_pre >> value_post;
-
     if (value_pre != -1) {
-        FactPair pre(var, value_pre);
-        preconditions.push_back(pre);
+        preconditions.emplace_back(var, value_pre);
     }
     effects.emplace_back(var, value_post, move(conditions));
 }
@@ -243,7 +241,6 @@ RootTask::RootTask(std::istream &in) {
     read_metric(in);
     variables = read_variables(in);
     mutexes = read_mutexes(in, variables);
-
 
     initial_state_values.resize(variables.size());
     check_magic(in, "begin_state");

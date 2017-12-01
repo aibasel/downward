@@ -9,7 +9,6 @@
 
 class AbstractTask;
 class AxiomEvaluator;
-class GlobalState;
 class TaskProxy;
 
 namespace int_packer {
@@ -25,12 +24,6 @@ struct Log;
 }
 
 /*
-  TODO: get rid of this method and use task_properties::is_goal_state instead.
-  To make this efficient however, the search should work with unpacked States
-  instead of packed GlobalStates internally.
-*/
-bool test_goal(const GlobalState &state, const TaskProxy &task_proxy);
-/*
   Set generates_multiple_plan_files to true if the planner can find more than
   one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
 */
@@ -40,7 +33,7 @@ void save_plan(const std::vector<OperatorID> &plan,
 int calculate_plan_cost(const std::vector<OperatorID> &plan, const TaskProxy &task_proxy);
 
 void read_everything(std::istream &in);
-// TODO: move this to task_utils?
+// TODO: move this to task_utils or a new file with dump methods for all proxy objects.
 void dump_everything();
 
 // The following six functions are deprecated. Use task_properties.h instead.
