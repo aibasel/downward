@@ -13,7 +13,7 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
-VALIDATE_MEMORY_LIMIT_IN_MB = 3072
+VALIDATE_MEMORY_LIMIT_IN_B = 3221225472 # 3 GB
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
@@ -165,13 +165,13 @@ def run_validate(args):
 
     print_component_settings(
         "validate", executable, validate_inputs, [],
-        time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
+        time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
     print_callstring(executable, validate_inputs)
 
     try:
         call.check_call(
             [executable] + validate_inputs,
-            memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
+            memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
     except OSError as err:
         if err.errno == errno.ENOENT:
             sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
