@@ -35,6 +35,9 @@ foreach(BITWIDTH 32 64)
             ${DOWNWARD_CPLEX_ROOT}
             $ENV{DOWNWARD_CPLEX_ROOT}
         )
+        if(CPLEX_HINT_PATHS_${BUILDMODE}${BITWIDTH})
+            list(APPEND CPLEX_HINT_PATHS_${BUILDMODE}${BITWIDTH} NO_DEFAULT_PATH)
+        endif()
     endforeach()
 endforeach()
 
