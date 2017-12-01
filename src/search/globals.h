@@ -48,10 +48,7 @@ extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
 extern bool g_is_part_of_anytime_portfolio;
 
-extern std::shared_ptr<AbstractTask> g_root_task;
-
 extern utils::Log g_log;
-
 
 /*
   This vector holds the initial values *before* the axioms have been evaluated.
