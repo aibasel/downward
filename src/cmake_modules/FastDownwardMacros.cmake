@@ -65,7 +65,7 @@ macro(fast_downward_set_compiler_flags)
     endif()
 endmacro()
 
-macro(fast_downward_set_linker_flags)
+macro(fast_downward_set_linker_flags PROJECT_NAME)
     if(UNIX)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
     endif()
@@ -93,7 +93,7 @@ macro(fast_downward_set_linker_flags)
 
             # Any libraries that are implicitly added to the end of the linker
             # command should be linked dynamically.
-            set(LINK_SEARCH_END_STATIC FALSE)
+            set_target_properties(${PROJECT_NAME} PROPERTIES LINK_SEARCH_END_STATIC FALSE)
 
             # Only look for dynamic libraries.
             set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
@@ -102,7 +102,7 @@ macro(fast_downward_set_linker_flags)
 
             # Any libraries that are implicitly added to the end of the linker
             # command should be linked statically.
-            set(LINK_SEARCH_END_STATIC TRUE)
+            set_target_properties(${PROJECT_NAME} PROPERTIES LINK_SEARCH_END_STATIC TRUE)
 
             # Only look for static libraries.
             set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
