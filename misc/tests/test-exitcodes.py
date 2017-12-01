@@ -21,15 +21,16 @@ TRANSLATE_TASKS = {
 }
 
 TRANSLATE_TESTS = [
-    ("small", ["--translate"], returncodes.SUCCESS),
-    ("large", ["--translate-time-limit", "1s", "--translate"], returncodes.TRANSLATE_OUT_OF_TIME),
-    ("large", ["--translate-memory-limit", "50M", "--translate"], returncodes.TRANSLATE_OUT_OF_MEMORY),
+    ("small", [], [], returncodes.SUCCESS),
+    ("large", ["--translate-time-limit", "1s"], [], returncodes.TRANSLATE_OUT_OF_TIME),
+    ("large", ["--translate-memory-limit", "50M"], [], returncodes.TRANSLATE_OUT_OF_MEMORY),
 ]
 
 SEARCH_TASKS = {
     "strips": "miconic/s1-0.pddl",
     "axioms": "philosophers/p01-phil2.pddl",
     "cond-eff": "miconic-simpleadl/s1-0.pddl",
+    "large": "satellite/p25-HC-pfile5.pddl",
 }
 
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
@@ -45,44 +46,46 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
 '))')
 
 SEARCH_TESTS = [
-    ("strips", "astar(add())", returncodes.SUCCESS),
-    ("strips", "astar(hm())", returncodes.SUCCESS),
-    ("strips", "ehc(hm())", returncodes.SUCCESS),
-    ("strips", "astar(ipdb())", returncodes.SUCCESS),
-    ("strips", "astar(lmcut())", returncodes.SUCCESS),
-    ("strips", "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
-    ("strips", "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SUCCESS),
-    ("strips", "astar(lmcount(lm_hm(), admissible=false))", returncodes.SUCCESS),
-    ("strips", "astar(lmcount(lm_hm(), admissible=true))", returncodes.SUCCESS),
-    ("strips", MERGE_AND_SHRINK, returncodes.SUCCESS),
-    ("axioms", "astar(add())", returncodes.SUCCESS),
-    ("axioms", "astar(hm())", returncodes.SEARCH_UNSOLVED_INCOMPLETE),
-    ("axioms", "ehc(hm())", returncodes.SEARCH_UNSOLVED_INCOMPLETE),
-    ("axioms", "astar(ipdb())", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcut())", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
-    ("axioms", "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_zg(), admissible=false))", returncodes.SUCCESS),
-    ("axioms", "astar(lmcount(lm_zg(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
+    ("strips", [], "astar(add())", returncodes.SUCCESS),
+    ("strips", [], "astar(hm())", returncodes.SUCCESS),
+    ("strips", [], "ehc(hm())", returncodes.SUCCESS),
+    ("strips", [], "astar(ipdb())", returncodes.SUCCESS),
+    ("strips", [], "astar(lmcut())", returncodes.SUCCESS),
+    ("strips", [], "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
+    ("strips", [], "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SUCCESS),
+    ("strips", [], "astar(lmcount(lm_hm(), admissible=false))", returncodes.SUCCESS),
+    ("strips", [], "astar(lmcount(lm_hm(), admissible=true))", returncodes.SUCCESS),
+    ("strips", [], MERGE_AND_SHRINK, returncodes.SUCCESS),
+    ("axioms", [], "astar(add())", returncodes.SUCCESS),
+    ("axioms", [], "astar(hm())", returncodes.SEARCH_UNSOLVED_INCOMPLETE),
+    ("axioms", [], "ehc(hm())", returncodes.SEARCH_UNSOLVED_INCOMPLETE),
+    ("axioms", [], "astar(ipdb())", returncodes.SEARCH_UNSUPPORTED),
+    ("axioms", [], "astar(lmcut())", returncodes.SEARCH_UNSUPPORTED),
+    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
+    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
+    ("axioms", [], "astar(lmcount(lm_zg(), admissible=false))", returncodes.SUCCESS),
+    ("axioms", [], "astar(lmcount(lm_zg(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
     # h^m landmark factory explicitly forbids axioms.
-    ("axioms", "astar(lmcount(lm_hm(), admissible=false))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_hm(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.SUCCESS),
-    ("axioms", "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", MERGE_AND_SHRINK, returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(add())", returncodes.SUCCESS),
-    ("cond-eff", "astar(hm())", returncodes.SUCCESS),
-    ("cond-eff", "astar(ipdb())", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(lmcut())", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SUCCESS),
-    ("cond-eff", "astar(lmcount(lm_zg(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", "astar(lmcount(lm_zg(), admissible=true))", returncodes.SUCCESS),
-    ("cond-eff", "astar(lmcount(lm_hm(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", "astar(lmcount(lm_hm(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", MERGE_AND_SHRINK, returncodes.SUCCESS),
+    ("axioms", [], "astar(lmcount(lm_hm(), admissible=false))", returncodes.SEARCH_UNSUPPORTED),
+    ("axioms", [], "astar(lmcount(lm_hm(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
+    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.SUCCESS),
+    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
+    ("axioms", [], MERGE_AND_SHRINK, returncodes.SEARCH_UNSUPPORTED),
+    ("cond-eff", [], "astar(add())", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(hm())", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(ipdb())", returncodes.SEARCH_UNSUPPORTED),
+    ("cond-eff", [], "astar(lmcut())", returncodes.SEARCH_UNSUPPORTED),
+    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=false))", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=true))", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=false))", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
+    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.SUCCESS),
+    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
+    ("cond-eff", [], MERGE_AND_SHRINK, returncodes.SUCCESS),
+    ("large", ["--search-memory-limit", "50M"], MERGE_AND_SHRINK, returncodes.SEARCH_OUT_OF_MEMORY),
+    ("large", ["--search-time-limit", "1s"], MERGE_AND_SHRINK, returncodes.SEARCH_OUT_OF_TIME),
 ]
 
 
@@ -90,36 +93,36 @@ def cleanup():
     subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
 
-def run_translator(task_type, relpath, command):
+def run_translator(task_type, relpath, driver_options, translate_options):
     problem = os.path.join(BENCHMARKS_DIR, relpath)
-    print("\nRun {command} on {task_type} task:".format(**locals()))
+    print("\nRun translator on {task_type} task:".format(**locals()))
     sys.stdout.flush()
-    return subprocess.call([sys.executable, DRIVER] + command + [problem])
+    return subprocess.call([sys.executable, DRIVER] + driver_options + ["--translate"] + translate_options + [problem])
 
 
 def run_translator_tests():
-    for task_type, command, expected in TRANSLATE_TESTS:
+    for task_type, driver_options, translate_options, expected in TRANSLATE_TESTS:
         relpath = TRANSLATE_TASKS[task_type]
-        exitcode = run_translator(task_type, relpath, command)
+        exitcode = run_translator(task_type, relpath, driver_options, translate_options)
         if not exitcode == expected:
-            yield (task_type, command, expected, exitcode)
+            yield (task_type, driver_options + ["--translate"], translate_options, expected, exitcode)
         cleanup()
 
 
-def run_search(task_type, relpath, search):
+def run_search(task_type, relpath, driver_options, search_options):
     problem = os.path.join(BENCHMARKS_DIR, relpath)
-    print("\nRun {search} on {task_type} task:".format(**locals()))
+    print("\nRun {search_options} on {task_type} task:".format(**locals()))
     sys.stdout.flush()
     return subprocess.call(
-        [sys.executable, DRIVER, problem, "--search", search])
+        [sys.executable, DRIVER] + driver_options + [problem, "--search", search_options])
 
 
 def run_search_tests():
-    for task_type, search, expected in SEARCH_TESTS:
+    for task_type, driver_options, search_options, expected in SEARCH_TESTS:
         relpath = SEARCH_TASKS[task_type]
-        exitcode = run_search(task_type, relpath, search)
+        exitcode = run_search(task_type, relpath, driver_options, search_options)
         if not exitcode == expected:
-            yield (task_type, search, expected, exitcode)
+            yield (task_type, driver_options, "--search " + "'{}'".format(search_options), expected, exitcode)
         cleanup()
 
 
@@ -136,9 +139,9 @@ def main():
     failures += run_search_tests()
     if failures:
         print("\nFailures:")
-        for task_type, command, expected, exitcode in failures:
-            print("{command} on {task_type} task: expected {expected}, "
-                   "got {exitcode}".format(**locals()))
+        for task_type, driver_options, component_options, expected, exitcode in failures:
+            print("{driver_options} + {component_options} on {task_type} task: "
+                   "expected {expected}, got {exitcode}".format(**locals()))
         sys.exit(1)
 
     print("\nNo errors detected.")
