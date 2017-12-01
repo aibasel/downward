@@ -18,7 +18,6 @@ fast_downward_set_compiler_flags()
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 add_executable(downward ${PLANNER_SOURCES})
 
-
 ## == Includes ==
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
