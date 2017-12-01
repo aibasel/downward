@@ -6,6 +6,7 @@
 #include "algorithms/int_packer.h"
 #include "task_utils/causal_graph.h"
 #include "task_utils/successor_generator.h"
+#include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/logging.h"
 #include "utils/rng.h"
@@ -78,12 +79,6 @@ void read_everything(istream &in) {
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
     TaskProxy task_proxy(*g_root_task);
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (OperatorProxy op : operators) {
-        g_min_action_cost = min(g_min_action_cost, op.get_cost());
-        g_max_action_cost = max(g_max_action_cost, op.get_cost());
-    }
-
     g_axiom_evaluator = new AxiomEvaluator(task_proxy);
 
     cout << "packing state variables..." << flush;
@@ -123,10 +118,18 @@ void read_everything(istream &in) {
 
 void dump_everything() {
     cout << "Use metric? " << g_use_metric << endl;
-    cout << "Min Action Cost: " << g_min_action_cost << endl;
-    cout << "Max Action Cost: " << g_max_action_cost << endl;
 
     TaskProxy task_proxy(*g_root_task);
+    OperatorsProxy operators = task_proxy.get_operators();
+    int min_action_cost = numeric_limits<int>::max();
+    int max_action_cost = 0;
+    for (OperatorProxy op : operators) {
+        min_action_cost = min(min_action_cost, op.get_cost());
+        max_action_cost = max(max_action_cost, op.get_cost());
+    }
+    cout << "Min Action Cost: " << min_action_cost << endl;
+    cout << "Max Action Cost: " << max_action_cost << endl;
+
     VariablesProxy variables = task_proxy.get_variables();
     cout << "Variables (" << variables.size() << "):" << endl;
     for (VariableProxy var : variables) {
@@ -145,12 +148,11 @@ void dump_everything() {
 }
 
 bool is_unit_cost() {
-    return g_min_action_cost == 1 && g_max_action_cost == 1;
+    static bool is_unit_cost = task_properties::is_unit_cost(TaskProxy(*g_root_task));
+    return is_unit_cost;
 }
 
 bool g_use_metric;
-int g_min_action_cost = numeric_limits<int>::max();
-int g_max_action_cost = 0;
 vector<int> g_variable_domain;
 int_packer::IntPacker *g_state_packer;
 vector<int> g_initial_state_data;

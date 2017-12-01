@@ -36,12 +36,10 @@ void read_everything(std::istream &in);
 // TODO: move this to task_utils or a new file with dump methods for all proxy objects.
 void dump_everything();
 
-// The following six functions are deprecated. Use task_properties.h instead.
+// The following function is deprecated. Use task_properties.h instead.
 bool is_unit_cost();
 
 extern bool g_use_metric;
-extern int g_min_action_cost;
-extern int g_max_action_cost;
 
 extern int_packer::IntPacker *g_state_packer;
 extern AxiomEvaluator *g_axiom_evaluator;
