@@ -78,6 +78,12 @@ void read_everything(istream &in) {
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
     TaskProxy task_proxy(*g_root_task);
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
+        g_min_action_cost = min(g_min_action_cost, op.get_cost());
+        g_max_action_cost = max(g_max_action_cost, op.get_cost());
+    }
+
     g_axiom_evaluator = new AxiomEvaluator(task_proxy);
 
     cout << "packing state variables..." << flush;

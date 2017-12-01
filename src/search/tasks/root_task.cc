@@ -118,10 +118,6 @@ ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom)
         int op_cost;
         in >> op_cost;
         cost = g_use_metric ? op_cost : 1;
-
-        g_min_action_cost = min(g_min_action_cost, cost);
-        g_max_action_cost = max(g_max_action_cost, cost);
-
         check_magic(in, "end_operator");
     } else {
         name = "<axiom>";
