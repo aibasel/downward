@@ -1,8 +1,5 @@
 #include "relaxation_heuristic.h"
 
-#include "../global_state.h"
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
