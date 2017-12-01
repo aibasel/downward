@@ -36,7 +36,7 @@ struct ExplicitOperator {
     bool is_an_axiom;
 
     void read_pre_post(std::istream &in);
-    ExplicitOperator(std::istream &in, bool is_an_axiom);
+    ExplicitOperator(std::istream &in, bool is_an_axiom, bool use_metric);
 };
 
 

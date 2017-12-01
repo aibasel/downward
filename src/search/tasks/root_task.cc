@@ -101,7 +101,7 @@ void ExplicitOperator::read_pre_post(istream &in) {
     effects.emplace_back(var, value_post, move(conditions));
 }
 
-ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom)
+ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric)
     : is_an_axiom(is_an_axiom) {
     if (!is_an_axiom) {
         check_magic(in, "begin_operator");
@@ -117,7 +117,7 @@ ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom)
 
         int op_cost;
         in >> op_cost;
-        cost = g_use_metric ? op_cost : 1;
+        cost = use_metric ? op_cost : 1;
         check_magic(in, "end_operator");
     } else {
         name = "<axiom>";
@@ -142,10 +142,12 @@ void read_and_verify_version(istream &in) {
     }
 }
 
-void read_metric(istream &in) {
+bool read_metric(istream &in) {
+    bool use_metric;
     check_magic(in, "begin_metric");
-    in >> g_use_metric;
+    in >> use_metric;
     check_magic(in, "end_metric");
+    return use_metric;
 }
 
 vector<ExplicitVariable> read_variables(istream &in) {
@@ -220,13 +222,14 @@ vector<FactPair> read_goal(istream &in) {
 }
 
 vector<ExplicitOperator> read_actions(
-    istream &in, bool is_axiom, const vector<ExplicitVariable> &variables) {
+    istream &in, bool is_axiom, bool use_metric,
+    const vector<ExplicitVariable> &variables) {
     int count;
     in >> count;
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        actions.emplace_back(in, is_axiom);
+        actions.emplace_back(in, is_axiom, use_metric);
         check_facts(actions.back(), variables);
     }
     return actions;
@@ -234,7 +237,7 @@ vector<ExplicitOperator> read_actions(
 
 RootTask::RootTask(std::istream &in) {
     read_and_verify_version(in);
-    read_metric(in);
+    bool use_metric = read_metric(in);
     variables = read_variables(in);
     mutexes = read_mutexes(in, variables);
 
@@ -244,8 +247,6 @@ RootTask::RootTask(std::istream &in) {
         in >> initial_state_values[i];
     }
     check_magic(in, "end_state");
-    // TODO: this global variable should disappear eventually.
-    g_initial_state_data = initial_state_values;
 
     for (size_t i = 0; i < variables.size(); ++i) {
         variables[i].axiom_default_value = initial_state_values[i];
@@ -253,10 +254,15 @@ RootTask::RootTask(std::istream &in) {
 
     goals = read_goal(in);
     check_facts(goals, variables);
-    operators = read_actions(in, false, variables);
-    axioms = read_actions(in, true, variables);
+    operators = read_actions(in, false, use_metric, variables);
+    axioms = read_actions(in, true, use_metric, variables);
     /* TODO: We should be stricter here and verify that we
        have reached the end of "in". */
+
+    // TODO: this global variable should disappear eventually.
+    g_initial_state_data = initial_state_values;
+    // TODO: think about removing g_metric or add access for it through the task interface.
+    g_use_metric = use_metric;
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
