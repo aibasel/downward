@@ -64,6 +64,12 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
         add_definitions("-D USE_LP")
         include_directories(${OSI_INCLUDE_DIRS})
         target_link_libraries(downward ${OSI_LIBRARIES})
+
+        find_package(ZLIB REQUIRED)
+        if(ZLIB_FOUND)
+            include_directories(${ZLIB_INCLUDE_DIRS})
+            target_link_libraries(downward ${ZLIB_LIBRARIES})
+        endif()
     endif()
 
     if(OSI_Cpx_FOUND AND CPLEX_RUNTIME_LIBRARY)
