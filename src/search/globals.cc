@@ -75,10 +75,10 @@ void dump_goal(const TaskProxy &task_proxy) {
 
 void read_everything(istream &in) {
     cout << "reading input... [t=" << utils::g_timer << "]" << endl;
-    g_root_task = make_shared<tasks::RootTask>(in);
+    tasks::read_root_task(in);
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
-    TaskProxy task_proxy(*g_root_task);
+    TaskProxy task_proxy(*tasks::g_root_task);
     g_axiom_evaluator = new AxiomEvaluator(task_proxy);
 
     cout << "packing state variables..." << flush;
@@ -119,7 +119,7 @@ void read_everything(istream &in) {
 void dump_everything() {
     cout << "Use metric? " << g_use_metric << endl;
 
-    TaskProxy task_proxy(*g_root_task);
+    TaskProxy task_proxy(*tasks::g_root_task);
     OperatorsProxy operators = task_proxy.get_operators();
     int min_action_cost = numeric_limits<int>::max();
     int max_action_cost = 0;
@@ -148,7 +148,7 @@ void dump_everything() {
 }
 
 bool is_unit_cost() {
-    static bool is_unit_cost = task_properties::is_unit_cost(TaskProxy(*g_root_task));
+    static bool is_unit_cost = task_properties::is_unit_cost(TaskProxy(*tasks::g_root_task));
     return is_unit_cost;
 }
 
@@ -164,5 +164,3 @@ int g_num_previously_generated_plans = 0;
 bool g_is_part_of_anytime_portfolio = false;
 
 utils::Log g_log;
-
-shared_ptr<AbstractTask> g_root_task;

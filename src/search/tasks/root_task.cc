@@ -18,6 +18,7 @@ using utils::ExitCode;
 
 namespace tasks {
 static const int PRE_FILE_VERSION = 3;
+shared_ptr<AbstractTask> g_root_task = nullptr;
 
 static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
@@ -409,6 +410,11 @@ void RootTask::convert_state_values(
     if (this != ancestor_task) {
         ABORT("Invalid state conversion");
     }
+}
+
+void read_root_task(std::istream &in) {
+    assert(!g_root_task);
+    g_root_task = make_shared<RootTask>(in);
 }
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {

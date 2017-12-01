@@ -8,6 +8,7 @@
 
 #include "task_utils/task_properties.h"
 #include "tasks/cost_adapted_task.h"
+#include "tasks/root_task.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -38,7 +39,7 @@ bool Heuristic::notify_state_transition(
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    State state(*g_root_task, global_state.get_values());
+    State state(*tasks::g_root_task, global_state.get_values());
     return task_proxy.convert_ancestor_state(state);
 }
 
@@ -55,7 +56,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 // This is currently only used by the LAMA/FF synergy.
 Options Heuristic::default_options() {
     Options opts = Options();
-    opts.set<shared_ptr<AbstractTask>>("transform", g_root_task);
+    opts.set<shared_ptr<AbstractTask>>("transform", tasks::g_root_task);
     opts.set<bool>("cache_estimates", false);
     return opts;
 }
@@ -97,8 +98,8 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     }
 
 #ifndef NDEBUG
-    TaskProxy global_task_proxy = TaskProxy(*g_root_task);
-    State global_state(*g_root_task, state.get_values());
+    TaskProxy global_task_proxy = TaskProxy(*tasks::g_root_task);
+    State global_state(*tasks::g_root_task, state.get_values());
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)

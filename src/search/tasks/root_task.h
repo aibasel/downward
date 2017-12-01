@@ -96,5 +96,8 @@ public:
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const override;
 };
+
+extern std::shared_ptr<AbstractTask> g_root_task;
+void read_root_task(std::istream &in);
 }
 #endif
