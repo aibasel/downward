@@ -7,9 +7,9 @@
 #include <vector>
 
 namespace tasks {
-struct ExplicitVariable;
-struct ExplicitOperator;
 struct ExplicitEffect;
+struct ExplicitOperator;
+struct ExplicitVariable;
 
 class RootTask : public AbstractTask {
     std::vector<ExplicitVariable> variables;
@@ -69,6 +69,6 @@ public:
 };
 
 extern std::shared_ptr<AbstractTask> g_root_task;
-void read_root_task(std::istream &in);
+extern void read_root_task(std::istream &in);
 }
 #endif
