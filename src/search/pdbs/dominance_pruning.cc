@@ -2,6 +2,7 @@
 
 #include "pattern_database.h"
 
+#include "../utils/collections.h"
 #include "../utils/hash.h"
 #include "../utils/timer.h"
 
@@ -60,6 +61,20 @@ bool collection_dominates(const PDBCollection &superset,
     return true;
 }
 
+static vector<int> get_variable_union(const PDBCollection &collection) {
+    unordered_set<int> variables;
+    for (const auto &pdb : collection) {
+        for (int var : pdb->get_pattern()) {
+            variables.insert(var);
+        }
+    }
+    vector<int> sorted_variables;
+    sorted_variables.assign(variables.begin(), variables.end());
+    sort(sorted_variables.begin(), sorted_variables.end());
+    assert(utils::is_sorted_unique(sorted_variables));
+    return sorted_variables;
+}
+
 shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     const PDBCollection &pattern_databases,
     const MaxAdditivePDBSubsets &max_additive_subsets) {
@@ -67,6 +82,11 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     int num_patterns = pattern_databases.size();
     int num_additive_subsets = max_additive_subsets.size();
 
+    vector<vector<int>> variable_unions;
+    variable_unions.reserve(num_additive_subsets);
+    for (const PDBCollection &collection : max_additive_subsets) {
+        variable_unions.push_back(get_variable_union(collection));
+    }
 
     shared_ptr<MaxAdditivePDBSubsets> nondominated_subsets =
         make_shared<MaxAdditivePDBSubsets>();
@@ -81,6 +101,7 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     // Check all pairs of collections for dominance.
     for (int c1_id = 0; c1_id < num_additive_subsets; ++c1_id) {
         const PDBCollection &c1 = max_additive_subsets[c1_id];
+        const vector<int> &c1_vars = variable_unions[c1_id];
         /*
           Collection c1 is useful if it is not dominated by any collection c2.
           Assume that it is useful and set it to false if any dominating
@@ -92,8 +113,14 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
                 continue;
             }
             const PDBCollection &c2 = max_additive_subsets[c2_id];
+            const vector<int> &c2_vars = variable_unions[c2_id];
 
-            if (collection_dominates(c2, c1, superset_relation)) {
+            /* Check quick necessary criterion for dominance before doing the
+               full test. c2 can only dominate c1 if it includes a (not
+               necessarily strict) superset of variables. */
+            if (includes(c2_vars.begin(), c2_vars.end(),
+                         c1_vars.begin(), c1_vars.end()) &&
+                collection_dominates(c2, c1, superset_relation)) {
                 c1_is_useful = false;
                 break;
             }
