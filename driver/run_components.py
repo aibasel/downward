@@ -13,7 +13,7 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
-VALIDATE_MEMORY_LIMIT_IN_B = 3221225472 # 3 GB
+VALIDATE_MEMORY_LIMIT_IN_B = 3.5 * 1024 * 1024 * 1024
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
