@@ -31,9 +31,11 @@ if common_setup.is_test_run():
     ENVIRONMENT = LocalEnvironment(processes=1)
 
 IssueExperiment.DEFAULT_TABLE_ATTRIBUTES += [
+    "dominance_pruning_failed",
     "dominance_pruning_time",
     "dominance_pruning_pruned_subsets",
-    "dominance_pruning_pruned_pdbs"]
+    "dominance_pruning_pruned_pdbs",
+    "pdb_collection_construction_time"]
 
 exp = IssueExperiment(
     revisions=REVISIONS,
@@ -43,6 +45,7 @@ exp = IssueExperiment(
 exp.add_resource("custom_parser", "custom-parser.py")
 exp.add_command("run-custom-parser", ["{custom_parser}"])
 exp.add_suite(BENCHMARKS_DIR, SUITE)
+exp.add_fetcher(name="parse-again", parsers=["custom-parser.py"])
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 
