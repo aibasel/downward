@@ -49,26 +49,6 @@ def get_executable(build, rel_path):
 
     return abs_path
 
-def print_component_settings(nick, executable, inputs, options, time_limit, memory_limit):
-    logging.info("{} executable: {}".format(nick, executable))
-    logging.info("{} input: {}".format(nick, inputs))
-    logging.info("{} arguments: {}".format(nick, options))
-    if time_limit is not None:
-        time_limit = str(time_limit) + "s"
-    logging.info("{} time limit: {}".format(nick, time_limit))
-    if memory_limit is not None:
-        memory_limit = int(limits.convert_to_mb(memory_limit))
-        memory_limit = str(memory_limit) + " MB"
-    logging.info("{} memory limit: {}".format(nick, memory_limit))
-
-
-def print_callstring(executable, options, stdin=None):
-    parts = [executable] + options
-    parts = [util.shell_escape(x) for x in parts]
-    if stdin is not None:
-        parts.extend(["<", util.shell_escape(stdin)])
-    logging.info("callstring: %s" % " ".join(parts))
-
 
 def run_translate(args):
     logging.info("Running translator.")
@@ -77,18 +57,14 @@ def run_translate(args):
     memory_limit = limits.get_memory_limit(
         args.translate_memory_limit, args.overall_memory_limit)
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
-    print_component_settings(
-        "translator", translate, args.translate_inputs, args.translate_options,
-        time_limit, memory_limit)
-
-    options = [translate] + args.translate_inputs + args.translate_options
     executable = sys.executable
     assert executable, "Path to interpreter could not be found"
-    print_callstring(executable, options)
+    cmd = [executable] + [translate] + args.translate_inputs + args.translate_options
 
     try:
         call.check_call(
-            [executable] + options,
+            "translator",
+            cmd,
             time_limit=time_limit,
             memory_limit=memory_limit)
     except subprocess.CalledProcessError as err:
@@ -108,9 +84,6 @@ def run_search(args):
     memory_limit = limits.get_memory_limit(
         args.search_memory_limit, args.overall_memory_limit)
     executable = get_executable(args.build, REL_SEARCH_PATH)
-    print_component_settings(
-        "search", executable, args.search_input, args.search_options,
-        time_limit, memory_limit)
 
     plan_manager = PlanManager(args.plan_file)
     plan_manager.delete_existing_plans()
@@ -128,10 +101,9 @@ def run_search(args):
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
 
-        print_callstring(executable, args.search_options, args.search_input)
-
         try:
             call.check_call(
+                "search",
                 [executable] + args.search_options,
                 stdin=args.search_input,
                 time_limit=time_limit,
@@ -163,13 +135,9 @@ def run_validate(args):
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     validate_inputs = [domain, task] + plan_files
 
-    print_component_settings(
-        "validate", executable, validate_inputs, [],
-        time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
-    print_callstring(executable, validate_inputs)
-
     try:
         call.check_call(
+            "validate",
             [executable] + validate_inputs,
             memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
     except OSError as err:
