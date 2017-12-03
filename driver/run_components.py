@@ -57,9 +57,8 @@ def run_translate(args):
     memory_limit = limits.get_memory_limit(
         args.translate_memory_limit, args.overall_memory_limit)
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
-    executable = sys.executable
-    assert executable, "Path to interpreter could not be found"
-    cmd = [executable] + [translate] + args.translate_inputs + args.translate_options
+    assert sys.executable, "Path to interpreter could not be found"
+    cmd = [sys.executable] + [translate] + args.translate_inputs + args.translate_options
 
     try:
         call.check_call(
@@ -131,14 +130,13 @@ def run_validate(args):
     else:
         raise ValueError("validate needs one or two PDDL input files.")
 
-    executable = VALIDATE
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     validate_inputs = [domain, task] + plan_files
 
     try:
         call.check_call(
             "validate",
-            [executable] + validate_inputs,
+            [VALIDATE] + validate_inputs,
             memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
     except OSError as err:
         if err.errno == errno.ENOENT:
