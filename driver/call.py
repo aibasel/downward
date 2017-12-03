@@ -23,7 +23,11 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
         memory_limit = int(limits.convert_to_mb(memory_limit))
         memory_limit = str(memory_limit) + " MB"
     logging.info("{} memory limit: {}".format(nick, memory_limit))
-    logging.info("{} command line string: {}".format(nick, cmd))
+
+    escaped_cmd = [util.shell_escape(x) for x in cmd]
+    if stdin is not None:
+        escaped_cmd.extend(["<", util.shell_escape(stdin)])
+    logging.info("{} command line string: {}".format(nick, " ".join(escaped_cmd)))
 
 
 def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
