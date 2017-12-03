@@ -15,7 +15,6 @@
 using namespace std;
 
 namespace pdbs {
-
 class Pruner {
     /*
       Algorithm for pruning dominated patterns.
