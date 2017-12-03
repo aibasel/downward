@@ -171,7 +171,7 @@ void signal_handler(int signal_number) {
     write_reentrant_int(STDOUT_FILENO, signal_number);
     write_reentrant_str(STDOUT_FILENO, " -- exiting\n");
     if (signal_number == SIGXCPU) {
-        exit_with_signal_handler(ExitCode::SEARCH_OUT_OF_TIME);
+        exit_after_receiving_signal(ExitCode::SEARCH_OUT_OF_TIME);
     }
     raise(signal_number);
 }
