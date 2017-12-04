@@ -140,7 +140,7 @@ def run_validate(args):
             memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
     except OSError as err:
         if err.errno == errno.ENOENT:
-            sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
+            sys.exit("Error: {} not found. Is it on the PATH?".format(VALIDATE))
         else:
             raise
     else:

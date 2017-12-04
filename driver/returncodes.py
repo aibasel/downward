@@ -2,8 +2,6 @@
 
 from __future__ import print_function
 
-import signal
-
 """
 We document Fast Downward exit codes at
 http://www.fast-downward.org/ExitCodes. Please update this documentation when
