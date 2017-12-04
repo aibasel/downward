@@ -32,18 +32,21 @@ class Pruner {
       against which other patterns and collections can be tested for
       dominance efficiently.
 
-      "pattern_index" is the data structure that encodes the relevant
-      information about the current collection. For every variable v,
-      pattern_index[v] is the index of the pattern containing v in the
-      current collection, or -1 if the variable is not contained in
-      the current collection. (Note that patterns in a collection must
-      be disjoint, which is verified by an assertion in debug mode.)
+      "pattern_index" encodes the relevant information about the
+      current collection. For every variable v, pattern_index[v] is
+      the index of the pattern containing v in the current collection,
+      or -1 if the variable is not contained in the current
+      collection. (Note that patterns in a collection must be
+      disjoint, which is verified by an assertion in debug mode.)
 
       To test if a given pattern v_1, ..., v_k is dominated by the
       current collection, we check that all entries pattern_index[v_i]
-      are equal and different from -1. To test if a collection is
-      dominated by the current collection, we test that all its
-      patterns are dominated.
+      are equal and different from -1.
+
+      "dominated_patterns" is a vector<bool> that can be used to
+      quickly test whether a given pattern is dominated by the current
+      collection. This is precomputed for every pattern whenever the
+      current collection is set.
     */
 
     const int num_variables;
@@ -51,17 +54,15 @@ class Pruner {
     vector<vector<int>> collections;
 
     vector<int> pattern_index;
-
-    void initialize_pattern_index() {
-        assert(pattern_index.empty());
-        pattern_index.resize(num_variables, -1);
-    }
+    vector<bool> dominated_patterns;
 
     void set_current_collection(int collection_id) {
         /*
           Set the current pattern collection to be used for
-          is_pattern_dominated() or is_collection_dominated().
+          is_pattern_dominated() or is_collection_dominated(). Compute
+          dominated_patterns based on the current pattern collection.
         */
+        pattern_index.assign(num_variables, -1);
         assert(pattern_index == vector<int>(num_variables, -1));
         for (int pattern_id : collections[collection_id]) {
             for (int variable : patterns[pattern_id]) {
@@ -69,18 +70,11 @@ class Pruner {
                 pattern_index[variable] = pattern_id;
             }
         }
-    }
 
-    void unset_current_collection(int collection_id) {
-        /*
-          Reset the current pattern collection. Must call this between
-          any two calls to set_current_collection.
-        */
-        for (int pattern_id : collections[collection_id]) {
-            for (int variable : patterns[pattern_id])
-                pattern_index[variable] = -1;
-        }
-        assert(pattern_index == vector<int>(num_variables, -1));
+        dominated_patterns.clear();
+        dominated_patterns.reserve(patterns.size());
+        for (size_t i = 0; i < patterns.size(); ++i)
+            dominated_patterns.push_back(is_pattern_dominated(i));
     }
 
     bool is_pattern_dominated(int pattern_id) const {
@@ -106,7 +100,7 @@ class Pruner {
           dominated by the current pattern collection.
         */
         for (int pattern_id : collections[collection_id])
-            if (!is_pattern_dominated(pattern_id))
+            if (!dominated_patterns[pattern_id])
                 return false;
         return true;
     }
@@ -136,8 +130,6 @@ public:
             }
             collections.push_back(move(pattern_indices));
         }
-
-        initialize_pattern_index();
     }
 
     vector<bool> get_pruned_collections() {
@@ -156,7 +148,6 @@ public:
                     if (c1 != c2 && !pruned[c2] && is_collection_dominated(c2))
                         pruned[c2] = true;
                 }
-                unset_current_collection(c1);
             }
         }
 
