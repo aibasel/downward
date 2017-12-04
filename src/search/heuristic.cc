@@ -2,7 +2,6 @@
 
 #include "evaluation_context.h"
 #include "evaluation_result.h"
-#include "global_operator.h"
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
@@ -17,7 +16,7 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : description(opts.get_unparsed_config()),
+    : Evaluator(opts.get_unparsed_config(), true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
@@ -112,10 +111,6 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     assert(preferred_operators.empty());
 
     return result;
-}
-
-string Heuristic::get_description() const {
-    return description;
 }
 
 
