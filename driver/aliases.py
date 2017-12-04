@@ -141,7 +141,7 @@ ALIASES["seq-sat-lama-2011-new"] = [
     "--heuristic",
     "hlm1=lama_synergy(lm_rhw(reasonable_orders=true,"
     "                           lm_cost_type=one),transform=adapt_costs(one))",
-    "--heuristic", "hff1=ff_synergy(hlm)",
+    "--heuristic", "hff1=ff_synergy(hlm1)",
     "--heuristic",
     "hlm2=lama_synergy(lm_rhw(reasonable_orders=true,"
     "                           lm_cost_type=plusone),transform=adapt_costs(plusone))",
