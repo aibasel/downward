@@ -70,7 +70,7 @@ def run_translate(args):
         if err.returncode == 1:
             return (returncodes.TRANSLATE_CRITICAL_ERROR, False)
 
-        assert err.returncode >= 10
+        assert err.returncode >= 10, "got returncode < 10: {}".format(err.returncode)
         return (err.returncode, False)
     else:
         return (0, True)
@@ -112,7 +112,7 @@ def run_search(args):
             # in the planner, this assertion no longer holds. Furthermore, we
             # would need to return (err.returncode, True) if the returncode is
             # in [0..10].
-            assert err.returncode >= 10
+            assert err.returncode >= 10, "got returncode < 10: {}".format(err.returncode)
             return (err.returncode, False)
         else:
             return (0, True)
