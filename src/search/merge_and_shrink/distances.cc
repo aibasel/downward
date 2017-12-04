@@ -204,7 +204,7 @@ void Distances::compute_distances(
     } else {
         /*
           Otherwise, when computing distances, the previous (invalid)
-          distanc information must have been cleared before.
+          distance information must have been cleared before.
         */
         assert(!are_init_distances_computed() && !are_goal_distances_computed());
         assert(init_distances.empty() && goal_distances.empty());
