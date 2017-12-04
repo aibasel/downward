@@ -17,13 +17,13 @@ def main():
     print "Running custom parser"
     parser = Parser()
     parser.add_pattern(
-        "pdb_collection_construction_time", "PDB collection construction time: (.+)s", type=float)
+        "pdb_collection_construction_time", "^PDB collection construction time: (.+)s$", type=float, flags="M", required=False)
     parser.add_pattern(
-        "dominance_pruning_time", "Dominance pruning took (.+)s", type=float)
+        "dominance_pruning_time", "^Dominance pruning took (.+)s$", type=float, flags="M", required=False)
     parser.add_pattern(
-        "dominance_pruning_pruned_subsets", "Pruned (\d+) of \d+ maximal additive subsets", type=int)
+        "dominance_pruning_pruned_subsets", "Pruned (\d+) of \d+ maximal additive subsets", type=int, required=False)
     parser.add_pattern(
-        "dominance_pruning_pruned_pdbs", "Pruned (\d+) of \d+ PDBs", type=int)
+        "dominance_pruning_pruned_pdbs", "Pruned (\d+) of \d+ PDBs", type=int, required=False)
     parser.add_function(add_dominance_pruning_failed)
     parser.parse()
 
