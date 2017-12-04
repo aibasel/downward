@@ -3,7 +3,6 @@
 
 #include "evaluation_result.h"
 #include "global_state.h"
-#include "heuristic.h"
 
 #include <unordered_map>
 
@@ -27,16 +26,11 @@ public:
     const GlobalState &get_state() const;
 
     template<class Callback>
-    void for_each_heuristic_value(const Callback &callback) const {
+    void for_each_evaluator_result(const Callback &callback) const {
         for (const auto &element : eval_results) {
             const Evaluator *eval = element.first;
             const EvaluationResult &result = element.second;
-            const Heuristic *heuristic = dynamic_cast<const Heuristic *>(eval);
-            if (heuristic) {
-                /* We want to consider only Heuristic instances, not other
-                   Evaluator instances. */
-                callback(heuristic, result);
-            }
+            callback(eval, result);
         }
     }
 };
