@@ -30,6 +30,7 @@ exp = IssueExperiment(
     environment=ENVIRONMENT,
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
-exp.add_absolute_report_step()
+del exp.commands['parse-search']
+exp.add_absolute_report_step(attributes=['translator_*'])
 
 exp.run_steps()
