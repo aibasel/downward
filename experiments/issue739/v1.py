@@ -32,6 +32,8 @@ exp = IssueExperiment(
     environment=ENVIRONMENT,
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
+exp.add_resource('exit_code_converter_parser', 'exit-code-converter-parser.py', dest='exit-code-converter-parser.py')
+exp.add_command('exit-code-converter-parser', ['{exit_code_converter_parser}'])
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 
