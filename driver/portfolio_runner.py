@@ -75,7 +75,7 @@ def run_search(executable, args, sas_file, plan_manager, time, memory):
 
     try:
         exitcode = call.check_call(
-            complete_args, stdin=sas_file,
+            "search", complete_args, stdin=sas_file,
             time_limit=time, memory_limit=memory)
     except subprocess.CalledProcessError as err:
         exitcode = err.returncode
