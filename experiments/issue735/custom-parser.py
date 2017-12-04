@@ -4,7 +4,9 @@ from lab.parser import Parser
 
 
 def add_dominance_pruning_failed(content, props):
-    if "pdb_collection_construction_time" not in props:
+    if "dominance_pruning=False" in content:
+        failed = False
+    elif "pdb_collection_construction_time" not in props:
         failed = False
     else:
         failed = "dominance_pruning_time" not in props
