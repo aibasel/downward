@@ -50,3 +50,23 @@ def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
             return subprocess.check_call(cmd, stdin=stdin_file, **kwargs)
     else:
         return subprocess.check_call(cmd, **kwargs)
+
+
+def check_error_output(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
+    print_call_settings(nick, cmd, stdin, time_limit, memory_limit)
+
+    def set_limits():
+        limits.set_time_limit(time_limit)
+        limits.set_memory_limit(memory_limit)
+
+    preexec_fn = None
+    if time_limit is not None or memory_limit is not None:
+        if limits.can_set_limits():
+            preexec_fn = set_limits
+        else:
+            sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+
+    sys.stdout.flush()
+    p = subprocess.Popen(cmd, stdin=stdin, preexec_fn=preexec_fn, stderr=subprocess.PIPE)
+    (stdout, stderr) = p.communicate()
+    return stderr, p.returncode
