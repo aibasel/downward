@@ -1,7 +1,7 @@
 #include "state_registry.h"
 
-#include "global_operator.h"
 #include "per_state_information.h"
+#include "task_proxy.h"
 
 using namespace std;
 
@@ -72,14 +72,15 @@ const GlobalState &StateRegistry::get_initial_state() {
 //TODO it would be nice to move the actual state creation (and operator application)
 //     out of the StateRegistry. This could for example be done by global functions
 //     operating on state buffers (PackedStateBin *).
-GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, const GlobalOperator &op) {
+GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, const OperatorProxy &op) {
     assert(!op.is_axiom());
     state_data_pool.push_back(predecessor.get_packed_buffer());
     PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
-    for (size_t i = 0; i < op.get_effects().size(); ++i) {
-        const GlobalEffect &effect = op.get_effects()[i];
-        if (effect.does_fire(predecessor))
-            state_packer.set(buffer, effect.var, effect.val);
+    for (EffectProxy effect : op.get_effects()) {
+        if (does_fire(effect, predecessor)) {
+            FactPair effect_pair = effect.get_fact().get_pair();
+            state_packer.set(buffer, effect_pair.var, effect_pair.value);
+        }
     }
     axiom_evaluator.evaluate(buffer, state_packer);
     StateID id = insert_id_or_pop_state();

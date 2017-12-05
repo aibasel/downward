@@ -297,8 +297,6 @@ class Queue:
         result = self.queue[self.queue_pos]
         self.queue_pos += 1
         return result
-    def popped_elements(self):
-        return self.queue[:self.queue_pos]
 
 def compute_model(prog):
     with timers.timing("Preparing model"):
@@ -331,10 +329,13 @@ def compute_model(prog):
 
 if __name__ == "__main__":
     import pddl_parser
+    import normalize
     import pddl_to_prolog
 
     print("Parsing...")
     task = pddl_parser.open()
+    print("Normalizing...")
+    normalize.normalize(task)
     print("Writing rules...")
     prog = pddl_to_prolog.translate(task)
 
