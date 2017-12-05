@@ -2,8 +2,6 @@
 
 #include "pattern_database.h"
 
-#include "../globals.h" // HACK: Remove this when removing the hack below.
-
 #include "../utils/hash.h"
 #include "../utils/timer.h"
 
@@ -107,8 +105,9 @@ class Pruner {
 
 public:
     Pruner(const PDBCollection &pattern_databases,
-           const MaxAdditivePDBSubsets &max_additive_subsets) :
-        num_variables(g_variable_name.size()) { // HACK! Should be passed in.
+           const MaxAdditivePDBSubsets &max_additive_subsets,
+           int num_variables) :
+        num_variables(num_variables) {
         unordered_map<const PatternDatabase *, int> pdb_to_pattern_index;
 
         int num_patterns = pattern_databases.size();
@@ -157,11 +156,14 @@ public:
 
 shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     const PDBCollection &pattern_databases,
-    const MaxAdditivePDBSubsets &max_additive_subsets) {
+    const MaxAdditivePDBSubsets &max_additive_subsets,
+    int num_variables) {
     utils::Timer timer;
 
     vector<bool> pruned = Pruner(
-        pattern_databases, max_additive_subsets).get_pruned_collections();
+        pattern_databases,
+        max_additive_subsets,
+        num_variables).get_pruned_collections();
 
     shared_ptr<MaxAdditivePDBSubsets> result =
         make_shared<MaxAdditivePDBSubsets>();
