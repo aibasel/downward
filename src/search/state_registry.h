@@ -203,7 +203,7 @@ public:
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    GlobalState get_successor_state(const GlobalState &predecessor, const GlobalOperator &op);
+    GlobalState get_successor_state(const GlobalState &predecessor, const OperatorProxy &op);
 
     /*
       Returns the number of states registered so far.

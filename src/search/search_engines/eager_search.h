@@ -8,7 +8,6 @@
 #include <vector>
 
 class Evaluator;
-class GlobalOperator;
 class Heuristic;
 class PruningMethod;
 

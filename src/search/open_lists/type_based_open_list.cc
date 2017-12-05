@@ -1,10 +1,12 @@
 #include "type_based_open_list.h"
 
+#include "../evaluator.h"
 #include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"

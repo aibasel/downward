@@ -1,13 +1,13 @@
 #ifndef TASK_UTILS_SUCCESSOR_GENERATOR_H
 #define TASK_UTILS_SUCCESSOR_GENERATOR_H
 
-#include "../task_proxy.h"
-
-#include <list>
 #include <memory>
 #include <vector>
 
 class GlobalState;
+class OperatorID;
+class State;
+class TaskProxy;
 
 namespace successor_generator {
 class GeneratorBase;
@@ -18,9 +18,9 @@ class SuccessorGenerator {
 public:
     explicit SuccessorGenerator(const TaskProxy &task_proxy);
     /*
-      Note that the destructor cannot be set to the default destructor here
-      (~SuccessorGenerator() = default;) because GeneratorBase is a forward
-      declaration and the incomplete type cannot be destroyed.
+      We cannot use the default destructor (implicitly or explicitly)
+      here because GeneratorBase is a forward declaration and the
+      incomplete type cannot be destroyed.
     */
     ~SuccessorGenerator();
 
