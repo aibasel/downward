@@ -35,6 +35,7 @@ def main():
             (exitcode, continue_execution) = run_components.run_validate(args)
         else:
             assert False
+        print()
         print("{component} exit code: {exitcode}".format(**locals()))
         if not continue_execution:
             print("Driver aborting after {}".format(component))

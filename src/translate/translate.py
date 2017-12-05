@@ -701,7 +701,6 @@ def main():
 def handle_sigxcpu(signum, stackframe):
     print()
     print("Translator hit the time limit")
-    sys.stdout.flush()
     # sys.exit() is not safe to be called from within signal handlers, but
     # os._exit() is.
     os._exit(TRANSLATE_OUT_OF_TIME)
@@ -721,5 +720,4 @@ if __name__ == "__main__":
         print("=" * 79)
         traceback.print_exc(file=sys.stdout)
         print("=" * 79)
-        sys.stdout.flush()
         sys.exit(TRANSLATE_OUT_OF_MEMORY)
