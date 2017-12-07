@@ -3,7 +3,6 @@
 #include "axioms.h"
 #include "global_operator.h"
 #include "global_state.h"
-#include "heuristic.h"
 
 #include "algorithms/int_packer.h"
 #include "task_utils/causal_graph.h"
