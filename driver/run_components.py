@@ -126,7 +126,6 @@ def run_search(args):
                 "search needs --alias, --portfolio, or search options")
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
-
         try:
             call.check_call(
                 "search",
