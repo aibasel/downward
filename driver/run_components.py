@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import errno
 import logging
 import os.path
@@ -60,47 +62,40 @@ def run_translate(args):
     assert sys.executable, "Path to interpreter could not be found"
     cmd = [sys.executable] + [translate] + args.translate_inputs + args.translate_options
 
-    try:
-        stderr, returncode = call.get_error_output_and_returncode(
-            "translator",
-            cmd,
-            time_limit=time_limit,
-            memory_limit=memory_limit)
+    stderr, returncode = call.get_error_output_and_returncode(
+        "translator",
+        cmd,
+        time_limit=time_limit,
+        memory_limit=memory_limit)
 
-        # We collect stderr of the translator and print it here, unless
-        # the translator ran out of memory and all output in stderr is
-        # related to MemoryError.
-        print_stderr = True
-        if returncode == returncodes.TRANSLATE_OUT_OF_MEMORY:
-            output_related_to_memory_error = True
-            if not stderr:
+    # We collect stderr of the translator and print it here, unless
+    # the translator ran out of memory and all output in stderr is
+    # related to MemoryError.
+    print_stderr = True
+    if returncode == returncodes.TRANSLATE_OUT_OF_MEMORY:
+        output_related_to_memory_error = True
+        if not stderr:
+            output_related_to_memory_error = False
+        for line in stderr.splitlines():
+            if "MemoryError" not in line:
                 output_related_to_memory_error = False
-            for line in stderr.splitlines():
-                if "MemoryError" not in line:
-                    output_related_to_memory_error = False
-                    break
-            if output_related_to_memory_error:
-                print_stderr = False
+                break
+        if output_related_to_memory_error:
+            print_stderr = False
 
-        if print_stderr and stderr:
-            sys.stderr.write(stderr)
-            sys.stderr.write("\n")
-            sys.stderr.flush()
+    if print_stderr and stderr:
+        print(stderr, file=sys.stderr)
 
-        if returncode == 0:
-            return (0, True)
-        elif returncode == 1:
-            # Unlikely case that the translator crashed without raising an
-            # exception.
-            return (returncodes.TRANSLATE_CRITICAL_ERROR, False)
-        else:
-            # Pass on any other exit code, including in particular signals or
-            # exit codes such as running out of memory or time.
-            return (returncode, False)
-    except Exception as err:
-        # Translator crashed
-        print(err)
-        raise
+    if returncode == 0:
+        return (0, True)
+    elif returncode == 1:
+        # Unlikely case that the translator crashed without raising an
+        # exception.
+        return (returncodes.TRANSLATE_CRITICAL_ERROR, False)
+    else:
+        # Pass on any other exit code, including in particular signals or
+        # exit codes such as running out of memory or time.
+        return (returncode, False)
 
 
 def run_search(args):
