@@ -5,7 +5,7 @@ pipelines:
         script:
           # Install dependencies.
           - apt update
-          - apt -y install cmake g++ g++-multilib make mercurial python wget
+          - apt -y install cmake g++ g++-multilib make mercurial python
           - apt -y install python-pip uncrustify
           - pip install -U pyflakes pytest
 
@@ -15,6 +15,7 @@ pipelines:
           - python -c "import multiprocessing; print 'CPUs:', multiprocessing.cpu_count()"
 
           # Setup uncrustify.
+          - apt -y install wget
           - wget http://downloads.sourceforge.net/project/uncrustify/uncrustify/uncrustify-0.61/uncrustify-0.61.tar.gz
           - tar -xzvf uncrustify-0.61.tar.gz
           - cd uncrustify-0.61
@@ -25,7 +26,7 @@ pipelines:
           - rm -rf uncrustify-0.61.tar.gz uncrustify-0.61
 
           # Setup VAL.
-          - sudo apt-get -y install g++ git make flex bison
+          - apt -y install g++ git make flex bison
           - git clone https://github.com/KCL-Planning/VAL.git
           - cd VAL
           - git checkout a5565396007eee73ac36527fbf904142b3077c74
