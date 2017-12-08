@@ -5,7 +5,7 @@ pipelines:
         script:
           # Install dependencies.
           - apt update
-          - apt -y install cmake g++ g++-multilib make mercurial python
+          - apt -y install cmake g++ g++-multilib make mercurial python python3
           - apt -y install python-pip uncrustify
           - pip install -U pyflakes pytest
 
