@@ -61,7 +61,7 @@ def run_translate(args):
     cmd = [sys.executable] + [translate] + args.translate_inputs + args.translate_options
 
     try:
-        stderr, returncode = call.check_error_output(
+        stderr, returncode = call.get_error_output_and_returncode(
             "translator",
             cmd,
             time_limit=time_limit,
