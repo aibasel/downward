@@ -30,19 +30,23 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
     logging.info("{} command line string: {}".format(nick, " ".join(escaped_cmd)))
 
 
-def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
-    print_call_settings(nick, cmd, stdin, time_limit, memory_limit)
-
+def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
         limits.set_time_limit(time_limit)
         limits.set_memory_limit(memory_limit)
 
-    kwargs = {}
-    if time_limit is not None or memory_limit is not None:
-        if limits.can_set_limits():
-            kwargs["preexec_fn"] = set_limits
-        else:
-            sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+    if time_limit is None and memory_limit is None:
+        return None
+    elif limits.can_set_limits():
+        return set_limits
+    else:
+        sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+
+
+def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
+    print_call_settings(nick, cmd, stdin, time_limit, memory_limit)
+
+    kwargs = {"preexec_fn": _get_preexec_function(time_limit, memory_limit)}
 
     sys.stdout.flush()
     if stdin:
@@ -52,21 +56,12 @@ def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
         return subprocess.check_call(cmd, **kwargs)
 
 
-def check_error_output(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
-    print_call_settings(nick, cmd, stdin, time_limit, memory_limit)
+def get_error_output_and_returncode(nick, cmd, time_limit=None, memory_limit=None):
+    print_call_settings(nick, cmd, None, time_limit, memory_limit)
 
-    def set_limits():
-        limits.set_time_limit(time_limit)
-        limits.set_memory_limit(memory_limit)
-
-    preexec_fn = None
-    if time_limit is not None or memory_limit is not None:
-        if limits.can_set_limits():
-            preexec_fn = set_limits
-        else:
-            sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+    preexec_fn = _get_preexec_function(time_limit, memory_limit)
 
     sys.stdout.flush()
-    p = subprocess.Popen(cmd, stdin=stdin, preexec_fn=preexec_fn, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd, preexec_fn=preexec_fn, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
     return stderr, p.returncode
