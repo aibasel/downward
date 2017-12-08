@@ -9,7 +9,7 @@ import sys
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 
-sys.path.insert(1, REPO_BASE)
+sys.path.insert(0, REPO_BASE)
 from driver import returncodes
 
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
@@ -93,36 +93,29 @@ def cleanup():
     subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
 
-def run_translator(task_type, relpath, driver_options, translate_options):
-    problem = os.path.join(BENCHMARKS_DIR, relpath)
-    print("\nRun translator on {task_type} task:".format(**locals()))
-    sys.stdout.flush()
-    return subprocess.call([sys.executable, DRIVER] + driver_options + ["--translate"] + translate_options + [problem])
-
-
 def run_translator_tests():
     for task_type, driver_options, translate_options, expected in TRANSLATE_TESTS:
         relpath = TRANSLATE_TASKS[task_type]
-        exitcode = run_translator(task_type, relpath, driver_options, translate_options)
-        if not exitcode == expected:
-            yield (task_type, driver_options + ["--translate"], translate_options, expected, exitcode)
+        problem = os.path.join(BENCHMARKS_DIR, relpath)
+        print("\nRun translator on {task_type} task:".format(**locals()))
+        sys.stdout.flush()
+        cmd = [sys.executable, DRIVER] + driver_options + ["--translate"] + translate_options + [problem]
+        exitcode = subprocess.call(cmd)
+        if exitcode != expected:
+            yield (cmd, expected, exitcode)
         cleanup()
-
-
-def run_search(task_type, relpath, driver_options, search_options):
-    problem = os.path.join(BENCHMARKS_DIR, relpath)
-    print("\nRun {search_options} on {task_type} task:".format(**locals()))
-    sys.stdout.flush()
-    return subprocess.call(
-        [sys.executable, DRIVER] + driver_options + [problem, "--search", search_options])
 
 
 def run_search_tests():
     for task_type, driver_options, search_options, expected in SEARCH_TESTS:
         relpath = SEARCH_TASKS[task_type]
-        exitcode = run_search(task_type, relpath, driver_options, search_options)
+        problem = os.path.join(BENCHMARKS_DIR, relpath)
+        print("\nRun {search_options} on {task_type} task:".format(**locals()))
+        sys.stdout.flush()
+        cmd = [sys.executable, DRIVER] + driver_options + [problem, "--search", search_options]
+        exitcode = subprocess.call(cmd)
         if not exitcode == expected:
-            yield (task_type, driver_options, "--search " + "'{}'".format(search_options), expected, exitcode)
+            yield (cmd, expected, exitcode)
         cleanup()
 
 
@@ -139,9 +132,8 @@ def main():
     failures += run_search_tests()
     if failures:
         print("\nFailures:")
-        for task_type, driver_options, component_options, expected, exitcode in failures:
-            print("{driver_options} + {component_options} on {task_type} task: "
-                   "expected {expected}, got {exitcode}".format(**locals()))
+        for cmd, expected, exitcode in failures:
+            print("{cmd} failed: expected {expected}, got {exitcode}".format(**locals()))
         sys.exit(1)
 
     print("\nNo errors detected.")
