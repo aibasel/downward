@@ -23,7 +23,7 @@ TRANSLATE_TASKS = {
 TRANSLATE_TESTS = [
     ("small", [], [], returncodes.SUCCESS),
     ("large", ["--translate-time-limit", "1s"], [], returncodes.TRANSLATE_OUT_OF_TIME),
-    ("large", ["--translate-memory-limit", "150M"], [], returncodes.TRANSLATE_OUT_OF_MEMORY),
+    ("large", ["--translate-memory-limit", "50M"], [], returncodes.TRANSLATE_OUT_OF_MEMORY),
 ]
 
 SEARCH_TASKS = {
