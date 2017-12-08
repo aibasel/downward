@@ -44,13 +44,13 @@ def generate_portfolio_exitcode(exitcodes):
     [..., SEARCH_OUT_OF_TIME, ...] -> SEARCH_OUT_OF_TIME
     [..., SEARCH_OUT_OF_MEMORY, ...] -> SEARCH_OUT_OF_MEMORY
     """
-    print("Exit codes: %s" % exitcodes)
+    print("Exit codes: {}".format(exitcodes))
     exitcodes = set(exitcodes)
     unrecoverable_codes = [code for code in exitcodes if is_unrecoverable(code)]
 
     # There are unrecoverable exit codes.
     if unrecoverable_codes:
-        print("Error: Unexpected exit codes: %s" % list(unrecoverable_codes))
+        print("Error: Unexpected exit codes: {}".format(unrecoverable_codes))
         if len(unrecoverable_codes) == 1:
             return (unrecoverable_codes[0], False)
         else:
@@ -80,4 +80,4 @@ def generate_portfolio_exitcode(exitcodes):
     elif SEARCH_OUT_OF_TIME in exitcodes:
         return (SEARCH_OUT_OF_TIME, False)
 
-    assert False, "Error: Unhandled exit codes: %s" % exitcodes
+    assert False, "Error: Unhandled exit codes: {}".format(exitcodes)
