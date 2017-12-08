@@ -4,10 +4,10 @@ pipelines:
     - step:
         script:
           # Install dependencies.
-          - sudo apt-get update
-          - sudo apt-get -y install cmake g++ g++-multilib make mercurial python
-          - sudo apt-get -y install python-pip uncrustify
-          - sudo pip install -U pyflakes pytest
+          - apt update
+          - apt -y install cmake g++ g++-multilib make mercurial python
+          - apt -y install python-pip uncrustify
+          - pip install -U pyflakes pytest
 
           # Print information about environment.
           - g++ --version
