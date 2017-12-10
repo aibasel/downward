@@ -92,7 +92,7 @@ static vector<vector<int>> compute_relevant_neighbours(const TaskProxy &task_pro
         vector<int> goal_variable_successors;
         set_intersection(
             causal_graph_successors.begin(), causal_graph_successors.end(),
-            goal_variable_successors.begin(), goal_variable_successors.end(),
+            goal_vars.begin(), goal_vars.end(),
             back_inserter(goal_variable_successors));
 
         // Combine relevant goal and non-goal variables.
