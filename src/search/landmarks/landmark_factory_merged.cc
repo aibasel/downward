@@ -44,7 +44,7 @@ void LandmarkFactoryMerged::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
 
-    for (shared_ptr<LandmarkFactory> lm_factory : lm_factories) {
+    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
         lm_graphs.push_back(lm_factory->compute_lm_graph(task, exploration));
     }
 
@@ -113,7 +113,7 @@ void LandmarkFactoryMerged::generate_landmarks(
 }
 
 bool LandmarkFactoryMerged::supports_conditional_effects() const {
-    for (const shared_ptr<LandmarkFactory> lm_factory : lm_factories) {
+    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
         if (!lm_factory->supports_conditional_effects()) {
             return false;
         }
@@ -150,6 +150,5 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     return make_shared<LandmarkFactoryMerged>(opts);
 }
 
-static PluginShared<LandmarkFactory> _plugin(
-    "lm_merged", _parse);
+static PluginShared<LandmarkFactory> _plugin("lm_merged", _parse);
 }
