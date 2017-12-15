@@ -29,7 +29,7 @@ public:
     explicit AlternationOpenList(const Options &opts);
     virtual ~AlternationOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void boost_preferred() override;
@@ -61,11 +61,7 @@ void AlternationOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
-    if (key) {
-        cerr << "not implemented -- see msg639 in the tracker" << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
-    }
+Entry AlternationOpenList<Entry>::remove_min() {
     int best = -1;
     for (size_t i = 0; i < open_lists.size(); ++i) {
         if (!open_lists[i]->empty() &&
@@ -77,7 +73,7 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     const auto &best_list = open_lists[best];
     assert(!best_list->empty());
     ++priorities[best];
-    return best_list->remove_min(nullptr);
+    return best_list->remove_min();
 }
 
 template<class Entry>

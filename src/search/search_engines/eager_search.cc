@@ -231,8 +231,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             SearchNode dummy_node = search_space.get_node(initial_state);
             return make_pair(dummy_node, false);
         }
-        // TODO: remove last key parameter from remove_min
-        StateID id = open_list->remove_min(nullptr);
+        StateID id = open_list->remove_min();
         // TODO is there a way we can avoid creating the state here and then
         //      recreate it outside of this function with node.get_state()?
         //      One way would be to store GlobalState objects inside SearchNodes
@@ -249,7 +248,6 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
 
             EvaluationContext eval_context(
                 node.get_state(), node.get_g(), false, &statistics);
-            // TODO: remove heuristics[0]
             if(eval_context.reevaluate_and_check_if_changed(lazy_heuristic)
                     && !open_list->is_dead_end(eval_context)) {
                 open_list->insert(eval_context, node.get_state_id());
