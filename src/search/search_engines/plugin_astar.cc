@@ -44,7 +44,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         vector<Heuristic *> preferred_list;
         opts.set("preferred", preferred_list);
         if(opts.get<bool>("mpd")) {
-            opts.set("lazy_heuristic",opts.get<Evaluator *>("f_eval"));
+            opts.set("lazy_heuristic",opts.get<Evaluator *>("eval"));
         }
         engine = make_shared<eager_search::EagerSearch>(opts);
     }

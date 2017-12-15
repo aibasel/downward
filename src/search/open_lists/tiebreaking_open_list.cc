@@ -40,7 +40,7 @@ public:
     explicit TieBreakingOpenList(const Options &opts);
     virtual ~TieBreakingOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
@@ -71,17 +71,13 @@ void TieBreakingOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry TieBreakingOpenList<Entry>::remove_min(vector<int> *key) {
+Entry TieBreakingOpenList<Entry>::remove_min() {
     assert(size > 0);
     typename map<const vector<int>, Bucket>::iterator it;
     it = buckets.begin();
     assert(it != buckets.end());
     assert(!it->second.empty());
     --size;
-    if (key) {
-        assert(key->empty());
-        *key = it->first;
-    }
     Entry result = it->second.front();
     it->second.pop_front();
     if (it->second.empty())
