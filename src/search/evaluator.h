@@ -58,12 +58,18 @@ public:
         EvaluationContext &eval_context) = 0;
 
     /*
-      reevaluate_and_check_if_changed will recompute the evaluation if necessary and
-      return true if the stored value differs form the computed one.
+      The first boolean indicates whether the state was reevaluated. It will not
+      be reevaluated if we do not cache estimates or if the current estimate is
+      not "dirty".
+      The second boolean indicates whether the heuristic value has changed.
 
-      If heuristic caching is not enabled it will return false.
+      TODO: currently this method only makes sense for heuristics, since Evaluators don't
+      have caching or a "dirty" flag.
+
+      TODO: I'm not particulary happy with the pair of bools, but the statistics
+      needs to know if the heuristic has in fact been evaluated again.
     */
-    virtual bool reevaluate_and_check_if_changed(EvaluationContext &eval_context);
+    virtual std::pair<bool,bool> reevaluate_and_check_if_changed(EvaluationContext &eval_context);
 };
 
 #endif

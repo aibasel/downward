@@ -113,20 +113,21 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-bool Heuristic::reevaluate_and_check_if_changed(EvaluationContext &eval_context) {
+std::pair<bool,bool> Heuristic::reevaluate_and_check_if_changed(EvaluationContext &eval_context) {
     const GlobalState &state = eval_context.get_state();
+    std::pair<bool,bool> ret(false,false);
 
     if(!cache_h_values || !heuristic_cache[state].dirty) {
-        return false;
+        return ret;
     }
 
-    // TODO: this returns true if no value has been cached yet. Is this correct behaviour?
     int old_h = heuristic_cache[state].h;
     heuristic_cache[state] = HEntry(compute_heuristic(state),false);
+    ret.first = true;
     if(old_h != heuristic_cache[state].h) {
-        return true;
+        ret.second = true;
     }
-    return false;
+    return ret;
 }
 
 string Heuristic::get_description() const {

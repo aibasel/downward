@@ -102,7 +102,8 @@ public:
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
-    virtual bool reevaluate_and_check_if_changed(EvaluationContext &eval_context) override;
+
+    virtual std::pair<bool, bool> reevaluate_and_check_if_changed(EvaluationContext &eval_context) override;
 
     std::string get_description() const;
 };
