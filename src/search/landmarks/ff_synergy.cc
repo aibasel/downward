@@ -45,7 +45,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     Options opts = parser.parse();
-    // Set options required by Heuristic base class. They are never accessed.
+    // Set options required by Heuristic base class.
     opts.set<shared_ptr<AbstractTask>>("transform", nullptr);
     opts.set<bool>("cache_estimates", false);
 
