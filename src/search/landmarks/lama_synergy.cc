@@ -29,7 +29,7 @@ void LamaSynergyHeuristic::compute_heuristics(EvaluationContext &eval_context) {
       results for neither of the two synergy heuristics because the
       method isn't called when a heuristic result is already present,
       and the two results are always added to the evaluation context
-      together.
+      together (in this method).
     */
     lama_heuristic->exploration.set_recompute_heuristic();
     lama_result = lama_heuristic->compute_result(eval_context);
