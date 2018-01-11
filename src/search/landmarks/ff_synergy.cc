@@ -42,12 +42,12 @@ static Heuristic *_parse(OptionParser &parser) {
         "See documentation for LAMA-FF synergy master.");
     parser.add_option<Heuristic *>("lama_synergy_heuristic");
 
+    if (parser.dry_run())
+        return nullptr;
     Options opts = parser.parse();
     // Set options required by Heuristic base class. They are never accessed.
     opts.set<shared_ptr<AbstractTask>>("transform", nullptr);
     opts.set<bool>("cache_estimates", false);
-    if (parser.dry_run())
-        return nullptr;
 
     return new FFSynergyHeuristic(opts);
 }
