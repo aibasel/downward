@@ -1,12 +1,13 @@
 #ifndef SEARCH_ENGINE_H
 #define SEARCH_ENGINE_H
 
-#include "global_operator.h"
 #include "operator_cost.h"
+#include "operator_id.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
 #include "state_registry.h"
+#include "task_proxy.h"
 
 #include <vector>
 
@@ -26,12 +27,17 @@ enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
 public:
-    typedef std::vector<const GlobalOperator *> Plan;
+    using Plan = std::vector<OperatorID>;
 private:
     SearchStatus status;
     bool solution_found;
     Plan plan;
 protected:
+    // Hold a reference to the task implementation and pass it to objects that need it.
+    const std::shared_ptr<AbstractTask> task;
+    // Use task_proxy to access task information.
+    TaskProxy task_proxy;
+
     StateRegistry state_registry;
     SearchSpace search_space;
     SearchProgress search_progress;
@@ -45,7 +51,7 @@ protected:
 
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const GlobalState &state);
-    int get_adjusted_cost(const GlobalOperator &op) const;
+    int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchEngine(const options::Options &opts);
     virtual ~SearchEngine();
