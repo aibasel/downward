@@ -47,6 +47,8 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     // Set options required by Heuristic base class.
     opts.set<shared_ptr<AbstractTask>>("transform", nullptr);
+    // Since heuristic estimates are cached in the master, we deactivate them
+    // explicitly in the slave.
     opts.set<bool>("cache_estimates", false);
 
     return new FFSynergyHeuristic(opts);
