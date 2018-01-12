@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import sys
+import traceback
 
 def python_version_supported():
     major, minor = sys.version_info[:2]
@@ -41,6 +42,8 @@ import variable_order
 # non-derived).
 
 DEBUG = False
+
+EXIT_MEMORY_ERROR = 100
 
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -276,10 +279,10 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
             implied_precondition.update(implied_facts[fact])
     prevail_and_pre = dict(condition)
     pre_post = []
-    for var in effects_by_variable:
+    for var, effects_on_var in effects_by_variable.items():
         orig_pre = condition.get(var, -1)
         added_effect = False
-        for post, eff_conditions in effects_by_variable[var].items():
+        for post, eff_conditions in effects_on_var.items():
             pre = orig_pre
             # if the effect does not change the variable value, we ignore it
             if pre == post:
@@ -289,7 +292,8 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
             if ranges[var] == 2:
                 # Apply simplifications for binary variables.
                 if prune_stupid_effect_conditions(var, post,
-                                                  eff_condition_lists):
+                                                  eff_condition_lists,
+                                                  effects_on_var):
                     global simplified_effect_condition_counter
                     simplified_effect_condition_counter += 1
                 if (options.add_implied_preconditions and pre == -1 and
@@ -324,7 +328,7 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
     return sas_tasks.SASOperator(name, prevail, pre_post, cost)
 
 
-def prune_stupid_effect_conditions(var, val, conditions):
+def prune_stupid_effect_conditions(var, val, conditions, effects_on_var):
     ## (IF <conditions> THEN <var> := <val>) is a conditional effect.
     ## <var> is guaranteed to be a binary variable.
     ## <conditions> is in DNF representation (list of lists).
@@ -334,6 +338,8 @@ def prune_stupid_effect_conditions(var, val, conditions):
     ##    effect variable and dualval != val can be omitted.
     ##    (If var != dualval, then var == val because it is binary,
     ##    which means that in such situations the effect is a no-op.)
+    ##    The condition can only be omitted if there is no effect
+    ##    producing dualval (see issue736).
     ## 2. If conditions contains any empty list, it is equivalent
     ##    to True and we can remove all other disjuncts.
     ##
@@ -341,7 +347,10 @@ def prune_stupid_effect_conditions(var, val, conditions):
     if conditions == [[]]:
         return False  # Quick exit for common case.
     assert val in [0, 1]
-    dual_fact = (var, 1 - val)
+    dual_val = 1 - val
+    dual_fact = (var, dual_val)
+    if dual_val in effects_on_var:
+        return False
     simplified = False
     for condition in conditions:
         # Apply rule 1.
@@ -687,4 +696,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except MemoryError:
+        print("Translator ran out of memory, traceback:")
+        print("=" * 79)
+        traceback.print_exc(file=sys.stdout)
+        print("=" * 79)
+        sys.exit(EXIT_MEMORY_ERROR)

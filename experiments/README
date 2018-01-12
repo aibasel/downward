@@ -4,7 +4,7 @@ Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
 the creation of experiments. We recommend using common_setup.py (and
-related files for usage) from issue704 for new experiments since it is
+related files for usage) from issue748 for new experiments since it is
 the most recent version.
 
 Previously, most experiments imported lab's downward/configs.py module.
@@ -21,7 +21,7 @@ performed. Some of them use lab's deprecated DownwardExperiment:
     experiments for satisficing, optimal and anytime configurations.
 
 * Add a custom log parser:
-  * issue439/regressions.py
+  * issue735/v1.py
 
 * Compare all attributes for tasks where we lose coverage:
   * issue439/regressions.py
@@ -50,6 +50,9 @@ performed. Some of them use lab's deprecated DownwardExperiment:
 * Translator:
   * issue671/v1.py runs simple configs on the entire set of suites and
     reports also translator-specific attributes
+
+* Translator-only experiment:
+  * issue733/v1.py compares translator time and memory under Python 2 and 3
 
 
 Microbenchmarks

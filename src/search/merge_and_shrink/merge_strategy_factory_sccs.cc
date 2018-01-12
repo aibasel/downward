@@ -136,7 +136,7 @@ void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
     }
     cout << endl;
 
-    cout << "Merge strategy for merging within sccs: ";
+    cout << "Merge strategy for merging within sccs: " << endl;
     if (merge_tree_factory) {
         merge_tree_factory->dump_options();
     }

@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalOperator;
 class GlobalState;
 class TaskProxy;
 
@@ -32,8 +31,6 @@ class Heuristic : public Evaluator {
         }
     };
     static_assert(sizeof(HEntry) == 4, "HEntry has unexpected size.");
-
-    std::string description;
 
     /*
       TODO: We might want to get rid of the preferred_operators
@@ -86,8 +83,12 @@ public:
     virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
     }
 
+    /*
+      TODO: I don't think we use the return value any more, in which
+      case we should make this void.
+    */
     virtual bool notify_state_transition(
-        const GlobalState &parent_state, const GlobalOperator &op,
+        const GlobalState &parent_state, OperatorID op_id,
         const GlobalState &state);
 
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
@@ -99,8 +100,6 @@ public:
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
-
-    std::string get_description() const;
 };
 
 #endif

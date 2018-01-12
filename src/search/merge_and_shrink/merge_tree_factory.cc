@@ -33,6 +33,7 @@ void MergeTreeFactory::dump_options() const {
         cout << "use random";
         break;
     }
+    cout << endl;
     dump_tree_specific_options();
 }
 
