@@ -322,6 +322,14 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
     final_entry = fts.extract_factor(final_index);
     mas_representation = move(final_entry.first);
+    if (!final_entry.second->are_goal_distances_computed()) {
+        // Be careful: the following two variables shadow above ones.
+        const bool compute_init_distances = false;
+        const bool compute_goal_distances = true;
+        final_entry.second->compute_distances(
+            compute_init_distances, compute_goal_distances, verbosity);
+    }
+    assert(final_entry.second->are_goal_distances_computed());
     mas_representation->set_distances(*final_entry.second);
     shrink_strategy = nullptr;
     label_reduction = nullptr;
@@ -388,12 +396,12 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
     }
 
     if (max_states < 1) {
-        cerr << "error: transition system size must be at least 1" << endl;
+        cout << "error: transition system size must be at least 1" << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
 
     if (max_states_before_merge < 1) {
-        cerr << "error: transition system size before merge must be at least 1"
+        cout << "error: transition system size before merge must be at least 1"
              << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
@@ -402,7 +410,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
         threshold = max_states;
     }
     if (threshold < 1) {
-        cerr << "error: threshold must be at least 1" << endl;
+        cout << "error: threshold must be at least 1" << endl;
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
     if (threshold > max_states) {
