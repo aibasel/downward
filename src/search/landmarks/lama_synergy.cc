@@ -64,8 +64,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "using the LAMA-FF synergy. "
         "This synergy can be used via Predefinition "
         "(see OptionSyntax#Predefinitions), for example:\n"
-        "```--heuristic \"lama_master=lama_synergy(...)\" "
-        "--heuristic \"lama_slave=ff_synergy(lama_master)\"```");
+        "```\n--heuristic \"lama_master=lama_synergy(...)\" "
+        "--heuristic \"lama_slave=ff_synergy(lama_master)\"\n```");
     parser.add_option<LandmarkFactory *>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
