@@ -21,6 +21,10 @@ BOT_USERNAME = "XmlRpcBot"
 PASSWORD_FILE = ".downward-xmlrpc.secret" # relative to this source file or in the home directory
 WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
+
+# a list of characters allowed to be used in doc titles
+TITLE_WHITE_LIST = "[\w-+]" # non-word characters (includes _) and - and +
+
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
@@ -107,7 +111,7 @@ def insert_wiki_links(text, titles):
     def make_doc_link(m):
         return make_link(m, prefix=DOC_PREFIX)
 
-    re_link = "(?P<before>\W)(?P<link>%s)(#(?P<anchor>\w+))?(?P<after>\W)"
+    re_link = "(?P<before>\W)(?P<link>%s)(#(?P<anchor>" + TITLE_WHITE_LIST + "+))?(?P<after>\W)"
     doctitles = [title[4:] for title in titles if title.startswith(DOC_PREFIX)]
     for key in doctitles:
         text = re.sub(re_link % key, make_doc_link, text)
