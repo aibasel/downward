@@ -33,13 +33,13 @@ def read_password():
     path = join(dirname(__file__), PASSWORD_FILE)
     if not os.path.exists(path):
         path = os.path.expanduser(join('~', PASSWORD_FILE))
-    with open(path) as password_file:
-        try:
+    try:
+        with open(path) as password_file:
             return password_file.read().strip()
-        except IOError, e:
-            logging.critical("Could not find password file %s!\nIs it present?"
-                     % PASSWORD_FILE)
-            sys.exit(1)
+    except IOError, e:
+        logging.critical("Could not find password file %s!\nIs it present?"
+                 % PASSWORD_FILE)
+        sys.exit(1)
 
 def connect():
     wiki = xmlrpclib.ServerProxy(WIKI_URL + "?action=xmlrpc2", allow_none=True)
