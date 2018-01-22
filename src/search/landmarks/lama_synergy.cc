@@ -65,7 +65,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_note(
         "Using the synergy",
         "To use the synergy, combine the master with the slave (see "
-        "Heuristic#LAMA-FF_synergy_slave using predefinitions (see "
+        "Heuristic#LAMA-FF_synergy_slave) using predefinitions (see "
         "OptionSyntax#Predefinitions), for example:\n"
         "```\n--heuristic \"lama_master=lama_synergy(lm_factory=lm_rhw))\"\n"
         "--heuristic \"lama_slave=ff_synergy(lama_master)\"\n```");
