@@ -65,14 +65,14 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_note(
         "Using the synergy",
         "To use the synergy, combine the master with the slave using "
-        "predefinitions (see [[OptionSyntax#Predefinitions|Predefinitions]]), "
+        "predefinitions (see OptionSyntax#Predefinitions), "
         "for example:\n"
         "```\n--heuristic \"lama_master=lama_synergy(lm_factory=lm_rhw))\"\n"
         "--heuristic \"lama_slave=ff_synergy(lama_master)\"\n```");
     parser.document_note(
         "Note",
         "Regarding using different cost transformations, there are a few "
-        "caveats to be considered, see [[OptionCaveats|OptionCaveats]]."
+        "caveats to be considered, see OptionCaveats."
         );
     parser.add_option<LandmarkFactory *>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
