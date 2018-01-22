@@ -39,7 +39,8 @@ EvaluationResult FFSynergyHeuristic::compute_result(
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "LAMA-FF synergy slave",
-        "See documentation for LAMA-FF synergy master.");
+        "See [[Doc/Heuristic#LAMA-FF_synergy_master|LAMA-FF-master]] for the "
+        "LAMA-FF synergy master.");
     parser.add_option<Heuristic *>("lama_synergy_heuristic");
 
     if (parser.dry_run())

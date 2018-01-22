@@ -57,15 +57,23 @@ bool LamaSynergyHeuristic::notify_state_transition(
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "LAMA-FF synergy master",
-        "If the FF heuristic should be used "
-        "(for its estimates or its preferred operators) "
-        "and we want to use preferred operators of the "
-        "landmark count heuristic, we can exploit synergy effects by "
-        "using the LAMA-FF synergy. "
-        "This synergy can be used via Predefinition "
-        "(see OptionSyntax#Predefinitions), for example:\n"
-        "```\n--heuristic \"lama_master=lama_synergy(...)\" "
+        "This class implements the LAMA-FF synergy. This synergy can be used "
+        "for combining the FF heuristic (e.g. using its estimates or its "
+        "(preferred operators) and the landmark count heuristic with preferred "
+        "operators. See below for an example of how to combine the synergy "
+        "with the slave class.");
+    parser.document_note(
+        "Using the synergy",
+        "To use the synergy, combine the master with the slave using "
+        "predefinitions (see [[OptionSyntax#Predefinitions|Predefinitions]]), "
+        "for example:\n"
+        "```\n--heuristic \"lama_master=lama_synergy(lm_factory=lm_rhw))\"\n"
         "--heuristic \"lama_slave=ff_synergy(lama_master)\"\n```");
+    parser.document_note(
+        "Note",
+        "Regarding using different cost transformations, there are a few "
+        "caveats to be considered, see [[OptionCaveats|OptionCaveats]]."
+        );
     parser.add_option<LandmarkFactory *>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
