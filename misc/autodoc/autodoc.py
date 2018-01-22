@@ -23,7 +23,7 @@ WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
 
 # a list of characters allowed to be used in doc titles
-TITLE_WHITE_LIST = "[\w-+]" # non-word characters (includes _) and - and +
+TITLE_WHITE_LIST = "[\w\+-]" # match 'non-word characters' (including '_'), '+', and '-'
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
