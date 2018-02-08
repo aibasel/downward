@@ -218,7 +218,7 @@ def _set_components_and_inputs(parser, args):
         args.components.append("validate")
 
     args.translate_inputs = []
-    args.search_input = "output.sas"
+    args.search_input = args.sas_file
 
     assert args.components
     first = args.components[0]
@@ -247,6 +247,19 @@ def _set_components_and_inputs(parser, args):
             parser.error("search needs exactly one input file")
     else:
         assert False, first
+
+
+def _set_translator_output_options(parser, args):
+    if args.sas_file is not None and "--sas-file" in args.translate_options:
+        parser.error("Cannot specify the \"--sas-file\" option both to the main"
+                     " driver and to the translator at the same time")
+
+    # By default, we have translator output to "output.sas"; if instructed
+    # otherwise, we update the corresponding translate_option
+    if args.sas_file is None:
+        args.search_input = "output.sas"
+    else:
+        args.translate_options += ["--sas-file", args.sas_file]
 
 
 def _convert_limits_to_ints(parser, args):
@@ -321,13 +334,18 @@ def parse_args():
     driver_other.add_argument(
         "--plan-file", metavar="FILE", default="sas_plan",
         help="write plan(s) to FILE (default: %(default)s; anytime configurations append .1, .2, ...)")
+
+    driver_other.add_argument(
+        "--sas-file", metavar="FILE", default=None,
+        help="Intermediate file where the output of the translator will eventually be placed (default: %(default)s)")
+
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
         help="run a portfolio specified in FILE")
 
     driver_other.add_argument(
         "--cleanup", action="store_true",
-        help="clean up temporary files (output.sas, sas_plan, sas_plan.*) and exit")
+        help="clean up temporary files (SAS translation, sas_plan, sas_plan.*) and exit")
 
 
     parser.add_argument(
@@ -358,6 +376,8 @@ def parse_args():
             ("--alias", args.alias is not None),
             ("--portfolio", args.portfolio is not None),
             ("options for search component", bool(args.search_options))])
+
+    _set_translator_output_options(parser, args)
 
     _convert_limits_to_ints(parser, args)
 
