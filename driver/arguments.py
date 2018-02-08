@@ -218,7 +218,6 @@ def _set_components_and_inputs(parser, args):
         args.components.append("validate")
 
     args.translate_inputs = []
-    args.search_input = args.sas_file
 
     assert args.components
     first = args.components[0]
@@ -254,12 +253,13 @@ def _set_translator_output_options(parser, args):
         parser.error("Cannot specify the \"--sas-file\" option both to the main"
                      " driver and to the translator at the same time")
 
-    # By default, we have translator output to "output.sas"; if instructed
-    # otherwise, we update the corresponding translate_option
-    if args.sas_file is None:
-        args.search_input = "output.sas"
-    else:
-        args.translate_options += ["--sas-file", args.sas_file]
+    # By default, we have translator output to "output.sas".
+    args.search_input = "output.sas" if args.sas_file is None else args.sas_file
+
+    # We make sure the input to the search component is the same as the translate
+    # component output, unless the user explicitly instructs otherwise.
+    if "--sas-file" not in args.translate_options:
+        args.translate_options += ["--sas-file", args.search_input]
 
 
 def _convert_limits_to_ints(parser, args):
