@@ -11,7 +11,7 @@ from common_setup import IssueConfig, IssueExperiment
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["d88bffb34748"]
+REVISIONS = ["9ce8c60f46ab"]
 EXPORTS = ["PYTHONPATH", "PATH", "DOWNWARD_BENCHMARKS"]
 
 
