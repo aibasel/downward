@@ -51,6 +51,9 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
     Options opts = parser.parse();
     // Set options required by Heuristic base class.
+    // The cost type of the synergy's FF heuristic is inherited by the
+    // transform option of the synergy's master therefore we set it here to
+    // nullptr explicitly.
     opts.set<shared_ptr<AbstractTask>>("transform", nullptr);
     // Since heuristic estimates are cached in the master, we deactivate them
     // explicitly in the slave.
