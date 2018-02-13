@@ -296,7 +296,7 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
                              "See also Heuristic#LAMA-FF_synergy_master");
-     parser.document_note(
+    parser.document_note(
         "Note",
         "Regarding using different cost transformations, there are a few "
         "caveats to be considered, see OptionCaveats."
