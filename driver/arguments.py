@@ -249,17 +249,12 @@ def _set_components_and_inputs(parser, args):
 
 
 def _set_translator_output_options(parser, args):
-    if args.sas_file is not None and "--sas-file" in args.translate_options:
-        parser.error("Cannot specify the \"--sas-file\" option both to the main"
-                     " driver and to the translator at the same time")
+    if "--sas-file" in args.translate_options:
+        parser.error("Cannot pass the \"--sas-file\" option to translate.py from the fast-downward.py script"
+                     "Pass it directly to fast-downward.py instead")
 
-    # By default, we have translator output to "output.sas".
-    args.search_input = "output.sas" if args.sas_file is None else args.sas_file
-
-    # We make sure the input to the search component is the same as the translate
-    # component output, unless the user explicitly instructs otherwise.
-    if "--sas-file" not in args.translate_options:
-        args.translate_options += ["--sas-file", args.search_input]
+    args.search_input = args.sas_file
+    args.translate_options += ["--sas-file", args.search_input]
 
 
 def _convert_limits_to_ints(parser, args):
@@ -336,8 +331,8 @@ def parse_args():
         help="write plan(s) to FILE (default: %(default)s; anytime configurations append .1, .2, ...)")
 
     driver_other.add_argument(
-        "--sas-file", metavar="FILE", default=None,
-        help="Intermediate file where the output of the translator will eventually be placed (default: %(default)s)")
+        "--sas-file", metavar="FILE", default="output.sas",
+        help="intermediate file for storing the translator output (default: %(default)s)")
 
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
@@ -345,7 +340,7 @@ def parse_args():
 
     driver_other.add_argument(
         "--cleanup", action="store_true",
-        help="clean up temporary files (SAS translation, sas_plan, sas_plan.*) and exit")
+        help="clean up temporary files (translator output and plan files) and exit")
 
 
     parser.add_argument(
