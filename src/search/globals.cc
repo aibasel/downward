@@ -1,7 +1,6 @@
 #include "globals.h"
 
 #include "axioms.h"
-#include "heuristic.h"
 
 #include "algorithms/int_packer.h"
 #include "task_utils/causal_graph.h"
