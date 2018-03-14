@@ -33,7 +33,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
 
     Heuristic *heuristic;
     std::vector<Heuristic *> preferred_operator_heuristics;
-    std::set<Heuristic *> heuristics;
+    std::set<Evaluator *> path_dependent_evaluators;
     bool use_preferred;
     PreferredUsage preferred_usage;
 
