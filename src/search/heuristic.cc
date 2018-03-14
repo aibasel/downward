@@ -51,15 +51,6 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
-// This solution to get default values seems nonoptimal.
-// This is currently only used by the LAMA/FF synergy.
-Options Heuristic::default_options() {
-    Options opts = Options();
-    opts.set<shared_ptr<AbstractTask>>("transform", g_root_task());
-    opts.set<bool>("cache_estimates", false);
-    return opts;
-}
-
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
 
