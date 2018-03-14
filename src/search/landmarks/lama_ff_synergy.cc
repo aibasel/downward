@@ -59,20 +59,22 @@ public:
         return synergy->lama_result;
     }
 
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override {
+        evals.insert(this);
+    }
+
     virtual void notify_initial_state(const GlobalState &initial_state) override {
         synergy->lama_notify_initial_state(initial_state);
     }
 
-    virtual bool notify_state_transition(
+    virtual void notify_state_transition(
         const GlobalState &parent_state, OperatorID op_id,
         const GlobalState &state) override {
-        if (synergy->lama_notify_state_transition(parent_state, op_id, state)) {
-            if (cache_h_values) {
-                heuristic_cache[state].dirty = true;
-            }
-            return true;
+        synergy->lama_notify_state_transition(parent_state, op_id, state);
+        if (cache_h_values) {
+            heuristic_cache[state].dirty = true;
         }
-        return false;
     }
 };
 
@@ -137,10 +139,10 @@ void LamaFFSynergy::lama_notify_initial_state(const GlobalState &initial_state) 
     lama_heuristic->notify_initial_state(initial_state);
 }
 
-bool LamaFFSynergy::lama_notify_state_transition(
+void LamaFFSynergy::lama_notify_state_transition(
     const GlobalState &parent_state, OperatorID op_id,
     const GlobalState &state) {
-    return lama_heuristic->notify_state_transition(parent_state, op_id, state);
+    lama_heuristic->notify_state_transition(parent_state, op_id, state);
 }
 
 Heuristic *LamaFFSynergy::get_lama_heuristic_proxy() const {
