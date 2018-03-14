@@ -2,8 +2,8 @@
 
 #include "pattern_database.h"
 
-#include "../utils/hash.h"
 #include "../utils/countdown_timer.h"
+#include "../utils/hash.h"
 
 #include <cassert>
 #include <unordered_map>
