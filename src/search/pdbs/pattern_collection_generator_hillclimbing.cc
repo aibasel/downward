@@ -594,6 +594,8 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "patterns", pgh);
     heuristic_opts.set<bool>(
         "dominance_pruning", opts.get<bool>("dominance_pruning"));
+    heuristic_opts.set<double>(
+        "dominance_pruning_max_time", opts.get<double>("dominance_pruning_max_time"));
 
     // Note: in the long run, this should return a shared pointer.
     return new CanonicalPDBsHeuristic(heuristic_opts);
