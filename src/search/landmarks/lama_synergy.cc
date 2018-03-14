@@ -41,17 +41,14 @@ void LamaSynergyHeuristic::notify_initial_state(const GlobalState &initial_state
     lama_heuristic->notify_initial_state(initial_state);
 }
 
-bool LamaSynergyHeuristic::notify_state_transition(
+void LamaSynergyHeuristic::notify_state_transition(
     const GlobalState &parent_state,
     OperatorID op_id,
     const GlobalState &state) {
-    if (lama_heuristic->notify_state_transition(parent_state, op_id, state)) {
-        if (cache_h_values) {
-            heuristic_cache[state].dirty = true;
-        }
-        return true;
+    lama_heuristic->notify_state_transition(parent_state, op_id, state);
+    if (cache_h_values) {
+        heuristic_cache[state].dirty = true;
     }
-    return false;
 }
 
 static Heuristic *_parse(OptionParser &parser) {

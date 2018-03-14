@@ -268,7 +268,6 @@ void Distances::compute_distances(
     if (compute_goal_distances) {
         goal_distances_computed = true;
     }
-    assert(are_init_distances_computed() || are_goal_distances_computed());
 }
 
 void Distances::apply_abstraction(
