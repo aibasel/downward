@@ -357,6 +357,13 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
     pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
     final_entry = fts.extract_factor(final_index);
     mas_representation = move(final_entry.first);
+    if (!final_entry.second->are_goal_distances_computed()) {
+        const bool compute_init = false;
+        const bool compute_goal = true;
+        final_entry.second->compute_distances(
+            compute_init, compute_goal, verbosity);
+    }
+    assert(final_entry.second->are_goal_distances_computed());
     mas_representation->set_distances(*final_entry.second);
     shrink_strategy = nullptr;
     label_reduction = nullptr;
