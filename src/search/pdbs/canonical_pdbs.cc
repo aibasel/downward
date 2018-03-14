@@ -1,6 +1,5 @@
 #include "canonical_pdbs.h"
 
-#include "dominance_pruning.h"
 #include "pattern_database.h"
 
 #include <algorithm>
@@ -12,15 +11,9 @@ using namespace std;
 
 namespace pdbs {
 CanonicalPDBs::CanonicalPDBs(
-    const shared_ptr<PDBCollection> &pattern_databases,
-    const shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets_,
-    bool dominance_pruning)
+    const shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets_)
     : max_additive_subsets(max_additive_subsets_) {
     assert(max_additive_subsets);
-    if (dominance_pruning) {
-        max_additive_subsets = prune_dominated_subsets(
-            *pattern_databases, *max_additive_subsets);
-    }
 }
 
 int CanonicalPDBs::get_value(const State &state) const {

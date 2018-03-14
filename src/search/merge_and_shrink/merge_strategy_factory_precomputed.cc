@@ -27,6 +27,14 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strateg
     return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
 }
 
+bool MergeStrategyFactoryPrecomputed::requires_init_distances() const {
+    return merge_tree_factory->requires_init_distances();
+}
+
+bool MergeStrategyFactoryPrecomputed::requires_goal_distances() const {
+    return merge_tree_factory->requires_goal_distances();
+}
+
 string MergeStrategyFactoryPrecomputed::name() const {
     return "precomputed";
 }

@@ -9,7 +9,6 @@
 #include <iostream>
 #include <vector>
 
-class GlobalOperator;
 class StateRegistry;
 
 using PackedStateBin = int_packer::IntPacker::Bin;

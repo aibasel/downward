@@ -10,6 +10,7 @@
 #include <vector>
 
 namespace merge_and_shrink {
+class Distances;
 class LabelEquivalenceRelation;
 class LabelGroup;
 class Labels;
@@ -158,7 +159,7 @@ public:
       old states are only mapped to the same new state if they are in the same
       equivalence class as specified in state_equivalence_relation.
     */
-    bool apply_abstraction(
+    void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping,
         Verbosity verbosity);
@@ -199,7 +200,7 @@ public:
     */
     bool are_transitions_sorted_unique() const;
 
-    bool is_solvable() const;
+    bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
     void statistics() const;

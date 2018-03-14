@@ -66,7 +66,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 
 
 bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
-                                               const GlobalOperator &,
+                                               OperatorID,
                                                const GlobalState &global_state) {
     if (global_state.get_id() == parent_global_state.get_id()) {
         // This can happen, e.g., in Satellite-01.

@@ -31,7 +31,9 @@ private:
 
     std::vector<Bucket> ordered_buckets_use_vector(
         const TransitionSystem &ts,
-        const Distances &distances) const;
+        const Distances &distances,
+        int max_f,
+        int max_h) const;
     std::vector<Bucket> ordered_buckets_use_map(
         const TransitionSystem &ts,
         const Distances &distances) const;
@@ -46,6 +48,14 @@ protected:
 public:
     explicit ShrinkFH(const options::Options &opts);
     virtual ~ShrinkFH() override = default;
+
+    virtual bool requires_init_distances() const override {
+        return true;
+    }
+
+    virtual bool requires_goal_distances() const override {
+        return true;
+    }
 };
 }
 

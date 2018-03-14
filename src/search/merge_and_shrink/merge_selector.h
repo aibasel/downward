@@ -23,6 +23,14 @@ public:
         const std::vector<int> &indices_subset = std::vector<int>()) const = 0;
     virtual void initialize(const TaskProxy &task_proxy) = 0;
     void dump_options() const;
+
+    virtual bool requires_init_distances() const {
+        return false;
+    }
+
+    virtual bool requires_goal_distances() const {
+        return false;
+    }
 };
 }
 

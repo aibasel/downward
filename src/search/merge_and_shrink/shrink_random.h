@@ -19,6 +19,14 @@ protected:
 public:
     explicit ShrinkRandom(const options::Options &opts);
     virtual ~ShrinkRandom() override = default;
+
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
+
+    virtual bool requires_goal_distances() const override {
+        return false;
+    }
 };
 }
 
