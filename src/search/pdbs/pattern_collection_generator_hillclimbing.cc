@@ -441,7 +441,9 @@ void add_hillclimbing_options(OptionParser &parser) {
         "max_time",
         "maximum time in seconds for improving the initial pattern "
         "collection via hill climbing. If set to 0, no hill climbing "
-        "is performed at all.",
+        "is performed at all. Note that this limit only affects hillclimbing, "
+        "which, for example, does not include dominance pruning, for which "
+        "you can set a separate time limit.",
         "infinity",
         Bounds("0.0", "infinity"));
     utils::add_rng_options(parser);
@@ -560,17 +562,14 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     add_hillclimbing_options(parser);
 
     /*
+      Add, possibly among others, the options for dominance pruning.
+
       Note that using dominance pruning during hill climbing could lead to fewer
       discovered patterns and pattern collections. A dominated pattern
       (or pattern collection) might no longer be dominated after more patterns
       are added. We thus only use dominance pruning on the resulting collection.
     */
-    parser.add_option<bool>(
-        "dominance_pruning",
-        "Exclude patterns and additive subsets that will never contribute to "
-        "the heuristic value because there are dominating patterns in the "
-        "collection.",
-        "true");
+    CanonicalPDBsHeuristic::add_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
 

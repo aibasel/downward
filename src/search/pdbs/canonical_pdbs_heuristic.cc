@@ -28,9 +28,10 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     cout << "PDB collection construction time: " << timer << endl;
 
     if (opts.get<bool>("dominance_pruning")) {
+        double dominance_pruning_max_time = opts.get<double>("dominance_pruning_max_time");
         int num_variables = TaskProxy(*task).get_variables().size();
         max_additive_subsets = prune_dominated_subsets(
-            *pdbs, *max_additive_subsets, num_variables);
+            *pdbs, *max_additive_subsets, num_variables, dominance_pruning_max_time);
     }
     return CanonicalPDBs(max_additive_subsets);
 }
@@ -54,6 +55,20 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     }
 }
 
+void CanonicalPDBsHeuristic::add_options_to_parser(
+    options::OptionParser &parser) {
+    parser.add_option<bool>(
+        "dominance_pruning",
+        "Exclude patterns and additive subsets that will never contribute to "
+        "the heuristic value because there are dominating patterns in the "
+        "collection.",
+        "true");
+    parser.add_option<double>(
+        "dominance_pruning_max_time",
+        "maximum time in seconds spent on dominance pruning if used.",
+        "infinity");
+}
+
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Canonical PDB",
@@ -75,12 +90,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "patterns",
         "pattern generation method",
         "systematic(1)");
-    parser.add_option<bool>(
-        "dominance_pruning",
-        "Exclude patterns and pattern collections that will never contribute to "
-        "the heuristic value because there are dominating patterns in the "
-        "collection.",
-        "true");
+
+    CanonicalPDBsHeuristic::add_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
 
