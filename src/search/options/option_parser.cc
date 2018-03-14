@@ -21,7 +21,6 @@
 
 using namespace std;
 
-// TODO: Remove this when Synergy is gone.
 namespace landmarks {
 class LandmarkFactory;
 }
