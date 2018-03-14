@@ -537,6 +537,8 @@ fast_downward_plugin(
     HELP "Successor generator"
     SOURCES
         task_utils/successor_generator
+        task_utils/successor_generator_factory
+        task_utils/successor_generator_internals
     DEPENDS TASK_PROPERTIES
     DEPENDENCY_ONLY
 )
@@ -625,7 +627,9 @@ fast_downward_plugin(
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
         landmarks/exploration
+        landmarks/ff_synergy
         landmarks/lama_ff_synergy
+        landmarks/lama_synergy
         landmarks/landmark_cost_assignment
         landmarks/landmark_count_heuristic
         landmarks/landmark_factory

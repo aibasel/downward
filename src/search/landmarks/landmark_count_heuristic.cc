@@ -263,9 +263,9 @@ void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_sta
 }
 
 bool LandmarkCountHeuristic::notify_state_transition(
-    const GlobalState &parent_state, const GlobalOperator &op,
+    const GlobalState &parent_state, OperatorID op_id,
     const GlobalState &state) {
-    lm_status_manager->update_reached_lms(parent_state, op, state);
+    lm_status_manager->update_reached_lms(parent_state, op_id, state);
     /* TODO: The return value "true" signals that the LM set of this state
              has changed and the h value should be recomputed. It's not
              wrong to always return true, but it may be more efficient to
@@ -295,16 +295,22 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
-                             "See also Synergy");
+                             "See also Heuristic#LAMA-FF_synergy_master");
     parser.document_note(
         "Note",
-        "to use ``optimal=true``, you must build the planner with LP support. "
-        "See LPBuildInstructions.");
+        "Regarding using different cost transformations, there are a few "
+        "caveats to be considered, see OptionCaveats."
+        );
     parser.document_note(
         "Optimal search",
         "when using landmarks for optimal search (``admissible=true``), "
         "you probably also want to enable the mpd option of the A* algorithm "
         "to improve heuristic estimates");
+    parser.document_note(
+        "Note",
+        "to use ``optimal=true``, you must build the planner with LP support. "
+        "See LPBuildInstructions.");
+
     parser.document_language_support("action costs",
                                      "supported");
     parser.document_language_support("conditional_effects",

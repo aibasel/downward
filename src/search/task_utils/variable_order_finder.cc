@@ -30,8 +30,10 @@ VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
     }
 
     if (variable_order_type == CG_GOAL_RANDOM ||
-        variable_order_type == RANDOM)
+        variable_order_type == RANDOM) {
+        // TODO: use an instance of RandomNumberGenerator for shuffling.
         random_shuffle(remaining_vars.begin(), remaining_vars.end());
+    }
 
     is_causal_predecessor.resize(var_count, false);
     is_goal_variable.resize(var_count, false);

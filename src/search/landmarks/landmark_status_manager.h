@@ -24,7 +24,7 @@ public:
 
     void set_landmarks_for_initial_state(const GlobalState &initial_state);
     bool update_reached_lms(const GlobalState &parent_state,
-                            const GlobalOperator &op,
+                            OperatorID op_id,
                             const GlobalState &state);
 };
 }
