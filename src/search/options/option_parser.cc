@@ -29,55 +29,40 @@ class LandmarkFactory;
 namespace options {
 const string OptionParser::NONE = "<none>";
 
+static void trim(string &arg) {
+    while (arg.size() && isspace(arg.front())) {
+        arg.erase(arg.begin());
+    }
+    while (arg.size() && isspace(arg.back())) {
+        arg.pop_back();
+    }
+}
+
+static pair<string, string> split_predefinition(const string &arg) {
+    size_t split_pos = arg.find("=");
+    string lhs = arg.substr(0, split_pos);
+    trim(lhs);
+    string rhs = arg.substr(split_pos + 1);
+    trim(rhs);
+    return make_pair(lhs, rhs);
+}
+
 /*
   Predefine landmarks and heuristics.
 */
 
-/* Convert a string of the form "word1, word2, word3" to a vector.
-   (used for predefining synergies) */
-static vector<string> to_list(const string &s) {
-    vector<string> result;
-    string buffer;
-    for (char c : s) {
-        if (c == ',') {
-            result.push_back(buffer);
-            buffer.clear();
-        } else if (c == ' ') {
-            continue;
-        } else {
-            buffer.push_back(c);
-        }
-    }
-    result.push_back(buffer);
-    return result;
-}
-
 static void predefine_heuristic(const string &arg, bool dry_run) {
-    size_t split_pos = arg.find("=");
-    string lhs = arg.substr(0, split_pos);
-    vector<string> definees = to_list(lhs);
-    string rhs = arg.substr(split_pos + 1);
-    OptionParser parser(rhs, dry_run);
-    if (definees.size() == 1) {
-        Predefinitions<Heuristic *>::instance()->predefine(
-            definees[0], parser.start_parsing<Heuristic *>());
-    } else {
-        parser.error("predefinition has invalid left side");
-    }
+    pair<string, string> predefinition = split_predefinition(arg);
+    OptionParser parser(predefinition.second, dry_run);
+    Predefinitions<Heuristic *>::instance()->predefine(
+        predefinition.first, parser.start_parsing<Heuristic *>());
 }
 
 static void predefine_lmgraph(const string &arg, bool dry_run) {
-    size_t split_pos = arg.find("=");
-    string lhs = arg.substr(0, split_pos);
-    vector<string> definees = to_list(lhs);
-    string rhs = arg.substr(split_pos + 1);
-    OptionParser op(rhs, dry_run);
-    if (definees.size() == 1) {
-        Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
-            definees[0], op.start_parsing<landmarks::LandmarkFactory *>());
-    } else {
-        op.error("predefinition has invalid left side");
-    }
+    pair<string, string> predefinition = split_predefinition(arg);
+    OptionParser parser(predefinition.second, dry_run);
+    Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
+        predefinition.first, parser.start_parsing<landmarks::LandmarkFactory *>());
 }
 
 
