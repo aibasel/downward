@@ -28,17 +28,25 @@ class LandmarkFactory;
 namespace options {
 const string OptionParser::NONE = "<none>";
 
-static void trim(string &arg) {
-    while (arg.size() && isspace(arg.front())) {
-        arg.erase(arg.begin());
-    }
-    while (arg.size() && isspace(arg.back())) {
-        arg.pop_back();
-    }
+static void ltrim(string &s) {
+    s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
+            return !isspace(ch);
+        }));
+}
+
+static void rtrim(string &s) {
+    s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
+            return !isspace(ch);
+        }).base(), s.end());
+}
+
+static void trim(string &s) {
+    ltrim(s);
+    rtrim(s);
 }
 
 static pair<string, string> split_predefinition(const string &arg) {
-    size_t split_pos = arg.find("=");
+    int split_pos = arg.find("=");
     string lhs = arg.substr(0, split_pos);
     trim(lhs);
     string rhs = arg.substr(split_pos + 1);
