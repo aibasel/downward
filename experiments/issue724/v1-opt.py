@@ -19,7 +19,7 @@ CONFIGS = [
     
 ]
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
-ENVIRONMENT = BaselSlurmEnvironment(email="guillem.frances@unibas.ch", export=["PATH", "DOWNWARD_BENCHMARKS"])
+ENVIRONMENT = BaselSlurmEnvironment(email="guillem.frances@unibas.ch", export=["PATH", "DOWNWARD_BENCHMARKS", "PYTHONPATH"])
 
 if common_setup.is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
