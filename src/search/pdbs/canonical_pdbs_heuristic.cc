@@ -1,5 +1,6 @@
 #include "canonical_pdbs_heuristic.h"
 
+#include "dominance_pruning.h"
 #include "pattern_generator.h"
 
 #include "../option_parser.h"
@@ -26,8 +27,12 @@ CanonicalPDBs get_canonical_pdbs_from_options(
         pattern_collection_info.get_max_additive_subsets();
     cout << "PDB collection construction time: " << timer << endl;
 
-    bool dominance_pruning = opts.get<bool>("dominance_pruning");
-    return CanonicalPDBs(pdbs, max_additive_subsets, dominance_pruning);
+    if (opts.get<bool>("dominance_pruning")) {
+        int num_variables = TaskProxy(*task).get_variables().size();
+        max_additive_subsets = prune_dominated_subsets(
+            *pdbs, *max_additive_subsets, num_variables);
+    }
+    return CanonicalPDBs(max_additive_subsets);
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)

@@ -19,7 +19,6 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
-#include "../utils/memory.h"
 #include "../utils/system.h"
 #include "../utils/timer.h"
 
@@ -127,12 +126,12 @@ void MergeAndShrinkHeuristic::dump_options() const {
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     string dashes(79, '=');
     if (!label_reduction) {
-        cerr << dashes << endl
+        cout << dashes << endl
              << "WARNING! You did not enable label reduction.\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
-        cerr << dashes << endl
+        cout << dashes << endl
              << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
             "iteration, both before shrinking and merging. This double computation effort\n"
             "does not pay off for most configurations!"
@@ -141,14 +140,14 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
         if (label_reduction->reduce_before_shrinking() &&
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
-            cerr << dashes << endl
+            cout << dashes << endl
                  << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
                 "best if used with label reduction before merging, not before shrinking!"
                  << endl << dashes << endl;
         }
         if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
-            cerr << dashes << endl
+            cout << dashes << endl
                  << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
                 "reduction before shrinking, not before merging!"
                  << endl << dashes << endl;
@@ -156,7 +155,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 
     if (!prune_unreachable_states || !prune_irrelevant_states) {
-        cerr << dashes << endl
+        cout << dashes << endl
              << "WARNING! Pruning is (partially) turned off!\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
@@ -418,7 +417,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
     }
 
     if (max_states_before_merge > max_states) {
-        cerr << "warning: max_states_before_merge exceeds max_states, "
+        cout << "warning: max_states_before_merge exceeds max_states, "
              << "correcting." << endl;
         max_states_before_merge = max_states;
     }
@@ -442,7 +441,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
     if (threshold > max_states) {
-        cerr << "warning: threshold exceeds max_states, correcting" << endl;
+        cout << "warning: threshold exceeds max_states, correcting" << endl;
         threshold = max_states;
     }
 

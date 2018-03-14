@@ -1,10 +1,12 @@
 #include "pareto_open_list.h"
 
+#include "../evaluator.h"
 #include "../globals.h"
 #include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/hash.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
