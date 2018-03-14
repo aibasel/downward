@@ -626,7 +626,9 @@ fast_downward_plugin(
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
         landmarks/exploration
+        landmarks/ff_synergy
         landmarks/lama_ff_synergy
+        landmarks/lama_synergy
         landmarks/landmark_cost_assignment
         landmarks/landmark_count_heuristic
         landmarks/landmark_factory
