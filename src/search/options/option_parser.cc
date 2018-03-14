@@ -3,7 +3,6 @@
 #include "doc_printer.h"
 #include "errors.h"
 #include "plugin.h"
-#include "synergy.h"
 
 #include "../globals.h"
 
@@ -53,7 +52,6 @@ static vector<string> to_list(const string &s) {
     return result;
 }
 
-// TODO: Update this function when we get rid of the Synergy object.
 static void predefine_heuristic(const string &arg, bool dry_run) {
     size_t split_pos = arg.find("=");
     string lhs = arg.substr(0, split_pos);
@@ -61,23 +59,8 @@ static void predefine_heuristic(const string &arg, bool dry_run) {
     string rhs = arg.substr(split_pos + 1);
     OptionParser parser(rhs, dry_run);
     if (definees.size() == 1) {
-        // Normal predefinition
         Predefinitions<Heuristic *>::instance()->predefine(
             definees[0], parser.start_parsing<Heuristic *>());
-    } else if (definees.size() > 1) {
-        // Synergy
-        if (!dry_run) {
-            vector<Heuristic *> heur = parser.start_parsing<Synergy *>()->heuristics;
-            for (size_t i = 0; i < definees.size(); ++i) {
-                Predefinitions<Heuristic *>::instance()->predefine(
-                    definees[i], heur[i]);
-            }
-        } else {
-            for (const string &definee : definees) {
-                Predefinitions<Heuristic *>::instance()->predefine(
-                    definee, nullptr);
-            }
-        }
     } else {
         parser.error("predefinition has invalid left side");
     }
