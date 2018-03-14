@@ -55,18 +55,15 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     }
 }
 
-void CanonicalPDBsHeuristic::add_options_to_parser(
-    options::OptionParser &parser) {
-    parser.add_option<bool>(
-        "dominance_pruning",
-        "Exclude patterns and additive subsets that will never contribute to "
-        "the heuristic value because there are dominating patterns in the "
-        "collection.",
-        "true");
+void add_canonicalpdbs_options_to_parser(options::OptionParser &parser) {
     parser.add_option<double>(
         "dominance_pruning_max_time",
-        "maximum time in seconds spent on dominance pruning if used.",
-        "infinity");
+        "The maximum time in seconds spent on dominance pruning. Using 0.0"
+        "turns off dominance pruning. Dominance pruning excludes patterns "
+        "and additive subsets that will never contribute to the heuristic "
+        "value because there are dominating patterns in the collection.",
+        "infinity",
+        Bounds("0.0", "infinity"));
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -91,7 +88,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "pattern generation method",
         "systematic(1)");
 
-    CanonicalPDBsHeuristic::add_options_to_parser(parser);
+    add_canonicalpdbs_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
 
