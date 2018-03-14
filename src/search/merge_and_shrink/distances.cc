@@ -266,11 +266,9 @@ void Distances::compute_distances(
     }
 
     if (compute_init_distances) {
-        assert(are_init_distances_computed());
         init_distances_computed = true;
     }
     if (compute_goal_distances) {
-        assert(are_goal_distances_computed());
         goal_distances_computed = true;
     }
 }
