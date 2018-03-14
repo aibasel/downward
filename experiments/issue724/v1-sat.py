@@ -11,7 +11,7 @@ from relativescatter import RelativeScatterPlotReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue724-base", "issue724-v1"]
+REVISIONS = ["issue724-base", "issue724-v2"]
 CONFIGS = [
     IssueConfig('lama-first', [], driver_options=["--alias", "lama-first"]),
     IssueConfig("ehc-ff", ["--search", "ehc(ff())"]),
