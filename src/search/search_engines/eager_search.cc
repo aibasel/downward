@@ -39,27 +39,27 @@ void EagerSearch::initialize() {
         cout << "Using multi-path dependence (LM-A*)" << endl;
     assert(open_list);
 
-    set<Heuristic *> hset;
-    open_list->get_involved_heuristics(hset);
+    set<Evaluator *> evals;
+    open_list->get_path_dependent_evaluators(evals);
 
-    // Add heuristics that are used for preferred operators (in case they are
-    // not also used in the open list).
-    hset.insert(preferred_operator_heuristics.begin(),
-                preferred_operator_heuristics.end());
-
-    // Add heuristics that are used in the f_evaluator. They are usually also
-    // used in the open list and are hence already included, but we want to be
-    // sure.
-    if (f_evaluator) {
-        f_evaluator->get_involved_heuristics(hset);
+    // Collect path-dependent evaluators that are used for preferred operators
+    // (in case they are not also used in the open list).
+    for (Heuristic *heuristic : preferred_operator_heuristics) {
+        heuristic->get_path_dependent_evaluators(evals);
     }
 
-    heuristics.assign(hset.begin(), hset.end());
-    assert(!heuristics.empty());
+    // Collect path-dependent evaluators that are used in the f_evaluator.
+    // They are usually also used in the open list and will hence already be
+    // included, but we want to be sure.
+    if (f_evaluator) {
+        f_evaluator->get_path_dependent_evaluators(evals);
+    }
+
+    path_dependent_evaluators.assign(evals.begin(), evals.end());
 
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : heuristics) {
-        heuristic->notify_initial_state(initial_state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
     }
 
     // Note: we consider the initial state as reached by a preferred
@@ -137,8 +137,11 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_dead_end())
             continue;
 
-        for (Heuristic *heuristic : heuristics) {
-            heuristic->notify_state_transition(s, op_id, succ_state);
+        // update new path
+        if (use_multi_path_dependence || succ_node.is_new()) {
+            for (Evaluator *evaluator : path_dependent_evaluators) {
+                evaluator->notify_state_transition(s, op_id, succ_state);
+            }
         }
 
         if (succ_node.is_new()) {

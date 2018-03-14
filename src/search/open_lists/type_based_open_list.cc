@@ -1,10 +1,12 @@
 #include "type_based_open_list.h"
 
+#include "../evaluator.h"
 #include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/hash.h"
 #include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
@@ -41,7 +43,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
 };
 
 template<class Entry>
@@ -126,10 +128,10 @@ bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-void TypeBasedOpenList<Entry>::get_involved_heuristics(
-    set<Heuristic *> &hset) {
+void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
+    set<Evaluator *> &evals) {
     for (Evaluator *evaluator : evaluators) {
-        evaluator->get_involved_heuristics(hset);
+        evaluator->get_path_dependent_evaluators(evals);
     }
 }
 

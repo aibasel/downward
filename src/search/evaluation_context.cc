@@ -1,7 +1,7 @@
 #include "evaluation_context.h"
 
 #include "evaluation_result.h"
-#include "heuristic.h"
+#include "evaluator.h"
 #include "search_statistics.h"
 
 #include <cassert>
@@ -31,16 +31,14 @@ EvaluationContext::EvaluationContext(
     : EvaluationContext(HeuristicCache(state), INVALID, false, statistics, calculate_preferred) {
 }
 
-const EvaluationResult &EvaluationContext::get_result(Evaluator *heur) {
-    EvaluationResult &result = cache[heur];
+const EvaluationResult &EvaluationContext::get_result(Evaluator *evaluator) {
+    EvaluationResult &result = cache[evaluator];
     if (result.is_uninitialized()) {
-        result = heur->compute_result(*this);
-        if (statistics && dynamic_cast<const Heuristic *>(heur)) {
-            /* Only count evaluations of actual Heuristics, not arbitrary
-               evaluators. */
-            if (result.get_count_evaluation()) {
-                statistics->inc_evaluations();
-            }
+        result = evaluator->compute_result(*this);
+        if (statistics &&
+            evaluator->is_used_for_counting_evaluations() &&
+            result.get_count_evaluation()) {
+            statistics->inc_evaluations();
         }
     }
     return result;

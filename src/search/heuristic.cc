@@ -16,7 +16,7 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : description(opts.get_unparsed_config()),
+    : Evaluator(opts.get_unparsed_config(), true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
@@ -30,12 +30,6 @@ void Heuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(op.get_global_operator_id());
 }
 
-bool Heuristic::notify_state_transition(
-    const GlobalState & /*parent_state*/,
-    OperatorID /*op_id*/,
-    const GlobalState & /*state*/) {
-    return false;
-}
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
     State state(*g_root_task(), global_state.get_values());
@@ -129,11 +123,6 @@ std::pair<bool,bool> Heuristic::reevaluate_and_check_if_changed(EvaluationContex
     }
     return ret;
 }
-
-string Heuristic::get_description() const {
-    return description;
-}
-
 
 static PluginTypePlugin<Heuristic> _type_plugin(
     "Heuristic",

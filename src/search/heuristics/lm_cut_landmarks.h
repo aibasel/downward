@@ -56,7 +56,6 @@ class LandmarkCutLandmarks {
     int num_propositions;
     priority_queues::AdaptiveQueue<RelaxedProposition *> priority_queue;
 
-    void initialize();
     void build_relaxed_operator(const OperatorProxy &op);
     void add_relaxed_operator(std::vector<RelaxedProposition *> &&precondition,
                               std::vector<RelaxedProposition *> &&effects,
