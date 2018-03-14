@@ -4,6 +4,7 @@
 #include "registries.h"
 
 #include <iostream>
+#include <map>
 
 using namespace std;
 
@@ -35,14 +36,28 @@ void DocPrinter::print_plugin(const string &name) {
 void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
     print_category_header(plugin_type_name);
     print_category_synopsis(synopsis);
+    map<string, vector<PluginInfo>> sections;
     DocStore *doc_store = DocStore::instance();
     for (const string &key : doc_store->get_keys()) {
         const PluginInfo &info = doc_store->get(key);
         if (info.get_type_name() == plugin_type_name && !info.hidden) {
-            print_plugin(key, info);
+            sections[info.section].push_back(info);
         }
     }
+    for (const auto &pair: sections) {
+        print_section(pair.first, pair.second);
+    }
     print_category_footer();
+}
+
+void DocPrinter::print_section(
+    const string &section, const vector<PluginInfo> &infos) {
+    if (!section.empty()) {
+        os << endl << "= " << section << " =" << endl << endl;
+    }
+    for (const PluginInfo &info : infos) {
+        print_plugin(info.name, info);
+    }
 }
 
 void DocPrinter::print_plugin(const string &name, const PluginInfo &info) {

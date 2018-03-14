@@ -18,7 +18,10 @@ string PluginInfo::get_type_name() const {
 
 
 void DocStore::register_plugin(
-    const string &key, DocFactory doc_factory, PluginTypeNameGetter type_name_factory) {
+    const string &key,
+    DocFactory doc_factory,
+    PluginTypeNameGetter type_name_factory,
+    const std::string &section) {
     if (plugin_infos.count(key)) {
         ABORT("DocStore already contains a plugin with name \"" + key + "\"");
     }
@@ -27,6 +30,7 @@ void DocStore::register_plugin(
     doc.type_name_factory = type_name_factory;
     doc.name = key;
     doc.synopsis = "";
+    doc.section = section;
     doc.hidden = false;
     plugin_infos[key] = doc;
 }

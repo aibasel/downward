@@ -40,7 +40,10 @@ public:
 template<typename T>
 class Plugin {
 public:
-    Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
+    Plugin(
+        const std::string &key,
+        typename Registry<T *>::Factory factory,
+        const std::string &section="") {
         Registry<T *>::instance()->insert(key, factory);
         // See comment in PluginShared.
         DocFactory doc_factory = [factory](OptionParser &parser) {
@@ -49,7 +52,7 @@ public:
         PluginTypeNameGetter type_name_factory = [&]() {
                                                      return TypeNamer<T *>::name();
                                                  };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
+        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, section);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
@@ -60,7 +63,10 @@ public:
 template<typename T>
 class PluginShared {
 public:
-    PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
+    PluginShared(
+        const std::string &key,
+        typename Registry<std::shared_ptr<T>>::Factory factory,
+        const std::string &section="") {
         using TPtr = std::shared_ptr<T>;
         Registry<TPtr>::instance()->insert(key, factory);
         /*
@@ -75,7 +81,7 @@ public:
         PluginTypeNameGetter type_name_factory = [&]() {
                                                      return TypeNamer<TPtr>::name();
                                                  };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
+        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, section);
     }
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;
