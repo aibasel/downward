@@ -9,7 +9,7 @@ namespace utils {
 class Time {
     double seconds;
 public:
-    Time(double seconds) : seconds(seconds) {}
+    explicit Time(double seconds) : seconds(seconds) {}
     operator double() const {
         return seconds;
     }
