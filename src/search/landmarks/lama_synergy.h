@@ -50,6 +50,11 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
 
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) override {
+        evals.insert(this);
+    }
+
     virtual void notify_initial_state(const GlobalState &initial_state) override;
 
     virtual void notify_state_transition(
