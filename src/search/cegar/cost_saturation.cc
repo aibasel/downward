@@ -147,7 +147,7 @@ void CostSaturation::build_abstractions(
             max(1, (max_states - num_states) / rem_subtasks),
             max(1, (max_non_looping_transitions - num_non_looping_transitions) /
                 rem_subtasks),
-            timer.get_remaining_time()() / rem_subtasks,
+            timer.get_remaining_time() / rem_subtasks,
             use_general_costs,
             pick_split,
             rng);

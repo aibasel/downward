@@ -15,7 +15,7 @@ using namespace std;
 
 namespace utils {
 ostream &operator<<(ostream &os, const Time &time) {
-    double value = time();
+    double value = time;
     if (value < 0 && value > -1e-10)
         value = 0.0;  // We sometimes get inaccuracies from God knows where.
     if (value < 1e-10)
@@ -72,7 +72,7 @@ double Timer::current_clock() const {
 }
 
 Time Timer::stop() {
-    collected_time = (*this)()();
+    collected_time = (*this)();
     stopped = true;
     return Time(collected_time);
 }
@@ -92,7 +92,7 @@ void Timer::resume() {
 }
 
 Time Timer::reset() {
-    double result = (*this)()();
+    double result = (*this)();
     collected_time = 0;
     last_start_clock = current_clock();
     return Time(result);
