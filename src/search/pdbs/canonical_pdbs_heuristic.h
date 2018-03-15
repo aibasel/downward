@@ -27,7 +27,7 @@ public:
     virtual ~CanonicalPDBsHeuristic() = default;
 };
 
-void add_canonicalpdbs_options_to_parser(options::OptionParser &parser);
+void add_canonical_pdbs_options_to_parser(options::OptionParser &parser);
 }
 
 #endif

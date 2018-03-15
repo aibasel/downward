@@ -442,7 +442,7 @@ void add_hillclimbing_options(OptionParser &parser) {
         "maximum time in seconds for improving the initial pattern "
         "collection via hill climbing. If set to 0, no hill climbing "
         "is performed at all. Note that this limit only affects hill "
-        "climbing. Use dominance_pruning_max_time to limit the time "
+        "climbing. Use max_time_dominance_pruning to limit the time "
         "spent for pruning dominated patterns.",
         "infinity",
         Bounds("0.0", "infinity"));
@@ -569,7 +569,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
       (or pattern collection) might no longer be dominated after more patterns
       are added. We thus only use dominance pruning on the resulting collection.
     */
-    add_canonicalpdbs_options_to_parser(parser);
+    add_canonical_pdbs_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
 
@@ -593,7 +593,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>(
         "patterns", pgh);
     heuristic_opts.set<double>(
-        "dominance_pruning_max_time", opts.get<double>("dominance_pruning_max_time"));
+        "max_time_dominance_pruning", opts.get<double>("max_time_dominance_pruning"));
 
     // Note: in the long run, this should return a shared pointer.
     return new CanonicalPDBsHeuristic(heuristic_opts);
