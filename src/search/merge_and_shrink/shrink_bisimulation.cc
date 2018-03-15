@@ -241,6 +241,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
     int target_size) const {
+    assert(distances.are_goal_distances_computed());
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);

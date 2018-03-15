@@ -422,8 +422,13 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 }
 
 bool TransitionSystem::is_solvable(const Distances &distances) const {
-    return init_state != PRUNED_STATE &&
-           distances.get_goal_distance(init_state) != INF;
+    if (init_state == PRUNED_STATE) {
+        return false;
+    }
+    if (distances.are_goal_distances_computed() && distances.get_goal_distance(init_state) == INF) {
+        return false;
+    }
+    return true;
 }
 
 int TransitionSystem::compute_total_transitions() const {
