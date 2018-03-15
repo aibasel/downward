@@ -30,13 +30,6 @@ void Heuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(op.get_global_operator_id());
 }
 
-bool Heuristic::notify_state_transition(
-    const GlobalState & /*parent_state*/,
-    OperatorID /*op_id*/,
-    const GlobalState & /*state*/) {
-    return false;
-}
-
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
     State state(*g_root_task(), global_state.get_values());
     return task_proxy.convert_ancestor_state(state);
