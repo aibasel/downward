@@ -71,7 +71,9 @@ int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
 
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("FF heuristic", "See also Synergy.");
+    parser.document_synopsis(
+        "FF heuristic",
+        "See also Heuristic#LAMA-FF_synergy_master.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported");
     parser.document_language_support(

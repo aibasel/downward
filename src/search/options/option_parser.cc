@@ -3,7 +3,6 @@
 #include "doc_printer.h"
 #include "errors.h"
 #include "plugin.h"
-#include "synergy.h"
 
 #include "../globals.h"
 
@@ -22,7 +21,6 @@
 
 using namespace std;
 
-// TODO: Remove this when Synergy is gone.
 namespace landmarks {
 class LandmarkFactory;
 }
@@ -30,71 +28,48 @@ class LandmarkFactory;
 namespace options {
 const string OptionParser::NONE = "<none>";
 
+static void ltrim(string &s) {
+    s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
+            return !isspace(ch);
+        }));
+}
+
+static void rtrim(string &s) {
+    s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
+            return !isspace(ch);
+        }).base(), s.end());
+}
+
+static void trim(string &s) {
+    ltrim(s);
+    rtrim(s);
+}
+
+static pair<string, string> split_predefinition(const string &arg) {
+    int split_pos = arg.find("=");
+    string lhs = arg.substr(0, split_pos);
+    trim(lhs);
+    string rhs = arg.substr(split_pos + 1);
+    trim(rhs);
+    return make_pair(lhs, rhs);
+}
+
 /*
   Predefine landmarks and heuristics.
 */
 
-/* Convert a string of the form "word1, word2, word3" to a vector.
-   (used for predefining synergies) */
-static vector<string> to_list(const string &s) {
-    vector<string> result;
-    string buffer;
-    for (char c : s) {
-        if (c == ',') {
-            result.push_back(buffer);
-            buffer.clear();
-        } else if (c == ' ') {
-            continue;
-        } else {
-            buffer.push_back(c);
-        }
-    }
-    result.push_back(buffer);
-    return result;
-}
-
-// TODO: Update this function when we get rid of the Synergy object.
 static void predefine_heuristic(const string &arg, bool dry_run) {
-    size_t split_pos = arg.find("=");
-    string lhs = arg.substr(0, split_pos);
-    vector<string> definees = to_list(lhs);
-    string rhs = arg.substr(split_pos + 1);
-    OptionParser parser(rhs, dry_run);
-    if (definees.size() == 1) {
-        // Normal predefinition
-        Predefinitions<Heuristic *>::instance()->predefine(
-            definees[0], parser.start_parsing<Heuristic *>());
-    } else if (definees.size() > 1) {
-        // Synergy
-        if (!dry_run) {
-            vector<Heuristic *> heur = parser.start_parsing<Synergy *>()->heuristics;
-            for (size_t i = 0; i < definees.size(); ++i) {
-                Predefinitions<Heuristic *>::instance()->predefine(
-                    definees[i], heur[i]);
-            }
-        } else {
-            for (const string &definee : definees) {
-                Predefinitions<Heuristic *>::instance()->predefine(
-                    definee, nullptr);
-            }
-        }
-    } else {
-        parser.error("predefinition has invalid left side");
-    }
+    pair<string, string> predefinition = split_predefinition(arg);
+    OptionParser parser(predefinition.second, dry_run);
+    Predefinitions<Heuristic *>::instance()->predefine(
+        predefinition.first, parser.start_parsing<Heuristic *>());
 }
 
 static void predefine_lmgraph(const string &arg, bool dry_run) {
-    size_t split_pos = arg.find("=");
-    string lhs = arg.substr(0, split_pos);
-    vector<string> definees = to_list(lhs);
-    string rhs = arg.substr(split_pos + 1);
-    OptionParser op(rhs, dry_run);
-    if (definees.size() == 1) {
-        Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
-            definees[0], op.start_parsing<landmarks::LandmarkFactory *>());
-    } else {
-        op.error("predefinition has invalid left side");
-    }
+    pair<string, string> predefinition = split_predefinition(arg);
+    OptionParser parser(predefinition.second, dry_run);
+    Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
+        predefinition.first, parser.start_parsing<landmarks::LandmarkFactory *>());
 }
 
 

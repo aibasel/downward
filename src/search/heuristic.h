@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalState;
 class TaskProxy;
 
 namespace options {
@@ -80,23 +79,11 @@ public:
     explicit Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
-    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
-    }
-
-    /*
-      TODO: I don't think we use the return value any more, in which
-      case we should make this void.
-    */
-    virtual bool notify_state_transition(
-        const GlobalState &parent_state, OperatorID op_id,
-        const GlobalState &state);
-
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
-        hset.insert(this);
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> & /*evals*/) override {
     }
 
     static void add_options_to_parser(options::OptionParser &parser);
-    static options::Options default_options();
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
