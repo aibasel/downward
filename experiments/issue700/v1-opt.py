@@ -41,10 +41,10 @@ for attr in ["total_time", "search_time", "memory"]:
         for config_nick in ["blind", "lmcut"]:
             exp.add_report(RelativeScatterPlotReport(
                 attributes=[attr],
-                filter_algorithm=["issue725-%s-%s" % (rev1, config_nick),
-                                  "issue725-%s-%s" % (rev2, config_nick)],
+                filter_algorithm=["issue700-%s-%s" % (rev1, config_nick),
+                                  "issue700-%s-%s" % (rev2, config_nick)],
                 get_category=lambda r1, r2: r1["domain"],
             ),
-            outfile="issue725-%s-%s-%s-%s.png" % (config_nick, attr, rev1, rev2))
+            outfile="issue700-%s-%s-%s-%s.png" % (config_nick, attr, rev1, rev2))
 
 exp.run_steps()
