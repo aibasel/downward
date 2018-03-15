@@ -42,7 +42,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
     if (!is_new_entry) {
         state_data_pool.pop_back();
     }
-    assert(registered_states.get_num_entries() == static_cast<int>(state_data_pool.size()));
+    assert(registered_states.size() == static_cast<int>(state_data_pool.size()));
     return StateID(result.first);
 }
 
