@@ -28,7 +28,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     cout << "PDB collection construction time: " << timer << endl;
 
     double dominance_pruning_max_time = opts.get<double>("dominance_pruning_max_time");
-    if (dominance_pruning_max_time) {
+    if (dominance_pruning_max_time > 0.0) {
         int num_variables = TaskProxy(*task).get_variables().size();
         max_additive_subsets = prune_dominated_subsets(
             *pdbs, *max_additive_subsets, num_variables, dominance_pruning_max_time);
