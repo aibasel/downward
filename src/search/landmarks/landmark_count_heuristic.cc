@@ -262,18 +262,15 @@ void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_sta
     lm_status_manager->set_landmarks_for_initial_state(initial_state);
 }
 
-bool LandmarkCountHeuristic::notify_state_transition(
+void LandmarkCountHeuristic::notify_state_transition(
     const GlobalState &parent_state, OperatorID op_id,
     const GlobalState &state) {
     lm_status_manager->update_reached_lms(parent_state, op_id, state);
-    /* TODO: The return value "true" signals that the LM set of this state
-             has changed and the h value should be recomputed. It's not
-             wrong to always return true, but it may be more efficient to
-             check that the LM set has actually changed. */
     if (cache_h_values) {
+        /* TODO:  It may be more efficient to check that the reached landmark
+           set has actually changed and only then mark the h value as dirty. */
         heuristic_cache[state].dirty = true;
     }
-    return true;
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
