@@ -14,6 +14,16 @@
 using namespace std;
 
 namespace utils {
+ostream &operator<<(ostream &os, const Time &time) {
+    double value = time();
+    if (value < 0 && value > -1e-10)
+        value = 0.0;  // We sometimes get inaccuracies from God knows where.
+    if (value < 1e-10)
+        value = 0.0;  // Don't care about such small values.
+    os << value << "s";
+    return os;
+}
+
 #if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
     uint64_t difference = end - start;
@@ -61,17 +71,17 @@ double Timer::current_clock() const {
 #endif
 }
 
-double Timer::stop() {
-    collected_time = (*this)();
+Time Timer::stop() {
+    collected_time = (*this)()();
     stopped = true;
-    return collected_time;
+    return Time(collected_time);
 }
 
-double Timer::operator()() const {
+Time Timer::operator()() const {
     if (stopped)
-        return collected_time;
+        return Time(collected_time);
     else
-        return collected_time + current_clock() - last_start_clock;
+        return Time(collected_time + current_clock() - last_start_clock);
 }
 
 void Timer::resume() {
@@ -81,20 +91,15 @@ void Timer::resume() {
     }
 }
 
-double Timer::reset() {
-    double result = (*this)();
+Time Timer::reset() {
+    double result = (*this)()();
     collected_time = 0;
     last_start_clock = current_clock();
-    return result;
+    return Time(result);
 }
 
 ostream &operator<<(ostream &os, const Timer &timer) {
-    double value = timer();
-    if (value < 0 && value > -1e-10)
-        value = 0.0;  // We sometimes get inaccuracies from God knows where.
-    if (value < 1e-10)
-        value = 0.0;  // Don't care about such small values.
-    os << value << "s";
+    os << timer();
     return os;
 }
 

@@ -6,6 +6,17 @@
 #include <ostream>
 
 namespace utils {
+class Time {
+    double seconds;
+public:
+    Time(double seconds) : seconds(seconds) {}
+    double operator()() const {
+        return seconds;
+    }
+};
+
+std::ostream &operator<<(std::ostream &os, const Time &time);
+
 class Timer {
     double last_start_clock;
     double collected_time;
@@ -20,10 +31,10 @@ class Timer {
 public:
     Timer();
     ~Timer() = default;
-    double operator()() const;
-    double stop();
+    Time operator()() const;
+    Time stop();
     void resume();
-    double reset();
+    Time reset();
 };
 
 std::ostream &operator<<(std::ostream &os, const Timer &timer);
