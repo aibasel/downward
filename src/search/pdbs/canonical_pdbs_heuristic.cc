@@ -27,11 +27,11 @@ CanonicalPDBs get_canonical_pdbs_from_options(
         pattern_collection_info.get_max_additive_subsets();
     cout << "PDB collection construction time: " << timer << endl;
 
-    double dominance_pruning_max_time = opts.get<double>("dominance_pruning_max_time");
-    if (dominance_pruning_max_time > 0.0) {
+    double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
+    if (max_time_dominance_pruning > 0.0) {
         int num_variables = TaskProxy(*task).get_variables().size();
         max_additive_subsets = prune_dominated_subsets(
-            *pdbs, *max_additive_subsets, num_variables, dominance_pruning_max_time);
+            *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
     }
     return CanonicalPDBs(max_additive_subsets);
 }
@@ -55,13 +55,13 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     }
 }
 
-void add_canonicalpdbs_options_to_parser(options::OptionParser &parser) {
+void add_canonical_pdbs_options_to_parser(options::OptionParser &parser) {
     parser.add_option<double>(
-        "dominance_pruning_max_time",
-        "The maximum time in seconds spent on dominance pruning. Using 0.0"
+        "max_time_dominance_pruning",
+        "The maximum time in seconds spent on dominance pruning. Using 0.0 "
         "turns off dominance pruning. Dominance pruning excludes patterns "
         "and additive subsets that will never contribute to the heuristic "
-        "value because there are dominating patterns in the collection.",
+        "value because there are dominating subsets in the collection.",
         "infinity",
         Bounds("0.0", "infinity"));
 }
@@ -88,7 +88,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "pattern generation method",
         "systematic(1)");
 
-    add_canonicalpdbs_options_to_parser(parser);
+    add_canonical_pdbs_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
 
