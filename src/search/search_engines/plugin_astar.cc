@@ -14,11 +14,12 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "as f-function. "
         "We break ties using the evaluator. Closed nodes are re-opened.");
     parser.document_note(
-        "mpd option",
-        "This option is currently only present for the A* algorithm and not "
-        "for the more general eager search, "
-        "because the current implementation of multi-path depedence "
-        "does not support general open lists.");
+        "lazy evaluator option",
+        "Lazy evaluators will be reevaluated on states when they get taken out of the open list."
+        "If their value changes (for example because the evaluator is path-dependant), the state"
+        "will instead be reinserted into the open list."
+        "This option is currently only present for the A* algorithm,"
+        "but we plan to implement this feature for at least eager search in the future.");
     parser.document_note(
         "Equivalent statements using general eager search",
         "\n```\n--search astar(evaluator)\n```\n"
@@ -28,8 +29,8 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "               reopen_closed=true, f_eval=sum([g(), h]))\n"
         "```\n", true);
     parser.add_option<Evaluator *>("eval", "evaluator for h-value");
-    parser.add_option<bool>("mpd",
-                            "use multi-path dependence (LM-A*)", "false");
+    parser.add_option<Evaluator *>("lazy_evaluator",
+                                        "list of evaluators that should be reevaluated before a state is expanded", OptionParser::NONE);
 
     SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
@@ -43,9 +44,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         opts.set("reopen_closed", true);
         vector<Heuristic *> preferred_list;
         opts.set("preferred", preferred_list);
-        if(opts.get<bool>("mpd")) {
-            opts.set("lazy_heuristic",opts.get<Evaluator *>("eval"));
-        }
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
 
