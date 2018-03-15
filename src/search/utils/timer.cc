@@ -15,12 +15,7 @@ using namespace std;
 
 namespace utils {
 ostream &operator<<(ostream &os, const Time &time) {
-    double value = time;
-    if (value < 0 && value > -1e-10)
-        value = 0.0;  // We sometimes get inaccuracies from God knows where.
-    if (value < 1e-10)
-        value = 0.0;  // Don't care about such small values.
-    os << value << "s";
+    os << static_cast<double>(time) << "s";
     return os;
 }
 
@@ -71,17 +66,25 @@ double Timer::current_clock() const {
 #endif
 }
 
+Time Timer::round_value(double value) const {
+    if (value < 0 && value > -1e-10)
+        value = 0.0;  // We sometimes get inaccuracies from God knows where.
+    if (value < 1e-10)
+        value = 0.0;  // Don't care about such small values.
+    return Time(value);
+}
+
 Time Timer::stop() {
     collected_time = (*this)();
     stopped = true;
-    return Time(collected_time);
+    return round_value(collected_time);
 }
 
 Time Timer::operator()() const {
     if (stopped)
-        return Time(collected_time);
+        return round_value(collected_time);
     else
-        return Time(collected_time + current_clock() - last_start_clock);
+        return round_value(collected_time + current_clock() - last_start_clock);
 }
 
 void Timer::resume() {
@@ -95,7 +98,7 @@ Time Timer::reset() {
     double result = (*this)();
     collected_time = 0;
     last_start_clock = current_clock();
-    return Time(result);
+    return round_value(result);
 }
 
 ostream &operator<<(ostream &os, const Timer &timer) {
