@@ -21,12 +21,11 @@ namespace eager_search {
 EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
       f_evaluator(opts.get<Evaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
-      lazy_heuristic(opts.get<Evaluator *>("lazy_heuristic", nullptr)),
+      lazy_evaluator(opts.get<Evaluator *>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
 
@@ -35,8 +34,6 @@ void EagerSearch::initialize() {
          << (reopen_closed_nodes ? " with" : " without")
          << " reopening closed nodes, (real) bound = " << bound
          << endl;
-    if (use_multi_path_dependence)
-        cout << "Using multi-path dependence (LM-A*)" << endl;
     assert(open_list);
 
     set<Evaluator *> evals;
@@ -137,11 +134,8 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_dead_end())
             continue;
 
-        // update new path
-        if (use_multi_path_dependence || succ_node.is_new()) {
-            for (Evaluator *evaluator : path_dependent_evaluators) {
-                evaluator->notify_state_transition(s, op_id, succ_state);
-            }
+        for (Evaluator *evaluator : path_dependent_evaluators) {
+            evaluator->notify_state_transition(s, op_id, succ_state);
         }
 
         if (succ_node.is_new()) {
@@ -245,13 +239,13 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (node.is_closed())
             continue;
 
-        if (use_multi_path_dependence) {
+        if (lazy_evaluator) {
             if (node.is_dead_end())
                 continue;
 
             EvaluationContext eval_context(
                 node.get_state(), node.get_g(), false, &statistics);
-            if(eval_context.reevaluate_and_check_if_changed(lazy_heuristic)
+            if(eval_context.reevaluate_and_check_if_changed(lazy_evaluator)
                     && !open_list->is_dead_end(eval_context)) {
                 open_list->insert(eval_context, node.get_state_id());
                 continue;
