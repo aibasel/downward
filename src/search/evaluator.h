@@ -6,11 +6,20 @@
 #include <set>
 
 class EvaluationContext;
-class Heuristic;
+class GlobalState;
 
 class Evaluator {
+    const std::string description;
+    const bool use_for_reporting_minima;
+    const bool use_for_boosting;
+    const bool use_for_counting_evaluations;
+
 public:
-    Evaluator() = default;
+    Evaluator(
+        const std::string &description = "<none>",
+        bool use_for_reporting_minima = false,
+        bool use_for_boosting = false,
+        bool use_for_counting_evaluations = false);
     virtual ~Evaluator() = default;
 
     /*
@@ -22,9 +31,9 @@ public:
     virtual bool dead_ends_are_reliable() const;
 
     /*
-      get_involved_heuristics should insert all heuristics that this
-      evaluator directly or indirectly depends on into the result set,
-      including itself if it is a heuristic.
+      get_path_dependent_evaluators should insert all path-dependent evaluators
+      that this evaluator directly or indirectly depends on into the result set,
+      including itself if necessary.
 
       TODO: We wanted to get rid of this at some point, and perhaps we
       still should try to do that. Currently, the only legitimate use
@@ -32,7 +41,18 @@ public:
       (There is also one "illegitimate" use, the remaining reference
       to heuristics[0] in EagerSearch.)
     */
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) = 0;
+
+
+    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
+    }
+
+    virtual void notify_state_transition(
+        const GlobalState & /*parent_state*/,
+        OperatorID /*op_id*/,
+        const GlobalState & /*state*/) {
+    }
 
     /*
       compute_result should compute the estimate and possibly
@@ -56,6 +76,14 @@ public:
     */
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
+
+    void report_value_for_initial_state(const EvaluationResult &result) const;
+    void report_new_minimum_value(const EvaluationResult &result) const;
+
+    const std::string &get_description() const;
+    bool is_used_for_reporting_minima() const;
+    bool is_used_for_boosting() const;
+    bool is_used_for_counting_evaluations() const;
 };
 
 #endif

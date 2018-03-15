@@ -1,6 +1,6 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "../global_operator.h"
+#include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -71,12 +71,14 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    heuristics.insert(preferred_operator_heuristics.begin(),
-                      preferred_operator_heuristics.end());
-    heuristics.insert(heuristic);
+    for (Heuristic *heur : preferred_operator_heuristics) {
+        heur->get_path_dependent_evaluators(path_dependent_evaluators);
+    }
+    heuristic->get_path_dependent_evaluators(path_dependent_evaluators);
+
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : heuristics) {
-        heuristic->notify_initial_state(initial_state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_heuristics.begin(),
                          preferred_operator_heuristics.end(), heuristic) !=
@@ -91,8 +93,8 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 
 void EnforcedHillClimbingSearch::reach_state(
     const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
-    for (Heuristic *heur : heuristics) {
-        heur->notify_state_transition(parent, op_id, state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_state_transition(parent, op_id, state);
     }
 }
 
@@ -129,7 +131,7 @@ void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     int parent_g,
     OperatorID op_id,
     bool preferred) {
-    const GlobalOperator &op = g_operators[op_id.get_index()];
+    OperatorProxy op = task_proxy.get_operators()[op_id];
     int succ_g = parent_g + get_adjusted_cost(op);
     EdgeOpenListEntry entry = make_pair(
         eval_context.get_state().get_id(), op_id);
@@ -189,19 +191,19 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         EdgeOpenListEntry entry = open_list->remove_min();
         StateID parent_state_id = entry.first;
         OperatorID last_op_id = entry.second;
-        const GlobalOperator *last_op = &g_operators[last_op_id.get_index()];
+        OperatorProxy last_op = task_proxy.get_operators()[last_op_id];
 
         GlobalState parent_state = state_registry.lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         // d: distance from initial node in this EHC phase
         int d = parent_node.get_g() - current_phase_start_g +
-                get_adjusted_cost(*last_op);
+                get_adjusted_cost(last_op);
 
-        if (parent_node.get_real_g() + last_op->get_cost() >= bound)
+        if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
 
-        GlobalState state = state_registry.get_successor_state(parent_state, *last_op);
+        GlobalState state = state_registry.get_successor_state(parent_state, last_op);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state);

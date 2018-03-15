@@ -95,7 +95,6 @@ fast_downward_plugin(
         options/predefinitions
         options/plugin
         options/registries
-        options/synergy
         options/token_parser
         options/type_namer
     CORE_PLUGIN
@@ -625,7 +624,8 @@ fast_downward_plugin(
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
         landmarks/exploration
-        landmarks/lama_ff_synergy
+        landmarks/ff_synergy
+        landmarks/lama_synergy
         landmarks/landmark_cost_assignment
         landmarks/landmark_count_heuristic
         landmarks/landmark_factory
