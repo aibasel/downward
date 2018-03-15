@@ -18,19 +18,14 @@ bool CountdownTimer::is_expired() const {
       output from "strace" (which otherwise reports the "times" system call
       millions of times.
     */
-    return max_time != numeric_limits<double>::infinity() && timer() >= max_time;
+    return max_time != numeric_limits<double>::infinity() && timer()() >= max_time;
 }
 
-double CountdownTimer::get_elapsed_time() const {
+Time CountdownTimer::get_elapsed_time() const {
     return timer();
 }
 
-double CountdownTimer::get_remaining_time() const {
-    return max_time - get_elapsed_time();
-}
-
-ostream &operator<<(ostream &os, const CountdownTimer &cd_timer) {
-    os << cd_timer.timer;
-    return os;
+Time CountdownTimer::get_remaining_time() const {
+    return Time(max_time - get_elapsed_time()());
 }
 }
