@@ -27,7 +27,7 @@ class Timer {
 #endif
 
     double current_clock() const;
-
+    Time round_value(double value) const;
 public:
     Timer();
     ~Timer() = default;
