@@ -10,7 +10,7 @@ class Time {
     double seconds;
 public:
     Time(double seconds) : seconds(seconds) {}
-    double operator()() const {
+    operator double() const {
         return seconds;
     }
 };

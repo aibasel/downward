@@ -18,7 +18,7 @@ bool CountdownTimer::is_expired() const {
       output from "strace" (which otherwise reports the "times" system call
       millions of times.
     */
-    return max_time != numeric_limits<double>::infinity() && timer()() >= max_time;
+    return max_time != numeric_limits<double>::infinity() && timer() >= max_time;
 }
 
 Time CountdownTimer::get_elapsed_time() const {
@@ -26,6 +26,6 @@ Time CountdownTimer::get_elapsed_time() const {
 }
 
 Time CountdownTimer::get_remaining_time() const {
-    return Time(max_time - get_elapsed_time()());
+    return Time(max_time - get_elapsed_time());
 }
 }
