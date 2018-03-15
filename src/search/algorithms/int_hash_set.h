@@ -25,10 +25,13 @@ namespace int_hash_set {
 
   Limitations:
 
-  The range of valid keys is [0, 2^31 - 1]. This range could be extended to [0,
-  2^32 - 1] without using more memory by using unsigned integers for the keys
-  and a different designated value for empty buckets (currently we use -1 for
-  this).
+  We use 32 bit (signed and unsigned) integers instead of larger data types for
+  keys and hashes to save memory.
+
+  Consequently, the range of valid keys is [0, 2^31 - 1]. This range could be
+  extended to [0, 2^32 - 1] without using more memory by using unsigned
+  integers for the keys and a different designated value for empty buckets
+  (currently we use -1 for this).
 
   The maximum capacity (i.e., number of buckets) is 2^30 because we use a
   signed integer to store it and the next larger power of 2 (2^31) is too big

@@ -185,6 +185,7 @@ fast_downward_plugin(
     HELP "Hash set storing non-negative integers"
     SOURCES
         algorithms/int_hash_set.h
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
