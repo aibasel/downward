@@ -152,7 +152,6 @@ bool is_unit_cost() {
 }
 
 bool g_use_metric;
-vector<int> g_variable_domain;
 int_packer::IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 AxiomEvaluator *g_axiom_evaluator;
