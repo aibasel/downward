@@ -25,7 +25,7 @@ CONFIGS = [
     IssueConfig('cpdbs-sys2-dp300', ['--search', 'astar(cpdbs(patterns=systematic(2),dominance_pruning_max_time=300))']),
 ]
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
-ENVIRONMENT = BaselSlurmEnvironment(email="silvan.isevers@unibas.ch")
+ENVIRONMENT = BaselSlurmEnvironment(email="silvan.sievers@unibas.ch")
 
 if common_setup.is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
@@ -48,6 +48,8 @@ attributes.extend([
     "dominance_pruning_pruned_pdbs",
     "pdb_collection_construction_time",
 ])
+
+exp.add_fetcher('data/issue578-v1-more-configs-eval')
 exp.add_absolute_report_step(attributes=attributes)
 #exp.add_comparison_table_step()
 
