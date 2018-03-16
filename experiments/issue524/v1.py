@@ -16,10 +16,35 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 REVISIONS = ["issue524-base", "issue524-v1"]
 CONFIGS = [
-    IssueConfig('lm_mh', [
-        '--landmarks', 'l=lm_hm(m=1)',
+    IssueConfig('lm_hm', [
+        '--landmarks', 'l=lm_hm()',
         '--heuristic', 'h=lmcount(l)',
         '--search', 'eager_greedy([h])']),
+] + [
+    IssueConfig('lm_rhw', [
+        '--landmarks', 'l=lm_rhw()',
+        '--heuristic', 'h=lmcount(l)',
+        '--search', 'eager_greedy([h])']),
+] + [
+    IssueConfig('lm_zg', [
+        '--landmarks', 'l=lm_zg()',
+        '--heuristic', 'h=lmcount(l)',
+        '--search', 'eager_greedy([h])']),
+] + [
+    IssueConfig('lm_exhaust', [
+        '--landmarks', 'l=lm_exhaust()',
+        '--heuristic', 'h=lmcount(l)',
+        '--search', 'eager_greedy([h])']),
+] + [
+    IssueConfig('lm_merged', [
+        '--landmarks', 'l1=lm_exhaust()',
+        '--landmarks', 'l2=lm_rhw()',
+        '--landmarks', 'l=lm_merged([l1, l2])',
+        '--heuristic', 'h=lmcount(l)',
+        '--search', 'eager_greedy([h])']),
+] + [
+    IssueConfig(
+        "lama-first", [], driver_options=["--alias", "lama-first"])
 ]
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
