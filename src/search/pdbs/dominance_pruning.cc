@@ -207,7 +207,7 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     cout << "Pruned " << num_pruned_patterns << " of " << num_patterns
          << " PDBs" << endl;
 
-    cout << "Dominance pruning took " << timer << endl;
+    cout << "Dominance pruning took " << timer.get_elapsed_time() << endl;
 
     return result;
 }
