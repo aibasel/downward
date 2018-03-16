@@ -27,7 +27,6 @@ class Timer {
 #endif
 
     double current_clock() const;
-    Duration sanitize_duration(double value) const;
 public:
     Timer();
     ~Timer() = default;

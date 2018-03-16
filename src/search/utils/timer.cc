@@ -19,6 +19,14 @@ ostream &operator<<(ostream &os, const Duration &time) {
     return os;
 }
 
+Duration sanitize_duration(double value) {
+    if (value < 0 && value > -1e-10)
+        value = 0.0;  // We sometimes get inaccuracies from God knows where.
+    if (value < 1e-10)
+        value = 0.0;  // Don't care about such small values.
+    return Duration(value);
+}
+
 #if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
     uint64_t difference = end - start;
@@ -64,14 +72,6 @@ double Timer::current_clock() const {
 #endif
     return tp.tv_sec + tp.tv_nsec / 1e9;
 #endif
-}
-
-Duration Timer::sanitize_duration(double value) const {
-    if (value < 0 && value > -1e-10)
-        value = 0.0;  // We sometimes get inaccuracies from God knows where.
-    if (value < 1e-10)
-        value = 0.0;  // Don't care about such small values.
-    return Duration(value);
 }
 
 Duration Timer::stop() {
