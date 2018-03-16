@@ -6,16 +6,16 @@
 #include <ostream>
 
 namespace utils {
-class Time {
+class Duration {
     double seconds;
 public:
-    explicit Time(double seconds) : seconds(seconds) {}
+    explicit Duration(double seconds) : seconds(seconds) {}
     operator double() const {
         return seconds;
     }
 };
 
-std::ostream &operator<<(std::ostream &os, const Time &time);
+std::ostream &operator<<(std::ostream &os, const Duration &time);
 
 class Timer {
     double last_start_clock;
@@ -27,14 +27,14 @@ class Timer {
 #endif
 
     double current_clock() const;
-    Time round_value(double value) const;
+    Duration sanitize_duration(double value) const;
 public:
     Timer();
     ~Timer() = default;
-    Time operator()() const;
-    Time stop();
+    Duration operator()() const;
+    Duration stop();
     void resume();
-    Time reset();
+    Duration reset();
 };
 
 std::ostream &operator<<(std::ostream &os, const Timer &timer);

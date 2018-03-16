@@ -21,11 +21,11 @@ bool CountdownTimer::is_expired() const {
     return max_time != numeric_limits<double>::infinity() && timer() >= max_time;
 }
 
-Time CountdownTimer::get_elapsed_time() const {
+Duration CountdownTimer::get_elapsed_time() const {
     return timer();
 }
 
-Time CountdownTimer::get_remaining_time() const {
-    return Time(max_time - get_elapsed_time());
+Duration CountdownTimer::get_remaining_time() const {
+    return Duration(max_time - get_elapsed_time());
 }
 }
