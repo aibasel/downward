@@ -174,9 +174,9 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
 
 ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
-    const vector<Heuristic *> &preferred_operator_heuristics) {
+    const vector<Evaluator *> &preferred_operator_heuristics) {
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
+    for (Evaluator *heuristic : preferred_operator_heuristics) {
         /*
           Unreliable heuristics might consider solvable states as dead
           ends. We only want preferred operators from finite-value
