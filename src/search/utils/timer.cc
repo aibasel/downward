@@ -92,7 +92,7 @@ Duration Timer::operator()() const {
         return Duration(collected_time);
     else
         return Duration(collected_time
-            + compute_sanitized_duration(current_clock(), last_start_clock));
+            + compute_sanitized_duration(last_start_clock, current_clock()));
 }
 
 void Timer::resume() {
