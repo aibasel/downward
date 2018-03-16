@@ -368,7 +368,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             // Remove the added PDB from candidate_pdbs.
             candidate_pdbs[best_pdb_index] = nullptr;
 
-            cout << "Hill climbing time so far: " << *hill_climbing_timer
+            cout << "Hill climbing time so far: "
+                 << hill_climbing_timer->get_elapsed_time()
                  << endl;
         }
     } catch (HillClimbingTimeout &) {
@@ -382,7 +383,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     cout << "iPDB: generated = " << generated_patterns.size() << endl;
     cout << "iPDB: rejected = " << num_rejected << endl;
     cout << "iPDB: maximum pdb size = " << max_pdb_size << endl;
-    cout << "iPDB: hill climbing time: " << *hill_climbing_timer << endl;
+    cout << "iPDB: hill climbing time: "
+         << hill_climbing_timer->get_elapsed_time() << endl;
 
     delete hill_climbing_timer;
     hill_climbing_timer = nullptr;
