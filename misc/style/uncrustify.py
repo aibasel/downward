@@ -17,7 +17,7 @@ try:
     # use new registrar.command decorator to register uncrustify later
     from mercurial import registrar
     command = registrar.command(cmdtable)
-except [ImportError, AttributeError]:
+except (ImportError, AttributeError):
     # make own decorator valid for the old way
     def command(name, opts, synopsis):
         def _decorator(func):
