@@ -11,8 +11,8 @@ public:
     explicit CountdownTimer(double max_time);
     ~CountdownTimer();
     bool is_expired() const;
-    Time get_elapsed_time() const;
-    Time get_remaining_time() const;
+    Duration get_elapsed_time() const;
+    Duration get_remaining_time() const;
 };
 }
 
