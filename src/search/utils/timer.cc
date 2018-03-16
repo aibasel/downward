@@ -19,12 +19,19 @@ ostream &operator<<(ostream &os, const Duration &time) {
     return os;
 }
 
-static Duration sanitize_duration(double value) {
-    if (value < 0 && value > -1e-10)
-        value = 0.0;  // We sometimes get inaccuracies from God knows where.
-    if (value < 1e-10)
-        value = 0.0;  // Don't care about such small values.
-    return Duration(value);
+static double compute_sanitized_duration(double start_clock, double end_clock) {
+    /*
+        Sometimes we measure durations that are closer to 0 than should be physically possible
+        with measurements on a single CPU. Note that with a CPU frequency less than 10 GHz,
+        each clock cycle will take more than 1e-10 seconds. Even worse, these close-to-zero durations
+        are sometimes negative. We sanitize them to 0.
+    */
+    double duration = end_clock - start_clock;
+    if (duration > -1e-10 && duration < 1e-10)
+        duration = 0.0;
+    if (duration < 0)
+        duration = 0.0;
+    return duration;
 }
 
 #if OPERATING_SYSTEM == OSX
@@ -77,14 +84,15 @@ double Timer::current_clock() const {
 Duration Timer::stop() {
     collected_time = (*this)();
     stopped = true;
-    return sanitize_duration(collected_time);
+    return Duration(collected_time);
 }
 
 Duration Timer::operator()() const {
     if (stopped)
-        return sanitize_duration(collected_time);
+        return Duration(collected_time);
     else
-        return sanitize_duration(collected_time + current_clock() - last_start_clock);
+        return Duration(collected_time
+            + compute_sanitized_duration(current_clock(), last_start_clock));
 }
 
 void Timer::resume() {
@@ -98,7 +106,7 @@ Duration Timer::reset() {
     double result = (*this)();
     collected_time = 0;
     last_start_clock = current_clock();
-    return sanitize_duration(result);
+    return Duration(result);
 }
 
 ostream &operator<<(ostream &os, const Timer &timer) {
