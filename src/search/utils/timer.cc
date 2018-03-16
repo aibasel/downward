@@ -19,7 +19,7 @@ ostream &operator<<(ostream &os, const Duration &time) {
     return os;
 }
 
-Duration sanitize_duration(double value) {
+static Duration sanitize_duration(double value) {
     if (value < 0 && value > -1e-10)
         value = 0.0;  // We sometimes get inaccuracies from God knows where.
     if (value < 1e-10)
