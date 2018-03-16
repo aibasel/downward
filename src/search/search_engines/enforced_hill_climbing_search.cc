@@ -1,6 +1,5 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -64,14 +63,14 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const Options &opts)
     : SearchEngine(opts),
-      heuristic(opts.get<Heuristic *>("h")),
-      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
+      heuristic(opts.get<Evaluator *>("h")),
+      preferred_operator_heuristics(opts.get_list<Evaluator *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    for (Heuristic *heur : preferred_operator_heuristics) {
+    for (Evaluator *heur : preferred_operator_heuristics) {
         heur->get_path_dependent_evaluators(path_dependent_evaluators);
     }
     heuristic->get_path_dependent_evaluators(path_dependent_evaluators);
@@ -266,7 +265,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 
 static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Lazy enforced hill-climbing", "");
-    parser.add_option<Heuristic *>("h", "heuristic");
+    parser.add_option<Evaluator *>("h", "heuristic");
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
@@ -275,7 +274,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         preferred_usages,
         "preferred operator usage",
         "PRUNE_BY_PREFERRED");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<Evaluator *>(
         "preferred",
         "use preferred operators of these heuristics",
         "[]");

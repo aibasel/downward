@@ -41,7 +41,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         opts.set("open", temp.first);
         opts.set("f_eval", temp.second);
         opts.set("reopen_closed", true);
-        vector<Heuristic *> preferred_list;
+        vector<Evaluator *> preferred_list;
         opts.set("preferred", preferred_list);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
