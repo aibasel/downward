@@ -14,7 +14,7 @@ from relativescatter import RelativeScatterPlotReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
-REVISIONS = ["issue524-base", "issue524-v1"]
+REVISIONS = ["issue524-base", "issue524-v2"]
 CONFIGS = [
     IssueConfig('lm_hm', [
         '--landmarks', 'l=lm_hm()',
@@ -51,7 +51,6 @@ ENVIRONMENT = BaselSlurmEnvironment(
     email="cedric.geissmann@unibas.ch"
 )
 
-# SUITE = ['gripper:prob01.pddl', 'rovers:p01.pddl']
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 
 if common_setup.is_test_run():
@@ -68,5 +67,6 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
+exp.add_scatter_plot_step()
 
 exp.run_steps()
