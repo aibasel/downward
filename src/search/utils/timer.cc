@@ -29,8 +29,6 @@ static double compute_sanitized_duration(double start_clock, double end_clock) {
     double duration = end_clock - start_clock;
     if (duration > -1e-10 && duration < 1e-10)
         duration = 0.0;
-    if (duration < 0)
-        duration = 0.0;
     return duration;
 }
 
