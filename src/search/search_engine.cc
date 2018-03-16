@@ -79,7 +79,7 @@ void SearchEngine::search() {
         }
     }
     // TODO: Revise when and which search times are logged.
-    cout << "Actual search time: " << timer
+    cout << "Actual search time: " << timer.get_elapsed_time()
          << " [t=" << utils::g_timer << "]" << endl;
 }
 

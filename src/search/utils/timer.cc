@@ -14,6 +14,24 @@
 using namespace std;
 
 namespace utils {
+ostream &operator<<(ostream &os, const Duration &time) {
+    os << static_cast<double>(time) << "s";
+    return os;
+}
+
+static double compute_sanitized_duration(double start_clock, double end_clock) {
+    /*
+        Sometimes we measure durations that are closer to 0 than should be physically possible
+        with measurements on a single CPU. Note that with a CPU frequency less than 10 GHz,
+        each clock cycle will take more than 1e-10 seconds. Even worse, these close-to-zero durations
+        are sometimes negative. We sanitize them to 0.
+    */
+    double duration = end_clock - start_clock;
+    if (duration > -1e-10 && duration < 1e-10)
+        duration = 0.0;
+    return duration;
+}
+
 #if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
     uint64_t difference = end - start;
@@ -61,17 +79,18 @@ double Timer::current_clock() const {
 #endif
 }
 
-double Timer::stop() {
+Duration Timer::stop() {
     collected_time = (*this)();
     stopped = true;
-    return collected_time;
+    return Duration(collected_time);
 }
 
-double Timer::operator()() const {
+Duration Timer::operator()() const {
     if (stopped)
-        return collected_time;
+        return Duration(collected_time);
     else
-        return collected_time + current_clock() - last_start_clock;
+        return Duration(collected_time
+                        + compute_sanitized_duration(last_start_clock, current_clock()));
 }
 
 void Timer::resume() {
@@ -81,20 +100,15 @@ void Timer::resume() {
     }
 }
 
-double Timer::reset() {
+Duration Timer::reset() {
     double result = (*this)();
     collected_time = 0;
     last_start_clock = current_clock();
-    return result;
+    return Duration(result);
 }
 
 ostream &operator<<(ostream &os, const Timer &timer) {
-    double value = timer();
-    if (value < 0 && value > -1e-10)
-        value = 0.0;  // We sometimes get inaccuracies from God knows where.
-    if (value < 1e-10)
-        value = 0.0;  // Don't care about such small values.
-    os << value << "s";
+    os << timer();
     return os;
 }
 
