@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -52,8 +53,12 @@ class IntHashSet {
     using KeyType = int;
     using HashType = unsigned int;
 
+    static_assert(sizeof(KeyType) == 4, "IntHashSet::KeyType does not use 4 bytes");
+    static_assert(sizeof(HashType) == 4, "IntHashSet::HashType does not use 4 bytes");
+
     // Max distance from the ideal bucket to the actual bucket for each key.
-    static const int max_distance = 32;
+    static const int MAX_DISTANCE = 32;
+    static const unsigned int MAX_BUCKETS = std::numeric_limits<unsigned int>::max();
 
     struct Bucket {
         KeyType key;
@@ -104,10 +109,15 @@ class IntHashSet {
     }
 
     void enlarge() {
-        int num_buckets = buckets.size();
-        assert(num_buckets == 1 || num_buckets % 2 == 0);
-        if (num_buckets == (1 << 30)) {
-            std::cerr << "Int hash set surpassed maximum capacity. Aborting."
+        unsigned int num_buckets = buckets.size();
+        // Verify that the number of buckets is a power of 2.
+        assert((num_buckets & (num_buckets - 1)) == 0);
+        if (num_buckets > MAX_BUCKETS / 2) {
+            std::cerr << "IntHashSet surpassed maximum capacity. This means"
+                " you either use IntHashSet for high-memory"
+                " applications for which it was not designed, or there"
+                " is an unexpectedly high number of hash collisions"
+                " that should be investigated. Aborting."
                       << std::endl;
             utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
         }
@@ -115,10 +125,13 @@ class IntHashSet {
     }
 
     int get_bucket(HashType hash) const {
-        /* Since the number of buckets is restricted to powers of 2,
-           we can use "i % 2^n = i & (2^n - 1)" to speed this up. */
         assert(!buckets.empty());
-        return hash & (buckets.size() - 1);
+        unsigned int num_buckets = buckets.size();
+        // Verify that the number of buckets is a power of 2.
+        assert((num_buckets & (num_buckets - 1)) == 0);
+        /* We want to return hash % num_buckets. The following line does this
+           because we know that num_buckets is a power of 2. */
+        return hash & (num_buckets - 1);
     }
 
     /*
@@ -147,7 +160,7 @@ class IntHashSet {
     KeyType find_equal_key(KeyType key, HashType hash) const {
         assert(hasher(key) == hash);
         int ideal_index = get_bucket(hash);
-        for (int i = 0; i < max_distance; ++i) {
+        for (int i = 0; i < MAX_DISTANCE; ++i) {
             int index = get_bucket(ideal_index + i);
             const Bucket &bucket = buckets[index];
             if (bucket.full() && bucket.hash == hash && equal(bucket.key, key)) {
@@ -200,10 +213,10 @@ class IntHashSet {
           the swap doesn't move the full bucket too far from its ideal
           position.
         */
-        while (get_distance(ideal_index, free_index) >= max_distance) {
+        while (get_distance(ideal_index, free_index) >= MAX_DISTANCE) {
             bool swapped = false;
             int num_buckets = capacity();
-            int max_offset = std::min(max_distance, num_buckets) - 1;
+            int max_offset = std::min(MAX_DISTANCE, num_buckets) - 1;
             for (int offset = max_offset; offset >= 1; --offset) {
                 assert(offset < num_buckets);
                 int candidate_index = free_index + num_buckets - offset;
@@ -211,7 +224,7 @@ class IntHashSet {
                 candidate_index = get_bucket(candidate_index);
                 HashType candidate_hash = buckets[candidate_index].hash;
                 int candidate_ideal_index = get_bucket(candidate_hash);
-                if (get_distance(candidate_ideal_index, free_index) < max_distance) {
+                if (get_distance(candidate_ideal_index, free_index) < MAX_DISTANCE) {
                     // Candidate can be swapped.
                     std::swap(buckets[candidate_index], buckets[free_index]);
                     free_index = candidate_index;
