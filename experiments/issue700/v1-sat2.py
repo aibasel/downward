@@ -14,14 +14,6 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue700-base", "issue700-v1"]
 CONFIGS = [
-    IssueConfig(
-        "lama-first",
-        [],
-        driver_options=["--alias", "lama-first"]),
-    IssueConfig(
-        "lama",
-        [],
-        driver_options=["--alias", "seq-sat-lama-2011"]),
     IssueConfig("ehc_ff", ["--heuristic", "h=ff()", "--search", "ehc(h, preferred=[h])"]),
 ]
 SUITE = common_setup.DEFAULT_SATISFICING_SUITE
@@ -40,12 +32,12 @@ exp = IssueExperiment(
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
-exp.add_absolute_report_step(filter_algorithm=["lama-first"])
+exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 
 for attr in ["total_time", "search_time", "memory"]:
     for rev1, rev2 in [("base", "v1")]:
-        for config_nick in ["lama-first", "ehc_ff"]:
+        for config_nick in ["ehc_ff"]:
             exp.add_report(RelativeScatterPlotReport(
                 attributes=[attr],
                 filter_algorithm=["issue700-%s-%s" % (rev1, config_nick),
