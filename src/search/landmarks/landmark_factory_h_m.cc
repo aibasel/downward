@@ -992,8 +992,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
 
     if (parser.dry_run())
         return nullptr;
-
-    return make_shared<LandmarkFactoryHM>(opts);
+    else
+        return make_shared<LandmarkFactoryHM>(opts);
 }
 
 static PluginShared<LandmarkFactory> _plugin("lm_hm", _parse);
