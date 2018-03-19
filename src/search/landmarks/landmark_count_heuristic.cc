@@ -351,7 +351,8 @@ static Heuristic *_parse(OptionParser &parser) {
 
     if (parser.dry_run())
         return nullptr;
-    return new LandmarkCountHeuristic(opts);
+    else
+        return new LandmarkCountHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("lmcount", _parse);

@@ -71,7 +71,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
 
     if (parser.dry_run())
         return nullptr;
-    return make_shared<LandmarkFactoryRpgExhaust>(opts);
+    else
+        return make_shared<LandmarkFactoryRpgExhaust>(opts);
 }
 
 static PluginShared<LandmarkFactory> _plugin("lm_exhaust", _parse);

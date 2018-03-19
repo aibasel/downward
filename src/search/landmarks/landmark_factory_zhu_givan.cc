@@ -320,7 +320,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
 
     if (parser.dry_run())
         return nullptr;
-    return make_shared<LandmarkFactoryZhuGivan>(opts);
+    else
+        return make_shared<LandmarkFactoryZhuGivan>(opts);
 }
 
 static PluginShared<LandmarkFactory> _plugin("lm_zg", _parse);
