@@ -14,7 +14,7 @@ from relativescatter import RelativeScatterPlotReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
-REVISIONS = ["issue524-base", "issue524-v2"]
+REVISIONS = ["issue524-base-v2", "issue524-v2"]
 CONFIGS = [
     IssueConfig('lm_hm', [
         '--landmarks', 'l=lm_hm()',
