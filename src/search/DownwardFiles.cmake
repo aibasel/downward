@@ -94,7 +94,6 @@ fast_downward_plugin(
         options/predefinitions
         options/plugin
         options/registries
-        options/synergy
         options/token_parser
         options/type_namer
     CORE_PLUGIN
@@ -625,7 +624,6 @@ fast_downward_plugin(
     SOURCES
         landmarks/exploration
         landmarks/ff_synergy
-        landmarks/lama_ff_synergy
         landmarks/lama_synergy
         landmarks/landmark_cost_assignment
         landmarks/landmark_count_heuristic

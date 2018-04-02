@@ -15,7 +15,6 @@ class LandmarkCostAssignment;
 class LandmarkStatusManager;
 
 class LandmarkCountHeuristic : public Heuristic {
-    friend class LamaFFSynergy;
     friend class LamaSynergyHeuristic;
     std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
