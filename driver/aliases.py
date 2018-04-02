@@ -96,38 +96,6 @@ lazy(alt([single(sum([g(),weight(hff,2)])),
 ALIASES["seq-sat-lama-2011"] = [
     "--if-unit-cost",
     "--heuristic",
-    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true))",
-    "--search", """iterated([
-                     lazy_greedy([hff,hlm],preferred=[hff,hlm]),
-                     lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
-                     lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
-                     lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2),
-                     lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)
-                     ],repeat_last=true,continue_on_fail=true)""",
-    "--if-non-unit-cost",
-    "--heuristic",
-    "hlm1,hff1=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=one),transform=adapt_costs(one))",
-    "--heuristic",
-    "hlm2,hff2=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=plusone),transform=adapt_costs(plusone))",
-    "--search", """iterated([
-                     lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
-                                 cost_type=one,reopen_closed=false),
-                     lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],
-                                 reopen_closed=false),
-                     lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=5),
-                     lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=3),
-                     lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=2),
-                     lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=1)
-                     ],repeat_last=true,continue_on_fail=true)""",
-    "--always"]
-# Append --always to be on the safe side if we want to append
-# additional options later.
-
-ALIASES["seq-sat-lama-2011-new"] = [
-    "--if-unit-cost",
-    "--heuristic",
     "hlm=lama_synergy(lm_rhw(reasonable_orders=true))",
     "--heuristic", "hff=ff_synergy(hlm)",
     "--search", """iterated([
@@ -161,13 +129,6 @@ ALIASES["seq-sat-lama-2011-new"] = [
 # additional options later.
 
 ALIASES["lama-first"] = [
-    "--heuristic",
-    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=one),"
-    "                  transform=adapt_costs(one))",
-    "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
-                               cost_type=one,reopen_closed=false)"""]
-
-ALIASES["lama-first-new"] = [
     "--heuristic",
     """hlm=lama_synergy(lm_rhw(reasonable_orders=true,lm_cost_type=one),
                                transform=adapt_costs(one))""",

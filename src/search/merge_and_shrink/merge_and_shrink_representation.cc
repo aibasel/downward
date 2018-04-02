@@ -6,6 +6,7 @@
 #include "../task_proxy.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <numeric>
 
@@ -34,6 +35,7 @@ MergeAndShrinkRepresentationLeaf::MergeAndShrinkRepresentationLeaf(
 
 void MergeAndShrinkRepresentationLeaf::set_distances(
     const Distances &distances) {
+    assert(distances.are_goal_distances_computed());
     for (int &entry : lookup_table) {
         if (entry != PRUNED_STATE) {
             entry = distances.get_goal_distance(entry);
@@ -87,6 +89,7 @@ MergeAndShrinkRepresentationMerge::MergeAndShrinkRepresentationMerge(
 
 void MergeAndShrinkRepresentationMerge::set_distances(
     const Distances &distances) {
+    assert(distances.are_goal_distances_computed());
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
             if (entry != PRUNED_STATE) {
