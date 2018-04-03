@@ -3,23 +3,13 @@
 #include "axioms.h"
 
 #include "algorithms/int_packer.h"
-#include "task_utils/causal_graph.h"
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/logging.h"
-#include "utils/rng.h"
-#include "utils/system.h"
-#include "utils/timer.h"
 
-#include <cstdlib>
-#include <fstream>
 #include <iostream>
 #include <limits>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
 
 using namespace std;
 using utils::ExitCode;
@@ -117,6 +107,5 @@ int_packer::IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 AxiomEvaluator *g_axiom_evaluator;
 successor_generator::SuccessorGenerator *g_successor_generator;
-
 
 utils::Log g_log;

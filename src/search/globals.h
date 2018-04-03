@@ -3,8 +3,7 @@
 
 #include "operator_id.h"
 
-#include <memory>
-#include <string>
+#include <istream>
 #include <vector>
 
 class AxiomEvaluator;
