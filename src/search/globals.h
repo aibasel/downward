@@ -1,8 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "operator_id.h"
-
 #include <istream>
 #include <vector>
 
