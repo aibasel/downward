@@ -1,7 +1,6 @@
 #include "search_space.h"
 
 #include "global_state.h"
-#include "globals.h"
 #include "task_proxy.h"
 
 #include <cassert>

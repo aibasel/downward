@@ -1,7 +1,6 @@
 #include "pareto_open_list.h"
 
 #include "../evaluator.h"
-#include "../globals.h"
 #include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
