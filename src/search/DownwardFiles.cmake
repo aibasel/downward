@@ -53,7 +53,6 @@ fast_downward_plugin(
         evaluation_context
         evaluation_result
         evaluator
-        global_operator
         globals
         global_state
         heuristic_cache

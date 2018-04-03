@@ -1,9 +1,9 @@
 #include "cost_adapted_task.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../tasks/root_task.h"
 #include "../utils/system.h"
 
 #include <iostream>
@@ -14,7 +14,7 @@ using utils::ExitCode;
 
 namespace tasks {
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
-    : DelegatingTask(g_root_task()),
+    : DelegatingTask(g_root_task),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
       is_unit_cost(compute_is_unit_cost()) {
 }
