@@ -147,6 +147,7 @@ void dump_everything() {
 }
 
 bool is_unit_cost() {
+    assert(tasks::g_root_task);
     static bool is_unit_cost = task_properties::is_unit_cost(TaskProxy(*tasks::g_root_task));
     return is_unit_cost;
 }
