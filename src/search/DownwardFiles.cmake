@@ -64,6 +64,7 @@ fast_downward_plugin(
         option_parser
         option_parser_util
         per_state_information
+        plan_manager
         plugin
         pruning_method
         search_engine
