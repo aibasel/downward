@@ -55,13 +55,13 @@ struct ExplicitOperator {
 
 
 class RootTask : public AbstractTask {
-    std::vector<ExplicitVariable> variables;
+    vector<ExplicitVariable> variables;
     // TODO: think about using hash sets here.
-    std::vector<std::vector<std::set<FactPair>>> mutexes;
-    std::vector<ExplicitOperator> operators;
-    std::vector<ExplicitOperator> axioms;
-    mutable std::vector<int> initial_state_values;
-    std::vector<FactPair> goals;
+    vector<vector<set<FactPair>>> mutexes;
+    vector<ExplicitOperator> operators;
+    vector<ExplicitOperator> axioms;
+    mutable vector<int> initial_state_values;
+    vector<FactPair> goals;
     mutable bool evaluated_axioms_on_initial_state;
 
     const ExplicitVariable &get_variable(int var) const;
@@ -71,19 +71,19 @@ class RootTask : public AbstractTask {
     void evaluate_axioms_on_initial_state() const;
 
 public:
-    explicit RootTask(std::istream &in);
+    explicit RootTask(istream &in);
 
     virtual int get_num_variables() const override;
-    virtual std::string get_variable_name(int var) const override;
+    virtual string get_variable_name(int var) const override;
     virtual int get_variable_domain_size(int var) const override;
     virtual int get_variable_axiom_layer(int var) const override;
     virtual int get_variable_default_axiom_value(int var) const override;
-    virtual std::string get_fact_name(const FactPair &fact) const override;
+    virtual string get_fact_name(const FactPair &fact) const override;
     virtual bool are_facts_mutex(
         const FactPair &fact1, const FactPair &fact2) const override;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
-    virtual std::string get_operator_name(
+    virtual string get_operator_name(
         int index, bool is_axiom) const override;
     virtual int get_num_operators() const override;
     virtual int get_num_operator_preconditions(
@@ -105,9 +105,9 @@ public:
     virtual int get_num_goals() const override;
     virtual FactPair get_goal_fact(int index) const override;
 
-    virtual std::vector<int> get_initial_state_values() const override;
+    virtual vector<int> get_initial_state_values() const override;
     virtual void convert_state_values(
-        std::vector<int> &values,
+        vector<int> &values,
         const AbstractTask *ancestor_task) const override;
 };
 
