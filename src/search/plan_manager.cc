@@ -13,8 +13,8 @@ using namespace std;
 
 PlanManager::PlanManager()
     : plan_filename("sas_plan"),
-    num_previously_generated_plans(0),
-    is_part_of_anytime_portfolio(false) {
+      num_previously_generated_plans(0),
+      is_part_of_anytime_portfolio(false) {
 }
 
 void PlanManager::set_plan_filename(string plan_filename_) {
@@ -29,7 +29,8 @@ void PlanManager::set_is_part_of_anytime_portfolio(bool is_part_of_anytime_portf
     is_part_of_anytime_portfolio = is_part_of_anytime_portfolio_;
 }
 
-int PlanManager::calculate_plan_cost(const vector<OperatorID> &plan, const TaskProxy &task_proxy) const {
+int PlanManager::calculate_plan_cost(
+    const vector<OperatorID> &plan, const TaskProxy &task_proxy) const {
     OperatorsProxy operators = task_proxy.get_operators();
     int plan_cost = 0;
     for (OperatorID op_id : plan) {
@@ -38,9 +39,9 @@ int PlanManager::calculate_plan_cost(const vector<OperatorID> &plan, const TaskP
     return plan_cost;
 }
 
-void PlanManager::save_plan(const vector<OperatorID> &plan,
-               const TaskProxy &task_proxy,
-               bool generates_multiple_plan_files) {
+void PlanManager::save_plan(
+    const vector<OperatorID> &plan, const TaskProxy &task_proxy,
+    bool generates_multiple_plan_files) {
     ostringstream filename;
     filename << plan_filename;
     int plan_number = num_previously_generated_plans + 1;
@@ -64,4 +65,3 @@ void PlanManager::save_plan(const vector<OperatorID> &plan,
     cout << "Plan cost: " << plan_cost << endl;
     ++num_previously_generated_plans;
 }
-
