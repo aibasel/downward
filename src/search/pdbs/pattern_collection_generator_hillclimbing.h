@@ -83,7 +83,8 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       the index of the best pdb in candidate_pdbs.
     */
     std::pair<int, int> find_best_improving_pdb(
-        std::vector<State> &samples,
+        const std::vector<State> &samples,
+        const std::vector<int> &samples_h_values,
         PDBCollection &candidate_pdbs);
 
     /*
@@ -95,6 +96,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     bool is_heuristic_improved(
         const PatternDatabase &pdb,
         const State &sample,
+        int h_collection,
         const MaxAdditivePDBSubsets &max_additive_subsets);
 
     /*
