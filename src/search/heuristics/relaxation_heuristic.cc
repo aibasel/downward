@@ -1,8 +1,6 @@
 #include "relaxation_heuristic.h"
 
-#include "../global_state.h"
-#include "../globals.h"
-
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
 
@@ -55,7 +53,7 @@ RelaxationHeuristic::~RelaxationHeuristic() {
 }
 
 bool RelaxationHeuristic::dead_ends_are_reliable() const {
-    return !has_axioms();
+    return !task_properties::has_axioms(task_proxy);
 }
 
 Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
