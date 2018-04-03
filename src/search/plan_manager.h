@@ -17,14 +17,15 @@ public:
     void set_num_previously_generated_plans(int num_previously_generated_plans);
     void set_is_part_of_anytime_portfolio(bool is_part_of_anytime_portfolio);
 
-    int calculate_plan_cost(const std::vector<OperatorID> &plan,
-        const TaskProxy &task_proxy) const;
+    int calculate_plan_cost(
+        const std::vector<OperatorID> &plan, const TaskProxy &task_proxy) const;
     /*
       Set generates_multiple_plan_files to true if the planner can find more than
       one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
     */
-    void save_plan(const std::vector<OperatorID> &plan,
-        const TaskProxy &task_proxy, bool generates_multiple_plan_files = false);
+    void save_plan(
+        const std::vector<OperatorID> &plan, const TaskProxy &task_proxy,
+        bool generates_multiple_plan_files = false);
 };
 
 #endif
