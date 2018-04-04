@@ -65,13 +65,13 @@ SearchStatus IteratedSearch::step() {
 
     current_search->search();
 
-    SearchEngine::Plan found_plan;
+    Plan found_plan;
     int plan_cost = 0;
     last_phase_found_solution = current_search->found_solution();
     if (last_phase_found_solution) {
         iterated_found_solution = true;
         found_plan = current_search->get_plan();
-        plan_cost = plan_manager.calculate_plan_cost(found_plan, task_proxy);
+        plan_cost = calculate_plan_cost(found_plan, task_proxy);
         if (plan_cost < best_bound) {
             plan_manager.save_plan(found_plan, task_proxy, true);
             best_bound = plan_cost;
