@@ -4,7 +4,8 @@
 #include "errors.h"
 #include "plugin.h"
 
-#include "../globals.h"
+#include "../plan_manager.h"
+#include "../search_engine.h"
 
 #include "../ext/tree_util.hh"
 
@@ -159,6 +160,10 @@ int OptionParser::parse_int_arg(const string &name, const string &value) {
 
 shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
     const vector<string> &args, bool dry_run) {
+    string plan_filename = "sas_plan";
+    int num_previously_generated_plans = 0;
+    bool is_part_of_anytime_portfolio = false;
+
     shared_ptr<SearchEngine> engine;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
@@ -209,18 +214,25 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --internal-plan-file");
             ++i;
-            g_plan_filename = args[i];
+            plan_filename = args[i];
         } else if (arg == "--internal-previous-portfolio-plans") {
             if (is_last)
                 throw ArgError("missing argument after --internal-previous-portfolio-plans");
             ++i;
-            g_is_part_of_anytime_portfolio = true;
-            g_num_previously_generated_plans = parse_int_arg(arg, args[i]);
-            if (g_num_previously_generated_plans < 0)
+            is_part_of_anytime_portfolio = true;
+            num_previously_generated_plans = parse_int_arg(arg, args[i]);
+            if (num_previously_generated_plans < 0)
                 throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
         } else {
             throw ArgError("unknown option " + arg);
         }
+    }
+
+    if (engine) {
+        PlanManager &plan_manager = engine->get_plan_manager();
+        plan_manager.set_plan_filename(plan_filename);
+        plan_manager.set_num_previously_generated_plans(num_previously_generated_plans);
+        plan_manager.set_is_part_of_anytime_portfolio(is_part_of_anytime_portfolio);
     }
     return engine;
 }

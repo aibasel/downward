@@ -1,10 +1,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "operator_id.h"
-
-#include <memory>
-#include <string>
+#include <istream>
 #include <vector>
 
 class AxiomEvaluator;
@@ -22,15 +19,6 @@ namespace utils {
 struct Log;
 }
 
-/*
-  Set generates_multiple_plan_files to true if the planner can find more than
-  one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
-*/
-void save_plan(const std::vector<OperatorID> &plan,
-               const TaskProxy &task_proxy,
-               bool generates_multiple_plan_files = false);
-int calculate_plan_cost(const std::vector<OperatorID> &plan, const TaskProxy &task_proxy);
-
 void read_everything(std::istream &in);
 // TODO: move this to task_utils or a new file with dump methods for all proxy objects.
 void dump_everything();
@@ -41,9 +29,6 @@ bool is_unit_cost();
 extern int_packer::IntPacker *g_state_packer;
 extern AxiomEvaluator *g_axiom_evaluator;
 extern successor_generator::SuccessorGenerator *g_successor_generator;
-extern std::string g_plan_filename;
-extern int g_num_previously_generated_plans;
-extern bool g_is_part_of_anytime_portfolio;
 
 extern utils::Log g_log;
 

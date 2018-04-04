@@ -58,7 +58,7 @@ SearchStatus SearchEngine::get_status() const {
     return status;
 }
 
-const SearchEngine::Plan &SearchEngine::get_plan() const {
+const Plan &SearchEngine::get_plan() const {
     assert(solution_found);
     return plan;
 }
@@ -95,9 +95,9 @@ bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
     return false;
 }
 
-void SearchEngine::save_plan_if_necessary() const {
+void SearchEngine::save_plan_if_necessary() {
     if (found_solution()) {
-        save_plan(get_plan(), task_proxy);
+        plan_manager.save_plan(get_plan(), task_proxy);
     }
 }
 

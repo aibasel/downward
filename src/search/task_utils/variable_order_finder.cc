@@ -1,7 +1,5 @@
 #include "variable_order_finder.h"
 
-#include "../globals.h"
-
 #include "../task_utils/causal_graph.h"
 #include "../utils/system.h"
 
