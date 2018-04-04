@@ -38,8 +38,6 @@ void dump_everything();
 // The following function is deprecated. Use task_properties.h instead.
 bool is_unit_cost();
 
-extern bool g_use_metric;
-
 extern int_packer::IntPacker *g_state_packer;
 extern AxiomEvaluator *g_axiom_evaluator;
 extern successor_generator::SuccessorGenerator *g_successor_generator;

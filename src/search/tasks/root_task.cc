@@ -356,8 +356,6 @@ RootTask::RootTask(std::istream &in) {
 
     // TODO: this global variable should disappear eventually.
     g_initial_state_data = initial_state_values;
-    // TODO: think about removing g_metric or add access for it through the task interface.
-    g_use_metric = use_metric;
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
