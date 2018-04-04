@@ -116,8 +116,6 @@ void read_everything(istream &in) {
 }
 
 void dump_everything() {
-    cout << "Use metric? " << g_use_metric << endl;
-
     TaskProxy task_proxy(*tasks::g_root_task);
     OperatorsProxy operators = task_proxy.get_operators();
     int min_action_cost = numeric_limits<int>::max();
@@ -152,7 +150,6 @@ bool is_unit_cost() {
     return is_unit_cost;
 }
 
-bool g_use_metric;
 int_packer::IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 AxiomEvaluator *g_axiom_evaluator;
