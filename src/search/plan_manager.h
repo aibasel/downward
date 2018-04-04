@@ -31,5 +31,4 @@ public:
 
 extern int calculate_plan_cost(const Plan &plan, const TaskProxy &task_proxy);
 
-
 #endif

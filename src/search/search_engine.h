@@ -27,7 +27,6 @@ class OrderedSet;
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
-private:
     SearchStatus status;
     bool solution_found;
     Plan plan;
