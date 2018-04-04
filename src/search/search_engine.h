@@ -27,8 +27,6 @@ class OrderedSet;
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
-public:
-    using Plan = std::vector<OperatorID>;
 private:
     SearchStatus status;
     bool solution_found;

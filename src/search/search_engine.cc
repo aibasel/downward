@@ -58,7 +58,7 @@ SearchStatus SearchEngine::get_status() const {
     return status;
 }
 
-const SearchEngine::Plan &SearchEngine::get_plan() const {
+const Plan &SearchEngine::get_plan() const {
     assert(solution_found);
     return plan;
 }
