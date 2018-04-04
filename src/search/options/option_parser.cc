@@ -68,8 +68,8 @@ static void predefine_heuristic(const string &arg, bool dry_run) {
 static void predefine_lmgraph(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split_predefinition(arg);
     OptionParser parser(predefinition.second, dry_run);
-    Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
-        predefinition.first, parser.start_parsing<landmarks::LandmarkFactory *>());
+    Predefinitions<shared_ptr<landmarks::LandmarkFactory>>::instance()->predefine(
+        predefinition.first, parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
 }
 
 
