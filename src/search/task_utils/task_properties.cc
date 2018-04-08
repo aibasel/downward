@@ -1,5 +1,6 @@
 #include "task_properties.h"
 
+#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -11,6 +12,9 @@ using utils::ExitCode;
 
 
 namespace task_properties {
+static unordered_map<const AbstractTask *,
+                     unique_ptr<int_packer::IntPacker>> state_packer_cache;
+
 bool is_unit_cost(TaskProxy task) {
     for (OperatorProxy op : task.get_operators()) {
         if (op.get_cost() != 1)
@@ -83,13 +87,18 @@ int get_min_operator_cost(TaskProxy task_proxy) {
     return min_cost;
 }
 
-int_packer::IntPacker *get_state_packer(const TaskProxy &task_proxy) {
-    VariablesProxy variables = task_proxy.get_variables();
-    vector<int> variable_ranges;
-    variable_ranges.reserve(variables.size());
-    for (VariableProxy var : variables) {
-        variable_ranges.push_back(var.get_domain_size());
+const int_packer::IntPacker &get_state_packer(const AbstractTask *task) {
+    if (state_packer_cache.count(task) == 0) {
+        TaskProxy task_proxy(*task);
+        VariablesProxy variables = task_proxy.get_variables();
+        vector<int> variable_ranges;
+        variable_ranges.reserve(variables.size());
+        for (VariableProxy var : variables) {
+            variable_ranges.push_back(var.get_domain_size());
+        }
+        state_packer_cache.insert(
+            make_pair(task, utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges)));
     }
-    return new int_packer::IntPacker(variable_ranges);
+    return *state_packer_cache[task];
 }
 }
