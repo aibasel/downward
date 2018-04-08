@@ -11,9 +11,6 @@
 
 using namespace std;
 
-static unordered_map<const AbstractTask *,
-                     unique_ptr<AxiomEvaluator>> axiom_evaluator_cache;
-
 AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
     task_has_axioms = task_properties::has_axioms(task_proxy);
     if (task_has_axioms) {
@@ -226,13 +223,4 @@ void AxiomEvaluator::evaluate(vector<int> &state) const {
             }
         }
     }
-}
-
-const AxiomEvaluator &get_axiom_evaluator(const AbstractTask *task) {
-    if (axiom_evaluator_cache.count(task) == 0) {
-        TaskProxy task_proxy(*task);
-        axiom_evaluator_cache.insert(
-            make_pair(task, utils::make_unique_ptr<AxiomEvaluator>(task_proxy)));
-    }
-    return *axiom_evaluator_cache[task];
 }

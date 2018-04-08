@@ -9,7 +9,7 @@ using namespace std;
 StateRegistry::StateRegistry(const AbstractTask &task)
     : task(task),
       state_packer(TaskProxy(task).get_state_packer()),
-      axiom_evaluator(get_axiom_evaluator(&task)),
+      axiom_evaluator(TaskProxy(task).get_axiom_evaluator()),
       num_variables(TaskProxy(task).get_variables().size()),
       state_data_pool(get_bins_per_state()),
       registered_states(

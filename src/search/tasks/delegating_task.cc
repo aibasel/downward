@@ -99,6 +99,10 @@ const int_packer::IntPacker &DelegatingTask::get_state_packer() const {
     return parent->get_state_packer();
 }
 
+const AxiomEvaluator &DelegatingTask::get_axiom_evaluator() const {
+    return parent->get_axiom_evaluator();
+}
+
 void DelegatingTask::convert_state_values(
     vector<int> &values, const AbstractTask *ancestor_task) const {
     if (this == ancestor_task) {

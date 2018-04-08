@@ -674,6 +674,10 @@ public:
         return task->get_state_packer();
     }
 
+    const AxiomEvaluator &get_axiom_evaluator() const {
+        return task->get_axiom_evaluator();
+    }
+
     /*
       Convert a state from an ancestor task into a state of this task.
       The given state has to belong to a task that is an ancestor of
