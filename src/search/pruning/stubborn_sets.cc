@@ -1,5 +1,7 @@
 #include "stubborn_sets.h"
 
+#include "../option_parser.h"
+
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 
@@ -9,6 +11,9 @@
 using namespace std;
 
 namespace stubborn_sets {
+// Number of expansions after which pruning ratio is checked.
+static const int NUM_PRUNING_CALLS_BEFORE_CHECK = 1000;
+
 // Relies on both fact sets being sorted by variable.
 bool contain_conflicting_fact(const vector<FactPair> &facts1,
                               const vector<FactPair> &facts2) {
@@ -27,6 +32,12 @@ bool contain_conflicting_fact(const vector<FactPair> &facts1,
         }
     }
     return false;
+}
+
+StubbornSets::StubbornSets(const options::Options &opts)
+    : min_pruning_ratio(opts.get<double>("min_pruning_ratio")),
+      num_pruning_calls(0),
+      do_pruning(true) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
@@ -100,7 +111,24 @@ bool StubbornSets::mark_as_stubborn(int op_no) {
 
 void StubbornSets::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
+    if (!do_pruning) {
+        return;
+    }
+    if (num_pruning_calls == NUM_PRUNING_CALLS_BEFORE_CHECK) {
+        double pruning_ratio = 1 - (
+            static_cast<double>(num_pruned_successors_generated) /
+            static_cast<double>(num_unpruned_successors_generated));
+        cout << "Pruning ratio after " << NUM_PRUNING_CALLS_BEFORE_CHECK
+             << " calls: " << pruning_ratio << endl;
+        if (pruning_ratio < min_pruning_ratio) {
+            cout << "-- pruning ratio is lower than minimum pruning ratio ("
+                 << min_pruning_ratio << ") -> switching off pruning" << endl;
+            do_pruning = false;
+        }
+    }
+
     num_unpruned_successors_generated += op_ids.size();
+    num_pruning_calls++;
 
     // Clear stubborn set from previous call.
     stubborn.assign(num_operators, false);
@@ -133,5 +161,13 @@ void StubbornSets::print_statistics() const {
          << num_unpruned_successors_generated << endl
          << "total successors after partial-order reduction: "
          << num_pruned_successors_generated << endl;
+}
+
+void add_pruning_options(options::OptionParser &parser) {
+    parser.add_option<double>(
+        "min_pruning_ratio",
+        "minimal pruning ratio such that pruning is not switched off",
+        "0.0",
+        Bounds("0.0", "1.0"));
 }
 }
