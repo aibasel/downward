@@ -354,12 +354,11 @@ RootTask::RootTask(std::istream &in) {
        have reached the end of "in". */
 
     /*
-      HACK: the following line mixes abstractions levels. TaskProxy doesn't
-      belong here. Also, using *this here is questionable because the object is
-      not completely constructed.
+      HACK: get_axiom_evaluator creates a TaskProxy which assumes that this
+      Task is completely constructed.
     */
-    axiom_evaluator = new AxiomEvaluator(TaskProxy(*this));
-    axiom_evaluator->evaluate(initial_state_values);
+    const AxiomEvaluator &axiom_evaluator = get_axiom_evaluator(this);
+    axiom_evaluator.evaluate(initial_state_values);
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {

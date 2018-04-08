@@ -6,11 +6,10 @@
 using namespace std;
 
 StateRegistry::StateRegistry(
-    const AbstractTask &task, const int_packer::IntPacker &state_packer,
-    AxiomEvaluator &axiom_evaluator)
+    const AbstractTask &task, const int_packer::IntPacker &state_packer)
     : task(task),
       state_packer(state_packer),
-      axiom_evaluator(axiom_evaluator),
+      axiom_evaluator(get_axiom_evaluator(&task)),
       num_variables(TaskProxy(task).get_variables().size()),
       state_data_pool(get_bins_per_state()),
       registered_states(
