@@ -78,6 +78,9 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     }
     return fact_pairs;
 }
+
+// HACK return a pointer for now. See if it possible to change it to an object later.
+int_packer::IntPacker *get_state_packer(const TaskProxy &task_proxy);
 }
 
 #endif

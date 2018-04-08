@@ -60,15 +60,14 @@ class RootTask : public AbstractTask {
     vector<vector<set<FactPair>>> mutexes;
     vector<ExplicitOperator> operators;
     vector<ExplicitOperator> axioms;
-    mutable vector<int> initial_state_values;
+    vector<int> initial_state_values;
     vector<FactPair> goals;
-    mutable bool evaluated_axioms_on_initial_state;
+
+    AxiomEvaluator *axiom_evaluator;
 
     const ExplicitVariable &get_variable(int var) const;
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
     const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
-
-    void evaluate_axioms_on_initial_state() const;
 
 public:
     explicit RootTask(istream &in);
@@ -354,8 +353,13 @@ RootTask::RootTask(std::istream &in) {
     /* TODO: We should be stricter here and verify that we
        have reached the end of "in". */
 
-    // TODO: this global variable should disappear eventually.
-    g_initial_state_data = initial_state_values;
+    /*
+      HACK: the following line mixes abstractions levels. TaskProxy doesn't
+      belong here. Also, using *this here is questionable because the object is
+      not completely constructed.
+    */
+    axiom_evaluator = new AxiomEvaluator(TaskProxy(*this));
+    axiom_evaluator->evaluate(initial_state_values);
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
@@ -379,17 +383,6 @@ const ExplicitOperator &RootTask::get_operator_or_axiom(
         assert(utils::in_bounds(index, operators));
         return operators[index];
     }
-}
-
-void RootTask::evaluate_axioms_on_initial_state() const {
-    if (!axioms.empty()) {
-        // HACK this should not have to go through a state registry.
-        // HACK on top of the HACK above: this should not use globals.
-        StateRegistry state_registry(
-            *this, *g_state_packer, *g_axiom_evaluator, initial_state_values);
-        initial_state_values = state_registry.get_initial_state().get_values();
-    }
-    evaluated_axioms_on_initial_state = true;
 }
 
 int RootTask::get_num_variables() const {
@@ -489,9 +482,6 @@ FactPair RootTask::get_goal_fact(int index) const {
 }
 
 vector<int> RootTask::get_initial_state_values() const {
-    if (!evaluated_axioms_on_initial_state) {
-        evaluate_axioms_on_initial_state();
-    }
     return initial_state_values;
 }
 

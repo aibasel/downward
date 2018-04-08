@@ -32,15 +32,4 @@ extern successor_generator::SuccessorGenerator *g_successor_generator;
 
 extern utils::Log g_log;
 
-/*
-  This vector holds the initial values *before* the axioms have been evaluated.
-  Use a state registry to obtain the real initial state.
-*/
-/*
-  TODO: This variable is deprecated and will be removed soon.
-  Currently, it is still needed by the search engine to create a registry.
-  (The state data should come from the task instead.)
-*/
-extern std::vector<int> g_initial_state_data;
-
 #endif

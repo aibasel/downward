@@ -96,7 +96,6 @@ bool is_unit_cost() {
 }
 
 int_packer::IntPacker *g_state_packer;
-vector<int> g_initial_state_data;
 AxiomEvaluator *g_axiom_evaluator;
 successor_generator::SuccessorGenerator *g_successor_generator;
 
