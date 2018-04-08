@@ -5,6 +5,8 @@
 #include "../plugin.h"
 #include "../state_registry.h"
 
+#include "../task_utils/task_properties.h"
+
 #include "../utils/collections.h"
 #include "../utils/timer.h"
 
@@ -63,7 +65,7 @@ class RootTask : public AbstractTask {
     vector<int> initial_state_values;
     vector<FactPair> goals;
 
-    AxiomEvaluator *axiom_evaluator;
+    mutable unique_ptr<int_packer::IntPacker> state_packer;
 
     const ExplicitVariable &get_variable(int var) const;
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
@@ -105,6 +107,9 @@ public:
     virtual FactPair get_goal_fact(int index) const override;
 
     virtual vector<int> get_initial_state_values() const override;
+
+    virtual const int_packer::IntPacker &get_state_packer() const override;
+
     virtual void convert_state_values(
         vector<int> &values,
         const AbstractTask *ancestor_task) const override;
@@ -482,6 +487,13 @@ FactPair RootTask::get_goal_fact(int index) const {
 
 vector<int> RootTask::get_initial_state_values() const {
     return initial_state_values;
+}
+
+const int_packer::IntPacker &RootTask::get_state_packer() const {
+    if (!state_packer) {
+        state_packer = task_properties::create_state_packer(TaskProxy(*this));
+    }
+    return *state_packer;
 }
 
 void RootTask::convert_state_values(

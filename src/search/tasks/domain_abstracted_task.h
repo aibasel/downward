@@ -24,6 +24,8 @@ class DomainAbstractedTask : public tasks::DelegatingTask {
     const std::vector<std::vector<std::string>> fact_names;
     const std::vector<std::vector<int>> value_map;
 
+    mutable std::unique_ptr<int_packer::IntPacker> state_packer;
+
     int get_abstract_value(const FactPair &fact) const {
         assert(utils::in_bounds(fact.var, value_map));
         assert(utils::in_bounds(fact.value, value_map[fact.var]));
@@ -56,6 +58,9 @@ public:
     virtual FactPair get_goal_fact(int index) const override;
 
     virtual std::vector<int> get_initial_state_values() const override;
+
+    virtual const int_packer::IntPacker &get_state_packer() const override;
+
     virtual void convert_state_values_from_parent(
         std::vector<int> &values) const override;
 };
