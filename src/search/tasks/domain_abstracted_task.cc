@@ -89,6 +89,10 @@ const int_packer::IntPacker &DomainAbstractedTask::get_state_packer() const {
     return *state_packer;
 }
 
+const AxiomEvaluator &DomainAbstractedTask::get_axiom_evaluator() const {
+    ABORT("DomainAbstractedTask doesn't support axioms.");
+}
+
 void DomainAbstractedTask::convert_state_values_from_parent(
     vector<int> &values) const {
     int num_vars = domain_size.size();

@@ -60,6 +60,7 @@ public:
     virtual std::vector<int> get_initial_state_values() const override;
 
     virtual const int_packer::IntPacker &get_state_packer() const override;
+    virtual const AxiomEvaluator &get_axiom_evaluator() const override;
 
     virtual void convert_state_values_from_parent(
         std::vector<int> &values) const override;

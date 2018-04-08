@@ -6,8 +6,8 @@
 #include "../state_registry.h"
 
 #include "../task_utils/task_properties.h"
-
 #include "../utils/collections.h"
+#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -66,6 +66,7 @@ class RootTask : public AbstractTask {
     vector<FactPair> goals;
 
     mutable unique_ptr<int_packer::IntPacker> state_packer;
+    mutable unique_ptr<AxiomEvaluator> axiom_evaluator;
 
     const ExplicitVariable &get_variable(int var) const;
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
@@ -109,6 +110,7 @@ public:
     virtual vector<int> get_initial_state_values() const override;
 
     virtual const int_packer::IntPacker &get_state_packer() const override;
+    virtual const AxiomEvaluator &get_axiom_evaluator() const override;
 
     virtual void convert_state_values(
         vector<int> &values,
@@ -362,7 +364,7 @@ RootTask::RootTask(std::istream &in) {
       HACK: get_axiom_evaluator creates a TaskProxy which assumes that this
       Task is completely constructed.
     */
-    const AxiomEvaluator &axiom_evaluator = get_axiom_evaluator(this);
+    const AxiomEvaluator &axiom_evaluator = get_axiom_evaluator();
     axiom_evaluator.evaluate(initial_state_values);
 }
 
@@ -495,6 +497,14 @@ const int_packer::IntPacker &RootTask::get_state_packer() const {
     }
     return *state_packer;
 }
+
+const AxiomEvaluator &RootTask::get_axiom_evaluator() const {
+    if (!axiom_evaluator) {
+        axiom_evaluator = utils::make_unique_ptr<AxiomEvaluator>(TaskProxy(*this));
+    }
+    return *axiom_evaluator;
+}
+
 
 void RootTask::convert_state_values(
     vector<int> &, const AbstractTask *ancestor_task) const {
