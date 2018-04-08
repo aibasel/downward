@@ -2,6 +2,7 @@
 
 #include "../global_state.h"
 
+#include "../task_utils/task_properties.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -79,6 +80,13 @@ FactPair DomainAbstractedTask::get_goal_fact(int index) const {
 
 vector<int> DomainAbstractedTask::get_initial_state_values() const {
     return initial_state_values;
+}
+
+const int_packer::IntPacker &DomainAbstractedTask::get_state_packer() const {
+    if (!state_packer) {
+        state_packer = task_properties::create_state_packer(TaskProxy(*this));
+    }
+    return *state_packer;
 }
 
 void DomainAbstractedTask::convert_state_values_from_parent(

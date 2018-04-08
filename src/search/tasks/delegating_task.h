@@ -52,6 +52,8 @@ public:
 
     virtual std::vector<int> get_initial_state_values() const override;
 
+    virtual const int_packer::IntPacker &get_state_packer() const override;
+
     virtual void convert_state_values(
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const final override;
