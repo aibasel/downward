@@ -155,7 +155,6 @@ class StateRegistry {
              members should come from the task. */
     const int_packer::IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
-    const std::vector<int> &initial_state_data;
     const int num_variables;
 
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
@@ -169,7 +168,7 @@ class StateRegistry {
 public:
     StateRegistry(
         const AbstractTask &task, const int_packer::IntPacker &state_packer,
-        AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
+        AxiomEvaluator &axiom_evaluator);
     ~StateRegistry();
 
     /* TODO: Ideally, this should return a TaskProxy. (See comment above the
