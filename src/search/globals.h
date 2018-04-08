@@ -6,10 +6,6 @@
 
 class TaskProxy;
 
-namespace int_packer {
-class IntPacker;
-}
-
 namespace successor_generator {
 class SuccessorGenerator;
 }
@@ -25,7 +21,6 @@ void dump_everything();
 // The following function is deprecated. Use task_properties.h instead.
 bool is_unit_cost();
 
-extern int_packer::IntPacker *g_state_packer;
 extern successor_generator::SuccessorGenerator *g_successor_generator;
 
 extern utils::Log g_log;

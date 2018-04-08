@@ -25,13 +25,13 @@ void read_everything(istream &in) {
     tasks::read_root_task(in);
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
-    TaskProxy task_proxy(*tasks::g_root_task);
-
     cout << "packing state variables..." << flush;
-    g_state_packer = task_properties::get_state_packer(task_proxy);
+    const int_packer::IntPacker &state_packer =
+        task_properties::get_state_packer(tasks::g_root_task.get());
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
     int num_facts = 0;
+    TaskProxy task_proxy(*tasks::g_root_task);
     VariablesProxy variables = task_proxy.get_variables();
     for (VariableProxy var : variables)
         num_facts += var.get_domain_size();
@@ -39,7 +39,7 @@ void read_everything(istream &in) {
     cout << "Variables: " << variables.size() << endl;
     cout << "FactPairs: " << num_facts << endl;
     cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
+         << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
          << endl;
 
     cout << "Building successor generator..." << flush;
@@ -92,7 +92,6 @@ bool is_unit_cost() {
     return is_unit_cost;
 }
 
-int_packer::IntPacker *g_state_packer;
 successor_generator::SuccessorGenerator *g_successor_generator;
 
 utils::Log g_log;
