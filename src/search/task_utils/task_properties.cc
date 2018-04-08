@@ -82,4 +82,14 @@ int get_min_operator_cost(TaskProxy task_proxy) {
     }
     return min_cost;
 }
+
+int_packer::IntPacker *get_state_packer(const TaskProxy &task_proxy) {
+    VariablesProxy variables = task_proxy.get_variables();
+    vector<int> variable_ranges;
+    variable_ranges.reserve(variables.size());
+    for (VariableProxy var : variables) {
+        variable_ranges.push_back(var.get_domain_size());
+    }
+    return new int_packer::IntPacker(variable_ranges);
+}
 }

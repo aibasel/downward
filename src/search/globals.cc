@@ -31,16 +31,11 @@ void read_everything(istream &in) {
     g_axiom_evaluator = new AxiomEvaluator(task_proxy);
 
     cout << "packing state variables..." << flush;
-    VariablesProxy variables = task_proxy.get_variables();
-    vector<int> variable_ranges;
-    variable_ranges.reserve(variables.size());
-    for (VariableProxy var : variables) {
-        variable_ranges.push_back(var.get_domain_size());
-    }
-    g_state_packer = new int_packer::IntPacker(variable_ranges);
+    g_state_packer = task_properties::get_state_packer(task_proxy);
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
     int num_facts = 0;
+    VariablesProxy variables = task_proxy.get_variables();
     for (VariableProxy var : variables)
         num_facts += var.get_domain_size();
 
