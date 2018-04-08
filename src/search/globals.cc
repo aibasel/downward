@@ -1,7 +1,5 @@
 #include "globals.h"
 
-#include "axioms.h"
-
 #include "algorithms/int_packer.h"
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
@@ -28,7 +26,6 @@ void read_everything(istream &in) {
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
     TaskProxy task_proxy(*tasks::g_root_task);
-    g_axiom_evaluator = new AxiomEvaluator(task_proxy);
 
     cout << "packing state variables..." << flush;
     g_state_packer = task_properties::get_state_packer(task_proxy);
@@ -96,7 +93,6 @@ bool is_unit_cost() {
 }
 
 int_packer::IntPacker *g_state_packer;
-AxiomEvaluator *g_axiom_evaluator;
 successor_generator::SuccessorGenerator *g_successor_generator;
 
 utils::Log g_log;

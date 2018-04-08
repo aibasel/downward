@@ -1,6 +1,7 @@
 #include "axioms.h"
 
 #include "algorithms/int_packer.h"
+#include "utils/memory.h"
 #include "task_utils/task_properties.h"
 
 #include <algorithm>
@@ -9,6 +10,9 @@
 #include <vector>
 
 using namespace std;
+
+static unordered_map<const AbstractTask *,
+                     unique_ptr<AxiomEvaluator>> axiom_evaluator_cache;
 
 AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
     task_has_axioms = task_properties::has_axioms(task_proxy);
@@ -75,7 +79,7 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
 
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
-                              const int_packer::IntPacker &state_packer) {
+                              const int_packer::IntPacker &state_packer) const {
     if (!task_has_axioms)
         return;
 
@@ -90,7 +94,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
         }
     }
 
-    for (AxiomRule &rule : rules) {
+    for (const AxiomRule &rule : rules) {
         rule.unsatisfied_conditions = rule.condition_count;
 
         /*
@@ -117,7 +121,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     for (size_t layer_no = 0; layer_no < nbf_info_by_layer.size(); ++layer_no) {
         // Apply Horn rules.
         while (!queue.empty()) {
-            AxiomLiteral *curr_literal = queue.back();
+            const AxiomLiteral *curr_literal = queue.back();
             queue.pop_back();
             for (size_t i = 0; i < curr_literal->condition_of.size(); ++i) {
                 AxiomRule *rule = curr_literal->condition_of[i];
@@ -150,7 +154,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
 }
 
 // TODO avoid code duplication
-void AxiomEvaluator::evaluate(vector<int> &state) {
+void AxiomEvaluator::evaluate(vector<int> &state) const {
     if (!task_has_axioms)
         return;
 
@@ -165,7 +169,7 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
         }
     }
 
-    for (AxiomRule &rule : rules) {
+    for (const AxiomRule &rule : rules) {
         rule.unsatisfied_conditions = rule.condition_count;
 
         /*
@@ -192,7 +196,7 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
     for (size_t layer_no = 0; layer_no < nbf_info_by_layer.size(); ++layer_no) {
         // Apply Horn rules.
         while (!queue.empty()) {
-            AxiomLiteral *curr_literal = queue.back();
+            const AxiomLiteral *curr_literal = queue.back();
             queue.pop_back();
             for (size_t i = 0; i < curr_literal->condition_of.size(); ++i) {
                 AxiomRule *rule = curr_literal->condition_of[i];
@@ -222,4 +226,13 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
             }
         }
     }
+}
+
+const AxiomEvaluator &get_axiom_evaluator(const AbstractTask *task) {
+    if (axiom_evaluator_cache.count(task) == 0) {
+        TaskProxy task_proxy(*task);
+        axiom_evaluator_cache.insert(
+            make_pair(task, utils::make_unique_ptr<AxiomEvaluator>(task_proxy)));
+    }
+    return *axiom_evaluator_cache[task];
 }
