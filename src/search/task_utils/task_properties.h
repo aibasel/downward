@@ -4,6 +4,8 @@
 #include "../global_state.h"
 #include "../task_proxy.h"
 
+#include "../algorithms/int_packer.h"
+
 namespace task_properties {
 inline bool is_applicable(OperatorProxy op, const State &state) {
     for (FactProxy precondition : op.get_preconditions()) {
