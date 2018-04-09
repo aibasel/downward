@@ -53,7 +53,6 @@ fast_downward_plugin(
         evaluation_context
         evaluation_result
         evaluator
-        global_operator
         globals
         global_state
         heuristic_cache
@@ -65,6 +64,7 @@ fast_downward_plugin(
         option_parser
         option_parser_util
         per_state_information
+        plan_manager
         plugin
         pruning_method
         search_engine
@@ -95,7 +95,6 @@ fast_downward_plugin(
         options/predefinitions
         options/plugin
         options/registries
-        options/synergy
         options/token_parser
         options/type_namer
     CORE_PLUGIN
@@ -626,7 +625,6 @@ fast_downward_plugin(
     SOURCES
         landmarks/exploration
         landmarks/ff_synergy
-        landmarks/lama_ff_synergy
         landmarks/lama_synergy
         landmarks/landmark_cost_assignment
         landmarks/landmark_count_heuristic

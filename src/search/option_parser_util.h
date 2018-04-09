@@ -5,11 +5,9 @@
    option parser code into a subdirectory. */
 #include "options/bounds.h"
 #include "options/options.h"
-#include "options/synergy.h"
 
 using options::Bounds;
 using options::Options;
 using options::ParseTree;
-using options::Synergy;
 
 #endif

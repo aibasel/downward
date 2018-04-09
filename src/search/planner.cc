@@ -1,3 +1,4 @@
+#include "globals.h"
 #include "option_parser.h"
 #include "search_engine.h"
 
@@ -17,14 +18,16 @@ int main(int argc, const char **argv) {
         utils::exit_with(ExitCode::INPUT_ERROR);
     }
 
-    if (static_cast<string>(argv[1]) != "--help")
+    bool unit_cost = false;
+    if (static_cast<string>(argv[1]) != "--help") {
         read_everything(cin);
+        unit_cost = is_unit_cost();
+    }
 
     shared_ptr<SearchEngine> engine;
 
     // The command line is parsed twice: once in dry-run mode, to
     // check for simple input errors, and then in normal mode.
-    bool unit_cost = is_unit_cost();
     try {
         OptionParser::parse_cmd_line(argc, argv, true, unit_cost);
         engine = OptionParser::parse_cmd_line(argc, argv, false, unit_cost);

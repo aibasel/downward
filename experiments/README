@@ -42,7 +42,7 @@ performed. Some of them use lab's deprecated DownwardExperiment:
   * issue77/issue77-v7-opt.py
 
 * M&S: configs and additional parsing and a check for availability of matplotlib
-  * issue707/v3.py and issue707/ms-parser.py
+  * issue742/v1.py and issue742/ms-parser.py
 
 * Run experiment in debug mode (with assertions):
   * issue650/v2.py

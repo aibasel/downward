@@ -71,7 +71,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "Regarding using different cost transformations, there are a few "
         "caveats to be considered, see OptionCaveats."
         );
-    parser.add_option<LandmarkFactory *>("lm_factory");
+    parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
