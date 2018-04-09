@@ -99,19 +99,21 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
 std::pair<bool,bool> Heuristic::reevaluate_and_check_if_changed(EvaluationContext &eval_context) {
     const GlobalState &state = eval_context.get_state();
-    std::pair<bool,bool> ret(false,false);
+    bool reevaluated = false;
+    bool changed = false;
 
     if(!cache_h_values || !heuristic_cache[state].dirty) {
-        return ret;
+        return std::make_pair(reevaluated, changed);
     }
 
     int old_h = heuristic_cache[state].h;
     heuristic_cache[state] = HEntry(compute_heuristic(state),false);
-    ret.first = true;
-    if(old_h != heuristic_cache[state].h) {
-        ret.second = true;
+    reevaluated = true;
+    int new_h = heuristic_cache[state].h;
+    if(old_h != new_h) {
+        changed = true;
     }
-    return ret;
+    return std::make_pair(reevaluated, changed);
 }
 
 static PluginTypePlugin<Heuristic> _type_plugin(
