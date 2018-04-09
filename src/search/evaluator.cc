@@ -55,7 +55,7 @@ bool Evaluator::is_used_for_counting_evaluations() const {
 
 
 std::pair<bool, bool> Evaluator::reevaluate_and_check_if_changed(EvaluationContext &) {
-    return std::pair<bool,bool>(false,false);
+    return make_pair(false, false);
 }
 static PluginTypePlugin<Evaluator> _type_plugin(
     "Evaluator",
