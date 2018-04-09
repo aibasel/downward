@@ -304,7 +304,7 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
 
-static LandmarkFactory *_parse(OptionParser &parser) {
+static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
@@ -318,12 +318,11 @@ static LandmarkFactory *_parse(OptionParser &parser) {
                                      "We think they are supported, but this "
                                      "is not 100% sure.");
 
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return nullptr;
-    } else {
-        return new LandmarkFactoryZhuGivan(opts);
-    }
+    else
+        return make_shared<LandmarkFactoryZhuGivan>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin("lm_zg", _parse);
+static PluginShared<LandmarkFactory> _plugin("lm_zg", _parse);
 }

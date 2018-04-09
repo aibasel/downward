@@ -95,7 +95,7 @@ Abstraction::Abstraction(
          << max_non_looping_transitions << endl;
     build(rng);
     g_log << "Done building abstraction." << endl;
-    cout << "Time for building abstraction: " << timer << endl;
+    cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
        last iteration, so we should update the distances. */

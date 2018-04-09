@@ -101,13 +101,19 @@ bool prune_factor(
         /* If pruning both unreachable and irrelevant states, a state which is
            dead is counted for both statistics! */
         bool prune_state = false;
-        if (prune_unreachable_states && distances.get_init_distance(state) == INF) {
-            ++unreachable_count;
-            prune_state = true;
+        if (prune_unreachable_states) {
+            assert(distances.are_init_distances_computed());
+            if (distances.get_init_distance(state) == INF) {
+                ++unreachable_count;
+                prune_state = true;
+            }
         }
-        if (prune_irrelevant_states && distances.get_goal_distance(state) == INF) {
-            ++irrelevant_count;
-            prune_state = true;
+        if (prune_irrelevant_states) {
+            assert(distances.are_goal_distances_computed());
+            if (distances.get_goal_distance(state) == INF) {
+                ++irrelevant_count;
+                prune_state = true;
+            }
         }
         if (prune_state) {
             ++dead_count;
