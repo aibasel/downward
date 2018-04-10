@@ -14,7 +14,12 @@
 
 namespace int_hash_set {
 /*
-  Hash set using a single vector for storing non-negative integer keys.
+  Hash set for storing non-negative integer keys.
+
+  Compared to unordered_set<int> in the standard library, this
+  implementation is much more memory-efficient. It requires 8 bytes
+  per bucket, so roughly 12-16 bytes per entry with typical load
+  factors.
 
   Usage:
 
@@ -26,27 +31,41 @@ namespace int_hash_set {
 
   Limitations:
 
-  We use 32 bit (signed and unsigned) integers instead of larger data types for
-  keys and hashes to save memory.
+  We use 32-bit (signed and unsigned) integers instead of larger data
+  types for keys and hashes to save memory.
 
-  Consequently, the range of valid keys is [0, 2^31 - 1]. This range could be
-  extended to [0, 2^32 - 1] without using more memory by using unsigned
-  integers for the keys and a different designated value for empty buckets
-  (currently we use -1 for this).
+  Consequently, the range of valid keys is [0, 2^31 - 1]. This range
+  could be extended to [0, 2^32 - 2] without using more memory by
+  using unsigned integers for the keys and a different designated
+  value for empty buckets (currently we use -1 for this).
 
-  The maximum capacity (i.e., number of buckets) is 2^30 because we use a
-  signed integer to store it and the next larger power of 2 (2^31) is too big
-  for an int. The maximum capacity could be raised by storing the number of
-  buckets in a larger data type.
+  The maximum capacity (i.e., number of buckets) is 2^30 because we
+  use a signed integer to store it, we grow the hash set by doubling
+  its capacity, and the next larger power of 2 (2^31) is too big for
+  an int. The maximum capacity could be increased by storing the
+  number of buckets in a larger data type.
+
+  Note on hash functions:
+
+  Because the hash table uses open addressing, it is important to use
+  hash functions that distribute the values roughly uniformly. Hash
+  implementations intended for use with C++ standard containers often
+  do not satisfy this requirement, for example hashing ints or
+  pointers to themselves, which is not problematic for hash
+  implementations based on chaining but can be catastrophic for this
+  implementation.
 
   Implementation:
 
-  We use ideas from hopscotch hashing
-  (https://en.wikipedia.org/wiki/Hopscotch_hashing) to ensure that each key is
-  at most "max_distance" buckets away from its ideal bucket. This ensures
-  constant lookup times since we always need to check at most "max_distance"
-  buckets. Since all buckets we need to check for a given key are aligned in
-  memory, the lookup has good cache locality.
+  All data and hashes are stored in a single vector, using open
+  addressing. We use ideas from hopscotch hashing
+  (https://en.wikipedia.org/wiki/Hopscotch_hashing) to ensure that
+  each key is at most "max_distance" buckets away from its ideal
+  bucket. This ensures constant lookup times since we always need to
+  check at most "max_distance" buckets. Since all buckets we need to
+  check for a given key are aligned in memory, the lookup has good
+  cache locality.
+
 */
 template<typename Hasher, typename Equal>
 class IntHashSet {
