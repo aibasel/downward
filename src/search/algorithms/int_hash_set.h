@@ -318,6 +318,12 @@ public:
         std::cout << "Int hash set resizes: " << num_resizes << std::endl;
     }
 };
+
+template<typename Hasher, typename Equal>
+const int IntHashSet<Hasher, Equal>::MAX_DISTANCE;
+
+template<typename Hasher, typename Equal>
+const unsigned int IntHashSet<Hasher, Equal>::MAX_BUCKETS;
 }
 
 #endif
