@@ -6,12 +6,12 @@
 #include "global_state.h"
 #include "state_id.h"
 
+#include "algorithms/int_hash_set.h"
 #include "algorithms/int_packer.h"
 #include "algorithms/segmented_vector.h"
 #include "utils/hash.h"
 
 #include <set>
-#include <unordered_set>
 
 /*
   Overview of classes relevant to storing and working with registered states.
@@ -111,8 +111,8 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        size_t operator()(StateID id) const {
-            const PackedStateBin *data = state_data_pool[id.value];
+        size_t operator()(int id) const {
+            const PackedStateBin *data = state_data_pool[id];
             utils::HashState hash_state;
             for (int i = 0; i < state_size; ++i) {
                 hash_state.feed(data[i]);
@@ -131,9 +131,9 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        bool operator()(StateID lhs, StateID rhs) const {
-            const PackedStateBin *lhs_data = state_data_pool[lhs.value];
-            const PackedStateBin *rhs_data = state_data_pool[rhs.value];
+        bool operator()(int lhs, int rhs) const {
+            const PackedStateBin *lhs_data = state_data_pool[lhs];
+            const PackedStateBin *rhs_data = state_data_pool[rhs];
             return std::equal(lhs_data, lhs_data + state_size, rhs_data);
         }
     };
@@ -143,7 +143,7 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    using StateIDSet = std::unordered_set<StateID, StateIDSemanticHash, StateIDSemanticEqual>;
+    using StateIDSet = int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */
@@ -222,6 +222,8 @@ public:
     */
     void subscribe(PerStateInformationBase *psi) const;
     void unsubscribe(PerStateInformationBase *psi) const;
+
+    void print_statistics() const;
 
     class const_iterator : public std::iterator<
                                std::forward_iterator_tag, StateID> {
