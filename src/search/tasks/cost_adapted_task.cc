@@ -15,7 +15,7 @@ using utils::ExitCode;
 namespace tasks {
 CostAdaptedTask::CostAdaptedTask(
     const shared_ptr<AbstractTask> &parent,
-    const OperatorCost cost_type)
+    OperatorCost cost_type)
     : DelegatingTask(parent),
       cost_type(cost_type),
       is_unit_cost(compute_is_unit_cost()) {
@@ -56,14 +56,14 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Cost-adapted task.",
+        "Cost-adapted task",
         "A cost-adapting transformation of the root task.");
     add_cost_type_option_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.dry_run())
+    if (parser.dry_run()) {
         return nullptr;
-    else {
-        OperatorCost cost_type(static_cast<OperatorCost>(opts.get<int>("cost_type")));
+    } else {
+        OperatorCost cost_type = OperatorCost(opts.get<int>("cost_type"));
         return make_shared<CostAdaptedTask>(g_root_task, cost_type);
     }
 }
