@@ -52,11 +52,8 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
         return lm_graph;
     utils::Timer lm_generation_timer;
 
-    Options options;
-    options.set<shared_ptr<AbstractTask>>("transform", task);
-    options.set<int>("cost_type", lm_cost_type);
     shared_ptr<AbstractTask> cost_adapted_task =
-        make_shared<tasks::CostAdaptedTask>(options);
+        make_shared<tasks::CostAdaptedTask>(task, lm_cost_type);
     TaskProxy cost_adapted_task_proxy(*cost_adapted_task);
 
     lm_graph = make_shared<LandmarkGraph>(cost_adapted_task_proxy);
