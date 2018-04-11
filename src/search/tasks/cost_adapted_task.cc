@@ -18,10 +18,10 @@ CostAdaptedTask::CostAdaptedTask(
     OperatorCost cost_type)
     : DelegatingTask(parent),
       cost_type(cost_type),
-      is_unit_cost(parent_is_unit_cost()) {
+      parent_is_unit_cost(compute_parent_is_unit_cost()) {
 }
 
-bool CostAdaptedTask::parent_is_unit_cost() const {
+bool CostAdaptedTask::compute_parent_is_unit_cost() const {
     int num_ops = parent->get_num_operators();
     for (int op_index = 0; op_index < num_ops; ++op_index) {
         if (parent->get_operator_cost(op_index, false) != 1)
@@ -43,7 +43,7 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
     case ONE:
         return 1;
     case PLUSONE:
-        if (is_unit_cost)
+        if (parent_is_unit_cost)
             return 1;
         else
             return original_cost + 1;

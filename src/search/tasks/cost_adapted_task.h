@@ -24,8 +24,8 @@ namespace tasks {
 */
 class CostAdaptedTask : public DelegatingTask {
     const OperatorCost cost_type;
-    const bool is_unit_cost;
-    bool parent_is_unit_cost() const;
+    const bool parent_is_unit_cost;
+    bool compute_parent_is_unit_cost() const;
 public:
     CostAdaptedTask(
         const std::shared_ptr<AbstractTask> &parent,
