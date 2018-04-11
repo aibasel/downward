@@ -5,8 +5,6 @@
 
 #include "../operator_cost.h"
 
-class AbstractTask;
-
 namespace options {
 class Options;
 }
@@ -31,7 +29,7 @@ class CostAdaptedTask : public DelegatingTask {
 public:
     CostAdaptedTask(
         const std::shared_ptr<AbstractTask> &parent,
-        const OperatorCost cost_type);
+        OperatorCost cost_type);
     virtual ~CostAdaptedTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
