@@ -107,7 +107,11 @@ def check_search_code_with_clang_tidy():
         os.makedirs(build_dir)
     subprocess.check_call(
         ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "../../src"], cwd=build_dir)
-    checks = ["modernize-use-using"]
+    checks = [
+        "performance-for-range-copy",
+        "performance-implicit-cast-in-loop",
+        "performance-inefficient-vector-operation",
+        ]
     cmd = [
         "./run-clang-tidy.py",
         "-quiet",

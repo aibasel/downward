@@ -76,7 +76,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
         };
 
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
-    for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
+    for (const shared_ptr<SubtaskGenerator> &subtask_generator : subtask_generators) {
         SharedTasks subtasks = subtask_generator->get_subtasks(task);
         build_abstractions(subtasks, timer, should_abort);
         if (should_abort())
