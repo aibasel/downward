@@ -3,6 +3,8 @@
 
 """
 Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
+
+The file bitbucket-pipelines.yml shows how to install the dependencies.
 """
 
 from __future__ import print_function
@@ -97,6 +99,25 @@ def check_cplusplus_style():
     return returncode == 0
 
 
+def check_search_code_with_clang_tidy():
+    # clang-tidy needs compiled files.
+    subprocess.check_call(["./build.py", "--debug"], cwd=REPO)
+    checks = ["modernize-use-using"]
+    print("Running clang-tidy (enabled checks: {})".format(", ".join(checks)))
+    output = subprocess.check_output([
+        "./run-clang-tidy.py",
+        "-quiet",
+        "-p", os.path.join(REPO, "builds", "debug32"),
+        "-clang-tidy-binary=clang-tidy-5.0",
+        # Include all non-system headers (.*) except the ones from search/ext/.
+        "-header-filter=.*,-tree.hh,-tree_util.hh",
+        "-checks=-*," + ",".join(checks)], cwd=DIR, stderr=subprocess.STDOUT)
+    errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
+    for error in errors:
+        print(error)
+    return not errors
+
+
 def main():
     tests = [test for test_name, test in sorted(globals().items())
              if test_name.startswith("check_")]
@@ -104,7 +125,7 @@ def main():
     if all(results):
         print("All style checks passed")
     else:
-        sys.exit(1)
+        sys.exit("Style checks failed")
 
 
 if __name__ == "__main__":
