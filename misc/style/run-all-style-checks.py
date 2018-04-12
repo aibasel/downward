@@ -11,6 +11,7 @@ from __future__ import print_function
 
 import glob
 import os
+import pipes
 import re
 import subprocess
 import sys
@@ -100,21 +101,35 @@ def check_cplusplus_style():
 
 
 def check_search_code_with_clang_tidy():
-    # clang-tidy needs compiled files.
-    subprocess.check_call(["./build.py", "--debug"], cwd=REPO)
+    # clang-tidy needs the CMake files.
+    build_dir = os.path.join(REPO, "builds", "clang-tidy")
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+    subprocess.check_call(
+        ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "../../src"], cwd=build_dir)
     checks = ["modernize-use-using"]
-    print("Running clang-tidy (enabled checks: {})".format(", ".join(checks)))
-    output = subprocess.check_output([
+    cmd = [
         "./run-clang-tidy.py",
         "-quiet",
-        "-p", os.path.join(REPO, "builds", "debug32"),
+        "-p", build_dir,
         "-clang-tidy-binary=clang-tidy-5.0",
         # Include all non-system headers (.*) except the ones from search/ext/.
         "-header-filter=.*,-tree.hh,-tree_util.hh",
-        "-checks=-*," + ",".join(checks)], cwd=DIR, stderr=subprocess.STDOUT)
+        "-checks=-*," + ",".join(checks)]
+    print("Running clang-tidy (enabled checks: {})".format(", ".join(checks)))
+    try:
+        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError:
+        print("Failed to run clang-tidy-5.0. Is it on the PATH?")
+        return False
     errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
     for error in errors:
         print(error)
+    if errors:
+        fix_cmd = cmd + [
+            "-clang-apply-replacements-binary=clang-apply-replacements-5.0", "-fix"]
+        print("You may be able to fix these issues with the following command: " +
+            " ".join(pipes.quote(x) for x in fix_cmd))
     return not errors
 
 
