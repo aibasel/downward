@@ -3,13 +3,15 @@ pipelines:
   default:
     - step:
         script:
-          # Install dependencies.
-          - sudo apt-get update
-          - sudo apt-get -y install
-              cmake g++ g++-multilib make mercurial python
-              clang-5.0 clang-tidy-5.0 python-pip uncrustify
+          - apt-get update
+          - apt-get -y upgrade
 
-          - sudo pip install -U pyflakes pytest # Tests
+          # Install Fast Downward dependencies.
+          - apt-get -y install cmake g++ g++-multilib make mercurial python
+
+          # Install dependencies for running code tests.
+          - apt-get -y install clang-5.0 clang-tidy-5.0 python-pip wget
+          - pip install -U pyflakes pytest
 
           # Print information about environment.
           - g++ --version
@@ -27,7 +29,7 @@ pipelines:
           - rm -rf uncrustify-0.61.tar.gz uncrustify-0.61
 
           # Setup VAL.
-          - sudo apt-get -y install g++ git make flex bison
+          - apt-get -y install g++ git make flex bison
           - git clone https://github.com/KCL-Planning/VAL.git
           - cd VAL
           - git checkout a5565396007eee73ac36527fbf904142b3077c74
