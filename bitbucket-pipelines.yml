@@ -4,9 +4,9 @@ pipelines:
         script:
           # Install dependencies.
           - sudo apt-get update
-          - sudo apt-get -y install \
-                cmake g++ g++-multilib make mercurial python \ # Fast Downward
-                clang-5.0 clang-tidy-5.0 python-pip uncrustify \ # Tests
+          - sudo apt-get -y install
+              cmake g++ g++-multilib make mercurial python
+              clang-5.0 clang-tidy-5.0 python-pip uncrustify
 
           - sudo pip install -U pyflakes pytest # Tests
 
