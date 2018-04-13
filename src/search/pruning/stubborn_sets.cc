@@ -11,9 +11,6 @@
 using namespace std;
 
 namespace stubborn_sets {
-// Number of expansions after which pruning ratio is checked.
-static const int NUM_PRUNING_CALLS_BEFORE_CHECK = 1000;
-
 // Relies on both fact sets being sorted by variable.
 bool contain_conflicting_fact(const vector<FactPair> &facts1,
                               const vector<FactPair> &facts2) {
@@ -35,9 +32,11 @@ bool contain_conflicting_fact(const vector<FactPair> &facts1,
 }
 
 StubbornSets::StubbornSets(const options::Options &opts)
-    : min_pruning_ratio(opts.get<double>("min_pruning_ratio")),
+    : min_required_pruning_ratio(opts.get<double>("min_required_pruning_ratio")),
+      num_expansions_before_checking_pruning_ratio(
+        opts.get<int>("expansions_before_checking_pruning_ratio")),
       num_pruning_calls(0),
-      do_pruning(true) {
+      is_pruning_disabled(false) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
@@ -111,24 +110,24 @@ bool StubbornSets::mark_as_stubborn(int op_no) {
 
 void StubbornSets::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
-    if (!do_pruning) {
+    if (is_pruning_disabled) {
         return;
     }
-    if (num_pruning_calls == NUM_PRUNING_CALLS_BEFORE_CHECK) {
-        double pruning_ratio = 1 - (
+    if (num_pruning_calls == num_expansions_before_checking_pruning_ratio) {
+        double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
             static_cast<double>(num_pruned_successors_generated) /
             static_cast<double>(num_unpruned_successors_generated));
-        cout << "Pruning ratio after " << NUM_PRUNING_CALLS_BEFORE_CHECK
+        cout << "Pruning ratio after " << num_expansions_before_checking_pruning_ratio
              << " calls: " << pruning_ratio << endl;
-        if (pruning_ratio < min_pruning_ratio) {
+        if (pruning_ratio < min_required_pruning_ratio) {
             cout << "-- pruning ratio is lower than minimum pruning ratio ("
-                 << min_pruning_ratio << ") -> switching off pruning" << endl;
-            do_pruning = false;
+                 << min_required_pruning_ratio << ") -> switching off pruning" << endl;
+            is_pruning_disabled = true;
         }
     }
 
     num_unpruned_successors_generated += op_ids.size();
-    num_pruning_calls++;
+    ++num_pruning_calls;
 
     // Clear stubborn set from previous call.
     stubborn.assign(num_operators, false);
@@ -164,10 +163,31 @@ void StubbornSets::print_statistics() const {
 }
 
 void add_pruning_options(options::OptionParser &parser) {
+    parser.document_note(
+        "Automatically disable pruning",
+        "Using stubborn sets to prune operators often reduces the required"
+        " number of expansions but computing the prunable operators has a"
+        " non-negligible runtime overhead. Whether the decrease in expansions"
+        " outweighs the increased computational costs depends on the task at"
+        " hand. Using the options 'min_required_pruning_ratio' (M) and"
+        " 'expansions_before_checking_pruning_ratio' (E) it is possible to"
+        " automatically disable pruning after E expansions if the ratio of"
+        " pruned vs. non-pruned operators is lower than M. In detail, let B and"
+        " A be the total number of operators before and after pruning summed"
+        " over all previous expansions. We call 1-(A/B) the pruning ratio R. If"
+        " R is lower than M after E expansions, we disable pruning for all"
+        " subsequent expansions, i.e., consider all applicable operators when"
+        " generating successor states.");
     parser.add_option<double>(
-        "min_pruning_ratio",
-        "minimal pruning ratio such that pruning is not switched off",
+        "min_required_pruning_ratio",
+        "disable pruning if the pruning ratio is lower than this value after"
+        " 'expansions_before_checking_pruning_ratio' expansions",
         "0.0",
         Bounds("0.0", "1.0"));
+    parser.add_option<int>(
+        "expansions_before_checking_pruning_ratio",
+        "number of expansions before deciding whether to disable pruning",
+        "1000",
+        Bounds("0", "infinity"));
 }
 }
