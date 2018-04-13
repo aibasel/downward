@@ -13,9 +13,10 @@ inline FactPair find_unsatisfied_condition(
     const std::vector<FactPair> &conditions, const State &state);
 
 class StubbornSets : public PruningMethod {
-    const double min_pruning_ratio;
+    const double min_required_pruning_ratio;
+    const int num_expansions_before_checking_pruning_ratio;
     int num_pruning_calls;
-    bool do_pruning;
+    bool is_pruning_disabled;
 
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
