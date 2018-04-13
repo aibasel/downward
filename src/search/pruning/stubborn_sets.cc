@@ -34,7 +34,7 @@ bool contain_conflicting_fact(const vector<FactPair> &facts1,
 StubbornSets::StubbornSets(const options::Options &opts)
     : min_required_pruning_ratio(opts.get<double>("min_required_pruning_ratio")),
       num_expansions_before_checking_pruning_ratio(
-        opts.get<int>("expansions_before_checking_pruning_ratio")),
+          opts.get<int>("expansions_before_checking_pruning_ratio")),
       num_pruning_calls(0),
       is_pruning_disabled(false) {
 }
