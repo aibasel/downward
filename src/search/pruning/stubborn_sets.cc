@@ -113,7 +113,8 @@ void StubbornSets::prune_operators(
     if (is_pruning_disabled) {
         return;
     }
-    if (num_pruning_calls == num_expansions_before_checking_pruning_ratio) {
+    if (min_required_pruning_ratio > 0. &&
+        num_pruning_calls == num_expansions_before_checking_pruning_ratio) {
         double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
             static_cast<double>(num_pruned_successors_generated) /
             static_cast<double>(num_unpruned_successors_generated));
@@ -177,7 +178,11 @@ void add_pruning_options(options::OptionParser &parser) {
         " over all previous expansions. We call 1-(A/B) the pruning ratio R. If"
         " R is lower than M after E expansions, we disable pruning for all"
         " subsequent expansions, i.e., consider all applicable operators when"
-        " generating successor states.");
+        " generating successor states. By default, pruning is never disabled"
+        " (min_required_pruning_ratio = 0.0). In experiments on IPC benchmarks,"
+        " stronger results have been observed with automatic disabling"
+        " (min_required_pruning_ratio = 0.2,"
+        " expansions_before_checking_pruning_ratio=1000).");
     parser.add_option<double>(
         "min_required_pruning_ratio",
         "disable pruning if the pruning ratio is lower than this value after"
