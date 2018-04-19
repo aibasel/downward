@@ -30,7 +30,7 @@ class IteratedSearch : public SearchEngine {
 public:
     explicit IteratedSearch(const options::Options &opts);
 
-    virtual void save_plan_if_necessary() const override;
+    virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
 };
 }

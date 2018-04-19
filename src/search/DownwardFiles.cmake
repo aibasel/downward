@@ -53,7 +53,6 @@ fast_downward_plugin(
         evaluation_context
         evaluation_result
         evaluator
-        global_operator
         globals
         global_state
         heuristic_cache
@@ -65,6 +64,7 @@ fast_downward_plugin(
         option_parser
         option_parser_util
         per_state_information
+        plan_manager
         plugin
         pruning_method
         search_engine
@@ -76,7 +76,7 @@ fast_downward_plugin(
         state_registry
         task_proxy
 
-    DEPENDS CAUSAL_GRAPH INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
+    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
 )
 
@@ -95,7 +95,6 @@ fast_downward_plugin(
         options/predefinitions
         options/plugin
         options/registries
-        options/synergy
         options/token_parser
         options/type_namer
     CORE_PLUGIN
@@ -177,6 +176,14 @@ fast_downward_plugin(
     HELP "Equivalence relation over [1, ..., n] that can be iteratively refined"
     SOURCES
         algorithms/equivalence_relation
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME INT_HASH_SET
+    HELP "Hash set storing non-negative integers"
+    SOURCES
+        algorithms/int_hash_set.h
     DEPENDENCY_ONLY
 )
 
@@ -627,7 +634,6 @@ fast_downward_plugin(
     SOURCES
         landmarks/exploration
         landmarks/ff_synergy
-        landmarks/lama_ff_synergy
         landmarks/lama_synergy
         landmarks/landmark_cost_assignment
         landmarks/landmark_count_heuristic

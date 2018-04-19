@@ -10,6 +10,8 @@
 #include "../search_progress.h"
 #include "../search_space.h"
 
+#include "../utils/rng.h"
+
 #include <memory>
 #include <vector>
 
