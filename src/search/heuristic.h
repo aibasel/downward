@@ -79,13 +79,11 @@ public:
     explicit Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
-
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {
     }
 
     static void add_options_to_parser(options::OptionParser &parser);
-    static options::Options default_options();
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

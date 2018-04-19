@@ -104,6 +104,10 @@ void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
+StubbornSetsEC::StubbornSetsEC(const options::Options &opts)
+    : StubbornSets(opts) {
+}
+
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     TaskProxy task_proxy(*task);
@@ -322,11 +326,14 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "251-259",
             "AAAI Press 2013"));
 
+    stubborn_sets::add_pruning_options(parser);
+
+    Options opts = parser.parse();
+
     if (parser.dry_run()) {
         return nullptr;
     }
-
-    return make_shared<StubbornSetsEC>();
+    return make_shared<StubbornSetsEC>(opts);
 }
 
 static PluginShared<PruningMethod> _plugin("stubborn_sets_ec", _parse);
