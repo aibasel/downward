@@ -42,7 +42,7 @@ SUITE = [
     'woodworking-sat08-strips', 'woodworking-sat11-strips'
 ]
 
-ENVIRONMENT = BaselSlurmEnvironment(email="silvan.sievers@unibas.ch")
+ENVIRONMENT = BaselSlurmEnvironment(email="silvan.sievers@unibas.ch",partition='infai_1')
 
 if common_setup.is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
