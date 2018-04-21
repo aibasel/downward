@@ -55,6 +55,8 @@ exp = IssueExperiment(
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
+exp.add_parse_again_step()
+
 exp.add_comparison_table_step()
 
 exp.run_steps()
