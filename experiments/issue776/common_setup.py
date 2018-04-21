@@ -258,6 +258,12 @@ class IssueExperiment(FastDownwardExperiment):
         self._revisions = revisions
         self._configs = configs
 
+        # Add default parsers to the experiment.
+        self.add_parser('lab_driver_parser', self.LAB_DRIVER_PARSER)
+        self.add_parser('exitcode_parser', self.EXITCODE_PARSER)
+        self.add_parser('translator_parser', self.TRANSLATOR_PARSER)
+        self.add_parser('single_search_parser', self.SINGLE_SEARCH_PARSER)
+
     @classmethod
     def _is_portfolio(cls, config_nick):
         return "fdss" in config_nick
