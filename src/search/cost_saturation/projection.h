@@ -33,15 +33,6 @@ class Projection : public Abstraction {
     // Reuse the queue to avoid switching to heap queue too often.
     mutable priority_queues::AdaptiveQueue<size_t> pq;
 
-    // Returns true iff op has an effect on a variable in the pattern.
-    bool is_operator_relevant(const OperatorProxy &op) const;
-
-    /* Return true iff there is no variable in the pattern for which op
-       has a precondition and (different) effect. */
-    bool operator_induces_loop(const OperatorProxy &op) const;
-
-    std::vector<int> compute_active_operators() const;
-    std::vector<int> compute_looping_operators() const;
     std::vector<int> compute_goal_states() const;
 
     /*

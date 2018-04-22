@@ -11,9 +11,6 @@ Abstraction::Abstraction()
     : has_transition_system(true) {
 }
 
-Abstraction::~Abstraction() {
-}
-
 pair<vector<int>, vector<int>> Abstraction::compute_goal_distances_and_saturated_costs(
     const vector<int> &costs,
     bool use_general_costs) const {

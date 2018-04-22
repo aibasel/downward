@@ -38,7 +38,7 @@ protected:
 
 public:
     Abstraction();
-    virtual ~Abstraction();
+    virtual ~Abstraction() = default;
 
     Abstraction(const Abstraction &) = delete;
 
