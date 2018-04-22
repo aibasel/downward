@@ -1,5 +1,7 @@
 #include "domains.h"
 
+#include "../utils/collections.h"
+
 #include <sstream>
 
 using namespace std;
@@ -50,6 +52,10 @@ bool Domains::is_superset_of(const Domains &other) const {
             return false;
     }
     return true;
+}
+
+void Domains::release_memory() {
+    utils::release_vector_memory(domain_subsets);
 }
 
 ostream &operator<<(ostream &os, const Domains &domains) {

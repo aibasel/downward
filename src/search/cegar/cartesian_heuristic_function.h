@@ -17,12 +17,12 @@ namespace cegar {
 class CartesianHeuristicFunction {
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
-    RefinementHierarchy refinement_hierarchy;
+    const std::shared_ptr<RefinementHierarchy> refinement_hierarchy;
 
 public:
     CartesianHeuristicFunction(
         const std::shared_ptr<AbstractTask> &task,
-        RefinementHierarchy &&hierarchy);
+        const std::shared_ptr<RefinementHierarchy> &hierarchy);
 
     // Visual Studio 2013 needs an explicit implementation.
     CartesianHeuristicFunction(CartesianHeuristicFunction &&other)

@@ -34,6 +34,9 @@ public:
     bool intersects(const Domains &other, int var) const;
     bool is_superset_of(const Domains &other) const;
 
+    // TODO: Remove this hack.
+    void release_memory();
+
     friend std::ostream &operator<<(
         std::ostream &os, const Domains &domain_subsets);
 };

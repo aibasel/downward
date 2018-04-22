@@ -133,6 +133,10 @@ public:
         return loops;
     }
 
+    Node *get_node() const {
+        return node;
+    }
+
     AbstractSearchInfo &get_search_info() {return search_info; }
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
@@ -150,7 +154,10 @@ public:
 
     // Create the Cartesian set that corresponds to the given fact conditions.
     static AbstractState get_abstract_state(
-        const TaskProxy &task_proxy, const ConditionsProxy &conditions);
+            const TaskProxy &task_proxy, const ConditionsProxy &conditions);
+
+    void remove_loops();
+    void release_domains_memory();
 };
 }
 

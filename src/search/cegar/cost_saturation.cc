@@ -162,7 +162,7 @@ void CostSaturation::build_abstractions(
         if (init_h > 0) {
             heuristic_functions.emplace_back(
                 subtask,
-                abstraction.extract_refinement_hierarchy());
+                abstraction.get_refinement_hierarchy());
         }
         if (should_abort())
             break;

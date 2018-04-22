@@ -586,6 +586,30 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME COST_SATURATION
+    HELP "Saturated cost partitioning"
+    SOURCES
+        cost_saturation/abstraction
+        cost_saturation/abstraction_generator
+        cost_saturation/cartesian_abstraction_generator
+        cost_saturation/cost_partitioned_heuristic
+        cost_saturation/cost_partitioning_collection_generator
+        cost_saturation/diversifier
+        cost_saturation/explicit_abstraction
+        cost_saturation/max_cost_partitioning_heuristic
+        cost_saturation/order_generator
+        cost_saturation/order_generator_greedy
+        cost_saturation/order_optimizer
+        cost_saturation/projection
+        cost_saturation/projection_generator
+        cost_saturation/saturated_cost_partitioning_heuristic
+        cost_saturation/scoring_functions
+        cost_saturation/types
+        cost_saturation/utils
+    DEPENDS CEGAR PDBS
+)
+
+fast_downward_plugin(
     NAME MAS_HEURISTIC
     HELP "The Merge-and-Shrink heuristic"
     SOURCES

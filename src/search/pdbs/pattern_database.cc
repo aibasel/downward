@@ -24,8 +24,10 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
                                    const vector<FactPair> &pre_pairs,
                                    const vector<FactPair> &eff_pairs,
                                    int cost,
-                                   const vector<size_t> &hash_multipliers)
-    : cost(cost),
+                                   const vector<size_t> &hash_multipliers,
+                                   int concrete_operator_id)
+    : concrete_operator_id(concrete_operator_id),
+      cost(cost),
       regression_preconditions(prev_pairs) {
     regression_preconditions.insert(regression_preconditions.end(),
                                     eff_pairs.begin(),
@@ -50,6 +52,15 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
 }
 
 AbstractOperator::~AbstractOperator() {
+}
+
+int AbstractOperator::get_concrete_operator_id() const {
+    assert(concrete_operator_id != -1);
+    return concrete_operator_id;
+}
+
+void AbstractOperator::release_memory() {
+    utils::release_vector_memory(regression_preconditions);
 }
 
 void AbstractOperator::dump(const Pattern &pattern,
