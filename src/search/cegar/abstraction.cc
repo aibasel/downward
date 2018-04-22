@@ -103,7 +103,6 @@ Abstraction::Abstraction(
     update_h_and_g_values();
 
     print_statistics();
-    compress_self_loops();
     set_state_ids();
 }
 
@@ -310,19 +309,24 @@ void Abstraction::set_state_ids() {
     }
 }
 
-void Abstraction::compress_self_loops() {
-    operator_induces_self_loop.resize(task_proxy.get_operators().size(), false);
+vector<int> Abstraction::get_looping_operators() const {
+    int num_operators = task_proxy.get_operators().size();
+
+    vector<bool> operator_induces_self_loop(num_operators, false);
     for (AbstractState *state : states) {
         for (int op_id : state->get_loops()) {
             operator_induces_self_loop[op_id] = true;
         }
-        state->remove_loops();
-        state->release_domains_memory();
     }
-}
 
-const vector<bool> &Abstraction::get_operator_induces_self_loop() const {
-    return operator_induces_self_loop;
+    vector<int> looping_operators;
+    for (int op_id = 0; op_id < num_operators; ++op_id) {
+        if (operator_induces_self_loop[op_id]) {
+            looping_operators.push_back(op_id);
+        }
+    }
+    looping_operators.shrink_to_fit();
+    return looping_operators;
 }
 
 vector<int> Abstraction::get_saturated_costs() {

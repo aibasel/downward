@@ -3,8 +3,6 @@
 #include "refinement_hierarchy.h"
 #include "utils.h"
 
-#include "../utils/collections.h"
-
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
@@ -148,14 +146,6 @@ void AbstractState::set_h_value(int new_h) {
 int AbstractState::get_h_value() const {
     assert(node);
     return node->get_h_value();
-}
-
-void AbstractState::remove_loops() {
-    utils::release_vector_memory(loops);
-}
-
-void AbstractState::release_domains_memory() {
-    domains.release_memory();
 }
 
 AbstractState *AbstractState::get_trivial_abstract_state(

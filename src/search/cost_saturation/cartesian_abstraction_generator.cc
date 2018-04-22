@@ -53,15 +53,7 @@ static unique_ptr<Abstraction> convert_abstraction(
     }
 
     // Store self-loop info.
-    vector<int> looping_operators;
-    const vector<bool> &self_loop_info =
-        cartesian_abstraction.get_operator_induces_self_loop();
-    for (size_t op_id = 0; op_id < self_loop_info.size(); ++op_id) {
-        if (self_loop_info[op_id]) {
-            looping_operators.push_back(op_id);
-        }
-    }
-    looping_operators.shrink_to_fit();
+    vector<int> looping_operators = cartesian_abstraction.get_looping_operators();
 
     // Store goals.
     vector<int> goal_states;
