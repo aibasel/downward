@@ -87,7 +87,7 @@ Abstraction::Abstraction(
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
-      refinement_hierarchy(make_shared<RefinementHierarchy>(task)),
+      refinement_hierarchy(utils::make_unique_ptr<RefinementHierarchy>(task)),
       debug(debug) {
     assert(max_states >= 1);
     g_log << "Start building abstraction." << endl;

@@ -68,7 +68,7 @@ class Abstraction {
 
     /* DAG with inner nodes for all split states and leaves for all
        current states. */
-    std::shared_ptr<RefinementHierarchy> refinement_hierarchy;
+    std::unique_ptr<RefinementHierarchy> refinement_hierarchy;
 
     const bool debug;
 
@@ -121,8 +121,9 @@ public:
 
     Abstraction(const Abstraction &) = delete;
 
-    std::shared_ptr<RefinementHierarchy> get_refinement_hierarchy() const {
-        return refinement_hierarchy;
+    std::unique_ptr<RefinementHierarchy> extract_refinement_hierarchy() {
+        assert(refinement_hierarchy);
+        return std::move(refinement_hierarchy);
     }
 
     const AbstractStates &get_states() const {

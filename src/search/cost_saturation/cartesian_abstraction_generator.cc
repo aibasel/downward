@@ -27,7 +27,7 @@ CartesianAbstractionGenerator::CartesianAbstractionGenerator(
 }
 
 static unique_ptr<Abstraction> convert_abstraction(
-    const cegar::Abstraction &cartesian_abstraction) {
+    cegar::Abstraction &cartesian_abstraction) {
     int num_states = cartesian_abstraction.get_num_states();
     vector<vector<Successor>> backward_graph(num_states);
 
@@ -62,8 +62,9 @@ static unique_ptr<Abstraction> convert_abstraction(
         goal_states.push_back(goal->get_node()->get_state_id());
     }
 
+    // Convert to shared_ptr since std::function requires copy-constructible arguments.
     shared_ptr<cegar::RefinementHierarchy> refinement_hierarchy =
-        cartesian_abstraction.get_refinement_hierarchy();
+        cartesian_abstraction.extract_refinement_hierarchy();
     AbstractionFunction state_map =
         [refinement_hierarchy](const State &state) {
             assert(refinement_hierarchy);

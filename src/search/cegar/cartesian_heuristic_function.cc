@@ -5,10 +5,10 @@ using namespace std;
 namespace cegar {
 CartesianHeuristicFunction::CartesianHeuristicFunction(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<RefinementHierarchy> &hierarchy)
+    unique_ptr<RefinementHierarchy> &&hierarchy)
     : task(task),
       task_proxy(*task),
-      refinement_hierarchy(hierarchy) {
+      refinement_hierarchy(move(hierarchy)) {
 }
 
 int CartesianHeuristicFunction::get_value(const State &parent_state) const {
