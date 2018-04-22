@@ -39,12 +39,6 @@ extern std::vector<int> get_default_order(int num_abstractions);
 extern std::vector<int> get_local_state_ids(
     const Abstractions &abstractions, const State &state);
 
-extern CostPartitionedHeuristic compute_saturated_cost_partitioning(
-    const Abstractions &abstractions,
-    const std::vector<int> &order,
-    const std::vector<int> &costs,
-    bool sparse);
-
 extern void reduce_costs(
     std::vector<int> &remaining_costs,
     const std::vector<int> &saturated_costs);

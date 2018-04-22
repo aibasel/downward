@@ -88,37 +88,6 @@ vector<int> get_local_state_ids(
     return local_state_ids;
 }
 
-CostPartitionedHeuristic compute_saturated_cost_partitioning(
-    const Abstractions &abstractions,
-    const vector<int> &order,
-    const vector<int> &costs,
-    bool sparse) {
-    const bool debug = false;
-    assert(abstractions.size() == order.size());
-    CostPartitionedHeuristic cp_heuristic;
-    vector<int> remaining_costs = costs;
-    for (int pos : order) {
-        const Abstraction &abstraction = *abstractions[pos];
-        auto pair = abstraction.compute_goal_distances_and_saturated_costs(
-            remaining_costs);
-        vector<int> &h_values = pair.first;
-        vector<int> &saturated_costs = pair.second;
-        if (debug) {
-            cout << "Heuristic values: ";
-            print_indexed_vector(h_values);
-            cout << "Saturated costs: ";
-            print_indexed_vector(saturated_costs);
-        }
-        cp_heuristic.add_cp_heuristic_values(pos, move(h_values), sparse);
-        reduce_costs(remaining_costs, saturated_costs);
-        if (debug) {
-            cout << "Remaining costs: ";
-            print_indexed_vector(remaining_costs);
-        }
-    }
-    return cp_heuristic;
-}
-
 void reduce_costs(vector<int> &remaining_costs, const vector<int> &saturated_costs) {
     assert(remaining_costs.size() == saturated_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
