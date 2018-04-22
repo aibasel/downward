@@ -18,6 +18,20 @@ namespace cost_saturation {
 class AbstractionGenerator;
 class OrderGenerator;
 
+static int compute_max_h(
+    const CPHeuristics &cp_heuristics,
+    const vector<int> &local_state_ids) {
+    int max_h = 0;
+    for (const CostPartitionedHeuristic &cp_heuristic : cp_heuristics) {
+        int sum_h = cp_heuristic.compute_heuristic(local_state_ids);
+        if (sum_h == INF) {
+            return INF;
+        }
+        max_h = max(max_h, sum_h);
+    }
+    return max_h;
+}
+
 MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     const Options &opts,
     Abstractions &&abstractions_,

@@ -95,20 +95,6 @@ int compute_sum_h(
     return sum_h;
 }
 
-int compute_max_h(
-    const CPHeuristics &cp_heuristics,
-    const vector<int> &local_state_ids) {
-    int max_h = 0;
-    for (const CostPartitionedHeuristic &cp_heuristic : cp_heuristics) {
-        int sum_h = cp_heuristic.compute_heuristic(local_state_ids);
-        if (sum_h == INF) {
-            return INF;
-        }
-        max_h = max(max_h, sum_h);
-    }
-    return max_h;
-}
-
 vector<int> get_local_state_ids(
     const Abstractions &abstractions, const State &state) {
     vector<int> local_state_ids;
@@ -141,15 +127,15 @@ CostPartitionedHeuristic compute_saturated_cost_partitioning(
         vector<int> &h_values = pair.first;
         vector<int> &saturated_costs = pair.second;
         if (debug) {
-            cout << "h-values: ";
+            cout << "Heuristic values: ";
             print_indexed_vector(h_values);
-            cout << "saturated costs: ";
+            cout << "Saturated costs: ";
             print_indexed_vector(saturated_costs);
         }
         cp_heuristic.add_cp_heuristic_values(pos, move(h_values), sparse);
         reduce_costs(remaining_costs, saturated_costs);
         if (debug) {
-            cout << "remaining costs: ";
+            cout << "Remaining costs: ";
             print_indexed_vector(remaining_costs);
         }
     }

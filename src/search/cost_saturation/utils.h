@@ -40,10 +40,6 @@ extern int compute_sum_h(
     const std::vector<int> &local_state_ids,
     const std::vector<std::vector<int>> &h_values_by_abstraction);
 
-extern int compute_max_h(
-    const CPHeuristics &cp_heuristics,
-    const std::vector<int> &local_state_ids);
-
 extern std::vector<int> get_local_state_ids(
     const Abstractions &abstractions, const State &state);
 
