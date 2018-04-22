@@ -61,9 +61,6 @@ void print_indexed_vector(const std::vector<T> &vec) {
     }
     std::cout << std::endl;
 }
-
-extern std::vector<bool> convert_to_bitvector(
-    const std::vector<int> &vec, int size);
 }
 
 #endif
