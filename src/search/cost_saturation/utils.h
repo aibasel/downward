@@ -36,10 +36,6 @@ extern Abstractions generate_abstractions(
 
 extern std::vector<int> get_default_order(int num_abstractions);
 
-extern int compute_sum_h(
-    const std::vector<int> &local_state_ids,
-    const std::vector<std::vector<int>> &h_values_by_abstraction);
-
 extern std::vector<int> get_local_state_ids(
     const Abstractions &abstractions, const State &state);
 

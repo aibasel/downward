@@ -205,9 +205,6 @@ Order OrderGeneratorGreedy::get_next_order(
         order = compute_greedy_dynamic_order_for_sample(
             abstractions, local_state_ids, costs);
     } else {
-        // We can call compute_sum_h with unpartitioned h values since we only need
-        // a safe, but not necessarily admissible estimate.
-        assert(compute_sum_h(local_state_ids, h_values_by_abstraction) != INF);
         order = compute_static_greedy_order_for_sample(local_state_ids, verbose);
     }
 
