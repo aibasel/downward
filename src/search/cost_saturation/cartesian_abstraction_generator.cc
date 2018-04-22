@@ -112,7 +112,6 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
 
         --remaining_subtasks;
     }
-
 }
 
 Abstractions CartesianAbstractionGenerator::generate_abstractions(

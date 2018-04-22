@@ -26,14 +26,14 @@ class CartesianAbstractionGenerator : public AbstractionGenerator {
 
     void build_abstractions_for_subtasks(
         const std::vector<std::shared_ptr<AbstractTask>> &subtasks,
-        std::function<bool ()> total_size_limit_reached,
+        std::function<bool()> total_size_limit_reached,
         Abstractions &abstractions);
 
 public:
     explicit CartesianAbstractionGenerator(const options::Options &opts);
 
     Abstractions generate_abstractions(
-            const std::shared_ptr<AbstractTask> &task);
+        const std::shared_ptr<AbstractTask> &task);
 };
 }
 
