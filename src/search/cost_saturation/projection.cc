@@ -14,71 +14,14 @@
 using namespace std;
 
 namespace cost_saturation {
-// Return true iff op has an effect on a variable in the pattern.
-static bool is_operator_relevant(
-    const OperatorProxy &op, const pdbs::Pattern &pattern) {
-    for (EffectProxy effect : op.get_effects()) {
-        int var_id = effect.get_fact().get_variable().get_id();
-        if (binary_search(pattern.begin(), pattern.end(), var_id)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/* Return true iff there is no variable in the pattern for which op
-   has a precondition and (different) effect. */
-static bool operator_induces_loop(
-    const OperatorProxy &op, const pdbs::Pattern &pattern) {
-    unordered_map<int, int> var_to_precondition;
-    for (FactProxy precondition : op.get_preconditions()) {
-        const FactPair fact = precondition.get_pair();
-        var_to_precondition[fact.var] = fact.value;
-    }
-    for (EffectProxy effect : op.get_effects()) {
-        const FactPair fact = effect.get_fact().get_pair();
-        auto it = var_to_precondition.find(fact.var);
-        if (it != var_to_precondition.end() &&
-            it->second != fact.value &&
-            binary_search(pattern.begin(), pattern.end(), fact.var)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-static vector<int> compute_active_operators(
-    const OperatorsProxy &operators, const pdbs::Pattern &pattern) {
-    vector<int> active_operators;
-    for (OperatorProxy op : operators) {
-        if (is_operator_relevant(op, pattern)) {
-            active_operators.push_back(op.get_id());
-        }
-    }
-    active_operators.shrink_to_fit();
-    return active_operators;
-}
-
-static vector<int> compute_looping_operators(
-    const OperatorsProxy &operators, const pdbs::Pattern &pattern) {
-    vector<int> looping_operators;
-    for (OperatorProxy op : operators) {
-        if (operator_induces_loop(op, pattern)) {
-            looping_operators.push_back(op.get_id());
-        }
-    }
-    looping_operators.shrink_to_fit();
-    return looping_operators;
-}
-
 Projection::Projection(
     const TaskProxy &task_proxy, const pdbs::Pattern &pattern)
     : task_proxy(task_proxy),
       pattern(pattern) {
     assert(utils::is_sorted_unique(pattern));
 
-    active_operators = compute_active_operators(task_proxy.get_operators(), pattern);
-    looping_operators = compute_looping_operators(task_proxy.get_operators(), pattern);
+    active_operators = compute_active_operators();
+    looping_operators = compute_looping_operators();
     assert(utils::is_sorted_unique(active_operators));
     assert(utils::is_sorted_unique(looping_operators));
 
@@ -129,6 +72,26 @@ Projection::~Projection() {
 
 int Projection::get_abstract_state_id(const State &concrete_state) const {
     return hash_index(concrete_state);
+}
+
+vector<int> Projection::compute_active_operators() const {
+    vector<int> active_operators;
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        if (is_operator_relevant(op)) {
+            active_operators.push_back(op.get_id());
+        }
+    }
+    return active_operators;
+}
+
+vector<int> Projection::compute_looping_operators() const {
+    vector<int> looping_operators;
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        if (operator_induces_loop(op)) {
+            looping_operators.push_back(op.get_id());
+        }
+    }
+    return looping_operators;
 }
 
 vector<int> Projection::compute_goal_states() const {
@@ -318,6 +281,34 @@ size_t Projection::hash_index(const State &state) const {
         index += hash_multipliers[i] * state[pattern[i]].get_value();
     }
     return index;
+}
+
+bool Projection::is_operator_relevant(const OperatorProxy &op) const {
+    for (EffectProxy effect : op.get_effects()) {
+        int var_id = effect.get_fact().get_variable().get_id();
+        if (binary_search(pattern.begin(), pattern.end(), var_id)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Projection::operator_induces_loop(const OperatorProxy &op) const {
+    unordered_map<int, int> var_to_precondition;
+    for (FactProxy precondition : op.get_preconditions()) {
+        const FactPair fact = precondition.get_pair();
+        var_to_precondition[fact.var] = fact.value;
+    }
+    for (EffectProxy effect : op.get_effects()) {
+        const FactPair fact = effect.get_fact().get_pair();
+        auto it = var_to_precondition.find(fact.var);
+        if (it != var_to_precondition.end() &&
+            it->second != fact.value &&
+            binary_search(pattern.begin(), pattern.end(), fact.var)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 vector<int> Projection::compute_saturated_costs(
