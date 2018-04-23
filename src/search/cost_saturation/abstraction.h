@@ -45,7 +45,7 @@ public:
 
     std::pair<std::vector<int>, std::vector<int>>
     compute_goal_distances_and_saturated_costs(
-        const std::vector<int> &costs, bool use_general_costs = true) const;
+        const std::vector<int> &costs) const;
 
     // Operators inducing state-changing transitions.
     virtual std::vector<int> compute_active_operators() const = 0;
