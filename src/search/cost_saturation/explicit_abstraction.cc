@@ -85,7 +85,7 @@ ExplicitAbstraction::ExplicitAbstraction(
 }
 
 vector<int> ExplicitAbstraction::compute_h_values(const vector<int> &costs) const {
-    vector<int> goal_distances(backward_graph.size(), INF);
+    vector<int> goal_distances(get_num_states(), INF);
     queue.clear();
     for (int goal_state : goal_states) {
         goal_distances[goal_state] = 0;
@@ -96,6 +96,7 @@ vector<int> ExplicitAbstraction::compute_h_values(const vector<int> &costs) cons
 }
 
 vector<Transition> ExplicitAbstraction::get_transitions() const {
+    assert(has_transition_system());
     vector<Transition> transitions;
     int num_states = backward_graph.size();
     for (int target = 0; target < num_states; ++target) {
@@ -151,6 +152,7 @@ vector<int> ExplicitAbstraction::compute_saturated_costs(
 }
 
 int ExplicitAbstraction::get_num_states() const {
+    assert(has_transition_system());
     return backward_graph.size();
 }
 
@@ -158,12 +160,30 @@ int ExplicitAbstraction::get_abstract_state_id(const State &concrete_state) cons
     return abstraction_function(concrete_state);
 }
 
-void ExplicitAbstraction::remove_transition_system() {
-    Abstraction::remove_transition_system();
+vector<int> ExplicitAbstraction::get_active_operators() const {
+    assert(has_transition_system());
+    return active_operators;
+}
+
+const vector<int> &ExplicitAbstraction::get_looping_operators() const {
+    assert(has_transition_system());
+    return looping_operators;
+}
+
+const vector<int> &ExplicitAbstraction::get_goal_states() const {
+    assert(has_transition_system());
+    return goal_states;
+}
+
+void ExplicitAbstraction::release_transition_system_memory() {
+    utils::release_vector_memory(active_operators);
+    utils::release_vector_memory(looping_operators);
+    utils::release_vector_memory(goal_states);
     utils::release_vector_memory(backward_graph);
 }
 
 void ExplicitAbstraction::dump() const {
+    assert(has_transition_system());
     cout << "State-changing transitions:" << endl;
     for (size_t state = 0; state < backward_graph.size(); ++state) {
         if (!backward_graph[state].empty()) {

@@ -30,6 +30,14 @@ class Projection : public Abstraction {
     // multipliers for each variable for perfect hash function
     std::vector<std::size_t> hash_multipliers;
 
+    std::vector<int> goal_states;
+
+    // Operators inducing state-changing transitions.
+    std::vector<int> active_operators;
+
+    // Operators inducing self-loops. May overlap with active operators.
+    std::vector<int> looping_operators;
+
     // Reuse the queue to avoid switching to heap queue too often.
     mutable priority_queues::AdaptiveQueue<size_t> pq;
 
@@ -100,6 +108,8 @@ protected:
         int num_operators,
         bool use_general_costs) const override;
 
+    virtual void release_transition_system_memory() override;
+
 public:
     Projection(const TaskProxy &task_proxy, const pdbs::Pattern &pattern);
     virtual ~Projection() override;
@@ -113,7 +123,9 @@ public:
 
     virtual int get_num_states() const override;
 
-    virtual void remove_transition_system() override;
+    virtual std::vector<int> get_active_operators() const override;
+    virtual const std::vector<int> &get_looping_operators() const override;
+    virtual const std::vector<int> &get_goal_states() const override;
 
     virtual void dump() const override;
 };

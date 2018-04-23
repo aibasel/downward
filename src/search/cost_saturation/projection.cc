@@ -370,8 +370,19 @@ int Projection::get_num_states() const {
     return num_states;
 }
 
-void Projection::remove_transition_system() {
-    Abstraction::remove_transition_system();
+vector<int> Projection::get_active_operators() const {
+    return active_operators;
+}
+
+const vector<int> &Projection::get_looping_operators() const {
+    return looping_operators;
+}
+
+const vector<int> &Projection::get_goal_states() const {
+    return goal_states;
+}
+
+void Projection::release_transition_system_memory() {
     utils::release_vector_memory(abstract_operators);
     match_tree = nullptr;
 }
