@@ -47,8 +47,11 @@ public:
     compute_goal_distances_and_saturated_costs(
         const std::vector<int> &costs, bool use_general_costs = true) const;
 
-    virtual std::vector<int> get_active_operators() const = 0;
+    // Operators inducing state-changing transitions.
+    virtual std::vector<int> compute_active_operators() const = 0;
 
+    // Operators inducing self-looping transitions. May overlap with
+    // state-changing transitions.
     virtual const std::vector<int> &get_looping_operators() const = 0;
 
     virtual std::vector<Transition> get_transitions() const = 0;

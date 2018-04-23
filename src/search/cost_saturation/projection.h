@@ -32,10 +32,7 @@ class Projection : public Abstraction {
 
     std::vector<int> goal_states;
 
-    // Operators inducing state-changing transitions.
-    std::vector<int> active_operators;
-
-    // Operators inducing self-loops. May overlap with active operators.
+    // Operators inducing self-loops.
     std::vector<int> looping_operators;
 
     // Reuse the queue to avoid switching to heap queue too often.
@@ -48,7 +45,6 @@ class Projection : public Abstraction {
        has a precondition and (different) effect. */
     bool operator_induces_loop(const OperatorProxy &op) const;
 
-    std::vector<int> compute_active_operators() const;
     std::vector<int> compute_looping_operators() const;
     std::vector<int> compute_goal_states() const;
 
@@ -123,7 +119,7 @@ public:
 
     virtual int get_num_states() const override;
 
-    virtual std::vector<int> get_active_operators() const override;
+    virtual std::vector<int> compute_active_operators() const override;
     virtual const std::vector<int> &get_looping_operators() const override;
     virtual const std::vector<int> &get_goal_states() const override;
 

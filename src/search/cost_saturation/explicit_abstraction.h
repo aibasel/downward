@@ -33,15 +33,12 @@ struct Successor {
     }
 };
 
-std::ostream &operator<<(std::ostream &os, const Successor &transition);
+std::ostream &operator<<(std::ostream &os, const Successor &successor);
 
 class ExplicitAbstraction : public Abstraction {
     const AbstractionFunction abstraction_function;
 
     std::vector<int> goal_states;
-
-    // Operators inducing state-changing transitions.
-    std::vector<int> active_operators;
 
     // Operators inducing self-loops. May overlap with active operators.
     std::vector<int> looping_operators;
@@ -73,7 +70,7 @@ public:
 
     virtual int get_abstract_state_id(const State &concrete_state) const override;
 
-    virtual std::vector<int> get_active_operators() const override;
+    virtual std::vector<int> compute_active_operators() const override;
 
     virtual const std::vector<int> &get_looping_operators() const override;
 

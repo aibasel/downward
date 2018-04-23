@@ -20,9 +20,7 @@ Projection::Projection(
       pattern(pattern) {
     assert(utils::is_sorted_unique(pattern));
 
-    active_operators = compute_active_operators();
     looping_operators = compute_looping_operators();
-    assert(utils::is_sorted_unique(active_operators));
     assert(utils::is_sorted_unique(looping_operators));
 
     hash_multipliers.reserve(pattern.size());
@@ -370,26 +368,26 @@ int Projection::get_num_states() const {
     return num_states;
 }
 
-vector<int> Projection::get_active_operators() const {
-    return active_operators;
-}
-
 const vector<int> &Projection::get_looping_operators() const {
+    assert(has_transition_system());
     return looping_operators;
 }
 
 const vector<int> &Projection::get_goal_states() const {
+    assert(has_transition_system());
     return goal_states;
 }
 
 void Projection::release_transition_system_memory() {
     utils::release_vector_memory(abstract_operators);
+    utils::release_vector_memory(looping_operators);
+    utils::release_vector_memory(goal_states);
     match_tree = nullptr;
 }
 
 void Projection::dump() const {
+    assert(has_transition_system());
     cout << "Abstract operators: " << abstract_operators.size()
-         << ", active operators: " << active_operators.size()
          << ", looping operators: " << looping_operators.size()
          << ", goal states: " << goal_states.size() << "/" << num_states
          << endl;
