@@ -63,19 +63,16 @@ static vector<int> get_active_operators_from_graph(
 
 ExplicitAbstraction::ExplicitAbstraction(
     AbstractionFunction function,
-    vector<vector<Successor>> &&backward_graph_,
-    vector<int> &&looping_operators_,
-    vector<int> &&goal_states_)
+    vector<vector<Successor>> &&backward_graph,
+    vector<int> &&looping_operators,
+    vector<int> &&goal_states)
     : abstraction_function(function),
-      backward_graph(move(backward_graph_)) {
-    looping_operators = move(looping_operators_);
-    goal_states = move(goal_states_);
-    sort(looping_operators.begin(), looping_operators.end());
-    sort(goal_states.begin(), goal_states.end());
-
+      backward_graph(move(backward_graph)),
+      looping_operators(move(looping_operators)),
+      goal_states(move(goal_states)) {
 #ifndef NDEBUG
     for (int target = 0; target < get_num_states(); ++target) {
-        vector<Successor> copied_transitions = backward_graph[target];
+        vector<Successor> copied_transitions = this->backward_graph[target];
         sort(copied_transitions.begin(), copied_transitions.end());
         assert(utils::is_sorted_unique(copied_transitions));
     }

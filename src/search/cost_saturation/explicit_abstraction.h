@@ -38,13 +38,13 @@ std::ostream &operator<<(std::ostream &os, const Successor &successor);
 class ExplicitAbstraction : public Abstraction {
     const AbstractionFunction abstraction_function;
 
-    std::vector<int> goal_states;
-
-    // Operators inducing self-loops. May overlap with active operators.
-    std::vector<int> looping_operators;
-
     // State-changing transitions.
     std::vector<std::vector<Successor>> backward_graph;
+
+    // Operators inducing self-loops.
+    std::vector<int> looping_operators;
+
+    std::vector<int> goal_states;
 
     mutable priority_queues::AdaptiveQueue<int> queue;
 
@@ -53,6 +53,8 @@ protected:
         const std::vector<int> &h_values,
         int num_operators,
         bool use_general_costs) const override;
+
+    virtual void release_transition_system_memory() override;
 
 public:
     ExplicitAbstraction(
@@ -75,8 +77,6 @@ public:
     virtual const std::vector<int> &get_looping_operators() const override;
 
     virtual const std::vector<int> &get_goal_states() const override;
-
-    virtual void release_transition_system_memory() override;
 
     virtual void dump() const override;
 };
