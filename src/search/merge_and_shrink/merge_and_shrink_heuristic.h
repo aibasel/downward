@@ -43,6 +43,9 @@ class MergeAndShrinkHeuristic : public Heuristic {
     // The final merge-and-shrink representation, storing goal distances.
     std::unique_ptr<MergeAndShrinkRepresentation> mas_representation;
 
+    void finalize_factor(FactoredTransitionSystem &fts, int index);
+    int prune_atomic(FactoredTransitionSystem &fts) const;
+    int main_loop(FactoredTransitionSystem &fts, const utils::Timer &timer);
     void build(const utils::Timer &timer);
 
     void report_peak_memory_delta(bool final = false) const;

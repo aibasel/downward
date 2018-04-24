@@ -13,10 +13,14 @@ class TransitionSystem;
 
 /*
   Determine if any of the two factors at indices index1 and index2 must be
-  shrunk according to the given size limits (max_states*), or if shrinking
-  should be triggered nevertheless (shrink_treshold_before_merge). See
-  compute_shrink_sizes for a detailed description of how target sizes are
-  computed. If shrinking is triggered, apply the abstraction to the two factors
+  shrunk according to the given size limits max_states* and
+  shrink_treshold_before_merge: before merging, the factors may have at most
+  max_states_before_merge states, and their product may hae at most
+  max_states_after_merge states. If the size of a factor is below
+  shrink_treshold_before_merge, shrinking is triggered with the current size
+  of the factor as the target, to allow exploiting perfect shrink opportunities.
+
+  If shrinking is triggered, apply the abstraction to the two factors
   within the factored transition system. Return true iff at least one of the
   factors was shrunk.
 */
@@ -35,7 +39,7 @@ extern bool shrink_before_merge_step(
   requires that init and/or goal distances have been computed accordingly.
   Return true iff any states have been pruned.
 
-  TODO: maybe this functionality belongs to a new class PruningStrategy.
+  TODO: maybe this functionality belongs to a new class PruneStrategy.
 */
 extern bool prune_step(
     FactoredTransitionSystem &fts,
