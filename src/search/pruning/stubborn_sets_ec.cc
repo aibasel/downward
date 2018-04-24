@@ -204,7 +204,7 @@ const vector<int> &StubbornSetsEC::get_disabled(int op1_no) {
     if (!disabled_computed[op1_no]) {
         for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
             if (op2_no != op1_no && can_disable(op1_no, op2_no)) {
-                disabled[op1_no].push_back(op2_no);
+                result.push_back(op2_no);
             }
         }
         result.shrink_to_fit();
