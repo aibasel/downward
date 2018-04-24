@@ -6,7 +6,6 @@
 #include "transition_system.h"
 
 #include "../utils/math.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
