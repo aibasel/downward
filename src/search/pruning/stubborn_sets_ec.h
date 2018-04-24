@@ -10,7 +10,9 @@ private:
     std::vector<std::vector<int>> op_preconditions_on_var;
     std::vector<bool> active_ops;
     std::vector<std::vector<int>> conflicting_and_disabling;
+    std::vector<bool> conflicting_and_disabling_computed;
     std::vector<std::vector<int>> disabled;
+    std::vector<bool> disabled_computed;
     std::vector<bool> written_vars;
     std::vector<std::vector<bool>> nes_computed;
 
@@ -19,7 +21,8 @@ private:
                            std::vector<int> &disabled_vars) const;
     void build_reachability_map(const TaskProxy &task_proxy);
     void compute_operator_preconditions(const TaskProxy &task_proxy);
-    void compute_conflicts_and_disabling();
+    const std::vector<int> &get_conflicting_and_disabling(int op1_no);
+    const std::vector<int> &get_disabled(int op1_no);
     void add_conflicting_and_disabling(int op_no, const State &state);
     void compute_active_operators(const State &state);
     void mark_as_stubborn_and_remember_written_vars(int op_no, const State &state);

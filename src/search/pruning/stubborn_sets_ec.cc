@@ -119,8 +119,13 @@ void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
         });
     active_ops.assign(num_operators, false);
     compute_operator_preconditions(task_proxy);
-    compute_conflicts_and_disabling();
     build_reachability_map(task_proxy);
+
+    conflicting_and_disabling.resize(num_operators);
+    conflicting_and_disabling_computed.resize(num_operators, false);
+    disabled.resize(num_operators);
+    disabled_computed.resize(num_operators, false);
+
     cout << "pruning method: stubborn sets ec" << endl;
 }
 
@@ -176,24 +181,36 @@ void StubbornSetsEC::compute_active_operators(const State &state) {
     }
 }
 
-void StubbornSetsEC::compute_conflicts_and_disabling() {
-    conflicting_and_disabling.resize(num_operators);
-    disabled.resize(num_operators);
-
-    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
+const vector<int> &StubbornSetsEC::get_conflicting_and_disabling(int op1_no) {
+    vector<int> &result = conflicting_and_disabling[op1_no];
+    if (!conflicting_and_disabling_computed[op1_no]) {
         for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
             if (op1_no != op2_no) {
                 bool conflict = can_conflict(op1_no, op2_no);
                 bool disable = can_disable(op2_no, op1_no);
                 if (conflict || disable) {
-                    conflicting_and_disabling[op1_no].push_back(op2_no);
-                }
-                if (disable) {
-                    disabled[op2_no].push_back(op1_no);
+                    result.push_back(op2_no);
                 }
             }
         }
+        result.shrink_to_fit();
+        conflicting_and_disabling_computed[op1_no] = true;
     }
+    return result;
+}
+
+const vector<int> &StubbornSetsEC::get_disabled(int op1_no) {
+    vector<int> &result = disabled[op1_no];
+    if (!disabled_computed[op1_no]) {
+        for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
+            if (op2_no != op1_no && can_disable(op1_no, op2_no)) {
+                result.push_back(op2_no);
+            }
+        }
+        result.shrink_to_fit();
+        disabled_computed[op1_no] = true;
+    }
+    return result;
 }
 
 bool StubbornSetsEC::is_applicable(int op_no, const State &state) const {
@@ -225,9 +242,10 @@ void StubbornSetsEC::add_nes_for_fact(const FactPair &fact, const State &state) 
 
 void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
                                                    const State &state) {
-    for (int conflict : conflicting_and_disabling[op_no]) {
-        if (active_ops[conflict])
+    for (int conflict : get_conflicting_and_disabling(op_no)) {
+        if (active_ops[conflict]) {
             mark_as_stubborn_and_remember_written_vars(conflict, state);
+        }
     }
 }
 
@@ -277,7 +295,7 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
         add_conflicting_and_disabling(op_no, state);     // active operators used
         //Rule S4'
         vector<int> disabled_vars;
-        for (int disabled_op_no : disabled[op_no]) {
+        for (int disabled_op_no : get_disabled(op_no)) {
             if (active_ops[disabled_op_no]) {
                 get_disabled_vars(op_no, disabled_op_no, disabled_vars);
                 if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
