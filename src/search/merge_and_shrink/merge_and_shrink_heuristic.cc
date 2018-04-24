@@ -332,7 +332,7 @@ int MergeAndShrinkHeuristic::main_loop(
              << fts.get_ts(final_index).get_size() << endl;
     } else {
         cout << "Main loop terminated early because a factor is unsolvable. "
-                "Statistics:" << endl;
+            "Statistics:" << endl;
     }
 
     cout << "Maximum intermediate abstraction size: "
