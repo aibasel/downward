@@ -44,6 +44,7 @@ shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &tas
 vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     vector<FactPair> facts;
     const set<LandmarkNode *> &nodes = graph.get_nodes();
+    facts.reserve(nodes.size());
     for (const LandmarkNode *node : nodes) {
         facts.push_back(get_fact(*node));
     }
