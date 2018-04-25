@@ -312,6 +312,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME STUBBORN_SETS_QUEUE
+    HELP "Stubborn sets queue"
+    SOURCES
+        pruning/stubborn_sets_queue
+    DEPENDS STUBBORN_SETS
+)
+
+fast_downward_plugin(
     NAME SEARCH_COMMON
     HELP "Basic classes used for all search engines"
     SOURCES
