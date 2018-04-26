@@ -43,7 +43,8 @@ exp.add_parser('exitcode_parser', exp.EXITCODE_PARSER)
 exp.add_parser('single_search_parser', exp.SINGLE_SEARCH_PARSER)
 exp.add_parser('pruning_parser', os.path.join(common_setup.get_script_dir(), "parser.py"))
 
-exp.add_absolute_report_step()
+exp.add_absolute_report_step(
+    attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + ["time_for_pruning_operators"])
 #exp.add_comparison_table_step()
 
 exp.run_steps()
