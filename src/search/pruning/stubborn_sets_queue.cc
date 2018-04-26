@@ -4,12 +4,16 @@
 #include "../plugin.h"
 
 #include "../utils/markup.h"
+#include "../utils/memory.h"
+#include "../utils/timer.h"
 
 using namespace std;
 
 namespace stubborn_sets_queue {
 StubbornSetsQueue::StubbornSetsQueue(const options::Options &opts)
     : StubbornSets(opts) {
+    timer = utils::make_unique_ptr<utils::Timer>();
+    timer->stop();
 }
 
 void StubbornSetsQueue::initialize(const shared_ptr<AbstractTask> &task) {
@@ -124,6 +128,7 @@ void StubbornSetsQueue::handle_stubborn_operator(const State &state, int op) {
 
 void StubbornSetsQueue::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
+    timer->resume();
     initialize_stubborn_set(state);
 
     while (!producer_queue.empty() || !consumer_queue.empty()) {
@@ -151,6 +156,11 @@ void StubbornSetsQueue::prune_operators(
     }
 
     op_ids.swap(remaining_op_ids);
+    timer->stop();
+}
+
+void StubbornSetsQueue::print_statistics() const {
+    cout << "Time for pruning operators: " << *timer << endl;
 }
 
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
