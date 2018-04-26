@@ -4,6 +4,7 @@
 
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -37,6 +38,11 @@ StubbornSets::StubbornSets(const options::Options &opts)
           opts.get<int>("expansions_before_checking_pruning_ratio")),
       num_pruning_calls(0),
       is_pruning_disabled(false) {
+    timer = utils::make_unique_ptr<utils::Timer>();
+    timer->stop();
+}
+
+StubbornSets::~StubbornSets() {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
@@ -110,6 +116,7 @@ bool StubbornSets::mark_as_stubborn(int op_no) {
 
 void StubbornSets::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
+    timer->resume();
     if (is_pruning_disabled) {
         return;
     }
@@ -154,6 +161,7 @@ void StubbornSets::prune_operators(
     op_ids.swap(remaining_op_ids);
 
     num_pruned_successors_generated += op_ids.size();
+    timer->stop();
 }
 
 void StubbornSets::print_statistics() const {
@@ -161,6 +169,7 @@ void StubbornSets::print_statistics() const {
          << num_unpruned_successors_generated << endl
          << "total successors after partial-order reduction: "
          << num_pruned_successors_generated << endl;
+    cout << "Time for pruning operators: " << *timer << endl;
 }
 
 void add_pruning_options(options::OptionParser &parser) {
