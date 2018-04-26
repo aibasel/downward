@@ -8,6 +8,10 @@ namespace options {
 class OptionParser;
 }
 
+namespace utils {
+class Timer;
+}
+
 namespace stubborn_sets {
 inline FactPair find_unsatisfied_condition(
     const std::vector<FactPair> &conditions, const State &state);
@@ -18,6 +22,7 @@ class StubbornSets : public PruningMethod {
     int num_pruning_calls;
     bool is_pruning_disabled;
 
+    std::unique_ptr<utils::Timer> timer;
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
 
@@ -92,6 +97,7 @@ protected:
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
     explicit StubbornSets(const options::Options &opts);
+    ~StubbornSets();
 
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 
