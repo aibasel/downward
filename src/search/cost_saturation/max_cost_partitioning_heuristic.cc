@@ -46,7 +46,7 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     int num_lookup_tables = num_abstractions * cp_heuristics.size();
     int num_stored_lookup_tables = 0;
     for (const auto &cp_heuristic: cp_heuristics) {
-        num_stored_lookup_tables += cp_heuristic.size();
+        num_stored_lookup_tables += cp_heuristic.get_lookup_tables().size();
     }
     utils::Log() << "Stored lookup tables: " << num_stored_lookup_tables << "/"
                  << num_lookup_tables << " = "
@@ -55,7 +55,7 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     // Number of stored heuristics.
     unordered_set<int> stored_heuristics;
     for (const auto &cp_heuristic : cp_heuristics) {
-        for (const auto &cp_h_values : cp_heuristic.get_h_values_by_heuristic()) {
+        for (const auto &cp_h_values : cp_heuristic.get_lookup_tables()) {
             stored_heuristics.insert(cp_h_values.heuristic_index);
         }
     }
