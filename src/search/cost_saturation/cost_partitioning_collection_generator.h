@@ -22,7 +22,6 @@ class OrderGenerator;
 
 class CostPartitioningCollectionGenerator {
     const std::shared_ptr<OrderGenerator> cp_generator;
-    const bool sparse;
     const int max_orders;
     const double max_time;
     const bool diversify;
@@ -34,7 +33,6 @@ class CostPartitioningCollectionGenerator {
 public:
     CostPartitioningCollectionGenerator(
         const std::shared_ptr<OrderGenerator> &cp_generator,
-        bool sparse,
         int max_orders,
         double max_time,
         bool diversify,

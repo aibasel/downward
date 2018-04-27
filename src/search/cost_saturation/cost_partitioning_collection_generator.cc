@@ -44,7 +44,6 @@ static vector<vector<int>> sample_states_and_return_local_state_ids(
 
 CostPartitioningCollectionGenerator::CostPartitioningCollectionGenerator(
     const shared_ptr<OrderGenerator> &cp_generator,
-    bool sparse,
     int max_orders,
     double max_time,
     bool diversify,
@@ -53,7 +52,6 @@ CostPartitioningCollectionGenerator::CostPartitioningCollectionGenerator(
     bool steepest_ascent,
     const shared_ptr<utils::RandomNumberGenerator> &rng)
     : cp_generator(cp_generator),
-      sparse(sparse),
       max_orders(max_orders),
       max_time(max_time),
       diversify(diversify),
@@ -75,7 +73,7 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
     vector<int> local_state_ids = get_local_state_ids(abstractions, initial_state);
 
     CostPartitionedHeuristic default_order_cp = cp_function(
-        abstractions, get_default_order(abstractions.size()), costs, true);
+        abstractions, get_default_order(abstractions.size()), costs);
     if (default_order_cp.compute_heuristic(local_state_ids) == INF) {
         return {
                    default_order_cp
@@ -86,7 +84,7 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
 
     Order order = cp_generator->compute_order_for_state(
         abstractions, costs, local_state_ids, false);
-    CostPartitionedHeuristic cp_for_sampling = cp_function(abstractions, order, costs, true);
+    CostPartitionedHeuristic cp_for_sampling = cp_function(abstractions, order, costs);
     function<int (const State &state)> sampling_heuristic =
         [&abstractions, &cp_for_sampling](const State &state) {
             vector<int> local_state_ids = get_local_state_ids(abstractions, state);
@@ -124,14 +122,14 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
         Order order = cp_generator->compute_order_for_state(
             abstractions, costs, local_state_ids, verbose);
         CostPartitionedHeuristic cp_heuristic = cp_function(
-            abstractions, order, costs, sparse);
+            abstractions, order, costs);
 
         if (max_optimization_time > 0) {
             utils::CountdownTimer timer(max_optimization_time);
             int incumbent_h_value = cp_heuristic.compute_heuristic(local_state_ids);
             do_hill_climbing(
                 cp_function, timer, abstractions, costs, local_state_ids, order,
-                cp_heuristic, incumbent_h_value, steepest_ascent, sparse, verbose);
+                cp_heuristic, incumbent_h_value, steepest_ascent, verbose);
             if (verbose) {
                 utils::Log() << "Time for optimizing order: " << timer.get_elapsed_time() << endl;
                 utils::Log() << "Time for optimizing order has expired: " << timer.is_expired() << endl;

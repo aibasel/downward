@@ -126,10 +126,6 @@ void add_cost_partitioning_collection_options_to_parser(OptionParser &parser) {
         "steepest_ascent",
         "do steepest-ascent hill climbing instead of selecting the first improving successor",
         "false");
-    parser.add_option<bool>(
-        "sparse",
-        "don't store h-value vectors that only contain zeros",
-        "true");
     utils::add_rng_options(parser);
 }
 
@@ -169,7 +165,6 @@ CostPartitioningCollectionGenerator get_cp_collection_generator_from_options(
     const options::Options &opts) {
     return CostPartitioningCollectionGenerator(
         opts.get<shared_ptr<OrderGenerator>>("orders"),
-        opts.get<bool>("sparse"),
         opts.get<int>("max_orders"),
         opts.get<double>("max_time"),
         opts.get<bool>("diversify"),

@@ -13,8 +13,7 @@ namespace cost_saturation {
 static CostPartitionedHeuristic compute_saturated_cost_partitioning(
     const Abstractions &abstractions,
     const vector<int> &order,
-    const vector<int> &costs,
-    bool sparse) {
+    const vector<int> &costs) {
     const bool debug = false;
     assert(abstractions.size() == order.size());
     CostPartitionedHeuristic cp_heuristic;
@@ -31,7 +30,7 @@ static CostPartitionedHeuristic compute_saturated_cost_partitioning(
             cout << "Saturated costs: ";
             print_indexed_vector(saturated_costs);
         }
-        cp_heuristic.add_lookup_table_if_nonzero(pos, move(h_values), sparse);
+        cp_heuristic.add_lookup_table_if_nonzero(pos, move(h_values));
         reduce_costs(remaining_costs, saturated_costs);
         if (debug) {
             cout << "Remaining costs: ";

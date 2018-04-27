@@ -20,11 +20,10 @@ class CostPartitionedHeuristic {
     std::vector<LookupTable> lookup_tables;
 
 public:
-    void add_lookup_table_if_nonzero(
-        int heuristic_id, std::vector<int> h_values, bool sparse);
+    void add_lookup_table_if_nonzero(int heuristic_id, std::vector<int> h_values);
     int compute_heuristic(const std::vector<int> &local_state_ids) const;
     int get_num_lookup_tables() const;
-    void mark_useful_heuristics(std::vector<bool> useful_heuristics) const;
+    void mark_useful_heuristics(std::vector<bool> &useful_heuristics) const;
 };
 }
 

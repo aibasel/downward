@@ -8,9 +8,8 @@ using namespace std;
 
 namespace cost_saturation {
 void CostPartitionedHeuristic::add_lookup_table_if_nonzero(
-    int heuristic_id, vector<int> h_values, bool sparse) {
-    if (!sparse ||
-        any_of(h_values.begin(), h_values.end(), [](int h) {return h != 0; })) {
+    int heuristic_id, vector<int> h_values) {
+    if (any_of(h_values.begin(), h_values.end(), [](int h) {return h != 0; })) {
         lookup_tables.emplace_back(heuristic_id, move(h_values));
     }
 }
@@ -37,8 +36,7 @@ int CostPartitionedHeuristic::get_num_lookup_tables() const {
     return lookup_tables.size();
 }
 
-void CostPartitionedHeuristic::mark_useful_heuristics(
-    vector<bool> useful_heuristics) const {
+void CostPartitionedHeuristic::mark_useful_heuristics(vector<bool> &useful_heuristics) const {
     for (const auto &lookup_table : lookup_tables) {
         assert(utils::in_bounds(lookup_table.heuristic_index, useful_heuristics));
         useful_heuristics[lookup_table.heuristic_index] = true;
