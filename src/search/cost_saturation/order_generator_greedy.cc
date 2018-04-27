@@ -19,10 +19,8 @@ using namespace std;
 
 namespace cost_saturation {
 OrderGeneratorGreedy::OrderGeneratorGreedy(const Options &opts)
-    : OrderGenerator(),
-      scoring_function(static_cast<ScoringFunction>(opts.get_enum("scoring_function"))),
-      dynamic(opts.get<bool>("dynamic")),
-      num_returned_orders(0) {
+    : scoring_function(
+        static_cast<ScoringFunction>(opts.get_enum("scoring_function"))) {
 }
 
 double OrderGeneratorGreedy::rate_abstraction(
@@ -62,69 +60,12 @@ Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
     return order;
 }
 
-Order OrderGeneratorGreedy::compute_dynamic_greedy_order_for_sample(
-    const vector<unique_ptr<Abstraction>> &abstractions,
-    const vector<int> &local_state_ids,
-    vector<int> remaining_costs) const {
-    assert(abstractions.size() == local_state_ids.size());
-    Order order;
-
-    vector<int> remaining_abstractions = get_default_order(abstractions.size());
-
-    while (!remaining_abstractions.empty()) {
-        int num_remaining = remaining_abstractions.size();
-        vector<int> current_h_values;
-        vector<vector<int>> current_saturated_costs;
-        current_h_values.reserve(num_remaining);
-        current_saturated_costs.reserve(num_remaining);
-
-        vector<int> saturated_costs_for_best_abstraction;
-        for (int abs_id : remaining_abstractions) {
-            assert(utils::in_bounds(abs_id, local_state_ids));
-            int local_state_id = local_state_ids[abs_id];
-            Abstraction &abstraction = *abstractions[abs_id];
-            auto pair = abstraction.compute_goal_distances_and_saturated_costs(
-                remaining_costs);
-            vector<int> &h_values = pair.first;
-            vector<int> &saturated_costs = pair.second;
-            assert(utils::in_bounds(local_state_id, h_values));
-            int h = h_values[local_state_id];
-            current_h_values.push_back(h);
-            current_saturated_costs.push_back(move(saturated_costs));
-        }
-
-        vector<int> surplus_costs = compute_all_surplus_costs(
-            remaining_costs, current_saturated_costs);
-
-        double highest_score = -numeric_limits<double>::max();
-        int best_rem_id = -1;
-        for (int rem_id = 0; rem_id < num_remaining; ++rem_id) {
-            int used_costs = compute_costs_stolen_by_heuristic(
-                current_saturated_costs[rem_id], surplus_costs);
-            double score = compute_score(
-                current_h_values[rem_id], used_costs, scoring_function);
-            if (score > highest_score) {
-                best_rem_id = rem_id;
-                highest_score = score;
-            }
-        }
-        order.push_back(remaining_abstractions[best_rem_id]);
-        reduce_costs(remaining_costs, current_saturated_costs[best_rem_id]);
-        utils::swap_and_pop_from_vector(remaining_abstractions, best_rem_id);
-    }
-    return order;
-}
-
 void OrderGeneratorGreedy::initialize(
     const TaskProxy &,
     const vector<unique_ptr<Abstraction>> &abstractions,
     const vector<int> &costs) {
-    utils::Log() << "Initialize greedy order generator" << endl;
-    if (dynamic) {
-        return;
-    }
-
     utils::Timer timer;
+    utils::Log() << "Initialize greedy order generator" << endl;
 
     vector<vector<int>> saturated_costs_by_abstraction;
     for (const unique_ptr<Abstraction> &abstraction : abstractions) {
@@ -134,9 +75,11 @@ void OrderGeneratorGreedy::initialize(
         h_values_by_abstraction.push_back(move(h_values));
         saturated_costs_by_abstraction.push_back(move(saturated_costs));
     }
-    utils::Log() << "Time for computing h values and saturated costs: " << timer << endl;
+    utils::Log() << "Time for computing h values and saturated costs: "
+                 << timer << endl;
 
-    vector<int> surplus_costs = compute_all_surplus_costs(costs, saturated_costs_by_abstraction);
+    vector<int> surplus_costs = compute_all_surplus_costs(
+        costs, saturated_costs_by_abstraction);
     utils::Log() << "Done computing surplus costs" << endl;
 
     utils::Log() << "Compute stolen costs" << endl;
@@ -152,36 +95,23 @@ void OrderGeneratorGreedy::initialize(
 Order OrderGeneratorGreedy::get_next_order(
     const TaskProxy &,
     const vector<unique_ptr<Abstraction>> &abstractions,
-    const vector<int> &costs,
+    const vector<int> &,
     const vector<int> &local_state_ids,
     bool verbose) {
     utils::Timer greedy_timer;
-    vector<int> order;
-    if (dynamic) {
-        order = compute_dynamic_greedy_order_for_sample(
-            abstractions, local_state_ids, costs);
-    } else {
-        order = compute_static_greedy_order_for_sample(local_state_ids, verbose);
-    }
+    vector<int> order = compute_static_greedy_order_for_sample(local_state_ids, verbose);
 
     if (verbose) {
         utils::Log() << "Time for computing greedy order: " << greedy_timer << endl;
     }
 
     assert(order.size() == abstractions.size());
-    ++num_returned_orders;
     return order;
 }
 
 
 static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
     add_scoring_function_to_parser(parser);
-    parser.add_option<bool>(
-        "dynamic",
-        "recompute goal distances and minimum saturated cost function for all"
-        " unordered abstractions before appending the abstraction with the"
-        " highest score to the order",
-        "false");
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
@@ -189,5 +119,5 @@ static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
         return make_shared<OrderGeneratorGreedy>(opts);
 }
 
-static PluginShared<OrderGenerator> _plugin_greedy("greedy", _parse_greedy);
+static PluginShared<OrderGenerator> _plugin_greedy("greedy_orders", _parse_greedy);
 }
