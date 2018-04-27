@@ -24,7 +24,7 @@ OrderGeneratorDynamicGreedy::OrderGeneratorDynamicGreedy(const Options &opts)
 }
 
 Order OrderGeneratorDynamicGreedy::compute_dynamic_greedy_order_for_sample(
-    const vector<unique_ptr<Abstraction>> &abstractions,
+    const Abstractions &abstractions,
     const vector<int> &local_state_ids,
     vector<int> remaining_costs) const {
     assert(abstractions.size() == local_state_ids.size());
@@ -78,14 +78,14 @@ Order OrderGeneratorDynamicGreedy::compute_dynamic_greedy_order_for_sample(
 
 void OrderGeneratorDynamicGreedy::initialize(
     const TaskProxy &,
-    const vector<unique_ptr<Abstraction>> &,
+    const Abstractions &,
     const vector<int> &) {
     utils::Log() << "Initialize dynamic greedy order generator" << endl;
 }
 
 Order OrderGeneratorDynamicGreedy::get_next_order(
     const TaskProxy &,
-    const vector<unique_ptr<Abstraction>> &abstractions,
+    const Abstractions &abstractions,
     const vector<int> &costs,
     const vector<int> &local_state_ids,
     bool verbose) {

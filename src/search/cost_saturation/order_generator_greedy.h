@@ -22,12 +22,12 @@ public:
 
     virtual void initialize(
         const TaskProxy &task_proxy,
-        const std::vector<std::unique_ptr<Abstraction>> &abstractions,
+        const Abstractions &abstractions,
         const std::vector<int> &costs) override;
 
     virtual Order get_next_order(
         const TaskProxy &task_proxy,
-        const std::vector<std::unique_ptr<Abstraction>> &abstractions,
+        const Abstractions &abstractions,
         const std::vector<int> &costs,
         const std::vector<int> &local_state_ids,
         bool verbose) override;

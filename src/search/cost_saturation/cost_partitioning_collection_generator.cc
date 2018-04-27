@@ -24,7 +24,7 @@ using namespace std;
 namespace cost_saturation {
 static vector<vector<int>> sample_states_and_return_local_state_ids(
     const TaskProxy &task_proxy,
-    const vector<unique_ptr<Abstraction>> &abstractions,
+    const Abstractions &abstractions,
     sampling::RandomWalkSampler &sampler,
     int num_samples) {
     assert(num_samples >= 1);

@@ -62,7 +62,7 @@ Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
 
 void OrderGeneratorGreedy::initialize(
     const TaskProxy &,
-    const vector<unique_ptr<Abstraction>> &abstractions,
+    const Abstractions &abstractions,
     const vector<int> &costs) {
     utils::Timer timer;
     utils::Log() << "Initialize greedy order generator" << endl;
@@ -94,7 +94,7 @@ void OrderGeneratorGreedy::initialize(
 
 Order OrderGeneratorGreedy::get_next_order(
     const TaskProxy &,
-    const vector<unique_ptr<Abstraction>> &abstractions,
+    const Abstractions &abstractions,
     const vector<int> &,
     const vector<int> &local_state_ids,
     bool verbose) {

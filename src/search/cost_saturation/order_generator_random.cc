@@ -18,7 +18,7 @@ OrderGeneratorRandom::OrderGeneratorRandom(const Options &opts)
 
 void OrderGeneratorRandom::initialize(
     const TaskProxy &,
-    const vector<unique_ptr<Abstraction>> &abstractions,
+    const Abstractions &abstractions,
     const vector<int> &) {
     utils::Log() << "Initialize random order generator" << endl;
     random_order = get_default_order(abstractions.size());
@@ -26,7 +26,7 @@ void OrderGeneratorRandom::initialize(
 
 Order OrderGeneratorRandom::get_next_order(
     const TaskProxy &,
-    const vector<unique_ptr<Abstraction>> &,
+    const Abstractions &,
     const vector<int> &,
     const vector<int> &,
     bool) {
