@@ -11,7 +11,6 @@ class RandomNumberGenerator;
 
 namespace cost_saturation {
 class OrderGeneratorGreedy : public OrderGenerator {
-    const bool reverse_order;
     const ScoringFunction scoring_function;
     const bool use_negative_costs;
     const bool dynamic;

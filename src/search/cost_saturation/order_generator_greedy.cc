@@ -23,7 +23,6 @@ using namespace std;
 namespace cost_saturation {
 OrderGeneratorGreedy::OrderGeneratorGreedy(const Options &opts)
     : OrderGenerator(),
-      reverse_order(opts.get<bool>("reverse_order")),
       scoring_function(static_cast<ScoringFunction>(opts.get_enum("scoring_function"))),
       use_negative_costs(opts.get<bool>("use_negative_costs")),
       dynamic(opts.get<bool>("dynamic")),
@@ -207,10 +206,6 @@ Order OrderGeneratorGreedy::get_next_order(
         order = compute_static_greedy_order_for_sample(local_state_ids, verbose);
     }
 
-    if (reverse_order) {
-        reverse(order.begin(), order.end());
-    }
-
     if (verbose) {
         utils::Log() << "Time for computing greedy order: " << greedy_timer << endl;
     }
@@ -222,10 +217,6 @@ Order OrderGeneratorGreedy::get_next_order(
 
 
 static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
-    parser.add_option<bool>(
-        "reverse_order",
-        "invert initial order",
-        "false");
     add_scoring_function_to_parser(parser);
     parser.add_option<bool>(
         "use_negative_costs",
@@ -243,6 +234,5 @@ static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
         return make_shared<OrderGeneratorGreedy>(opts);
 }
 
-static PluginShared<OrderGenerator> _plugin_greedy(
-    "greedy", _parse_greedy);
+static PluginShared<OrderGenerator> _plugin_greedy("greedy", _parse_greedy);
 }
