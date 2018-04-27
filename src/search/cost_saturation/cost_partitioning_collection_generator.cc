@@ -89,7 +89,8 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
     CostPartitionedHeuristic cp_for_sampling = cp_function(abstractions, order, costs, true);
     function<int (const State &state)> sampling_heuristic =
         [&abstractions, &cp_for_sampling](const State &state) {
-            return cp_for_sampling.compute_heuristic(abstractions, state);
+            vector<int> local_state_ids = get_local_state_ids(abstractions, state);
+            return cp_for_sampling.compute_heuristic(local_state_ids);
         };
 
     int init_h = sampling_heuristic(initial_state);
