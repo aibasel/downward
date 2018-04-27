@@ -121,6 +121,11 @@ Abstractions CartesianAbstractionGenerator::generate_abstractions(
     utils::Log log;
     log << "Build Cartesian abstractions" << endl;
 
+    // TODO: The CEGAR code expects some extra memory padding to be reserved.
+    // Using memory padding leads to nondeterministic results. Therefore, we
+    // want to get rid of the memory padding here and in the CEGAR code.
+    utils::reserve_extra_memory_padding(0);
+
     function<bool()> total_size_limit_reached =
         [&] () {
             return num_transitions >= max_transitions;
@@ -133,6 +138,10 @@ Abstractions CartesianAbstractionGenerator::generate_abstractions(
         if (total_size_limit_reached()) {
             break;
         }
+    }
+
+    if (utils::extra_memory_padding_is_reserved()) {
+        utils::release_extra_memory_padding();
     }
 
     log << "Cartesian abstractions built: " << abstractions.size() << endl;
