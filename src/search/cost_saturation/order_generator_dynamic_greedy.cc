@@ -5,15 +5,11 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_proxy.h"
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 
-#include <algorithm>
 #include <cassert>
-#include <cmath>
-#include <unordered_set>
 
 using namespace std;
 

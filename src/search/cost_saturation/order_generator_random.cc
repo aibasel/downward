@@ -28,7 +28,6 @@ Order OrderGeneratorRandom::get_next_order(
     const vector<int> &,
     const vector<int> &,
     bool) {
-    utils::Timer greedy_timer;
     rng->shuffle(random_order);
     return random_order;
 }

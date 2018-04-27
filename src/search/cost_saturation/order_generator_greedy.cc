@@ -5,15 +5,11 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_proxy.h"
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 
-#include <algorithm>
 #include <cassert>
-#include <cmath>
-#include <unordered_set>
 
 using namespace std;
 
@@ -88,7 +84,8 @@ void OrderGeneratorGreedy::initialize(
             saturated_costs_by_abstraction[abs], surplus_costs);
         stolen_costs_by_abstraction.push_back(sum_stolen_costs);
     }
-    utils::Log() << "Time for initializing greedy order generator: " << timer << endl;
+    utils::Log() << "Time for initializing greedy order generator: "
+                 << timer << endl;
 }
 
 Order OrderGeneratorGreedy::get_next_order(
@@ -97,7 +94,8 @@ Order OrderGeneratorGreedy::get_next_order(
     const vector<int> &local_state_ids,
     bool verbose) {
     utils::Timer greedy_timer;
-    vector<int> order = compute_static_greedy_order_for_sample(local_state_ids, verbose);
+    vector<int> order = compute_static_greedy_order_for_sample(
+        local_state_ids, verbose);
 
     if (verbose) {
         utils::Log() << "Time for computing greedy order: " << greedy_timer << endl;
