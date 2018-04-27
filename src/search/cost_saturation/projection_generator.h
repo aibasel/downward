@@ -14,7 +14,6 @@ class PatternCollectionGenerator;
 namespace cost_saturation {
 class ProjectionGenerator : public AbstractionGenerator {
     const std::shared_ptr<pdbs::PatternCollectionGenerator> pattern_generator;
-    const bool dominance_pruning;
     const bool debug;
 
 public:
