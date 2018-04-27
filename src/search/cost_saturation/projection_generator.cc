@@ -20,7 +20,6 @@ namespace cost_saturation {
 ProjectionGenerator::ProjectionGenerator(const options::Options &opts)
     : pattern_generator(
           opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns")),
-      min_pattern_size(opts.get<int>("min_pattern_size")),
       dominance_pruning(opts.get<bool>("dominance_pruning")),
       use_add_after_delete_semantics(opts.get<bool>("use_add_after_delete_semantics")),
       debug(opts.get<bool>("debug")) {
@@ -68,9 +67,6 @@ Abstractions ProjectionGenerator::generate_abstractions(
     utils::Timer pdbs_timer;
     Abstractions abstractions;
     for (const pdbs::Pattern &pattern : *patterns) {
-        if (static_cast<int>(pattern.size()) < min_pattern_size) {
-            continue;
-        }
         if (debug) {
             log << "Pattern " << abstractions.size() + 1 << ": "
                 << pattern << endl;
@@ -95,11 +91,6 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
         "patterns",
         "pattern generation method",
         OptionParser::NONE);
-    parser.add_option<int>(
-        "min_pattern_size",
-        "minimum number of variables in a pattern",
-        "1",
-        Bounds("1", "infinity"));
     parser.add_option<bool>(
         "dominance_pruning",
         "prune dominated patterns",
