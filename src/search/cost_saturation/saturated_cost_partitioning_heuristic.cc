@@ -10,6 +10,7 @@
 #include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 using namespace std;
 
@@ -29,16 +30,13 @@ static CostPartitionedHeuristic compute_saturated_cost_partitioning(
         vector<int> &h_values = pair.first;
         vector<int> &saturated_costs = pair.second;
         if (debug) {
-            cout << "Heuristic values: ";
-            print_indexed_vector(h_values);
-            cout << "Saturated costs: ";
-            print_indexed_vector(saturated_costs);
+            cout << "Heuristic values: " << h_values << endl;
+            cout << "Saturated costs: " << saturated_costs << endl;
         }
         cp_heuristic.add_lookup_table_if_nonzero(pos, move(h_values));
         reduce_costs(remaining_costs, saturated_costs);
         if (debug) {
-            cout << "Remaining costs: ";
-            print_indexed_vector(remaining_costs);
+            cout << "Remaining costs: " << remaining_costs << endl;
         }
     }
     return cp_heuristic;
