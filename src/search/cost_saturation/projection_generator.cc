@@ -21,7 +21,6 @@ ProjectionGenerator::ProjectionGenerator(const options::Options &opts)
     : pattern_generator(
           opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns")),
       dominance_pruning(opts.get<bool>("dominance_pruning")),
-      use_add_after_delete_semantics(opts.get<bool>("use_add_after_delete_semantics")),
       debug(opts.get<bool>("debug")) {
 }
 
@@ -94,10 +93,6 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
     parser.add_option<bool>(
         "dominance_pruning",
         "prune dominated patterns",
-        "false");
-    parser.add_option<bool>(
-        "use_add_after_delete_semantics",
-        "skip transitions that are invalid according to add-after-delete semantics",
         "false");
     parser.add_option<bool>(
         "debug",
