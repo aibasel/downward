@@ -89,7 +89,7 @@ void OrderGeneratorGreedy::initialize(
 }
 
 Order OrderGeneratorGreedy::compute_order_for_state(
-    const Abstractions &abstractions,
+    const Abstractions &,
     const vector<int> &,
     const vector<int> &local_state_ids,
     bool verbose) {
@@ -101,7 +101,7 @@ Order OrderGeneratorGreedy::compute_order_for_state(
         utils::Log() << "Time for computing greedy order: " << greedy_timer << endl;
     }
 
-    assert(order.size() == abstractions.size());
+    assert(order.size() == local_state_ids.size());
     return order;
 }
 
