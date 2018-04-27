@@ -3,19 +3,12 @@
 
 #include "types.h"
 
-class State;
-class TaskProxy;
-
-namespace utils {
-class RandomNumberGenerator;
-}
-
 namespace cost_saturation {
 class CostPartitionedHeuristic;
 
 class Diversifier {
-    std::vector<int> portfolio_h_values;
     std::vector<std::vector<int>> local_state_ids_by_sample;
+    std::vector<int> portfolio_h_values;
 
 public:
     explicit Diversifier(std::vector<std::vector<int>> &&local_state_ids_by_sample);

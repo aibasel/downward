@@ -1,26 +1,19 @@
 #include "diversifier.h"
 
-#include "abstraction.h"
 #include "cost_partitioned_heuristic.h"
-#include "order_generator.h"
-#include "utils.h"
-
-#include "../task_proxy.h"
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
-#include "../utils/countdown_timer.h"
 
 #include <cassert>
-#include <unordered_set>
 
 using namespace std;
 
 namespace cost_saturation {
 Diversifier::Diversifier(vector<vector<int>> &&local_state_ids_by_sample)
-    : local_state_ids_by_sample(move(local_state_ids_by_sample)) {
-    // Initialize portfolio h values with -1 to ensure that first CP is diverse.
-    portfolio_h_values.assign(this->local_state_ids_by_sample.size(), -1);
+    : local_state_ids_by_sample(move(local_state_ids_by_sample)),
+      // Initialize with -1 to ensure that first cost partitioning is diverse.
+      portfolio_h_values(this->local_state_ids_by_sample.size(), -1) {
 }
 
 bool Diversifier::is_diverse(const CostPartitionedHeuristic &cp) {
