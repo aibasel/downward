@@ -100,17 +100,18 @@ int MaxCostPartitioningHeuristic::compute_heuristic(const State &state) {
 void add_cost_partitioning_collection_options_to_parser(OptionParser &parser) {
     parser.add_option<int>(
         "max_orders",
-        "maximum number of abstraction orders",
+        "maximum number of orders",
         "infinity",
         Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_time",
-        "maximum time for finding cost partitionings",
+        "maximum time for finding orders",
         "10",
         Bounds("0", "infinity"));
     parser.add_option<bool>(
         "diversify",
-        "keep orders that improve the portfolio's heuristic value for any of the samples",
+        "only keep orders that have a higher heuristic value than all previous"
+        " orders for any of the samples",
         "true");
     parser.add_option<int>(
         "samples",
@@ -119,7 +120,7 @@ void add_cost_partitioning_collection_options_to_parser(OptionParser &parser) {
         Bounds("1", "infinity"));
     parser.add_option<double>(
         "max_optimization_time",
-        "maximum time for optimizing",
+        "maximum time for optimizing each order with hill climbing",
         "0.0",
         Bounds("0.0", "infinity"));
     utils::add_rng_options(parser);
@@ -137,19 +138,17 @@ void prepare_parser_for_cost_partitioning_heuristic(
         "not supported (the heuristic supports them in theory, but none of "
         "the currently implemented abstraction generators do)");
     parser.document_property("admissible", "yes");
-    parser.document_property(
-        "consistent",
-        "yes, if all abstraction generators represent consistent heuristics");
+    parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
 
     parser.add_list_option<shared_ptr<AbstractionGenerator>>(
         "abstraction_generators",
-        "methods that generate abstractions");
+        "classes that generate abstractions");
     parser.add_option<shared_ptr<OrderGenerator>>(
         "orders",
         "order generator",
-        OptionParser::NONE);
+        "greedy_orders()");
     parser.add_option<bool>(
         "debug",
         "print debugging information",
