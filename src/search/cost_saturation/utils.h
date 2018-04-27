@@ -16,10 +16,6 @@ class OptionParser;
 
 namespace cost_saturation {
 class AbstractionGenerator;
-class CostPartitionedHeuristic;
-
-extern Heuristic *get_max_cp_heuristic(
-    options::OptionParser &parser, CPFunction cp_function);
 
 extern Abstractions generate_abstractions(
     const std::shared_ptr<AbstractTask> &task,
