@@ -11,8 +11,6 @@ namespace cost_saturation {
 enum class ScoringFunction {
     RANDOM,
     MAX_HEURISTIC,
-    MIN_COSTS,
-    MAX_HEURISTIC_PER_COSTS,
     MIN_STOLEN_COSTS,
     MAX_HEURISTIC_PER_STOLEN_COSTS
 };

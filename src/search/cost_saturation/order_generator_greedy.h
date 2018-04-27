@@ -12,13 +12,11 @@ class RandomNumberGenerator;
 namespace cost_saturation {
 class OrderGeneratorGreedy : public OrderGenerator {
     const ScoringFunction scoring_function;
-    const bool use_negative_costs;
     const bool dynamic;
     const std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     // Unpartitioned h values.
     std::vector<std::vector<int>> h_values_by_abstraction;
-    std::vector<int> used_costs_by_abstraction;
     std::vector<int> stolen_costs_by_abstraction;
 
     std::vector<int> random_order;

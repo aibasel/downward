@@ -89,24 +89,19 @@ double compute_score(int h, int used_costs, ScoringFunction scoring_function) {
     assert(used_costs != -INF);
     if (scoring_function == ScoringFunction::MAX_HEURISTIC) {
         return h;
-    } else if (scoring_function == ScoringFunction::MIN_COSTS ||
-               scoring_function == ScoringFunction::MIN_STOLEN_COSTS) {
+    } else if (scoring_function == ScoringFunction::MIN_STOLEN_COSTS) {
         return -used_costs;
-    } else if (scoring_function == ScoringFunction::MAX_HEURISTIC_PER_COSTS ||
-               scoring_function == ScoringFunction::MAX_HEURISTIC_PER_STOLEN_COSTS) {
+    } else if (scoring_function == ScoringFunction::MAX_HEURISTIC_PER_STOLEN_COSTS) {
         return static_cast<double>(h) / max(1, used_costs);
     } else {
         ABORT("Invalid scoring_function");
     }
 }
 
-
 void add_scoring_function_to_parser(OptionParser &parser) {
     vector<string> scoring_functions;
     scoring_functions.push_back("RANDOM");
     scoring_functions.push_back("MAX_HEURISTIC");
-    scoring_functions.push_back("MIN_COSTS");
-    scoring_functions.push_back("MAX_HEURISTIC_PER_COSTS");
     scoring_functions.push_back("MIN_STOLEN_COSTS");
     scoring_functions.push_back("MAX_HEURISTIC_PER_STOLEN_COSTS");
     parser.add_enum_option(

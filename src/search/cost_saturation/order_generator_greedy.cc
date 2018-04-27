@@ -8,7 +8,6 @@
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
-#include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -24,21 +23,9 @@ namespace cost_saturation {
 OrderGeneratorGreedy::OrderGeneratorGreedy(const Options &opts)
     : OrderGenerator(),
       scoring_function(static_cast<ScoringFunction>(opts.get_enum("scoring_function"))),
-      use_negative_costs(opts.get<bool>("use_negative_costs")),
       dynamic(opts.get<bool>("dynamic")),
       rng(utils::parse_rng_from_options(opts)),
       num_returned_orders(0) {
-}
-
-static int compute_used_costs(const vector<int> &saturated_costs, bool use_negative_costs) {
-    int sum = 0;
-    for (int cost : saturated_costs) {
-        assert(cost != INF);
-        if (cost != -INF && (use_negative_costs || cost > 0)) {
-            sum += cost;
-        }
-    }
-    return sum;
 }
 
 double OrderGeneratorGreedy::rate_abstraction(
@@ -53,25 +40,12 @@ double OrderGeneratorGreedy::rate_abstraction(
     assert(utils::in_bounds(abs_id, stolen_costs_by_abstraction));
     int stolen_costs = stolen_costs_by_abstraction[abs_id];
 
-    if (scoring_function == ScoringFunction::MIN_COSTS ||
-        scoring_function == ScoringFunction::MAX_HEURISTIC_PER_COSTS) {
-        assert(utils::in_bounds(abs_id, used_costs_by_abstraction));
-        stolen_costs = used_costs_by_abstraction[abs_id];
-    }
-    if (false) {
-        double diff = static_cast<double>(h - stolen_costs);
-        cout << "abs " << abs_id << ", h: " << h << ", costs: " << stolen_costs
-             << ", h/costs: " << static_cast<double>(h) / stolen_costs
-             << ", exp(h-costs): " << exp(diff) << ", log: " << log(exp(diff))
-             << endl;
-    }
     return compute_score(h, stolen_costs, scoring_function);
 }
 
 Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
     const vector<int> &local_state_ids, bool verbose) const {
     assert(local_state_ids.size() == h_values_by_abstraction.size());
-    assert(local_state_ids.size() == used_costs_by_abstraction.size());
     int num_abstractions = local_state_ids.size();
     Order order = get_default_order(num_abstractions);
     vector<double> scores;
@@ -83,10 +57,10 @@ Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
             return scores[abs1] > scores[abs2];
         });
     if (verbose) {
-        cout << "Scores: " << scores << endl;
+        cout << "Static greedy scores: " << scores << endl;
         unordered_set<double> unique_scores(scores.begin(), scores.end());
-        cout << "Unique scores: " << unique_scores.size() << endl;
-        cout << "Order: " << order << endl;
+        cout << "Static greedy unique scores: " << unique_scores.size() << endl;
+        cout << "Static greedy order: " << order << endl;
     }
     return order;
 }
@@ -128,15 +102,8 @@ Order OrderGeneratorGreedy::compute_greedy_dynamic_order_for_sample(
         double highest_score = -numeric_limits<double>::max();
         int best_rem_id = -1;
         for (int rem_id = 0; rem_id < num_remaining; ++rem_id) {
-            int used_costs;
-            if (scoring_function == ScoringFunction::MIN_COSTS ||
-                scoring_function == ScoringFunction::MAX_HEURISTIC_PER_COSTS) {
-                used_costs = compute_used_costs(
-                    current_saturated_costs[rem_id], use_negative_costs);
-            } else {
-                used_costs = compute_costs_stolen_by_heuristic(
-                    current_saturated_costs[rem_id], surplus_costs);
-            }
+            int used_costs = compute_costs_stolen_by_heuristic(
+                current_saturated_costs[rem_id], surplus_costs);
             double score = compute_score(
                 current_h_values[rem_id], used_costs, scoring_function);
             if (score > highest_score) {
@@ -169,8 +136,6 @@ void OrderGeneratorGreedy::initialize(
         vector<int> &h_values = pair.first;
         vector<int> &saturated_costs = pair.second;
         h_values_by_abstraction.push_back(move(h_values));
-        int used_costs = compute_used_costs(saturated_costs, use_negative_costs);
-        used_costs_by_abstraction.push_back(used_costs);
         saturated_costs_by_abstraction.push_back(move(saturated_costs));
     }
     utils::Log() << "Time for computing h values and saturated costs: " << timer << endl;
@@ -219,12 +184,10 @@ Order OrderGeneratorGreedy::get_next_order(
 static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
     add_scoring_function_to_parser(parser);
     parser.add_option<bool>(
-        "use_negative_costs",
-        "account for negative costs when computing used costs",
-        "false");
-    parser.add_option<bool>(
         "dynamic",
-        "recompute ratios in each step",
+        "recompute goal distances and minimum saturated cost function for all"
+        " unordered abstractions before appending the abstraction with the"
+        " highest score to the order",
         "false");
     utils::add_rng_options(parser);
     Options opts = parser.parse();
