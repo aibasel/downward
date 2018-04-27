@@ -42,7 +42,7 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
       debug(opts.get<bool>("debug")) {
     int num_abstractions = abstractions.size();
 
-    // Number of lookup tables.
+    // Print statistics about the number of lookup tables.
     int num_lookup_tables = num_abstractions * cp_heuristics.size();
     int num_stored_lookup_tables = 0;
     for (const auto &cp_heuristic: cp_heuristics) {
@@ -50,25 +50,29 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     }
     utils::Log() << "Stored lookup tables: " << num_stored_lookup_tables << "/"
                  << num_lookup_tables << " = "
-                 << num_stored_lookup_tables / static_cast<double>(num_lookup_tables) << endl;
+                 << num_stored_lookup_tables / static_cast<double>(num_lookup_tables)
+                 << endl;
 
-    // Number of stored heuristics.
-    unordered_set<int> stored_heuristics;
+    // Collect useful abstractions.
+    unordered_set<int> useful_abstractions;
     for (const auto &cp_heuristic : cp_heuristics) {
         for (const auto &cp_h_values : cp_heuristic.get_lookup_tables()) {
-            stored_heuristics.insert(cp_h_values.heuristic_index);
+            useful_abstractions.insert(cp_h_values.heuristic_index);
         }
     }
-    utils::Log() << "Stored heuristics: " << stored_heuristics.size() << "/"
-                 << abstractions.size() << " = "
-                 << static_cast<double>(stored_heuristics.size()) /
-        static_cast<double>(num_abstractions) << endl;
+    utils::Log() << "Useful abstractions: " << useful_abstractions.size() << "/"
+                 << num_abstractions << " = "
+                 << static_cast<double>(useful_abstractions.size()) / num_abstractions
+                 << endl;
 
+    // Delete useless abstractions.
     for (int i = 0; i < num_abstractions; ++i) {
-        if (!stored_heuristics.count(i)) {
+        if (!useful_abstractions.count(i)) {
             abstractions[i] = nullptr;
         }
     }
+
+    // Delete transition systems since they are not required during the search.
     for (auto &abstraction : abstractions) {
         if (abstraction) {
             abstraction->remove_transition_system();
