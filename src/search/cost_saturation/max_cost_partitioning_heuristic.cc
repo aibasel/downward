@@ -19,7 +19,7 @@ class AbstractionGenerator;
 class OrderGenerator;
 
 static int compute_max_h(
-    const CPHeuristics &cp_heuristics,
+    const vector<CostPartitionedHeuristic> &cp_heuristics,
     const vector<int> &local_state_ids) {
     int max_h = 0;
     for (const CostPartitionedHeuristic &cp_heuristic : cp_heuristics) {

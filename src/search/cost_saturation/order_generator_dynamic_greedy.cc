@@ -16,7 +16,7 @@ using namespace std;
 namespace cost_saturation {
 OrderGeneratorDynamicGreedy::OrderGeneratorDynamicGreedy(const Options &opts)
     : scoring_function(
-        static_cast<ScoringFunction>(opts.get_enum("scoring_function"))) {
+          static_cast<ScoringFunction>(opts.get_enum("scoring_function"))) {
 }
 
 Order OrderGeneratorDynamicGreedy::compute_dynamic_greedy_order_for_sample(

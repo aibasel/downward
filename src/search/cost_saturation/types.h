@@ -15,7 +15,6 @@ const int INF = std::numeric_limits<int>::max();
 using Abstractions = std::vector<std::unique_ptr<Abstraction>>;
 using CPFunction = std::function<CostPartitionedHeuristic(
                                      const Abstractions &, const std::vector<int> &, const std::vector<int> &)>;
-using CPHeuristics = std::vector<CostPartitionedHeuristic>;
 using Order = std::vector<int>;
 }
 

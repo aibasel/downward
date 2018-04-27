@@ -9,18 +9,9 @@
 class AbstractTask;
 class Heuristic;
 class State;
-class TaskProxy;
 
 namespace options {
 class OptionParser;
-}
-
-namespace sampling {
-class RandomWalkSampler;
-}
-
-namespace utils {
-class RandomNumberGenerator;
 }
 
 namespace cost_saturation {

@@ -16,7 +16,7 @@ using namespace std;
 namespace cost_saturation {
 OrderGeneratorGreedy::OrderGeneratorGreedy(const Options &opts)
     : scoring_function(
-        static_cast<ScoringFunction>(opts.get_enum("scoring_function"))) {
+          static_cast<ScoringFunction>(opts.get_enum("scoring_function"))) {
 }
 
 double OrderGeneratorGreedy::rate_abstraction(

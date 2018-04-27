@@ -12,8 +12,8 @@ class CostPartitionedHeuristic {
         const std::vector<int> h_values;
 
         LookupTable(int heuristic_index, std::vector<int> &&h_values)
-          : heuristic_index(heuristic_index),
-            h_values(move(h_values)) {
+            : heuristic_index(heuristic_index),
+              h_values(move(h_values)) {
         }
     };
 
