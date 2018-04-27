@@ -26,7 +26,6 @@ OrderGeneratorGreedy::OrderGeneratorGreedy(const Options &opts)
       reverse_order(opts.get<bool>("reverse_order")),
       scoring_function(static_cast<ScoringFunction>(opts.get_enum("scoring_function"))),
       use_negative_costs(opts.get<bool>("use_negative_costs")),
-      use_exp(opts.get<bool>("use_exp")),
       dynamic(opts.get<bool>("dynamic")),
       rng(utils::parse_rng_from_options(opts)),
       num_returned_orders(0) {
@@ -67,7 +66,7 @@ double OrderGeneratorGreedy::rate_abstraction(
              << ", exp(h-costs): " << exp(diff) << ", log: " << log(exp(diff))
              << endl;
     }
-    return compute_score(h, stolen_costs, scoring_function, use_exp);
+    return compute_score(h, stolen_costs, scoring_function);
 }
 
 Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
@@ -140,7 +139,7 @@ Order OrderGeneratorGreedy::compute_greedy_dynamic_order_for_sample(
                     current_saturated_costs[rem_id], surplus_costs);
             }
             double score = compute_score(
-                current_h_values[rem_id], used_costs, scoring_function, use_exp);
+                current_h_values[rem_id], used_costs, scoring_function);
             if (score > highest_score) {
                 best_rem_id = rem_id;
                 highest_score = score;
@@ -231,10 +230,6 @@ static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
     parser.add_option<bool>(
         "use_negative_costs",
         "account for negative costs when computing used costs",
-        "false");
-    parser.add_option<bool>(
-        "use_exp",
-        "use exp(h-costs) instead of h/max(1,costs) for computing scores",
         "false");
     parser.add_option<bool>(
         "dynamic",

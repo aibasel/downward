@@ -18,7 +18,7 @@ enum class ScoringFunction {
 };
 
 extern double compute_score(
-    int h, int used_costs, ScoringFunction scoring_function, bool use_exp);
+    int h, int used_costs, ScoringFunction scoring_function);
 
 extern int compute_stolen_costs(int wanted_by_abs, int surplus_cost);
 

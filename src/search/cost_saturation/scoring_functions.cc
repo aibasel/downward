@@ -82,8 +82,7 @@ vector<int> compute_all_surplus_costs(
     return surplus_costs;
 }
 
-double compute_score(
-    int h, int used_costs, ScoringFunction scoring_function, bool use_exp) {
+double compute_score(int h, int used_costs, ScoringFunction scoring_function) {
     assert(h >= 0);
     assert(h != INF);
     assert(used_costs != INF);
@@ -95,11 +94,7 @@ double compute_score(
         return -used_costs;
     } else if (scoring_function == ScoringFunction::MAX_HEURISTIC_PER_COSTS ||
                scoring_function == ScoringFunction::MAX_HEURISTIC_PER_STOLEN_COSTS) {
-        if (use_exp) {
-            return exp(static_cast<double>(h - used_costs));
-        } else {
-            return static_cast<double>(h) / max(1, used_costs);
-        }
+        return static_cast<double>(h) / max(1, used_costs);
     } else {
         ABORT("Invalid scoring_function");
     }

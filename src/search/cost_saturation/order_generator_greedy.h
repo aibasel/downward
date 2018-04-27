@@ -14,7 +14,6 @@ class OrderGeneratorGreedy : public OrderGenerator {
     const bool reverse_order;
     const ScoringFunction scoring_function;
     const bool use_negative_costs;
-    const bool use_exp;
     const bool dynamic;
     const std::shared_ptr<utils::RandomNumberGenerator> rng;
 
