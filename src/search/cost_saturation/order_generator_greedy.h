@@ -27,7 +27,7 @@ class OrderGeneratorGreedy : public OrderGenerator {
         const std::vector<int> &local_state_ids, int abs_id) const;
     Order compute_static_greedy_order_for_sample(
         const std::vector<int> &local_state_ids, bool verbose) const;
-    Order compute_greedy_dynamic_order_for_sample(
+    Order compute_dynamic_greedy_order_for_sample(
         const std::vector<std::unique_ptr<Abstraction>> &abstractions,
         const std::vector<int> &local_state_ids,
         std::vector<int> remaining_costs) const;

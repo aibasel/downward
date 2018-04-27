@@ -65,7 +65,7 @@ Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
     return order;
 }
 
-Order OrderGeneratorGreedy::compute_greedy_dynamic_order_for_sample(
+Order OrderGeneratorGreedy::compute_dynamic_greedy_order_for_sample(
     const vector<unique_ptr<Abstraction>> &abstractions,
     const vector<int> &local_state_ids,
     vector<int> remaining_costs) const {
@@ -165,7 +165,7 @@ Order OrderGeneratorGreedy::get_next_order(
         rng->shuffle(random_order);
         order = random_order;
     } else if (dynamic) {
-        order = compute_greedy_dynamic_order_for_sample(
+        order = compute_dynamic_greedy_order_for_sample(
             abstractions, local_state_ids, costs);
     } else {
         order = compute_static_greedy_order_for_sample(local_state_ids, verbose);
