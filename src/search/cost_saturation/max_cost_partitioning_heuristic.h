@@ -17,7 +17,6 @@ class CostPartitionedHeuristic;
 class MaxCostPartitioningHeuristic : public Heuristic {
     Abstractions abstractions;
     const std::vector<CostPartitionedHeuristic> cp_heuristics;
-    const bool debug;
 
     int compute_heuristic(const State &state) const;
 

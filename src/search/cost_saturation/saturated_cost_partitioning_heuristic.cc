@@ -21,7 +21,6 @@ static CostPartitionedHeuristic compute_saturated_cost_partitioning(
     const Abstractions &abstractions,
     const vector<int> &order,
     const vector<int> &costs) {
-    const bool debug = false;
     assert(abstractions.size() == order.size());
     CostPartitionedHeuristic cp_heuristic;
     vector<int> remaining_costs = costs;
@@ -31,15 +30,8 @@ static CostPartitionedHeuristic compute_saturated_cost_partitioning(
             remaining_costs);
         vector<int> &h_values = pair.first;
         vector<int> &saturated_costs = pair.second;
-        if (debug) {
-            cout << "Heuristic values: " << h_values << endl;
-            cout << "Saturated costs: " << saturated_costs << endl;
-        }
         cp_heuristic.add_lookup_table_if_nonzero(pos, move(h_values));
         reduce_costs(remaining_costs, saturated_costs);
-        if (debug) {
-            cout << "Remaining costs: " << remaining_costs << endl;
-        }
     }
     return cp_heuristic;
 }
@@ -108,12 +100,8 @@ static Heuristic *get_max_cp_heuristic(
     parser.add_list_option<shared_ptr<AbstractionGenerator>>(
         "abstraction_generators",
         "classes that generate abstractions");
-    parser.add_option<bool>(
-        "debug",
-        "print debugging information",
-        "false");
-    Heuristic::add_options_to_parser(parser);
     add_order_options_to_parser(parser);
+    Heuristic::add_options_to_parser(parser);
 
     options::Options opts = parser.parse();
     if (parser.help_mode())

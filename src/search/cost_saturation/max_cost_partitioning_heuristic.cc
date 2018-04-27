@@ -31,8 +31,7 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     vector<CostPartitionedHeuristic> &&cp_heuristics_)
     : Heuristic(opts),
       abstractions(move(abstractions_)),
-      cp_heuristics(move(cp_heuristics_)),
-      debug(opts.get<bool>("debug")) {
+      cp_heuristics(move(cp_heuristics_)) {
     int num_abstractions = abstractions.size();
 
     // Print statistics about the number of lookup tables.
