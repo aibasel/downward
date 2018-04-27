@@ -77,14 +77,12 @@ Order OrderGeneratorDynamicGreedy::compute_dynamic_greedy_order_for_sample(
 }
 
 void OrderGeneratorDynamicGreedy::initialize(
-    const TaskProxy &,
     const Abstractions &,
     const vector<int> &) {
     utils::Log() << "Initialize dynamic greedy order generator" << endl;
 }
 
 Order OrderGeneratorDynamicGreedy::get_next_order(
-    const TaskProxy &,
     const Abstractions &abstractions,
     const vector<int> &costs,
     const vector<int> &local_state_ids,

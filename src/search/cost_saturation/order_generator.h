@@ -23,12 +23,10 @@ public:
     virtual ~OrderGenerator() = default;
 
     virtual void initialize(
-        const TaskProxy &task_proxy,
         const Abstractions &abstractions,
         const std::vector<int> &costs) = 0;
 
     virtual Order get_next_order(
-        const TaskProxy &task_proxy,
         const Abstractions &abstractions,
         const std::vector<int> &costs,
         const std::vector<int> &local_state_ids,
