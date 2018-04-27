@@ -27,8 +27,6 @@ static bool search_improving_successor(
     int &incumbent_h_value,
     bool verbose) {
     int num_abstractions = abstractions.size();
-    int best_i = -1;
-    int best_j = -1;
     for (int i = 0; i < num_abstractions && !timer.is_expired(); ++i) {
         for (int j = i + 1; j < num_abstractions && !timer.is_expired(); ++j) {
             swap(incumbent_order[i], incumbent_order[j]);
@@ -40,8 +38,6 @@ static bool search_improving_successor(
             if (h > incumbent_h_value) {
                 incumbent_cp = move(neighbor_cp);
                 incumbent_h_value = h;
-                best_i = i;
-                best_j = j;
                 if (verbose) {
                     log_better_order(incumbent_order, h, i, j);
                 }
@@ -52,8 +48,7 @@ static bool search_improving_successor(
             }
         }
     }
-    assert((best_i == -1 && best_j == -1) || (best_i != -1 && best_j != -1));
-    return best_i != -1;
+    return false;
 }
 
 
