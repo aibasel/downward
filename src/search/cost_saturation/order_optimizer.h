@@ -17,7 +17,6 @@ extern void do_hill_climbing(
     Order &incumbent_order,
     CostPartitionedHeuristic &incumbent_cp,
     int incumbent_h_value,
-    bool steepest_ascent,
     bool verbose);
 }
 

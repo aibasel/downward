@@ -25,7 +25,6 @@ static bool search_improving_successor(
     vector<int> &incumbent_order,
     CostPartitionedHeuristic &incumbent_cp,
     int &incumbent_h_value,
-    bool steepest_ascent,
     bool verbose) {
     int num_abstractions = abstractions.size();
     int best_i = -1;
@@ -43,32 +42,18 @@ static bool search_improving_successor(
                 incumbent_h_value = h;
                 best_i = i;
                 best_j = j;
-                if (steepest_ascent) {
-                    // Restore incumbent order.
-                    swap(incumbent_order[i], incumbent_order[j]);
-                } else {
-                    if (verbose) {
-                        log_better_order(incumbent_order, h, i, j);
-                    }
-                    return true;
+                if (verbose) {
+                    log_better_order(incumbent_order, h, i, j);
                 }
+                return true;
             } else {
                 // Restore incumbent order.
                 swap(incumbent_order[i], incumbent_order[j]);
             }
         }
     }
-    if (best_i != -1) {
-        assert(best_j != -1);
-        if (steepest_ascent) {
-            swap(incumbent_order[best_i], incumbent_order[best_j]);
-            if (verbose) {
-                log_better_order(incumbent_order, incumbent_h_value, best_i, best_j);
-            }
-        }
-        return true;
-    }
-    return false;
+    assert((best_i == -1 && best_j == -1) || (best_i != -1 && best_j != -1));
+    return best_i != -1;
 }
 
 
@@ -81,7 +66,6 @@ void do_hill_climbing(
     vector<int> &incumbent_order,
     CostPartitionedHeuristic &incumbent_cp,
     int incumbent_h_value,
-    bool steepest_ascent,
     bool verbose) {
     if (verbose) {
         utils::Log() << "Incumbent h value: " << incumbent_h_value << endl;
@@ -89,8 +73,7 @@ void do_hill_climbing(
     while (!timer.is_expired()) {
         bool success = search_improving_successor(
             cp_function, timer, abstractions, costs, local_state_ids,
-            incumbent_order, incumbent_cp, incumbent_h_value, steepest_ascent,
-            verbose);
+            incumbent_order, incumbent_cp, incumbent_h_value, verbose);
         if (!success) {
             break;
         }

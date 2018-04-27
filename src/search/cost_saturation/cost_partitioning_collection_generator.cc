@@ -49,7 +49,6 @@ CostPartitioningCollectionGenerator::CostPartitioningCollectionGenerator(
     bool diversify,
     int num_samples,
     double max_optimization_time,
-    bool steepest_ascent,
     const shared_ptr<utils::RandomNumberGenerator> &rng)
     : cp_generator(cp_generator),
       max_orders(max_orders),
@@ -57,7 +56,6 @@ CostPartitioningCollectionGenerator::CostPartitioningCollectionGenerator(
       diversify(diversify),
       num_samples(num_samples),
       max_optimization_time(max_optimization_time),
-      steepest_ascent(steepest_ascent),
       rng(rng) {
 }
 
@@ -128,7 +126,7 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
             int incumbent_h_value = cp_heuristic.compute_heuristic(local_state_ids);
             do_hill_climbing(
                 cp_function, timer, abstractions, costs, local_state_ids, order,
-                cp_heuristic, incumbent_h_value, steepest_ascent, verbose);
+                cp_heuristic, incumbent_h_value, verbose);
             if (verbose) {
                 utils::Log() << "Time for optimizing order: " << timer.get_elapsed_time() << endl;
                 utils::Log() << "Time for optimizing order has expired: " << timer.is_expired() << endl;

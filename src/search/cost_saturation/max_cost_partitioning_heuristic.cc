@@ -122,10 +122,6 @@ void add_cost_partitioning_collection_options_to_parser(OptionParser &parser) {
         "maximum time for optimizing",
         "0.0",
         Bounds("0.0", "infinity"));
-    parser.add_option<bool>(
-        "steepest_ascent",
-        "do steepest-ascent hill climbing instead of selecting the first improving successor",
-        "false");
     utils::add_rng_options(parser);
 }
 
@@ -170,7 +166,6 @@ CostPartitioningCollectionGenerator get_cp_collection_generator_from_options(
         opts.get<bool>("diversify"),
         opts.get<int>("samples"),
         opts.get<double>("max_optimization_time"),
-        opts.get<bool>("steepest_ascent"),
         utils::parse_rng_from_options(opts));
 }
 }
