@@ -107,7 +107,6 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
     vector<CostPartitionedHeuristic> cp_heuristics;
     utils::CountdownTimer timer(max_time);
     int evaluated_orders = 0;
-    int peak_memory_without_cps = utils::get_peak_memory_in_kb();
     utils::Log() << "Start computing cost partitionings" << endl;
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
            !timer.is_expired()) {
@@ -142,11 +141,8 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
 
         ++evaluated_orders;
     }
-    int peak_memory_with_cps = utils::get_peak_memory_in_kb();
     utils::Log() << "Orders: " << cp_heuristics.size() << endl;
     utils::Log() << "Time for computing cost partitionings: " << timer.get_elapsed_time() << endl;
-    utils::Log() << "Memory for cost partitionings: "
-                 << peak_memory_with_cps - peak_memory_without_cps << " KB" << endl;
     return cp_heuristics;
 }
 }
