@@ -3,6 +3,10 @@
 
 #include "order_generator.h"
 
+namespace options {
+class Options;
+}
+
 namespace utils {
 class RandomNumberGenerator;
 }

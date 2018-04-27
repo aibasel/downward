@@ -111,7 +111,7 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
     int peak_memory_without_cps = utils::get_peak_memory_in_kb();
     utils::Log() << "Start computing cost partitionings" << endl;
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
-           !timer.is_expired() && cp_generator->has_next_cost_partitioning()) {
+           !timer.is_expired()) {
         State sample = evaluated_orders == 0 ? initial_state : sampler.sample_state();
         assert(!is_dead_end(sample));
         if (timer.is_expired() && !cp_heuristics.empty()) {

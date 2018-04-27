@@ -4,6 +4,10 @@
 #include "order_generator.h"
 #include "scoring_functions.h"
 
+namespace options {
+class Options;
+}
+
 namespace cost_saturation {
 class OrderGeneratorGreedy : public OrderGenerator {
     const ScoringFunction scoring_function;
