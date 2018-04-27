@@ -46,28 +46,28 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     int num_lookup_tables = num_abstractions * cp_heuristics.size();
     int num_stored_lookup_tables = 0;
     for (const auto &cp_heuristic: cp_heuristics) {
-        num_stored_lookup_tables += cp_heuristic.get_lookup_tables().size();
+        num_stored_lookup_tables += cp_heuristic.get_num_lookup_tables();
     }
     utils::Log() << "Stored lookup tables: " << num_stored_lookup_tables << "/"
                  << num_lookup_tables << " = "
                  << num_stored_lookup_tables / static_cast<double>(num_lookup_tables)
                  << endl;
 
-    // Collect useful abstractions.
-    unordered_set<int> useful_abstractions;
+    // Collect IDs of useful abstractions.
+    vector<bool> useful_abstractions(num_abstractions, false);
     for (const auto &cp_heuristic : cp_heuristics) {
-        for (const auto &cp_h_values : cp_heuristic.get_lookup_tables()) {
-            useful_abstractions.insert(cp_h_values.heuristic_index);
-        }
+        cp_heuristic.mark_useful_heuristics(useful_abstractions);
     }
-    utils::Log() << "Useful abstractions: " << useful_abstractions.size() << "/"
+    int num_useful_abstractions = count(
+        useful_abstractions.begin(), useful_abstractions.end(), true);
+    utils::Log() << "Useful abstractions: " << num_useful_abstractions << "/"
                  << num_abstractions << " = "
-                 << static_cast<double>(useful_abstractions.size()) / num_abstractions
+                 << static_cast<double>(num_useful_abstractions) / num_abstractions
                  << endl;
 
     // Delete useless abstractions.
     for (int i = 0; i < num_abstractions; ++i) {
-        if (!useful_abstractions.count(i)) {
+        if (!useful_abstractions[i]) {
             abstractions[i] = nullptr;
         }
     }

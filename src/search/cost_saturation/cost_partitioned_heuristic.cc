@@ -7,13 +7,6 @@
 using namespace std;
 
 namespace cost_saturation {
-LookupTable::LookupTable(
-    int heuristic_index, vector<int> &&h_values)
-    : heuristic_index(heuristic_index),
-      h_values(move(h_values)) {
-}
-
-
 void CostPartitionedHeuristic::add_lookup_table_if_nonzero(
     int heuristic_id, vector<int> h_values, bool sparse) {
     if (!sparse ||
@@ -40,7 +33,15 @@ int CostPartitionedHeuristic::compute_heuristic(
     return sum_h;
 }
 
-const vector<LookupTable> &CostPartitionedHeuristic::get_lookup_tables() const {
-    return lookup_tables;
+int CostPartitionedHeuristic::get_num_lookup_tables() const {
+    return lookup_tables.size();
+}
+
+void CostPartitionedHeuristic::mark_useful_heuristics(
+    vector<bool> useful_heuristics) const {
+    for (const auto &lookup_table : lookup_tables) {
+        assert(utils::in_bounds(lookup_table.heuristic_index, useful_heuristics));
+        useful_heuristics[lookup_table.heuristic_index] = true;
+    }
 }
 }
