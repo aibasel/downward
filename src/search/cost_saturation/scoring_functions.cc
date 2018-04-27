@@ -100,7 +100,6 @@ double compute_score(int h, int used_costs, ScoringFunction scoring_function) {
 
 void add_scoring_function_to_parser(OptionParser &parser) {
     vector<string> scoring_functions;
-    scoring_functions.push_back("RANDOM");
     scoring_functions.push_back("MAX_HEURISTIC");
     scoring_functions.push_back("MIN_STOLEN_COSTS");
     scoring_functions.push_back("MAX_HEURISTIC_PER_STOLEN_COSTS");

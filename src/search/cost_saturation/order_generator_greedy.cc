@@ -9,8 +9,6 @@
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
-#include "../utils/rng.h"
-#include "../utils/rng_options.h"
 
 #include <algorithm>
 #include <cassert>
@@ -24,7 +22,6 @@ OrderGeneratorGreedy::OrderGeneratorGreedy(const Options &opts)
     : OrderGenerator(),
       scoring_function(static_cast<ScoringFunction>(opts.get_enum("scoring_function"))),
       dynamic(opts.get<bool>("dynamic")),
-      rng(utils::parse_rng_from_options(opts)),
       num_returned_orders(0) {
 }
 
@@ -123,7 +120,6 @@ void OrderGeneratorGreedy::initialize(
     const vector<unique_ptr<Abstraction>> &abstractions,
     const vector<int> &costs) {
     utils::Log() << "Initialize greedy order generator" << endl;
-    random_order = get_default_order(abstractions.size());
     if (dynamic) {
         return;
     }
@@ -161,10 +157,7 @@ Order OrderGeneratorGreedy::get_next_order(
     bool verbose) {
     utils::Timer greedy_timer;
     vector<int> order;
-    if (scoring_function == ScoringFunction::RANDOM) {
-        rng->shuffle(random_order);
-        order = random_order;
-    } else if (dynamic) {
+    if (dynamic) {
         order = compute_dynamic_greedy_order_for_sample(
             abstractions, local_state_ids, costs);
     } else {
@@ -189,7 +182,6 @@ static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
         " unordered abstractions before appending the abstraction with the"
         " highest score to the order",
         "false");
-    utils::add_rng_options(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
