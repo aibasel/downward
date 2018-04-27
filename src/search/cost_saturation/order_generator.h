@@ -26,7 +26,7 @@ public:
         const Abstractions &abstractions,
         const std::vector<int> &costs) = 0;
 
-    virtual Order get_next_order(
+    virtual Order compute_order_for_state(
         const Abstractions &abstractions,
         const std::vector<int> &costs,
         const std::vector<int> &local_state_ids,

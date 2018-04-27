@@ -23,7 +23,7 @@ void OrderGeneratorRandom::initialize(
     random_order = get_default_order(abstractions.size());
 }
 
-Order OrderGeneratorRandom::get_next_order(
+Order OrderGeneratorRandom::compute_order_for_state(
     const Abstractions &,
     const vector<int> &,
     const vector<int> &,

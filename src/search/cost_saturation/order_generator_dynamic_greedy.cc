@@ -78,7 +78,7 @@ void OrderGeneratorDynamicGreedy::initialize(
     utils::Log() << "Initialize dynamic greedy order generator" << endl;
 }
 
-Order OrderGeneratorDynamicGreedy::get_next_order(
+Order OrderGeneratorDynamicGreedy::compute_order_for_state(
     const Abstractions &abstractions,
     const vector<int> &costs,
     const vector<int> &local_state_ids,

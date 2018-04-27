@@ -84,7 +84,7 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
 
     cp_generator->initialize(abstractions, costs);
 
-    Order order = cp_generator->get_next_order(
+    Order order = cp_generator->compute_order_for_state(
         abstractions, costs, local_state_ids, false);
     CostPartitionedHeuristic cp_for_sampling = cp_function(abstractions, order, costs, true);
     function<int (const State &state)> sampling_heuristic =
@@ -120,7 +120,7 @@ vector<CostPartitionedHeuristic> CostPartitioningCollectionGenerator::get_cost_p
         vector<int> local_state_ids = get_local_state_ids(abstractions, sample);
         // Only be verbose for first sample.
         bool verbose = (evaluated_orders == 0);
-        Order order = cp_generator->get_next_order(
+        Order order = cp_generator->compute_order_for_state(
             abstractions, costs, local_state_ids, verbose);
         CostPartitionedHeuristic cp_heuristic = cp_function(
             abstractions, order, costs, sparse);

@@ -88,7 +88,7 @@ void OrderGeneratorGreedy::initialize(
                  << timer << endl;
 }
 
-Order OrderGeneratorGreedy::get_next_order(
+Order OrderGeneratorGreedy::compute_order_for_state(
     const Abstractions &abstractions,
     const vector<int> &,
     const vector<int> &local_state_ids,
