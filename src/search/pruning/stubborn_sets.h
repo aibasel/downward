@@ -26,10 +26,6 @@ class StubbornSets : public PruningMethod {
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
 
-    /* stubborn[op_no] is true iff the operator with operator index
-       op_no is contained in the stubborn set */
-    std::vector<bool> stubborn;
-
     /*
       stubborn_queue contains the operator indices of operators that
       have been marked as stubborn but have not yet been processed
@@ -54,6 +50,10 @@ protected:
     /* achievers[var][value] contains all operator indices of
        operators that achieve the fact (var, value). */
     std::vector<std::vector<std::vector<int>>> achievers;
+
+    /* stubborn[op_no] is true iff the operator with operator index
+       op_no is contained in the stubborn set */
+    std::vector<bool> stubborn;
 
     bool can_disable(int op1_no, int op2_no) const;
     bool can_conflict(int op1_no, int op2_no) const;
