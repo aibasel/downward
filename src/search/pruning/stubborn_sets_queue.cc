@@ -79,9 +79,21 @@ void StubbornSetsQueue::enqueue_sibling_consumers(const FactPair &fact) {
 }
 
 void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
-    FactPair fact = find_unsatisfied_precondition(op, state);
+    FactPair fact = FactPair::no_fact;
+    for (const FactPair &condition : sorted_op_preconditions[op]) {
+        if (state[condition.var].get_value() != condition.value) {
+            if (marked_producers[condition.var][condition.value]) {
+                return;
+            } else if (fact == FactPair::no_fact) {
+                fact = condition;
+            }
+        }
+    }
+
     assert(fact != FactPair::no_fact);
-    enqueue_producers(fact);
+    assert(!marked_producers[fact.var][fact.value]);
+    marked_producers[fact.var][fact.value] = true;
+    producer_queue.push_back(fact);
 }
 
 void StubbornSetsQueue::enqueue_interferers(int op) {
