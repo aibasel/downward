@@ -5,15 +5,12 @@
 
 #include "../utils/markup.h"
 #include "../utils/memory.h"
-#include "../utils/timer.h"
 
 using namespace std;
 
 namespace stubborn_sets_queue {
 StubbornSetsQueue::StubbornSetsQueue(const options::Options &opts)
     : StubbornSets(opts) {
-    timer = utils::make_unique_ptr<utils::Timer>();
-    timer->stop();
 }
 
 void StubbornSetsQueue::initialize(const shared_ptr<AbstractTask> &task) {
@@ -26,7 +23,6 @@ void StubbornSetsQueue::initialize(const shared_ptr<AbstractTask> &task) {
         marked_producers.emplace_back(var.get_domain_size(), false);
         marked_consumers.emplace_back(var.get_domain_size(), false);
     }
-    marked_ops.resize(num_operators, false);
 
     compute_consumers(task_proxy);
 }
@@ -108,28 +104,9 @@ void StubbornSetsQueue::initialize_stubborn_set(const State &state) {
         fill(facts.begin(), facts.end(), false);
     }
 
-    fill(marked_ops.begin(), marked_ops.end(), false);
-
     FactPair unsatisfied_goal = find_unsatisfied_goal(state);
     assert(unsatisfied_goal != FactPair::no_fact);
     enqueue_producers(unsatisfied_goal);
-}
-
-void StubbornSetsQueue::handle_stubborn_operator(const State &state, int op) {
-    if (!marked_ops[op]) {
-        marked_ops[op] = true;
-        if (operator_is_applicable(op, state)) {
-            enqueue_interferers(op);
-        } else {
-            enqueue_nes(op, state);
-        }
-    }
-}
-
-void StubbornSetsQueue::prune_operators(
-    const State &state, vector<OperatorID> &op_ids) {
-    timer->resume();
-    initialize_stubborn_set(state);
 
     while (!producer_queue.empty() || !consumer_queue.empty()) {
         if (!producer_queue.empty()) {
@@ -146,22 +123,19 @@ void StubbornSetsQueue::prune_operators(
             }
         }
     }
+}
 
-    vector<OperatorID> remaining_op_ids;
-    remaining_op_ids.reserve(op_ids.size());
-    for (OperatorID op_id : op_ids) {
-        if (marked_ops[op_id.get_index()]) {
-            remaining_op_ids.push_back(op_id);
+void StubbornSetsQueue::handle_stubborn_operator(const State &state, int op) {
+    if (!stubborn[op]) {
+        stubborn[op] = true;
+        if (operator_is_applicable(op, state)) {
+            enqueue_interferers(op);
+        } else {
+            enqueue_nes(op, state);
         }
     }
-
-    op_ids.swap(remaining_op_ids);
-    timer->stop();
 }
 
-void StubbornSetsQueue::print_statistics() const {
-    cout << "Time for pruning operators: " << *timer << endl;
-}
 
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
@@ -187,7 +161,6 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "323-331",
             "AAAI Press, 2014"));
 
-    // TODO: Setting these options currently has no effect.
     stubborn_sets::add_pruning_options(parser);
 
     Options opts = parser.parse();
