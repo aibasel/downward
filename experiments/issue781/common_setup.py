@@ -243,6 +243,9 @@ class IssueExperiment(FastDownwardExperiment):
             raise ValueError(
                 "please provide either both or none of revisions and configs")
 
+        revisions = revisions or []
+        configs = configs or []
+
         for rev in revisions:
             for config in configs:
                 self.add_algorithm(
