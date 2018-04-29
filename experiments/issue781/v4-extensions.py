@@ -44,6 +44,11 @@ exp.add_parser('pruning_parser', os.path.join(common_setup.get_script_dir(), "pa
 
 exp.add_absolute_report_step(
     attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + ["time_for_pruning_operators"])
-#exp.add_comparison_table_step()
+exp.add_report(common_setup.ComparativeReport([
+        ("issue781-v3-{heuristic}-queue".format(**locals()),
+         "issue781-v4-{extension}-{heuristic}-queue".format(**locals()))
+        for heuristic in ["blind", "lmcut"]
+        for extension in ["wss", "varmark", "opportunistic"]],
+    attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + ["time_for_pruning_operators"]))
 
 exp.run_steps()
