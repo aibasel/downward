@@ -116,7 +116,6 @@ bool StubbornSets::mark_as_stubborn(int op_no) {
 
 void StubbornSets::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
-    timer->resume();
     if (is_pruning_disabled) {
         return;
     }
@@ -133,6 +132,8 @@ void StubbornSets::prune_operators(
             is_pruning_disabled = true;
         }
     }
+
+    timer->resume();
 
     num_unpruned_successors_generated += op_ids.size();
     ++num_pruning_calls;
@@ -161,6 +162,7 @@ void StubbornSets::prune_operators(
     op_ids.swap(remaining_op_ids);
 
     num_pruned_successors_generated += op_ids.size();
+
     timer->stop();
 }
 
