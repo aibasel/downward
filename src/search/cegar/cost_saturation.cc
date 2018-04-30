@@ -84,10 +84,11 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     }
     if (utils::extra_memory_padding_is_reserved())
         utils::release_extra_memory_padding();
-    print_statistics();
+    print_statistics(timer.get_elapsed_time());
 
     vector<CartesianHeuristicFunction> functions;
     swap(heuristic_functions, functions);
+
     return functions;
 }
 
@@ -168,8 +169,10 @@ void CostSaturation::build_abstractions(
     }
 }
 
-void CostSaturation::print_statistics() const {
+void CostSaturation::print_statistics(utils::Duration init_time) const {
     g_log << "Done initializing additive Cartesian heuristic" << endl;
+    cout << "Time for initializing additive Cartesian heuristic: "
+         << init_time << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
     cout << "Cartesian heuristic functions stored: "
          << heuristic_functions.size() << endl;
