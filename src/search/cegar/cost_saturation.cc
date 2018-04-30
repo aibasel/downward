@@ -157,13 +157,10 @@ void CostSaturation::build_abstractions(
         num_non_looping_transitions += abstraction.get_num_non_looping_transitions();
         assert(num_states <= max_states);
         reduce_remaining_costs(abstraction.get_saturated_costs());
-        int init_h = abstraction.get_h_value_of_initial_state();
+        heuristic_functions.emplace_back(
+            subtask,
+            abstraction.extract_refinement_hierarchy());
 
-        if (init_h > 0) {
-            heuristic_functions.emplace_back(
-                subtask,
-                abstraction.extract_refinement_hierarchy());
-        }
         if (should_abort())
             break;
 
