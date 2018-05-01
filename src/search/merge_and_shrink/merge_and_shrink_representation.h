@@ -51,8 +51,8 @@ class MergeAndShrinkRepresentationMerge : public MergeAndShrinkRepresentation {
     std::vector<std::vector<int>> lookup_table;
 public:
     MergeAndShrinkRepresentationMerge(
-        std::unique_ptr<MergeAndShrinkRepresentation> left_child_,
-        std::unique_ptr<MergeAndShrinkRepresentation> right_child_);
+        std::unique_ptr<MergeAndShrinkRepresentation> left_child,
+        std::unique_ptr<MergeAndShrinkRepresentation> right_child);
     virtual ~MergeAndShrinkRepresentationMerge() = default;
 
     virtual void set_distances(const Distances &distances) override;

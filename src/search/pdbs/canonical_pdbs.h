@@ -13,7 +13,7 @@ class CanonicalPDBs {
 
 public:
     explicit CanonicalPDBs(
-        const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets_);
+        const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets);
     ~CanonicalPDBs() = default;
 
     int get_value(const State &state) const;

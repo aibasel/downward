@@ -127,7 +127,8 @@ def check_search_code_with_clang_tidy():
         #"readability-function-size",
         #"readability-identifier-naming",
         #"readability-implicit-bool-cast",
-        "readability-inconsistent-declaration-parameter-name",
+        # Disabled since we prefer a clean interface over consistent names.
+        #"readability-inconsistent-declaration-parameter-name",
         "readability-misleading-indentation",
         "readability-misplaced-array-index",
         #"readability-named-parameter",

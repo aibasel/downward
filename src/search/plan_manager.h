@@ -16,9 +16,9 @@ class PlanManager {
 public:
     PlanManager();
 
-    void set_plan_filename(const std::string &plan_filename_);
-    void set_num_previously_generated_plans(int num_previously_generated_plans_);
-    void set_is_part_of_anytime_portfolio(bool is_part_of_anytime_portfolio_);
+    void set_plan_filename(const std::string &plan_filename);
+    void set_num_previously_generated_plans(int num_previously_generated_plans);
+    void set_is_part_of_anytime_portfolio(bool is_part_of_anytime_portfolio);
 
     /*
       Set generates_multiple_plan_files to true if the planner can find more than
