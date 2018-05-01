@@ -49,7 +49,7 @@ class TaskDuplicator : public SubtaskGenerator {
     int num_copies;
 
 public:
-    explicit TaskDuplicator(const options::Options &options);
+    explicit TaskDuplicator(const options::Options &opts);
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;
@@ -64,7 +64,7 @@ class GoalDecomposition : public SubtaskGenerator {
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 public:
-    explicit GoalDecomposition(const options::Options &options);
+    explicit GoalDecomposition(const options::Options &opts);
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;

@@ -13,7 +13,7 @@ class RandomNumberGenerator {
 
 public:
     RandomNumberGenerator(); // Seed with a value depending on time and process ID.
-    explicit RandomNumberGenerator(int seed);
+    explicit RandomNumberGenerator(int seed_);
     RandomNumberGenerator(const RandomNumberGenerator &) = delete;
     RandomNumberGenerator &operator=(const RandomNumberGenerator &) = delete;
     ~RandomNumberGenerator();

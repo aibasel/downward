@@ -110,7 +110,7 @@ public:
     }
 
     void register_plugin(
-        const std::string &key, DocFactory factory, PluginTypeNameGetter type_name_factory);
+        const std::string &key, DocFactory doc_factory, PluginTypeNameGetter type_name_factory);
 
     void add_arg(
         const std::string &key,

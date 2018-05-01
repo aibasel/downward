@@ -9,7 +9,7 @@ class BlindSearchHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
 public:
-    BlindSearchHeuristic(const options::Options &options);
+    BlindSearchHeuristic(const options::Options &opts);
     ~BlindSearchHeuristic();
 };
 }

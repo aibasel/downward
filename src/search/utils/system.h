@@ -42,7 +42,7 @@ enum class ExitCode {
     OUT_OF_MEMORY = 6
 };
 
-NO_RETURN extern void exit_with(ExitCode returncode);
+NO_RETURN extern void exit_with(ExitCode exitcode);
 
 int get_peak_memory_in_kb();
 const char *get_exit_code_message_reentrant(ExitCode exitcode);

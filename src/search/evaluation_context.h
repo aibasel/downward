@@ -90,7 +90,7 @@ public:
 
     ~EvaluationContext() = default;
 
-    const EvaluationResult &get_result(Evaluator *heur);
+    const EvaluationResult &get_result(Evaluator *evaluator);
     const HeuristicCache &get_cache() const;
     const GlobalState &get_state() const;
     int get_g_value() const;

@@ -143,9 +143,9 @@ void Txt2TagsPrinter::print_category_footer() {
        << ">>>>CATEGORYEND<<<<" << endl;
 }
 
-PlainPrinter::PlainPrinter(ostream &out, bool pa)
+PlainPrinter::PlainPrinter(ostream &out, bool print_all)
     : DocPrinter(out),
-      print_all(pa) {
+      print_all(print_all) {
 }
 
 void PlainPrinter::print_synopsis(const PluginInfo &info) {
