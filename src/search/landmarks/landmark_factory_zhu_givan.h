@@ -35,7 +35,7 @@ public:
     bool operator_applicable(const OperatorProxy &op, const PropositionLayer &state) const;
 
     bool operator_cond_effect_fires(const EffectConditionsProxy &effect_conditions,
-                                    const PropositionLayer &state) const;
+                                    const PropositionLayer &layer) const;
 
     // Apply operator and propagate labels to next layer. Returns set of
     // propositions that:

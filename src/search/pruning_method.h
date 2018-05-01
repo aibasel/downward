@@ -18,7 +18,7 @@ public:
     PruningMethod();
     virtual ~PruningMethod() = default;
 
-    virtual void initialize(const std::shared_ptr<AbstractTask> &task_);
+    virtual void initialize(const std::shared_ptr<AbstractTask> &task);
 
     /* This method must not be called for goal states. This can be checked
        with assertions in derived classes. */

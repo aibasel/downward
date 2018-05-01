@@ -144,7 +144,7 @@ public:
 
     // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
     // via "exported_ops". (This is the real reason why you might want to call this.)
-    bool plan_for_disj(std::vector<FactPair> &landmarks, const State &state);
+    bool plan_for_disj(std::vector<FactPair> &disj_goal, const State &state);
 };
 }
 

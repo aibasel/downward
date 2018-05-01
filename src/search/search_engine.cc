@@ -63,9 +63,9 @@ const Plan &SearchEngine::get_plan() const {
     return plan;
 }
 
-void SearchEngine::set_plan(const Plan &plan_) {
+void SearchEngine::set_plan(const Plan &p) {
     solution_found = true;
-    plan = plan_;
+    plan = p;
 }
 
 void SearchEngine::search() {
