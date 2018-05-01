@@ -39,9 +39,9 @@ public:
       meaning prevail, preconditions and effects are all related to
       progression search.
     */
-    AbstractOperator(const std::vector<FactPair> &prevail,
-                     const std::vector<FactPair> &preconditions,
-                     const std::vector<FactPair> &effects,
+    AbstractOperator(const std::vector<FactPair> &prev_pairs,
+                     const std::vector<FactPair> &pre_pairs,
+                     const std::vector<FactPair> &eff_pairs,
                      int cost,
                      const std::vector<std::size_t> &hash_multipliers);
     ~AbstractOperator();

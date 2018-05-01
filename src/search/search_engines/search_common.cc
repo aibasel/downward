@@ -62,12 +62,11 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
     }
 }
 
-shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-    const Options &options) {
+shared_ptr<OpenListFactory> create_greedy_open_list_factory(const Options &opts) {
     return create_alternation_open_list_factory_aux(
-        options.get_list<Evaluator *>("evals"),
-        options.get_list<Heuristic *>("preferred"),
-        options.get<int>("boost"));
+        opts.get_list<Evaluator *>("evals"),
+        opts.get_list<Heuristic *>("preferred"),
+        opts.get<int>("boost"));
 }
 
 /*
@@ -91,11 +90,10 @@ static Evaluator *create_wastar_eval(GEval *g_eval, int w, Evaluator *h_eval) {
     return new SumEval(vector<Evaluator *>({g_eval, w_h_eval}));
 }
 
-shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-    const Options &options) {
+shared_ptr<OpenListFactory> create_wastar_open_list_factory(const Options &opts) {
     vector<Evaluator *> base_evals =
-        options.get_list<Evaluator *>("evals");
-    int w = options.get<int>("w");
+        opts.get_list<Evaluator *>("evals");
+    int w = opts.get<int>("w");
 
     GEval *g_eval = new GEval();
     vector<Evaluator *> f_evals;
@@ -105,8 +103,8 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
     return create_alternation_open_list_factory_aux(
         f_evals,
-        options.get_list<Heuristic *>("preferred"),
-        options.get<int>("boost"));
+        opts.get_list<Heuristic *>("preferred"),
+        opts.get<int>("boost"));
 }
 
 pair<shared_ptr<OpenListFactory>, Evaluator *>

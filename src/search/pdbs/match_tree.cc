@@ -25,7 +25,7 @@ struct MatchTree::Node {
     Node **successors;
     Node *star_successor;
 
-    void initialize(int var_id, int var_domain_size);
+    void initialize(int var_id_, int var_domain_size_);
     bool is_leaf_node() const;
 };
 

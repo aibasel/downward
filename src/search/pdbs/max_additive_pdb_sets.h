@@ -71,7 +71,7 @@ extern std::shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
   "new" cliques including P.
   */
 extern MaxAdditivePDBSubsets compute_max_additive_subsets_with_pattern(
-    const MaxAdditivePDBSubsets &max_additive_subsets,
+    const MaxAdditivePDBSubsets &known_additive_subsets,
     const Pattern &new_pattern,
     const VariableAdditivity &are_additive);
 }

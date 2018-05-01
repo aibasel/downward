@@ -35,7 +35,7 @@ public:
     bool is_superset_of(const Domains &other) const;
 
     friend std::ostream &operator<<(
-        std::ostream &os, const Domains &domain_subsets);
+        std::ostream &os, const Domains &domains);
 };
 
 std::ostream &operator<<(std::ostream &os, const Domains &domains);

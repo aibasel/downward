@@ -69,7 +69,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
                                 int level,
                                 TriggerSet &next_trigger);
 
-    void propagate_pm_fact(int fact, bool newly_discovered,
+    void propagate_pm_fact(int factindex, bool newly_discovered,
                            TriggerSet &trigger);
 
     bool possible_noop_set(const VariablesProxy &variables,

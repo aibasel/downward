@@ -127,11 +127,11 @@ class Exploration : public Heuristic {
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
 protected:
-    virtual int compute_heuristic(const GlobalState &state) override;
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
     explicit Exploration(const options::Options &opts);
 
-    void set_additional_goals(const std::vector<FactPair> &goals);
+    void set_additional_goals(const std::vector<FactPair> &additional_goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
                                             std::vector<std::unordered_map<FactPair, int>> &lvl_op,
@@ -144,7 +144,7 @@ public:
 
     // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
     // via "exported_ops". (This is the real reason why you might want to call this.)
-    bool plan_for_disj(std::vector<FactPair> &disj_goal, const State &state);
+    bool plan_for_disj(std::vector<FactPair> &landmarks, const State &state);
 };
 }
 

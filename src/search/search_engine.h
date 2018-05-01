@@ -48,7 +48,7 @@ protected:
     virtual void initialize() {}
     virtual SearchStatus step() = 0;
 
-    void set_plan(const Plan &plan);
+    void set_plan(const Plan &plan_);
     bool check_goal_and_set_plan(const GlobalState &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:

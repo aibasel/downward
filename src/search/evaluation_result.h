@@ -45,7 +45,7 @@ public:
     const std::vector<OperatorID> &get_preferred_operators() const;
 
     void set_h_value(int value);
-    void set_preferred_operators(std::vector<OperatorID> &&preferred_operators);
+    void set_preferred_operators(std::vector<OperatorID> &&preferred_ops);
     void set_count_evaluation(bool count_eval);
 };
 
