@@ -105,12 +105,43 @@ def check_search_code_with_clang_tidy():
     build_dir = os.path.join(REPO, "builds", "clang-tidy")
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
-    subprocess.check_call(
-        ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "../../src"], cwd=build_dir)
+    with open(os.devnull, 'w') as devnull:
+        subprocess.check_call(
+            ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "../../src"],
+            cwd=build_dir, stdout=devnull)
+    # See https://clang.llvm.org/extra/clang-tidy/checks/list.html for
+    # an explanation of the checks. We comment out inactive checks of some
+    # categories instead of deleting them to see which additional checks
+    # we could activate.
     checks = [
         "performance-for-range-copy",
         "performance-implicit-cast-in-loop",
         "performance-inefficient-vector-operation",
+
+        "readability-avoid-const-params-in-decls",
+        #"readability-braces-around-statements",
+        "readability-container-size-empty",
+        "readability-delete-null-pointer",
+        "readability-deleted-default",
+        #"readability-else-after-return",
+        #"readability-function-size",
+        #"readability-identifier-naming",
+        #"readability-implicit-bool-cast",
+        #"readability-inconsistent-declaration-parameter-name",
+        "readability-misleading-indentation",
+        "readability-misplaced-array-index",
+        #"readability-named-parameter",
+        #"readability-non-const-parameter",
+        "readability-redundant-control-flow",
+        "readability-redundant-declaration",
+        "readability-redundant-function-ptr-dereference",
+        "readability-redundant-member-init",
+        "readability-redundant-smartptr-get",
+        "readability-redundant-string-cstr",
+        "readability-redundant-string-init",
+        "readability-simplify-boolean-expr",
+        "readability-static-definition-in-anonymous-namespace",
+        "readability-uniqueptr-delete-release",
         ]
     cmd = [
         "./run-clang-tidy.py",
@@ -121,6 +152,7 @@ def check_search_code_with_clang_tidy():
         "-header-filter=.*,-tree.hh,-tree_util.hh",
         "-checks=-*," + ",".join(checks)]
     print("Running clang-tidy (enabled checks: {})".format(", ".join(checks)))
+    print()
     try:
         output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
@@ -132,6 +164,7 @@ def check_search_code_with_clang_tidy():
     if errors:
         fix_cmd = cmd + [
             "-clang-apply-replacements-binary=clang-apply-replacements-5.0", "-fix"]
+        print()
         print("You may be able to fix these issues with the following command: " +
             " ".join(pipes.quote(x) for x in fix_cmd))
     return not errors
