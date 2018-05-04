@@ -112,7 +112,7 @@ public:
 
     virtual int get_abstract_state_id(const State &concrete_state) const override;
 
-    virtual std::vector<int> compute_h_values(
+    virtual std::vector<int> compute_goal_distances(
         const std::vector<int> &costs) const override;
 
     virtual std::vector<Transition> get_transitions() const override;

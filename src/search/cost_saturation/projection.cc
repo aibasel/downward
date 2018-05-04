@@ -351,7 +351,7 @@ vector<int> Projection::compute_saturated_costs(
     return saturated_costs;
 }
 
-vector<int> Projection::compute_h_values(const vector<int> &costs) const {
+vector<int> Projection::compute_goal_distances(const vector<int> &costs) const {
     return compute_distances(costs);
 }
 

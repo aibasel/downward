@@ -1,6 +1,5 @@
 #include "cost_partitioning_collection_generator.h"
 
-#include "abstraction.h"
 #include "cost_partitioned_heuristic.h"
 #include "diversifier.h"
 #include "order_generator.h"
@@ -10,7 +9,6 @@
 #include "../task_proxy.h"
 
 #include "../task_utils/sampling.h"
-#include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/countdown_timer.h"

@@ -115,6 +115,9 @@ RandomWalkSampler::RandomWalkSampler(
     assert(init_h != numeric_limits<int>::max());
 }
 
+RandomWalkSampler::~RandomWalkSampler() {
+}
+
 State RandomWalkSampler::sample_state() {
     return sample_state_with_random_walk(
         task_proxy,

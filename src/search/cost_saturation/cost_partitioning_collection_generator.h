@@ -6,9 +6,6 @@
 #include <memory>
 #include <vector>
 
-class RandomWalkSampler;
-class State;
-class SuccessorGenerator;
 class TaskProxy;
 
 namespace utils {
@@ -16,7 +13,6 @@ class RandomNumberGenerator;
 }
 
 namespace cost_saturation {
-class Abstraction;
 class CostPartitionedHeuristic;
 class OrderGenerator;
 

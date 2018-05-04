@@ -59,6 +59,7 @@ public:
         int init_h,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         DeadEndDetector is_dead_end = [] (const State &) {return false; });
+    ~RandomWalkSampler();
 
     State sample_state();
 };

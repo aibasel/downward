@@ -40,7 +40,7 @@ public:
 
     virtual int get_abstract_state_id(const State &concrete_state) const = 0;
 
-    virtual std::vector<int> compute_h_values(
+    virtual std::vector<int> compute_goal_distances(
         const std::vector<int> &costs) const = 0;
 
     std::pair<std::vector<int>, std::vector<int>>
@@ -50,14 +50,12 @@ public:
     // Operators inducing state-changing transitions.
     virtual std::vector<int> compute_active_operators() const = 0;
 
-    // Operators inducing self-looping transitions. May overlap with
-    // state-changing transitions.
+    // Operators inducing self-looping transitions. May overlap with active
+    // operators.
     virtual const std::vector<int> &get_looping_operators() const = 0;
 
     virtual std::vector<Transition> get_transitions() const = 0;
-
     virtual int get_num_states() const = 0;
-
     virtual const std::vector<int> &get_goal_states() const = 0;
 
     void remove_transition_system();

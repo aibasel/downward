@@ -63,7 +63,7 @@ public:
         std::vector<int> &&looping_operators,
         std::vector<int> &&goal_states);
 
-    virtual std::vector<int> compute_h_values(
+    virtual std::vector<int> compute_goal_distances(
         const std::vector<int> &costs) const override;
 
     virtual std::vector<Transition> get_transitions() const override;

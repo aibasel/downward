@@ -28,10 +28,8 @@ CartesianAbstractionGenerator::CartesianAbstractionGenerator(
 
 static unique_ptr<Abstraction> convert_abstraction(
     cegar::Abstraction &cartesian_abstraction) {
-    int num_states = cartesian_abstraction.get_num_states();
-    vector<vector<Successor>> backward_graph(num_states);
-
-    // Store non-looping transitions.
+    // Retrieve non-looping transitions.
+    vector<vector<Successor>> backward_graph(cartesian_abstraction.get_num_states());
     for (cegar::AbstractState *state : cartesian_abstraction.get_states()) {
         // Ignore transitions from dead-end or unreachable states.
         if (state->get_h_value() == INF ||
@@ -52,10 +50,8 @@ static unique_ptr<Abstraction> convert_abstraction(
         succesors.shrink_to_fit();
     }
 
-    // Store self-loop info.
     vector<int> looping_operators = cartesian_abstraction.get_looping_operators();
 
-    // Store goals.
     vector<int> goal_states;
     goal_states.reserve(cartesian_abstraction.get_goals().size());
     for (const cegar::AbstractState *goal : cartesian_abstraction.get_goals()) {
@@ -83,7 +79,7 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
     function<bool()> total_size_limit_reached,
     Abstractions &abstractions) {
     int remaining_subtasks = subtasks.size();
-    for (shared_ptr<AbstractTask> subtask : subtasks) {
+    for (const shared_ptr<AbstractTask> &subtask : subtasks) {
         // TODO: Allow specifying this on the commandline.
         const int max_states = INF;
         /* To make the abstraction refinement process deterministic, we don't
@@ -102,9 +98,7 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
             *rng);
 
         num_transitions += cartesian_abstraction.get_num_non_looping_transitions();
-
         int init_h = cartesian_abstraction.get_h_value_of_initial_state();
-
         abstractions.push_back(convert_abstraction(cartesian_abstraction));
 
         if (total_size_limit_reached() || init_h == INF) {
@@ -132,9 +126,10 @@ Abstractions CartesianAbstractionGenerator::generate_abstractions(
         };
 
     Abstractions abstractions;
-    for (shared_ptr<cegar::SubtaskGenerator> subtask_generator : subtask_generators) {
+    for (const auto &subtask_generator : subtask_generators) {
         cegar::SharedTasks subtasks = subtask_generator->get_subtasks(task);
-        build_abstractions_for_subtasks(subtasks, total_size_limit_reached, abstractions);
+        build_abstractions_for_subtasks(
+            subtasks, total_size_limit_reached, abstractions);
         if (total_size_limit_reached()) {
             break;
         }
@@ -157,10 +152,10 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
     parser.add_list_option<shared_ptr<cegar::SubtaskGenerator>>(
         "subtasks",
         "subtask generators",
-        "[landmarks(order=random, random_seed=0),goals(order=random, random_seed=0)]");
+        "[landmarks(order=random, random_seed=0), goals(order=random, random_seed=0)]");
     parser.add_option<int>(
         "max_transitions",
-        "maximum sum of real transitions (excluding self-loops) over "
+        "maximum sum of state-changing transitions (excluding self-loops) over "
         " all abstractions",
         "1000000",
         Bounds("0", "infinity"));

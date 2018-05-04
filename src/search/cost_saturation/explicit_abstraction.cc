@@ -79,7 +79,7 @@ ExplicitAbstraction::ExplicitAbstraction(
 #endif
 }
 
-vector<int> ExplicitAbstraction::compute_h_values(const vector<int> &costs) const {
+vector<int> ExplicitAbstraction::compute_goal_distances(const vector<int> &costs) const {
     vector<int> goal_distances(get_num_states(), INF);
     queue.clear();
     for (int goal_state : goal_states) {

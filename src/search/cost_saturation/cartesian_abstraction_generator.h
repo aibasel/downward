@@ -3,6 +3,10 @@
 
 #include "abstraction_generator.h"
 
+#include <functional>
+#include <memory>
+#include <vector>
+
 namespace options {
 class Options;
 }
@@ -12,7 +16,6 @@ class SubtaskGenerator;
 }
 
 namespace utils {
-class CountdownTimer;
 class RandomNumberGenerator;
 }
 
