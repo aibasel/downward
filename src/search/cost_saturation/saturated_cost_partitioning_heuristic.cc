@@ -1,5 +1,3 @@
-#include "saturated_cost_partitioning_heuristic.h"
-
 #include "abstraction.h"
 #include "cost_partitioned_heuristic.h"
 #include "cost_partitioning_collection_generator.h"
