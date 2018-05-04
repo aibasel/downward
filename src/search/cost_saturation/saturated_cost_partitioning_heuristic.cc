@@ -47,7 +47,7 @@ void add_order_options_to_parser(OptionParser &parser) {
     parser.add_option<double>(
         "max_time",
         "maximum time for finding orders",
-        "10",
+        "200.0",
         Bounds("0", "infinity"));
     parser.add_option<bool>(
         "diversify",
@@ -62,7 +62,7 @@ void add_order_options_to_parser(OptionParser &parser) {
     parser.add_option<double>(
         "max_optimization_time",
         "maximum time for optimizing each order with hill climbing",
-        "0.0",
+        "2.0",
         Bounds("0.0", "infinity"));
     utils::add_rng_options(parser);
 }
@@ -97,7 +97,9 @@ static Heuristic *get_max_cp_heuristic(
 
     parser.add_list_option<shared_ptr<AbstractionGenerator>>(
         "abstraction_generators",
-        "classes that generate abstractions");
+        "available generators are cartesian() and projections()",
+        "[projections(hillclimbing(max_time=60, random_seed=0)),"
+        " projections(systematic(2)), cartesian()]");
     add_order_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
