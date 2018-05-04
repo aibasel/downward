@@ -8,6 +8,9 @@ class CountdownTimer;
 }
 
 namespace cost_saturation {
+/*
+  Optimize the given order in-place via simple hill climbing.
+*/
 extern void do_hill_climbing(
     CPFunction cp_function,
     const utils::CountdownTimer &timer,

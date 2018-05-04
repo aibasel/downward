@@ -24,10 +24,9 @@ Order OrderGeneratorDynamicGreedy::compute_dynamic_greedy_order_for_sample(
     const vector<int> &abstract_state_ids,
     vector<int> remaining_costs) const {
     assert(abstractions.size() == abstract_state_ids.size());
-    Order order;
-
     vector<int> remaining_abstractions = get_default_order(abstractions.size());
 
+    Order order;
     while (!remaining_abstractions.empty()) {
         int num_remaining = remaining_abstractions.size();
         vector<int> current_h_values;
@@ -65,6 +64,7 @@ Order OrderGeneratorDynamicGreedy::compute_dynamic_greedy_order_for_sample(
                 highest_score = score;
             }
         }
+        assert(utils::in_bounds(best_rem_id, remaining_abstractions));
         order.push_back(remaining_abstractions[best_rem_id]);
         reduce_costs(remaining_costs, current_saturated_costs[best_rem_id]);
         utils::swap_and_pop_from_vector(remaining_abstractions, best_rem_id);

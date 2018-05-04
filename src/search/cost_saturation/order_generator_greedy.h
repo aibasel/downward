@@ -12,7 +12,7 @@ namespace cost_saturation {
 class OrderGeneratorGreedy : public OrderGenerator {
     const ScoringFunction scoring_function;
 
-    // Unpartitioned h values.
+    // Goal distances under the original cost function by abstraction.
     std::vector<std::vector<int>> h_values_by_abstraction;
     std::vector<int> stolen_costs_by_abstraction;
 

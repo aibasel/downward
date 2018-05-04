@@ -16,10 +16,12 @@ Diversifier::Diversifier(vector<vector<int>> &&abstract_state_ids_by_sample)
       portfolio_h_values(this->abstract_state_ids_by_sample.size(), -1) {
 }
 
-bool Diversifier::is_diverse(const CostPartitionedHeuristic &cp) {
+bool Diversifier::is_diverse(const CostPartitionedHeuristic &cp_heuristic) {
     bool cp_improves_portfolio = false;
-    for (size_t sample_id = 0; sample_id < abstract_state_ids_by_sample.size(); ++sample_id) {
-        int cp_h_value = cp.compute_heuristic(abstract_state_ids_by_sample[sample_id]);
+    int num_samples = abstract_state_ids_by_sample.size();
+    for (int sample_id = 0; sample_id < num_samples; ++sample_id) {
+        int cp_h_value = cp_heuristic.compute_heuristic(
+            abstract_state_ids_by_sample[sample_id]);
         assert(utils::in_bounds(sample_id, portfolio_h_values));
         int &portfolio_h_value = portfolio_h_values[sample_id];
         if (cp_h_value > portfolio_h_value) {

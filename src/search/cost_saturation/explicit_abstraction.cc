@@ -12,9 +12,9 @@ using namespace std;
 namespace cost_saturation {
 static void dijkstra_search(
     const vector<vector<Successor>> &graph,
+    const vector<int> &costs,
     priority_queues::AdaptiveQueue<int> &queue,
-    vector<int> &distances,
-    const vector<int> &costs) {
+    vector<int> &distances) {
     while (!queue.empty()) {
         pair<int, int> top_pair = queue.pop();
         int distance = top_pair.first;
@@ -71,6 +71,7 @@ ExplicitAbstraction::ExplicitAbstraction(
       looping_operators(move(looping_operators)),
       goal_states(move(goal_states)) {
 #ifndef NDEBUG
+    // Check that no transition is stored multiple times.
     for (int target = 0; target < get_num_states(); ++target) {
         vector<Successor> copied_transitions = this->backward_graph[target];
         sort(copied_transitions.begin(), copied_transitions.end());
@@ -86,7 +87,7 @@ vector<int> ExplicitAbstraction::compute_goal_distances(const vector<int> &costs
         goal_distances[goal_state] = 0;
         queue.push(0, goal_state);
     }
-    dijkstra_search(backward_graph, queue, goal_distances, costs);
+    dijkstra_search(backward_graph, costs, queue, goal_distances);
     return goal_distances;
 }
 

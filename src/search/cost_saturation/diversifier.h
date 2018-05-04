@@ -13,7 +13,9 @@ class Diversifier {
 public:
     explicit Diversifier(std::vector<std::vector<int>> &&abstract_state_ids_by_sample);
 
-    bool is_diverse(const CostPartitionedHeuristic &cp);
+    /* Return true iff the cost-partitioned heuristic has a higher heuristic
+       value than all previously seen heuristics for at least one sample. */
+    bool is_diverse(const CostPartitionedHeuristic &cp_heuristic);
 };
 }
 
