@@ -61,7 +61,6 @@ Projection::Projection(
         op.release_memory();
     }
 
-    // Needs hash_multipliers.
     goal_states = compute_goal_states();
 }
 
@@ -111,7 +110,7 @@ vector<int> Projection::compute_goal_states() const {
         }
     }
 
-    for (size_t state_index = 0; state_index < num_states; ++state_index) {
+    for (int state_index = 0; state_index < num_states; ++state_index) {
         if (is_goal_state(state_index, abstract_goals, variables)) {
             goal_states.push_back(state_index);
         }
@@ -356,10 +355,10 @@ vector<int> Projection::compute_goal_distances(const vector<int> &costs) const {
 }
 
 vector<Transition> Projection::get_transitions() const {
-    vector<Transition> transitions;
     // We can use an arbitrary cost function for computing the transitions.
     int num_operators = task_proxy.get_operators().size();
     vector<int> unit_costs(num_operators, 1);
+    vector<Transition> transitions;
     compute_distances(unit_costs, &transitions);
     return transitions;
 }

@@ -10,6 +10,7 @@
 
 namespace pdbs {
 class AbstractOperator {
+    // The ID of the concrete operator is needed for cost partitioning.
     const int concrete_operator_id;
 
     /*
