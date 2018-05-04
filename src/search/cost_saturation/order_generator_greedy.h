@@ -17,9 +17,9 @@ class OrderGeneratorGreedy : public OrderGenerator {
     std::vector<int> stolen_costs_by_abstraction;
 
     double rate_abstraction(
-        const std::vector<int> &local_state_ids, int abs_id) const;
+        const std::vector<int> &abstract_state_ids, int abs_id) const;
     Order compute_static_greedy_order_for_sample(
-        const std::vector<int> &local_state_ids, bool verbose) const;
+        const std::vector<int> &abstract_state_ids, bool verbose) const;
 
 public:
     explicit OrderGeneratorGreedy(const options::Options &opts);
@@ -31,7 +31,7 @@ public:
     virtual Order compute_order_for_state(
         const Abstractions &abstractions,
         const std::vector<int> &costs,
-        const std::vector<int> &local_state_ids,
+        const std::vector<int> &abstract_state_ids,
         bool verbose) override;
 };
 }

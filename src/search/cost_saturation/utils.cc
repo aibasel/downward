@@ -35,20 +35,20 @@ vector<int> get_default_order(int num_abstractions) {
     return indices;
 }
 
-vector<int> get_local_state_ids(
+vector<int> get_abstract_state_ids(
     const Abstractions &abstractions, const State &state) {
-    vector<int> local_state_ids;
-    local_state_ids.reserve(abstractions.size());
+    vector<int> abstract_state_ids;
+    abstract_state_ids.reserve(abstractions.size());
     for (auto &abstraction : abstractions) {
         if (abstraction) {
             // Only add local state IDs for useful abstractions.
-            local_state_ids.push_back(abstraction->get_abstract_state_id(state));
+            abstract_state_ids.push_back(abstraction->get_abstract_state_id(state));
         } else {
             // Add dummy value if abstraction will never be used.
-            local_state_ids.push_back(-1);
+            abstract_state_ids.push_back(-1);
         }
     }
-    return local_state_ids;
+    return abstract_state_ids;
 }
 
 void reduce_costs(vector<int> &remaining_costs, const vector<int> &saturated_costs) {

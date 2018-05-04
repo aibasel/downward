@@ -13,10 +13,10 @@ using namespace std;
 namespace cost_saturation {
 static int compute_max_h(
     const vector<CostPartitionedHeuristic> &cp_heuristics,
-    const vector<int> &local_state_ids) {
+    const vector<int> &abstract_state_ids) {
     int max_h = 0;
     for (const CostPartitionedHeuristic &cp_heuristic : cp_heuristics) {
-        int sum_h = cp_heuristic.compute_heuristic(local_state_ids);
+        int sum_h = cp_heuristic.compute_heuristic(abstract_state_ids);
         if (sum_h == INF) {
             return INF;
         }
@@ -81,8 +81,8 @@ int MaxCostPartitioningHeuristic::compute_heuristic(const GlobalState &global_st
 }
 
 int MaxCostPartitioningHeuristic::compute_heuristic(const State &state) const {
-    vector<int> local_state_ids = get_local_state_ids(abstractions, state);
-    int max_h = compute_max_h(cp_heuristics, local_state_ids);
+    vector<int> abstract_state_ids = get_abstract_state_ids(abstractions, state);
+    int max_h = compute_max_h(cp_heuristics, abstract_state_ids);
     if (max_h == INF) {
         return DEAD_END;
     }

@@ -26,7 +26,7 @@ public:
     virtual Order compute_order_for_state(
         const Abstractions &abstractions,
         const std::vector<int> &costs,
-        const std::vector<int> &local_state_ids,
+        const std::vector<int> &abstract_state_ids,
         bool verbose) override;
 };
 }

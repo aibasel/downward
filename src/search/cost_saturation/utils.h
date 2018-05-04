@@ -21,7 +21,7 @@ extern Abstractions generate_abstractions(
 
 extern std::vector<int> get_default_order(int num_abstractions);
 
-extern std::vector<int> get_local_state_ids(
+extern std::vector<int> get_abstract_state_ids(
     const Abstractions &abstractions, const State &state);
 
 extern void reduce_costs(

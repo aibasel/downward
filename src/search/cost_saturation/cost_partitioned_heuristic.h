@@ -26,7 +26,7 @@ public:
     void add_lookup_table_if_nonzero(int heuristic_id, std::vector<int> h_values);
 
     // Sum up the values stored for all abstract states.
-    int compute_heuristic(const std::vector<int> &local_state_ids) const;
+    int compute_heuristic(const std::vector<int> &abstract_state_ids) const;
 
     // Return the number of stored lookup tables.
     int get_num_lookup_tables() const;

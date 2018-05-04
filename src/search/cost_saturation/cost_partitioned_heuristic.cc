@@ -15,11 +15,11 @@ void CostPartitionedHeuristic::add_lookup_table_if_nonzero(
 }
 
 int CostPartitionedHeuristic::compute_heuristic(
-    const vector<int> &local_state_ids) const {
+    const vector<int> &abstract_state_ids) const {
     int sum_h = 0;
     for (const LookupTable &lookup_table : lookup_tables) {
-        assert(utils::in_bounds(lookup_table.heuristic_index, local_state_ids));
-        int state_id = local_state_ids[lookup_table.heuristic_index];
+        assert(utils::in_bounds(lookup_table.heuristic_index, abstract_state_ids));
+        int state_id = abstract_state_ids[lookup_table.heuristic_index];
         assert(utils::in_bounds(state_id, lookup_table.h_values));
         int h = lookup_table.h_values[state_id];
         assert(h >= 0);

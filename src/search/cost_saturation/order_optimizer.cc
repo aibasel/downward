@@ -21,7 +21,7 @@ static bool search_improving_successor(
     const utils::CountdownTimer &timer,
     const Abstractions &abstractions,
     const vector<int> &costs,
-    const vector<int> &local_state_ids,
+    const vector<int> &abstract_state_ids,
     vector<int> &incumbent_order,
     CostPartitionedHeuristic &incumbent_cp,
     int &incumbent_h_value,
@@ -34,7 +34,7 @@ static bool search_improving_successor(
             CostPartitionedHeuristic neighbor_cp =
                 cp_function(abstractions, incumbent_order, costs);
 
-            int h = neighbor_cp.compute_heuristic(local_state_ids);
+            int h = neighbor_cp.compute_heuristic(abstract_state_ids);
             if (h > incumbent_h_value) {
                 incumbent_cp = move(neighbor_cp);
                 incumbent_h_value = h;
@@ -57,7 +57,7 @@ void do_hill_climbing(
     const utils::CountdownTimer &timer,
     const Abstractions &abstractions,
     const vector<int> &costs,
-    const vector<int> &local_state_ids,
+    const vector<int> &abstract_state_ids,
     vector<int> &incumbent_order,
     CostPartitionedHeuristic &incumbent_cp,
     int incumbent_h_value,
@@ -67,7 +67,7 @@ void do_hill_climbing(
     }
     while (!timer.is_expired()) {
         bool success = search_improving_successor(
-            cp_function, timer, abstractions, costs, local_state_ids,
+            cp_function, timer, abstractions, costs, abstract_state_ids,
             incumbent_order, incumbent_cp, incumbent_h_value, verbose);
         if (!success) {
             break;

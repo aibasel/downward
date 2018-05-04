@@ -20,12 +20,12 @@ OrderGeneratorGreedy::OrderGeneratorGreedy(const Options &opts)
 }
 
 double OrderGeneratorGreedy::rate_abstraction(
-    const vector<int> &local_state_ids, int abs_id) const {
-    assert(utils::in_bounds(abs_id, local_state_ids));
-    int local_state_id = local_state_ids[abs_id];
+    const vector<int> &abstract_state_ids, int abs_id) const {
+    assert(utils::in_bounds(abs_id, abstract_state_ids));
+    int abstract_state_id = abstract_state_ids[abs_id];
     assert(utils::in_bounds(abs_id, h_values_by_abstraction));
-    assert(utils::in_bounds(local_state_id, h_values_by_abstraction[abs_id]));
-    int h = h_values_by_abstraction[abs_id][local_state_id];
+    assert(utils::in_bounds(abstract_state_id, h_values_by_abstraction[abs_id]));
+    int h = h_values_by_abstraction[abs_id][abstract_state_id];
     assert(h >= 0);
 
     assert(utils::in_bounds(abs_id, stolen_costs_by_abstraction));
@@ -35,14 +35,14 @@ double OrderGeneratorGreedy::rate_abstraction(
 }
 
 Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
-    const vector<int> &local_state_ids, bool verbose) const {
-    assert(local_state_ids.size() == h_values_by_abstraction.size());
-    int num_abstractions = local_state_ids.size();
+    const vector<int> &abstract_state_ids, bool verbose) const {
+    assert(abstract_state_ids.size() == h_values_by_abstraction.size());
+    int num_abstractions = abstract_state_ids.size();
     Order order = get_default_order(num_abstractions);
     vector<double> scores;
     scores.reserve(num_abstractions);
     for (int abs = 0; abs < num_abstractions; ++abs) {
-        scores.push_back(rate_abstraction(local_state_ids, abs));
+        scores.push_back(rate_abstraction(abstract_state_ids, abs));
     }
     sort(order.begin(), order.end(), [&](int abs1, int abs2) {
             return scores[abs1] > scores[abs2];
@@ -91,17 +91,17 @@ void OrderGeneratorGreedy::initialize(
 Order OrderGeneratorGreedy::compute_order_for_state(
     const Abstractions &,
     const vector<int> &,
-    const vector<int> &local_state_ids,
+    const vector<int> &abstract_state_ids,
     bool verbose) {
     utils::Timer greedy_timer;
     vector<int> order = compute_static_greedy_order_for_sample(
-        local_state_ids, verbose);
+        abstract_state_ids, verbose);
 
     if (verbose) {
         utils::Log() << "Time for computing greedy order: " << greedy_timer << endl;
     }
 
-    assert(order.size() == local_state_ids.size());
+    assert(order.size() == abstract_state_ids.size());
     return order;
 }
 
