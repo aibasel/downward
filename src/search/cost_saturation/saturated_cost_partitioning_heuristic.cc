@@ -115,7 +115,7 @@ static Heuristic *get_max_cp_heuristic(
     vector<int> costs = task_properties::get_operator_costs(task_proxy);
     Abstractions abstractions = generate_abstractions(
         task, opts.get_list<shared_ptr<AbstractionGenerator>>("abstraction_generators"));
-    std::vector<CostPartitionedHeuristic> cp_heuristics =
+    vector<CostPartitionedHeuristic> cp_heuristics =
         get_cp_collection_generator_from_options(opts).get_cost_partitionings(
             task_proxy, abstractions, costs, cp_function);
     return new MaxCostPartitioningHeuristic(
