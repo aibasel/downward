@@ -115,17 +115,21 @@ static Heuristic *get_max_cp_heuristic(
     vector<int> costs = task_properties::get_operator_costs(task_proxy);
     Abstractions abstractions = generate_abstractions(
         task, opts.get_list<shared_ptr<AbstractionGenerator>>("abstraction_generators"));
+    std::vector<CostPartitionedHeuristic> cp_heuristics =
+        get_cp_collection_generator_from_options(opts).get_cost_partitionings(
+            task_proxy, abstractions, costs, cp_function);
     return new MaxCostPartitioningHeuristic(
         opts,
         move(abstractions),
-        get_cp_collection_generator_from_options(opts).get_cost_partitionings(
-            task_proxy, abstractions, costs, cp_function));
+        move(cp_heuristics));
 }
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Saturated cost partitioning heuristic",
-        "");
+        "Compute the maximum over multiple saturated cost partitioning"
+        " heuristics using different orders. Depending on the options orders"
+        " may be greedy, optimized and/or diverse.");
     return get_max_cp_heuristic(parser, compute_saturated_cost_partitioning);
 }
 
