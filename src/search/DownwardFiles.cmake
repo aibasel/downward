@@ -608,7 +608,7 @@ fast_downward_plugin(
         cost_saturation/scoring_functions
         cost_saturation/types
         cost_saturation/utils
-    DEPENDS CEGAR PDBS
+    DEPENDS CEGAR PDBS PRIORITY_QUEUES SAMPLING TASK_PROPERTIES
 )
 
 fast_downward_plugin(
