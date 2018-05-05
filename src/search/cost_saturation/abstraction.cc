@@ -21,7 +21,7 @@ pair<vector<int>, vector<int>> Abstraction::compute_goal_distances_and_saturated
     vector<int> h_values = compute_goal_distances(costs);
     int num_operators = costs.size();
     vector<int> saturated_costs = compute_saturated_costs(
-        h_values, num_operators, true);
+        h_values, num_operators);
     return make_pair(move(h_values), move(saturated_costs));
 }
 

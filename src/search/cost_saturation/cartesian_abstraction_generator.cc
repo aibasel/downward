@@ -85,7 +85,8 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
         /* To make the abstraction refinement process deterministic, we don't
            set a time limit. */
         const double max_time = numeric_limits<double>::infinity();
-        // Has no effect since we compute the cost partitioning(s) later.
+        // Changing this value has no effect since we don't use
+        // cegar::Abstraction to compute saturated cost functions.
         const bool use_general_costs = true;
 
         cegar::Abstraction cartesian_abstraction(

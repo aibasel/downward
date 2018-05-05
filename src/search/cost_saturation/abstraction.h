@@ -25,8 +25,7 @@ class Abstraction {
 protected:
     virtual std::vector<int> compute_saturated_costs(
         const std::vector<int> &h_values,
-        int num_operators,
-        bool use_general_costs) const = 0;
+        int num_operators) const = 0;
 
     virtual void release_transition_system_memory() = 0;
 

@@ -52,8 +52,7 @@ class ExplicitAbstraction : public Abstraction {
 protected:
     virtual std::vector<int> compute_saturated_costs(
         const std::vector<int> &h_values,
-        int num_operators,
-        bool use_general_costs) const override;
+        int num_operators) const override;
 
     virtual void release_transition_system_memory() override;
 

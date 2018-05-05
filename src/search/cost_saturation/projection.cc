@@ -310,18 +310,13 @@ bool Projection::operator_induces_loop(const OperatorProxy &op) const {
 
 vector<int> Projection::compute_saturated_costs(
     const vector<int> &h_values,
-    int num_operators,
-    bool use_general_costs) const {
-    const int min_cost = use_general_costs ? -INF : 0;
-
-    vector<int> saturated_costs(num_operators, min_cost);
+    int num_operators) const {
+    vector<int> saturated_costs(num_operators, -INF);
 
     /* To prevent negative cost cycles we ensure that all operators
        inducing self-loops have non-negative costs. */
-    if (use_general_costs) {
-        for (int op_id : looping_operators) {
-            saturated_costs[op_id] = 0;
-        }
+    for (int op_id : looping_operators) {
+        saturated_costs[op_id] = 0;
     }
 
     // Reuse vector to save allocations.
