@@ -21,8 +21,10 @@ CartesianAbstractionGenerator::CartesianAbstractionGenerator(
     const options::Options &opts)
     : subtask_generators(
           opts.get_list<shared_ptr<cegar::SubtaskGenerator>>("subtasks")),
+      max_states(opts.get<int>("max_states")),
       max_transitions(opts.get<int>("max_transitions")),
       rng(utils::parse_rng_from_options(opts)),
+      num_states(0),
       num_transitions(0) {
 }
 
@@ -80,8 +82,6 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
     Abstractions &abstractions) {
     int remaining_subtasks = subtasks.size();
     for (const shared_ptr<AbstractTask> &subtask : subtasks) {
-        // TODO: Allow specifying this on the commandline.
-        const int max_states = INF;
         /* To make the abstraction refinement process deterministic, we don't
            set a time limit. */
         const double max_time = numeric_limits<double>::infinity();
@@ -91,13 +91,14 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
 
         cegar::Abstraction cartesian_abstraction(
             subtask,
-            max_states,
+            max(1, (max_states - num_states) / remaining_subtasks),
             max(1, (max_transitions - num_transitions) / remaining_subtasks),
             max_time,
             use_general_costs,
             cegar::PickSplit::MAX_REFINED,
             *rng);
 
+        num_states += cartesian_abstraction.get_num_states();
         num_transitions += cartesian_abstraction.get_num_non_looping_transitions();
         int init_h = cartesian_abstraction.get_h_value_of_initial_state();
         abstractions.push_back(convert_abstraction(cartesian_abstraction));
@@ -154,6 +155,11 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
         "subtasks",
         "subtask generators",
         "[landmarks(order=random, random_seed=0), goals(order=random, random_seed=0)]");
+    parser.add_option<int>(
+        "max_states",
+        "maximum sum of abstract states over all abstractions",
+        "infinity",
+        Bounds("0", "infinity"));
     parser.add_option<int>(
         "max_transitions",
         "maximum sum of state-changing transitions (excluding self-loops) over "
