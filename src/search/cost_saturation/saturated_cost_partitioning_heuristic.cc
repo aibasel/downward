@@ -1,5 +1,5 @@
 #include "abstraction.h"
-#include "cost_partitioned_heuristic.h"
+#include "cost_partitioning_heuristic.h"
 #include "cost_partitioning_collection_generator.h"
 #include "max_cost_partitioning_heuristic.h"
 #include "utils.h"
@@ -15,12 +15,12 @@
 using namespace std;
 
 namespace cost_saturation {
-static CostPartitionedHeuristic compute_saturated_cost_partitioning(
+static CostPartitioningHeuristic compute_saturated_cost_partitioning(
     const Abstractions &abstractions,
     const vector<int> &order,
     const vector<int> &costs) {
     assert(abstractions.size() == order.size());
-    CostPartitionedHeuristic cp_heuristic;
+    CostPartitioningHeuristic cp_heuristic;
     vector<int> remaining_costs = costs;
     for (int pos : order) {
         const Abstraction &abstraction = *abstractions[pos];
@@ -115,7 +115,7 @@ static Heuristic *get_max_cp_heuristic(
     vector<int> costs = task_properties::get_operator_costs(task_proxy);
     Abstractions abstractions = generate_abstractions(
         task, opts.get_list<shared_ptr<AbstractionGenerator>>("abstraction_generators"));
-    vector<CostPartitionedHeuristic> cp_heuristics =
+    vector<CostPartitioningHeuristic> cp_heuristics =
         get_cp_collection_generator_from_options(opts).get_cost_partitionings(
             task_proxy, abstractions, costs, cp_function);
     return new MaxCostPartitioningHeuristic(

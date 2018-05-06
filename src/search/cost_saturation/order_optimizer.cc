@@ -1,6 +1,6 @@
 #include "order_optimizer.h"
 
-#include "cost_partitioned_heuristic.h"
+#include "cost_partitioning_heuristic.h"
 
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
@@ -23,7 +23,7 @@ static bool search_improving_successor(
     const vector<int> &costs,
     const vector<int> &abstract_state_ids,
     vector<int> &incumbent_order,
-    CostPartitionedHeuristic &incumbent_cp,
+    CostPartitioningHeuristic &incumbent_cp,
     int &incumbent_h_value,
     bool verbose) {
     int num_abstractions = abstractions.size();
@@ -31,7 +31,7 @@ static bool search_improving_successor(
         for (int j = i + 1; j < num_abstractions && !timer.is_expired(); ++j) {
             swap(incumbent_order[i], incumbent_order[j]);
 
-            CostPartitionedHeuristic neighbor_cp =
+            CostPartitioningHeuristic neighbor_cp =
                 cp_function(abstractions, incumbent_order, costs);
 
             int h = neighbor_cp.compute_heuristic(abstract_state_ids);
@@ -59,7 +59,7 @@ void do_hill_climbing(
     const vector<int> &costs,
     const vector<int> &abstract_state_ids,
     vector<int> &incumbent_order,
-    CostPartitionedHeuristic &incumbent_cp,
+    CostPartitioningHeuristic &incumbent_cp,
     int incumbent_h_value,
     bool verbose) {
     if (verbose) {

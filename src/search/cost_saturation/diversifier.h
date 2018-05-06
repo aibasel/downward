@@ -4,7 +4,7 @@
 #include "types.h"
 
 namespace cost_saturation {
-class CostPartitionedHeuristic;
+class CostPartitioningHeuristic;
 
 class Diversifier {
     std::vector<std::vector<int>> abstract_state_ids_by_sample;
@@ -15,7 +15,7 @@ public:
 
     /* Return true iff the cost-partitioned heuristic has a higher heuristic
        value than all previously seen heuristics for at least one sample. */
-    bool is_diverse(const CostPartitionedHeuristic &cp_heuristic);
+    bool is_diverse(const CostPartitioningHeuristic &cp_heuristic);
 };
 }
 

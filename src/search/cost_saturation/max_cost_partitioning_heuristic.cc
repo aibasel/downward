@@ -1,7 +1,7 @@
 #include "max_cost_partitioning_heuristic.h"
 
 #include "abstraction.h"
-#include "cost_partitioned_heuristic.h"
+#include "cost_partitioning_heuristic.h"
 #include "utils.h"
 
 #include "../option_parser.h"
@@ -12,10 +12,10 @@ using namespace std;
 
 namespace cost_saturation {
 static int compute_max_h(
-    const vector<CostPartitionedHeuristic> &cp_heuristics,
+    const vector<CostPartitioningHeuristic> &cp_heuristics,
     const vector<int> &abstract_state_ids) {
     int max_h = 0;
-    for (const CostPartitionedHeuristic &cp_heuristic : cp_heuristics) {
+    for (const CostPartitioningHeuristic &cp_heuristic : cp_heuristics) {
         int sum_h = cp_heuristic.compute_heuristic(abstract_state_ids);
         if (sum_h == INF) {
             return INF;
@@ -28,7 +28,7 @@ static int compute_max_h(
 MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     const Options &opts,
     Abstractions &&abstractions_,
-    vector<CostPartitionedHeuristic> &&cp_heuristics_)
+    vector<CostPartitioningHeuristic> &&cp_heuristics_)
     : Heuristic(opts),
       abstractions(move(abstractions_)),
       cp_heuristics(move(cp_heuristics_)) {

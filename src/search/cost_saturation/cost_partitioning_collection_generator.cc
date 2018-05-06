@@ -1,6 +1,6 @@
 #include "cost_partitioning_collection_generator.h"
 
-#include "cost_partitioned_heuristic.h"
+#include "cost_partitioning_heuristic.h"
 #include "diversifier.h"
 #include "order_generator.h"
 #include "order_optimizer.h"
@@ -60,7 +60,7 @@ CostPartitioningCollectionGenerator::CostPartitioningCollectionGenerator(
 CostPartitioningCollectionGenerator::~CostPartitioningCollectionGenerator() {
 }
 
-vector<CostPartitionedHeuristic>
+vector<CostPartitioningHeuristic>
 CostPartitioningCollectionGenerator::get_cost_partitionings(
     const TaskProxy &task_proxy,
     const Abstractions &abstractions,
@@ -72,7 +72,7 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
 
     // If any abstraction detects unsolvability in the initial state, we only
     // need a single order (any order suffices).
-    CostPartitionedHeuristic default_order_cp = cp_function(
+    CostPartitioningHeuristic default_order_cp = cp_function(
         abstractions, get_default_order(abstractions.size()), costs);
     if (default_order_cp.compute_heuristic(abstract_state_ids_for_init) == INF) {
         return {
@@ -82,10 +82,10 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
 
     cp_generator->initialize(abstractions, costs);
 
-    // Compute cost-partitioned heuristic for sampling.
+    // Compute cost partitioning heuristic for sampling.
     Order order = cp_generator->compute_order_for_state(
         abstractions, costs, abstract_state_ids_for_init, false);
-    CostPartitionedHeuristic cp_for_sampling = cp_function(
+    CostPartitioningHeuristic cp_for_sampling = cp_function(
         abstractions, order, costs);
     function<int (const State &state)> sampling_heuristic =
         [&abstractions, &cp_for_sampling](const State &state) {
@@ -108,7 +108,7 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
                 task_proxy, abstractions, sampler, num_samples));
     }
 
-    vector<CostPartitionedHeuristic> cp_heuristics;
+    vector<CostPartitioningHeuristic> cp_heuristics;
     utils::CountdownTimer timer(max_time);
     int evaluated_orders = 0;
     utils::Log() << "Start computing cost partitionings" << endl;
@@ -130,7 +130,7 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
         // Find order and compute cost partitioning for it.
         Order order = cp_generator->compute_order_for_state(
             abstractions, costs, abstract_state_ids, verbose);
-        CostPartitionedHeuristic cp_heuristic = cp_function(
+        CostPartitioningHeuristic cp_heuristic = cp_function(
             abstractions, order, costs);
 
         // Optimize order.

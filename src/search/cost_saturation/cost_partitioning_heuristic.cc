@@ -1,4 +1,4 @@
-#include "cost_partitioned_heuristic.h"
+#include "cost_partitioning_heuristic.h"
 
 #include "../utils/collections.h"
 
@@ -7,14 +7,14 @@
 using namespace std;
 
 namespace cost_saturation {
-void CostPartitionedHeuristic::add_lookup_table_if_nonzero(
+void CostPartitioningHeuristic::add_lookup_table_if_nonzero(
     int heuristic_id, vector<int> h_values) {
     if (any_of(h_values.begin(), h_values.end(), [](int h) {return h != 0; })) {
         lookup_tables.emplace_back(heuristic_id, move(h_values));
     }
 }
 
-int CostPartitionedHeuristic::compute_heuristic(
+int CostPartitioningHeuristic::compute_heuristic(
     const vector<int> &abstract_state_ids) const {
     int sum_h = 0;
     for (const LookupTable &lookup_table : lookup_tables) {
@@ -32,11 +32,11 @@ int CostPartitionedHeuristic::compute_heuristic(
     return sum_h;
 }
 
-int CostPartitionedHeuristic::get_num_lookup_tables() const {
+int CostPartitioningHeuristic::get_num_lookup_tables() const {
     return lookup_tables.size();
 }
 
-void CostPartitionedHeuristic::mark_useful_heuristics(vector<bool> &useful_heuristics) const {
+void CostPartitioningHeuristic::mark_useful_heuristics(vector<bool> &useful_heuristics) const {
     for (const auto &lookup_table : lookup_tables) {
         assert(utils::in_bounds(lookup_table.heuristic_index, useful_heuristics));
         useful_heuristics[lookup_table.heuristic_index] = true;

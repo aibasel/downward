@@ -1,6 +1,6 @@
 #include "diversifier.h"
 
-#include "cost_partitioned_heuristic.h"
+#include "cost_partitioning_heuristic.h"
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
@@ -16,7 +16,7 @@ Diversifier::Diversifier(vector<vector<int>> &&abstract_state_ids_by_sample)
       portfolio_h_values(this->abstract_state_ids_by_sample.size(), -1) {
 }
 
-bool Diversifier::is_diverse(const CostPartitionedHeuristic &cp_heuristic) {
+bool Diversifier::is_diverse(const CostPartitioningHeuristic &cp_heuristic) {
     bool cp_improves_portfolio = false;
     int num_samples = abstract_state_ids_by_sample.size();
     for (int sample_id = 0; sample_id < num_samples; ++sample_id) {

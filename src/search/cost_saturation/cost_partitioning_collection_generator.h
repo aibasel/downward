@@ -13,7 +13,7 @@ class RandomNumberGenerator;
 }
 
 namespace cost_saturation {
-class CostPartitionedHeuristic;
+class CostPartitioningHeuristic;
 class OrderGenerator;
 
 class CostPartitioningCollectionGenerator {
@@ -36,7 +36,7 @@ public:
         const std::shared_ptr<utils::RandomNumberGenerator> &rng);
     ~CostPartitioningCollectionGenerator();
 
-    std::vector<CostPartitionedHeuristic> get_cost_partitionings(
+    std::vector<CostPartitioningHeuristic> get_cost_partitionings(
         const TaskProxy &task_proxy,
         const Abstractions &abstractions,
         const std::vector<int> &costs,

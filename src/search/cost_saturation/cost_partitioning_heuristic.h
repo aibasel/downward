@@ -1,12 +1,12 @@
-#ifndef COST_SATURATION_COST_PARTITIONED_HEURISTIC_H
-#define COST_SATURATION_COST_PARTITIONED_HEURISTIC_H
+#ifndef COST_SATURATION_COST_PARTITIONING_HEURISTIC_H
+#define COST_SATURATION_COST_PARTITIONING_HEURISTIC_H
 
 #include "types.h"
 
 #include <vector>
 
 namespace cost_saturation {
-class CostPartitionedHeuristic {
+class CostPartitioningHeuristic {
     struct LookupTable {
         const int heuristic_index;
         /* h_values[i] is the goal distance of abstract state i under the cost

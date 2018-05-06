@@ -12,11 +12,11 @@ class Options;
 }
 
 namespace cost_saturation {
-class CostPartitionedHeuristic;
+class CostPartitioningHeuristic;
 
 class MaxCostPartitioningHeuristic : public Heuristic {
     Abstractions abstractions;
-    const std::vector<CostPartitionedHeuristic> cp_heuristics;
+    const std::vector<CostPartitioningHeuristic> cp_heuristics;
 
     int compute_heuristic(const State &state) const;
 
@@ -27,7 +27,7 @@ public:
     MaxCostPartitioningHeuristic(
         const options::Options &opts,
         Abstractions &&abstractions,
-        std::vector<CostPartitionedHeuristic> &&cp_heuristics);
+        std::vector<CostPartitioningHeuristic> &&cp_heuristics);
     virtual ~MaxCostPartitioningHeuristic() override;
 };
 }
