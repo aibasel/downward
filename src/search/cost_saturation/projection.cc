@@ -57,6 +57,10 @@ Projection::Projection(
         match_tree->insert(op);
     }
 
+    for (pdbs::AbstractOperator &op : abstract_operators) {
+        op.release_memory();
+    }
+
     goal_states = compute_goal_states();
 }
 
