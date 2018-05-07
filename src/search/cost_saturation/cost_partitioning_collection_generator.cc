@@ -66,6 +66,7 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
     const Abstractions &abstractions,
     const vector<int> &costs,
     CPFunction cp_function) const {
+    utils::Log log;
     State initial_state = task_proxy.get_initial_state();
     vector<int> abstract_state_ids_for_init = get_abstract_state_ids(
         abstractions, initial_state);
@@ -111,7 +112,7 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
     vector<CostPartitioningHeuristic> cp_heuristics;
     utils::CountdownTimer timer(max_time);
     int evaluated_orders = 0;
-    utils::Log() << "Start computing cost partitionings" << endl;
+    log << "Start computing cost partitionings" << endl;
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
            !timer.is_expired()) {
         // Use initial state as first sample.
@@ -141,24 +142,29 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
                 cp_function, timer, abstractions, costs, abstract_state_ids, order,
                 cp_heuristic, incumbent_h_value, verbose);
             if (verbose) {
-                utils::Log() << "Time for optimizing order: "
-                             << timer.get_elapsed_time() << endl;
-                utils::Log() << "Time for optimizing order has expired: "
-                             << timer.is_expired() << endl;
+                log << "Time for optimizing order: " << timer.get_elapsed_time()
+                    << endl;
             }
         }
 
         // If diversify=true, only add order if it improves upon previously
         // added orders.
-        if (!diversify || (diversifier->is_diverse(cp_heuristic))) {
+        if (!diversify || diversifier->is_diverse(cp_heuristic)) {
             cp_heuristics.push_back(move(cp_heuristic));
+            if (diversify) {
+                log << "Sum over max h values for " << num_samples
+                    << " samples after " << timer.get_elapsed_time()
+                    << " of diversification: "
+                    << diversifier->compute_sum_portfolio_h_value_for_samples()
+                    << endl;
+            }
         }
 
         ++evaluated_orders;
     }
-    utils::Log() << "Cost partitionings: " << cp_heuristics.size() << endl;
-    utils::Log() << "Time for computing cost partitionings: "
-                 << timer.get_elapsed_time() << endl;
+    log << "Cost partitionings: " << cp_heuristics.size() << endl;
+    log << "Time for computing cost partitionings: " << timer.get_elapsed_time()
+        << endl;
     return cp_heuristics;
 }
 }

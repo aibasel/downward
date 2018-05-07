@@ -3,7 +3,6 @@
 #include "cost_partitioning_heuristic.h"
 
 #include "../utils/collections.h"
-#include "../utils/logging.h"
 
 #include <cassert>
 
@@ -29,14 +28,10 @@ bool Diversifier::is_diverse(const CostPartitioningHeuristic &cp_heuristic) {
             portfolio_h_value = cp_h_value;
         }
     }
-
-    // Statistics.
-    if (cp_improves_portfolio) {
-        int sum_portfolio_h = accumulate(
-            portfolio_h_values.begin(), portfolio_h_values.end(), 0);
-        utils::Log() << "Portfolio sum h value: " << sum_portfolio_h << endl;
-    }
-
     return cp_improves_portfolio;
+}
+
+int Diversifier::compute_sum_portfolio_h_value_for_samples() const {
+    return accumulate(portfolio_h_values.begin(), portfolio_h_values.end(), 0);
 }
 }

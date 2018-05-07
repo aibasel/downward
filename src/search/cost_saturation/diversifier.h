@@ -16,6 +16,8 @@ public:
     /* Return true iff the cost-partitioned heuristic has a higher heuristic
        value than all previously seen heuristics for at least one sample. */
     bool is_diverse(const CostPartitioningHeuristic &cp_heuristic);
+
+    int compute_sum_portfolio_h_value_for_samples() const;
 };
 }
 
