@@ -37,7 +37,7 @@ public:
         return root.get();
     }
 
-    int get_local_state_id(const State &state) const;
+    int get_abstract_state_id(const State &state) const;
 };
 
 

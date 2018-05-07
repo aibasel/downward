@@ -66,7 +66,7 @@ static unique_ptr<Abstraction> convert_abstraction(
     AbstractionFunction state_map =
         [refinement_hierarchy](const State &state) {
             assert(refinement_hierarchy);
-            return refinement_hierarchy->get_local_state_id(state);
+            return refinement_hierarchy->get_abstract_state_id(state);
         };
 
     return utils::make_unique_ptr<ExplicitAbstraction>(
