@@ -5,6 +5,7 @@
 
 #include "../task_proxy.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -28,7 +29,7 @@ class AbstractOperator {
       Preconditions for the regression search, corresponds to normal
       effects and prevail of concrete operators.
     */
-    std::vector<FactPair> regression_preconditions;
+    std::unique_ptr<std::vector<FactPair>> regression_preconditions;
 
     /*
       Effect of the operator during regression search on a given
@@ -50,6 +51,8 @@ public:
                      int concrete_operator_id = -1);
     ~AbstractOperator();
 
+    AbstractOperator(AbstractOperator &&) = default;
+
     int get_concrete_operator_id() const;
 
     /*
@@ -57,7 +60,7 @@ public:
       the abstract operator in a regression search
     */
     const std::vector<FactPair> &get_regression_preconditions() const {
-        return regression_preconditions;
+        return *regression_preconditions;
     }
 
     /*
