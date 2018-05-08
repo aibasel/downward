@@ -309,7 +309,7 @@ void Abstraction::set_state_ids() {
     }
 }
 
-vector<int> Abstraction::get_looping_operators() const {
+vector<int> Abstraction::compute_looping_operators() const {
     int num_operators = task_proxy.get_operators().size();
 
     vector<bool> operator_induces_self_loop(num_operators, false);

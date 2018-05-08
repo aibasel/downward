@@ -60,6 +60,7 @@ public:
       the abstract operator in a regression search
     */
     const std::vector<FactPair> &get_regression_preconditions() const {
+        assert(regression_preconditions);
         return *regression_preconditions;
     }
 
@@ -75,7 +76,7 @@ public:
     */
     int get_cost() const {return cost; }
 
-    void release_memory();
+    void remove_regression_preconditions();
 
     void dump(const Pattern &pattern,
               const VariablesProxy &variables) const;

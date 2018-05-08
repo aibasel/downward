@@ -52,7 +52,7 @@ static unique_ptr<Abstraction> convert_abstraction(
         succesors.shrink_to_fit();
     }
 
-    vector<int> looping_operators = cartesian_abstraction.get_looping_operators();
+    vector<int> looping_operators = cartesian_abstraction.compute_looping_operators();
 
     vector<int> goal_states;
     goal_states.reserve(cartesian_abstraction.get_goals().size());

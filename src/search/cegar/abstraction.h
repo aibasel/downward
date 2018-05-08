@@ -151,7 +151,7 @@ public:
 
     int get_h_value_of_initial_state() const;
 
-    std::vector<int> get_looping_operators() const;
+    std::vector<int> compute_looping_operators() const;
 };
 }
 

@@ -58,7 +58,7 @@ Projection::Projection(
     }
 
     for (pdbs::AbstractOperator &op : abstract_operators) {
-        op.release_memory();
+        op.remove_regression_preconditions();
     }
 
     goal_states = compute_goal_states();
