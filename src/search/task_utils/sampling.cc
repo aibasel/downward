@@ -13,7 +13,7 @@ using namespace std;
 
 
 namespace sampling {
-State sample_state_with_random_walk(
+static State sample_state_with_random_walk(
     const TaskProxy &task_proxy,
     const State &initial_state,
     const successor_generator::SuccessorGenerator &successor_generator,
