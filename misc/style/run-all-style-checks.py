@@ -10,7 +10,6 @@ The file bitbucket-pipelines.yml shows how to install the dependencies.
 from __future__ import print_function
 
 import glob
-import json
 import os
 import pipes
 import re
@@ -101,42 +100,15 @@ def check_cplusplus_style():
     return returncode == 0
 
 
-def get_src_files(path, extensions, ignore_dirs=None):
-    ignore_dirs = ignore_dirs or []
-    src_files = []
-    for root, dirs, files in os.walk(path):
-        for ignore_dir in ignore_dirs:
-            if ignore_dir in dirs:
-                dirs.remove(ignore_dir)
-        src_files.extend([
-            os.path.join(root, file)
-            for file in files if file.endswith(extensions)])
-    return src_files
-
-
 def check_search_code_with_clang_tidy():
     # clang-tidy needs the CMake files.
     build_dir = os.path.join(REPO, "builds", "clang-tidy")
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
     with open(os.devnull, 'w') as devnull:
-        subprocess.check_call(["cmake", "../../src"], cwd=build_dir, stdout=devnull)
-
-    # Create custom compilation database file. CMake outputs part of this information
-    # when passing -DCMAKE_EXPORT_COMPILE_COMMANDS=ON, but the resulting file
-    # contains no header files.
-    search_dir = os.path.join(REPO, "src/search")
-    src_files = get_src_files(search_dir, (".h", ".cc"))
-    compile_commands = [{
-        "directory": os.path.join(build_dir, "search"),
-        "command": "g++ -I{search_dir}/ext -std=c++11 -c {src_file}".format(**locals()),
-        "file": src_file}
-        # TODO: option_parser.h and token_parser.h are too tangled to be checked by clang-tidy.
-        for src_file in src_files if not src_file.endswith(("option_parser.h", "token_parser.h"))
-    ]
-    with open(os.path.join(build_dir, "compile_commands.json"), "w") as f:
-        json.dump(compile_commands, f, indent=2)
-
+        subprocess.check_call(
+            ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "../../src"],
+            cwd=build_dir, stdout=devnull)
     # See https://clang.llvm.org/extra/clang-tidy/checks/list.html for
     # an explanation of the checks. We comment out inactive checks of some
     # categories instead of deleting them to see which additional checks
