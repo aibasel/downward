@@ -15,27 +15,28 @@ StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
 
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
-    compute_interference_relation();
+    interference_relation.resize(num_operators);
+    interference_relation_computed.resize(num_operators, false);
     cout << "pruning method: stubborn sets simple" << endl;
 }
 
-
-void StubbornSetsSimple::compute_interference_relation() {
-    interference_relation.resize(num_operators);
-
+const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {
     /*
        TODO: as interference is symmetric, we only need to compute the
        relation for operators (o1, o2) with (o1 < o2) and add a lookup
        method that looks up (i, j) if i < j and (j, i) otherwise.
     */
-    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
-        vector<int> &interfere_op1 = interference_relation[op1_no];
+    vector<int> &interfere_op1 = interference_relation[op1_no];
+    if (!interference_relation_computed[op1_no]) {
         for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
             if (op1_no != op2_no && interfere(op1_no, op2_no)) {
                 interfere_op1.push_back(op2_no);
             }
         }
+        interfere_op1.shrink_to_fit();
+        interference_relation_computed[op1_no] = true;
     }
+    return interfere_op1;
 }
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
@@ -47,7 +48,7 @@ void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
 
 // Add all operators that interfere with op.
 void StubbornSetsSimple::add_interfering(int op_no) {
-    for (int interferer_no : interference_relation[op_no]) {
+    for (int interferer_no : get_interfering_operators(op_no)) {
         mark_as_stubborn(interferer_no);
     }
 }
