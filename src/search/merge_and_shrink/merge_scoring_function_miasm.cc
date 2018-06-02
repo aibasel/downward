@@ -59,12 +59,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         /*
           Compute the score as the ratio of alive states of the product
           compared to the number of states of the full product.
-
-          HACK! The version used in the paper accidentally used the sizes of
-          the non-shrunk transition systems for computing the ratio of
-          pruned states in the product. We emulate this behavior here.
         */
-        num_states = fts.get_ts(index1).get_size() * fts.get_ts(index2).get_size();
         double score = static_cast<double>(alive_states_count) /
                        static_cast<double>(num_states);
         scores.push_back(score);
