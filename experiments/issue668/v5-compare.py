@@ -79,7 +79,7 @@ exp.add_report(ComparativeReport(attributes=attributes,algorithm_pairs=[
     ('%s-sbf-miasm-rnd-otn-pba-b50k' % 'issue668-v5-hack','%s-sbf-miasm-rnd-otn-pba-b50k' % 'issue668-v5-clean'),
     ('%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v5-hack','%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v5-clean'),
     ('%s-sbf-miasm-rnd-rnd-pba-b50k' % 'issue668-v5-hack','%s-sbf-miasm-rnd-rnd-pba-b50k' % 'issue668-v5-clean'),
-]),name='issue668-v5-hack-v4-compare-pba.html')
+]),outfile='issue668-v5-hack-v4-compare-pba.html')
 exp.add_report(ComparativeReport(attributes=attributes,algorithm_pairs=[
     ('%s-sbf-miasm-rl-nto-abp-b50k' % 'issue668-v5-hack','%s-sbf-miasm-rl-nto-abp-b50k' % 'issue668-v5-clean'),
     ('%s-sbf-miasm-l-nto-abp-b50k' % 'issue668-v5-hack','%s-sbf-miasm-l-nto-abp-b50k' % 'issue668-v5-clean'),
@@ -88,7 +88,7 @@ exp.add_report(ComparativeReport(attributes=attributes,algorithm_pairs=[
     ('%s-sbf-miasm-l-nto-pba-b50k' % 'issue668-v5-hack','%s-sbf-miasm-l-nto-pba-b50k' % 'issue668-v5-clean'),
     ('%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v5-hack','%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v5-clean'),
     ('%s-sbf-miasm-allrnd-b50k' % 'issue668-v5-hack','%s-sbf-miasm-allrnd-b50k' % 'issue668-v5-clean'),
-]),name='issue668-v5-hack-v4-compare-paper.html')
+]),outfile='issue668-v5-hack-v4-compare-paper.html')
 
 exp.run_steps()
 
