@@ -102,7 +102,7 @@ exp.add_report(AbsoluteReport(attributes=attributes,filter_algorithm=[
     '%s-sbf-miasm-rnd-otn-pba-b50k' % 'issue668-v5-hack',
     '%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v5-hack',
     '%s-sbf-miasm-rnd-rnd-pba-b50k' % 'issue668-v5-hack',
-]),name='issue668-v5-hack-pba.html')
+]),outfile='issue668-v5-hack-pba.html')
 exp.add_report(AbsoluteReport(attributes=attributes,filter_algorithm=[
     '%s-sbf-miasm-rl-nto-abp-b50k' % 'issue668-v5-hack',
     '%s-sbf-miasm-l-nto-abp-b50k' % 'issue668-v5-hack',
@@ -111,7 +111,7 @@ exp.add_report(AbsoluteReport(attributes=attributes,filter_algorithm=[
     '%s-sbf-miasm-l-nto-pba-b50k' % 'issue668-v5-hack',
     '%s-sbf-miasm-rnd-nto-pba-b50k' % 'issue668-v5-hack',
     '%s-sbf-miasm-allrnd-b50k' % 'issue668-v5-hack',
-]),name='issue668-v5-hack-paper.html')
+]),outfile='issue668-v5-hack-paper.html')
 
 exp.run_steps()
 
