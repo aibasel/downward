@@ -14,10 +14,10 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
 }
 
 LabelEquivalenceRelation::LabelEquivalenceRelation(
-     const LabelEquivalenceRelation &other)
-     : labels(other.labels),
-       grouped_labels(other.grouped_labels),
-       label_to_positions(other.label_to_positions) {
+    const LabelEquivalenceRelation &other)
+    : labels(other.labels),
+      grouped_labels(other.grouped_labels),
+      label_to_positions(other.label_to_positions) {
 }
 
 void LabelEquivalenceRelation::add_label_to_group(int group_id,

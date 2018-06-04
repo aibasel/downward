@@ -11,7 +11,6 @@
 using namespace std;
 
 namespace merge_and_shrink {
-
 /*
   Compute a state equivalence relation for the given transition system with
   the given shrink strategy, respecting the given size limit new_size. If the
