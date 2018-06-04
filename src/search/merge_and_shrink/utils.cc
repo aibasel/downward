@@ -67,6 +67,10 @@ bool shrink_factor(
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity) {
+    /*
+      TODO: think about factoring out common logic of this function and the
+      function copy_and_shrink_ts in merge_scoring_function_miasm_utils.cc.
+    */
     const TransitionSystem &ts = fts.get_ts(index);
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {

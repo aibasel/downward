@@ -24,6 +24,10 @@ unique_ptr<TransitionSystem> copy_and_shrink_ts(
     const ShrinkStrategy &shrink_strategy,
     int new_size,
     Verbosity verbosity) {
+    /*
+      TODO: think about factoring out common logic of this function and the
+      function shrink_factor in utils.cc
+    */
     StateEquivalenceRelation equivalence_relation =
         shrink_strategy.compute_equivalence_relation(ts, distances, new_size);
     // TODO: We currently violate this; see issue250
