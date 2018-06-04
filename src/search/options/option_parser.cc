@@ -267,8 +267,8 @@ static ParseTree generate_parse_tree(const string &config) {
     ParseTree::sibling_iterator pseudoroot =
         tree.insert(tree.begin(), ParseNode("pseudoroot", ""));
     ParseTree::sibling_iterator cur_node = pseudoroot;
-    string buffer = "";
-    string key = "";
+    string buffer;
+    string key;
     for (size_t i = 0; i < config.size(); ++i) {
         char next = config.at(i);
         if ((next == '(' || next == ')' || next == ',') && !buffer.empty()) {
@@ -419,7 +419,7 @@ void OptionParser::add_enum_option(
 Options OptionParser::parse() {
     /* Check if there were any arguments with invalid keywords,
        or positional arguments after keyword arguments. */
-    string last_key = "";
+    string last_key;
     for (auto tree_it = first_child_of_root(parse_tree);
          tree_it != end_of_roots_children(parse_tree);
          ++tree_it) {
