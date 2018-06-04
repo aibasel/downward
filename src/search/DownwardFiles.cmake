@@ -601,9 +601,9 @@ fast_downward_plugin(
         merge_and_shrink/merge_scoring_function_dfp
         merge_and_shrink/merge_scoring_function_goal_relevance
         merge_and_shrink/merge_scoring_function_miasm
+        merge_and_shrink/merge_scoring_function_miasm_utils
         merge_and_shrink/merge_scoring_function_single_random
         merge_and_shrink/merge_scoring_function_total_order
-        merge_and_shrink/merge_scoring_function_utils
         merge_and_shrink/merge_selector
         merge_and_shrink/merge_selector_score_based_filtering
         merge_and_shrink/merge_strategy
