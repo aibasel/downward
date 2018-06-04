@@ -27,6 +27,9 @@ EagerSearch::EagerSearch(const Options &opts)
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       lazy_evaluator(opts.get<Evaluator *>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+    if(lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+        utils::exit_with(utils::ExitCode::INPUT_ERROR);
+    }
 }
 
 void EagerSearch::initialize() {
@@ -249,16 +252,19 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             if (node.is_dead_end())
                 continue;
 
-            /*
-              We can implicitly pass calculate_preferred=false here
-              since preferred operators are computed when the state is expanded.
-            */
-            EvaluationContext eval_context(
-                node.get_state(), node.get_g(), false, &statistics);
-            if(eval_context.reevaluate_and_check_if_changed(lazy_evaluator)
-                    && !open_list->is_dead_end(eval_context)) {
-                open_list->insert(eval_context, node.get_state_id());
-                continue;
+            if (lazy_evaluator->is_estimate_cached(s)) {
+                int old_h = lazy_evaluator->get_cached_estimate(s);
+                /*
+                  We can implicitly pass calculate_preferred=false here
+                  since preferred operators are computed when the state is expanded.
+                */
+                EvaluationContext eval_context(
+                    s, node.get_g(), false, &statistics);
+                int new_h = eval_context.get_heuristic_value_or_infinity(lazy_evaluator);
+                if(new_h != old_h) {
+                    open_list->insert(eval_context, id);
+                    continue;
+                }
             }
         }
 

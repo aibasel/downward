@@ -85,19 +85,9 @@ public:
     bool is_used_for_boosting() const;
     bool is_used_for_counting_evaluations() const;
 
-    /*
-      The first boolean indicates whether the state was reevaluated. It will not
-      be reevaluated if we do not cache estimates or if the current estimate is
-      not "dirty".
-      The second boolean indicates whether the heuristic value has changed.
-
-      TODO: currently this method only makes sense for heuristics, since Evaluators don't
-      have caching or a "dirty" flag.
-
-      TODO: I'm not particulary happy with the pair of bools, but the statistics
-      needs to know if the heuristic has in fact been evaluated again.
-    */
-    virtual std::pair<bool,bool> reevaluate_and_check_if_changed(EvaluationContext &eval_context);
+    virtual bool does_cache_estimates() const;
+    virtual bool is_estimate_cached(const GlobalState &state) const;
+    virtual int get_cached_estimate(const GlobalState &state) const;
 };
 
 #endif
