@@ -14,7 +14,12 @@ from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import ComparativeReport
 from downward.reports.scatter import ScatterPlotReport
 
-from relativescatter import RelativeScatterPlotReport
+try:
+    from relativescatter import RelativeScatterPlotReport
+    matplotlib = True
+except ImportError:
+    print 'matplotlib not availabe, scatter plots not available'
+    matplotlib = False
 
 
 def parse_args():
@@ -129,10 +134,7 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return (
-        "cluster" in node or
-        node.startswith("gkigrid") or
-        node in ["habakuk", "turtur"])
+    return node.endswith(".scicore.unibas.ch") or node.endswith(".cluster.bc2.ch")
 
 
 def is_test_run():
@@ -162,7 +164,7 @@ class IssueConfig(object):
 class IssueExperiment(FastDownwardExperiment):
     """Subclass of FastDownwardExperiment with some convenience features."""
 
-    DEFAULT_TEST_SUITE = ["gripper:prob01.pddl"]
+    DEFAULT_TEST_SUITE = ["depot:p01.pddl", "gripper:prob01.pddl"]
 
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -350,36 +352,37 @@ class IssueExperiment(FastDownwardExperiment):
             exp.add_scatter_plot_step(attributes=["expansions"])
 
         """
-        if relative:
-            report_class = RelativeScatterPlotReport
-            scatter_dir = os.path.join(self.eval_dir, "scatter-relative")
-            step_name = "make-relative-scatter-plots"
-        else:
-            report_class = ScatterPlotReport
-            scatter_dir = os.path.join(self.eval_dir, "scatter-absolute")
-            step_name = "make-absolute-scatter-plots"
-        if attributes is None:
-            attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
+        if matplotlib:
+            if relative:
+                report_class = RelativeScatterPlotReport
+                scatter_dir = os.path.join(self.eval_dir, "scatter-relative")
+                step_name = "make-relative-scatter-plots"
+            else:
+                report_class = ScatterPlotReport
+                scatter_dir = os.path.join(self.eval_dir, "scatter-absolute")
+                step_name = "make-absolute-scatter-plots"
+            if attributes is None:
+                attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
 
-        def make_scatter_plot(config_nick, rev1, rev2, attribute):
-            name = "-".join([self.name, rev1, rev2, attribute, config_nick])
-            print "Make scatter plot for", name
-            algo1 = "{}-{}".format(rev1, config_nick)
-            algo2 = "{}-{}".format(rev2, config_nick)
-            report = report_class(
-                filter_config=[algo1, algo2],
-                attributes=[attribute],
-                get_category=lambda run1, run2: run1["domain"],
-                legend_location=(1.3, 0.5))
-            report(
-                self.eval_dir,
-                os.path.join(scatter_dir, rev1 + "-" + rev2, name))
+            def make_scatter_plot(config_nick, rev1, rev2, attribute):
+                name = "-".join([self.name, rev1, rev2, attribute, config_nick])
+                print "Make scatter plot for", name
+                algo1 = "{}-{}".format(rev1, config_nick)
+                algo2 = "{}-{}".format(rev2, config_nick)
+                report = report_class(
+                    filter_config=[algo1, algo2],
+                    attributes=[attribute],
+                    get_category=lambda run1, run2: run1["domain"],
+                    legend_location=(1.3, 0.5))
+                report(
+                    self.eval_dir,
+                    os.path.join(scatter_dir, rev1 + "-" + rev2, name))
 
-        def make_scatter_plots():
-            for config in self._configs:
-                for rev1, rev2 in itertools.combinations(self._revisions, 2):
-                    for attribute in self.get_supported_attributes(
-                            config.nick, attributes):
-                        make_scatter_plot(config.nick, rev1, rev2, attribute)
+            def make_scatter_plots():
+                for config in self._configs:
+                    for rev1, rev2 in itertools.combinations(self._revisions, 2):
+                        for attribute in self.get_supported_attributes(
+                                config.nick, attributes):
+                            make_scatter_plot(config.nick, rev1, rev2, attribute)
 
-        self.add_step(step_name, make_scatter_plots)
+            self.add_step(step_name, make_scatter_plots)
