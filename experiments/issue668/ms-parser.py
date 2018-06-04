@@ -5,8 +5,8 @@ from lab.parser import Parser
 parser = Parser()
 parser.add_pattern('ms_final_size', 'Final transition system size: (\d+)', required=False, type=int)
 parser.add_pattern('ms_construction_time', 'Done initializing merge-and-shrink heuristic \[(.+)s\]', required=False, type=float)
+parser.add_pattern('ms_atomic_construction_time', 't=(.+)s \(after computation of atomic transition systems\)', required=False, type=float)
 parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink computation: (\d+) KB', required=False, type=int)
-parser.add_pattern('actual_search_time', 'Actual search time: (.+)s \[t=.+s\]', required=False, type=float)
 
 def check_ms_constructed(content, props):
     ms_construction_time = props.get('ms_construction_time')
