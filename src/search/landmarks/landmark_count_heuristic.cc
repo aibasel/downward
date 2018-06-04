@@ -36,7 +36,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       use_preferred_operators(opts.get<bool>("pref")),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
-          opts.get<LandmarkFactory *>("lm_factory")->supports_conditional_effects()),
+          opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
       admissible(opts.get<bool>("admissible")),
       dead_ends_reliable(
           admissible ||
@@ -44,7 +44,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
-    LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
+    shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
@@ -262,18 +262,15 @@ void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_sta
     lm_status_manager->set_landmarks_for_initial_state(initial_state);
 }
 
-bool LandmarkCountHeuristic::notify_state_transition(
+void LandmarkCountHeuristic::notify_state_transition(
     const GlobalState &parent_state, OperatorID op_id,
     const GlobalState &state) {
     lm_status_manager->update_reached_lms(parent_state, op_id, state);
-    /* TODO: The return value "true" signals that the LM set of this state
-             has changed and the h value should be recomputed. It's not
-             wrong to always return true, but it may be more efficient to
-             check that the LM set has actually changed. */
     if (cache_h_values) {
+        /* TODO:  It may be more efficient to check that the reached landmark
+           set has actually changed and only then mark the h value as dirty. */
         heuristic_cache[state].dirty = true;
     }
-    return true;
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
@@ -295,16 +292,22 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
-                             "See also Synergy");
+                             "See also Heuristic#LAMA-FF_synergy_master");
     parser.document_note(
         "Note",
-        "to use ``optimal=true``, you must build the planner with LP support. "
-        "See LPBuildInstructions.");
+        "Regarding using different cost transformations, there are a few "
+        "caveats to be considered, see OptionCaveats."
+        );
     parser.document_note(
         "Optimal search",
         "when using landmarks for optimal search (``admissible=true``), "
         "you probably also want to enable the mpd option of the A* algorithm "
         "to improve heuristic estimates");
+    parser.document_note(
+        "Note",
+        "to use ``optimal=true``, you must build the planner with LP support. "
+        "See LPBuildInstructions.");
+
     parser.document_language_support("action costs",
                                      "supported");
     parser.document_language_support("conditional_effects",
@@ -328,7 +331,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators",
                              "yes (if enabled; see ``pref`` option)");
 
-    parser.add_option<LandmarkFactory *>(
+    parser.add_option<shared_ptr<LandmarkFactory>>(
         "lm_factory",
         "the set of landmarks to use for this heuristic. "
         "The set of landmarks can be specified here, "
@@ -352,6 +355,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new LandmarkCountHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin(
-    "lmcount", _parse);
+static Plugin<Heuristic> _plugin("lmcount", _parse);
 }

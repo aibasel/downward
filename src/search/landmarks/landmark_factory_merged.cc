@@ -17,7 +17,7 @@ class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
     : LandmarkFactory(opts),
-      lm_factories(opts.get_list<LandmarkFactory *>("lm_factories")) {
+      lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &lm) const {
@@ -44,7 +44,7 @@ void LandmarkFactoryMerged::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
 
-    for (LandmarkFactory *lm_factory : lm_factories) {
+    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
         lm_graphs.push_back(lm_factory->compute_lm_graph(task, exploration));
     }
 
@@ -113,7 +113,7 @@ void LandmarkFactoryMerged::generate_landmarks(
 }
 
 bool LandmarkFactoryMerged::supports_conditional_effects() const {
-    for (const LandmarkFactory *lm_factory : lm_factories) {
+    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
         if (!lm_factory->supports_conditional_effects()) {
             return false;
         }
@@ -121,7 +121,7 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
     return true;
 }
 
-static LandmarkFactory *_parse(OptionParser &parser) {
+static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merged Landmarks",
         "Merges the landmarks and orderings from the parameter landmarks");
@@ -136,22 +136,20 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_note(
         "Note",
         "Does not currently support conjunctive landmarks");
-    parser.add_list_option<LandmarkFactory *>("lm_factories");
+    parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
     _add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<LandmarkFactory *>("lm_factories");
+    opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");
 
     parser.document_language_support("conditional_effects",
                                      "supported if all components support them");
 
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return nullptr;
-    } else {
-        return new LandmarkFactoryMerged(opts);
-    }
+    else
+        return make_shared<LandmarkFactoryMerged>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin(
-    "lm_merged", _parse);
+static PluginShared<LandmarkFactory> _plugin("lm_merged", _parse);
 }

@@ -4,6 +4,7 @@
 #include "cost_saturation.h"
 #include "utils.h"
 
+#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 

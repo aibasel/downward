@@ -346,9 +346,8 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
     vector<string> label_reduction_system_order_doc;
     label_reduction_system_order.push_back("REGULAR");
     label_reduction_system_order_doc.push_back(
-        "transition systems are considered in the FD given order for "
-        "atomic transition systems and in the order of their creation "
-        "for composite transition system.");
+        "transition systems are considered in the order given in the planner "
+        "input if atomic and in the order of their creation if composite.");
     label_reduction_system_order.push_back("REVERSE");
     label_reduction_system_order_doc.push_back(
         "inverse of REGULAR");
