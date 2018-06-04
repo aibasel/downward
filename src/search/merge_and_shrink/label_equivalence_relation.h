@@ -81,6 +81,12 @@ public:
       the public add_label_group method below.
     */
     explicit LabelEquivalenceRelation(const Labels &labels);
+    /*
+      NOTE: we need a custom copy constructor here because we need to fill
+      label_to_positions with correct LabelIter objects that point to the
+      copied LabelGroup objects rather than to those of the given
+      LabelEquivalenceRelation other.
+    */
     LabelEquivalenceRelation(const LabelEquivalenceRelation &other);
 
     /*
