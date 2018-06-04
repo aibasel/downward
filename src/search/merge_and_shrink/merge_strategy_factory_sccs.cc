@@ -32,8 +32,7 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
-    : MergeStrategyFactory(),
-      order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
+    : order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
       merge_tree_factory(nullptr),
       merge_selector(nullptr) {
     if (options.contains("merge_tree")) {
