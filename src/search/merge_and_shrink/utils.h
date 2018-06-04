@@ -16,7 +16,8 @@ class TransitionSystem;
   and size2 before they are merged. Use the following rules:
   1) Right before merging, the transition systems may have at most
      max_states_before_merge states.
-  2) Right after merging, the product has at most max_states_after_merge states.
+  2) Right after merging, the product may have most max_states_after_merge
+     states.
   3) Transition systems are shrunk as little as necessary to satisfy the above
      constraints. (If possible, neither is shrunk at all.)
   There is often a Pareto frontier of solutions following these rules. In this
@@ -30,12 +31,12 @@ extern std::pair<int, int> compute_shrink_sizes(
     int max_states_after_merge);
 
 /*
-  This method first determines if any of the two factors at indices index1 and
-  index2 must be shrunk according to the given size limits max_states and
-  max_states_before_merge, using the function computet_shrink_sizes (see above).
-  If not, then the method further checks if any of the two factors has a size
-  larger than shrink_treshold_before_merge, in wchi case shrinking is still
-  triggered to allow exploiting perfect shrink opportunities.
+  This function first determines if any of the two factors at indices index1
+  and index2 must be shrunk according to the given size limits max_states and
+  max_states_before_merge, using the function compute_shrink_sizes (see above).
+  If not, then the function further checks if any of the two factors has a
+  size larger than shrink_treshold_before_merge, in which case shrinking is
+  still triggered.
 
   If shrinking is triggered, apply the abstraction to the two factors
   within the factored transition system. Return true iff at least one of the
