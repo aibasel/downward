@@ -21,9 +21,7 @@ public:
     LabelGroup() : cost(INF) {
     }
 
-    LabelGroup(const LabelGroup &other) :
-        labels(other.labels), cost(other.cost) {
-    }
+    LabelGroup(const LabelGroup &other) = default;
 
     void set_cost(int cost_) {
         cost = cost_;
