@@ -599,7 +599,7 @@ bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
     return true;
 }
 
-static LandmarkFactory *_parse(OptionParser &parser) {
+static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "RHW Landmarks",
         "The landmark generation method introduced by "
@@ -615,12 +615,11 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_language_support("conditional_effects",
                                      "supported");
 
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return nullptr;
-    } else {
-        return new LandmarkFactoryRpgSasp(opts);
-    }
+    else
+        return make_shared<LandmarkFactoryRpgSasp>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin("lm_rhw", _parse);
+static PluginShared<LandmarkFactory> _plugin("lm_rhw", _parse);
 }

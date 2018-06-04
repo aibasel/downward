@@ -5,6 +5,10 @@
 
 #include "../heuristic.h"
 
+namespace options {
+class OptionParser;
+}
+
 namespace pdbs {
 // Implements the canonical heuristic function.
 class CanonicalPDBsHeuristic : public Heuristic {
@@ -22,6 +26,8 @@ public:
     explicit CanonicalPDBsHeuristic(const options::Options &opts);
     virtual ~CanonicalPDBsHeuristic() = default;
 };
+
+void add_canonical_pdbs_options_to_parser(options::OptionParser &parser);
 }
 
 #endif

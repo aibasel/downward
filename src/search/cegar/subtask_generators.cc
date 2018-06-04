@@ -98,6 +98,7 @@ TaskDuplicator::TaskDuplicator(const Options &opts)
 SharedTasks TaskDuplicator::get_subtasks(
     const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
+    subtasks.reserve(num_copies);
     for (int i = 0; i < num_copies; ++i) {
         subtasks.push_back(task);
     }
