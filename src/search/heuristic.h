@@ -88,7 +88,9 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
 
-    virtual std::pair<bool, bool> reevaluate_and_check_if_changed(EvaluationContext &eval_context) override;
+    virtual bool does_cache_estimates() const;
+    virtual bool is_estimate_cached(const GlobalState &state) const override;
+    virtual int get_cached_estimate(const GlobalState &state) const override;
 };
 
 #endif

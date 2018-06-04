@@ -1,6 +1,7 @@
 #include "evaluator.h"
 
 #include "plugin.h"
+#include "utils/system.h"
 
 #include <cassert>
 
@@ -54,9 +55,16 @@ bool Evaluator::is_used_for_counting_evaluations() const {
 }
 
 
-std::pair<bool, bool> Evaluator::reevaluate_and_check_if_changed(EvaluationContext &) {
-    return make_pair(false, false);
+bool Evaluator::does_cache_estimates() const {
+    return false;
 }
+bool Evaluator::is_estimate_cached(const GlobalState &) const {
+    return false;
+}
+int Evaluator::get_cached_estimate(const GlobalState &) const {
+    ABORT("Called get_cached_estimate when estimate is not cached.");
+}
+
 static PluginTypePlugin<Evaluator> _type_plugin(
     "Evaluator",
     // TODO: Replace empty string by synopsis for the wiki page.

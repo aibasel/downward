@@ -85,11 +85,3 @@ EvaluationContext::get_preferred_operators(Evaluator *heur) {
 bool EvaluationContext::get_calculate_preferred() const {
     return calculate_preferred;
 }
-
-bool EvaluationContext::reevaluate_and_check_if_changed(Evaluator *heur) {
-    std::pair<bool,bool> reeval_change = heur->reevaluate_and_check_if_changed(*this);
-    if (reeval_change.first && statistics) {
-        statistics->inc_evaluations();
-    }
-    return reeval_change.second;
-}

@@ -97,23 +97,16 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-std::pair<bool,bool> Heuristic::reevaluate_and_check_if_changed(EvaluationContext &eval_context) {
-    const GlobalState &state = eval_context.get_state();
-    bool reevaluated = false;
-    bool changed = false;
+bool Heuristic::does_cache_estimates() const {
+    return cache_h_values;
+}
 
-    if(!cache_h_values || !heuristic_cache[state].dirty) {
-        return std::make_pair(reevaluated, changed);
-    }
+bool Heuristic::is_estimate_cached(const GlobalState &state) const {
+    return heuristic_cache[state].h != NO_VALUE;
+}
 
-    int old_h = heuristic_cache[state].h;
-    heuristic_cache[state] = HEntry(compute_heuristic(state),false);
-    reevaluated = true;
-    int new_h = heuristic_cache[state].h;
-    if(old_h != new_h) {
-        changed = true;
-    }
-    return std::make_pair(reevaluated, changed);
+int Heuristic::get_cached_estimate(const GlobalState &state) const {
+    return heuristic_cache[state].h;
 }
 
 static PluginTypePlugin<Heuristic> _type_plugin(
