@@ -28,6 +28,7 @@ EagerSearch::EagerSearch(const Options &opts)
       lazy_evaluator(opts.get<Evaluator *>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+        cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::INPUT_ERROR);
     }
 }
@@ -56,7 +57,7 @@ void EagerSearch::initialize() {
     }
 
     // Collect path-dependent evaluators that are used in the lazy_evaluator
-    // (in case they are not already included)
+    // (in case they are not already included).
     if (lazy_evaluator) {
         lazy_evaluator->get_path_dependent_evaluators(evals);
     }
