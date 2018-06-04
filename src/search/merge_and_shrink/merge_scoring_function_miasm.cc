@@ -60,6 +60,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
           Compute the score as the ratio of alive states of the product
           compared to the number of states of the full product.
         */
+        assert(num_states);
         double score = static_cast<double>(alive_states_count) /
                        static_cast<double>(num_states);
         scores.push_back(score);
