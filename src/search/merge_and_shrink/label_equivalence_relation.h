@@ -67,8 +67,8 @@ class LabelEquivalenceRelation {
     /*
       NOTE: it is somewhat dangerous to use lists inside vectors and storing
       iterators to these lists, because whenever the vector needs to be
-      resized, these iterators may become invalid. In the constructor, we
-      make sure to reserve enough memory so reallocation is never needed.
+      resized, iterators to these lists may become invalid. In the constructor,
+      we thus make sure to reserve enough memory so reallocation is never needed.
     */
     std::vector<LabelGroup> grouped_labels;
     // maps each label to its group's ID and its iterator within the group.
@@ -91,7 +91,7 @@ public:
 
     /*
       The given label mappings (from label reduction) contain the new label
-      and the old label that were reduced to the new one.
+      and the old labels that were reduced to the new one.
 
       If affected_group_ids is not given, then all old labels must have been
       in the same group before, and the new labels are added to this group.
