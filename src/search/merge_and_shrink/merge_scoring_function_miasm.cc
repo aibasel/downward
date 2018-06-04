@@ -5,7 +5,7 @@
 #include "merge_and_shrink_heuristic.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
-#include "utils.h"
+#include "merge_scoring_function_utils.h"
 
 #include "../options/option_parser.h"
 #include "../options/options.h"
