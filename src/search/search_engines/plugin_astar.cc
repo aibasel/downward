@@ -30,7 +30,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n", true);
     parser.add_option<Evaluator *>("eval", "evaluator for h-value");
     parser.add_option<Evaluator *>("lazy_evaluator",
-                                        "An evaluator that reevaluates a state before it is expanded", OptionParser::NONE);
+                                   "An evaluator that reevaluates a state before it is expanded", OptionParser::NONE);
 
     SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);

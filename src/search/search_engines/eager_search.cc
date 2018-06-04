@@ -27,7 +27,7 @@ EagerSearch::EagerSearch(const Options &opts)
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       lazy_evaluator(opts.get<Evaluator *>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
-    if(lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+    if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         utils::exit_with(utils::ExitCode::INPUT_ERROR);
     }
 }
@@ -57,7 +57,7 @@ void EagerSearch::initialize() {
 
     // Collect path-dependent evaluators that are used in the lazy_evaluator
     // (in case they are not already included)
-    if(lazy_evaluator) {
+    if (lazy_evaluator) {
         lazy_evaluator->get_path_dependent_evaluators(evals);
     }
 
@@ -261,7 +261,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 EvaluationContext eval_context(
                     s, node.get_g(), false, &statistics);
                 int new_h = eval_context.get_heuristic_value_or_infinity(lazy_evaluator);
-                if(new_h != old_h) {
+                if (new_h != old_h) {
                     open_list->insert(eval_context, id);
                     continue;
                 }
