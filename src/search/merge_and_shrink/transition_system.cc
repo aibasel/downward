@@ -99,6 +99,18 @@ TransitionSystem::TransitionSystem(
     assert(are_transitions_sorted_unique());
 }
 
+TransitionSystem::TransitionSystem(const TransitionSystem &other)
+    : num_variables(other.num_variables),
+      incorporated_variables(other.incorporated_variables),
+      label_equivalence_relation(
+          utils::make_unique_ptr<LabelEquivalenceRelation>(
+              *other.label_equivalence_relation)),
+      transitions_by_group_id(other.transitions_by_group_id),
+      num_states(other.num_states),
+      goal_states(other.goal_states),
+      init_state(other.init_state) {
+}
+
 TransitionSystem::~TransitionSystem() {
 }
 
