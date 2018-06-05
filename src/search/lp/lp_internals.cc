@@ -57,8 +57,7 @@ static const string CPLEX_ERROR_OOM_DEVEX = "CPX0000  Not enough memory for deve
 */
 class ErrorCatchingCoinMessageHandler : public CoinMessageHandler {
 public:
-    ErrorCatchingCoinMessageHandler()
-        : CoinMessageHandler() {
+    ErrorCatchingCoinMessageHandler() {
         setLogLevel(0);
     }
 

@@ -3,6 +3,7 @@
 
 #include "operator_cost.h"
 #include "operator_id.h"
+#include "plan_manager.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
@@ -26,9 +27,6 @@ class OrderedSet;
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
-public:
-    using Plan = std::vector<OperatorID>;
-private:
     SearchStatus status;
     bool solution_found;
     Plan plan;
@@ -38,6 +36,7 @@ protected:
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 
+    PlanManager plan_manager;
     StateRegistry state_registry;
     SearchSpace search_space;
     SearchProgress search_progress;
@@ -56,7 +55,7 @@ public:
     SearchEngine(const options::Options &opts);
     virtual ~SearchEngine();
     virtual void print_statistics() const;
-    virtual void save_plan_if_necessary() const;
+    virtual void save_plan_if_necessary();
     bool found_solution() const;
     SearchStatus get_status() const;
     const Plan &get_plan() const;
@@ -64,6 +63,7 @@ public:
     const SearchStatistics &get_statistics() const {return statistics; }
     void set_bound(int b) {bound = b; }
     int get_bound() {return bound; }
+    PlanManager &get_plan_manager() {return plan_manager; }
 
     /* The following three methods should become functions as they
        do not require access to private/protected class members. */

@@ -1,5 +1,6 @@
 #include "enforced_hill_climbing_search.h"
 
+#include "../globals.h"
 #include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -71,12 +72,14 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    heuristics.insert(preferred_operator_heuristics.begin(),
-                      preferred_operator_heuristics.end());
-    heuristics.insert(heuristic);
+    for (Heuristic *heur : preferred_operator_heuristics) {
+        heur->get_path_dependent_evaluators(path_dependent_evaluators);
+    }
+    heuristic->get_path_dependent_evaluators(path_dependent_evaluators);
+
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : heuristics) {
-        heuristic->notify_initial_state(initial_state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_heuristics.begin(),
                          preferred_operator_heuristics.end(), heuristic) !=
@@ -91,8 +94,8 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 
 void EnforcedHillClimbingSearch::reach_state(
     const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
-    for (Heuristic *heur : heuristics) {
-        heur->notify_state_transition(parent, op_id, state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_state_transition(parent, op_id, state);
     }
 }
 

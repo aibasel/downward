@@ -1,7 +1,6 @@
 #include "search_space.h"
 
 #include "global_state.h"
-#include "globals.h"
 #include "task_proxy.h"
 
 #include <cassert>
@@ -164,6 +163,5 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
 }
 
 void SearchSpace::print_statistics() const {
-    cout << "Number of registered states: "
-         << state_registry.size() << endl;
+    state_registry.print_statistics();
 }

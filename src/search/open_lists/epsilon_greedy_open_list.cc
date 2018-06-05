@@ -1,7 +1,6 @@
 #include "epsilon_greedy_open_list.h"
 
 #include "../evaluator.h"
-#include "../globals.h"
 #include "../open_list.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -55,7 +54,7 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
     virtual bool empty() const override;
     virtual void clear() override;
 };
@@ -124,8 +123,9 @@ bool EpsilonGreedyOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-void EpsilonGreedyOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
-    evaluator->get_involved_heuristics(hset);
+void EpsilonGreedyOpenList<Entry>::get_path_dependent_evaluators(
+    set<Evaluator *> &evals) {
+    evaluator->get_path_dependent_evaluators(evals);
 }
 
 template<class Entry>
