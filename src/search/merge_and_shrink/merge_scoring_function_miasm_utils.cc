@@ -8,6 +8,8 @@
 
 #include "../utils/memory.h"
 
+#include <algorithm>
+
 using namespace std;
 
 namespace merge_and_shrink {
