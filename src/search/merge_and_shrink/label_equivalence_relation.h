@@ -10,6 +10,9 @@
 namespace merge_and_shrink {
 class Labels;
 
+using LabelIter = std::list<int>::iterator;
+using LabelConstIter = std::list<int>::const_iterator;
+
 class LabelGroup {
     /*
       A label group contains a set of locally equivalent labels, possibly of
