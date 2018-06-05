@@ -74,17 +74,17 @@ string MergeScoringFunctionMIASM::name() const {
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
-        "miasm",
+        "MIASM",
         "This scoring function favors merging transition systems such that in "
         "their product, there are many dead states, which can then be pruned "
-        "without sacrificing information. To do so, for every candidate pair "
-        "of transition systems, this class copies the two transition systems, "
-        "possibly shrinks them, and then computes their product. The "
-        "score for the merge candidate is the ratio of alive states of this "
-        "product compared to the number of states in the full product."
-        "The merge strategy using this scoring function is called dyn-MIASM "
-        "(nowadays also called sbMIASM for score-based MIASM) and is described "
-        "in the following paper:"
+        "without sacrificing information. In particular, the score it assigns "
+        "to a product is the ratio of alive states to the total number of "
+        "states. To compute this score, this class thus computes the product "
+        "of all pairs of transition systems, potentially copying and shrinking "
+        "the transition systems before if otherwise their product would exceed "
+        "the specified size limits. A stateless merge strategy using this "
+        "scoring function is called dyn-MIASM (nowadays also called sbMIASM "
+        "for score-based MIASM) and is described in the following paper:"
         + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
@@ -98,14 +98,14 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "To obtain the configurations called dyn-MIASM described in the paper, "
         "use the following configuration of the merge-and-shrink heuristic "
         "and adapt the tie-breaking criteria of {{{total_order}}} as desired:\n "
-        "{{{merge_and_shrink(merge_strategy=merge_stateless(merge_selector="
+        "{{{\nmerge_and_shrink(merge_strategy=merge_stateless(merge_selector="
         "score_based_filtering(scoring_functions=[sf_miasm(shrink_strategy="
         "shrink_bisimulation(greedy=false),max_states=50000,"
         "threshold_before_merge=1),total_order(atomic_ts_order=reverse_level,"
         "product_ts_order=new_to_old,atomic_before_product=true)])),"
         "shrink_strategy=shrink_bisimulation(greedy=false),label_reduction="
         "exact(before_shrinking=true,before_merging=false),max_states=50000,"
-        "threshold_before_merge=1)}}}");
+        "threshold_before_merge=1)\n}}}");
     parser.document_note(
         "Note",
         "Unless you know what you are doing, we recommend using the same "
