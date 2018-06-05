@@ -28,9 +28,8 @@ public:
   supported and leads to insertion of a default value (similar to the
   defaultdict class in Python).
 
-  For example, landmark heuristics can use it to store the set of landmarks
-  with every state reached during search, or search algorithms can use it to
-  associate g values or creating operators with a state.
+  For example, search algorithms can use it to associate g values or creating
+  operators with a state.
 
   Implementation notes: PerStateInformation is essentially implemented as a
   kind of two-level map:
@@ -87,7 +86,7 @@ class PerStateInformation : public PerStateInformationBase {
     */
     const segmented_vector::SegmentedVector<Entry> *get_entries(const StateRegistry *registry) const {
         if (cached_registry != registry) {
-            typename EntryVectorMap::const_iterator it = entries_by_registry.find(registry);
+            const auto it = entries_by_registry.find(registry);
             if (it == entries_by_registry.end()) {
                 return nullptr;
             } else {
@@ -99,9 +98,6 @@ class PerStateInformation : public PerStateInformationBase {
         return cached_entries;
     }
 
-    // No implementation to forbid copies and assignment
-    PerStateInformation(const PerStateInformation<Entry> &);
-    PerStateInformation &operator=(const PerStateInformation<Entry> &);
 public:
     PerStateInformation()
         : default_value(),
@@ -114,6 +110,10 @@ public:
           cached_registry(nullptr),
           cached_entries(nullptr) {
     }
+
+    // No implementation to forbid copies and assignment
+    PerStateInformation(const PerStateInformation<Entry> &) = delete;
+    PerStateInformation &operator=(const PerStateInformation<Entry> &) = delete;
 
     ~PerStateInformation() {
         for (typename EntryVectorMap::iterator it = entries_by_registry.begin();

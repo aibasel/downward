@@ -15,7 +15,6 @@ class ArrayView {
     int array_size;
 public:
     ArrayView(T *p, size_t size) : p(p), array_size(size) {}
-    // TODO: is this necessary (is it equal to the implicit copy constructor)?
     ArrayView(const ArrayView<T> &other) : p(other.p), array_size(other.array_size) {}
 
     ArrayView<T> &operator=(const ArrayView<T> &other) {
@@ -23,7 +22,6 @@ public:
         array_size = other.array_size;
         return *this;
     }
-    //TODO: we could implement a deep copy, but we currently don't need it
 
     T &operator[](int index) {
         return p[index];
@@ -66,7 +64,6 @@ public:
 
 template<class Element>
 class PerStateArray : public PerStateInformationBase {
-    friend class PerStateBitset;
     size_t array_size;
     const std::vector<Element> default_array;
     using EntryArrayVectorMap = std::unordered_map<const StateRegistry *,
@@ -107,7 +104,7 @@ class PerStateArray : public PerStateInformationBase {
     */
     const segmented_vector::SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) const {
         if (cached_registry != registry) {
-            typename EntryArrayVectorMap::const_iterator it = entry_arrays_by_registry.find(registry);
+            const auto it = entry_arrays_by_registry.find(registry);
             if (it == entry_arrays_by_registry.end()) {
                 return nullptr;
             } else {
@@ -135,8 +132,9 @@ public:
     PerStateArray(const PerStateArray<Element> &) = delete;
     PerStateArray &operator=(const PerStateArray<Element> &) = delete;
 
+    // TODO: could we use unique_ptr to avoid naked new and delete?
     ~PerStateArray() {
-        for (typename EntryArrayVectorMap::iterator it = entry_arrays_by_registry.begin();
+        for (auto it = entry_arrays_by_registry.begin();
              it != entry_arrays_by_registry.end(); ++it) {
             it->first->unsubscribe(this);
             delete it->second;
@@ -153,7 +151,7 @@ public:
             entries->resize(virtual_size, &default_array[0]);
         }
         assert(entries->size() >= virtual_size); // TODO: remove this assert
-        return ArrayView<Element>((*cached_entries)[state_id], array_size);
+        return ArrayView<Element>((*entries)[state_id], array_size);
     }
 
     void remove_state_registry(StateRegistry *registry) {

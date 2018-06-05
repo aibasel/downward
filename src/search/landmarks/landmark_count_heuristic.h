@@ -5,7 +5,8 @@
 #include "landmark_graph.h"
 
 #include "../heuristic.h"
-#include "../per_state_bitset.h"
+
+class BitsetView;
 
 namespace successor_generator {
 class SuccessorGenerator;
