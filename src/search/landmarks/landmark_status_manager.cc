@@ -5,7 +5,6 @@
 using namespace std;
 
 namespace landmarks {
-
 /*
   By default we set all landmarks as reached, since we do an intersection when
   computing new landmark information. This however necessitates to treat the

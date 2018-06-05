@@ -11,7 +11,7 @@
 
 template<class T>
 class ArrayView {
-    T * p;
+    T *p;
     int array_size;
 public:
     ArrayView(T *p, size_t size) : p(p), array_size(size) {}

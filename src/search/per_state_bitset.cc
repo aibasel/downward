@@ -30,7 +30,7 @@ void BitsetView::reset(std::size_t index) {
 
 // TODO: can we use fill here? Not sure what ArrayView needs to return for begin and end
 void BitsetView::reset() {
-    for(int i = 0; i < data.size(); ++i) {
+    for (int i = 0; i < data.size(); ++i) {
         data[i] = BitsetMath<Block>::zeros;
     }
 }
@@ -43,7 +43,7 @@ bool BitsetView::test(std::size_t index) const {
 
 void BitsetView::intersect(const BitsetView &other) {
     assert(array_size == other.array_size);
-    for(int i = 0; i < data.size(); ++i) {
+    for (int i = 0; i < data.size(); ++i) {
         data[i] &= other.data[i];
     }
 }
@@ -66,9 +66,9 @@ std::vector<unsigned int> pack_bit_vector(const std::vector<bool> &bits) {
     std::vector<unsigned int> packed_bits = std::vector<unsigned int>(num_blocks, 0);
     // TODO: this looks ugly
     BitsetView bitset_view =
-            BitsetView(ArrayView<unsigned int>(packed_bits.data(),num_blocks), num_bits);
-    for(int i = 0; i < num_bits; ++i) {
-        if(bits[i]) {
+        BitsetView(ArrayView<unsigned int>(packed_bits.data(), num_blocks), num_bits);
+    for (int i = 0; i < num_bits; ++i) {
+        if (bits[i]) {
             bitset_view.set(i);
         }
     }
@@ -83,7 +83,7 @@ PerStateBitset::PerStateBitset(const std::vector<bool> &default_value)
 
 
 BitsetView PerStateBitset::operator[](const GlobalState &state) {
-    return BitsetView(data[state],int_array_size);
+    return BitsetView(data[state], int_array_size);
 }
 
 // TODO: does this do the right thing?
