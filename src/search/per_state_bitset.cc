@@ -81,7 +81,7 @@ PerStateBitset::PerStateBitset(const std::vector<bool> &default_value)
       data(int_array_size, pack_bit_vector(default_value)) {
 }
 
-// TODO: can we avoid code duplication from PerStateArray here?
+
 BitsetView PerStateBitset::operator[](const GlobalState &state) {
     return BitsetView(data[state],int_array_size);
 }

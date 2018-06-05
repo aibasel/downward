@@ -9,7 +9,7 @@ namespace landmarks {
 /*
   By default we set all landmarks as reached, since we do an intersection when
   computing new landmark information. This however necessitates to treat the
-  initial state differently; there we first must "reset" the vector
+  initial state differently; there we first must "reset" the vector.
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),

@@ -7,6 +7,7 @@
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../per_state_bitset.h"
 
 #include "../lp/lp_solver.h"
 #include "../task_utils/successor_generator.h"
