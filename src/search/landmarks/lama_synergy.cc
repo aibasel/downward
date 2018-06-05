@@ -41,17 +41,14 @@ void LamaSynergyHeuristic::notify_initial_state(const GlobalState &initial_state
     lama_heuristic->notify_initial_state(initial_state);
 }
 
-bool LamaSynergyHeuristic::notify_state_transition(
+void LamaSynergyHeuristic::notify_state_transition(
     const GlobalState &parent_state,
     OperatorID op_id,
     const GlobalState &state) {
-    if (lama_heuristic->notify_state_transition(parent_state, op_id, state)) {
-        if (cache_h_values) {
-            heuristic_cache[state].dirty = true;
-        }
-        return true;
+    lama_heuristic->notify_state_transition(parent_state, op_id, state);
+    if (cache_h_values) {
+        heuristic_cache[state].dirty = true;
     }
-    return false;
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -74,7 +71,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "Regarding using different cost transformations, there are a few "
         "caveats to be considered, see OptionCaveats."
         );
-    parser.add_option<LandmarkFactory *>("lm_factory");
+    parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");

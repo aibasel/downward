@@ -76,7 +76,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
         };
 
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
-    for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
+    for (const shared_ptr<SubtaskGenerator> &subtask_generator : subtask_generators) {
         SharedTasks subtasks = subtask_generator->get_subtasks(task);
         build_abstractions(subtasks, timer, should_abort);
         if (should_abort())
@@ -84,10 +84,11 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     }
     if (utils::extra_memory_padding_is_reserved())
         utils::release_extra_memory_padding();
-    print_statistics();
+    print_statistics(timer.get_elapsed_time());
 
     vector<CartesianHeuristicFunction> functions;
     swap(heuristic_functions, functions);
+
     return functions;
 }
 
@@ -157,13 +158,10 @@ void CostSaturation::build_abstractions(
         num_non_looping_transitions += abstraction.get_num_non_looping_transitions();
         assert(num_states <= max_states);
         reduce_remaining_costs(abstraction.get_saturated_costs());
-        int init_h = abstraction.get_h_value_of_initial_state();
+        heuristic_functions.emplace_back(
+            subtask,
+            abstraction.extract_refinement_hierarchy());
 
-        if (init_h > 0) {
-            heuristic_functions.emplace_back(
-                subtask,
-                abstraction.extract_refinement_hierarchy());
-        }
         if (should_abort())
             break;
 
@@ -171,8 +169,10 @@ void CostSaturation::build_abstractions(
     }
 }
 
-void CostSaturation::print_statistics() const {
+void CostSaturation::print_statistics(utils::Duration init_time) const {
     g_log << "Done initializing additive Cartesian heuristic" << endl;
+    cout << "Time for initializing additive Cartesian heuristic: "
+         << init_time << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
     cout << "Cartesian heuristic functions stored: "
          << heuristic_functions.size() << endl;
