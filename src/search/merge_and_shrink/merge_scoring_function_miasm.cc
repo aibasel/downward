@@ -126,12 +126,17 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
 
     options::Options options = parser.parse();
+    if (parser.help_mode()) {
+        return nullptr;
+    }
+
     MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(options);
 
-    if (parser.dry_run())
+    if (parser.dry_run()) {
         return nullptr;
-    else
+    } else {
         return make_shared<MergeScoringFunctionMIASM>(options);
+    }
 }
 
 static options::PluginShared<MergeScoringFunction> _plugin("sf_miasm", _parse);
