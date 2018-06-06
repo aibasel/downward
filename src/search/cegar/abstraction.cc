@@ -76,9 +76,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
         var, wanted, v1_id, v2_id);
     AbstractState *v1 = new_states.first;
     AbstractState *v2 = new_states.second;
-
-    transition_system->rewire(states, v_id, v1, v2, var);
-
+    delete state;
     states[v1_id] = v1;
     assert(static_cast<int>(states.size()) == v2_id);
     states.push_back(v2);
@@ -99,7 +97,6 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
             cout << "New init state #" << init->get_id() << ": " << *init << endl;
         }
     }
-
     if (goals.count(v_id)) {
         goals.erase(v_id);
         if (v1->includes(goal_facts)) {
@@ -113,7 +110,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
         }
     }
 
-    delete state;
+    transition_system->rewire(states, v_id, v1, v2, var);
 }
 
 void Abstraction::print_statistics() const {
