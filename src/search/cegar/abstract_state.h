@@ -60,7 +60,7 @@ public:
       new states.
     */
     std::pair<AbstractState *, AbstractState *> split(
-        int var, const std::vector<int> &wanted, int left_state_id, int right_state_id);
+        int var, const std::vector<int> &wanted, int v1_id, int v2_id);
 
     bool includes(const State &concrete_state) const;
     bool includes(const std::vector<FactPair> &facts) const;

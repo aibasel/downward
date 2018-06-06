@@ -20,7 +20,7 @@ AbstractState::AbstractState(const Domains &domains, int id, Node *node)
 AbstractState::AbstractState(AbstractState &&other)
     : domains(move(other.domains)),
       node(move(other.node)),
-      id(move(other.id)) {
+      id(other.id) {
 }
 
 int AbstractState::count(int var) const {
@@ -32,11 +32,11 @@ bool AbstractState::contains(int var, int value) const {
 }
 
 pair<AbstractState *, AbstractState *> AbstractState::split(
-    int var, const vector<int> &wanted, int left_state_id, int right_state_id) {
+    int var, const vector<int> &wanted, int v1_id, int v2_id) {
     int num_wanted = wanted.size();
     utils::unused_variable(num_wanted);
     // We can only split states in the refinement hierarchy (not artificial states).
-    assert(node);
+    assert(node && id != UNDEFINED);
     // We can only refine for variables with at least two values.
     assert(num_wanted >= 1);
     assert(domains.count(var) > num_wanted);
@@ -60,10 +60,10 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
 
     // Update refinement hierarchy.
     pair<Node *, Node *> new_nodes = node->split(
-        var, wanted, left_state_id, right_state_id);
+        var, wanted, v1_id, v2_id);
 
-    AbstractState *v1 = new AbstractState(v1_domains, left_state_id, new_nodes.first);
-    AbstractState *v2 = new AbstractState(v2_domains, right_state_id, new_nodes.second);
+    AbstractState *v1 = new AbstractState(v1_domains, v1_id, new_nodes.first);
+    AbstractState *v2 = new AbstractState(v2_domains, v2_id, new_nodes.second);
 
     assert(this->is_more_general_than(*v1));
     assert(this->is_more_general_than(*v2));
