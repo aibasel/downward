@@ -32,8 +32,7 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
-    : MergeStrategyFactory(),
-      order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
+    : order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
       merge_tree_factory(nullptr),
       merge_selector(nullptr) {
     if (options.contains("merge_tree")) {
@@ -116,6 +115,22 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         merge_selector,
         move(non_singleton_cg_sccs),
         move(indices_of_merged_sccs));
+}
+
+bool MergeStrategyFactorySCCs::requires_init_distances() const {
+    if (merge_tree_factory) {
+        return merge_tree_factory->requires_init_distances();
+    } else {
+        return merge_selector->requires_init_distances();
+    }
+}
+
+bool MergeStrategyFactorySCCs::requires_goal_distances() const {
+    if (merge_tree_factory) {
+        return merge_tree_factory->requires_goal_distances();
+    } else {
+        return merge_selector->requires_goal_distances();
+    }
 }
 
 void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {

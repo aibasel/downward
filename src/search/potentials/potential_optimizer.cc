@@ -103,6 +103,7 @@ void PotentialOptimizer::construct_lp() {
                           lp_solver.get_infinity());
 
     vector<lp::LPVariable> lp_variables;
+    lp_variables.reserve(num_lp_vars);
     for (int lp_var_id = 0; lp_var_id < num_lp_vars; ++lp_var_id) {
         // Use dummy coefficient for now. Adapt coefficient later.
         lp_variables.emplace_back(-lp_solver.get_infinity(), upper_bound, 1.0);

@@ -65,7 +65,7 @@ SearchStatus IteratedSearch::step() {
 
     current_search->search();
 
-    SearchEngine::Plan found_plan;
+    Plan found_plan;
     int plan_cost = 0;
     last_phase_found_solution = current_search->found_solution();
     if (last_phase_found_solution) {
@@ -73,7 +73,7 @@ SearchStatus IteratedSearch::step() {
         found_plan = current_search->get_plan();
         plan_cost = calculate_plan_cost(found_plan, task_proxy);
         if (plan_cost < best_bound) {
-            save_plan(found_plan, task_proxy, true);
+            plan_manager.save_plan(found_plan, task_proxy, true);
             best_bound = plan_cost;
             set_plan(found_plan);
         }
@@ -119,7 +119,7 @@ void IteratedSearch::print_statistics() const {
     statistics.print_detailed_statistics();
 }
 
-void IteratedSearch::save_plan_if_necessary() const {
+void IteratedSearch::save_plan_if_necessary() {
     // We don't need to save here, as we automatically save after
     // each successful search iteration.
 }

@@ -13,7 +13,9 @@ namespace pdbs {
 */
 extern std::shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     const PDBCollection &pattern_databases,
-    const MaxAdditivePDBSubsets &max_additive_subsets);
+    const MaxAdditivePDBSubsets &max_additive_subsets,
+    int num_variables,
+    double max_time);
 }
 
 #endif
