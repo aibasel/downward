@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 import os
 from os.path import dirname, join
@@ -24,13 +23,6 @@ WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--build", default="release32")
-    parser.add_argument("--dry-run", action="store_true")
-    return parser.parse_args()
 
 
 def read_password():
@@ -125,13 +117,12 @@ def insert_wiki_links(text, titles):
         text = re.sub(re_link % key, make_link, text)
     return text
 
-def build_planner(build):
-    subprocess.check_call(["./build.py", build, "downward"], cwd=REPO_ROOT_DIR)
+def build_planner():
+    subprocess.check_call(["./build.py", "release32", "downward"], cwd=REPO_ROOT_DIR)
 
-def get_pages_from_planner(build):
-    out = subprocess.check_output(
-        ["./fast-downward.py", "--build", build, "--search", "--", "--help", "--txt2tags"],
-        cwd=REPO_ROOT_DIR)
+def get_pages_from_planner():
+    planner = os.path.join(REPO_ROOT_DIR, "builds", "release32", "bin", "downward")
+    out = subprocess.check_output([planner, "--help", "--txt2tags"])
     #split the output into tuples (title, markup_text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
     pages = dict()
@@ -164,18 +155,10 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     return changed_pages
 
 if __name__ == '__main__':
-    args = parse_args()
     logging.info("building planner...")
-    build_planner(args.build)
+    build_planner()
     logging.info("getting new pages from planner...")
-    new_doc_pages = get_pages_from_planner(args.build)
-    if args.dry_run:
-        for title, content in sorted(new_doc_pages.items()):
-            print "=" * 25, title, "=" * 25
-            print content
-            print
-            print
-        sys.exit()
+    new_doc_pages = get_pages_from_planner()
     logging.info("getting existing page titles from wiki...")
     old_titles = attempt(get_all_titles_from_wiki)
     old_doc_titles = [title for title in old_titles if title.startswith(DOC_PREFIX)]
