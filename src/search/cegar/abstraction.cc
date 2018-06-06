@@ -2,6 +2,7 @@
 
 #include "abstract_state.h"
 #include "refinement_hierarchy.h"
+#include "transition.h"
 #include "transition_system.h"
 #include "utils.h"
 
@@ -59,7 +60,7 @@ bool Abstraction::is_goal(AbstractState *state) const {
 void Abstraction::create_trivial_abstraction(const vector<int> &domain_sizes) {
     init = AbstractState::get_trivial_abstract_state(
         domain_sizes, refinement_hierarchy->get_root());
-    transition_system->initialize(init);
+    transition_system->initialize_trivial_abstraction();
     goals.insert(init->get_id());
     states.push_back(init);
 }
