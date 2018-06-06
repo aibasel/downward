@@ -32,7 +32,7 @@ bool AbstractState::contains(int var, int value) const {
 }
 
 pair<AbstractState *, AbstractState *> AbstractState::split(
-    int var, const vector<int> &wanted,int left_state_id, int right_state_id) {
+    int var, const vector<int> &wanted, int left_state_id, int right_state_id) {
     int num_wanted = wanted.size();
     utils::unused_variable(num_wanted);
     // We can only split states in the refinement hierarchy (not artificial states).
@@ -123,7 +123,7 @@ int AbstractState::get_goal_distance_estimate() const {
 }
 
 AbstractState *AbstractState::get_trivial_abstract_state(
-        const vector<int> &domain_sizes, Node *root_node) {
+    const vector<int> &domain_sizes, Node *root_node) {
     assert(root_node->get_state_id() == 0);
     return new AbstractState(Domains(domain_sizes), 0, root_node);
 }
