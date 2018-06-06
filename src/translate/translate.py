@@ -45,6 +45,9 @@ import variable_order
 
 DEBUG = False
 
+
+## For a full list of exit codes, please see driver/returncodes.py. Here,
+## we only list codes that are used by the translator component of the planner.
 TRANSLATE_OUT_OF_MEMORY = 20
 TRANSLATE_OUT_OF_TIME = 21
 
