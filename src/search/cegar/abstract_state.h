@@ -4,8 +4,6 @@
 #include "domains.h"
 #include "types.h"
 
-#include <string>
-#include <utility>
 #include <vector>
 
 class ConditionsProxy;
@@ -15,7 +13,6 @@ class State;
 class TaskProxy;
 
 namespace cegar {
-class AbstractState;
 class Node;
 
 /*
@@ -49,7 +46,7 @@ public:
     bool contains(int var, int value) const;
 
     // Return the abstract state in which applying "op" leads to this state.
-    AbstractState regress(OperatorProxy op) const;
+    AbstractState regress(const OperatorProxy &op) const;
 
     /*
       Split this state into two new states by separating the "wanted" values
@@ -83,7 +80,7 @@ public:
 
     // Create the Cartesian set that corresponds to the given fact conditions.
     static AbstractState get_cartesian_set(
-        const TaskProxy &task_proxy, const ConditionsProxy &conditions);
+        const std::vector<int> &domain_sizes, const ConditionsProxy &conditions);
 };
 }
 

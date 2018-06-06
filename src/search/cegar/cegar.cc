@@ -79,6 +79,7 @@ CEGAR::CEGAR(
     utils::RandomNumberGenerator &rng,
     bool debug)
     : task_proxy(*task),
+      domain_sizes(get_domain_sizes(task_proxy)),
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
       split_selector(task, pick),
@@ -226,7 +227,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
                 move(concrete_state),
                 abstract_state,
                 AbstractState::get_cartesian_set(
-                    task_proxy, op.get_preconditions()));
+                    domain_sizes, op.get_preconditions()));
         }
     }
     assert(abstraction->get_goals().count(abstract_state->get_id()));
@@ -240,7 +241,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             move(concrete_state),
             abstract_state,
             AbstractState::get_cartesian_set(
-                task_proxy, task_proxy.get_goals()));
+                domain_sizes, task_proxy.get_goals()));
     }
 }
 

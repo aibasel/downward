@@ -26,6 +26,7 @@ struct Flaw;
 */
 class CEGAR {
     const TaskProxy task_proxy;
+    const std::vector<int> domain_sizes;
     const int max_states;
     const int max_non_looping_transitions;
     const SplitSelector split_selector;

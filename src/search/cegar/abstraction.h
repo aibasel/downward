@@ -39,7 +39,7 @@ class Abstraction {
 
     const bool debug;
 
-    void create_trivial_abstraction(const std::vector<int> &domain_sizes);
+    void initialize_trivial_abstraction(const std::vector<int> &domain_sizes);
 
 public:
     Abstraction(const std::shared_ptr<AbstractTask> &task, bool debug);
@@ -78,8 +78,6 @@ public:
 
     /* Needed for CEGAR::separate_facts_unreachable_before_goal(). */
     void mark_all_states_as_goals();
-
-    bool is_goal(AbstractState *state) const;
 
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
