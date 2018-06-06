@@ -10,17 +10,15 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(const Domains &domains, int id, Node *node)
+AbstractState::AbstractState(const Domains &domains, Node *node)
     : domains(domains),
       node(node),
-      id(id),
       goal_distance_estimate(0) {
 }
 
 AbstractState::AbstractState(AbstractState &&other)
     : domains(move(other.domains)),
-      node(move(other.node)),
-      id(other.id) {
+      node(move(other.node)) {
 }
 
 int AbstractState::count(int var) const {
@@ -36,7 +34,7 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     int num_wanted = wanted.size();
     utils::unused_variable(num_wanted);
     // We can only split states in the refinement hierarchy (not artificial states).
-    assert(node && id != UNDEFINED);
+    assert(node);
     // We can only refine for variables with at least two values.
     assert(num_wanted >= 1);
     assert(domains.count(var) > num_wanted);
@@ -62,8 +60,8 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     pair<Node *, Node *> new_nodes = node->split(
         var, wanted, v1_id, v2_id);
 
-    AbstractState *v1 = new AbstractState(v1_domains, v1_id, new_nodes.first);
-    AbstractState *v2 = new AbstractState(v2_domains, v2_id, new_nodes.second);
+    AbstractState *v1 = new AbstractState(v1_domains, new_nodes.first);
+    AbstractState *v2 = new AbstractState(v2_domains, new_nodes.second);
 
     assert(this->is_more_general_than(*v1));
     assert(this->is_more_general_than(*v2));
@@ -86,7 +84,7 @@ AbstractState AbstractState::regress(OperatorProxy op) const {
         int var_id = precondition.get_variable().get_id();
         regressed_domains.set_single_value(var_id, precondition.get_value());
     }
-    return AbstractState(regressed_domains, UNDEFINED, nullptr);
+    return AbstractState(regressed_domains, nullptr);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
@@ -122,10 +120,14 @@ int AbstractState::get_goal_distance_estimate() const {
     return goal_distance_estimate;
 }
 
+int AbstractState::get_id() const {
+    assert(node);
+    return node->get_state_id();
+}
+
 AbstractState *AbstractState::get_trivial_abstract_state(
     const vector<int> &domain_sizes, Node *root_node) {
-    assert(root_node->get_state_id() == 0);
-    return new AbstractState(Domains(domain_sizes), 0, root_node);
+    return new AbstractState(Domains(domain_sizes), root_node);
 }
 
 AbstractState AbstractState::get_cartesian_set(
@@ -134,6 +136,6 @@ AbstractState AbstractState::get_cartesian_set(
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
-    return AbstractState(domains, UNDEFINED, nullptr);
+    return AbstractState(domains, nullptr);
 }
 }

@@ -11,6 +11,7 @@ Node::Node(int state_id)
       var(UNDEFINED),
       value(UNDEFINED),
       state_id(state_id) {
+    assert(state_id != UNDEFINED);
 }
 
 Node::~Node() {

@@ -307,9 +307,8 @@ void TransitionSystem::rewire_loops(
 }
 
 void TransitionSystem::rewire(
-    const AbstractStates &states, AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
+    const AbstractStates &states, int v_id, AbstractState *v1, AbstractState *v2, int var) {
     // Retrieve old transitions and make space for new transitions.
-    int v_id = v->get_id();
     Transitions old_incoming = move(incoming[v_id]);
     Transitions old_outgoing = move(outgoing[v_id]);
     Loops old_loops = move(loops[v_id]);

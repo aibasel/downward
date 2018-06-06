@@ -68,18 +68,19 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (debug)
         cout << "Refine " << *state << " for " << var << "=" << wanted << endl;
 
+    int v_id = state->get_id();
     // Reuse state ID from obsolete parent to obtain consecutive IDs.
-    int left_state_id = state->get_id();
-    int right_state_id = get_num_states();
+    int v1_id = v_id;
+    int v2_id = get_num_states();
     pair<AbstractState *, AbstractState *> new_states = state->split(
-        var, wanted, left_state_id, right_state_id);
+        var, wanted, v1_id, v2_id);
     AbstractState *v1 = new_states.first;
     AbstractState *v2 = new_states.second;
 
-    transition_system->rewire(states, state, v1, v2, var);
+    transition_system->rewire(states, v_id, v1, v2, var);
 
-    states[v1->get_id()] = v1;
-    assert(static_cast<int>(states.size()) == v2->get_id());
+    states[v1_id] = v1;
+    assert(static_cast<int>(states.size()) == v2_id);
     states.push_back(v2);
 
     /*
@@ -99,13 +100,13 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
         }
     }
 
-    if (is_goal(state)) {
-        goals.erase(state->get_id());
+    if (goals.count(v_id)) {
+        goals.erase(v_id);
         if (v1->includes(goal_facts)) {
-            goals.insert(v1->get_id());
+            goals.insert(v1_id);
         }
         if (v2->includes(goal_facts)) {
-            goals.insert(v2->get_id());
+            goals.insert(v2_id);
         }
         if (debug) {
             cout << "goal states: " << goals.size() << endl;

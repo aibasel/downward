@@ -28,14 +28,11 @@ class AbstractState {
     // This state's node in the refinement hierarchy.
     Node *node;
 
-    // ID for indexing the state in vectors.
-    const int id;
-
     // We update this value when the state is part of an optimal solution.
     int goal_distance_estimate;
 
     // Construct instances with factory methods.
-    AbstractState(const Domains &domains, int id, Node *node);
+    AbstractState(const Domains &domains, Node *node);
 
     bool is_more_general_than(const AbstractState &other) const;
 
@@ -68,10 +65,8 @@ public:
     void set_goal_distance_estimate(int new_estimate);
     int get_goal_distance_estimate() const;
 
-    int get_id() const {
-        assert(id != UNDEFINED);
-        return id;
-    }
+    // IDs are consecutive, so they can be used to index states in vectors.
+    int get_id() const;
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
         return os << state.domains;
