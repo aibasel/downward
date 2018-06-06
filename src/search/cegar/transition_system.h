@@ -21,7 +21,6 @@ class AbstractState;
 */
 class TransitionSystem {
     const std::vector<std::vector<FactPair>> preconditions_by_operator;
-    const std::vector<std::vector<FactPair>> effects_by_operator;
     const std::vector<std::vector<FactPair>> postconditions_by_operator;
 
     // Transitions from and to other abstract states.
@@ -88,17 +87,11 @@ public:
 
     // TODO: These methods should probably live in a separate class.
     int get_precondition_value(int op_id, int var) const;
-    int get_effect_value(int op_id, int var) const;
     int get_postcondition_value(int op_id, int var) const;
 
     const std::vector<FactPair> get_preconditions(int op_id) const {
         assert(utils::in_bounds(op_id, preconditions_by_operator));
         return preconditions_by_operator[op_id];
-    }
-
-    const std::vector<FactPair> get_effects(int op_id) const {
-        assert(utils::in_bounds(op_id, effects_by_operator));
-        return effects_by_operator[op_id];
     }
 
     int get_num_states() const;

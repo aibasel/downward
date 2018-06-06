@@ -24,21 +24,6 @@ static vector<vector<FactPair>> get_preconditions_by_operator(
     return preconditions_by_operator;
 }
 
-static vector<vector<FactPair>> get_effects_by_operator(
-    const OperatorsProxy &ops) {
-    vector<vector<FactPair>> effects_by_operator;
-    effects_by_operator.reserve(ops.size());
-    for (OperatorProxy op : ops) {
-        vector<FactPair> effects;
-        effects.reserve(op.get_effects().size());
-        for (EffectProxy effect: op.get_effects()) {
-            effects.push_back(effect.get_fact().get_pair());
-        }
-        effects_by_operator.push_back(effects);
-    }
-    return effects_by_operator;
-}
-
 static vector<FactPair> get_postconditions(
     const OperatorProxy &op) {
     // Use map to obtain sorted postconditions.
@@ -91,7 +76,6 @@ static void remove_transition(
 
 TransitionSystem::TransitionSystem(const OperatorsProxy &ops)
     : preconditions_by_operator(get_preconditions_by_operator(ops)),
-      effects_by_operator(get_effects_by_operator(ops)),
       postconditions_by_operator(get_postconditions_by_operator(ops)),
       num_non_loops(0),
       num_loops(0) {
@@ -99,10 +83,6 @@ TransitionSystem::TransitionSystem(const OperatorsProxy &ops)
 
 int TransitionSystem::get_precondition_value(int op_id, int var) const {
     return lookup_value(preconditions_by_operator[op_id], var);
-}
-
-int TransitionSystem::get_effect_value(int op_id, int var) const {
-    return lookup_value(effects_by_operator[op_id], var);
 }
 
 int TransitionSystem::get_postcondition_value(int op_id, int var) const {
