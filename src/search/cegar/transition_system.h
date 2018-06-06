@@ -1,21 +1,14 @@
 #ifndef CEGAR_TRANSITION_SYSTEM_H
 #define CEGAR_TRANSITION_SYSTEM_H
 
-#include "abstract_state.h"
-#include "transition.h"
 #include "types.h"
 
-#include "../utils/collections.h"
-
-#include <memory>
 #include <vector>
 
 struct FactPair;
 class OperatorsProxy;
 
 namespace cegar {
-class AbstractState;
-
 /*
   Rewire transitions after each split.
 */
@@ -35,6 +28,9 @@ class TransitionSystem {
 
     void enlarge_vectors_by_one();
 
+    int get_precondition_value(int op_id, int var) const;
+    int get_postcondition_value(int op_id, int var) const;
+
     void add_incoming_transition(int src_id, int op_id, int target_id);
     void add_outgoing_transition(int src_id, int op_id, int target_id);
     void add_transition_both_ways(int src_id, int op_id, int target_id);
@@ -52,42 +48,16 @@ class TransitionSystem {
 public:
     explicit TransitionSystem(const OperatorsProxy &ops);
 
-    void initialize(AbstractState *initial_state);
+    // Add self-loops to single abstract state in trivial abstraction.
+    void initialize_trivial_abstraction();
 
-    // Update transition system after v has been split into v1 and v2.
+    // Update transition system after v has been split for var into v1 and v2.
     void rewire(
         const AbstractStates &states, int v_id, AbstractState *v1, AbstractState *v2, int var);
 
-    const Transitions &get_incoming_transitions(int state_id) const {
-        assert(utils::in_bounds(state_id, incoming));
-        return incoming[state_id];
-    }
-
-    const std::vector<Transitions> &get_incoming_transitions() const {
-        return incoming;
-    }
-
-    const Transitions &get_outgoing_transitions(int state_id) const {
-        assert(utils::in_bounds(state_id, outgoing));
-        return outgoing[state_id];
-    }
-
-    const Transitions &get_outgoing_transitions(AbstractState *state) const {
-        return get_outgoing_transitions(state->get_id());
-    }
-
-    const std::vector<Transitions> &get_outgoing_transitions() const {
-        return outgoing;
-    }
-
-    const Loops &get_loops(int state_id) const {
-        assert(utils::in_bounds(state_id, loops));
-        return loops[state_id];
-    }
-
-    // TODO: These methods should probably live in a separate class.
-    int get_precondition_value(int op_id, int var) const;
-    int get_postcondition_value(int op_id, int var) const;
+    const std::vector<Transitions> &get_incoming_transitions() const;
+    const std::vector<Transitions> &get_outgoing_transitions() const;
+    const std::vector<Loops> &get_loops() const;
 
     int get_num_states() const;
     int get_num_operators() const;

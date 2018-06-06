@@ -1,5 +1,6 @@
 #include "cost_saturation.h"
 
+#include "abstract_state.h"
 #include "abstraction.h"
 #include "cartesian_heuristic_function.h"
 #include "cegar.h"
@@ -57,7 +58,8 @@ static vector<int> compute_saturated_costs(
         if (g == INF || h == INF)
             continue;
 
-        for (const Transition &transition: transition_system.get_outgoing_transitions(state_id)) {
+        for (const Transition &transition:
+             transition_system.get_outgoing_transitions()[state_id]) {
             int op_id = transition.op_id;
             int succ_id = transition.target_id;
             int succ_h = h_values[succ_id];
@@ -72,7 +74,7 @@ static vector<int> compute_saturated_costs(
         if (use_general_costs) {
             /* To prevent negative cost cycles, all operators inducing
                self-loops must have non-negative costs. */
-            for (int op_id : transition_system.get_loops(state_id)) {
+            for (int op_id : transition_system.get_loops()[state_id]) {
                 saturated_costs[op_id] = max(saturated_costs[op_id], 0);
             }
         }

@@ -1,5 +1,7 @@
 #include "transition_system.h"
 
+#include "abstract_state.h"
+#include "transition.h"
 #include "utils.h"
 
 #include "../task_proxy.h"
@@ -96,11 +98,11 @@ void TransitionSystem::enlarge_vectors_by_one() {
     loops.resize(new_num_states);
 }
 
-void TransitionSystem::initialize(AbstractState *initial_state) {
+void TransitionSystem::initialize_trivial_abstraction() {
+    assert(get_num_states() == 0);
     enlarge_vectors_by_one();
-    int num_operators = preconditions_by_operator.size();
-    int init_id = initial_state->get_id();
-    for (int i = 0; i < num_operators; ++i) {
+    int init_id = 0;
+    for (int i = 0; i < get_num_operators(); ++i) {
         add_loop(init_id, i);
     }
 }
@@ -306,10 +308,21 @@ void TransitionSystem::rewire(
     rewire_loops(old_loops, v1, v2, var);
 }
 
+const vector<Transitions> &TransitionSystem::get_incoming_transitions() const {
+    return incoming;
+}
+
+const vector<Transitions> &TransitionSystem::get_outgoing_transitions() const {
+    return outgoing;
+}
+
+const vector<Loops> &TransitionSystem::get_loops() const {
+    return loops;
+}
+
 int TransitionSystem::get_num_states() const {
     assert(incoming.size() == outgoing.size());
-    // We may have already deleted the self-loops.
-    assert(loops.empty() || loops.size() == outgoing.size());
+    assert(loops.size() == outgoing.size());
     return outgoing.size();
 }
 
