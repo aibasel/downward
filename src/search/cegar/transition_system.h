@@ -57,7 +57,7 @@ public:
 
     // Update transition system after v has been split into v1 and v2.
     void rewire(
-        const AbstractStates &states, AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
+        const AbstractStates &states, int v_id, AbstractState *v1, AbstractState *v2, int var);
 
     const Transitions &get_incoming_transitions(int state_id) const {
         assert(utils::in_bounds(state_id, incoming));

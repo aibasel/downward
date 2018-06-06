@@ -54,11 +54,12 @@ class Node {
     Node *left_child;
     Node *right_child;
 
-    // Variable and value for which the corresponding state was split.
+    /* Before splitting the corresponding state for var and value, both
+       members hold UNDEFINED. */
     int var;
     int value;
 
-    // Holds UNDEFINED if this node belongs to a split state.
+    // When splitting the corresponding state, we change this value to UNDEFINED.
     int state_id;
 
 public:
@@ -99,7 +100,6 @@ public:
 
     int get_state_id() const {
         assert(!is_split());
-        assert(state_id != UNDEFINED);
         return state_id;
     }
 };
