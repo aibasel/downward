@@ -1,7 +1,9 @@
 #include "abstract_search.h"
 
-#include "abstract_state.h"
+#include "transition_system.h"
 #include "utils.h"
+
+#include "../utils/memory.h"
 
 #include <cassert>
 
@@ -9,75 +11,83 @@ using namespace std;
 
 namespace cegar {
 AbstractSearch::AbstractSearch(
-    vector<int> &&operator_costs,
-    AbstractStates &states)
-    : operator_costs(move(operator_costs)),
-      states(states) {
+    const vector<int> &operator_costs)
+    : operator_costs(operator_costs) {
 }
 
-void AbstractSearch::reset() {
+void AbstractSearch::reset(int num_states) {
     open_queue.clear();
-    for (AbstractState *state : states) {
-        state->get_search_info().reset();
+    search_info.resize(num_states);
+    for (AbstractSearchInfo &info : search_info) {
+        info.reset();
     }
-    solution.clear();
 }
 
-bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
-    reset();
-    init->get_search_info().decrease_g_value_to(0);
-    open_queue.push(init->get_h_value(), init);
-    AbstractState *goal = astar_search(true, true, &goals);
-    bool has_found_solution = static_cast<bool>(goal);
+vector<int> AbstractSearch::get_g_values() const {
+    vector<int> g_values;
+    g_values.reserve(search_info.size());
+    for (const AbstractSearchInfo &info : search_info) {
+        g_values.push_back(info.get_g_value());
+    }
+    return g_values;
+}
+
+unique_ptr<Solution> AbstractSearch::find_solution(
+    const vector<Transitions> &transitions,
+    const AbstractStates &states, int init_id, const Goals &goal_ids) {
+    assert(transitions.size() == states.size());
+    int num_states = states.size();
+    reset(num_states);
+    for (int state_id = 0; state_id < num_states; ++state_id) {
+        search_info[state_id].increase_h_value_to(
+            states[state_id]->get_goal_distance_estimate());
+    }
+    search_info[init_id].decrease_g_value_to(0);
+    open_queue.push(search_info[init_id].get_h_value(), init_id);
+    int goal_id = astar_search(transitions, true, &goal_ids);
+    open_queue.clear();
+    bool has_found_solution = (goal_id != UNDEFINED);
     if (has_found_solution) {
-        extract_solution(init, goal);
+        return extract_solution(init_id, goal_id);
     }
-    return has_found_solution;
+    return nullptr;
 }
 
-void AbstractSearch::forward_dijkstra(AbstractState *init) {
-    reset();
-    init->get_search_info().decrease_g_value_to(0);
-    open_queue.push(0, init);
-    astar_search(true, false);
-}
-
-void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
-    reset();
-    for (AbstractState *goal : goals) {
-        goal->get_search_info().decrease_g_value_to(0);
-        open_queue.push(0, goal);
+vector<int> AbstractSearch::compute_distances(
+    const vector<Transitions> &transitions, const unordered_set<int> &start_ids) {
+    reset(transitions.size());
+    for (int goal_id : start_ids) {
+        search_info[goal_id].decrease_g_value_to(0);
+        open_queue.push(0, goal_id);
     }
-    astar_search(false, false);
+    astar_search(transitions, false);
+    open_queue.clear();
+    return get_g_values();
 }
 
-AbstractState *AbstractSearch::astar_search(
-    bool forward, bool use_h, AbstractStates *goals) {
-    assert((forward && use_h && goals) ||
-           (!forward && !use_h && !goals) ||
-           (forward && !use_h && !goals));
+int AbstractSearch::astar_search(
+    const vector<Transitions> &transitions, bool use_h, const Goals *goals) {
+    assert((use_h && goals) || (!use_h && !goals));
     while (!open_queue.empty()) {
-        pair<int, AbstractState *> top_pair = open_queue.pop();
+        pair<int, int> top_pair = open_queue.pop();
         int old_f = top_pair.first;
-        AbstractState *state = top_pair.second;
+        int state_id = top_pair.second;
 
-        const int g = state->get_search_info().get_g_value();
+        const int g = search_info[state_id].get_g_value();
         assert(0 <= g && g < INF);
         int new_f = g;
         if (use_h)
-            new_f += state->get_h_value();
+            new_f += search_info[state_id].get_h_value();
         assert(new_f <= old_f);
         if (new_f < old_f)
             continue;
-        if (goals && goals->count(state) == 1) {
-            return state;
+        if (goals && goals->count(state_id) == 1) {
+            return state_id;
         }
-        const Transitions &transitions = forward ?
-                                         state->get_outgoing_transitions() :
-                                         state->get_incoming_transitions();
-        for (const Transition &transition : transitions) {
+        assert(utils::in_bounds(state_id, transitions));
+        for (const Transition &transition : transitions[state_id]) {
             int op_id = transition.op_id;
-            AbstractState *successor = transition.target;
+            int succ_id = transition.target_id;
 
             assert(utils::in_bounds(op_id, operator_costs));
             const int op_cost = operator_costs[op_id];
@@ -85,38 +95,34 @@ AbstractState *AbstractSearch::astar_search(
             int succ_g = (op_cost == INF) ? INF : g + op_cost;
             assert(succ_g >= 0);
 
-            if (succ_g < successor->get_search_info().get_g_value()) {
-                successor->get_search_info().decrease_g_value_to(succ_g);
+            if (succ_g < search_info[succ_id].get_g_value()) {
+                search_info[succ_id].decrease_g_value_to(succ_g);
                 int f = succ_g;
                 if (use_h) {
-                    int h = successor->get_h_value();
+                    int h = search_info[succ_id].get_h_value();
                     if (h == INF)
                         continue;
                     f += h;
                 }
                 assert(f >= 0);
-                open_queue.push(f, successor);
-                successor->get_search_info().set_incoming_transition(
-                    Transition(op_id, state));
+                assert(f != INF);
+                open_queue.push(f, succ_id);
+                search_info[succ_id].set_incoming_transition(Transition(op_id, state_id));
             }
         }
     }
-    return nullptr;
+    return UNDEFINED;
 }
 
-void AbstractSearch::extract_solution(
-    AbstractState *init, AbstractState *goal) {
-    AbstractState *current = goal;
-    while (current != init) {
-        const Transition &prev =
-            current->get_search_info().get_incoming_transition();
-        solution.emplace_front(prev.op_id, current);
-        assert(utils::in_bounds(prev.op_id, operator_costs));
-        const int prev_op_cost = operator_costs[prev.op_id];
-        assert(prev_op_cost != INF);
-        prev.target->set_h_value(current->get_h_value() + prev_op_cost);
-        assert(prev.target != current);
-        current = prev.target;
+unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) const {
+    unique_ptr<Solution> solution = utils::make_unique_ptr<Solution>();
+    int current_id = goal_id;
+    while (current_id != init_id) {
+        const Transition &prev = search_info[current_id].get_incoming_transition();
+        solution->emplace_front(prev.op_id, current_id);
+        assert(prev.target_id != current_id);
+        current_id = prev.target_id;
     }
+    return solution;
 }
 }
