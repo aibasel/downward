@@ -28,7 +28,7 @@ Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, bool debug)
       init(nullptr),
       refinement_hierarchy(utils::make_unique_ptr<RefinementHierarchy>(task)),
       debug(debug) {
-    create_trivial_abstraction(get_domain_sizes(TaskProxy(*task)));
+    initialize_trivial_abstraction(get_domain_sizes(TaskProxy(*task)));
 }
 
 Abstraction::~Abstraction() {
@@ -53,11 +53,7 @@ void Abstraction::mark_all_states_as_goals() {
     }
 }
 
-bool Abstraction::is_goal(AbstractState *state) const {
-    return goals.count(state->get_id()) == 1;
-}
-
-void Abstraction::create_trivial_abstraction(const vector<int> &domain_sizes) {
+void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes) {
     init = AbstractState::get_trivial_abstract_state(
         domain_sizes, refinement_hierarchy->get_root());
     transition_system->initialize_trivial_abstraction();

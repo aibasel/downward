@@ -74,7 +74,7 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     return make_pair(v1, v2);
 }
 
-AbstractState AbstractState::regress(OperatorProxy op) const {
+AbstractState AbstractState::regress(const OperatorProxy &op) const {
     Domains regressed_domains = domains;
     for (EffectProxy effect : op.get_effects()) {
         int var_id = effect.get_fact().get_variable().get_id();
@@ -131,8 +131,8 @@ AbstractState *AbstractState::get_trivial_abstract_state(
 }
 
 AbstractState AbstractState::get_cartesian_set(
-    const TaskProxy &task_proxy, const ConditionsProxy &conditions) {
-    Domains domains(get_domain_sizes(task_proxy));
+    const vector<int> &domain_sizes, const ConditionsProxy &conditions) {
+    Domains domains(domain_sizes);
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
