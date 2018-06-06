@@ -35,7 +35,7 @@ Abstraction::~Abstraction() {
         delete state;
 }
 
-std::unique_ptr<RefinementHierarchy> Abstraction::extract_refinement_hierarchy() {
+unique_ptr<RefinementHierarchy> Abstraction::extract_refinement_hierarchy() {
     assert(refinement_hierarchy);
     return move(refinement_hierarchy);
 }

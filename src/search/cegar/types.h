@@ -7,7 +7,7 @@
 
 namespace cegar {
 class AbstractState;
-class Transition;
+struct Transition;
 
 using AbstractStates = std::vector<AbstractState *>;
 using Goals = std::unordered_set<int>;

@@ -101,7 +101,7 @@ CEGAR::CEGAR(
 CEGAR::~CEGAR() {
 }
 
-std::unique_ptr<Abstraction> CEGAR::extract_abstraction() {
+unique_ptr<Abstraction> CEGAR::extract_abstraction() {
     return move(abstraction);
 }
 
