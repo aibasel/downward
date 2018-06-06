@@ -10,7 +10,8 @@ Node::Node()
       right_child(nullptr),
       var(LEAF_NODE),
       value(LEAF_NODE),
-      h(0) {
+      h(0),
+      state_id(-1) {
 }
 
 Node::~Node() {
@@ -46,8 +47,10 @@ Node *Node::get_child(int value) const {
 }
 
 
-RefinementHierarchy::RefinementHierarchy()
-    : root(new Node()) {
+RefinementHierarchy::RefinementHierarchy(
+    const shared_ptr<AbstractTask> &task)
+    : task(task),
+      root(new Node()) {
 }
 
 Node *RefinementHierarchy::get_node(const State &state) const {
@@ -57,5 +60,11 @@ Node *RefinementHierarchy::get_node(const State &state) const {
         current = current->get_child(state[current->get_var()].get_value());
     }
     return current;
+}
+
+int RefinementHierarchy::get_abstract_state_id(const State &state) const {
+    TaskProxy subtask_proxy(*task);
+    State subtask_state = subtask_proxy.convert_ancestor_state(state);
+    return get_node(subtask_state)->get_state_id();
 }
 }
