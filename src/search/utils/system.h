@@ -32,9 +32,8 @@
 namespace utils {
 enum class ExitCode {
     /*
-      We document Fast Downward exit codes at
-      http://www.fast-downward.org/ExitCodes. Please update this documentation
-      when making changes below.
+      For a full list of exit codes, please see driver/returncodes.py. Here,
+      we only list codes that are used by the search component of the planner.
     */
     // 0-9: exit codes denoting a plan was found
     SUCCESS = 0,
