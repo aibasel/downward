@@ -89,20 +89,10 @@ public:
     int get_precondition_value(int op_id, int var) const;
     int get_postcondition_value(int op_id, int var) const;
 
-    const std::vector<FactPair> get_preconditions(int op_id) const {
-        assert(utils::in_bounds(op_id, preconditions_by_operator));
-        return preconditions_by_operator[op_id];
-    }
-
     int get_num_states() const;
     int get_num_operators() const;
     int get_num_non_loops() const;
     int get_num_loops() const;
-
-    std::vector<int> extract_operators_inducing_loops();
-
-    std::vector<Transitions> extract_incoming_transitions();
-    std::vector<Transitions> extract_outgoing_transitions();
 
     void print_statistics() const;
 };

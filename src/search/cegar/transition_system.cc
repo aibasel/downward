@@ -325,33 +325,6 @@ int TransitionSystem::get_num_loops() const {
     return num_loops;
 }
 
-vector<int> TransitionSystem::extract_operators_inducing_loops() {
-    vector<int> looping_operators;
-    int num_operators = preconditions_by_operator.size();
-    vector<bool> operator_induces_self_loop(num_operators, false);
-    while (!loops.empty()) {
-        for (int op_id : loops.back()) {
-            operator_induces_self_loop[op_id] = true;
-        }
-        loops.pop_back();
-    }
-    utils::release_vector_memory(loops);
-    for (int op_id = 0; op_id < num_operators; ++op_id) {
-        if (operator_induces_self_loop[op_id]) {
-            looping_operators.push_back(op_id);
-        }
-    }
-    return looping_operators;
-}
-
-vector<Transitions> TransitionSystem::extract_incoming_transitions() {
-    return move(incoming);
-}
-
-vector<Transitions> TransitionSystem::extract_outgoing_transitions() {
-    return move(outgoing);
-}
-
 void TransitionSystem::print_statistics() const {
     int total_incoming_transitions = 0;
     int total_outgoing_transitions = 0;
