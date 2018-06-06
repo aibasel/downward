@@ -573,13 +573,14 @@ fast_downward_plugin(
         cegar/abstract_state
         cegar/additive_cartesian_heuristic
         cegar/cartesian_heuristic_function
+        cegar/cegar
         cegar/cost_saturation
         cegar/domains
         cegar/refinement_hierarchy
         cegar/split_selector
         cegar/subtask_generators
         cegar/transition
-        cegar/transition_updater
+        cegar/transition_system
         cegar/utils
         cegar/utils_landmarks
     DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES TASK_PROPERTIES

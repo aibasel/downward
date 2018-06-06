@@ -2,6 +2,7 @@
 
 #include "cartesian_heuristic_function.h"
 #include "cost_saturation.h"
+#include "types.h"
 #include "utils.h"
 
 #include "../globals.h"
@@ -32,7 +33,8 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")),
-        *rng);
+        *rng,
+        false);
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }

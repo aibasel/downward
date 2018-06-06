@@ -1,6 +1,8 @@
 #ifndef CEGAR_REFINEMENT_HIERARCHY_H
 #define CEGAR_REFINEMENT_HIERARCHY_H
 
+#include "types.h"
+
 #include <cassert>
 #include <memory>
 #include <utility>
@@ -17,7 +19,7 @@ class Node;
   abstraction. The hierarchy forms a DAG with inner nodes for each
   split and leaf nodes for the abstract states.
 
-  It is used for efficient lookup of heuristic values during search.
+  It is used for efficient lookup of abstract states during search.
 
   Inner nodes correspond to abstract states that have been split (or
   helper nodes, see below). Leaf nodes correspond to the current
@@ -28,10 +30,10 @@ class RefinementHierarchy {
     std::shared_ptr<AbstractTask> task;
     std::unique_ptr<Node> root;
 
+    Node *get_node(const State &state) const;
+
 public:
     explicit RefinementHierarchy(const std::shared_ptr<AbstractTask> &task);
-
-    Node *get_node(const State &state) const;
 
     Node *get_root() const {
         return root.get();
@@ -42,7 +44,6 @@ public:
 
 
 class Node {
-    static const int LEAF_NODE = -1;
     /*
       While right_child is always the node of a (possibly split)
       abstract state, left_child may be a helper node. We add helper
@@ -57,15 +58,11 @@ class Node {
     int var;
     int value;
 
-    // Estimated cost to nearest goal state from this node's state.
-    int h;
-
-    // Set after the abstraction is built.
-    // TODO: Set ID in the constructor.
+    // Holds UNDEFINED if this node belongs to a split state.
     int state_id;
 
 public:
-    Node();
+    explicit Node(int state_id);
     ~Node();
 
     Node(const Node &) = delete;
@@ -77,13 +74,14 @@ public:
       the right child as their right child and the next helper node as
       their left child.
     */
-    std::pair<Node *, Node *> split(int var, const std::vector<int> &values);
+    std::pair<Node *, Node *> split(
+        int var, const std::vector<int> &values, int left_state_id, int right_state_id);
 
     bool is_split() const {
         assert((!left_child && !right_child &&
-                var == LEAF_NODE && value == LEAF_NODE) ||
+                var == UNDEFINED && value == UNDEFINED && state_id != UNDEFINED) ||
                (left_child && right_child &&
-                var != LEAF_NODE && value != LEAF_NODE));
+                var != UNDEFINED && value != UNDEFINED && state_id == UNDEFINED));
         return left_child;
     }
 
@@ -99,25 +97,10 @@ public:
 
     Node *get_child(int value) const;
 
-    void increase_h_value_to(int new_h) {
-        assert(new_h >= h);
-        h = new_h;
-    }
-
-    int get_h_value() const {
-        return h;
-    }
-
     int get_state_id() const {
         assert(!is_split());
-        assert(state_id != -1);
+        assert(state_id != UNDEFINED);
         return state_id;
-    }
-
-    void set_state_id(int id) {
-        assert(!is_split());
-        assert(state_id == -1);
-        state_id = id;
     }
 };
 }
