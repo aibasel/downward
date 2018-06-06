@@ -29,6 +29,8 @@ ShrinkFH::ShrinkFH(const Options &opts)
 vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
     const TransitionSystem &ts,
     const Distances &distances) const {
+    assert(distances.are_init_distances_computed());
+    assert(distances.are_goal_distances_computed());
     int max_h = 0;
     int max_f = 0;
     for (int state = 0; state < ts.get_size(); ++state) {

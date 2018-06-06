@@ -15,7 +15,7 @@ class LandmarkCostAssignment;
 class LandmarkStatusManager;
 
 class LandmarkCountHeuristic : public Heuristic {
-    friend class LamaFFSynergy;
+    friend class LamaSynergyHeuristic;
     std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
     const bool use_preferred_operators;
@@ -52,8 +52,13 @@ public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
     ~LandmarkCountHeuristic();
 
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) override {
+        evals.insert(this);
+    }
+
     virtual void notify_initial_state(const GlobalState &initial_state) override;
-    virtual bool notify_state_transition(const GlobalState &parent_state,
+    virtual void notify_state_transition(const GlobalState &parent_state,
                                          OperatorID op_id,
                                          const GlobalState &state) override;
     virtual bool dead_ends_are_reliable() const override;

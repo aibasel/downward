@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+#include <cassert>
 #include <vector>
 
 /*
@@ -21,7 +22,8 @@ class Distances {
     const TransitionSystem &transition_system;
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
-    bool distances_computed;
+    bool init_distances_computed;
+    bool goal_distances_computed;
 
     void clear_distances();
     int get_num_states() const;
@@ -33,10 +35,14 @@ class Distances {
     void compute_goal_distances_general_cost();
 public:
     explicit Distances(const TransitionSystem &transition_system);
-    ~Distances();
+    ~Distances() = default;
 
-    bool are_distances_computed() const {
-        return distances_computed;
+    bool are_init_distances_computed() const {
+        return init_distances_computed;
+    }
+
+    bool are_goal_distances_computed() const {
+        return goal_distances_computed;
     }
 
     void compute_distances(
@@ -60,10 +66,12 @@ public:
         Verbosity verbosity);
 
     int get_init_distance(int state) const {
+        assert(are_init_distances_computed());
         return init_distances[state];
     }
 
     int get_goal_distance(int state) const {
+        assert(are_goal_distances_computed());
         return goal_distances[state];
     }
 

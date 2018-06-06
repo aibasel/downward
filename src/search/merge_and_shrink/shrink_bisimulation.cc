@@ -94,8 +94,7 @@ struct Signature {
 
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
-    : ShrinkStrategy(),
-      greedy(opts.get<bool>("greedy")),
+    : greedy(opts.get<bool>("greedy")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
@@ -241,6 +240,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
     int target_size) const {
+    assert(distances.are_goal_distances_computed());
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
