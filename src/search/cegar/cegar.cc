@@ -103,6 +103,7 @@ CEGAR::~CEGAR() {
 }
 
 unique_ptr<Abstraction> CEGAR::extract_abstraction() {
+    assert(abstraction);
     return move(abstraction);
 }
 

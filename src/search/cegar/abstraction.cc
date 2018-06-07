@@ -36,14 +36,39 @@ Abstraction::~Abstraction() {
         delete state;
 }
 
-unique_ptr<RefinementHierarchy> Abstraction::extract_refinement_hierarchy() {
-    assert(refinement_hierarchy);
-    return move(refinement_hierarchy);
+const AbstractStates &Abstraction::get_states() const {
+    return states;
+}
+
+AbstractState *Abstraction::get_initial_state() const {
+    return init;
+}
+
+int Abstraction::get_num_states() const {
+    return states.size();
+}
+
+const Goals &Abstraction::get_goals() const {
+    return goals;
+}
+
+AbstractState *Abstraction::get_state(int state_id) const {
+    assert(utils::in_bounds(state_id, states));
+    return states[state_id];
+}
+
+const TransitionSystem &Abstraction::get_transition_system() const {
+    return *transition_system;
 }
 
 int Abstraction::get_init_h() const {
     // The initial state always holds its exact abstract goal distance.
     return init->get_goal_distance_estimate();
+}
+
+unique_ptr<RefinementHierarchy> Abstraction::extract_refinement_hierarchy() {
+    assert(refinement_hierarchy);
+    return move(refinement_hierarchy);
 }
 
 void Abstraction::mark_all_states_as_goals() {
@@ -56,7 +81,6 @@ void Abstraction::mark_all_states_as_goals() {
 void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes) {
     init = AbstractState::get_trivial_abstract_state(
         domain_sizes, refinement_hierarchy->get_root());
-    transition_system->initialize_trivial_abstraction();
     goals.insert(init->get_id());
     states.push_back(init);
 }

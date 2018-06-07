@@ -81,6 +81,7 @@ TransitionSystem::TransitionSystem(const OperatorsProxy &ops)
       postconditions_by_operator(get_postconditions_by_operator(ops)),
       num_non_loops(0),
       num_loops(0) {
+    add_loops_in_trivial_abstraction();
 }
 
 int TransitionSystem::get_precondition_value(int op_id, int var) const {
@@ -98,7 +99,7 @@ void TransitionSystem::enlarge_vectors_by_one() {
     loops.resize(new_num_states);
 }
 
-void TransitionSystem::initialize_trivial_abstraction() {
+void TransitionSystem::add_loops_in_trivial_abstraction() {
     assert(get_num_states() == 0);
     enlarge_vectors_by_one();
     int init_id = 0;
