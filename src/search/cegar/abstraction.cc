@@ -61,11 +61,6 @@ const TransitionSystem &Abstraction::get_transition_system() const {
     return *transition_system;
 }
 
-int Abstraction::get_init_h() const {
-    // The initial state always holds its exact abstract goal distance.
-    return init->get_goal_distance_estimate();
-}
-
 unique_ptr<RefinementHierarchy> Abstraction::extract_refinement_hierarchy() {
     assert(refinement_hierarchy);
     return move(refinement_hierarchy);
@@ -138,5 +133,7 @@ void Abstraction::print_statistics() const {
     cout << "States: " << get_num_states() << endl;
     cout << "Goal states: " << goals.size() << endl;
     transition_system->print_statistics();
+    // The initial state always holds its exact abstract goal distance.
+    cout << "Init h: " << init->get_goal_distance_estimate() << endl;
 }
 }
