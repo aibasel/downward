@@ -77,42 +77,6 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
 FactoredTransitionSystem::~FactoredTransitionSystem() {
 }
 
-bool FactoredTransitionSystem::apply_abstraction(
-    int index,
-    const StateEquivalenceRelation &state_equivalence_relation,
-    Verbosity verbosity) {
-    assert(is_component_valid(index));
-
-    int new_num_states = state_equivalence_relation.size();
-    if (new_num_states == transition_systems[index]->get_size()) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << transition_systems[index]->tag()
-                 << "not applying abstraction (same number of states)" << endl;
-        }
-        return false;
-    }
-
-    vector<int> abstraction_mapping = compute_abstraction_mapping(
-        transition_systems[index]->get_size(), state_equivalence_relation);
-
-    transition_systems[index]->apply_abstraction(
-        state_equivalence_relation, abstraction_mapping, verbosity);
-    if (compute_init_distances || compute_goal_distances) {
-        distances[index]->apply_abstraction(
-            state_equivalence_relation,
-            compute_init_distances,
-            compute_goal_distances,
-            verbosity);
-    }
-    mas_representations[index]->apply_abstraction_to_lookup_table(
-        abstraction_mapping);
-
-    /* If distances need to be recomputed, this already happened in the
-       Distances object. */
-    assert(is_component_valid(index));
-    return true;
-}
-
 void FactoredTransitionSystem::assert_index_valid(int index) const {
     assert(utils::in_bounds(index, transition_systems));
     assert(utils::in_bounds(index, mas_representations));
@@ -158,6 +122,42 @@ void FactoredTransitionSystem::apply_label_mapping(
         }
     }
     assert_all_components_valid();
+}
+
+bool FactoredTransitionSystem::apply_abstraction(
+    int index,
+    const StateEquivalenceRelation &state_equivalence_relation,
+    Verbosity verbosity) {
+    assert(is_component_valid(index));
+
+    int new_num_states = state_equivalence_relation.size();
+    if (new_num_states == transition_systems[index]->get_size()) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << transition_systems[index]->tag()
+                 << "not applying abstraction (same number of states)" << endl;
+        }
+        return false;
+    }
+
+    vector<int> abstraction_mapping = compute_abstraction_mapping(
+        transition_systems[index]->get_size(), state_equivalence_relation);
+
+    transition_systems[index]->apply_abstraction(
+        state_equivalence_relation, abstraction_mapping, verbosity);
+    if (compute_init_distances || compute_goal_distances) {
+        distances[index]->apply_abstraction(
+            state_equivalence_relation,
+            compute_init_distances,
+            compute_goal_distances,
+            verbosity);
+    }
+    mas_representations[index]->apply_abstraction_to_lookup_table(
+        abstraction_mapping);
+
+    /* If distances need to be recomputed, this already happened in the
+       Distances object. */
+    assert(is_component_valid(index));
+    return true;
 }
 
 int FactoredTransitionSystem::merge(
