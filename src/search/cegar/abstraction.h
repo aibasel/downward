@@ -53,7 +53,6 @@ public:
     const Goals &get_goals() const;
     AbstractState *get_state(int state_id) const;
     const TransitionSystem &get_transition_system() const;
-    int get_init_h() const;
     std::unique_ptr<RefinementHierarchy> extract_refinement_hierarchy();
 
     /* Needed for CEGAR::separate_facts_unreachable_before_goal(). */
