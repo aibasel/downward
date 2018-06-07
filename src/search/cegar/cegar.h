@@ -19,10 +19,12 @@ class Abstraction;
 struct Flaw;
 
 /*
-  Store the set of AbstractStates, use AbstractSearch to find abstract
-  solutions, find flaws, use SplitSelector to select splits in case of
-  ambiguities, break spurious solutions and maintain the
-  RefinementHierarchy.
+  Iteratively refine a Cartesian abstraction with counterexample-guided
+  abstraction refinement (CEGAR).
+
+  Store the abstraction, use AbstractSearch to find abstract solutions, find
+  flaws, use SplitSelector to select splits in case of ambiguities and break
+  spurious solutions.
 */
 class CEGAR {
     const TaskProxy task_proxy;

@@ -28,6 +28,9 @@ class TransitionSystem {
 
     void enlarge_vectors_by_one();
 
+    // Add self-loops to single abstract state in trivial abstraction.
+    void add_loops_in_trivial_abstraction();
+
     int get_precondition_value(int op_id, int var) const;
     int get_postcondition_value(int op_id, int var) const;
 
@@ -47,9 +50,6 @@ class TransitionSystem {
 
 public:
     explicit TransitionSystem(const OperatorsProxy &ops);
-
-    // Add self-loops to single abstract state in trivial abstraction.
-    void initialize_trivial_abstraction();
 
     // Update transition system after v has been split for var into v1 and v2.
     void rewire(

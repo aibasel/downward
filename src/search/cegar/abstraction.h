@@ -47,34 +47,14 @@ public:
 
     Abstraction(const Abstraction &) = delete;
 
-    std::unique_ptr<RefinementHierarchy> extract_refinement_hierarchy();
-
-    const AbstractStates &get_states() const {
-        return states;
-    }
-
-    int get_num_states() const {
-        return states.size();
-    }
-
-    AbstractState *get_initial_state() const {
-        return init;
-    }
-
-    const Goals &get_goals() const {
-        return goals;
-    }
-
-    AbstractState *get_state(int state_id) const {
-        assert(utils::in_bounds(state_id, states));
-        return states[state_id];
-    }
-
-    const TransitionSystem &get_transition_system() const {
-        return *transition_system;
-    }
-
+    int get_num_states() const;
+    const AbstractStates &get_states() const;
+    AbstractState *get_initial_state() const;
+    const Goals &get_goals() const;
+    AbstractState *get_state(int state_id) const;
+    const TransitionSystem &get_transition_system() const;
     int get_init_h() const;
+    std::unique_ptr<RefinementHierarchy> extract_refinement_hierarchy();
 
     /* Needed for CEGAR::separate_facts_unreachable_before_goal(). */
     void mark_all_states_as_goals();
