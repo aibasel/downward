@@ -68,14 +68,15 @@ namespace int_hash_set {
   cache locality.
 
 */
+
+using KeyType = int;
+using HashType = unsigned int;
+
+static_assert(sizeof(KeyType) == 4, "KeyType does not use 4 bytes");
+static_assert(sizeof(HashType) == 4, "HashType does not use 4 bytes");
+
 template<typename Hasher, typename Equal>
 class IntHashSet {
-    using KeyType = int;
-    using HashType = unsigned int;
-
-    static_assert(sizeof(KeyType) == 4, "IntHashSet::KeyType does not use 4 bytes");
-    static_assert(sizeof(HashType) == 4, "IntHashSet::HashType does not use 4 bytes");
-
     // Max distance from the ideal bucket to the actual bucket for each key.
     static const int MAX_DISTANCE = 32;
     // MSVC 12.0 lacks support for constexpr. Other compilers allow using
