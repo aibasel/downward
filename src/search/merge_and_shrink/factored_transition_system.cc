@@ -231,4 +231,8 @@ bool FactoredTransitionSystem::is_active(int index) const {
     assert_index_valid(index);
     return transition_systems[index] != nullptr;
 }
+
+int FactoredTransitionSystem::get_init_state_goal_distance(int index) const {
+    return distances[index]->get_goal_distance(transition_systems[index]->get_init_state());
+}
 }

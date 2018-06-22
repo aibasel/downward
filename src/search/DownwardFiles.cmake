@@ -590,6 +590,7 @@ fast_downward_plugin(
     HELP "The Merge-and-Shrink heuristic"
     SOURCES
         merge_and_shrink/distances
+        merge_and_shrink/factor_scoring_functions
         merge_and_shrink/factored_transition_system
         merge_and_shrink/fts_factory
         merge_and_shrink/label_equivalence_relation

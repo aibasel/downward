@@ -126,8 +126,6 @@ private:
         return transitions_by_group_id[group_id];
     }
 
-    // Statistics and output
-    int compute_total_transitions() const;
     std::string get_description() const;
 public:
     TransitionSystem(
@@ -204,6 +202,7 @@ public:
     bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
+    int compute_total_transitions() const;
     void statistics() const;
 
     int get_size() const {
