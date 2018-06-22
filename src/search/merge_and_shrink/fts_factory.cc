@@ -57,6 +57,7 @@ class FTSFactory {
     int max_valid_factor_index;
 
     bool check_time_and_set_valid_factors(int var_index, string identifier);
+    bool ran_out_of_time() const;
 
     vector<unique_ptr<Label>> create_labels();
     void build_label_equivalence_relation(LabelEquivalenceRelation &label_equivalence_relation);
@@ -123,6 +124,10 @@ bool FTSFactory::check_time_and_set_valid_factors(int var_index, string identifi
         return true;
     }
     return false;
+}
+
+bool FTSFactory::ran_out_of_time() const {
+    return max_valid_factor_index != INF;
 }
 
 vector<unique_ptr<Label>> FTSFactory::create_labels() {
@@ -345,9 +350,10 @@ void FTSFactory::build_transitions() {
     /*
       - Add all transitions.
       - Computes relevant operator information as a side effect.
-      NOTE: we cannot interrupt the computation of transitions even this can
-      take up very much time, because if ignoring some of the operators may
-      cause non-admissible heuristic values.
+      NOTE: we cannot interrupt the computation of transitions due to running
+      out of time even though this computation can take up very much time,
+      because leaving out transitions potentially renders the heuristic
+      inadmisisble.
     */
     for (size_t op_index = 0; op_index < task_proxy.get_operators().size(); ++op_index) {
         OperatorProxy op = task_proxy.get_operators()[op_index];
@@ -360,7 +366,10 @@ void FTSFactory::build_transitions() {
         }
         VariableProxy variable = task_proxy.get_variables()[var_index];
         build_transitions_for_irrelevant_ops(variable);
-        if (check_time_and_set_valid_factors(var_index, "irrelevant operator transitions")) {
+        /* We only check running of out time if we did not previously ran
+           out of time to avoid breaking this loop at the first iteration. */
+        if (!ran_out_of_time() && check_time_and_set_valid_factors(
+                var_index, "irrelevant operator transitions")) {
             break;
         }
     }
@@ -391,7 +400,7 @@ void FTSFactory::build_transitions() {
 vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
     // Create the actual TransitionSystem objects.
     int num_variables = task_proxy.get_variables().size();
-    if (max_valid_factor_index < INF) {
+    if (ran_out_of_time()) {
         num_variables = max_valid_factor_index;
     }
 
@@ -420,7 +429,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
 vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_representations() {
     // Create the actual MergeAndShrinkRepresentation objects.
     int num_variables = task_proxy.get_variables().size();
-    if (max_valid_factor_index < INF) {
+    if (ran_out_of_time()) {
         num_variables = max_valid_factor_index;
     }
 
@@ -441,7 +450,7 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
     const vector<unique_ptr<TransitionSystem>> &transition_systems) {
     // Create the actual Distances objects.
     int num_variables = task_proxy.get_variables().size();
-    if (max_valid_factor_index < INF) {
+    if (ran_out_of_time()) {
         num_variables = max_valid_factor_index;
     }
 
