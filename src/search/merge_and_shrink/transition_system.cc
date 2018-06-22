@@ -443,14 +443,6 @@ bool TransitionSystem::is_solvable(const Distances &distances) const {
     return true;
 }
 
-int TransitionSystem::compute_total_transitions() const {
-    int total = 0;
-    for (const GroupAndTransitions &gat : *this) {
-        total += gat.transitions.size();
-    }
-    return total;
-}
-
 string TransitionSystem::get_description() const {
     ostringstream s;
     if (incorporated_variables.size() == 1) {
@@ -521,6 +513,14 @@ void TransitionSystem::dump_labels_and_transitions() const {
         cout << endl;
         cout << "cost: " << label_group.get_cost() << endl;
     }
+}
+
+int TransitionSystem::compute_total_transitions() const {
+    int total = 0;
+    for (const GroupAndTransitions &gat : *this) {
+        total += gat.transitions.size();
+    }
+    return total;
 }
 
 void TransitionSystem::statistics() const {

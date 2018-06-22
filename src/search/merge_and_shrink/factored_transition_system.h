@@ -165,6 +165,7 @@ public:
     }
 
     bool is_active(int index) const;
+    int get_init_state_goal_distance(int index) const;
 };
 }
 
