@@ -62,7 +62,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     int find_best_factor(const FactoredTransitionSystem &fts) const;
     void finalize_factor(FactoredTransitionSystem &fts, int index);
     void finalize(FactoredTransitionSystem &fts);
-    int prune_atomic(FactoredTransitionSystem &fts) const;
+    int prune_fts(FactoredTransitionSystem &fts, const utils::Timer &timer) const;
     int main_loop(FactoredTransitionSystem &fts, const utils::Timer &timer);
     void build(const utils::Timer &timer);
 
