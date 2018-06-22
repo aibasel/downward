@@ -337,6 +337,7 @@ int MergeAndShrinkHeuristic::main_loop(
 
     cout << "Maximum intermediate abstraction size: "
          << maximum_intermediate_size << endl;
+    cout << endl;
 
     shrink_strategy = nullptr;
     label_reduction = nullptr;

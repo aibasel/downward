@@ -216,6 +216,12 @@ void FactoredTransitionSystem::dump(int index) const {
     mas_representations[index]->dump();
 }
 
+void FactoredTransitionSystem::dump() const {
+    for (int index : *this) {
+        dump(index);
+    }
+}
+
 bool FactoredTransitionSystem::is_factor_solvable(int index) const {
     assert(is_component_valid(index));
     return transition_systems[index]->is_solvable(*distances[index]);
