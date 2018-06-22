@@ -6,6 +6,7 @@
 #include "transition_system.h"
 
 #include "../utils/math.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -14,6 +15,10 @@
 using namespace std;
 
 namespace merge_and_shrink {
+void print_time(const utils::Timer &timer, string text) {
+    cout << "t=" << timer << " (" << text << ")" << endl;
+}
+
 pair<int, int> compute_shrink_sizes(
     int size1,
     int size2,
