@@ -34,10 +34,6 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-static void print_time(const utils::Timer &timer, string text) {
-    cout << "t=" << timer << " (" << text << ")" << endl;
-}
-
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),
@@ -194,8 +190,10 @@ vector<int> get_remaining_candidates(
 bool MergeAndShrinkHeuristic::ran_out_of_time(
     const utils::Timer &timer) const {
     if (timer() > max_time) {
-        cout << "Ran out of time, stopping computation." << endl;
-        cout << endl;
+        if (verbosity >= Verbosity::NORMAL) {
+            cout << "Ran out of time, stopping computation." << endl;
+            cout << endl;
+        }
         return true;
     }
     return false;
@@ -203,9 +201,11 @@ bool MergeAndShrinkHeuristic::ran_out_of_time(
 
 bool MergeAndShrinkHeuristic::too_many_transitions(int num_transitions) const {
     if (num_transitions > num_transitions_to_abort) {
-        cout << "Factor has too many transitions, stopping computation."
-             << endl;
-        cout << endl;
+        if (verbosity >= Verbosity::NORMAL) {
+            cout << "Factor has too many transitions, stopping computation."
+                 << endl;
+            cout << endl;
+        }
         return true;
     }
     return false;
@@ -253,25 +253,36 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
             ++active_factors_count;
         }
     }
-    cout << "Number of remaining factors: " << active_factors_count << endl;
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << "Number of remaining factors: " << active_factors_count << endl;
+    }
     if (partial_mas_method == PartialMASMethod::Single) {
-        cout << "Need to choose a single factor to serve as a heuristic." << endl;
+        if (verbosity >= Verbosity::NORMAL) {
+            cout << "Need to choose a single factor to serve as a heuristic."
+                 << endl;
+        }
         int index = find_best_factor(fts);
         // We do not need the scoring functions anymore at this point.
         factor_scoring_functions.clear();
         finalize_factor(fts, index);
-        cout << "Chose single factor as heuristic: " << fts.get_ts(index).tag()
-             << endl;
+        if (verbosity >= Verbosity::NORMAL) {
+            cout << "Chose single factor as heuristic: " << fts.get_ts(index).tag()
+                 << endl;
+        }
     } else if (partial_mas_method == PartialMASMethod::Maximum) {
         for (int index : fts) {
             finalize_factor(fts, index);
         }
-        cout << "Use all factors in a maximum heuristic." << endl;
+        if (verbosity >= Verbosity::NORMAL) {
+            cout << "Use all factors in a maximum heuristic." << endl;
+        }
     } else {
         cerr << "Unknown partial merge-and-shrink method!" << endl;
         utils::exit_with(utils::ExitCode::UNSUPPORTED);
     }
-    cout << endl;
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << endl;
+    }
 }
 
 int MergeAndShrinkHeuristic::prune_fts(
