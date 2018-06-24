@@ -485,7 +485,7 @@ FactoredTransitionSystem FTSFactory::create(
     initialize_transition_system_data(*labels, verbosity);
     if (verbosity >= Verbosity::VERBOSE) {
         print_time(timer, "atomic transition systems: done initializing "
-                          "transition system data");
+                   "transition system data");
     }
     build_transitions(verbosity);
     if (verbosity >= Verbosity::VERBOSE) {
@@ -500,7 +500,7 @@ FactoredTransitionSystem FTSFactory::create(
         create_mas_representations();
     if (verbosity >= Verbosity::VERBOSE) {
         print_time(timer, "atomic transition systems: done creating "
-                          "merge-and-shrink representations");
+                   "merge-and-shrink representations");
     }
     vector<unique_ptr<Distances>> distances =
         create_distances(transition_systems);
