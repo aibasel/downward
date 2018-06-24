@@ -60,7 +60,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
 
     if (opts.contains("factor_scoring_functions")) {
         factor_scoring_functions = opts.get_list<shared_ptr<FactorScoringFunction>>(
-                "factor_scoring_functions");
+            "factor_scoring_functions");
     }
 
     utils::Timer timer;
@@ -481,8 +481,8 @@ int MergeAndShrinkHeuristic::main_loop(
              << fts.get_ts(final_index).get_size() << endl;
     } else {
         cout << "Main loop terminated early (either because a factor is "
-                "unsolvable or the time or transition limit was reached). "
-                "Statistics:" << endl;
+            "unsolvable or the time or transition limit was reached). "
+            "Statistics:" << endl;
     }
 
     cout << "Maximum intermediate abstraction size: "
@@ -830,26 +830,26 @@ static Heuristic *_parse(OptionParser &parser) {
         int num_transitions_to_abort = opts.get<int>("num_transitions_to_abort");
         PartialMASMethod partial_mas_method = static_cast<PartialMASMethod>(opts.get_enum("partial_mas_method"));
         if (partial_mas_method != PartialMASMethod::None
-                && (max_time == numeric_limits<double>::infinity()
-                    && num_transitions_to_abort == INF)) {
+            && (max_time == numeric_limits<double>::infinity()
+                && num_transitions_to_abort == INF)) {
             cerr << "If using a partial merge-and-shrink method, you must "
-                    "use a finite value for at least one of max_time and "
-                    "num_transitions_to_abort. "
+                "use a finite value for at least one of max_time and "
+                "num_transitions_to_abort. "
                  << endl;
             utils::exit_with(utils::ExitCode::INPUT_ERROR);
         }
         if (partial_mas_method == PartialMASMethod::None
             && (max_time < INF || num_transitions_to_abort < INF)) {
             cerr << "If using a finite value to any of max_time and "
-                    "num_transitions_to_abort, you also must use a partial "
-                    "merge-and-shrink method."
+                "num_transitions_to_abort, you also must use a partial "
+                "merge-and-shrink method."
                  << endl;
             utils::exit_with(utils::ExitCode::INPUT_ERROR);
         }
         if (partial_mas_method == PartialMASMethod::Single
             && !opts.contains("factor_scoring_functions")) {
             cerr << "If using the partial merge-and-shrink method single, "
-                    "you must specify a least one factor scoring function!"
+                "you must specify a least one factor scoring function!"
                  << endl;
             utils::exit_with(utils::ExitCode::INPUT_ERROR);
         }
