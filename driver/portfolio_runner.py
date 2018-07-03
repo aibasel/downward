@@ -42,7 +42,7 @@ def adapt_heuristic_cost_type(arg, cost_type):
 
 
 def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
-    g_bound = plan_manager.get_best_plan_cost()
+    g_bound = plan_manager.get_current_portfolio_bound()
     plan_counter = plan_manager.get_plan_counter()
     print("g bound: %s" % g_bound)
     print("next plan number: %d" % (plan_counter + 1))
