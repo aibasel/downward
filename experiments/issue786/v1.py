@@ -12,17 +12,20 @@ from relativescatter import RelativeScatterPlotReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue786-base", "issue786-v1"]
+DRIVER_OPTIONS = ["--overall-time-limit", "5m"]
 CONFIGS = [
     IssueConfig(
         "cegar",
-        ["--search", "astar(cegar())"]),
+        ["--search", "astar(cegar())"],
+        driver_options=DRIVER_OPTIONS),
     IssueConfig(
         "ipdb",
-        ["--search", "astar(ipdb())"])
+        ["--search", "astar(ipdb())"],
+        driver_options=DRIVER_OPTIONS)
 ]
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
-    partition="infai_1",
+    partition="infai_2",
     email="jendrik.seipp@unibas.ch",
     export=["PATH", "DOWNWARD_BENCHMARKS"])
 
