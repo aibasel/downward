@@ -22,8 +22,8 @@ public:
         std::unique_ptr<RefinementHierarchy> &&hierarchy,
         std::vector<int> &&h_values);
 
-    CartesianHeuristicFunction(const CartesianHeuristicFunction &other) = delete;
-    CartesianHeuristicFunction(CartesianHeuristicFunction &&other) = default;
+    CartesianHeuristicFunction(const CartesianHeuristicFunction &) = delete;
+    CartesianHeuristicFunction(CartesianHeuristicFunction &&) = default;
 
     int get_value(const State &state) const;
 };
