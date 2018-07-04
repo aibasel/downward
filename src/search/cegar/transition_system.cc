@@ -108,17 +108,7 @@ void TransitionSystem::add_loops_in_trivial_abstraction() {
     }
 }
 
-void TransitionSystem::add_incoming_transition(int src_id, int op_id, int target_id) {
-    assert(src_id != target_id);
-    incoming[target_id].emplace_back(op_id, src_id);
-}
-
-void TransitionSystem::add_outgoing_transition(int src_id, int op_id, int target_id) {
-    assert(src_id != target_id);
-    outgoing[src_id].emplace_back(op_id, target_id);
-}
-
-void TransitionSystem::add_transition_both_ways(int src_id, int op_id, int target_id) {
+void TransitionSystem::add_transition(int src_id, int op_id, int target_id) {
     assert(src_id != target_id);
     outgoing[src_id].emplace_back(op_id, target_id);
     incoming[target_id].emplace_back(op_id, src_id);
@@ -134,48 +124,33 @@ void TransitionSystem::add_loop(int state_id, int op_id) {
 void TransitionSystem::rewire_incoming_transitions(
     const Transitions &old_incoming, const AbstractStates &states,
     AbstractState *v1, AbstractState *v2, int var) {
-    /*
-      State v has been split into v1 and v2. Now for all transitions u->v we
-      need to add transitions u->v1, u->v2, or both.
-
-      Since v1 inherits the state ID of v, we can apply the following
-      optimization: If u->v1 is a valid transition, we keep the old outgoing
-      transition u->v (which is identical to u->v1) and only add the new
-      incoming transition u->v1. This often reduces the time for rewiring
-      significantly.
-    */
+    /* State v has been split into v1 and v2. Now for all transitions
+       u->v we need to add transitions u->v1, u->v2, or both. */
     int v1_id = v1->get_id();
     int v2_id = v2->get_id();
     for (const Transition &transition : old_incoming) {
         int op_id = transition.op_id;
         int u_id = transition.target_id;
         AbstractState *u = states[u_id];
-        bool keep_old_outgoing_transition = false;
         int post = get_postcondition_value(op_id, var);
         if (post == UNDEFINED) {
             // op has no precondition and no effect on var.
             bool u_and_v1_intersect = u->domains_intersect(v1, var);
             if (u_and_v1_intersect) {
-                add_incoming_transition(u_id, op_id, v1_id);
-                keep_old_outgoing_transition = true;
+                add_transition(u_id, op_id, v1_id);
             }
             /* If the domains of u and v1 don't intersect, we must add
                the other transition and can avoid an intersection test. */
             if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
-                add_transition_both_ways(u_id, op_id, v2_id);
+                add_transition(u_id, op_id, v2_id);
             }
         } else if (v1->contains(var, post)) {
             // op can only end in v1.
-            add_incoming_transition(u_id, op_id, v1_id);
-            keep_old_outgoing_transition = true;
+            add_transition(u_id, op_id, v1_id);
         } else {
             // op can only end in v2.
             assert(v2->contains(var, post));
-            add_transition_both_ways(u_id, op_id, v2_id);
-        }
-        if (!keep_old_outgoing_transition) {
-            remove_transition(outgoing[u_id], Transition(op_id, v1_id));
-            --num_non_loops;
+            add_transition(u_id, op_id, v2_id);
         }
     }
 }
@@ -183,23 +158,14 @@ void TransitionSystem::rewire_incoming_transitions(
 void TransitionSystem::rewire_outgoing_transitions(
     const Transitions &old_outgoing, const AbstractStates &states,
     AbstractState *v1, AbstractState *v2, int var) {
-    /*
-      State v has been split into v1 and v2. Now for all transitions
-      v->w we need to add transitions v1->w, v2->w, or both.
-
-      Since v1 inherits the state ID of v, we can apply the following
-      optimization: If v1->w is a valid transition, we keep the old incoming
-      transition v->w (which is identical to v1->w) and only add the new
-      outgoing transition v1->w. This often reduces the time for rewiring
-      significantly.
-    */
+    /* State v has been split into v1 and v2. Now for all transitions
+       v->w we need to add transitions v1->w, v2->w, or both. */
     int v1_id = v1->get_id();
     int v2_id = v2->get_id();
     for (const Transition &transition : old_outgoing) {
         int op_id = transition.op_id;
         int w_id = transition.target_id;
         AbstractState *w = states[w_id];
-        bool keep_old_incoming_transition = false;
         int pre = get_precondition_value(op_id, var);
         int post = get_postcondition_value(op_id, var);
         if (post == UNDEFINED) {
@@ -207,30 +173,24 @@ void TransitionSystem::rewire_outgoing_transitions(
             // op has no precondition and no effect on var.
             bool v1_and_w_intersect = v1->domains_intersect(w, var);
             if (v1_and_w_intersect) {
-                add_outgoing_transition(v1_id, op_id, w_id);
-                keep_old_incoming_transition = true;
+                add_transition(v1_id, op_id, w_id);
             }
             /* If the domains of v1 and w don't intersect, we must add
                the other transition and can avoid an intersection test. */
             if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
-                add_transition_both_ways(v2_id, op_id, w_id);
+                add_transition(v2_id, op_id, w_id);
             }
         } else if (pre == UNDEFINED) {
             // op has no precondition, but an effect on var.
-            add_transition_both_ways(v1_id, op_id, w_id);
-            add_transition_both_ways(v2_id, op_id, w_id);
+            add_transition(v1_id, op_id, w_id);
+            add_transition(v2_id, op_id, w_id);
         } else if (v1->contains(var, pre)) {
             // op can only start in v1.
-            add_outgoing_transition(v1_id, op_id, w_id);
-            keep_old_incoming_transition = true;
+            add_transition(v1_id, op_id, w_id);
         } else {
             // op can only start in v2.
             assert(v2->contains(var, pre));
-            add_transition_both_ways(v2_id, op_id, w_id);
-        }
-        if (!keep_old_incoming_transition) {
-            remove_transition(incoming[w_id], Transition(op_id, v1_id));
-            --num_non_loops;
+            add_transition(v2_id, op_id, w_id);
         }
     }
 }
@@ -253,13 +213,13 @@ void TransitionSystem::rewire_loops(
                 add_loop(v2_id, op_id);
             } else if (v2->contains(var, post)) {
                 // op must end in v2.
-                add_transition_both_ways(v1_id, op_id, v2_id);
+                add_transition(v1_id, op_id, v2_id);
                 add_loop(v2_id, op_id);
             } else {
                 // op must end in v1.
                 assert(v1->contains(var, post));
                 add_loop(v1_id, op_id);
-                add_transition_both_ways(v2_id, op_id, v1_id);
+                add_transition(v2_id, op_id, v1_id);
             }
         } else if (v1->contains(var, pre)) {
             // op must start in v1.
@@ -270,7 +230,7 @@ void TransitionSystem::rewire_loops(
             } else {
                 // op must end in v2.
                 assert(v2->contains(var, post));
-                add_transition_both_ways(v1_id, op_id, v2_id);
+                add_transition(v1_id, op_id, v2_id);
             }
         } else {
             // op must start in v2.
@@ -278,7 +238,7 @@ void TransitionSystem::rewire_loops(
             assert(post != UNDEFINED);
             if (v1->contains(var, post)) {
                 // op must end in v1.
-                add_transition_both_ways(v2_id, op_id, v1_id);
+                add_transition(v2_id, op_id, v1_id);
             } else {
                 // op must end in v2.
                 assert(v2->contains(var, post));
@@ -305,7 +265,21 @@ void TransitionSystem::rewire(
 
     // Add new transitions and remove old transitions.
     rewire_incoming_transitions(old_incoming, states, v1, v2, var);
+    for (const Transition &transition : old_incoming) {
+        int op_id = transition.op_id;
+        int u_id = transition.target_id;
+        assert(u_id != v_id);
+        remove_transition(outgoing[u_id], Transition(op_id, v_id));
+        --num_non_loops;
+    }
     rewire_outgoing_transitions(old_outgoing, states, v1, v2, var);
+    for (const Transition &transition : old_outgoing) {
+        int op_id = transition.op_id;
+        int w_id = transition.target_id;
+        assert(w_id != v_id);
+        remove_transition(incoming[w_id], Transition(op_id, v_id));
+        --num_non_loops;
+    }
     rewire_loops(old_loops, v1, v2, var);
 }
 

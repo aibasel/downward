@@ -34,9 +34,7 @@ class TransitionSystem {
     int get_precondition_value(int op_id, int var) const;
     int get_postcondition_value(int op_id, int var) const;
 
-    void add_incoming_transition(int src_id, int op_id, int target_id);
-    void add_outgoing_transition(int src_id, int op_id, int target_id);
-    void add_transition_both_ways(int src_id, int op_id, int target_id);
+    void add_transition(int src_id, int op_id, int target_id);
     void add_loop(int state_id, int op_id);
 
     void rewire_incoming_transitions(
