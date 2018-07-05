@@ -78,7 +78,7 @@ class RelativeScatterPlotReport(ScatterPlotReport):
                     run2['algorithm'] == self.algorithms[1])
             val1 = run1.get(self.attribute)
             val2 = run2.get(self.attribute)
-            if val1 is None or val2 is None:
+            if not val1 or not val2:
                 continue
             category = self.get_category(run1, run2)
             assert val1 > 0, (domain, problem, self.algorithms[0], val1)
