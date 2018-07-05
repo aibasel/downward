@@ -131,6 +131,10 @@ void TransitionSystem::rewire_incoming_transitions(
     for (const Transition &transition : old_incoming) {
         int op_id = transition.op_id;
         int u_id = transition.target_id;
+
+        remove_transition(outgoing[u_id], Transition(op_id, v1_id));
+        --num_non_loops;
+
         AbstractState *u = states[u_id];
         int post = get_postcondition_value(op_id, var);
         if (post == UNDEFINED) {
@@ -152,8 +156,6 @@ void TransitionSystem::rewire_incoming_transitions(
             assert(v2->contains(var, post));
             add_transition(u_id, op_id, v2_id);
         }
-        remove_transition(outgoing[u_id], Transition(op_id, v1_id));
-        --num_non_loops;
     }
 }
 
@@ -167,6 +169,10 @@ void TransitionSystem::rewire_outgoing_transitions(
     for (const Transition &transition : old_outgoing) {
         int op_id = transition.op_id;
         int w_id = transition.target_id;
+
+        remove_transition(incoming[w_id], Transition(op_id, v1_id));
+        --num_non_loops;
+
         AbstractState *w = states[w_id];
         int pre = get_precondition_value(op_id, var);
         int post = get_postcondition_value(op_id, var);
@@ -194,8 +200,6 @@ void TransitionSystem::rewire_outgoing_transitions(
             assert(v2->contains(var, pre));
             add_transition(v2_id, op_id, w_id);
         }
-        remove_transition(incoming[w_id], Transition(op_id, v1_id));
-        --num_non_loops;
     }
 }
 
