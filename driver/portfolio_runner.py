@@ -104,8 +104,10 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
     _, args_template = configs[pos]
     args = list(args_template)
     adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager)
-    args.extend([
-        "--internal-previous-portfolio-plans", str(plan_manager.get_plan_counter())])
+    if not plan_manager.abort_portfolio_after_first_plan():
+        args.extend([
+            "--internal-previous-portfolio-plans",
+            str(plan_manager.get_plan_counter())])
     result = run_search(executable, args, sas_file, plan_manager, run_time, memory)
     plan_manager.process_new_plans()
     return result
@@ -133,6 +135,8 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 return
 
             if exitcode == returncodes.EXIT_PLAN_FOUND:
+                if plan_manager.abort_portfolio_after_first_plan():
+                    return
                 configs_next_round.append((relative_time, args))
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
