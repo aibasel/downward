@@ -69,6 +69,11 @@ static int lookup_value(const vector<FactPair> &facts, int var) {
 
 static void remove_transition(
     Transitions &transitions, const Transition &transition) {
+    assert(!transitions.empty());
+    if (transitions.back() == transition) {
+        transitions.pop_back();
+        return;
+    }
     auto pos = find(transitions.begin(), transitions.end(), transition);
     assert(pos != transitions.end());
     swap(*pos, transitions.back());
