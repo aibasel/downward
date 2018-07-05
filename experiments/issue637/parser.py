@@ -63,6 +63,7 @@ def main():
     parser.add_pattern("search_start_time", r"\[g=0, 1 evaluated, 0 expanded, t=(.+)s, \d+ KB\]", type=float, required=False)
     parser.add_pattern("search_start_memory", r"\[g=0, 1 evaluated, 0 expanded, t=.+s, (\d+) KB\]", type=int, required=False)
     parser.add_pattern("init_time", r"^Time for initializing additive Cartesian heuristic: (.+)s$", type=float, required=False)
+    parser.add_pattern("cartesian_states", r"^Cartesian states: (\d+)$", type=int, required=False)
 
     parser.add_function(no_search)
 
