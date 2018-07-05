@@ -55,7 +55,7 @@ exp.add_comparison_table_step(
     attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES
     + ["search_start_time", "search_start_memory", "init_time"])
 
-for attribute in ["memory", "total_time"]:
+for attribute in ["memory", "total_time", "init_time", "expansions_until_last_jump"]:
     for config in CONFIGS:
         exp.add_report(
             RelativeScatterPlotReport(
