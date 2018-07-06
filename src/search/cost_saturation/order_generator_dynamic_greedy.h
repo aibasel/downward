@@ -11,7 +11,6 @@ class Options;
 namespace cost_saturation {
 class OrderGeneratorDynamicGreedy : public OrderGenerator {
     const ScoringFunction scoring_function;
-    int num_returned_orders;
 
     Order compute_dynamic_greedy_order_for_sample(
         const Abstractions &abstractions,
