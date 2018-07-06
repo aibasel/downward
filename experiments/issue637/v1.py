@@ -44,9 +44,11 @@ exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.TRANSLATOR_PARSER)
 exp.add_parser(exp.SINGLE_SEARCH_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
+exp.add_parser(os.path.join(DIR, "parser.py"))
 
 exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
+exp.add_parse_again_step()
 exp.add_fetcher(name='fetch')
 
 #exp.add_absolute_report_step()
