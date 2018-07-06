@@ -124,7 +124,7 @@ Abstractions CartesianAbstractionGenerator::generate_abstractions(
 
     function<bool()> total_size_limit_reached =
         [&] () {
-            return num_transitions >= max_transitions;
+            return num_states >= max_states || num_transitions >= max_transitions;
         };
 
     Abstractions abstractions;
