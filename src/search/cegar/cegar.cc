@@ -168,7 +168,8 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
             abstraction->get_goals());
         if (!solution) {
             cout << "Abstract problem is unsolvable!" << endl;
-            break;
+            abstraction->get_initial_state()->set_goal_distance_estimate(INF);
+            return;
         }
         update_goal_distances(*solution);
         unique_ptr<Flaw> flaw = find_flaw(*solution);
