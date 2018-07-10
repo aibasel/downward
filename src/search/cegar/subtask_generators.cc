@@ -50,8 +50,8 @@ static void remove_initial_state_facts(
     const TaskProxy &task_proxy, Facts &facts) {
     State initial_state = task_proxy.get_initial_state();
     facts.erase(remove_if(facts.begin(), facts.end(), [&](FactPair fact) {
-            return initial_state[fact.var].get_value() == fact.value;
-        }), facts.end());
+                              return initial_state[fact.var].get_value() == fact.value;
+                          }), facts.end());
 }
 
 static void order_facts(
