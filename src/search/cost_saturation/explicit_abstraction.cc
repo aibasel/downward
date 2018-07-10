@@ -63,11 +63,12 @@ static vector<int> get_active_operators_from_graph(
 
 ExplicitAbstraction::ExplicitAbstraction(
     AbstractionFunction function,
-    vector<vector<Successor>> &&backward_graph,
+    vector<vector<Successor>> &&backward_graph_,
     vector<int> &&looping_operators,
     vector<int> &&goal_states)
     : abstraction_function(function),
-      backward_graph(move(backward_graph)),
+      backward_graph(move(backward_graph_)),
+      active_operators(get_active_operators_from_graph(backward_graph)),
       looping_operators(move(looping_operators)),
       goal_states(move(goal_states)) {
 #ifndef NDEBUG
@@ -151,9 +152,9 @@ int ExplicitAbstraction::get_abstract_state_id(const State &concrete_state) cons
     return abstraction_function(concrete_state);
 }
 
-vector<int> ExplicitAbstraction::compute_active_operators() const {
+const vector<int> &ExplicitAbstraction::get_active_operators() const {
     assert(has_transition_system());
-    return get_active_operators_from_graph(backward_graph);
+    return active_operators;
 }
 
 const vector<int> &ExplicitAbstraction::get_looping_operators() const {

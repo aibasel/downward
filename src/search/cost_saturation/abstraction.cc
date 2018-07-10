@@ -26,7 +26,7 @@ pair<vector<int>, vector<int>> Abstraction::compute_goal_distances_and_saturated
 }
 
 void Abstraction::remove_transition_system() {
-    assert(has_transition_system_);
+    assert(has_transition_system());
     release_transition_system_memory();
     has_transition_system_ = false;
 }

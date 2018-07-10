@@ -47,7 +47,7 @@ public:
         const std::vector<int> &costs) const;
 
     // Operators inducing state-changing transitions.
-    virtual std::vector<int> compute_active_operators() const = 0;
+    virtual const std::vector<int> &get_active_operators() const = 0;
 
     // Operators inducing self-looping transitions. May overlap with active
     // operators.
