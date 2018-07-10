@@ -32,6 +32,7 @@ class OptionParser {
         const std::string &key, const T &value, const Bounds &bounds);
 
     static int parse_int_arg(const std::string &name, const std::string &value);
+    static std::string copy_str_lower(std::string arg);
     static std::shared_ptr<SearchEngine> parse_cmd_line_aux(
         const std::vector<std::string> &args, bool dry_run);
 
