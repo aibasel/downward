@@ -121,7 +121,7 @@ void TransitionSystem::add_loop(int state_id, int op_id) {
     ++num_loops;
 }
 
-void TransitionSystem::rewire_incoming_transitions(
+void TransitionSystem::add_new_incoming_transitions(
     const Transitions &old_incoming, const AbstractStates &states,
     AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
@@ -131,10 +131,6 @@ void TransitionSystem::rewire_incoming_transitions(
     for (const Transition &transition : old_incoming) {
         int op_id = transition.op_id;
         int u_id = transition.target_id;
-
-        remove_transition(outgoing[u_id], Transition(op_id, v1_id));
-        --num_non_loops;
-
         AbstractState *u = states[u_id];
         int post = get_postcondition_value(op_id, var);
         if (post == UNDEFINED) {
@@ -159,7 +155,25 @@ void TransitionSystem::rewire_incoming_transitions(
     }
 }
 
-void TransitionSystem::rewire_outgoing_transitions(
+void TransitionSystem::remove_old_transitions(
+    const Transitions &v_incoming, const Transitions &v_outgoing, int v_id) {
+    for (const Transition &transition : v_incoming) {
+        int op_id = transition.op_id;
+        int u_id = transition.target_id;
+
+        remove_transition(outgoing[u_id], Transition(op_id, v_id));
+        --num_non_loops;
+    }
+    for (const Transition &transition : v_outgoing) {
+        int op_id = transition.op_id;
+        int w_id = transition.target_id;
+
+        remove_transition(incoming[w_id], Transition(op_id, v_id));
+        --num_non_loops;
+    }
+}
+
+void TransitionSystem::add_new_outgoing_transitions(
     const Transitions &old_outgoing, const AbstractStates &states,
     AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
@@ -169,10 +183,6 @@ void TransitionSystem::rewire_outgoing_transitions(
     for (const Transition &transition : old_outgoing) {
         int op_id = transition.op_id;
         int w_id = transition.target_id;
-
-        remove_transition(incoming[w_id], Transition(op_id, v1_id));
-        --num_non_loops;
-
         AbstractState *w = states[w_id];
         int pre = get_precondition_value(op_id, var);
         int post = get_postcondition_value(op_id, var);
@@ -271,9 +281,10 @@ void TransitionSystem::rewire(
     assert(incoming[v1_id].empty() && outgoing[v1_id].empty() && loops[v1_id].empty());
     assert(incoming[v2_id].empty() && outgoing[v2_id].empty() && loops[v2_id].empty());
 
-    // Add new transitions and remove old transitions.
-    rewire_incoming_transitions(old_incoming, states, v1, v2, var);
-    rewire_outgoing_transitions(old_outgoing, states, v1, v2, var);
+    // Remove old transitions and add new transitions.
+    remove_old_transitions(old_incoming, old_outgoing, v_id);
+    add_new_incoming_transitions(old_incoming, states, v1, v2, var);
+    add_new_outgoing_transitions(old_outgoing, states, v1, v2, var);
     rewire_loops(old_loops, v1, v2, var);
 }
 

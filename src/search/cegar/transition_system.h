@@ -37,10 +37,12 @@ class TransitionSystem {
     void add_transition(int src_id, int op_id, int target_id);
     void add_loop(int state_id, int op_id);
 
-    void rewire_incoming_transitions(
+    void remove_old_transitions(
+        const Transitions &v_incoming, const Transitions &v_outgoing, int v_id);
+    void add_new_incoming_transitions(
         const Transitions &old_incoming, const AbstractStates &states,
         AbstractState *v1, AbstractState *v2, int var);
-    void rewire_outgoing_transitions(
+    void add_new_outgoing_transitions(
         const Transitions &old_outgoing, const AbstractStates &states,
         AbstractState *v1, AbstractState *v2, int var);
     void rewire_loops(
