@@ -38,10 +38,8 @@ exp = IssueExperiment(
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
-exp.add_parser('lab_driver_parser', exp.LAB_DRIVER_PARSER)
-exp.add_parser('exitcode_parser', exp.EXITCODE_PARSER)
-#exp.add_parser('translator_parser', exp.TRANSLATOR_PARSER)
-exp.add_parser('single_search_parser', exp.SINGLE_SEARCH_PARSER)
+exp.add_parser(exp.EXITCODE_PARSER)
+exp.add_parser(exp.SINGLE_SEARCH_PARSER)
 
 #exp.add_absolute_report_step()
 exp.add_comparison_table_step()
