@@ -75,7 +75,7 @@ def run_search(executable, args, sas_file, plan_manager, time, memory):
 
     try:
         exitcode = call.check_call(
-            complete_args, stdin=sas_file,
+            "search", complete_args, stdin=sas_file,
             time_limit=time, memory_limit=memory)
     except subprocess.CalledProcessError as err:
         exitcode = err.returncode
@@ -129,10 +129,10 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 return
 
             yield exitcode
-            if exitcode == returncodes.EXIT_UNSOLVABLE:
+            if exitcode == returncodes.SEARCH_UNSOLVABLE:
                 return
 
-            if exitcode == returncodes.EXIT_PLAN_FOUND:
+            if exitcode == returncodes.SUCCESS:
                 configs_next_round.append((relative_time, args))
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
@@ -147,7 +147,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                         return
 
                     yield exitcode
-                    if exitcode == returncodes.EXIT_UNSOLVABLE:
+                    if exitcode == returncodes.SEARCH_UNSOLVABLE:
                         return
                 if final_config_builder:
                     print("Build final config.")
@@ -177,7 +177,7 @@ def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
                               run_time, memory)
         yield exitcode
 
-        if exitcode in [returncodes.EXIT_PLAN_FOUND, returncodes.EXIT_UNSOLVABLE]:
+        if exitcode in [returncodes.SUCCESS, returncodes.SEARCH_UNSOLVABLE]:
             break
 
 
@@ -238,6 +238,4 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
         exitcodes = run_sat(
             configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory)
-    exitcode = returncodes.generate_portfolio_exitcode(exitcodes)
-    if exitcode != 0:
-        raise subprocess.CalledProcessError(exitcode, ["run-portfolio", portfolio])
+    return returncodes.generate_portfolio_exitcode(exitcodes)
