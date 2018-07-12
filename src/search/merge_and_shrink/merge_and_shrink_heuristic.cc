@@ -278,7 +278,7 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
         }
     } else {
         cerr << "Unknown partial merge-and-shrink method!" << endl;
-        utils::exit_with(utils::ExitCode::UNSUPPORTED);
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
     if (verbosity >= Verbosity::NORMAL) {
         cout << endl;
@@ -836,7 +836,7 @@ static Heuristic *_parse(OptionParser &parser) {
                 "use a finite value for at least one of max_time and "
                 "num_transitions_to_abort. "
                  << endl;
-            utils::exit_with(utils::ExitCode::INPUT_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
         if (partial_mas_method == PartialMASMethod::None
             && (max_time < INF || num_transitions_to_abort < INF)) {
@@ -844,14 +844,14 @@ static Heuristic *_parse(OptionParser &parser) {
                 "num_transitions_to_abort, you also must use a partial "
                 "merge-and-shrink method."
                  << endl;
-            utils::exit_with(utils::ExitCode::INPUT_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
         if (partial_mas_method == PartialMASMethod::Single
             && !opts.contains("factor_scoring_functions")) {
             cerr << "If using the partial merge-and-shrink method single, "
                 "you must specify a least one factor scoring function!"
                  << endl;
-            utils::exit_with(utils::ExitCode::INPUT_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
         return nullptr;
     } else {
