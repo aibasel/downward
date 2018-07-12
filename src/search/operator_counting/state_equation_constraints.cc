@@ -150,5 +150,5 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     return make_shared<StateEquationConstraints>();
 }
 
-PluginShared<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
+static PluginShared<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
 }

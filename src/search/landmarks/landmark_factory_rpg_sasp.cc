@@ -458,7 +458,6 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
                 if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
                     found_disj_lm_and_order(task_proxy, preconditions, *bp, EdgeType::greedy_necessary);
                 }
-
         }
     }
     add_lm_forward_orders();
@@ -501,7 +500,6 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
             if (!domain_connectivity(initial_state, lmk, exclude))
                 found_simple_lm_and_order(FactPair(lmk.var, value), *lmp, EdgeType::natural);
         }
-
 }
 
 bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
@@ -580,7 +578,6 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
             if (insert)
                 lmp->forward_orders.insert(fact);
         }
-
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
