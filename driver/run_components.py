@@ -112,7 +112,7 @@ def run_search(args):
         args.search_memory_limit, args.overall_memory_limit)
     executable = get_executable(args.build, REL_SEARCH_PATH)
 
-    plan_manager = PlanManager(args.plan_file)
+    plan_manager = PlanManager(args.plan_file, portfolio_bound=args.portfolio_bound)
     plan_manager.delete_existing_plans()
 
     if args.portfolio:
