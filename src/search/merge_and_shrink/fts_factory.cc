@@ -87,7 +87,7 @@ class FTSFactory {
 public:
     FTSFactory(
         const TaskProxy &task_proxy,
-        const double max_time,
+        double max_time,
         const utils::Timer &timer);
     ~FTSFactory();
 
