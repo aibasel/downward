@@ -60,10 +60,10 @@ public:
     SearchStatus get_status() const;
     const Plan &get_plan() const;
     void search();
-    const SearchStatistics &get_statistics() const {return statistics; }
-    void set_bound(int b) {bound = b; }
-    int get_bound() {return bound; }
-    PlanManager &get_plan_manager() {return plan_manager; }
+    const SearchStatistics &get_statistics() const {return statistics;}
+    void set_bound(int b) {bound = b;}
+    int get_bound() {return bound;}
+    PlanManager &get_plan_manager() {return plan_manager;}
 
     /* The following three methods should become functions as they
        do not require access to private/protected class members. */

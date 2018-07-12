@@ -142,7 +142,7 @@ class IntHashSet {
                 " is an unexpectedly high number of hash collisions"
                 " that should be investigated. Aborting."
                       << std::endl;
-            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         rehash(num_buckets * 2);
     }
