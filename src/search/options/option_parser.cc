@@ -121,7 +121,10 @@ void OptionParser::check_bounds<double>(
 }
 
 
-string lower(string s) {
+string sanitize_argument(string s) {
+    // Sanitize argument by converting newlines to spaces.
+    replace(s.begin(), s.end(), '\n', ' ');
+    // Sanitize argument by converting them to lower case
     transform(s.begin(), s.end(), s.begin(), ::tolower);
     return s;
 }
@@ -132,7 +135,7 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line(
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
-        string arg = lower(argv[i]);
+        string arg = sanitize_argument(argv[i]);
 
         if (arg == "--if-unit-cost") {
             active = is_unit_cost;
@@ -141,10 +144,7 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line(
         } else if (arg == "--always") {
             active = true;
         } else if (active) {
-            string parse_arg = argv[i];
-            // Sanitize argument by converting newlines to spaces.
-            replace(parse_arg.begin(), parse_arg.end(), '\n', ' ');
-            args.push_back(parse_arg);
+            args.push_back(argv[i]);
         }
     }
     return parse_cmd_line_aux(args, dry_run);
@@ -169,32 +169,36 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
     bool is_part_of_anytime_portfolio = false;
 
     shared_ptr<SearchEngine> engine;
+    /*
+      Note that we don’t sanitize all arguments beforehand because filenames should remain as-is
+      (no conversion to lower-case, no conversion of newlines to spaces).
+    */
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
-        string arg = lower(args[i]);
+        string arg = sanitize_argument(args[i]);
         bool is_last = (i == args.size() - 1);
         if (arg == "--heuristic") {
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine_heuristic(lower(args[i]), dry_run);
+            predefine_heuristic(sanitize_argument(args[i]), dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
-            predefine_lmgraph(lower(args[i]), dry_run);
+            predefine_lmgraph(sanitize_argument(args[i]), dry_run);
         } else if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
-            OptionParser parser(lower(args[i]), dry_run);
+            OptionParser parser(sanitize_argument(args[i]), dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
             vector<string> plugin_names;
             for (size_t j = i + 1; j < args.size(); ++j) {
-                string help_arg = lower(args[j]);
+                string help_arg = sanitize_argument(args[j]);
                 if (help_arg == "--txt2tags") {
                     txt2tags = true;
                 } else {
