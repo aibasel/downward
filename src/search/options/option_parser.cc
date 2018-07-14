@@ -122,9 +122,9 @@ void OptionParser::check_bounds<double>(
 
 
 string sanitize_argument(string s) {
-    // Sanitize argument by converting newlines to spaces.
+    // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
-    // Sanitize argument by converting them to lower case
+    // Convert string to lower case
     transform(s.begin(), s.end(), s.begin(), ::tolower);
     return s;
 }
