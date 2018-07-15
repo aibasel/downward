@@ -80,7 +80,8 @@ void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes
     states.push_back(init);
 }
 
-void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
+pair<int, int> Abstraction::refine(
+    AbstractState *state, int var, const vector<int> &wanted) {
     if (debug)
         cout << "Refine " << *state << " for " << var << "=" << wanted << endl;
 
@@ -127,13 +128,14 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     }
 
     transition_system->rewire(states, v_id, v1, v2, var);
+    return {
+               v1_id, v2_id
+    };
 }
 
 void Abstraction::print_statistics() const {
     cout << "States: " << get_num_states() << endl;
     cout << "Goal states: " << goals.size() << endl;
     transition_system->print_statistics();
-    // The initial state always holds its exact abstract goal distance.
-    cout << "Init h: " << init->get_goal_distance_estimate() << endl;
 }
 }

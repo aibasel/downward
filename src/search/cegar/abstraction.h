@@ -59,7 +59,8 @@ public:
     void mark_all_states_as_goals();
 
     // Split state into two child states.
-    void refine(AbstractState *state, int var, const std::vector<int> &wanted);
+    std::pair<int, int> refine(
+        AbstractState *state, int var, const std::vector<int> &wanted);
 
     void print_statistics() const;
 };
