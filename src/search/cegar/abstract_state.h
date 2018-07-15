@@ -16,7 +16,7 @@ namespace cegar {
 class Node;
 
 /*
-  Store and update abstract Domains and transitions.
+  Store and update abstract Domains.
 */
 class AbstractState {
     // Abstract domains for all variables.
@@ -24,9 +24,6 @@ class AbstractState {
 
     // This state's node in the refinement hierarchy.
     Node *node;
-
-    // We update this value when the state is part of an optimal solution.
-    int goal_distance_estimate;
 
     // Construct instances with factory methods.
     AbstractState(const Domains &domains, Node *node);
@@ -58,9 +55,6 @@ public:
 
     bool includes(const State &concrete_state) const;
     bool includes(const std::vector<FactPair> &facts) const;
-
-    void set_goal_distance_estimate(int new_estimate);
-    int get_goal_distance_estimate() const;
 
     // IDs are consecutive, so they can be used to index states in vectors.
     int get_id() const;

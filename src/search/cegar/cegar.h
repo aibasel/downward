@@ -53,8 +53,6 @@ class CEGAR {
     */
     void separate_facts_unreachable_before_goal();
 
-    void update_goal_distances(const Solution &solution);
-
     /* Try to convert the abstract solution into a concrete trace. Return the
        first encountered flaw or nullptr if there is no flaw. */
     std::unique_ptr<Flaw> find_flaw(const Solution &solution);

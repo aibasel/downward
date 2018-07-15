@@ -12,8 +12,7 @@ using namespace std;
 namespace cegar {
 AbstractState::AbstractState(const Domains &domains, Node *node)
     : domains(domains),
-      node(node),
-      goal_distance_estimate(0) {
+      node(node) {
 }
 
 AbstractState::AbstractState(AbstractState &&other)
@@ -66,11 +65,6 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     assert(this->is_more_general_than(*v1));
     assert(this->is_more_general_than(*v2));
 
-    // Since h-values only increase we can assign the h-value to the children.
-    int h = get_goal_distance_estimate();
-    v1->set_goal_distance_estimate(h);
-    v2->set_goal_distance_estimate(h);
-
     return make_pair(v1, v2);
 }
 
@@ -109,15 +103,6 @@ bool AbstractState::includes(const vector<FactPair> &facts) const {
 
 bool AbstractState::is_more_general_than(const AbstractState &other) const {
     return domains.is_superset_of(other.domains);
-}
-
-void AbstractState::set_goal_distance_estimate(int new_estimate) {
-    assert(new_estimate >= goal_distance_estimate);
-    goal_distance_estimate = new_estimate;
-}
-
-int AbstractState::get_goal_distance_estimate() const {
-    return goal_distance_estimate;
 }
 
 int AbstractState::get_id() const {

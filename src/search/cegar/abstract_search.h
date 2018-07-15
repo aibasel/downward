@@ -71,9 +71,11 @@ public:
 
     void reset(int num_states);
 
+    void set_h_value(int state_id, int h);
     std::vector<int> get_g_values() const;
 
     std::unique_ptr<Solution> extract_solution(int init_id, int goal_id) const;
+    void update_goal_distances(const Solution &solution, int init_id);
 
     int astar_search(
         const std::vector<Transitions> &transitions,
@@ -85,13 +87,14 @@ public:
 
     std::unique_ptr<Solution> find_solution(
         const std::vector<Transitions> &transitions,
-        const AbstractStates &states,
         int init_id,
         const Goals &goal_ids);
-
     std::vector<int> compute_distances(
         const std::vector<Transitions> &transitions,
         const std::unordered_set<int> &start_ids);
+
+    int get_h_value(int state_id) const;
+    void copy_h_value_to_children(int v, int v1, int v2);
 };
 }
 
