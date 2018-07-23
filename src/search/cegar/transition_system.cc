@@ -121,7 +121,7 @@ void TransitionSystem::add_loop(int state_id, int op_id) {
     ++num_loops;
 }
 
-void TransitionSystem::add_new_incoming_transitions(
+void TransitionSystem::rewire_incoming_transitions(
     const Transitions &old_incoming, const AbstractStates &states,
     AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
@@ -152,28 +152,12 @@ void TransitionSystem::add_new_incoming_transitions(
             assert(v2->contains(var, post));
             add_transition(u_id, op_id, v2_id);
         }
-    }
-}
-
-void TransitionSystem::remove_old_transitions(
-    const Transitions &v_incoming, const Transitions &v_outgoing, int v_id) {
-    for (const Transition &transition : v_incoming) {
-        int op_id = transition.op_id;
-        int u_id = transition.target_id;
-
-        remove_transition(outgoing[u_id], Transition(op_id, v_id));
-        --num_non_loops;
-    }
-    for (const Transition &transition : v_outgoing) {
-        int op_id = transition.op_id;
-        int w_id = transition.target_id;
-
-        remove_transition(incoming[w_id], Transition(op_id, v_id));
+        remove_transition(outgoing[u_id], Transition(op_id, v1_id));
         --num_non_loops;
     }
 }
 
-void TransitionSystem::add_new_outgoing_transitions(
+void TransitionSystem::rewire_outgoing_transitions(
     const Transitions &old_outgoing, const AbstractStates &states,
     AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
@@ -210,6 +194,8 @@ void TransitionSystem::add_new_outgoing_transitions(
             assert(v2->contains(var, pre));
             add_transition(v2_id, op_id, w_id);
         }
+        remove_transition(incoming[w_id], Transition(op_id, v1_id));
+        --num_non_loops;
     }
 }
 
@@ -282,9 +268,8 @@ void TransitionSystem::rewire(
     assert(incoming[v2_id].empty() && outgoing[v2_id].empty() && loops[v2_id].empty());
 
     // Remove old transitions and add new transitions.
-    remove_old_transitions(old_incoming, old_outgoing, v_id);
-    add_new_incoming_transitions(old_incoming, states, v1, v2, var);
-    add_new_outgoing_transitions(old_outgoing, states, v1, v2, var);
+    rewire_incoming_transitions(old_incoming, states, v1, v2, var);
+    rewire_outgoing_transitions(old_outgoing, states, v1, v2, var);
     rewire_loops(old_loops, v1, v2, var);
 }
 
