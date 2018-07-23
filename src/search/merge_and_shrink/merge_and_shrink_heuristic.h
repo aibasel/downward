@@ -44,7 +44,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     std::unique_ptr<MergeAndShrinkRepresentation> mas_representation;
 
     void finalize_factor(FactoredTransitionSystem &fts, int index);
-    int prune_atomic(FactoredTransitionSystem &fts) const;
+    int prune_fts(FactoredTransitionSystem &fts, const utils::Timer &timer) const;
     int main_loop(FactoredTransitionSystem &fts, const utils::Timer &timer);
     void build(const utils::Timer &timer);
 

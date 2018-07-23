@@ -177,28 +177,33 @@ void MergeAndShrinkHeuristic::finalize_factor(
     mas_representation->set_distances(*final_entry.second);
 }
 
-int MergeAndShrinkHeuristic::prune_atomic(FactoredTransitionSystem &fts) const {
+int MergeAndShrinkHeuristic::prune_fts(
+    FactoredTransitionSystem &fts, const utils::Timer &timer) const {
     /*
-      Go over all atomic factors and check if any is unsolvable. If so,
-      we can skip the main loop and immediately terminate the heuristic
-      computation.
+      Prune all factors according to the chosen options. Stop early if one
+      factor is unsolvable and return its index.
     */
+    int unsolvable_index = -1;
+    bool pruned = false;
     for (int index = 0; index < fts.get_size(); ++index) {
         if (prune_unreachable_states || prune_irrelevant_states) {
-            prune_step(
+            bool pruned_factor = prune_step(
                 fts,
                 index,
                 prune_unreachable_states,
                 prune_irrelevant_states,
                 verbosity);
+            pruned = pruned || pruned_factor;
         }
         if (!fts.is_factor_solvable(index)) {
-            cout << "Abstract problem is unsolvable, stopping computation."
-                 << endl;
-            return index;
+            unsolvable_index = index;
+            break;
         }
     }
-    return -1;
+    if (verbosity >= Verbosity::NORMAL && pruned) {
+        print_time(timer, "after pruning atomic factors");
+    }
+    return unsolvable_index;
 }
 
 int MergeAndShrinkHeuristic::main_loop(
@@ -300,8 +305,10 @@ int MergeAndShrinkHeuristic::main_loop(
           not to be pruned/not to be evaluated as infinity.
         */
         if (!fts.is_factor_solvable(merged_index)) {
-            cout << "Abstract problem is unsolvable, stopping computation."
-                 << endl << endl;
+            if (verbosity >= Verbosity::NORMAL) {
+                cout << "Abstract problem is unsolvable, stopping computation."
+                     << endl << endl;
+            }
             final_index = merged_index;
             break;
         }
@@ -310,7 +317,9 @@ int MergeAndShrinkHeuristic::main_loop(
         if (verbosity >= Verbosity::VERBOSE) {
             report_peak_memory_delta();
         }
-        cout << endl;
+        if (verbosity >= Verbosity::NORMAL) {
+            cout << endl;
+        }
 
         ++iteration_counter;
     }
@@ -337,6 +346,7 @@ int MergeAndShrinkHeuristic::main_loop(
 
     cout << "Maximum intermediate abstraction size: "
          << maximum_intermediate_size << endl;
+    cout << endl;
 
     shrink_strategy = nullptr;
     label_reduction = nullptr;
@@ -359,20 +369,26 @@ void MergeAndShrinkHeuristic::build(const utils::Timer &timer) {
             compute_init_distances,
             compute_goal_distances,
             verbosity);
-    int unsolvable_index = prune_atomic(fts);
-    print_time(timer, "after computation of atomic transition systems");
-    cout << endl;
-
+    if (verbosity >= Verbosity::NORMAL) {
+        print_time(timer, "after computation of atomic transition systems");
+    }
+    int unsolvable_index = prune_fts(fts, timer);
     if (unsolvable_index != -1) {
-        // An atomic factor is unsolvable, use it as the final abstraction.
+        cout << "Atomic factor is unsolvable, stopping computation."
+             << endl << endl;
+        // Use the unsolvable factor as the final abstraction.
         finalize_factor(fts, unsolvable_index);
         return;
+    }
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << endl;
     }
 
     int final_index = main_loop(fts, timer);
     /*
       Main loop terminated regularly and final_index points to the last
-      factor, or it points to an unsolvable factor.
+      factor, or it terminated early and final_index points to an unsolvable
+      factor. In both cases, we use this factor as the final abstraction.
     */
     finalize_factor(fts, final_index);
 }
@@ -439,13 +455,13 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
 
     if (max_states < 1) {
         cerr << "error: transition system size must be at least 1" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     if (max_states_before_merge < 1) {
         cerr << "error: transition system size before merge must be at least 1"
              << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     if (threshold == -1) {
@@ -453,7 +469,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
     }
     if (threshold < 1) {
         cerr << "error: threshold must be at least 1" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (threshold > max_states) {
         cout << "warning: threshold exceeds max_states, correcting" << endl;

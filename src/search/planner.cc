@@ -15,7 +15,7 @@ int main(int argc, const char **argv) {
 
     if (argc < 2) {
         cout << OptionParser::usage(argv[0]) << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     bool unit_cost = false;
@@ -34,10 +34,10 @@ int main(int argc, const char **argv) {
     } catch (ArgError &error) {
         cerr << error << endl;
         OptionParser::usage(argv[0]);
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (ParseError &error) {
         cerr << error << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     utils::Timer search_timer;
@@ -51,8 +51,8 @@ int main(int argc, const char **argv) {
     cout << "Total time: " << utils::g_timer << endl;
 
     if (engine->found_solution()) {
-        utils::exit_with(ExitCode::PLAN_FOUND);
+        utils::exit_with(ExitCode::SUCCESS);
     } else {
-        utils::exit_with(ExitCode::UNSOLVED_INCOMPLETE);
+        utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
     }
 }

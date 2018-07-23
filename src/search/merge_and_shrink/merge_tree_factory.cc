@@ -43,7 +43,7 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     const vector<int> &) {
     cerr << "This merge tree does not support being computed on a subset "
         "of indices for a given factored transition system!" << endl;
-    utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+    utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
 void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {

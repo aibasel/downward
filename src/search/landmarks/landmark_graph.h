@@ -132,11 +132,11 @@ class LandmarkGraph {
 public:
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
-    inline int cost_of_landmarks() const {return landmarks_cost; }
+    inline int cost_of_landmarks() const {return landmarks_cost;}
     void count_costs();
     LandmarkNode *get_lm_for_index(int) const;
-    int get_needed_cost() const {return needed_cost; }
-    int get_reached_cost() const {return reached_cost; }
+    int get_needed_cost() const {return needed_cost;}
+    int get_reached_cost() const {return reached_cost;}
     LandmarkNode *get_landmark(const FactPair &fact) const;
 
     // ------------------------------------------------------------------------------

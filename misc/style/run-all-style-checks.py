@@ -9,6 +9,7 @@ The file bitbucket-pipelines.yml shows how to install the dependencies.
 
 from __future__ import print_function
 
+import errno
 import glob
 import os
 import pipes
@@ -90,9 +91,16 @@ def check_cplusplus_style():
             os.path.join(root, file)
             for file in files if file.endswith((".h", ".cc"))])
     config_file = os.path.join(REPO, ".uncrustify.cfg")
-    returncode = subprocess.call(
-        ["uncrustify", "-q", "-c", config_file, "--check"] + src_files,
+    executable = "uncrustify"
+    try:
+        returncode = subprocess.call(
+            [executable, "-q", "-c", config_file, "--check"] + src_files,
         cwd=DIR, stdout=subprocess.PIPE)
+    except OSError as err:
+        if err.errno == errno.ENOENT:
+            sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
+        else:
+            raise
     if returncode != 0:
         print(
             'Run "hg uncrustify" to fix the coding style in the above '
