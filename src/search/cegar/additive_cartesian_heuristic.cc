@@ -34,7 +34,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")),
         *rng,
-        false);
+        opts.get<bool>("debug"));
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }
@@ -128,6 +128,10 @@ static Heuristic *_parse(OptionParser &parser) {
         "use_general_costs",
         "allow negative costs in cost partitioning",
         "true");
+    parser.add_option<bool>(
+        "debug",
+        "print debugging output",
+        "false");
     Heuristic::add_options_to_parser(parser);
     utils::add_rng_options(parser);
     Options opts = parser.parse();
