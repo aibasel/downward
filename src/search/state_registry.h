@@ -111,13 +111,13 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        size_t operator()(int id) const {
+        int_hash_set::HashType operator()(int id) const {
             const PackedStateBin *data = state_data_pool[id];
             utils::HashState hash_state;
             for (int i = 0; i < state_size; ++i) {
                 hash_state.feed(data[i]);
             }
-            return hash_state.get_hash64();
+            return hash_state.get_hash32();
         }
     };
 

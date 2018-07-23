@@ -79,9 +79,9 @@ public:
         } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
                    messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
                    messageBuffer_ == CPLEX_ERROR_OOM_DEVEX) {
-            utils::exit_with(ExitCode::OUT_OF_MEMORY);
+            utils::exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
         } else {
-            utils::exit_with(ExitCode::CRITICAL_ERROR);
+            utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
         }
     }
 };
@@ -124,7 +124,7 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         return unique_ptr<OsiSolverInterface>(lp_solver);
     } else {
         cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
-        utils::exit_with(ExitCode::CRITICAL_ERROR);
+        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
 
@@ -133,7 +133,7 @@ void handle_coin_error(const CoinError &error) {
     cerr << "Coin threw exception: " << error.message() << endl
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
-    utils::exit_with(ExitCode::CRITICAL_ERROR);
+    utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
 }
 }
 

@@ -124,6 +124,7 @@ public:
 
     void statistics(int index) const;
     void dump(int index) const;
+    void dump() const;
 
     const TransitionSystem &get_ts(int index) const {
         return *transition_systems[index];
