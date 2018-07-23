@@ -40,7 +40,7 @@ std::vector<State> sample_states_with_random_walks(
     int init_h,
     double average_operator_cost,
     utils::RandomNumberGenerator &rng,
-    DeadEndDetector is_dead_end = [] (const State &) {return false; },
+    DeadEndDetector is_dead_end = [] (const State &) {return false;},
     const utils::CountdownTimer *timer = nullptr);
 
 
@@ -58,7 +58,7 @@ public:
         const TaskProxy &task_proxy,
         int init_h,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng,
-        DeadEndDetector is_dead_end = [] (const State &) {return false; });
+        DeadEndDetector is_dead_end = [] (const State &) {return false;});
     ~RandomWalkSampler();
 
     State sample_state();
