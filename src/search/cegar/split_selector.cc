@@ -103,7 +103,7 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
         break;
     default:
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
-        utils::exit_with(utils::ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
     return rating;
 }
