@@ -4,8 +4,7 @@ USAGE = """\
 Update baseline:
   * change BASELINE variable below
   * push the change
-  * login to buildbot server and become the buildslave user
-      sudo -u buildslave -H bash
+  * login to computer running the buildslave as the buildslave user
   * remove ~/experiments dir
   * run in an updated repo (e.g. in ~/lib/downward):
     export PYTHONPATH=~/lib/python/lab
