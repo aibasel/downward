@@ -543,7 +543,6 @@ void LandmarkFactory::collect_ancestors(
                 closed_nodes.insert(&parent);
                 result.insert(&parent);
             }
-
     }
     while (!open_nodes.empty()) {
         LandmarkNode &node2 = *(open_nodes.front());

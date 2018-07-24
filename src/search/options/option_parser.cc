@@ -31,14 +31,14 @@ const string OptionParser::NONE = "<none>";
 
 static void ltrim(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
-            return !isspace(ch);
-        }));
+                                   return !isspace(ch);
+                               }));
 }
 
 static void rtrim(string &s) {
     s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
-            return !isspace(ch);
-        }).base(), s.end());
+                        return !isspace(ch);
+                    }).base(), s.end());
 }
 
 static void trim(string &s) {
@@ -400,15 +400,15 @@ void OptionParser::add_enum_option(
         // ... otherwise map the string to its position in the enumeration vector.
         auto it = find_if(names.begin(), names.end(),
                           [&](const string &name) {
-                if (name.size() != value.size())
-                    return false;
-                for (size_t i = 0; i < value.size(); ++i) {
-                    // Ignore case.
-                    if (tolower(name[i]) != tolower(value[i]))
-                        return false;
-                }
-                return true;
-            });
+                              if (name.size() != value.size())
+                                  return false;
+                              for (size_t i = 0; i < value.size(); ++i) {
+                                  // Ignore case.
+                                  if (tolower(name[i]) != tolower(value[i]))
+                                      return false;
+                              }
+                              return true;
+                          });
         if (it == names.end()) {
             error("invalid enum argument " + value + " for option " + key);
         }
