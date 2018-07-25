@@ -33,7 +33,8 @@ public:
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void boost_preferred() override;
-    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
@@ -64,7 +65,7 @@ template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     if (key) {
         cerr << "not implemented -- see msg639 in the tracker" << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
     int best = -1;
     for (size_t i = 0; i < open_lists.size(); ++i) {
@@ -102,10 +103,10 @@ void AlternationOpenList<Entry>::boost_preferred() {
 }
 
 template<class Entry>
-void AlternationOpenList<Entry>::get_involved_heuristics(
-    set<Heuristic *> &hset) {
+void AlternationOpenList<Entry>::get_path_dependent_evaluators(
+    set<Evaluator *> &evals) {
     for (const auto &sublist : open_lists)
-        sublist->get_involved_heuristics(hset);
+        sublist->get_path_dependent_evaluators(evals);
 }
 
 template<class Entry>

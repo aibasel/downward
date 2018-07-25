@@ -425,7 +425,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 init = false;
             }
             // Test whether one of the shared effects is inconsistent with b
-            for (const pair<int, int> &eff : shared_eff) {
+            for (const pair<const int, int> &eff : shared_eff) {
                 const FactProxy &effect_fact = variables[eff.first].get_fact(eff.second);
                 if (effect_fact != fact_a &&
                     effect_fact != fact_b &&
@@ -543,7 +543,6 @@ void LandmarkFactory::collect_ancestors(
                 closed_nodes.insert(&parent);
                 result.insert(&parent);
             }
-
     }
     while (!open_nodes.empty()) {
         LandmarkNode &node2 = *(open_nodes.front());

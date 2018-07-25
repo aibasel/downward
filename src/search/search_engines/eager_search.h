@@ -23,7 +23,7 @@ class EagerSearch : public SearchEngine {
     std::unique_ptr<StateOpenList> open_list;
     Evaluator *f_evaluator;
 
-    std::vector<Heuristic *> heuristics;
+    std::vector<Evaluator *> path_dependent_evaluators;
     std::vector<Heuristic *> preferred_operator_heuristics;
 
     std::shared_ptr<PruningMethod> pruning_method;
