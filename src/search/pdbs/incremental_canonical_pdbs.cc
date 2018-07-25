@@ -52,7 +52,7 @@ MaxAdditivePDBSubsets IncrementalCanonicalPDBs::get_max_additive_subsets(
 }
 
 int IncrementalCanonicalPDBs::get_value(const State &state) const {
-    CanonicalPDBs canonical_pdbs(pattern_databases, max_additive_subsets, false);
+    CanonicalPDBs canonical_pdbs(max_additive_subsets);
     return canonical_pdbs.get_value(state);
 }
 

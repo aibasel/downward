@@ -33,10 +33,13 @@ def _parse_plan(plan_filename):
 
 
 class PlanManager(object):
-    def __init__(self, plan_prefix):
+    def __init__(self, plan_prefix, portfolio_bound=None):
         self._plan_prefix = plan_prefix
         self._plan_costs = []
         self._problem_type = None
+        if portfolio_bound is None:
+            portfolio_bound = "infinity"
+        self._portfolio_bound = portfolio_bound
 
     def get_plan_prefix(self):
         return self._plan_prefix
@@ -44,13 +47,18 @@ class PlanManager(object):
     def get_plan_counter(self):
         return len(self._plan_costs)
 
-    def get_best_plan_cost(self):
-        """Return best plan cost found so far. Return string
-        "infinity" if no plans found yet."""
+    def get_next_portfolio_cost_bound(self):
+        """Return the next plan cost bound to be used in a portfolio planner.
+
+        Initially, this is the user-specified cost bound, or "infinity"
+        if the user specified no bound. Once a plan has been found, it
+        is the cost of the best plan found so far. (This is always the
+        last plan found because plans must decrease in cost.)
+        """
         if self._plan_costs:
             return self._plan_costs[-1]
         else:
-            return "infinity"
+            return self._portfolio_bound
 
     def get_problem_type(self):
         if self._problem_type is None:

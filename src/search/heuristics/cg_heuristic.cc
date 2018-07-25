@@ -33,7 +33,7 @@ CGHeuristic::CGHeuristic(const Options &opts)
         prio_queues.push_back(new priority_queues::AdaptiveQueue<ValueNode *>);
 
     function<bool(int, int)> pruning_condition =
-        [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
+        [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
     DTGFactory factory(task_proxy, false, pruning_condition);
     transition_graphs = factory.build_dtgs();
 }

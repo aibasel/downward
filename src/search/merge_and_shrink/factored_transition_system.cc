@@ -77,6 +77,53 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
 FactoredTransitionSystem::~FactoredTransitionSystem() {
 }
 
+void FactoredTransitionSystem::assert_index_valid(int index) const {
+    assert(utils::in_bounds(index, transition_systems));
+    assert(utils::in_bounds(index, mas_representations));
+    assert(utils::in_bounds(index, distances));
+    if (!(transition_systems[index] && mas_representations[index] && distances[index]) &&
+        !(!transition_systems[index] && !mas_representations[index] && !distances[index])) {
+        cerr << "Factor at index is in an inconsistent state!" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+}
+
+bool FactoredTransitionSystem::is_component_valid(int index) const {
+    assert(is_active(index));
+    if (compute_init_distances && !distances[index]->are_init_distances_computed()) {
+        return false;
+    }
+    if (compute_goal_distances && !distances[index]->are_goal_distances_computed()) {
+        return false;
+    }
+    return transition_systems[index]->are_transitions_sorted_unique();
+}
+
+void FactoredTransitionSystem::assert_all_components_valid() const {
+    for (size_t index = 0; index < transition_systems.size(); ++index) {
+        if (transition_systems[index]) {
+            assert(is_component_valid(index));
+        }
+    }
+}
+
+void FactoredTransitionSystem::apply_label_mapping(
+    const vector<pair<int, vector<int>>> &label_mapping,
+    int combinable_index) {
+    assert_all_components_valid();
+    for (const auto &new_label_old_labels : label_mapping) {
+        assert(new_label_old_labels.first == labels->get_size());
+        labels->reduce_labels(new_label_old_labels.second);
+    }
+    for (size_t i = 0; i < transition_systems.size(); ++i) {
+        if (transition_systems[i]) {
+            transition_systems[i]->apply_label_reduction(
+                label_mapping, static_cast<int>(i) != combinable_index);
+        }
+    }
+    assert_all_components_valid();
+}
+
 bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
@@ -111,48 +158,6 @@ bool FactoredTransitionSystem::apply_abstraction(
        Distances object. */
     assert(is_component_valid(index));
     return true;
-}
-
-void FactoredTransitionSystem::assert_index_valid(int index) const {
-    assert(utils::in_bounds(index, transition_systems));
-    assert(utils::in_bounds(index, mas_representations));
-    assert(utils::in_bounds(index, distances));
-    if (!(transition_systems[index] && mas_representations[index] && distances[index]) &&
-        !(!transition_systems[index] && !mas_representations[index] && !distances[index])) {
-        cerr << "Factor at index is in an inconsistent state!" << endl;
-        utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
-    }
-}
-
-bool FactoredTransitionSystem::is_component_valid(int index) const {
-    assert(is_active(index));
-    return distances[index]->are_distances_computed()
-           && transition_systems[index]->are_transitions_sorted_unique();
-}
-
-void FactoredTransitionSystem::assert_all_components_valid() const {
-    for (size_t index = 0; index < transition_systems.size(); ++index) {
-        if (transition_systems[index]) {
-            assert(is_component_valid(index));
-        }
-    }
-}
-
-void FactoredTransitionSystem::apply_label_mapping(
-    const vector<pair<int, vector<int>>> &label_mapping,
-    int combinable_index) {
-    assert_all_components_valid();
-    for (const auto &new_label_old_labels : label_mapping) {
-        assert(new_label_old_labels.first == labels->get_size());
-        labels->reduce_labels(new_label_old_labels.second);
-    }
-    for (size_t i = 0; i < transition_systems.size(); ++i) {
-        if (transition_systems[i]) {
-            transition_systems[i]->apply_label_reduction(
-                label_mapping, static_cast<int>(i) != combinable_index);
-        }
-    }
-    assert_all_components_valid();
 }
 
 int FactoredTransitionSystem::merge(
@@ -209,6 +214,12 @@ void FactoredTransitionSystem::dump(int index) const {
     assert_index_valid(index);
     transition_systems[index]->dump_labels_and_transitions();
     mas_representations[index]->dump();
+}
+
+void FactoredTransitionSystem::dump() const {
+    for (int index : *this) {
+        dump(index);
+    }
 }
 
 bool FactoredTransitionSystem::is_factor_solvable(int index) const {

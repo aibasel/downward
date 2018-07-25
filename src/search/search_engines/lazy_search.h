@@ -10,6 +10,8 @@
 #include "../search_progress.h"
 #include "../search_space.h"
 
+#include "../utils/rng.h"
+
 #include <memory>
 #include <vector>
 
@@ -30,9 +32,8 @@ protected:
     bool preferred_successors_first;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
-    std::vector<Heuristic *> heuristics;
+    std::vector<Evaluator *> path_dependent_evaluators;
     std::vector<Heuristic *> preferred_operator_heuristics;
-    std::vector<Heuristic *> estimate_heuristics;
 
     GlobalState current_state;
     StateID current_predecessor_id;

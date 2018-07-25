@@ -1,6 +1,5 @@
 #include "state_equation_constraints.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -151,5 +150,5 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     return make_shared<StateEquationConstraints>();
 }
 
-PluginShared<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
+static PluginShared<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
 }

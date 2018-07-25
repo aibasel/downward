@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 
-import multiprocessing
 import os
 import subprocess
 import sys
@@ -59,9 +58,7 @@ def main():
     # shell, we do not build on Windows. If the planner is not yet built,
     # the driver script will complain about this.
     if os.name == "posix":
-        jobs = multiprocessing.cpu_count()
-        cmd = ["./build.py", "release32", "debug32", "-j{}".format(jobs)]
-        subprocess.check_call(cmd, cwd=REPO)
+        subprocess.check_call(["./build.py", "release32", "debug32"], cwd=REPO)
     for task in TASKS:
         for nick, config in CONFIGS.items():
             for debug in [False, True]:
