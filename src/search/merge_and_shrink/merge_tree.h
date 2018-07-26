@@ -56,14 +56,14 @@ enum class UpdateOption {
   This class manages a binary tree data structure (MergeTreeNode) that
   represents a merge tree.
 
-  In the common use case, it the merge tree is used as "the merge strategy"
+  In the common use case, the merge tree is used as "the merge strategy"
   and hence it is always synchronized with the current factored transition
   system managed by the merge-and-shrink heuristic. In that case, when asked
   for a next merge, the *left-most* sibling leaf pair is returned and their
   parent node updated to represent the resulting composite transition system.
 
   NOTE: returning the left-most sibling leaf pair does not allow to represent
-  arbitrary merge strategies with this class, because there is not possibility
+  arbitrary merge strategies with this class, because there is no possibility
   to specify the merge order of current sibling leaf nodes in an arbitrary
   way. For existing precomputed merge strategies like the linear ones or MIASM,
   this does not matter.

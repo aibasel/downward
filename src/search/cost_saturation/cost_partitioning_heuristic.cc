@@ -9,7 +9,7 @@ using namespace std;
 namespace cost_saturation {
 void CostPartitioningHeuristic::add_lookup_table_if_nonzero(
     int heuristic_id, vector<int> h_values) {
-    if (any_of(h_values.begin(), h_values.end(), [](int h) {return h != 0; })) {
+    if (any_of(h_values.begin(), h_values.end(), [](int h) {return h != 0;})) {
         lookup_tables.emplace_back(heuristic_id, move(h_values));
     }
 }

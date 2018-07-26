@@ -45,8 +45,8 @@ Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
         scores.push_back(rate_abstraction(abstract_state_ids, abs));
     }
     sort(order.begin(), order.end(), [&](int abs1, int abs2) {
-            return scores[abs1] > scores[abs2];
-        });
+             return scores[abs1] > scores[abs2];
+         });
     if (verbose) {
         cout << "Static greedy scores: " << scores << endl;
         unordered_set<double> unique_scores(scores.begin(), scores.end());

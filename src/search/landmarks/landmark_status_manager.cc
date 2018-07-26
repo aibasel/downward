@@ -28,7 +28,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
             ++num_goal_lms;
         }
 
-        if (node_p->parents.size() > 0) {
+        if (!node_p->parents.empty()) {
             continue;
         }
         if (node_p->conjunctive) {
@@ -141,11 +141,11 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
 
         if (!node->is_derived) {
             if ((node->status == lm_not_reached) &&
-                (node->first_achievers.size() == 0)) {
+                node->first_achievers.empty()) {
                 dead_end_found = true;
             }
             if ((node->status == lm_needed_again) &&
-                (node->possible_achievers.size() == 0)) {
+                node->possible_achievers.empty()) {
                 dead_end_found = true;
             }
         }
@@ -169,11 +169,10 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
     //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
-        if (true) // Note: no condition on edge type here
-            if (!reached[parent_node->get_id()]) {
-                return false;
-            }
-
+        // Note: no condition on edge type here.
+        if (!reached[parent_node->get_id()]) {
+            return false;
+        }
     }
     return true;
 }

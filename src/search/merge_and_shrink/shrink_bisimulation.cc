@@ -94,8 +94,7 @@ struct Signature {
 
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
-    : ShrinkStrategy(),
-      greedy(opts.get<bool>("greedy")),
+    : greedy(opts.get<bool>("greedy")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 

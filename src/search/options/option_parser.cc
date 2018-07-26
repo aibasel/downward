@@ -31,14 +31,14 @@ const string OptionParser::NONE = "<none>";
 
 static void ltrim(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
-            return !isspace(ch);
-        }));
+                                   return !isspace(ch);
+                               }));
 }
 
 static void rtrim(string &s) {
     s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
-            return !isspace(ch);
-        }).base(), s.end());
+                        return !isspace(ch);
+                    }).base(), s.end());
 }
 
 static void trim(string &s) {
@@ -267,8 +267,8 @@ static ParseTree generate_parse_tree(const string &config) {
     ParseTree::sibling_iterator pseudoroot =
         tree.insert(tree.begin(), ParseNode("pseudoroot", ""));
     ParseTree::sibling_iterator cur_node = pseudoroot;
-    string buffer = "";
-    string key = "";
+    string buffer;
+    string key;
     for (size_t i = 0; i < config.size(); ++i) {
         char next = config.at(i);
         if ((next == '(' || next == ')' || next == ',') && !buffer.empty()) {
@@ -400,15 +400,15 @@ void OptionParser::add_enum_option(
         // ... otherwise map the string to its position in the enumeration vector.
         auto it = find_if(names.begin(), names.end(),
                           [&](const string &name) {
-                if (name.size() != value.size())
-                    return false;
-                for (size_t i = 0; i < value.size(); ++i) {
-                    // Ignore case.
-                    if (tolower(name[i]) != tolower(value[i]))
-                        return false;
-                }
-                return true;
-            });
+                              if (name.size() != value.size())
+                                  return false;
+                              for (size_t i = 0; i < value.size(); ++i) {
+                                  // Ignore case.
+                                  if (tolower(name[i]) != tolower(value[i]))
+                                      return false;
+                              }
+                              return true;
+                          });
         if (it == names.end()) {
             error("invalid enum argument " + value + " for option " + key);
         }
@@ -419,7 +419,7 @@ void OptionParser::add_enum_option(
 Options OptionParser::parse() {
     /* Check if there were any arguments with invalid keywords,
        or positional arguments after keyword arguments. */
-    string last_key = "";
+    string last_key;
     for (auto tree_it = first_child_of_root(parse_tree);
          tree_it != end_of_roots_children(parse_tree);
          ++tree_it) {
