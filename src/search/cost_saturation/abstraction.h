@@ -1,6 +1,8 @@
 #ifndef COST_SATURATION_ABSTRACTION_H
 #define COST_SATURATION_ABSTRACTION_H
 
+#include <cassert>
+#include <ostream>
 #include <vector>
 
 class State;
@@ -15,6 +17,7 @@ struct Transition {
         : src(src),
           op(op),
           target(target) {
+        assert(src != target);
     }
 
     bool operator==(const Transition &other) const {
@@ -25,6 +28,10 @@ struct Transition {
         return src < other.src
                || (src == other.src && op < other.op)
                || (src == other.src && op == other.op && target < other.target);
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Transition &t) {
+        return os << "<" << t.src << "," << t.op << "," << t.target << ">";
     }
 };
 
