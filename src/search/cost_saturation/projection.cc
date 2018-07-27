@@ -303,8 +303,8 @@ bool Projection::operator_induces_loop(const OperatorProxy &op) const {
     return true;
 }
 
-void Projection::compute_transitions_for_operator(
-    const OperatorProxy &op, vector<Transition> &transitions) const {
+void Projection::for_each_transition(
+    const OperatorProxy &op, const TransitionCallback &callback) const {
     vector<FactPair> abstract_preconditions;
     for (FactProxy pre : op.get_preconditions()) {
         FactPair fact = pre.get_pair();
@@ -328,19 +328,17 @@ void Projection::compute_transitions_for_operator(
                 dest_index += hash_multipliers[pattern_index] * (fact.value - old_value);
             }
             assert(state_index != dest_index);
-            transitions.emplace_back(state_index, op.get_id(), dest_index);
+            callback(Transition(state_index, op.get_id(), dest_index));
         }
     }
 }
 
-vector<Transition> Projection::compute_transitions() const {
+void Projection::for_each_transition(const TransitionCallback &callback) const {
     OperatorsProxy operators = task_proxy.get_operators();
-    vector<Transition> transitions;
     for (int op_id : active_operators) {
         OperatorProxy op = operators[op_id];
-        compute_transitions_for_operator(op, transitions);
+        for_each_transition(op, callback);
     }
-    return transitions;
 }
 
 vector<int> Projection::compute_saturated_costs(
@@ -378,7 +376,8 @@ vector<int> Projection::compute_saturated_costs(
         }
     }
     vector<Transition> old_transitions = get_transitions();
-    vector<Transition> new_transitions = compute_transitions();
+    vector<Transition> new_transitions;
+    for_each_transition([&new_transitions](const Transition &t) {new_transitions.push_back(t);});
     sort(old_transitions.begin(), old_transitions.end());
     sort(new_transitions.begin(), new_transitions.end());
     assert(old_transitions == new_transitions);

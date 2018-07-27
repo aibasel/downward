@@ -56,9 +56,10 @@ class Projection : public Abstraction {
     std::vector<int> compute_looping_operators() const;
     std::vector<int> compute_goal_states() const;
 
-    void compute_transitions_for_operator(
-        const OperatorProxy &op, std::vector<Transition> &transitions) const;
-    std::vector<Transition> compute_transitions() const;
+    using TransitionCallback = std::function<void (const Transition &)>;
+    void for_each_transition(
+        const OperatorProxy &op, const TransitionCallback &callback) const;
+    void for_each_transition(const TransitionCallback &callback) const;
 
     /*
       Recursive method; called by build_abstract_operators. In the case
