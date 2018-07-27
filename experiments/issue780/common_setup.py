@@ -170,6 +170,8 @@ class IssueExperiment(FastDownwardExperiment):
         "expansions_until_last_jump",
         "generated",
         "memory",
+        "planner_memory",
+        "planner_time",
         "quality",
         "run_dir",
         "score_evaluations",
