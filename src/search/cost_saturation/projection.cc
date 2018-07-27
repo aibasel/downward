@@ -379,9 +379,15 @@ vector<int> Projection::compute_saturated_costs(
     }
     vector<Transition> old_transitions = get_transitions();
     vector<Transition> new_transitions;
-    for_each_transition([&new_transitions](const Transition &t) {new_transitions.push_back(t);});
+    for_each_transition(
+        [&new_transitions, &h_values](const Transition &t) {
+            if (h_values[t.target] != INF)
+                new_transitions.push_back(t);
+        });
     sort(old_transitions.begin(), old_transitions.end());
     sort(new_transitions.begin(), new_transitions.end());
+    //cout << "Old: " << old_transitions << endl;
+    //cout << "New: " << new_transitions << endl;
     assert(old_transitions == new_transitions);
 
     vector<int> saturated_costs_new(num_operators, -INF);

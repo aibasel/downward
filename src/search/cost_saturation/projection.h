@@ -56,6 +56,10 @@ class Projection : public Abstraction {
     std::vector<int> compute_looping_operators() const;
     std::vector<int> compute_goal_states() const;
 
+    /*
+      Apply a function to all transitions in the projection (including
+      irrelevant transitions).
+    */
     using TransitionCallback = std::function<void (const Transition &)>;
     void for_each_transition(
         const OperatorProxy &op, const TransitionCallback &callback) const;
