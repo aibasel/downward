@@ -9,6 +9,7 @@
 #include "../utils/math.h"
 #include "../utils/memory.h"
 
+#include <cassert>
 #include <unordered_map>
 
 using namespace std;
@@ -327,8 +328,9 @@ void Projection::for_each_transition(
                                 % variables[fact.var].get_domain_size();
                 dest_index += hash_multipliers[pattern_index] * (fact.value - old_value);
             }
-            assert(state_index != dest_index);
-            callback(Transition(state_index, op.get_id(), dest_index));
+            if (state_index != dest_index) {
+                callback(Transition(state_index, op.get_id(), dest_index));
+            }
         }
     }
 }
