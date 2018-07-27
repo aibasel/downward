@@ -377,18 +377,20 @@ vector<int> Projection::compute_saturated_costs(
             needed_costs = max(needed_costs, src_h - target_h);
         }
     }
-    vector<Transition> old_transitions = get_transitions();
-    vector<Transition> new_transitions;
-    for_each_transition(
-        [&new_transitions, &h_values](const Transition &t) {
-            if (h_values[t.target] != INF)
-                new_transitions.push_back(t);
-        });
-    sort(old_transitions.begin(), old_transitions.end());
-    sort(new_transitions.begin(), new_transitions.end());
+    //vector<Transition> old_transitions = get_transitions();
+    //vector<Transition> new_transitions;
+    //for_each_transition(
+    //    [&new_transitions, &h_values](const Transition &t) {
+    //        if (h_values[t.target] != INF)
+    //            new_transitions.push_back(t);
+    //    });
+    //sort(old_transitions.begin(), old_transitions.end());
+    //sort(new_transitions.begin(), new_transitions.end());
+    //cout << "goals: " << goal_states << endl;
+    //cout << "h values: " << h_values << endl;
     //cout << "Old: " << old_transitions << endl;
     //cout << "New: " << new_transitions << endl;
-    assert(old_transitions == new_transitions);
+    //assert(old_transitions == new_transitions);
 
     vector<int> saturated_costs_new(num_operators, -INF);
 
