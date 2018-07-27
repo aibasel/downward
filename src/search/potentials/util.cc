@@ -27,7 +27,7 @@ vector<State> sample_without_dead_end_detection(
     vector<State> samples;
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
-        sampler.sample_state(init_h);
+        samples.push_back(sampler.sample_state(init_h));
     }
     return samples;
 }
