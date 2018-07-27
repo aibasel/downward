@@ -40,15 +40,15 @@ Projection::Projection(
     }
 
     VariablesProxy variables = task_proxy.get_variables();
-    vector<int> variable_to_index(variables.size(), -1);
+    variable_to_pattern_index.resize(variables.size(), -1);
     for (size_t i = 0; i < pattern.size(); ++i) {
-        variable_to_index[pattern[i]] = i;
+        variable_to_pattern_index[pattern[i]] = i;
     }
 
     // Compute abstract operators.
     for (OperatorProxy op : task_proxy.get_operators()) {
         build_abstract_operators(
-            op, -1, variable_to_index, variables, abstract_operators);
+            op, -1, variable_to_pattern_index, variables, abstract_operators);
     }
 
     // Create match tree.
@@ -95,24 +95,18 @@ vector<int> Projection::compute_looping_operators() const {
 vector<int> Projection::compute_goal_states() const {
     vector<int> goal_states;
 
-    VariablesProxy variables = task_proxy.get_variables();
-    vector<int> variable_to_index(variables.size(), -1);
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        variable_to_index[pattern[i]] = i;
-    }
-
     // Compute abstract goal var-val pairs.
     vector<FactPair> abstract_goals;
     for (FactProxy goal : task_proxy.get_goals()) {
         int var_id = goal.get_variable().get_id();
         int val = goal.get_value();
-        if (variable_to_index[var_id] != -1) {
-            abstract_goals.emplace_back(variable_to_index[var_id], val);
+        if (variable_to_pattern_index[var_id] != -1) {
+            abstract_goals.emplace_back(variable_to_pattern_index[var_id], val);
         }
     }
 
     for (int state_index = 0; state_index < num_states; ++state_index) {
-        if (is_goal_state(state_index, abstract_goals, variables)) {
+        if (is_consistent(state_index, abstract_goals)) {
             goal_states.push_back(state_index);
         }
     }
@@ -256,10 +250,10 @@ vector<int> Projection::compute_distances(
     return distances;
 }
 
-bool Projection::is_goal_state(
-    const size_t state_index,
-    const vector<FactPair> &abstract_goals,
-    const VariablesProxy &variables) const {
+bool Projection::is_consistent(
+    size_t state_index,
+    const vector<FactPair> &abstract_goals) const {
+    VariablesProxy variables = task_proxy.get_variables();
     for (const FactPair &abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.var;
         int var_id = pattern[pattern_var_id];
@@ -309,6 +303,46 @@ bool Projection::operator_induces_loop(const OperatorProxy &op) const {
     return true;
 }
 
+void Projection::compute_transitions_for_operator(
+    const OperatorProxy &op, vector<Transition> &transitions) const {
+    vector<FactPair> abstract_preconditions;
+    for (FactProxy pre : op.get_preconditions()) {
+        FactPair fact = pre.get_pair();
+        if (variable_to_pattern_index[fact.var] != -1) {
+            abstract_preconditions.emplace_back(variable_to_pattern_index[fact.var], fact.value);
+        }
+    }
+
+    VariablesProxy variables = task_proxy.get_variables();
+    for (int state_index = 0; state_index < num_states; ++state_index) {
+        if (is_consistent(state_index, abstract_preconditions)) {
+            int dest_index = state_index;
+            for (EffectProxy effect : op.get_effects()) {
+                FactPair fact = effect.get_fact().get_pair();
+                int pattern_index = variable_to_pattern_index[fact.var];
+                if (pattern_index == -1) {
+                    continue;
+                }
+                int old_value = (state_index / hash_multipliers[pattern_index])
+                                % variables[fact.var].get_domain_size();
+                dest_index += hash_multipliers[pattern_index] * (fact.value - old_value);
+            }
+            assert(state_index != dest_index);
+            transitions.emplace_back(state_index, op.get_id(), dest_index);
+        }
+    }
+}
+
+vector<Transition> Projection::compute_transitions() const {
+    OperatorsProxy operators = task_proxy.get_operators();
+    vector<Transition> transitions;
+    for (int op_id : active_operators) {
+        OperatorProxy op = operators[op_id];
+        compute_transitions_for_operator(op, transitions);
+    }
+    return transitions;
+}
+
 vector<int> Projection::compute_saturated_costs(
     const vector<int> &h_values,
     int num_operators) const {
@@ -343,6 +377,11 @@ vector<int> Projection::compute_saturated_costs(
             needed_costs = max(needed_costs, src_h - target_h);
         }
     }
+    vector<Transition> old_transitions = get_transitions();
+    vector<Transition> new_transitions = compute_transitions();
+    sort(old_transitions.begin(), old_transitions.end());
+    sort(new_transitions.begin(), new_transitions.end());
+    assert(old_transitions == new_transitions);
     return saturated_costs;
 }
 

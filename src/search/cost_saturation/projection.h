@@ -32,6 +32,8 @@ class Projection : public Abstraction {
     // Multipliers for each variable for perfect hash function.
     std::vector<std::size_t> hash_multipliers;
 
+    std::vector<int> variable_to_pattern_index;
+
     std::vector<int> goal_states;
 
     // Operators inducing state-changing transitions.
@@ -53,6 +55,10 @@ class Projection : public Abstraction {
     std::vector<int> compute_active_operators() const;
     std::vector<int> compute_looping_operators() const;
     std::vector<int> compute_goal_states() const;
+
+    void compute_transitions_for_operator(
+        const OperatorProxy &op, std::vector<Transition> &transitions) const;
+    std::vector<Transition> compute_transitions() const;
 
     /*
       Recursive method; called by build_abstract_operators. In the case
@@ -78,7 +84,7 @@ class Projection : public Abstraction {
     */
     void build_abstract_operators(
         const OperatorProxy &op, int cost,
-        const std::vector<int> &variable_to_index,
+        const std::vector<int> &variable_to_pattern_index,
         const VariablesProxy &variables,
         std::vector<pdbs::AbstractOperator> &abstract_operators) const;
 
@@ -95,10 +101,9 @@ class Projection : public Abstraction {
     /*
       Return true iff the given state is an abstract goal state.
     */
-    bool is_goal_state(
-        const std::size_t state_index,
-        const std::vector<FactPair> &abstract_goals,
-        const VariablesProxy &variables) const;
+    bool is_consistent(
+        std::size_t state_index,
+        const std::vector<FactPair> &abstract_goals) const;
 
     /*
       Use the given concrete state to calculate the index of the corresponding

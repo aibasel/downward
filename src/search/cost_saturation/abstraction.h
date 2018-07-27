@@ -16,6 +16,16 @@ struct Transition {
           op(op),
           target(target) {
     }
+
+    bool operator==(const Transition &other) const {
+        return src == other.src && op == other.op && target == other.target;
+    }
+
+    bool operator<(const Transition &other) const {
+        return src < other.src
+               || (src == other.src && op < other.op)
+               || (src == other.src && op == other.op && target < other.target);
+    }
 };
 
 
