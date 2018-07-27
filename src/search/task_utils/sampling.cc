@@ -5,7 +5,6 @@
 #include "../task_proxy.h"
 
 #include "../task_utils/task_properties.h"
-#include "../utils/countdown_timer.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 
@@ -21,6 +20,7 @@ static State sample_state_with_random_walk(
     double average_operator_cost,
     utils::RandomNumberGenerator &rng,
     function<bool(State)> is_dead_end) {
+    assert(init_h != numeric_limits<int>::max());
     int n;
     if (init_h == 0) {
         n = 10;
@@ -72,60 +72,29 @@ static State sample_state_with_random_walk(
     return current_state;
 }
 
-vector<State> sample_states_with_random_walks(
-    const TaskProxy &task_proxy,
-    const successor_generator::SuccessorGenerator &successor_generator,
-    int num_samples,
-    int init_h,
-    double average_operator_cost,
-    utils::RandomNumberGenerator &rng,
-    function<bool(State)> is_dead_end,
-    const utils::CountdownTimer *timer) {
-    const State initial_state = task_proxy.get_initial_state();
-    vector<State> samples;
-    samples.reserve(num_samples);
-    for (int i = 0; i < num_samples; ++i) {
-        if (timer && timer->is_expired())
-            throw SamplingTimeout();
-        samples.push_back(sample_state_with_random_walk(
-                              task_proxy,
-                              initial_state,
-                              successor_generator,
-                              init_h,
-                              average_operator_cost,
-                              rng,
-                              is_dead_end));
-    }
-    return samples;
-}
-
 
 RandomWalkSampler::RandomWalkSampler(
     const TaskProxy &task_proxy,
-    int init_h,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    DeadEndDetector is_dead_end)
+    utils::RandomNumberGenerator &rng)
     : task_proxy(task_proxy),
       successor_generator(utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy)),
       initial_state(utils::make_unique_ptr<State>(task_proxy.get_initial_state())),
-      init_h(init_h),
       average_operator_costs(task_properties::get_average_operator_cost(task_proxy)),
-      rng(rng),
-      is_dead_end(is_dead_end) {
-    assert(init_h != numeric_limits<int>::max());
+      rng(rng) {
 }
 
 RandomWalkSampler::~RandomWalkSampler() {
 }
 
-State RandomWalkSampler::sample_state() {
+State RandomWalkSampler::sample_state(
+    int init_h, const DeadEndDetector &is_dead_end) const {
     return sample_state_with_random_walk(
         task_proxy,
         *initial_state,
         *successor_generator,
         init_h,
         average_operator_costs,
-        *rng,
+        rng,
         is_dead_end);
 }
 }
