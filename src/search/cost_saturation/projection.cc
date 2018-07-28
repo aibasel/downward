@@ -310,20 +310,27 @@ void Projection::for_each_transition(
     for (FactProxy pre : op.get_preconditions()) {
         FactPair fact = pre.get_pair();
         if (variable_to_pattern_index[fact.var] != -1) {
+            // TODO: Store concrete preconditions instead.
             abstract_preconditions.emplace_back(variable_to_pattern_index[fact.var], fact.value);
         }
     }
+
+    vector<FactPair> effects;
+    for (EffectProxy effect : op.get_effects()) {
+        FactPair fact = effect.get_fact().get_pair();
+        int pattern_index = variable_to_pattern_index[fact.var];
+        if (pattern_index != -1) {
+            effects.push_back(fact);
+        }
+    }
+    assert(!effects.empty());
 
     VariablesProxy variables = task_proxy.get_variables();
     for (int state_index = 0; state_index < num_states; ++state_index) {
         if (is_consistent(state_index, abstract_preconditions)) {
             int dest_index = state_index;
-            for (EffectProxy effect : op.get_effects()) {
-                FactPair fact = effect.get_fact().get_pair();
+            for (const FactPair &fact : effects) {
                 int pattern_index = variable_to_pattern_index[fact.var];
-                if (pattern_index == -1) {
-                    continue;
-                }
                 int old_value = (state_index / hash_multipliers[pattern_index])
                                 % variables[fact.var].get_domain_size();
                 dest_index += hash_multipliers[pattern_index] * (fact.value - old_value);
