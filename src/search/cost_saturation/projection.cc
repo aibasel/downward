@@ -45,6 +45,10 @@ Projection::Projection(
     for (size_t i = 0; i < pattern.size(); ++i) {
         variable_to_pattern_index[pattern[i]] = i;
     }
+    pattern_domain_sizes.reserve(pattern.size());
+    for (int pattern_var : pattern) {
+        pattern_domain_sizes.push_back(variables[pattern_var].get_domain_size());
+    }
 
     // Compute abstract operators.
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -250,13 +254,10 @@ vector<int> Projection::compute_distances(const vector<int> &costs) const {
 bool Projection::is_consistent(
     size_t state_index,
     const vector<FactPair> &abstract_goals) const {
-    VariablesProxy variables = task_proxy.get_variables();
     for (const FactPair &abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.var;
-        int var_id = pattern[pattern_var_id];
-        VariableProxy var = variables[var_id];
         int temp = state_index / hash_multipliers[pattern_var_id];
-        int val = temp % var.get_domain_size();
+        int val = temp % pattern_domain_sizes[pattern_var_id];
         if (val != abstract_goal.value) {
             return false;
         }
@@ -321,14 +322,13 @@ void Projection::for_each_transition(
     }
     assert(!effects.empty());
 
-    VariablesProxy variables = task_proxy.get_variables();
     for (int state_index = 0; state_index < num_states; ++state_index) {
         if (is_consistent(state_index, abstract_preconditions)) {
             int dest_index = state_index;
             for (const FactPair &fact : effects) {
                 int pattern_index = variable_to_pattern_index[fact.var];
                 int old_value = (state_index / hash_multipliers[pattern_index])
-                                % variables[fact.var].get_domain_size();
+                                % pattern_domain_sizes[pattern_index];
                 dest_index += hash_multipliers[pattern_index] * (fact.value - old_value);
             }
             if (state_index != dest_index) {

@@ -32,7 +32,14 @@ class Projection : public Abstraction {
     // Multipliers for each variable for perfect hash function.
     std::vector<std::size_t> hash_multipliers;
 
+    /*
+      For each variable store its index in the pattern or -1 if it is not in
+      the pattern.
+    */
     std::vector<int> variable_to_pattern_index;
+
+    // Domain size of each variable in the pattern.
+    std::vector<int> pattern_domain_sizes;
 
     std::vector<int> goal_states;
 
