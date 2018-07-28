@@ -346,37 +346,41 @@ void Projection::for_each_transition(const TransitionCallback &callback) const {
 vector<int> Projection::compute_saturated_costs(
     const vector<int> &h_values,
     int num_operators) const {
+    //vector<Transition> old_transitions = get_transitions();
+    //vector<Transition> new_transitions;
+    //for_each_transition(
+    //    [&new_transitions, &h_values](const Transition &t) {
+    //        if (h_values[t.target] != INF)
+    //            new_transitions.push_back(t);
+    //    });
+    //sort(old_transitions.begin(), old_transitions.end());
+    //sort(new_transitions.begin(), new_transitions.end());
+    //cout << "goals: " << goal_states << endl;
+    //cout << "h values: " << h_values << endl;
+    //cout << "Old: " << old_transitions << endl;
+    //cout << "New: " << new_transitions << endl;
+    //assert(old_transitions == new_transitions);
+
     vector<int> saturated_costs(num_operators, -INF);
 
-    /* To prevent negative cost cycles we ensure that all operators
+    /* To prevent negative cost cycles, we ensure that all operators
        inducing self-loops have non-negative costs. */
     for (int op_id : looping_operators) {
         saturated_costs[op_id] = 0;
     }
 
-    // Reuse vector to save allocations.
-    vector<const pdbs::AbstractOperator *> applicable_operators;
-    for (int target = 0; target < get_num_states(); ++target) {
-        utils::in_bounds(target, h_values);
-        int target_h = h_values[target];
-        if (target_h == INF) {
-            continue;
-        }
-
-        applicable_operators.clear();
-        match_tree->get_applicable_operators(target, applicable_operators);
-        for (const pdbs::AbstractOperator *op : applicable_operators) {
-            int src = target + op->get_hash_effect();
-            assert(src != target);
-            utils::in_bounds(src, h_values);
-            int src_h = h_values[src];
-            if (src_h == INF) {
-                continue;
+    for_each_transition(
+        [&saturated_costs, &h_values](const Transition &t) {
+            assert(utils::in_bounds(t.src, h_values));
+            assert(utils::in_bounds(t.target, h_values));
+            int src_h = h_values[t.src];
+            int target_h = h_values[t.target];
+            if (src_h == INF || target_h == INF) {
+                return;
             }
-            int &needed_costs = saturated_costs[op->get_concrete_operator_id()];
+            int &needed_costs = saturated_costs[t.op];
             needed_costs = max(needed_costs, src_h - target_h);
-        }
-    }
+        });
     return saturated_costs;
 }
 
