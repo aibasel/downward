@@ -94,14 +94,9 @@ class Projection : public Abstraction {
         std::vector<pdbs::AbstractOperator> &abstract_operators) const;
 
     /*
-      Use Dijkstra's algorithm to compute all goal distances. If 'transitions'
-      is given it is filled with all transitions visited during the execution
-      of Dijkstra's algorithm, i.e., all transitions that may be part of any
-      plan from any abstract state in the projection.
+      Use Dijkstra's algorithm to compute all goal distances.
     */
-    std::vector<int> compute_distances(
-        const std::vector<int> &costs,
-        std::vector<Transition> *transitions = nullptr) const;
+    std::vector<int> compute_distances(const std::vector<int> &costs) const;
 
     /*
       Return true iff the given state is an abstract goal state.

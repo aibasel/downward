@@ -204,8 +204,7 @@ void Projection::build_abstract_operators(
                  effects_without_pre, variables, operators);
 }
 
-vector<int> Projection::compute_distances(
-    const vector<int> &costs, vector<Transition> *transitions) const {
+vector<int> Projection::compute_distances(const vector<int> &costs) const {
     vector<int> distances(num_states, INF);
 
     // Initialize queue.
@@ -234,9 +233,6 @@ vector<int> Projection::compute_distances(
         for (const pdbs::AbstractOperator *op : applicable_operators) {
             size_t predecessor = state_index + op->get_hash_effect();
             int op_id = op->get_concrete_operator_id();
-            if (transitions) {
-                transitions->emplace_back(predecessor, op_id, state_index);
-            }
             assert(utils::in_bounds(op_id, costs));
             int alternative_cost = (costs[op_id] == INF) ?
                                    INF : distances[state_index] + costs[op_id];
@@ -310,8 +306,8 @@ void Projection::for_each_transition(
     for (FactProxy pre : op.get_preconditions()) {
         FactPair fact = pre.get_pair();
         if (variable_to_pattern_index[fact.var] != -1) {
-            // TODO: Store concrete preconditions instead.
-            abstract_preconditions.emplace_back(variable_to_pattern_index[fact.var], fact.value);
+            abstract_preconditions.emplace_back(
+                variable_to_pattern_index[fact.var], fact.value);
         }
     }
 
@@ -353,21 +349,6 @@ void Projection::for_each_transition(const TransitionCallback &callback) const {
 vector<int> Projection::compute_saturated_costs(
     const vector<int> &h_values,
     int num_operators) const {
-    //vector<Transition> old_transitions = get_transitions();
-    //vector<Transition> new_transitions;
-    //for_each_transition(
-    //    [&new_transitions, &h_values](const Transition &t) {
-    //        if (h_values[t.target] != INF)
-    //            new_transitions.push_back(t);
-    //    });
-    //sort(old_transitions.begin(), old_transitions.end());
-    //sort(new_transitions.begin(), new_transitions.end());
-    //cout << "goals: " << goal_states << endl;
-    //cout << "h values: " << h_values << endl;
-    //cout << "Old: " << old_transitions << endl;
-    //cout << "New: " << new_transitions << endl;
-    //assert(old_transitions == new_transitions);
-
     vector<int> saturated_costs(num_operators, -INF);
 
     /* To prevent negative cost cycles, we ensure that all operators
@@ -396,12 +377,7 @@ vector<int> Projection::compute_goal_distances(const vector<int> &costs) const {
 }
 
 vector<Transition> Projection::get_transitions() const {
-    // We can use an arbitrary cost function for computing the transitions.
-    int num_operators = task_proxy.get_operators().size();
-    vector<int> unit_costs(num_operators, 1);
-    vector<Transition> transitions;
-    compute_distances(unit_costs, &transitions);
-    return transitions;
+    ABORT("TODO: Remove get_transitions() and use for_each_transition() instead.");
 }
 
 int Projection::get_num_states() const {
