@@ -377,43 +377,6 @@ vector<int> Projection::compute_saturated_costs(
             needed_costs = max(needed_costs, src_h - target_h);
         }
     }
-    //vector<Transition> old_transitions = get_transitions();
-    //vector<Transition> new_transitions;
-    //for_each_transition(
-    //    [&new_transitions, &h_values](const Transition &t) {
-    //        if (h_values[t.target] != INF)
-    //            new_transitions.push_back(t);
-    //    });
-    //sort(old_transitions.begin(), old_transitions.end());
-    //sort(new_transitions.begin(), new_transitions.end());
-    //cout << "goals: " << goal_states << endl;
-    //cout << "h values: " << h_values << endl;
-    //cout << "Old: " << old_transitions << endl;
-    //cout << "New: " << new_transitions << endl;
-    //assert(old_transitions == new_transitions);
-
-    vector<int> saturated_costs_new(num_operators, -INF);
-
-    /* To prevent negative cost cycles, we ensure that all operators
-       inducing self-loops have non-negative costs. */
-    for (int op_id : looping_operators) {
-        saturated_costs_new[op_id] = 0;
-    }
-
-    for_each_transition(
-        [&saturated_costs_new, &h_values](const Transition &t) {
-            assert(utils::in_bounds(t.src, h_values));
-            assert(utils::in_bounds(t.target, h_values));
-            int src_h = h_values[t.src];
-            int target_h = h_values[t.target];
-            if (src_h == INF || target_h == INF) {
-                return;
-            }
-            int &needed_costs = saturated_costs_new[t.op];
-            needed_costs = max(needed_costs, src_h - target_h);
-        });
-
-    assert(saturated_costs == saturated_costs_new);
     return saturated_costs;
 }
 
