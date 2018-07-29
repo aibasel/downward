@@ -455,43 +455,6 @@ void Projection::for_each_transition_recursive(
     }
 }
 
-void Projection::for_each_transition(
-    const OperatorProxy &op, const TransitionCallback &callback) const {
-    vector<FactPair> abstract_preconditions;
-    for (FactProxy pre : op.get_preconditions()) {
-        FactPair fact = pre.get_pair();
-        if (variable_to_pattern_index[fact.var] != -1) {
-            abstract_preconditions.emplace_back(
-                variable_to_pattern_index[fact.var], fact.value);
-        }
-    }
-
-    vector<FactPair> effects;
-    for (EffectProxy effect : op.get_effects()) {
-        FactPair fact = effect.get_fact().get_pair();
-        int pattern_index = variable_to_pattern_index[fact.var];
-        if (pattern_index != -1) {
-            effects.push_back(fact);
-        }
-    }
-    assert(!effects.empty());
-
-    for (int state_index = 0; state_index < num_states; ++state_index) {
-        if (is_consistent(state_index, abstract_preconditions)) {
-            int dest_index = state_index;
-            for (const FactPair &fact : effects) {
-                int pattern_index = variable_to_pattern_index[fact.var];
-                int old_value = (state_index / hash_multipliers[pattern_index])
-                                % pattern_domain_sizes[pattern_index];
-                dest_index += hash_multipliers[pattern_index] * (fact.value - old_value);
-            }
-            if (state_index != dest_index) {
-                callback(Transition(state_index, op.get_id(), dest_index));
-            }
-        }
-    }
-}
-
 void Projection::for_each_transition(const TransitionCallback &callback) const {
     for (const AbstractForwardOperator &op : abstract_forward_operators) {
         for_each_transition_recursive(op, callback, 0, 0);

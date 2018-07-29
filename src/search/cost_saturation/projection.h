@@ -113,8 +113,6 @@ class Projection : public Abstraction {
         const TransitionCallback &cb,
         int partial_hash,
         int pos) const;
-    void for_each_transition(
-        const OperatorProxy &op, const TransitionCallback &callback) const;
     void for_each_transition(const TransitionCallback &callback) const;
 
     /*
