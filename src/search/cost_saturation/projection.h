@@ -19,12 +19,52 @@ namespace cost_saturation {
 /*
   TODO: Reduce code duplication with pdbs::PatternDatabase.
 */
+
+class AbstractForwardOperator {
+    // The ID of the concrete operator is needed for cost partitioning.
+    const int concrete_operator_id;
+
+    std::vector<int> abstract_preconditions;
+
+    /*
+      Effect of the operator during forward search on a given abstract state
+      number.
+    */
+    int hash_effect;
+public:
+    /*
+      AbstractForwardOperators are built from concrete operators. The
+      parameters follow the usual name convention of SAS+ operators,
+      meaning prevail, preconditions and effects are all related to
+      progression search.
+    */
+    AbstractForwardOperator(const std::vector<FactPair> &prevail,
+                            const std::vector<FactPair> &preconditions,
+                            const std::vector<FactPair> &effects,
+                            const std::vector<std::size_t> &hash_multipliers,
+                            int concrete_operator_id);
+
+    int get_concrete_operator_id() const;
+
+    const std::vector<int> &get_abstract_preconditions() const {
+        return abstract_preconditions;
+    }
+
+    /*
+      Returns the effect of the abstract operator in form of a value change to
+      an abstract state index.
+    */
+    int get_hash_effect() const {return hash_effect;}
+};
+
 class Projection : public Abstraction {
     const TaskProxy task_proxy;
     const pdbs::Pattern pattern;
 
     std::vector<pdbs::AbstractOperator> abstract_operators;
     std::unique_ptr<pdbs::MatchTree> match_tree;
+
+    std::vector<AbstractForwardOperator> abstract_forward_operators;
 
     // Number of abstract states in the projection.
     int num_states;
@@ -68,6 +108,13 @@ class Projection : public Abstraction {
       irrelevant transitions).
     */
     using TransitionCallback = std::function<void (const Transition &)>;
+    void for_each_transition_recursive(
+        int op_id,
+        const std::vector<int> &op_preconditions,
+        int op_delta,
+        const TransitionCallback &cb,
+        int partial_hash,
+        int pos) const;
     void for_each_transition(
         const OperatorProxy &op, const TransitionCallback &callback) const;
     void for_each_transition(const TransitionCallback &callback) const;
@@ -99,6 +146,21 @@ class Projection : public Abstraction {
         const std::vector<int> &variable_to_pattern_index,
         const VariablesProxy &variables,
         std::vector<pdbs::AbstractOperator> &abstract_operators) const;
+
+    void multiply_out_forward(
+        int pos, int cost, int op_id,
+        std::vector<FactPair> &prev_pairs,
+        std::vector<FactPair> &pre_pairs,
+        std::vector<FactPair> &eff_pairs,
+        const std::vector<FactPair> &effects_without_pre,
+        const VariablesProxy &variables,
+        std::vector<AbstractForwardOperator> &abstract_operators) const;
+
+    void build_abstract_forward_operators(
+        const OperatorProxy &op, int cost,
+        const std::vector<int> &variable_to_pattern_index,
+        const VariablesProxy &variables,
+        std::vector<AbstractForwardOperator> &abstract_operators) const;
 
     /*
       Use Dijkstra's algorithm to compute all goal distances.

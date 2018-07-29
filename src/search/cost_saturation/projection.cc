@@ -15,6 +15,40 @@
 using namespace std;
 
 namespace cost_saturation {
+AbstractForwardOperator::AbstractForwardOperator(
+    const vector<FactPair> &prev_pairs,
+    const vector<FactPair> &pre_pairs,
+    const vector<FactPair> &eff_pairs,
+    const vector<size_t> &hash_multipliers,
+    int concrete_operator_id)
+    : concrete_operator_id(concrete_operator_id) {
+    abstract_preconditions.resize(hash_multipliers.size(), -1);
+    for (const FactPair &fact : prev_pairs) {
+        int pattern_index = fact.var;
+        abstract_preconditions[pattern_index] = fact.value;
+    }
+    for (const FactPair &fact : pre_pairs) {
+        int pattern_index = fact.var;
+        abstract_preconditions[pattern_index] = fact.value;
+    }
+
+    hash_effect = 0;
+    assert(pre_pairs.size() == eff_pairs.size());
+    for (size_t i = 0; i < pre_pairs.size(); ++i) {
+        int var = pre_pairs[i].var;
+        assert(var == eff_pairs[i].var);
+        int old_val = pre_pairs[i].value;
+        int new_val = eff_pairs[i].value;
+        assert(old_val != -1);
+        int effect = (new_val - old_val) * hash_multipliers[var];
+        hash_effect += effect;
+    }
+}
+
+int AbstractForwardOperator::get_concrete_operator_id() const {
+    return concrete_operator_id;
+}
+
 Projection::Projection(
     const TaskProxy &task_proxy, const pdbs::Pattern &pattern)
     : task_proxy(task_proxy),
@@ -51,9 +85,14 @@ Projection::Projection(
     }
 
     // Compute abstract operators.
-    for (OperatorProxy op : task_proxy.get_operators()) {
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
         build_abstract_operators(
             op, -1, variable_to_pattern_index, variables, abstract_operators);
+    }
+    for (OperatorProxy op : operators) {
+        build_abstract_forward_operators(
+            op, -1, variable_to_pattern_index, variables, abstract_forward_operators);
     }
 
     // Create match tree.
@@ -208,6 +247,95 @@ void Projection::build_abstract_operators(
                  effects_without_pre, variables, operators);
 }
 
+void Projection::multiply_out_forward(
+    int pos, int cost, int op_id,
+    vector<FactPair> &prev_pairs,
+    vector<FactPair> &pre_pairs,
+    vector<FactPair> &eff_pairs,
+    const vector<FactPair> &effects_without_pre,
+    const VariablesProxy &variables,
+    vector<AbstractForwardOperator> &operators) const {
+    if (pos == static_cast<int>(effects_without_pre.size())) {
+        // All effects without precondition have been checked: insert op.
+        if (!eff_pairs.empty()) {
+            operators.emplace_back(
+                prev_pairs, pre_pairs, eff_pairs, hash_multipliers, op_id);
+        }
+    } else {
+        // For each possible value for the current variable, build an
+        // abstract operator.
+        int var_id = effects_without_pre[pos].var;
+        int eff = effects_without_pre[pos].value;
+        VariableProxy var = variables[pattern[var_id]];
+        for (int i = 0; i < var.get_domain_size(); ++i) {
+            if (i != eff) {
+                pre_pairs.emplace_back(var_id, i);
+                eff_pairs.emplace_back(var_id, eff);
+            } else {
+                prev_pairs.emplace_back(var_id, i);
+            }
+            multiply_out_forward(pos + 1, cost, op_id, prev_pairs, pre_pairs, eff_pairs,
+                                 effects_without_pre, variables, operators);
+            if (i != eff) {
+                pre_pairs.pop_back();
+                eff_pairs.pop_back();
+            } else {
+                prev_pairs.pop_back();
+            }
+        }
+    }
+}
+
+void Projection::build_abstract_forward_operators(
+    const OperatorProxy &op, int cost,
+    const vector<int> &variable_to_index,
+    const VariablesProxy &variables,
+    vector<AbstractForwardOperator> &operators) const {
+    // All variable value pairs that are a prevail condition
+    vector<FactPair> prev_pairs;
+    // All variable value pairs that are a precondition (value != -1)
+    vector<FactPair> pre_pairs;
+    // All variable value pairs that are an effect
+    vector<FactPair> eff_pairs;
+    // All variable value pairs that are a precondition (value = -1)
+    vector<FactPair> effects_without_pre;
+
+    size_t num_vars = variables.size();
+    vector<bool> has_precond_and_effect_on_var(num_vars, false);
+    vector<bool> has_precondition_on_var(num_vars, false);
+
+    for (FactProxy pre : op.get_preconditions())
+        has_precondition_on_var[pre.get_variable().get_id()] = true;
+
+    for (EffectProxy eff : op.get_effects()) {
+        int var_id = eff.get_fact().get_variable().get_id();
+        int pattern_var_id = variable_to_index[var_id];
+        int val = eff.get_fact().get_value();
+        if (pattern_var_id != -1) {
+            if (has_precondition_on_var[var_id]) {
+                has_precond_and_effect_on_var[var_id] = true;
+                eff_pairs.emplace_back(pattern_var_id, val);
+            } else {
+                effects_without_pre.emplace_back(pattern_var_id, val);
+            }
+        }
+    }
+    for (FactProxy pre : op.get_preconditions()) {
+        int var_id = pre.get_variable().get_id();
+        int pattern_var_id = variable_to_index[var_id];
+        int val = pre.get_value();
+        if (pattern_var_id != -1) { // variable occurs in pattern
+            if (has_precond_and_effect_on_var[var_id]) {
+                pre_pairs.emplace_back(pattern_var_id, val);
+            } else {
+                prev_pairs.emplace_back(pattern_var_id, val);
+            }
+        }
+    }
+    multiply_out_forward(0, cost, op.get_id(), prev_pairs, pre_pairs, eff_pairs,
+                         effects_without_pre, variables, operators);
+}
+
 vector<int> Projection::compute_distances(const vector<int> &costs) const {
     vector<int> distances(num_states, INF);
 
@@ -301,6 +429,31 @@ bool Projection::operator_induces_loop(const OperatorProxy &op) const {
     return true;
 }
 
+void Projection::for_each_transition_recursive(
+    int op_id,
+    const vector<int> &op_preconditions,
+    int op_delta,
+    const TransitionCallback &cb,
+    int partial_hash,
+    int pos) const {
+    if (pos == static_cast<int>(pattern.size())) {
+        return cb(Transition(partial_hash, op_id, partial_hash + op_delta));
+    }
+
+    int min_val = 0;
+    int max_val = pattern_domain_sizes[pos] - 1;
+    int pre_val = op_preconditions[pos];
+    if (pre_val != -1) {
+        min_val = pre_val;
+        max_val = pre_val;
+    }
+    for (int value = min_val; value <= max_val; ++value) {
+        int hash_delta = hash_multipliers[pos] * value;
+        return for_each_transition_recursive(
+            op_id, op_preconditions, op_delta, cb, partial_hash + hash_delta, pos + 1);
+    }
+}
+
 void Projection::for_each_transition(
     const OperatorProxy &op, const TransitionCallback &callback) const {
     vector<FactPair> abstract_preconditions;
@@ -339,10 +492,11 @@ void Projection::for_each_transition(
 }
 
 void Projection::for_each_transition(const TransitionCallback &callback) const {
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (int op_id : active_operators) {
-        OperatorProxy op = operators[op_id];
-        for_each_transition(op, callback);
+    for (const AbstractForwardOperator &op : abstract_forward_operators) {
+        for_each_transition_recursive(
+            op.get_concrete_operator_id(),
+            op.get_abstract_preconditions(),
+            op.get_hash_effect(), callback, 0, 0);
     }
 }
 
