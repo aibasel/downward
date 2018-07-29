@@ -109,9 +109,7 @@ class Projection : public Abstraction {
     */
     using TransitionCallback = std::function<void (const Transition &)>;
     void for_each_transition_recursive(
-        int op_id,
-        const std::vector<int> &op_preconditions,
-        int op_delta,
+        const AbstractForwardOperator &op,
         const TransitionCallback &cb,
         int partial_hash,
         int pos) const;

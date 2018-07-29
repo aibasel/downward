@@ -430,19 +430,20 @@ bool Projection::operator_induces_loop(const OperatorProxy &op) const {
 }
 
 void Projection::for_each_transition_recursive(
-    int op_id,
-    const vector<int> &op_preconditions,
-    int op_delta,
+    const AbstractForwardOperator &op,
     const TransitionCallback &cb,
     int partial_hash,
     int pos) const {
     if (pos == static_cast<int>(pattern.size())) {
-        return cb(Transition(partial_hash, op_id, partial_hash + op_delta));
+        return cb(Transition(
+                      partial_hash,
+                      op.get_concrete_operator_id(),
+                      partial_hash + op.get_hash_effect()));
     }
 
     int min_val = 0;
     int max_val = pattern_domain_sizes[pos] - 1;
-    int pre_val = op_preconditions[pos];
+    int pre_val = op.get_abstract_preconditions()[pos];
     if (pre_val != -1) {
         min_val = pre_val;
         max_val = pre_val;
@@ -450,7 +451,7 @@ void Projection::for_each_transition_recursive(
     for (int value = min_val; value <= max_val; ++value) {
         int hash_delta = hash_multipliers[pos] * value;
         return for_each_transition_recursive(
-            op_id, op_preconditions, op_delta, cb, partial_hash + hash_delta, pos + 1);
+            op, cb, partial_hash + hash_delta, pos + 1);
     }
 }
 
@@ -493,10 +494,7 @@ void Projection::for_each_transition(
 
 void Projection::for_each_transition(const TransitionCallback &callback) const {
     for (const AbstractForwardOperator &op : abstract_forward_operators) {
-        for_each_transition_recursive(
-            op.get_concrete_operator_id(),
-            op.get_abstract_preconditions(),
-            op.get_hash_effect(), callback, 0, 0);
+        for_each_transition_recursive(op, callback, 0, 0);
     }
 }
 
