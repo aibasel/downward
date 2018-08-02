@@ -450,7 +450,7 @@ void Projection::for_each_transition_recursive(
     }
     for (int value = min_val; value <= max_val; ++value) {
         int hash_delta = hash_multipliers[pos] * value;
-        return for_each_transition_recursive(
+        for_each_transition_recursive(
             op, cb, partial_hash + hash_delta, pos + 1);
     }
 }
