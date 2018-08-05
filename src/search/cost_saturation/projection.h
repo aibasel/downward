@@ -115,8 +115,8 @@ class Projection : public Abstraction {
       Apply a function to all transitions in the projection (including
       irrelevant transitions).
     */
-    using TransitionCallback = std::function<void (const Transition &)>;
-    void for_each_transition(const TransitionCallback &callback) const {
+    template<class Callback>
+    void for_each_transition(const Callback &callback) const {
         // Reuse vector to save allocations.
         std::vector<FactPair> abstract_facts;
 
