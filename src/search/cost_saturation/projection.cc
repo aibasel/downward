@@ -43,6 +43,14 @@ AbstractForwardOperator::AbstractForwardOperator(
         int effect = (new_val - old_val) * hash_multipliers[var];
         hash_effect += effect;
     }
+
+    precondition_hash = 0;
+    for (size_t pos = 0; pos < hash_multipliers.size(); ++pos) {
+        int pre_val = abstract_preconditions[pos];
+        if (pre_val != -1) {
+            precondition_hash += hash_multipliers[pos] * pre_val;
+        }
+    }
 }
 
 int AbstractForwardOperator::get_concrete_operator_id() const {
@@ -473,13 +481,6 @@ void Projection::for_each_transition(const TransitionCallback &callback) const {
 
     for (const AbstractForwardOperator &op : abstract_forward_operators) {
         int pattern_size = pattern.size();
-        int precondition_hash = 0;
-        for (int pos = 0; pos < pattern_size; ++pos) {
-            int pre_val = op.get_abstract_preconditions()[pos];
-            if (pre_val != -1) {
-                precondition_hash += hash_multipliers[pos] * pre_val;
-            }
-        }
 
         abstract_facts.clear();
         for (int pos = 0; pos < pattern_size; ++pos) {
@@ -489,6 +490,7 @@ void Projection::for_each_transition(const TransitionCallback &callback) const {
             }
         }
 
+        int precondition_hash = op.get_precondition_hash();
         bool has_next_match = true;
         while (has_next_match) {
             int state = precondition_hash;

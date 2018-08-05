@@ -26,6 +26,8 @@ class AbstractForwardOperator {
 
     std::vector<int> abstract_preconditions;
 
+    int precondition_hash;
+
     /*
       Effect of the operator during forward search on a given abstract state
       number.
@@ -55,6 +57,8 @@ public:
       an abstract state index.
     */
     int get_hash_effect() const {return hash_effect;}
+
+    int get_precondition_hash() const {return precondition_hash;}
 };
 
 class Projection : public Abstraction {
