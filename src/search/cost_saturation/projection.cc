@@ -455,9 +455,49 @@ void Projection::for_each_transition_recursive(
     }
 }
 
+static bool increment(const vector<int> &pattern_domain_sizes, vector<FactPair> &facts) {
+    for (size_t i = 0; i < facts.size(); ++i) {
+        ++facts[i].value;
+        if (facts[i].value > pattern_domain_sizes[facts[i].var] - 1) {
+            facts[i].value = 0;
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Projection::for_each_transition(const TransitionCallback &callback) const {
     for (const AbstractForwardOperator &op : abstract_forward_operators) {
-        for_each_transition_recursive(op, callback, 0, 0);
+        int pattern_size = pattern.size();
+        int precondition_hash = 0;
+        for (int pos = 0; pos < pattern_size; ++pos) {
+            int pre_val = op.get_abstract_preconditions()[pos];
+            if (pre_val != -1) {
+                precondition_hash += hash_multipliers[pos] * pre_val;
+            }
+        }
+
+        vector<FactPair> abstract_facts;
+        for (int pos = 0; pos < pattern_size; ++pos) {
+            int pre_val = op.get_abstract_preconditions()[pos];
+            if (pre_val == -1) {
+                abstract_facts.emplace_back(pos, 0);
+            }
+        }
+
+        bool has_next_match = true;
+        while (has_next_match) {
+            int state = precondition_hash;
+            for (const FactPair &fact : abstract_facts) {
+                state += hash_multipliers[fact.var] * fact.value;
+            }
+            callback(
+                Transition(
+                    state, op.get_concrete_operator_id(), state + op.get_hash_effect()));
+
+            has_next_match = increment(pattern_domain_sizes, abstract_facts);
+        }
     }
 }
 
