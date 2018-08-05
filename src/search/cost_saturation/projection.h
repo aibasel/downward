@@ -112,11 +112,6 @@ class Projection : public Abstraction {
       irrelevant transitions).
     */
     using TransitionCallback = std::function<void (const Transition &)>;
-    void for_each_transition_recursive(
-        const AbstractForwardOperator &op,
-        const TransitionCallback &cb,
-        int partial_hash,
-        int pos) const;
     void for_each_transition(const TransitionCallback &callback) const;
 
     /*
