@@ -468,6 +468,9 @@ static bool increment(const vector<int> &pattern_domain_sizes, vector<FactPair> 
 }
 
 void Projection::for_each_transition(const TransitionCallback &callback) const {
+    // Reuse vector to save allocations.
+    vector<FactPair> abstract_facts;
+
     for (const AbstractForwardOperator &op : abstract_forward_operators) {
         int pattern_size = pattern.size();
         int precondition_hash = 0;
@@ -478,7 +481,7 @@ void Projection::for_each_transition(const TransitionCallback &callback) const {
             }
         }
 
-        vector<FactPair> abstract_facts;
+        abstract_facts.clear();
         for (int pos = 0; pos < pattern_size; ++pos) {
             int pre_val = op.get_abstract_preconditions()[pos];
             if (pre_val == -1) {
