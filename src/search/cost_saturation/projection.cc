@@ -15,6 +15,19 @@
 using namespace std;
 
 namespace cost_saturation {
+bool increment(const vector<int> &pattern_domain_sizes, vector<FactPair> &facts) {
+    for (size_t i = 0; i < facts.size(); ++i) {
+        ++facts[i].value;
+        if (facts[i].value > pattern_domain_sizes[facts[i].var] - 1) {
+            facts[i].value = 0;
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 AbstractForwardOperator::AbstractForwardOperator(
     const vector<FactPair> &prev_pairs,
     const vector<FactPair> &pre_pairs,
@@ -437,44 +450,6 @@ bool Projection::operator_induces_loop(const OperatorProxy &op) const {
         }
     }
     return true;
-}
-
-static bool increment(const vector<int> &pattern_domain_sizes, vector<FactPair> &facts) {
-    for (size_t i = 0; i < facts.size(); ++i) {
-        ++facts[i].value;
-        if (facts[i].value > pattern_domain_sizes[facts[i].var] - 1) {
-            facts[i].value = 0;
-        } else {
-            return true;
-        }
-    }
-    return false;
-}
-
-void Projection::for_each_transition(const TransitionCallback &callback) const {
-    // Reuse vector to save allocations.
-    vector<FactPair> abstract_facts;
-
-    for (const AbstractForwardOperator &op : abstract_forward_operators) {
-        abstract_facts.clear();
-        for (int var : op.get_unaffected_variables()) {
-            abstract_facts.emplace_back(var, 0);
-        }
-
-        int precondition_hash = op.get_precondition_hash();
-        bool has_next_match = true;
-        while (has_next_match) {
-            int state = precondition_hash;
-            for (const FactPair &fact : abstract_facts) {
-                state += hash_multipliers[fact.var] * fact.value;
-            }
-            callback(
-                Transition(
-                    state, op.get_concrete_operator_id(), state + op.get_hash_effect()));
-
-            has_next_match = increment(pattern_domain_sizes, abstract_facts);
-        }
-    }
 }
 
 vector<int> Projection::compute_saturated_costs(

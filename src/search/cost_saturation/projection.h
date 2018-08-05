@@ -20,6 +20,10 @@ namespace cost_saturation {
   TODO: Reduce code duplication with pdbs::PatternDatabase.
 */
 
+extern bool increment(
+    const std::vector<int> &pattern_domain_sizes, std::vector<FactPair> &facts);
+
+
 class AbstractForwardOperator {
     // The ID of the concrete operator is needed for cost partitioning.
     const int concrete_operator_id;
@@ -112,7 +116,31 @@ class Projection : public Abstraction {
       irrelevant transitions).
     */
     using TransitionCallback = std::function<void (const Transition &)>;
-    void for_each_transition(const TransitionCallback &callback) const;
+    void for_each_transition(const TransitionCallback &callback) const {
+        // Reuse vector to save allocations.
+        std::vector<FactPair> abstract_facts;
+
+        for (const AbstractForwardOperator &op : abstract_forward_operators) {
+            abstract_facts.clear();
+            for (int var : op.get_unaffected_variables()) {
+                abstract_facts.emplace_back(var, 0);
+            }
+
+            int precondition_hash = op.get_precondition_hash();
+            bool has_next_match = true;
+            while (has_next_match) {
+                int state = precondition_hash;
+                for (const FactPair &fact : abstract_facts) {
+                    state += hash_multipliers[fact.var] * fact.value;
+                }
+                callback(
+                    Transition(
+                        state, op.get_concrete_operator_id(), state + op.get_hash_effect()));
+
+                has_next_match = increment(pattern_domain_sizes, abstract_facts);
+            }
+        }
+    }
 
     /*
       Recursive method; called by build_abstract_operators. In the case
