@@ -22,7 +22,7 @@ AbstractForwardOperator::AbstractForwardOperator(
     const vector<size_t> &hash_multipliers,
     int concrete_operator_id)
     : concrete_operator_id(concrete_operator_id) {
-    abstract_preconditions.resize(hash_multipliers.size(), -1);
+    vector<int> abstract_preconditions(hash_multipliers.size(), -1);
     for (const FactPair &fact : prev_pairs) {
         int pattern_index = fact.var;
         abstract_preconditions[pattern_index] = fact.value;
@@ -47,7 +47,9 @@ AbstractForwardOperator::AbstractForwardOperator(
     precondition_hash = 0;
     for (size_t pos = 0; pos < hash_multipliers.size(); ++pos) {
         int pre_val = abstract_preconditions[pos];
-        if (pre_val != -1) {
+        if (pre_val == -1) {
+            unaffected_variables.push_back(pos);
+        } else {
             precondition_hash += hash_multipliers[pos] * pre_val;
         }
     }
@@ -454,14 +456,9 @@ void Projection::for_each_transition(const TransitionCallback &callback) const {
     vector<FactPair> abstract_facts;
 
     for (const AbstractForwardOperator &op : abstract_forward_operators) {
-        int pattern_size = pattern.size();
-
         abstract_facts.clear();
-        for (int pos = 0; pos < pattern_size; ++pos) {
-            int pre_val = op.get_abstract_preconditions()[pos];
-            if (pre_val == -1) {
-                abstract_facts.emplace_back(pos, 0);
-            }
+        for (int var : op.get_unaffected_variables()) {
+            abstract_facts.emplace_back(var, 0);
         }
 
         int precondition_hash = op.get_precondition_hash();

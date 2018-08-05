@@ -24,7 +24,7 @@ class AbstractForwardOperator {
     // The ID of the concrete operator is needed for cost partitioning.
     const int concrete_operator_id;
 
-    std::vector<int> abstract_preconditions;
+    std::vector<int> unaffected_variables;
 
     int precondition_hash;
 
@@ -48,8 +48,8 @@ public:
 
     int get_concrete_operator_id() const;
 
-    const std::vector<int> &get_abstract_preconditions() const {
-        return abstract_preconditions;
+    const std::vector<int> &get_unaffected_variables() const {
+        return unaffected_variables;
     }
 
     /*
