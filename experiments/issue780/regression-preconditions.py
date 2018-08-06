@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import itertools
 import os
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
@@ -44,15 +45,16 @@ exp.add_parser(exp.SINGLE_SEARCH_PARSER)
 #exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 
-for attribute in ["memory", "total_time"]:
+for attribute in ["memory"]:
     for config in CONFIGS:
-        exp.add_report(
-            RelativeScatterPlotReport(
-                attributes=[attribute],
-                filter_algorithm=["{}-{}".format(rev, config.nick) for rev in REVISIONS],
-                get_category=lambda run1, run2: run1.get("domain"),
-            ),
-            outfile="{}-{}-{}-{}-{}.png".format(exp.name, attribute, config.nick, *REVISIONS)
-        )
+        for rev1, rev2 in itertools.combinations(REVISIONS, 2):
+            exp.add_report(
+                RelativeScatterPlotReport(
+                    attributes=[attribute],
+                    filter_algorithm=["{}-{}".format(rev, config.nick) for rev in (rev1, rev2)],
+                    get_category=lambda run1, run2: run1.get("domain"),
+                ),
+                outfile="{}-{}-{}-{}-{}.png".format(exp.name, attribute, config.nick, rev1, rev2)
+            )
 
 exp.run_steps()
