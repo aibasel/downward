@@ -43,7 +43,7 @@ public:
     bool find_solution(AbstractState *init, AbstractStates &goals);
 
     void forward_dijkstra(AbstractState *init);
-    void backwards_dijkstra(const AbstractStates goals);
+    void backwards_dijkstra(const AbstractStates &goals);
 
     const Solution &get_solution() {
         return solution;
