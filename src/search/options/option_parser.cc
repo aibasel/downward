@@ -144,6 +144,7 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line(
         } else if (arg == "--always") {
             active = true;
         } else if (active) {
+            // We use the unsanitized arguments because sanitizing is inappropriate for things like filenames.
             args.push_back(argv[i]);
         }
     }
