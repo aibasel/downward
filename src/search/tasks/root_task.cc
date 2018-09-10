@@ -5,6 +5,7 @@
 #include "../plugin.h"
 #include "../state_registry.h"
 
+#include "../task_utils/on_demand_task_object.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/memory.h"
@@ -65,8 +66,8 @@ class RootTask : public AbstractTask {
     vector<int> initial_state_values;
     vector<FactPair> goals;
 
-    mutable unique_ptr<int_packer::IntPacker> state_packer;
-    mutable unique_ptr<AxiomEvaluator> axiom_evaluator;
+    task_utils::OnDemandTaskObject<task_properties::StatePacker> state_packer;
+    task_utils::OnDemandTaskObject<AxiomEvaluator> axiom_evaluator;
 
     const ExplicitVariable &get_variable(int var) const;
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
@@ -492,17 +493,11 @@ vector<int> RootTask::get_initial_state_values() const {
 }
 
 const int_packer::IntPacker &RootTask::get_state_packer() const {
-    if (!state_packer) {
-        state_packer = task_properties::create_state_packer(TaskProxy(*this));
-    }
-    return *state_packer;
+    return state_packer.get(TaskProxy(*this));
 }
 
 const AxiomEvaluator &RootTask::get_axiom_evaluator() const {
-    if (!axiom_evaluator) {
-        axiom_evaluator = utils::make_unique_ptr<AxiomEvaluator>(TaskProxy(*this));
-    }
-    return *axiom_evaluator;
+    return axiom_evaluator.get(TaskProxy(*this));
 }
 
 

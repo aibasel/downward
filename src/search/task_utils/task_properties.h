@@ -79,7 +79,14 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     return fact_pairs;
 }
 
-std::unique_ptr<int_packer::IntPacker> create_state_packer(const TaskProxy &task_proxy);
+std::vector<int> get_variable_ranges(const TaskProxy &task_proxy);
+
+class StatePacker : public int_packer::IntPacker {
+public:
+    StatePacker(const TaskProxy &task_proxy)
+        : int_packer::IntPacker(get_variable_ranges(task_proxy)) {
+    }
+};
 }
 
 #endif

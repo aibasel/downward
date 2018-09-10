@@ -4,6 +4,8 @@
 #include "delegating_task.h"
 
 #include "../utils/collections.h"
+#include "../task_utils/on_demand_task_object.h"
+#include "../task_utils/task_properties.h"
 
 #include <cassert>
 #include <string>
@@ -24,7 +26,7 @@ class DomainAbstractedTask : public tasks::DelegatingTask {
     const std::vector<std::vector<std::string>> fact_names;
     const std::vector<std::vector<int>> value_map;
 
-    mutable std::unique_ptr<int_packer::IntPacker> state_packer;
+    task_utils::OnDemandTaskObject<task_properties::StatePacker> state_packer;
 
     int get_abstract_value(const FactPair &fact) const {
         assert(utils::in_bounds(fact.var, value_map));
