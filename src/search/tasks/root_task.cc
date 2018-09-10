@@ -121,11 +121,11 @@ public:
 static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
         cerr << "Invalid variable id: " << fact.var << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
         cerr << "Invalid value for variable " << fact.var << ": " << fact.value << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -154,7 +154,7 @@ void check_magic(istream &in, const string &magic) {
                  << "on a translator output file from " << endl
                  << "an older version." << endl;
         }
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -237,7 +237,7 @@ void read_and_verify_version(istream &in) {
         cerr << "Expected translator output file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl
              << "Exiting." << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -315,7 +315,7 @@ vector<FactPair> read_goal(istream &in) {
     check_magic(in, "end_goal");
     if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     return goals;
 }

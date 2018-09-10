@@ -81,7 +81,7 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
             return utils::sorted<FactPair>(
                 utils::map_vector<FactPair>(
                     op.get_effects(),
-                    [](const EffectProxy &eff) {return eff.get_fact().get_pair(); }));
+                    [](const EffectProxy &eff) {return eff.get_fact().get_pair();}));
         });
 }
 

@@ -42,7 +42,7 @@ void AbstractSearch::forward_dijkstra(AbstractState *init) {
     astar_search(true, false);
 }
 
-void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
+void AbstractSearch::backwards_dijkstra(const AbstractStates &goals) {
     reset();
     for (AbstractState *goal : goals) {
         goal->get_search_info().decrease_g_value_to(0);
