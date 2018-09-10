@@ -76,7 +76,7 @@ fast_downward_plugin(
         state_registry
         task_proxy
 
-    DEPENDS CAUSAL_GRAPH INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
+    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
 )
 
@@ -176,6 +176,14 @@ fast_downward_plugin(
     HELP "Equivalence relation over [1, ..., n] that can be iteratively refined"
     SOURCES
         algorithms/equivalence_relation
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME INT_HASH_SET
+    HELP "Hash set storing non-negative integers"
+    SOURCES
+        algorithms/int_hash_set
     DEPENDENCY_ONLY
 )
 
@@ -296,7 +304,7 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME StubbornSetsEC
+    NAME STUBBORN_SETS_EC
     HELP "Stubborn set method that dominates expansion core"
     SOURCES
         pruning/stubborn_sets_ec
@@ -592,6 +600,8 @@ fast_downward_plugin(
         merge_and_shrink/merge_scoring_function
         merge_and_shrink/merge_scoring_function_dfp
         merge_and_shrink/merge_scoring_function_goal_relevance
+        merge_and_shrink/merge_scoring_function_miasm
+        merge_and_shrink/merge_scoring_function_miasm_utils
         merge_and_shrink/merge_scoring_function_single_random
         merge_and_shrink/merge_scoring_function_total_order
         merge_and_shrink/merge_selector
@@ -701,7 +711,7 @@ fast_downward_plugin(
     HELP "Algorithm to compute the strongly connected components (SCCs) of a "
          "directed graph."
     SOURCES
-        algorithms/sccs.cc
+        algorithms/sccs
     DEPENDENCY_ONLY
 )
 

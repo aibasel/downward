@@ -93,7 +93,7 @@ PluginInfo &DocStore::get(const string &key) {
 
 vector<string> DocStore::get_keys() {
     vector<string> keys;
-    for (const auto it : plugin_infos) {
+    for (const auto &it : plugin_infos) {
         keys.push_back(it.first);
     }
     return keys;

@@ -24,7 +24,7 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
         variables.push_back(lp::LPVariable(0, infinity, op_cost));
     }
     vector<lp::LPConstraint> constraints;
-    for (auto generator : constraint_generators) {
+    for (const auto &generator : constraint_generators) {
         generator->initialize_constraints(task, constraints, infinity);
     }
     lp_solver.load_problem(lp::LPObjectiveSense::MINIMIZE, variables, constraints);
@@ -40,7 +40,7 @@ int OperatorCountingHeuristic::compute_heuristic(const GlobalState &global_state
 
 int OperatorCountingHeuristic::compute_heuristic(const State &state) {
     assert(!lp_solver.has_temporary_constraints());
-    for (auto generator : constraint_generators) {
+    for (const auto &generator : constraint_generators) {
         bool dead_end = generator->update_constraints(state, lp_solver);
         if (dead_end) {
             lp_solver.clear_temporary_constraints();
