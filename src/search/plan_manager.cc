@@ -50,7 +50,7 @@ void PlanManager::save_plan(
         assert(plan_number == 1);
     }
     ofstream outfile(filename.str());
-    if (outfile.rdstate() & std::ofstream::failbit) {
+    if (outfile.rdstate() & ofstream::failbit) {
         cerr << "Failed to open plan file: " << filename.str() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
