@@ -22,7 +22,7 @@ enum class LPSolverType;
 std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
 
 /*
-  Print the CoinError and then exit with ExitCode::CRITICAL_ERROR.
+  Print the CoinError and then exit with ExitCode::SEARCH_CRITICAL_ERROR.
   Note that out-of-memory conditions occurring within CPLEX code cannot
   be caught by a try/catch block. When CPLEX runs out of memory,
   the planner will attempt to terminate gracefully, like it does with
