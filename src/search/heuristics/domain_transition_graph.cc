@@ -148,7 +148,7 @@ ValueTransition *DTGFactory::get_transition(int origin, int target,
 void DTGFactory::collect_all_side_effects(vector<DomainTransitionGraph *> &dtgs) {
     for (auto *dtg : dtgs) {
         for (auto &node : dtg->nodes)
-            for (auto & transition: node.transitions)
+            for (auto &transition: node.transitions)
                 collect_side_effects(dtg, transition.labels);
     }
 }

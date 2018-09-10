@@ -1,6 +1,10 @@
 #ifndef UTILS_SYSTEM_WINDOWS_H
 #define UTILS_SYSTEM_WINDOWS_H
 
+#include "system.h"
+
+#if OPERATING_SYSTEM == WINDOWS
+
 // Avoid min/max conflicts (http://support.microsoft.com/kb/143208).
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -14,4 +18,5 @@
 
 #include <windows.h>
 
+#endif
 #endif

@@ -29,7 +29,7 @@ EagerSearch::EagerSearch(const Options &opts)
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
-        utils::exit_with(utils::ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
