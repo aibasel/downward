@@ -84,13 +84,14 @@ int get_min_operator_cost(TaskProxy task_proxy) {
     return min_cost;
 }
 
-unique_ptr<int_packer::IntPacker> create_state_packer(const TaskProxy &task_proxy) {
+vector<int> get_variable_ranges(const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     vector<int> variable_ranges;
     variable_ranges.reserve(variables.size());
     for (VariableProxy var : variables) {
         variable_ranges.push_back(var.get_domain_size());
     }
-    return utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges);
+    return variable_ranges;
+
 }
 }
