@@ -31,14 +31,14 @@ const string OptionParser::NONE = "<none>";
 
 static void ltrim(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
-            return !isspace(ch);
-        }));
+                                   return !isspace(ch);
+                               }));
 }
 
 static void rtrim(string &s) {
     s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
-            return !isspace(ch);
-        }).base(), s.end());
+                        return !isspace(ch);
+                    }).base(), s.end());
 }
 
 static void trim(string &s) {
@@ -120,18 +120,22 @@ void OptionParser::check_bounds<double>(
     _check_bounds(*this, key, value, lower_bound, upper_bound);
 }
 
+
+string sanitize_argument(string s) {
+    // Convert newlines to spaces.
+    replace(s.begin(), s.end(), '\n', ' ');
+    // Convert string to lower case.
+    transform(s.begin(), s.end(), s.begin(), ::tolower);
+    return s;
+}
+
+
 shared_ptr<SearchEngine> OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
-        string arg = argv[i];
-
-        // Ignore case.
-        transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
-
-        // Sanitize argument by removing newlines.
-        arg.erase(remove(arg.begin(), arg.end(), '\n'), arg.end());
+        string arg = sanitize_argument(argv[i]);
 
         if (arg == "--if-unit-cost") {
             active = is_unit_cost;
@@ -140,7 +144,8 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line(
         } else if (arg == "--always") {
             active = true;
         } else if (active) {
-            args.push_back(arg);
+            // We use the unsanitized arguments because sanitizing is inappropriate for things like filenames.
+            args.push_back(argv[i]);
         }
     }
     return parse_cmd_line_aux(args, dry_run);
@@ -165,35 +170,40 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
     bool is_part_of_anytime_portfolio = false;
 
     shared_ptr<SearchEngine> engine;
+    /*
+      Note that we don’t sanitize all arguments beforehand because filenames should remain as-is
+      (no conversion to lower-case, no conversion of newlines to spaces).
+    */
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
-        string arg = args[i];
+        string arg = sanitize_argument(args[i]);
         bool is_last = (i == args.size() - 1);
         if (arg == "--heuristic") {
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine_heuristic(args[i], dry_run);
+            predefine_heuristic(sanitize_argument(args[i]), dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
-            predefine_lmgraph(args[i], dry_run);
+            predefine_lmgraph(sanitize_argument(args[i]), dry_run);
         } else if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
-            OptionParser parser(args[i], dry_run);
+            OptionParser parser(sanitize_argument(args[i]), dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
             vector<string> plugin_names;
             for (size_t j = i + 1; j < args.size(); ++j) {
-                if (args[j] == "--txt2tags") {
+                string help_arg = sanitize_argument(args[j]);
+                if (help_arg == "--txt2tags") {
                     txt2tags = true;
                 } else {
-                    plugin_names.push_back(args[j]);
+                    plugin_names.push_back(help_arg);
                 }
             }
             unique_ptr<DocPrinter> doc_printer;
@@ -400,15 +410,15 @@ void OptionParser::add_enum_option(
         // ... otherwise map the string to its position in the enumeration vector.
         auto it = find_if(names.begin(), names.end(),
                           [&](const string &name) {
-                if (name.size() != value.size())
-                    return false;
-                for (size_t i = 0; i < value.size(); ++i) {
-                    // Ignore case.
-                    if (tolower(name[i]) != tolower(value[i]))
-                        return false;
-                }
-                return true;
-            });
+                              if (name.size() != value.size())
+                                  return false;
+                              for (size_t i = 0; i < value.size(); ++i) {
+                                  // Ignore case.
+                                  if (tolower(name[i]) != tolower(value[i]))
+                                      return false;
+                              }
+                              return true;
+                          });
         if (it == names.end()) {
             error("invalid enum argument " + value + " for option " + key);
         }
