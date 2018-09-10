@@ -76,7 +76,7 @@ fast_downward_plugin(
         state_registry
         task_proxy
 
-    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES ON_DEMAND_TASK_OBJECT
+    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
 )
 
@@ -525,14 +525,6 @@ fast_downward_plugin(
     HELP "Causal Graph"
     SOURCES
         task_utils/causal_graph
-    DEPENDENCY_ONLY
-)
-
-fast_downward_plugin(
-    NAME ON_DEMAND_TASK_OBJECT
-    HELP "Object created for a task on its first usage"
-    SOURCES
-        task_utils/on_demand_task_object
     DEPENDENCY_ONLY
 )
 
