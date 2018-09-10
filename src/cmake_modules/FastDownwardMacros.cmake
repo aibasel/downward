@@ -153,51 +153,13 @@ macro(fast_downward_set_configuration_types)
     endif()
 endmacro()
 
-macro(fast_downward_set_bitwidth)
-    # Add -m32 to the compiler flags on Unix, unless ALLOW_64_BIT is set to true.
-    # This has to be done before defining the project.
-
-    # Since compiling for 32-bit works differently on each platform, we let
-    # users set up their own build environment and only check which one is
-    # used. Compiling a 64-bit version of the planner without explicitly
-    # settig ALLOW_64_BIT to true results in an error.
-    option(ALLOW_64_BIT "Allow to compile a 64-bit version." FALSE)
-
-    if(UNIX AND NOT ALLOW_64_BIT)
-        set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
-
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" CACHE STRING "c++ flags")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32" CACHE STRING "c flags")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32" CACHE STRING "linker flags")
-    endif()
-endmacro()
-
-macro(fast_downward_check_64_bit_option)
-    # The macro fast_downward_set_bitwidth
-    # adds -m32 to the compiler flags on Unix, unless ALLOW_64_BIT is
-    # set to true. If this done before defining a project, the tool
-    # chain will be set up for 32-bit and CMAKE_SIZEOF_VOID_P should be 4.
+macro(fast_downward_report_bitwidth)
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-        if(ALLOW_64_BIT)
-            message(WARNING "Building for 32-bit but ALLOW_64_BIT is set. "
-            "Do not set ALLOW_64_BIT unless you are sure you want a 64-bit build. "
-            "See http://www.fast-downward.org/PlannerUsage#A64bit for details.")
-        else()
-            message(STATUS "Building for 32-bit.")
-        endif()
+        message(STATUS "Building for 32-bit.")
     elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-        if(ALLOW_64_BIT)
-            message(STATUS "Building for 64-bit.")
-        else()
-            message(FATAL_ERROR "You are compiling the planner for 64-bit, "
-            "which is not recommended. "
-            "Use -DALLOW_64_BIT=true if you need a 64-bit build. "
-            "See http://www.fast-downward.org/PlannerUsage#A64bit for details.")
-        endif()
+        message(STATUS "Building for 64-bit.")
     else()
-        message(FATAL_ERROR, "Could not determine bitwidth. We recommend to "
-        "build the planner for 32-bit. "
-        "See http://www.fast-downward.org/PlannerUsage#A64bit for details.")
+        message(FATAL_ERROR, "Could not determine bitwidth.")
     endif()
 endmacro()
 
