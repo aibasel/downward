@@ -84,7 +84,7 @@ void FactoredTransitionSystem::assert_index_valid(int index) const {
     if (!(transition_systems[index] && mas_representations[index] && distances[index]) &&
         !(!transition_systems[index] && !mas_representations[index] && !distances[index])) {
         cerr << "Factor at index is in an inconsistent state!" << endl;
-        utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
 
@@ -214,6 +214,12 @@ void FactoredTransitionSystem::dump(int index) const {
     assert_index_valid(index);
     transition_systems[index]->dump_labels_and_transitions();
     mas_representations[index]->dump();
+}
+
+void FactoredTransitionSystem::dump() const {
+    for (int index : *this) {
+        dump(index);
+    }
 }
 
 bool FactoredTransitionSystem::is_factor_solvable(int index) const {
