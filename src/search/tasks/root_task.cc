@@ -530,8 +530,7 @@ void read_root_task(std::istream &in) {
         move(operators),
         move(axioms),
         move(initial_state_values),
-        move(goals)
-    );
+        move(goals));
 }
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
