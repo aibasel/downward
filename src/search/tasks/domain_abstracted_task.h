@@ -3,9 +3,9 @@
 
 #include "delegating_task.h"
 
-#include "../utils/collections.h"
 #include "../task_utils/on_demand_task_object.h"
 #include "../task_utils/task_properties.h"
+#include "../utils/collections.h"
 
 #include <cassert>
 #include <string>
