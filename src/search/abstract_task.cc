@@ -1,5 +1,6 @@
 #include "abstract_task.h"
 
+#include "per_task_information.h"
 #include "plugin.h"
 
 #include <iostream>
@@ -13,6 +14,20 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     return os;
 }
 
+
+AbstractTask::~AbstractTask() {
+    for (PerTaskInformationBase *pti : subscribers) {
+        pti->remove_task(this);
+    }
+}
+
+void AbstractTask::subscribe(PerTaskInformationBase *pti) const {
+    subscribers.insert(pti);
+}
+
+void AbstractTask::unsubscribe(PerTaskInformationBase *pti) const {
+    subscribers.erase(pti);
+}
 
 static PluginTypePlugin<AbstractTask> _type_plugin(
     "AbstractTask",

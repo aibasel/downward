@@ -6,6 +6,7 @@
 #include "utils/hash.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,6 +14,8 @@
 namespace options {
 class Options;
 }
+
+class PerTaskInformationBase;
 
 struct FactPair {
     int var;
@@ -56,9 +59,14 @@ struct hash<FactPair> {
 }
 
 class AbstractTask {
+    /*
+      TODO: we use the same subscriber mechanism in the state registry.
+      Maybe the common functionality can be factored out.
+    */
+    mutable std::set<PerTaskInformationBase *> subscribers;
 public:
     AbstractTask() = default;
-    virtual ~AbstractTask() = default;
+    virtual ~AbstractTask();
     virtual int get_num_variables() const = 0;
     virtual std::string get_variable_name(int var) const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
@@ -101,6 +109,14 @@ public:
     virtual void convert_state_values(
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const = 0;
+
+    /*
+      Remembers the given PerTaskInformation. If this task is destroyed, it
+      notifies all subscribed PerTaskInformation objects. The information
+      stored in them that relates to this task is then destroyed as well.
+    */
+    void subscribe(PerTaskInformationBase *pti) const;
+    void unsubscribe(PerTaskInformationBase *pti) const;
 };
 
 #endif

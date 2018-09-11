@@ -27,7 +27,7 @@ void read_everything(istream &in) {
 
     cout << "packing state variables..." << flush;
     const int_packer::IntPacker &state_packer =
-        task_properties::get_state_packer(tasks::g_root_task.get());
+        task_properties::g_state_packers[tasks::g_root_task.get()];
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
     int num_facts = 0;
