@@ -7,7 +7,6 @@ import subprocess
 import sys
 
 from lab.experiment import ARGPARSER
-from lab.steps import Step
 from lab import tools
 
 from downward.experiment import FastDownwardExperiment
@@ -130,10 +129,7 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return (
-        "cluster" in node or
-        node.startswith("gkigrid") or
-        node in ["habakuk", "turtur"])
+    return node.endswith(".scicore.unibas.ch") or node.endswith(".cluster.bc2.ch")
 
 
 def is_test_run():
@@ -163,7 +159,7 @@ class IssueConfig(object):
 class IssueExperiment(FastDownwardExperiment):
     """Subclass of FastDownwardExperiment with some convenience features."""
 
-    DEFAULT_TEST_SUITE = ["gripper:prob01.pddl"]
+    DEFAULT_TEST_SUITE = ["depot:p01.pddl", "gripper:prob01.pddl"]
 
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -174,6 +170,8 @@ class IssueExperiment(FastDownwardExperiment):
         "expansions_until_last_jump",
         "generated",
         "memory",
+        "planner_memory",
+        "planner_time",
         "quality",
         "run_dir",
         "score_evaluations",
