@@ -300,12 +300,12 @@ static Heuristic *_parse(OptionParser &parser) {
         );
     parser.document_note(
         "Optimal search",
-        "when using landmarks for optimal search (``admissible=true``), "
-        "you probably also want to enable the mpd option of the A* algorithm "
-        "to improve heuristic estimates");
+        "When using landmarks for optimal search (``admissible=true``), "
+        "you probably also want to add this heuristic as a lazy_evaluator "
+        "in the A* algorithm to improve heuristic estimates.");
     parser.document_note(
         "Note",
-        "to use ``optimal=true``, you must build the planner with LP support. "
+        "To use ``optimal=true``, you must build the planner with LP support. "
         "See LPBuildInstructions.");
 
     parser.document_language_support("action costs",

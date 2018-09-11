@@ -55,7 +55,6 @@ bool Evaluator::is_used_for_counting_evaluations() const {
     return use_for_counting_evaluations;
 }
 
-
 bool Evaluator::does_cache_estimates() const {
     return false;
 }

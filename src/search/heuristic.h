@@ -88,7 +88,7 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
 
-    virtual bool does_cache_estimates() const;
+    virtual bool does_cache_estimates() const override;
     virtual bool is_estimate_cached(const GlobalState &state) const override;
     virtual int get_cached_estimate(const GlobalState &state) const override;
 };
