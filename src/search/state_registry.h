@@ -91,10 +91,10 @@
   Problem:
     In the LMcount heuristic each state should store which landmarks are
     already reached when this state is reached. This should only require
-    additional memory, when the LMcount heuristic is used.
+    additional memory when the LMcount heuristic is used.
 
   Solution:
-    The heuristic object uses a field of type PerStateBitset to store for each
+    The heuristic object uses an attribute of type PerStateBitset to store for each
     state and each landmark whether it was reached in this state.
 */
 
