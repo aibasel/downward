@@ -55,7 +55,7 @@ CONFIGS = [
     for build in BUILDS
     for config_nick, config in CONFIG_DICT.items()
 ]
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+SUITE = common_setup.DEFAULT_SATISFICING_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
     partition="infai_2",
     email="jendrik.seipp@unibas.ch",
