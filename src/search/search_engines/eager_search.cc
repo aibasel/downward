@@ -148,13 +148,13 @@ SearchStatus EagerSearch::step() {
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
-        // Previously encountered dead end. Don't re-evaluate.
-        if (succ_node.is_dead_end())
-            continue;
-
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
         }
+
+        // Previously encountered dead end. Don't re-evaluate.
+        if (succ_node.is_dead_end())
+            continue;
 
         if (succ_node.is_new()) {
             // We have not seen this state before.
