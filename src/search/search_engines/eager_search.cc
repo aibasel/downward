@@ -38,27 +38,27 @@ void EagerSearch::initialize() {
         cout << "Using multi-path dependence (LM-A*)" << endl;
     assert(open_list);
 
-    set<Heuristic *> hset;
-    open_list->get_involved_heuristics(hset);
+    set<Evaluator *> evals;
+    open_list->get_path_dependent_evaluators(evals);
 
-    // Add heuristics that are used for preferred operators (in case they are
-    // not also used in the open list).
-    hset.insert(preferred_operator_heuristics.begin(),
-                preferred_operator_heuristics.end());
-
-    // Add heuristics that are used in the f_evaluator. They are usually also
-    // used in the open list and are hence already included, but we want to be
-    // sure.
-    if (f_evaluator) {
-        f_evaluator->get_involved_heuristics(hset);
+    // Collect path-dependent evaluators that are used for preferred operators
+    // (in case they are not also used in the open list).
+    for (Heuristic *heuristic : preferred_operator_heuristics) {
+        heuristic->get_path_dependent_evaluators(evals);
     }
 
-    heuristics.assign(hset.begin(), hset.end());
-    assert(!heuristics.empty());
+    // Collect path-dependent evaluators that are used in the f_evaluator.
+    // They are usually also used in the open list and will hence already be
+    // included, but we want to be sure.
+    if (f_evaluator) {
+        f_evaluator->get_path_dependent_evaluators(evals);
+    }
+
+    path_dependent_evaluators.assign(evals.begin(), evals.end());
 
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : heuristics) {
-        heuristic->notify_initial_state(initial_state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
     }
 
     // Note: we consider the initial state as reached by a preferred
@@ -81,7 +81,7 @@ void EagerSearch::initialize() {
 
     print_initial_h_values(eval_context);
 
-    pruning_method->initialize(g_root_task());
+    pruning_method->initialize(task);
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -122,11 +122,11 @@ SearchStatus EagerSearch::step() {
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (OperatorID op_id : applicable_ops) {
-        const GlobalOperator *op = &g_operators[op_id.get_index()];
-        if ((node.get_real_g() + op->get_cost()) >= bound)
+        OperatorProxy op = task_proxy.get_operators()[op_id];
+        if ((node.get_real_g() + op.get_cost()) >= bound)
             continue;
 
-        GlobalState succ_state = state_registry.get_successor_state(s, *op);
+        GlobalState succ_state = state_registry.get_successor_state(s, op);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
@@ -138,12 +138,8 @@ SearchStatus EagerSearch::step() {
 
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
-            /*
-              Note: we must call notify_state_transition for each heuristic, so
-              don't break out of the for loop early.
-            */
-            for (Heuristic *heuristic : heuristics) {
-                heuristic->notify_state_transition(s, *op, succ_state);
+            for (Evaluator *evaluator : path_dependent_evaluators) {
+                evaluator->notify_state_transition(s, op_id, succ_state);
             }
         }
 
@@ -154,7 +150,7 @@ SearchStatus EagerSearch::step() {
             // Careful: succ_node.get_g() is not available here yet,
             // hence the stupid computation of succ_g.
             // TODO: Make this less fragile.
-            int succ_g = node.get_g() + get_adjusted_cost(*op);
+            int succ_g = node.get_g() + get_adjusted_cost(op);
 
             EvaluationContext eval_context(
                 succ_state, succ_g, is_preferred, &statistics);
@@ -172,7 +168,7 @@ SearchStatus EagerSearch::step() {
                 print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }
-        } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(*op)) {
+        } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(op)) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
                 if (succ_node.is_closed()) {
@@ -265,7 +261,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     statistics.inc_dead_ends();
                     continue;
                 }
-                if (pushed_h < eval_context.get_result(heuristics[0]).get_h_value()) {
+                if (pushed_h < eval_context.get_result(path_dependent_evaluators[0]).get_h_value()) {
                     assert(node.is_open());
                     open_list->insert(eval_context, node.get_state_id());
                     continue;
@@ -288,7 +284,7 @@ void EagerSearch::reward_progress() {
 }
 
 void EagerSearch::dump_search_space() const {
-    search_space.dump();
+    search_space.dump(task_proxy);
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {

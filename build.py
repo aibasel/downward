@@ -2,6 +2,7 @@
 
 import errno
 import glob
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -17,8 +18,15 @@ DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 
 CMAKE = "cmake"
+DEFAULT_MAKE_PARAMETERS = []
 if os.name == "posix":
     MAKE = "make"
+    try:
+        num_cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        pass
+    else:
+        DEFAULT_MAKE_PARAMETERS.append('-j{}'.format(num_cpus))
     CMAKE_GENERATOR = "Unix Makefiles"
 elif os.name == "nt":
     MAKE = "nmake"
@@ -48,6 +56,9 @@ def print_usage():
 Build one or more predefined build configurations of Fast Downward. Each build
 uses {cmake_name} to generate {generator_name} and then uses {make_name} to compile the
 code. Build configurations differ in the parameters they pass to {cmake_name}.
+By default, the build uses N threads on a machine with N cores if the number of
+cores can be determined. Use the "-j" option for {cmake_name} to override this default
+behaviour.
 
 Build configurations
   {configs_string}
@@ -60,10 +71,10 @@ Make options
   All other parameters are forwarded to {make_name}.
 
 Example usage:
+  ./{script_name}                     # build {default_config_name} in #cores threads
   ./{script_name} -j4                 # build {default_config_name} in 4 threads
-  ./{script_name} -j4 downward        # as above, but only build the planner
-  ./{script_name} debug32 -j4         # build debug32 in 4 threads
-  ./{script_name} --debug -j4         # build {debug_config_name} in 4 threads
+  ./{script_name} debug32             # build debug32
+  ./{script_name} --debug             # build {debug_config_name}
   ./{script_name} release64 debug64   # build both 64-bit build configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
 """.format(**locals()))
@@ -86,19 +97,20 @@ def get_build_path(config_name):
     return os.path.join(get_builds_path(), config_name)
 
 def try_run(cmd, cwd):
+    print('Executing command "{}" in directory "{}".'.format(" ".join(cmd), cwd))
     try:
         subprocess.check_call(cmd, cwd=cwd)
     except OSError as exc:
         if exc.errno == errno.ENOENT:
             print("Could not find '%s' on your PATH. For installation instructions, "
-                  "see http://www.fast-downward.org/ObtainingAndRunningFastDownward" %
+                  "see http://www.fast-downward.org/ObtainingAndRunningFastDownward." %
                   cmd[0])
             sys.exit(1)
         else:
             raise
 
 def build(config_name, cmake_parameters, make_parameters):
-    print("Building configuration " + config_name)
+    print("Building configuration {config_name}.".format(**locals()))
     build_path = get_build_path(config_name)
     rel_src_path = os.path.relpath(get_src_path(), build_path)
     try:
@@ -113,12 +125,12 @@ def build(config_name, cmake_parameters, make_parameters):
             cwd=build_path)
     try_run([MAKE] + make_parameters, cwd=build_path)
 
-    print("Built configuration " + config_name + " successfully")
+    print("Built configuration {config_name} successfully.".format(**locals()))
 
 
 def main():
     config_names = set()
-    make_parameters = []
+    make_parameters = DEFAULT_MAKE_PARAMETERS
     for arg in sys.argv[1:]:
         if arg == "--help" or arg == "-h":
             print_usage()

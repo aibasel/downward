@@ -32,22 +32,21 @@ struct Flaw {
         : concrete_state(move(concrete_state)),
           current_abstract_state(current_abstract_state),
           desired_abstract_state(move(desired_abstract_state)) {
+        assert(this->current_abstract_state->includes(this->concrete_state));
     }
 
     vector<Split> get_possible_splits() const {
         vector<Split> splits;
         /*
-          For each fact in the concrete state that is not contained in
-          the current abstract state (reason: abstract and concrete
-          traces diverged) or the desired abstract state (reason:
-          unsatisfied precondition or goal), loop over all values of
-          the corresponding variable. The values that are in both the
-          current and the desired abstract state are the "wanted" ones.
+          For each fact in the concrete state that is not contained in the
+          desired abstract state, loop over all values in the domain of the
+          corresponding variable. The values that are in both the current and
+          the desired abstract state are the "wanted" ones, i.e., the ones that
+          we want to split off.
         */
         for (FactProxy wanted_fact_proxy : concrete_state) {
             FactPair fact = wanted_fact_proxy.get_pair();
-            if (!current_abstract_state->contains(fact.var, fact.value) ||
-                !desired_abstract_state.contains(fact.var, fact.value)) {
+            if (!desired_abstract_state.contains(fact.var, fact.value)) {
                 VariableProxy var = wanted_fact_proxy.get_variable();
                 int var_id = var.get_id();
                 vector<int> wanted;
@@ -67,7 +66,7 @@ struct Flaw {
 };
 
 Abstraction::Abstraction(
-    const shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     int max_states,
     int max_non_looping_transitions,
     double max_time,
@@ -95,7 +94,7 @@ Abstraction::Abstraction(
          << max_non_looping_transitions << endl;
     build(rng);
     g_log << "Done building abstraction." << endl;
-    cout << "Time for building abstraction: " << timer << endl;
+    cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
        last iteration, so we should update the distances. */
@@ -199,8 +198,10 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.insert(v1);
     states.insert(v2);
 
-    /* Since the search is always started from the abstract initial state, v2
-       is never the new initial state and v1 is never a goal state. */
+    /*
+      Due to the way we split the state into v1 and v2, v2 is never the new
+      initial state and v1 is never a goal state.
+    */
     if (state == init) {
         assert(v1->includes(task_proxy.get_initial_state()));
         assert(!v2->includes(task_proxy.get_initial_state()));

@@ -33,7 +33,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
 
     Heuristic *heuristic;
     std::vector<Heuristic *> preferred_operator_heuristics;
-    std::set<Heuristic *> heuristics;
+    std::set<Evaluator *> path_dependent_evaluators;
     bool use_preferred;
     PreferredUsage preferred_usage;
 
@@ -48,11 +48,11 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     void insert_successor_into_open_list(
         const EvaluationContext &eval_context,
         int parent_g,
-        const GlobalOperator *op,
+        OperatorID op_id,
         bool preferred);
     void expand(EvaluationContext &eval_context);
     void reach_state(
-        const GlobalState &parent, const GlobalOperator &op,
+        const GlobalState &parent, OperatorID op_id,
         const GlobalState &state);
     SearchStatus ehc();
 

@@ -205,6 +205,17 @@ bool LabelReduction::reduce(
     int num_unsuccessful_iterations = 0;
 
     bool reduced = false;
+    /*
+      If using ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT, this loop stops under
+      the following conditions: if there are no combinable labels for all
+      transition systems, we have num_unsuccessful_iterations =
+      num_transition_systems and break the loop.
+
+      Whenever there is a transition system for which we reduce labels, we
+      reset the counter num_unsuccessful_iterations to 1 (not to 0!) because
+      we only need to consider all remaining transitions systems, but not the
+      one itself again.
+    */
     for (int i = 0; i < max_iterations; ++i) {
         int ts_index = transition_system_order[tso_index];
 
@@ -217,16 +228,23 @@ bool LabelReduction::reduce(
         }
 
         if (label_mapping.empty()) {
-            /* Even if the transition system has been removed, we need to count
-               it as unsuccessful iterations (the size of the vector matters). */
+            /*
+              Even if the index is inactive, we need to count it as
+              unsuccessful iterations, because the number of indices, i.e.
+              the size of the vector in the factored transition system
+              matters.
+            */
             ++num_unsuccessful_iterations;
         } else {
             reduced = true;
-            num_unsuccessful_iterations = 0;
+            // See comment for the loop and its exit conditions.
+            num_unsuccessful_iterations = 1;
             fts.apply_label_mapping(label_mapping, ts_index);
         }
-        if (num_unsuccessful_iterations == num_transition_systems - 1)
+        if (num_unsuccessful_iterations == num_transition_systems) {
+            // See comment for the loop and its exit conditions.
             break;
+        }
 
         ++tso_index;
         if (tso_index == transition_system_order.size()) {
@@ -328,9 +346,8 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
     vector<string> label_reduction_system_order_doc;
     label_reduction_system_order.push_back("REGULAR");
     label_reduction_system_order_doc.push_back(
-        "transition systems are considered in the FD given order for "
-        "atomic transition systems and in the order of their creation "
-        "for composite transition system.");
+        "transition systems are considered in the order given in the planner "
+        "input if atomic and in the order of their creation if composite.");
     label_reduction_system_order.push_back("REVERSE");
     label_reduction_system_order_doc.push_back(
         "inverse of REGULAR");
@@ -360,7 +377,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         if (!lr_before_shrinking && !lr_before_merging) {
             cerr << "Please turn on at least one of the options "
                  << "before_shrinking or before_merging!" << endl;
-            utils::exit_with(ExitCode::INPUT_ERROR);
+            utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         }
         return nullptr;
     } else {

@@ -14,8 +14,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
     options::Options &options)
-    : MergeStrategyFactory(),
-      merge_selector(options.get<shared_ptr<MergeSelector>>("merge_selector")) {
+    : merge_selector(options.get<shared_ptr<MergeSelector>>("merge_selector")) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
@@ -31,6 +30,14 @@ string MergeStrategyFactoryStateless::name() const {
 
 void MergeStrategyFactoryStateless::dump_strategy_specific_options() const {
     merge_selector->dump_options();
+}
+
+bool MergeStrategyFactoryStateless::requires_init_distances() const {
+    return merge_selector->requires_init_distances();
+}
+
+bool MergeStrategyFactoryStateless::requires_goal_distances() const {
+    return merge_selector->requires_goal_distances();
 }
 
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {

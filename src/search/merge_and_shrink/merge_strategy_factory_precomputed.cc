@@ -15,8 +15,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
     options::Options &options)
-    : MergeStrategyFactory(),
-      merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
+    : merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
@@ -25,6 +24,14 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strateg
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task_proxy);
     return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
+}
+
+bool MergeStrategyFactoryPrecomputed::requires_init_distances() const {
+    return merge_tree_factory->requires_init_distances();
+}
+
+bool MergeStrategyFactoryPrecomputed::requires_goal_distances() const {
+    return merge_tree_factory->requires_goal_distances();
 }
 
 string MergeStrategyFactoryPrecomputed::name() const {

@@ -1,6 +1,7 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "../global_operator.h"
+#include "../globals.h"
+#include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -71,12 +72,14 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    heuristics.insert(preferred_operator_heuristics.begin(),
-                      preferred_operator_heuristics.end());
-    heuristics.insert(heuristic);
+    for (Heuristic *heur : preferred_operator_heuristics) {
+        heur->get_path_dependent_evaluators(path_dependent_evaluators);
+    }
+    heuristic->get_path_dependent_evaluators(path_dependent_evaluators);
+
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Heuristic *heuristic : heuristics) {
-        heuristic->notify_initial_state(initial_state);
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_heuristics.begin(),
                          preferred_operator_heuristics.end(), heuristic) !=
@@ -90,9 +93,9 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 
 void EnforcedHillClimbingSearch::reach_state(
-    const GlobalState &parent, const GlobalOperator &op, const GlobalState &state) {
-    for (Heuristic *heur : heuristics) {
-        heur->notify_state_transition(parent, op, state);
+    const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_state_transition(parent, op_id, state);
     }
 }
 
@@ -113,9 +116,9 @@ void EnforcedHillClimbingSearch::initialize() {
     if (dead_end) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
-            utils::exit_with(ExitCode::UNSOLVABLE);
+            utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
         else
-            utils::exit_with(ExitCode::UNSOLVED_INCOMPLETE);
+            utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
     }
 
     SearchNode node = search_space.get_node(current_eval_context.get_state());
@@ -127,11 +130,12 @@ void EnforcedHillClimbingSearch::initialize() {
 void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     const EvaluationContext &eval_context,
     int parent_g,
-    const GlobalOperator *op,
+    OperatorID op_id,
     bool preferred) {
-    int succ_g = parent_g + get_adjusted_cost(*op);
+    OperatorProxy op = task_proxy.get_operators()[op_id];
+    int succ_g = parent_g + get_adjusted_cost(op);
     EdgeOpenListEntry entry = make_pair(
-        eval_context.get_state().get_id(), get_op_index_hacked(op));
+        eval_context.get_state().get_id(), op_id);
     EvaluationContext new_eval_context(
         eval_context.get_cache(), succ_g, preferred, &statistics);
     open_list->insert(new_eval_context, entry);
@@ -151,7 +155,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
         for (OperatorID op_id : preferred_operators) {
             insert_successor_into_open_list(
-                eval_context, node_g, &g_operators[op_id.get_index()], true);
+                eval_context, node_g, op_id, true);
         }
     } else {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
@@ -163,7 +167,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
             bool preferred = use_preferred &&
                              preferred_operators.contains(op_id);
             insert_successor_into_open_list(
-                eval_context, node_g, &g_operators[op_id.get_index()], preferred);
+                eval_context, node_g, op_id, preferred);
         }
     }
 
@@ -187,26 +191,27 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         EdgeOpenListEntry entry = open_list->remove_min();
         StateID parent_state_id = entry.first;
-        const GlobalOperator *last_op = &g_operators[entry.second];
+        OperatorID last_op_id = entry.second;
+        OperatorProxy last_op = task_proxy.get_operators()[last_op_id];
 
         GlobalState parent_state = state_registry.lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         // d: distance from initial node in this EHC phase
         int d = parent_node.get_g() - current_phase_start_g +
-                get_adjusted_cost(*last_op);
+                get_adjusted_cost(last_op);
 
-        if (parent_node.get_real_g() + last_op->get_cost() >= bound)
+        if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
 
-        GlobalState state = state_registry.get_successor_state(parent_state, *last_op);
+        GlobalState state = state_registry.get_successor_state(parent_state, last_op);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state);
 
         if (node.is_new()) {
             EvaluationContext eval_context(state, &statistics);
-            reach_state(parent_state, *last_op, state);
+            reach_state(parent_state, last_op_id, state);
             statistics.inc_evaluated_states();
 
             if (eval_context.is_heuristic_infinite(heuristic)) {

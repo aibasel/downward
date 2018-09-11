@@ -111,13 +111,13 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        size_t operator()(int id) const {
+        int_hash_set::HashType operator()(int id) const {
             const PackedStateBin *data = state_data_pool[id];
             utils::HashState hash_state;
             for (int i = 0; i < state_size; ++i) {
                 hash_state.feed(data[i]);
             }
-            return hash_state.get_hash64();
+            return hash_state.get_hash32();
         }
     };
 
@@ -143,7 +143,7 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    using StateIDSet = algorithms::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
+    using StateIDSet = int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */
@@ -203,13 +203,13 @@ public:
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    GlobalState get_successor_state(const GlobalState &predecessor, const GlobalOperator &op);
+    GlobalState get_successor_state(const GlobalState &predecessor, const OperatorProxy &op);
 
     /*
       Returns the number of states registered so far.
     */
     size_t size() const {
-        return registered_states.get_num_entries();
+        return registered_states.size();
     }
 
     int get_state_size_in_bytes() const;

@@ -1,12 +1,15 @@
 #include "search_engine.h"
 
 #include "evaluation_context.h"
+#include "evaluator.h"
 #include "globals.h"
+#include "heuristic.h"
 #include "option_parser.h"
 #include "plugin.h"
 
 #include "algorithms/ordered_set.h"
-
+#include "task_utils/task_properties.h"
+#include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
@@ -24,15 +27,17 @@ class PruningMethod;
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
+      task(tasks::g_root_task),
+      task_proxy(*task),
       state_registry(
-          *g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
+          *task, *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
 }
@@ -53,7 +58,7 @@ SearchStatus SearchEngine::get_status() const {
     return status;
 }
 
-const SearchEngine::Plan &SearchEngine::get_plan() const {
+const Plan &SearchEngine::get_plan() const {
     assert(solution_found);
     return plan;
 }
@@ -75,12 +80,12 @@ void SearchEngine::search() {
         }
     }
     // TODO: Revise when and which search times are logged.
-    cout << "Actual search time: " << timer
+    cout << "Actual search time: " << timer.get_elapsed_time()
          << " [t=" << utils::g_timer << "]" << endl;
 }
 
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
-    if (test_goal(state)) {
+    if (task_properties::is_goal_state(task_proxy, state)) {
         cout << "Solution found!" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
@@ -90,12 +95,13 @@ bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
     return false;
 }
 
-void SearchEngine::save_plan_if_necessary() const {
-    if (found_solution())
-        save_plan(get_plan());
+void SearchEngine::save_plan_if_necessary() {
+    if (found_solution()) {
+        plan_manager.save_plan(get_plan(), task_proxy);
+    }
 }
 
-int SearchEngine::get_adjusted_cost(const GlobalOperator &op) const {
+int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
@@ -151,16 +157,12 @@ void SearchEngine::add_succ_order_options(OptionParser &parser) {
 }
 
 void print_initial_h_values(const EvaluationContext &eval_context) {
-    eval_context.get_cache().for_each_heuristic_value(
-        [] (const Heuristic *heur, const EvaluationResult &result) {
-        cout << "Initial heuristic value for "
-             << heur->get_description() << ": ";
-        if (result.is_infinite())
-            cout << "infinity";
-        else
-            cout << result.get_h_value();
-        cout << endl;
-    }
+    eval_context.get_cache().for_each_evaluator_result(
+        [] (const Evaluator *eval, const EvaluationResult &result) {
+            if (eval->is_used_for_reporting_minima()) {
+                eval->report_value_for_initial_state(result);
+            }
+        }
         );
 }
 

@@ -1,5 +1,6 @@
 #include "canonical_pdbs_heuristic.h"
 
+#include "dominance_pruning.h"
 #include "pattern_generator.h"
 
 #include "../option_parser.h"
@@ -26,8 +27,13 @@ CanonicalPDBs get_canonical_pdbs_from_options(
         pattern_collection_info.get_max_additive_subsets();
     cout << "PDB collection construction time: " << timer << endl;
 
-    bool dominance_pruning = opts.get<bool>("dominance_pruning");
-    return CanonicalPDBs(pdbs, max_additive_subsets, dominance_pruning);
+    double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
+    if (max_time_dominance_pruning > 0.0) {
+        int num_variables = TaskProxy(*task).get_variables().size();
+        max_additive_subsets = prune_dominated_subsets(
+            *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
+    }
+    return CanonicalPDBs(max_additive_subsets);
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
@@ -47,6 +53,17 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     } else {
         return h;
     }
+}
+
+void add_canonical_pdbs_options_to_parser(options::OptionParser &parser) {
+    parser.add_option<double>(
+        "max_time_dominance_pruning",
+        "The maximum time in seconds spent on dominance pruning. Using 0.0 "
+        "turns off dominance pruning. Dominance pruning excludes patterns "
+        "and additive subsets that will never contribute to the heuristic "
+        "value because there are dominating subsets in the collection.",
+        "infinity",
+        Bounds("0.0", "infinity"));
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -70,12 +87,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "patterns",
         "pattern generation method",
         "systematic(1)");
-    parser.add_option<bool>(
-        "dominance_pruning",
-        "Exclude patterns and pattern collections that will never contribute to "
-        "the heuristic value because there are dominating patterns in the "
-        "collection.",
-        "true");
+
+    add_canonical_pdbs_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
 
