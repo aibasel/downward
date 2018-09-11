@@ -11,6 +11,21 @@ except ImportError:
     def match_func(repo, ctx, patterns, options):
         return cmdutil.match(repo, patterns, options)
 
+
+cmdtable = {}
+try:
+    # use new registrar.command decorator to register uncrustify later
+    from mercurial import registrar
+    command = registrar.command(cmdtable)
+except (ImportError, AttributeError):
+    # make own decorator valid for the old way
+    def command(name, opts, synopsis):
+        def _decorator(func):
+            cmdtable[name] = (func, opts, synopsis)
+            return func
+        return _decorator
+
+
 import errno
 import os
 import os.path
@@ -60,7 +75,7 @@ def _run_uncrustify(config_file, filenames):
                 ["uncrustify", "--version"]).strip()
             raise util.Abort(
                 "uncrustify exited with {returncode}. Are you using an "
-                "outdated version? We require uncrustify 0.61, you "
+                "outdated version? We require uncrustify 0.67, you "
                 "have {uncrustify_version}. Please consult "
                 "www.fast-downward.org/ForDevelopers/Uncrustify".format(
                 **locals()))
@@ -112,6 +127,21 @@ def _get_files(repo, patterns, options):
     return files
 
 
+@command("uncrustify",
+         [("d", "diff", None,
+           "show diff of changes that --modify would make"),
+          ("m", "modify", None,
+           "actually modify the files that need to be uncrustified"),
+          ("", "no-backup", None,
+           "do not save backup copies of modified files"),
+          ("", "show-clean", None,
+           "also list clean source files"),
+          ("I", "include", [],
+           "include names matching the given patterns", "PATTERN"),
+          ("X", "exclude", [],
+           "exclude names matching the given patterns", "PATTERN"),
+          ],
+         "[OPTION]... [FILE]...")
 def uncrustify(ui, repo, *patterns, **options):
     """Run uncrustify on the specified files or directories.
 
@@ -189,22 +219,3 @@ def uncrustify(ui, repo, *patterns, **options):
                 elif mode == "modify":
                     ui.write("%s is clean\n" % relpath)
             util.unlink(uncr_relpath)
-
-
-cmdtable = {
-    "uncrustify": (
-        uncrustify,
-        [("d", "diff", None,
-          "show diff of changes that --modify would make"),
-         ("m", "modify", None,
-          "actually modify the files that need to be uncrustified"),
-         ("", "no-backup", None,
-          "do not save backup copies of modified files"),
-         ("", "show-clean", None,
-          "also list clean source files"),
-         ("I", "include", [],
-          "include names matching the given patterns", "PATTERN"),
-         ("X", "exclude", [],
-          "exclude names matching the given patterns", "PATTERN"),
-         ], "[OPTION]... [FILE]...")
-}

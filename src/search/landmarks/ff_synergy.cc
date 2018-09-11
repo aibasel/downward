@@ -18,7 +18,7 @@ FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     cout << "Initializing LAMA-FF synergy slave" << endl;
     if (!master) {
         cerr << "ff_synergy requires a lama_synergy heuristic" << endl;
-        utils::exit_with(utils::ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 

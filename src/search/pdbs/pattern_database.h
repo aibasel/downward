@@ -58,13 +58,13 @@ public:
       Returns the effect of the abstract operator in form of a value
       change (+ or -) to an abstract state index
     */
-    std::size_t get_hash_effect() const {return hash_effect; }
+    std::size_t get_hash_effect() const {return hash_effect;}
 
     /*
       Returns the cost of the abstract operator (same as the cost of
       the original concrete operator)
     */
-    int get_cost() const {return cost; }
+    int get_cost() const {return cost;}
     void dump(const Pattern &pattern,
               const VariablesProxy &variables) const;
 };
@@ -131,7 +131,7 @@ class PatternDatabase {
       state is a goal state.
     */
     bool is_goal_state(
-        const std::size_t state_index,
+        std::size_t state_index,
         const std::vector<FactPair> &abstract_goals,
         const VariablesProxy &variables) const;
 

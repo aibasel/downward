@@ -67,6 +67,7 @@ void MergeScoringFunctionTotalOrder::initialize(const TaskProxy &task_proxy) {
 
     // Compute the order in which atomic transition systems are considered
     vector<int> atomic_tso;
+    atomic_tso.reserve(num_variables);
     for (int i = 0; i < num_variables; ++i) {
         atomic_tso.push_back(i);
     }

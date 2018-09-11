@@ -33,21 +33,21 @@ public:
     ~SearchStatistics() = default;
 
     // Methods that update statistics.
-    void inc_expanded(int inc = 1) {expanded_states += inc; }
-    void inc_evaluated_states(int inc = 1) {evaluated_states += inc; }
-    void inc_generated(int inc = 1) {generated_states += inc; }
-    void inc_reopened(int inc = 1) {reopened_states += inc; }
-    void inc_generated_ops(int inc = 1) {generated_ops += inc; }
-    void inc_evaluations(int inc = 1) {evaluations += inc; }
-    void inc_dead_ends(int inc = 1) {dead_end_states += inc; }
+    void inc_expanded(int inc = 1) {expanded_states += inc;}
+    void inc_evaluated_states(int inc = 1) {evaluated_states += inc;}
+    void inc_generated(int inc = 1) {generated_states += inc;}
+    void inc_reopened(int inc = 1) {reopened_states += inc;}
+    void inc_generated_ops(int inc = 1) {generated_ops += inc;}
+    void inc_evaluations(int inc = 1) {evaluations += inc;}
+    void inc_dead_ends(int inc = 1) {dead_end_states += inc;}
 
     // Methods that access statistics.
-    int get_expanded() const {return expanded_states; }
-    int get_evaluated_states() const {return evaluated_states; }
-    int get_evaluations() const {return evaluations; }
-    int get_generated() const {return generated_states; }
-    int get_reopened() const {return reopened_states; }
-    int get_generated_ops() const {return generated_ops; }
+    int get_expanded() const {return expanded_states;}
+    int get_evaluated_states() const {return evaluated_states;}
+    int get_evaluations() const {return evaluations;}
+    int get_generated() const {return generated_states;}
+    int get_reopened() const {return reopened_states;}
+    int get_generated_ops() const {return generated_ops;}
 
     /*
       Call the following method with the f value of every expanded

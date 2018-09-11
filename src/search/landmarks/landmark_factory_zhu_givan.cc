@@ -225,10 +225,7 @@ static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
     // (old_labels.size() == 0) && (labels.size() >= 1)
     // if old_labels.size() == labels.size(), then labels have not been refined
     // by intersection.
-    if (old_labels.size() != labels.size())
-        return true;
-
-    return false;
+    return old_labels.size() != labels.size();
 }
 
 lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
@@ -304,7 +301,7 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
 
-static LandmarkFactory *_parse(OptionParser &parser) {
+static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
@@ -318,12 +315,11 @@ static LandmarkFactory *_parse(OptionParser &parser) {
                                      "We think they are supported, but this "
                                      "is not 100% sure.");
 
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return nullptr;
-    } else {
-        return new LandmarkFactoryZhuGivan(opts);
-    }
+    else
+        return make_shared<LandmarkFactoryZhuGivan>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin("lm_zg", _parse);
+static PluginShared<LandmarkFactory> _plugin("lm_zg", _parse);
 }

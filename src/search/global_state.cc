@@ -1,6 +1,5 @@
 #include "global_state.h"
 
-#include "globals.h"
 #include "state_registry.h"
 #include "task_proxy.h"
 
