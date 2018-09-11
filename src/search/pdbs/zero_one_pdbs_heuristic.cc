@@ -71,5 +71,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new ZeroOnePDBsHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("zopdbs", _parse);
+static Plugin<Heuristic> _plugin("zopdbs", _parse, "Pattern Databases");
 }
