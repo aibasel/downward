@@ -61,5 +61,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new PDBHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("pdb", _parse);
+static Plugin<Heuristic> _plugin("pdb", _parse, "Pattern Databases");
 }
