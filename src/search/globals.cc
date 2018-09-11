@@ -26,14 +26,11 @@ void read_everything(istream &in) {
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
     TaskProxy task_proxy(*tasks::g_root_task);
 
-    cout << "packing state variables..." << flush;
-    const int_packer::IntPacker &state_packer = task_proxy.get_state_packer();
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
-
     int num_facts = 0;
     VariablesProxy variables = task_proxy.get_variables();
     for (VariableProxy var : variables)
         num_facts += var.get_domain_size();
+    const int_packer::IntPacker &state_packer = task_proxy.get_state_packer();
 
     cout << "Variables: " << variables.size() << endl;
     cout << "FactPairs: " << num_facts << endl;
