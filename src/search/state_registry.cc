@@ -15,7 +15,6 @@ StateRegistry::StateRegistry(
       num_variables(initial_state_data.size()),
       state_data_pool(get_bins_per_state()),
       registered_states(
-          0,
           StateIDSemanticHash(state_data_pool, get_bins_per_state()),
           StateIDSemanticEqual(state_data_pool, get_bins_per_state())),
       cached_initial_state(0) {
@@ -38,13 +37,13 @@ StateID StateRegistry::insert_id_or_pop_state() {
       state data pool.
     */
     StateID id(state_data_pool.size() - 1);
-    pair<StateIDSet::iterator, bool> result = registered_states.insert(id);
+    pair<int, bool> result = registered_states.insert(id.value);
     bool is_new_entry = result.second;
     if (!is_new_entry) {
         state_data_pool.pop_back();
     }
-    assert(registered_states.size() == state_data_pool.size());
-    return *result.first;
+    assert(registered_states.size() == static_cast<int>(state_data_pool.size()));
+    return StateID(result.first);
 }
 
 GlobalState StateRegistry::lookup_state(StateID id) const {
@@ -101,4 +100,9 @@ void StateRegistry::subscribe(PerStateInformationBase *psi) const {
 
 void StateRegistry::unsubscribe(PerStateInformationBase *const psi) const {
     subscribers.erase(psi);
+}
+
+void StateRegistry::print_statistics() const {
+    cout << "Number of registered states: " << size() << endl;
+    registered_states.print_statistics();
 }

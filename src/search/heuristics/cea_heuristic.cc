@@ -3,7 +3,6 @@
 #include "domain_transition_graph.h"
 
 #include "../global_state.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -415,7 +414,7 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing context-enhanced additive heuristic..." << endl;
 
-    DTGFactory factory(task_proxy, true, [](int, int) {return false; });
+    DTGFactory factory(task_proxy, true, [](int, int) {return false;});
     transition_graphs = factory.build_dtgs();
 
     goal_problem = build_problem_for_goal();
