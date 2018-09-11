@@ -19,7 +19,7 @@ class AxiomEvaluator {
     };
     struct AxiomRule {
         int condition_count;
-        mutable int unsatisfied_conditions;
+        int unsatisfied_conditions;
         int effect_var;
         int effect_val;
         AxiomLiteral *effect_literal;
@@ -57,11 +57,11 @@ class AxiomEvaluator {
       The queue is an instance variable rather than a local variable
       to reduce reallocation effort. See issue420.
     */
-    mutable std::vector<const AxiomLiteral *> queue;
+    std::vector<const AxiomLiteral *> queue;
 public:
     explicit AxiomEvaluator(const TaskProxy &task_proxy);
-    void evaluate(PackedStateBin *buffer, const int_packer::IntPacker &state_packer) const;
-    void evaluate(std::vector<int> &state) const;
+    void evaluate(PackedStateBin *buffer, const int_packer::IntPacker &state_packer);
+    void evaluate(std::vector<int> &state);
 };
 
 /* Create or retrieve an axiom evaluator from global cache. If axiom evaluators
