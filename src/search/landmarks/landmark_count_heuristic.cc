@@ -6,8 +6,8 @@
 
 #include "../global_state.h"
 #include "../option_parser.h"
-#include "../plugin.h"
 #include "../per_state_bitset.h"
+#include "../plugin.h"
 
 #include "../lp/lp_solver.h"
 #include "../task_utils/successor_generator.h"
@@ -88,8 +88,8 @@ LandmarkCountHeuristic::~LandmarkCountHeuristic() {
 
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &global_state) {
     // Set additional goals for FF exploration
-    BitsetView landmarks_info = lm_status_manager->get_reached_landmarks(global_state);
-    LandmarkSet reached_landmarks = convert_to_landmark_set(landmarks_info);
+    BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
+    LandmarkSet reached_landmarks = convert_to_landmark_set(landmark_info);
     vector<FactPair> lm_leaves = collect_lm_leaves(
         ff_search_disjunctive_lms, reached_landmarks);
     exploration.set_additional_goals(lm_leaves);
@@ -282,10 +282,10 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
 // functions in this class that use LandmarkSets for the reached LMs
 // (HACK).
 LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
-    BitsetView &landmark_vector) {
+    const BitsetView &landmark_bitset) {
     LandmarkSet landmark_set;
-    for (int i = 0; i < landmark_vector.size(); ++i)
-        if (landmark_vector.test(i))
+    for (int i = 0; i < landmark_bitset.size(); ++i)
+        if (landmark_bitset.test(i))
             landmark_set.insert(lgraph->get_lm_for_index(i));
     return landmark_set;
 }

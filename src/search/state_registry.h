@@ -94,8 +94,8 @@
     additional memory, when the LMcount heuristic is used.
 
   Solution:
-    The heuristic object uses a field of type PerStateInformation<std::vector<bool> >
-    to store for each state and each landmark whether it was reached in this state.
+    The heuristic object uses a field of type PerStateBitset to store for each
+    state and each landmark whether it was reached in this state.
 */
 
 class PerStateInformationBase;
