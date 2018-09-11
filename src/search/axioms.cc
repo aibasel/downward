@@ -79,7 +79,7 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
 
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
-                              const int_packer::IntPacker &state_packer) const {
+                              const int_packer::IntPacker &state_packer) {
     if (!task_has_axioms)
         return;
 
@@ -94,7 +94,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
         }
     }
 
-    for (const AxiomRule &rule : rules) {
+    for (AxiomRule &rule : rules) {
         rule.unsatisfied_conditions = rule.condition_count;
 
         /*
@@ -154,7 +154,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
 }
 
 // TODO avoid code duplication (issue794)
-void AxiomEvaluator::evaluate(vector<int> &state) const {
+void AxiomEvaluator::evaluate(vector<int> &state) {
     if (!task_has_axioms)
         return;
 
@@ -169,7 +169,7 @@ void AxiomEvaluator::evaluate(vector<int> &state) const {
         }
     }
 
-    for (const AxiomRule &rule : rules) {
+    for (AxiomRule &rule : rules) {
         rule.unsatisfied_conditions = rule.condition_count;
 
         /*
