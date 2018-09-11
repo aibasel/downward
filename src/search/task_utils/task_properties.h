@@ -79,7 +79,10 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     return fact_pairs;
 }
 
-std::unique_ptr<int_packer::IntPacker> create_state_packer(const TaskProxy &task_proxy);
+/* Create or retrieve a state packer from cache. If state packers are
+   created with this function, we build at most one per AbstractTask. */
+// TODO: remove duplication with causal graph and axiom evaluator.
+const int_packer::IntPacker &get_state_packer(const AbstractTask *task);
 }
 
 #endif
