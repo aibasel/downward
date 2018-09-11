@@ -2,7 +2,6 @@
 
 #include "../global_state.h"
 
-#include "../task_utils/task_properties.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -41,8 +40,7 @@ DomainAbstractedTask::DomainAbstractedTask(
       initial_state_values(move(initial_state_values)),
       goals(move(goals)),
       fact_names(move(fact_names)),
-      value_map(move(value_map)),
-      state_packer(task_properties::create_state_packer(TaskProxy(*this))) {
+      value_map(move(value_map)) {
     if (parent->get_num_axioms() > 0) {
         ABORT("DomainAbstractedTask doesn't support axioms.");
     }
@@ -81,14 +79,6 @@ FactPair DomainAbstractedTask::get_goal_fact(int index) const {
 
 vector<int> DomainAbstractedTask::get_initial_state_values() const {
     return initial_state_values;
-}
-
-const int_packer::IntPacker &DomainAbstractedTask::get_state_packer() const {
-    return *state_packer;
-}
-
-const AxiomEvaluator &DomainAbstractedTask::get_axiom_evaluator() const {
-    ABORT("DomainAbstractedTask doesn't support axioms.");
 }
 
 void DomainAbstractedTask::convert_state_values_from_parent(

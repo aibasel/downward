@@ -5,9 +5,7 @@
 #include "../plugin.h"
 #include "../state_registry.h"
 
-#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
-#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -65,21 +63,12 @@ class RootTask : public AbstractTask {
     vector<int> initial_state_values;
     vector<FactPair> goals;
 
-    unique_ptr<int_packer::IntPacker> state_packer;
-    AxiomEvaluator axiom_evaluator;
-
     const ExplicitVariable &get_variable(int var) const;
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
     const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
 
 public:
-    explicit RootTask(
-        vector<ExplicitVariable> &&variables,
-        vector<vector<set<FactPair>>> &&mutexes,
-        vector<ExplicitOperator> &&operators,
-        vector<ExplicitOperator> &&axioms,
-        vector<int> &&initial_state_values,
-        vector<FactPair> &&goals);
+    explicit RootTask(istream &in);
 
     virtual int get_num_variables() const override;
     virtual string get_variable_name(int var) const override;
@@ -114,10 +103,6 @@ public:
     virtual FactPair get_goal_fact(int index) const override;
 
     virtual vector<int> get_initial_state_values() const override;
-
-    virtual const int_packer::IntPacker &get_state_packer() const override;
-    virtual const AxiomEvaluator &get_axiom_evaluator() const override;
-
     virtual void convert_state_values(
         vector<int> &values,
         const AbstractTask *ancestor_task) const override;
@@ -340,25 +325,37 @@ vector<ExplicitOperator> read_actions(
     return actions;
 }
 
-RootTask::RootTask(
-    vector<ExplicitVariable> &&variables,
-    vector<vector<set<FactPair>>> &&mutexes,
-    vector<ExplicitOperator> &&operators,
-    vector<ExplicitOperator> &&axioms,
-    vector<int> &&initial_state_values,
-    vector<FactPair> &&goals)
-    : variables(move(variables)),
-      mutexes(move(mutexes)),
-      operators(move(operators)),
-      axioms(move(axioms)),
-      initial_state_values(move(initial_state_values)),
-      goals(move(goals)),
-      /*
-        HACK: constructing state_packer and axiom_evaluator with a TaskProxy
-        assumes that this Task is completely constructed.
-      */
-      state_packer(task_properties::create_state_packer(TaskProxy(*this))),
-      axiom_evaluator(TaskProxy(*this)) {
+RootTask::RootTask(std::istream &in) {
+    read_and_verify_version(in);
+    bool use_metric = read_metric(in);
+    variables = read_variables(in);
+    int num_variables = variables.size();
+
+    mutexes = read_mutexes(in, variables);
+
+    initial_state_values.resize(num_variables);
+    check_magic(in, "begin_state");
+    for (int i = 0; i < num_variables; ++i) {
+        in >> initial_state_values[i];
+    }
+    check_magic(in, "end_state");
+
+    for (int i = 0; i < num_variables; ++i) {
+        variables[i].axiom_default_value = initial_state_values[i];
+    }
+
+    goals = read_goal(in);
+    check_facts(goals, variables);
+    operators = read_actions(in, false, use_metric, variables);
+    axioms = read_actions(in, true, use_metric, variables);
+    /* TODO: We should be stricter here and verify that we
+       have reached the end of "in". */
+
+    /*
+      HACK: get_axiom_evaluator creates a TaskProxy which assumes that this
+      Task is completely constructed.
+    */
+    const AxiomEvaluator &axiom_evaluator = get_axiom_evaluator(this);
     axiom_evaluator.evaluate(initial_state_values);
 }
 
@@ -485,14 +482,6 @@ vector<int> RootTask::get_initial_state_values() const {
     return initial_state_values;
 }
 
-const int_packer::IntPacker &RootTask::get_state_packer() const {
-    return *state_packer;
-}
-
-const AxiomEvaluator &RootTask::get_axiom_evaluator() const {
-    return axiom_evaluator;
-}
-
 void RootTask::convert_state_values(
     vector<int> &, const AbstractTask *ancestor_task) const {
     if (this != ancestor_task) {
@@ -502,35 +491,7 @@ void RootTask::convert_state_values(
 
 void read_root_task(std::istream &in) {
     assert(!g_root_task);
-    read_and_verify_version(in);
-    bool use_metric = read_metric(in);
-    vector<ExplicitVariable> variables = read_variables(in);
-    int num_variables = variables.size();
-
-    vector<vector<set<FactPair>>> mutexes = read_mutexes(in, variables);
-
-    vector<int> initial_state_values(num_variables);
-    check_magic(in, "begin_state");
-    for (int i = 0; i < num_variables; ++i) {
-        in >> initial_state_values[i];
-    }
-    check_magic(in, "end_state");
-
-    for (int i = 0; i < num_variables; ++i) {
-        variables[i].axiom_default_value = initial_state_values[i];
-    }
-
-    vector<FactPair> goals = read_goal(in);
-    check_facts(goals, variables);
-    vector<ExplicitOperator> operators = read_actions(in, false, use_metric, variables);
-    vector<ExplicitOperator> axioms = read_actions(in, true, use_metric, variables);
-    g_root_task = make_shared<RootTask>(
-        move(variables),
-        move(mutexes),
-        move(operators),
-        move(axioms),
-        move(initial_state_values),
-        move(goals));
+    g_root_task = make_shared<RootTask>(in);
 }
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {

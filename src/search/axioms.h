@@ -63,4 +63,10 @@ public:
     void evaluate(std::vector<int> &state) const;
 };
 
+/* Create or retrieve an axiom evaluator from cache. If axiom evaluators are
+   created with this function, we build at most one per AbstractTask. */
+// TODO: remove duplication with causal graph.
+extern const AxiomEvaluator &get_axiom_evaluator(const AbstractTask *task);
+
+
 #endif
