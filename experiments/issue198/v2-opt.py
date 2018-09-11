@@ -11,7 +11,7 @@ from relativescatter import RelativeScatterPlotReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue198-base", "issue198-v2"]
+REVISIONS = ["issue198-v2-base", "issue198-v2"]
 CONFIGS = [
     IssueConfig('astar_blind', ['--search', 'astar(blind)']),
     IssueConfig('seq-opt-bjolp', [], driver_options=["--alias", "seq-opt-bjolp"]),
