@@ -100,7 +100,13 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
            always having it "true"), as there is probably no good reason to
            ignore landmark information from previous paths.
         */
-        reached = parent_reached;
+        for (int i = 0; i < reached.size(); ++i) {
+            if (parent_reached.test(i)) {
+                reached.set(i);
+            } else {
+                reached.reset(i);
+            }
+        }
     }
 
     // Mark landmarks reached right now as "reached" (if they are "leaves").

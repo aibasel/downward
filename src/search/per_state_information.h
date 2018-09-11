@@ -27,7 +27,7 @@ public:
   supported and leads to insertion of a default value (similar to the
   defaultdict class in Python).
 
-  For example, search algorithms can use it to associate g values or creating
+  For example, search algorithms can use it to associate g values or create
   operators with a state.
 
   Implementation notes: PerStateInformation is essentially implemented as a
@@ -110,7 +110,6 @@ public:
           cached_entries(nullptr) {
     }
 
-    // No implementation to forbid copies and assignment
     PerStateInformation(const PerStateInformation<Entry> &) = delete;
     PerStateInformation &operator=(const PerStateInformation<Entry> &) = delete;
 
