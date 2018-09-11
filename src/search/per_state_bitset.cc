@@ -1,11 +1,28 @@
 #include "per_state_bitset.h"
 
-#include <climits>
-#include <cmath>
+using namespace std;
 
-// TODO: is move a good idea here?
-BitsetView::BitsetView(ArrayView<Block> data, int num_bits) :
-    data(std::move(data)), num_bits(num_bits) {}
+
+int BitsetMath::compute_num_blocks(size_t num_bits) {
+    return num_bits / bits_per_block +
+            static_cast<int>(num_bits % bits_per_block != 0);
+}
+
+size_t BitsetMath::block_index(size_t pos) {
+    return pos / bits_per_block;
+}
+
+size_t BitsetMath::bit_index(size_t pos) {
+    return pos % bits_per_block;
+}
+
+BitsetMath::Block BitsetMath::bit_mask(size_t pos) {
+    return Block(1) << bit_index(pos);
+}
+
+
+BitsetView::BitsetView(ArrayView<BitsetMath::Block> data, int num_bits) :
+    data(data), num_bits(num_bits) {}
 
 BitsetView::BitsetView(const BitsetView &other)
     : data(other.data), num_bits(other.num_bits) {}
@@ -16,29 +33,29 @@ BitsetView &BitsetView::operator=(const BitsetView &other) {
     return *this;
 }
 
-void BitsetView::set(std::size_t index) {
-    assert(index < array_size);
-    int block_index = BitsetMath<unsigned int>::block_index(index);
-    data[block_index] |= BitsetMath<unsigned int>::bit_mask(index);
+void BitsetView::set(int index) {
+    assert(index >= 0 && index < array_size);
+    int block_index = BitsetMath::block_index(index);
+    data[block_index] |= BitsetMath::bit_mask(index);
 }
 
-void BitsetView::reset(std::size_t index) {
-    assert(index < array_size);
-    int block_index = BitsetMath<unsigned int>::block_index(index);
-    data[block_index] &= ~BitsetMath<unsigned int>::bit_mask(index);
+void BitsetView::reset(int index) {
+    assert(index >= 0 && index < array_size);
+    int block_index = BitsetMath::block_index(index);
+    data[block_index] &= ~BitsetMath::bit_mask(index);
 }
 
 // TODO: can we use fill here? Not sure what ArrayView needs to return for begin and end
 void BitsetView::reset() {
     for (int i = 0; i < data.size(); ++i) {
-        data[i] = BitsetMath<Block>::zeros;
+        data[i] = BitsetMath::zeros;
     }
 }
 
-bool BitsetView::test(std::size_t index) const {
-    assert(index < array_size);
-    int block_index = BitsetMath<unsigned int>::block_index(index);
-    return (data[block_index] & BitsetMath<unsigned int>::bit_mask(index)) != 0;
+bool BitsetView::test(int index) const {
+    assert(index >= 0 && index < array_size);
+    int block_index = BitsetMath::block_index(index);
+    return (data[block_index] & BitsetMath::bit_mask(index)) != 0;
 }
 
 void BitsetView::intersect(const BitsetView &other) {
@@ -53,17 +70,10 @@ int BitsetView::size() const {
 }
 
 
-
-PerStateBitset::PerStateBitset(int array_size)
-    : bitset_size(array_size),
-      int_array_size(BitsetMath<unsigned int>::compute_num_blocks(array_size)),
-      data(int_array_size) {
-}
-
-std::vector<unsigned int> pack_bit_vector(const std::vector<bool> &bits) {
+static vector<unsigned int> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();
-    int num_blocks = BitsetMath<unsigned int>::compute_num_blocks(num_bits);
-    std::vector<unsigned int> packed_bits = std::vector<unsigned int>(num_blocks, 0);
+    int num_blocks = BitsetMath::compute_num_blocks(num_bits);
+    vector<unsigned int> packed_bits = vector<unsigned int>(num_blocks, 0);
     // TODO: this looks ugly
     BitsetView bitset_view =
         BitsetView(ArrayView<unsigned int>(packed_bits.data(), num_blocks), num_bits);
@@ -75,15 +85,14 @@ std::vector<unsigned int> pack_bit_vector(const std::vector<bool> &bits) {
     return packed_bits;
 }
 
-PerStateBitset::PerStateBitset(const std::vector<bool> &default_value)
-    : bitset_size(default_value.size()),
-      int_array_size(BitsetMath<unsigned int>::compute_num_blocks(bitset_size)),
-      data(int_array_size, pack_bit_vector(default_value)) {
+PerStateBitset::PerStateBitset(const vector<bool> &default_bits)
+    : num_blocks(BitsetMath::compute_num_blocks(default_bits.size())),
+      data(pack_bit_vector(default_bits)) {
 }
 
 
 BitsetView PerStateBitset::operator[](const GlobalState &state) {
-    return BitsetView(data[state], int_array_size);
+    return BitsetView(data[state], num_blocks);
 }
 
 // TODO: does this do the right thing?

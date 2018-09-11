@@ -6,9 +6,8 @@ using namespace std;
 
 namespace landmarks {
 /*
-  By default we set all landmarks as reached, since we do an intersection when
-  computing new landmark information. This however necessitates to treat the
-  initial state differently; there we first must "reset" the vector.
+  By default we mark all landmarks as reached, since we do an intersection when
+  computing new landmark information.
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
@@ -22,8 +21,9 @@ BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
     const GlobalState &initial_state) {
-    BitsetView reached = reached_lms[initial_state];
-    reached.reset(); // This is necessary since the default ist "true for all" (see comment above)
+    BitsetView reached = get_reached_landmarks(initial_state);
+    // This is necessary since the default is "true for all" (see comment above).
+    reached.reset();
 
     int inserted = 0;
     int num_goal_lms = 0;
@@ -72,8 +72,8 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
         return false;
     }
 
-    const BitsetView parent_reached = reached_lms[parent_global_state];
-    BitsetView reached = reached_lms[global_state];
+    const BitsetView parent_reached = get_reached_landmarks(parent_global_state);
+    BitsetView reached = get_reached_landmarks(global_state);
 
     int num_landmarks = lm_graph.number_of_landmarks();
     assert(reached.size() == num_landmarks);
@@ -119,7 +119,7 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
 }
 
 bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    const BitsetView reached = reached_lms[global_state];
+    const BitsetView reached = get_reached_landmarks(global_state);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
