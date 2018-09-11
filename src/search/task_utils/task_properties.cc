@@ -12,9 +12,6 @@ using utils::ExitCode;
 
 
 namespace task_properties {
-static unordered_map<const AbstractTask *,
-                     unique_ptr<int_packer::IntPacker>> state_packer_cache;
-
 bool is_unit_cost(TaskProxy task) {
     for (OperatorProxy op : task.get_operators()) {
         if (op.get_cost() != 1)
