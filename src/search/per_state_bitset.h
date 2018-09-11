@@ -30,8 +30,10 @@ class BitsetView {
     int num_bits;
 public:
     BitsetView(ArrayView<BitsetMath::Block> data, int num_bits);
+
     BitsetView(const BitsetView &other);
     BitsetView &operator=(const BitsetView &other);
+
     void set(int index);
     void reset(int index);
     void reset();
@@ -41,12 +43,9 @@ public:
 };
 
 
-// TODO: update usage example 2 in state_registry.h
-
 class PerStateBitset : public PerStateInformationBase {
     int num_blocks;
     PerStateArray<BitsetMath::Block> data;
-
 public:
     explicit PerStateBitset(const std::vector<bool> &default_bits);
 

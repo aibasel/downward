@@ -45,7 +45,6 @@ void BitsetView::reset(int index) {
     data[block_index] &= ~BitsetMath::bit_mask(index);
 }
 
-// TODO: can we use fill here? Not sure what ArrayView needs to return for begin and end
 void BitsetView::reset() {
     for (int i = 0; i < data.size(); ++i) {
         data[i] = BitsetMath::zeros;
@@ -70,13 +69,11 @@ int BitsetView::size() const {
 }
 
 
-static vector<unsigned int> pack_bit_vector(const vector<bool> &bits) {
+static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();
     int num_blocks = BitsetMath::compute_num_blocks(num_bits);
-    vector<unsigned int> packed_bits = vector<unsigned int>(num_blocks, 0);
-    // TODO: this looks ugly
-    BitsetView bitset_view =
-        BitsetView(ArrayView<unsigned int>(packed_bits.data(), num_blocks), num_bits);
+    vector<BitsetMath::Block> packed_bits(num_blocks, 0);
+    BitsetView bitset_view(ArrayView<BitsetMath::Block>(packed_bits.data(), num_blocks), num_bits);
     for (int i = 0; i < num_bits; ++i) {
         if (bits[i]) {
             bitset_view.set(i);
@@ -85,17 +82,16 @@ static vector<unsigned int> pack_bit_vector(const vector<bool> &bits) {
     return packed_bits;
 }
 
+
 PerStateBitset::PerStateBitset(const vector<bool> &default_bits)
     : num_blocks(BitsetMath::compute_num_blocks(default_bits.size())),
       data(pack_bit_vector(default_bits)) {
 }
 
-
 BitsetView PerStateBitset::operator[](const GlobalState &state) {
     return BitsetView(data[state], num_blocks);
 }
 
-// TODO: does this do the right thing?
 void PerStateBitset::remove_state_registry(StateRegistry *registry) {
     data.remove_state_registry(registry);
 }
