@@ -29,7 +29,8 @@ void DocStore::register_plugin(
     doc.doc_factory = doc_factory;
     doc.type_name_factory = type_name_factory;
     doc.key = key;
-    doc.name = "<missing>";
+    // We store key as name here, that we can omit calling document_synopsis.
+    doc.name = key;
     doc.synopsis = "";
     doc.section = section;
     doc.hidden = false;
