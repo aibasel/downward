@@ -11,8 +11,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalOperator;
-class GlobalState;
 class TaskProxy;
 
 namespace options {
@@ -32,8 +30,6 @@ class Heuristic : public Evaluator {
         }
     };
     static_assert(sizeof(HEntry) == 4, "HEntry has unexpected size.");
-
-    std::string description;
 
     /*
       TODO: We might want to get rid of the preferred_operators
@@ -83,24 +79,14 @@ public:
     explicit Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
-    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
-    }
-
-    virtual bool notify_state_transition(
-        const GlobalState &parent_state, const GlobalOperator &op,
-        const GlobalState &state);
-
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
-        hset.insert(this);
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> & /*evals*/) override {
     }
 
     static void add_options_to_parser(options::OptionParser &parser);
-    static options::Options default_options();
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
-
-    std::string get_description() const;
 };
 
 #endif

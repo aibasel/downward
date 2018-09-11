@@ -5,9 +5,8 @@
 #include <vector>
 
 #include "evaluation_context.h"
+#include "operator_id.h"
 
-class GlobalOperator;
-class Heuristic;
 class StateID;
 
 
@@ -90,12 +89,13 @@ public:
     virtual void boost_preferred();
 
     /*
-      Add all heuristics that this open lists uses (directly or
+      Add all path-dependent evaluators that this open lists uses (directly or
       indirectly) into the result set.
 
       TODO: This method can probably go away at some point.
     */
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) = 0;
 
     /*
       Accessor method for only_preferred.
@@ -134,7 +134,7 @@ public:
 
 
 using StateOpenListEntry = StateID;
-using EdgeOpenListEntry = std::pair<StateID, int>;
+using EdgeOpenListEntry = std::pair<StateID, OperatorID>;
 
 using StateOpenList = OpenList<StateOpenListEntry>;
 using EdgeOpenList = OpenList<EdgeOpenListEntry>;

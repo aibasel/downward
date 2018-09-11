@@ -1,7 +1,5 @@
 #include "causal_graph.h"
 
-#include "../global_operator.h"
-#include "../globals.h"
 #include "../task_proxy.h"
 
 #include "../utils/logging.h"

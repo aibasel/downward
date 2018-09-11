@@ -99,6 +99,18 @@ TransitionSystem::TransitionSystem(
     assert(are_transitions_sorted_unique());
 }
 
+TransitionSystem::TransitionSystem(const TransitionSystem &other)
+    : num_variables(other.num_variables),
+      incorporated_variables(other.incorporated_variables),
+      label_equivalence_relation(
+          utils::make_unique_ptr<LabelEquivalenceRelation>(
+              *other.label_equivalence_relation)),
+      transitions_by_group_id(other.transitions_by_group_id),
+      num_states(other.num_states),
+      goal_states(other.goal_states),
+      init_state(other.init_state) {
+}
+
 TransitionSystem::~TransitionSystem() {
 }
 
@@ -112,7 +124,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
              << ts2.get_description() << endl;
     }
 
-    assert(ts1.is_solvable() && ts2.is_solvable());
+    assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
 
     int num_variables = ts1.num_variables;
@@ -174,9 +186,9 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
-            if (transitions1.size() && transitions2.size()
+            if (!transitions1.empty() && !transitions2.empty()
                 && transitions1.size() > new_transitions.max_size() / transitions2.size())
-                utils::exit_with(ExitCode::OUT_OF_MEMORY);
+                utils::exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (const Transition &transition1 : transitions1) {
                 int src1 = transition1.src;
@@ -214,6 +226,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         label_equivalence_relation->add_label_group(dead_labels);
     }
 
+    const bool compute_label_equivalence_relation = false;
     return utils::make_unique_ptr<TransitionSystem>(
         num_variables,
         move(incorporated_variables),
@@ -222,7 +235,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         num_states,
         move(goal_states),
         init_state,
-        false
+        compute_label_equivalence_relation
         );
 }
 
@@ -251,28 +264,20 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     }
 }
 
-bool TransitionSystem::apply_abstraction(
+void TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
     Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
 
     int new_num_states = state_equivalence_relation.size();
-    if (new_num_states == get_size()) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << tag()
-                 << "not applying abstraction (same number of states)" << endl;
-        }
-        return false;
-    }
-
+    assert(new_num_states < num_states);
     if (verbosity >= Verbosity::VERBOSE) {
         cout << tag() << "applying abstraction (" << get_size()
              << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
-
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
         const StateEquivalenceClass &state_equivalence_class =
             state_equivalence_relation[new_state];
@@ -285,7 +290,6 @@ bool TransitionSystem::apply_abstraction(
             }
         }
     }
-
     goal_states = move(new_goal_states);
 
     // Update all transitions.
@@ -323,7 +327,6 @@ bool TransitionSystem::apply_abstraction(
     }
 
     assert(are_transitions_sorted_unique());
-    return true;
 }
 
 void TransitionSystem::apply_label_reduction(
@@ -430,8 +433,14 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
     return true;
 }
 
-bool TransitionSystem::is_solvable() const {
-    return init_state != PRUNED_STATE;
+bool TransitionSystem::is_solvable(const Distances &distances) const {
+    if (init_state == PRUNED_STATE) {
+        return false;
+    }
+    if (distances.are_goal_distances_computed() && distances.get_goal_distance(init_state) == INF) {
+        return false;
+    }
+    return true;
 }
 
 int TransitionSystem::compute_total_transitions() const {
@@ -462,7 +471,7 @@ void TransitionSystem::dump_dot_graph() const {
     cout << "    node [shape = none] start;" << endl;
     for (int i = 0; i < num_states; ++i) {
         bool is_init = (i == init_state);
-        bool is_goal = (goal_states[i] == true);
+        bool is_goal = goal_states[i];
         cout << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
              << "] node" << i << ";" << endl;
         if (is_init)

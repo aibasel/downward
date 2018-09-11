@@ -3,8 +3,6 @@
 
 #include "timer.h"
 
-#include <ostream>
-
 namespace utils {
 class CountdownTimer {
     Timer timer;
@@ -13,12 +11,9 @@ public:
     explicit CountdownTimer(double max_time);
     ~CountdownTimer();
     bool is_expired() const;
-    double get_elapsed_time() const;
-    double get_remaining_time() const;
-    friend std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
+    Duration get_elapsed_time() const;
+    Duration get_remaining_time() const;
 };
-
-std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
 }
 
 #endif

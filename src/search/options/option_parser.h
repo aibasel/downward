@@ -43,7 +43,8 @@ public:
     OptionParser &operator=(const OptionParser &other) = delete;
 
     /* This function initiates parsing of T (the root node of parse_tree will be
-       parsed as T). Usually T=shared_ptr<SearchEngine>, Evaluator* or LandmarkFactory*. */
+       parsed as T). Usually T=shared_ptr<SearchEngine>, Evaluator* or
+       shared_ptr<LandmarkFactory>. */
     template<typename T>
     T start_parsing();
 

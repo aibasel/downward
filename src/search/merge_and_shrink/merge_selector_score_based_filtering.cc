@@ -64,7 +64,7 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
         cerr << "More than one merge candidate remained after computing all "
             "scores! Did you forget to include a uniquely tie-breaking "
             "scoring function, e.g. total_order or single_random?" << endl;
-        utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
     return merge_candidates.front();
@@ -86,6 +86,26 @@ void MergeSelectorScoreBasedFiltering::dump_specific_options() const {
          : merge_scoring_functions) {
         scoring_function->dump_options();
     }
+}
+
+bool MergeSelectorScoreBasedFiltering::requires_init_distances() const {
+    for (const shared_ptr<MergeScoringFunction> &scoring_function
+         : merge_scoring_functions) {
+        if (scoring_function->requires_init_distances()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
+    for (const shared_ptr<MergeScoringFunction> &scoring_function
+         : merge_scoring_functions) {
+        if (scoring_function->requires_goal_distances()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
