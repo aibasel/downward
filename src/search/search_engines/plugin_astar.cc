@@ -15,9 +15,9 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "We break ties using the evaluator. Closed nodes are re-opened.");
     parser.document_note(
         "lazy_evaluator",
-        "When a state s is taken out of the open list, the lazy evaluator h re-evaluates s. "
-        "If h(s) changes (for example because h is path-dependent), "
-        "s is not expanded, but instead reinserted into the open list."
+        "When a state s is taken out of the open list, the lazy evaluator h "
+        "re-evaluates s. If h(s) changes (for example because h is path-dependent), "
+        "s is not expanded, but instead reinserted into the open list. "
         "This option is currently only present for the A* algorithm.");
     parser.document_note(
         "Equivalent statements using general eager search",
@@ -29,7 +29,9 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n", true);
     parser.add_option<Evaluator *>("eval", "evaluator for h-value");
     parser.add_option<Evaluator *>(
-        "lazy_evaluator", "An evaluator that re-evaluates a state before it is expanded", OptionParser::NONE);
+        "lazy_evaluator",
+        "An evaluator that re-evaluates a state before it is expanded.",
+        OptionParser::NONE);
 
     SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
