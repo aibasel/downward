@@ -150,7 +150,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     }
 }
 
-// TODO avoid code duplication
+// TODO avoid code duplication (issue794)
 void AxiomEvaluator::evaluate(vector<int> &state) const {
     if (!task_has_axioms)
         return;
