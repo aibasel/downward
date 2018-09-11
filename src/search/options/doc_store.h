@@ -83,6 +83,7 @@ struct LanguageSupportInfo {
 struct PluginInfo {
     DocFactory doc_factory;
     PluginTypeNameGetter type_name_factory;
+    std::string key;
     std::string name;
     std::string synopsis;
     std::string section;

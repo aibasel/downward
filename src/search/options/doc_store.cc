@@ -8,7 +8,7 @@ using namespace std;
 
 namespace options {
 void PluginInfo::fill_docs() {
-    OptionParser parser(name, true, true);
+    OptionParser parser(key, true, true);
     doc_factory(parser);
 }
 
@@ -28,7 +28,8 @@ void DocStore::register_plugin(
     PluginInfo doc;
     doc.doc_factory = doc_factory;
     doc.type_name_factory = type_name_factory;
-    doc.name = key;
+    doc.key = key;
+    doc.name = "<missing>";
     doc.synopsis = "";
     doc.section = section;
     doc.hidden = false;

@@ -56,7 +56,7 @@ void DocPrinter::print_section(
         os << endl << "= " << section << " =" << endl << endl;
     }
     for (const PluginInfo &info : infos) {
-        print_plugin(info.name, info);
+        print_plugin(info.key, info);
     }
 }
 
