@@ -87,18 +87,15 @@ int get_min_operator_cost(TaskProxy task_proxy) {
     return min_cost;
 }
 
-const int_packer::IntPacker &get_state_packer(const AbstractTask *task) {
-    if (state_packer_cache.count(task) == 0) {
-        TaskProxy task_proxy(*task);
+PerTaskInformation<int_packer::IntPacker> g_state_packers(
+    [](const TaskProxy &task_proxy) {
         VariablesProxy variables = task_proxy.get_variables();
         vector<int> variable_ranges;
         variable_ranges.reserve(variables.size());
         for (VariableProxy var : variables) {
             variable_ranges.push_back(var.get_domain_size());
         }
-        state_packer_cache.insert(
-            make_pair(task, utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges)));
+        return utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges);
     }
-    return *state_packer_cache[task];
-}
+);
 }

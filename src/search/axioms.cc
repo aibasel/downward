@@ -228,11 +228,7 @@ void AxiomEvaluator::evaluate(vector<int> &state) const {
     }
 }
 
-const AxiomEvaluator &get_axiom_evaluator(const AbstractTask *task) {
-    if (axiom_evaluator_cache.count(task) == 0) {
-        TaskProxy task_proxy(*task);
-        axiom_evaluator_cache.insert(
-            make_pair(task, utils::make_unique_ptr<AxiomEvaluator>(task_proxy)));
-    }
-    return *axiom_evaluator_cache[task];
-}
+PerTaskInformation<AxiomEvaluator> g_axiom_evaluators(
+    [](const TaskProxy &task_proxy) {
+        return utils::make_unique_ptr<AxiomEvaluator>(task_proxy);
+    });
