@@ -31,15 +31,14 @@ public:
     virtual bool dead_ends_are_reliable() const;
 
     /*
-      get_path_dependent_evaluators should insert all path-dependent evaluators
-      that this evaluator directly or indirectly depends on into the result set,
-      including itself if necessary.
+      get_path_dependent_evaluators should insert all path-dependent
+      evaluators that this evaluator directly or indirectly depends on
+      into the result set, including itself if necessary.
 
-      TODO: We wanted to get rid of this at some point, and perhaps we
-      still should try to do that. Currently, the only legitimate use
-      for this seems to be to call "notify_state_transition" on all heuristics.
-      (There is also one "illegitimate" use, the remaining reference
-      to heuristics[0] in EagerSearch.)
+      The two notify methods below will be called for these and only
+      these evaluators. In other words, "path-dependent" for our
+      purposes means "needs to be notified of the initial state and
+      state transitions".
     */
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) = 0;
