@@ -14,7 +14,7 @@ public:
         "Block type must be unsigned");
 
     static const Block zeros = Block(0);
-    // MSVC's bitwise negation always returns int.
+    // MSVC's bitwise negation always returns a signed type.
     static const Block ones = Block(~Block(0));
     static const int bits_per_block = std::numeric_limits<Block>::digits;
 
