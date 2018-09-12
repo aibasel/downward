@@ -36,24 +36,24 @@ void DocPrinter::print_plugin(const string &name) {
 void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
     print_category_header(plugin_type_name);
     print_category_synopsis(synopsis);
-    map<string, vector<PluginInfo>> sections;
+    map<string, vector<PluginInfo>> groups;
     DocStore *doc_store = DocStore::instance();
     for (const string &key : doc_store->get_keys()) {
         const PluginInfo &info = doc_store->get(key);
         if (info.get_type_name() == plugin_type_name && !info.hidden) {
-            sections[info.section].push_back(info);
+            groups[info.group].push_back(info);
         }
     }
-    for (const auto &pair: sections) {
+    for (const auto &pair: groups) {
         print_section(pair.first, pair.second);
     }
     print_category_footer();
 }
 
 void DocPrinter::print_section(
-    const string &section, const vector<PluginInfo> &infos) {
-    if (!section.empty()) {
-        os << endl << "= " << section << " =" << endl << endl;
+    const string &group, const vector<PluginInfo> &infos) {
+    if (!group.empty()) {
+        os << endl << "= " << group << " =" << endl << endl;
     }
     for (const PluginInfo &info : infos) {
         print_plugin(info.key, info);

@@ -43,7 +43,7 @@ public:
     Plugin(
         const std::string &key,
         typename Registry<T *>::Factory factory,
-        const std::string &section = "") {
+        const std::string &group = "") {
         Registry<T *>::instance()->insert(key, factory);
         // See comment in PluginShared.
         DocFactory doc_factory = [factory](OptionParser &parser) {
@@ -52,7 +52,7 @@ public:
         PluginTypeNameGetter type_name_factory = [&]() {
                                                      return TypeNamer<T *>::name();
                                                  };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, section);
+        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, group);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
@@ -66,7 +66,7 @@ public:
     PluginShared(
         const std::string &key,
         typename Registry<std::shared_ptr<T>>::Factory factory,
-        const std::string &section = "") {
+        const std::string &group = "") {
         using TPtr = std::shared_ptr<T>;
         Registry<TPtr>::instance()->insert(key, factory);
         /*
@@ -81,7 +81,7 @@ public:
         PluginTypeNameGetter type_name_factory = [&]() {
                                                      return TypeNamer<TPtr>::name();
                                                  };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, section);
+        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, group);
     }
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;
