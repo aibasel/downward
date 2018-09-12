@@ -96,12 +96,12 @@ public:
 
     Node *get_child(int value) const;
 
-    void increase_h_value_to(int new_h) {
+    void increase_evaluator_value_to(int new_h) {
         assert(new_h >= h);
         h = new_h;
     }
 
-    int get_h_value() const {
+    int get_evaluator_value() const {
         return h;
     }
 };

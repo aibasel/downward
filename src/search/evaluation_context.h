@@ -14,7 +14,7 @@ class SearchStatistics;
 /*
   TODO: Now that we have an explicit EvaluationResult class, it's
   perhaps not such a great idea to duplicate all its access methods
-  like "get_heuristic_value()" etc. on EvaluationContext. Might be a
+  like "get_evaluator_value()" etc. on EvaluationContext. Might be a
   simpler interface to just give EvaluationContext an operator[]
   method or other simple way of accessing a given EvaluationResult
   and then use the methods of the result directly.
@@ -90,28 +90,27 @@ public:
 
     ~EvaluationContext() = default;
 
-    const EvaluationResult &get_result(Evaluator *heur);
+    const EvaluationResult &get_result(Evaluator *eval);
     const HeuristicCache &get_cache() const;
     const GlobalState &get_state() const;
     int get_g_value() const;
     bool is_preferred() const;
 
     /*
-      Use get_heuristic_value() to query finite heuristic values. It
+      Use get_evaluator_value() to query finite heuristic values. It
       is an error (guarded by an assertion) to call this method for
       states with infinite heuristic values, because such states often
       need to be treated specially and we want to catch cases where we
       forget to do this.
 
       In cases where finite and infinite heuristic values can be
-      treated uniformly, use get_heuristic_value_or_infinity(), which
+      treated uniformly, use get_evaluator_value_or_infinity(), which
       returns numeric_limits<int>::max() for infinite estimates.
     */
-    bool is_heuristic_infinite(Evaluator *heur);
-    int get_heuristic_value(Evaluator *heur);
-    int get_heuristic_value_or_infinity(Evaluator *heur);
-    const std::vector<OperatorID> &get_preferred_operators(
-        Evaluator *heur);
+    bool is_evaluator_value_infinite(Evaluator *eval);
+    int get_evaluator_value(Evaluator *eval);
+    int get_evaluator_value_or_infinity(Evaluator *eval);
+    const std::vector<OperatorID> &get_preferred_operators(Evaluator *eval);
     bool get_calculate_preferred() const;
 };
 

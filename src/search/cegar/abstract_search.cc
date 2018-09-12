@@ -26,7 +26,7 @@ void AbstractSearch::reset() {
 bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
     reset();
     init->get_search_info().decrease_g_value_to(0);
-    open_queue.push(init->get_h_value(), init);
+    open_queue.push(init->get_evaluator_value(), init);
     AbstractState *goal = astar_search(true, true, &goals);
     bool has_found_solution = static_cast<bool>(goal);
     if (has_found_solution) {
@@ -65,7 +65,7 @@ AbstractState *AbstractSearch::astar_search(
         assert(0 <= g && g < INF);
         int new_f = g;
         if (use_h)
-            new_f += state->get_h_value();
+            new_f += state->get_evaluator_value();
         assert(new_f <= old_f);
         if (new_f < old_f)
             continue;
@@ -89,7 +89,7 @@ AbstractState *AbstractSearch::astar_search(
                 successor->get_search_info().decrease_g_value_to(succ_g);
                 int f = succ_g;
                 if (use_h) {
-                    int h = successor->get_h_value();
+                    int h = successor->get_evaluator_value();
                     if (h == INF)
                         continue;
                     f += h;
@@ -114,7 +114,7 @@ void AbstractSearch::extract_solution(
         assert(utils::in_bounds(prev.op_id, operator_costs));
         const int prev_op_cost = operator_costs[prev.op_id];
         assert(prev_op_cost != INF);
-        prev.target->set_h_value(current->get_h_value() + prev_op_cost);
+        prev.target->set_evaluator_value(current->get_evaluator_value() + prev_op_cost);
         assert(prev.target != current);
         current = prev.target;
     }

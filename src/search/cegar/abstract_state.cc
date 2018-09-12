@@ -104,9 +104,9 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     assert(this->is_more_general_than(*v2));
 
     // Since h-values only increase we can assign the h-value to the children.
-    int h = node->get_h_value();
-    v1->set_h_value(h);
-    v2->set_h_value(h);
+    int h = node->get_evaluator_value();
+    v1->set_evaluator_value(h);
+    v2->set_evaluator_value(h);
 
     return make_pair(v1, v2);
 }
@@ -140,14 +140,14 @@ bool AbstractState::is_more_general_than(const AbstractState &other) const {
     return domains.is_superset_of(other.domains);
 }
 
-void AbstractState::set_h_value(int new_h) {
+void AbstractState::set_evaluator_value(int new_h) {
     assert(node);
-    node->increase_h_value_to(new_h);
+    node->increase_evaluator_value_to(new_h);
 }
 
-int AbstractState::get_h_value() const {
+int AbstractState::get_evaluator_value() const {
     assert(node);
-    return node->get_h_value();
+    return node->get_evaluator_value();
 }
 
 AbstractState *AbstractState::get_trivial_abstract_state(
