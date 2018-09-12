@@ -1,8 +1,8 @@
 #include "eager_search.h"
 
 #include "../evaluation_context.h"
+#include "../evaluator.h"
 #include "../globals.h"
-#include "../heuristic.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../pruning_method.h"
@@ -25,7 +25,7 @@ EagerSearch::EagerSearch(const Options &opts)
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
       f_evaluator(opts.get<Evaluator *>("f_eval", nullptr)),
-      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
+      preferred_operator_heuristics(opts.get_list<Evaluator *>("preferred")),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
 
@@ -43,7 +43,7 @@ void EagerSearch::initialize() {
 
     // Collect path-dependent evaluators that are used for preferred operators
     // (in case they are not also used in the open list).
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
+    for (Evaluator *heuristic : preferred_operator_heuristics) {
         heuristic->get_path_dependent_evaluators(evals);
     }
 
