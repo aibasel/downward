@@ -10,4 +10,11 @@ void register_plugin_type_plugin(
     PluginTypeInfo info(type_index(type), type_name, documentation);
     PluginTypeRegistry::instance()->insert(info);
 }
+
+PluginGroupPlugin::PluginGroupPlugin(const std::string &group_id,
+                                     const std::string &doc_title) {
+    PluginGroupInfo info { group_id, doc_title };
+    PluginGroupRegistry::instance()->insert(info);
+}
+
 }
