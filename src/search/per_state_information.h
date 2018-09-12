@@ -48,8 +48,8 @@ public:
 template<class Entry>
 class PerStateInformation : public PerStateInformationBase {
     const Entry default_value;
-    typedef std::unordered_map<const StateRegistry *,
-                               segmented_vector::SegmentedVector<Entry> * > EntryVectorMap;
+    using EntryVectorMap = std::unordered_map<const StateRegistry *,
+                                              segmented_vector::SegmentedVector<Entry> * >;
     EntryVectorMap entries_by_registry;
 
     mutable const StateRegistry *cached_registry;
@@ -64,7 +64,7 @@ class PerStateInformation : public PerStateInformationBase {
     segmented_vector::SegmentedVector<Entry> *get_entries(const StateRegistry *registry) {
         if (cached_registry != registry) {
             cached_registry = registry;
-            typename EntryVectorMap::const_iterator it = entries_by_registry.find(registry);
+            auto it = entries_by_registry.find(registry);
             if (it == entries_by_registry.end()) {
                 cached_entries = new segmented_vector::SegmentedVector<Entry>();
                 entries_by_registry[registry] = cached_entries;
@@ -114,10 +114,9 @@ public:
     PerStateInformation &operator=(const PerStateInformation<Entry> &) = delete;
 
     ~PerStateInformation() {
-        for (typename EntryVectorMap::iterator it = entries_by_registry.begin();
-             it != entries_by_registry.end(); ++it) {
-            it->first->unsubscribe(this);
-            delete it->second;
+        for (auto it : entries_by_registry) {
+            it.first->unsubscribe(this);
+            delete it.second;
         }
     }
 
