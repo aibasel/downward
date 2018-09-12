@@ -86,7 +86,7 @@ struct PluginInfo {
     std::string key;
     std::string name;
     std::string synopsis;
-    std::string section;
+    std::string group;
     std::vector<ArgumentInfo> arg_help;
     std::vector<PropertyInfo> property_help;
     std::vector<LanguageSupportInfo> support_help;
@@ -115,7 +115,7 @@ public:
         const std::string &key,
         DocFactory factory,
         PluginTypeNameGetter type_name_factory,
-        const std::string &section);
+        const std::string &group);
 
     void add_arg(
         const std::string &key,

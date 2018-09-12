@@ -21,7 +21,7 @@ void DocStore::register_plugin(
     const string &key,
     DocFactory doc_factory,
     PluginTypeNameGetter type_name_factory,
-    const string &section) {
+    const string &group) {
     if (plugin_infos.count(key)) {
         ABORT("DocStore already contains a plugin with name \"" + key + "\"");
     }
@@ -32,7 +32,7 @@ void DocStore::register_plugin(
     // Plugin names can be set with document_synopsis. Otherwise, we use the key.
     doc.name = key;
     doc.synopsis = "";
-    doc.section = section;
+    doc.group = group;
     doc.hidden = false;
     plugin_infos[key] = doc;
 }
