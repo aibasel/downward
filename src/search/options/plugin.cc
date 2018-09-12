@@ -11,10 +11,9 @@ void register_plugin_type_plugin(
     PluginTypeRegistry::instance()->insert(info);
 }
 
-PluginGroupPlugin::PluginGroupPlugin(const std::string &group_id,
-                                     const std::string &doc_title) {
-    PluginGroupInfo info { group_id, doc_title };
+PluginGroupPlugin::PluginGroupPlugin(const string &group_id,
+                                     const string &doc_title) {
+    PluginGroupInfo info {group_id, doc_title};
     PluginGroupRegistry::instance()->insert(info);
 }
-
 }
