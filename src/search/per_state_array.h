@@ -14,14 +14,10 @@ class ArrayView {
     T *p;
     int size_;
 public:
-    ArrayView(T *p, size_t size) : p(p), size_(size) {}
-    ArrayView(const ArrayView<T> &other) : p(other.p), size_(other.size_) {}
+    ArrayView(T *p, int size) : p(p), size_(size) {}
+    ArrayView(const ArrayView<T> &other) = default;
 
-    ArrayView<T> &operator=(const ArrayView<T> &other) {
-        p = other.p;
-        size_ = other.size_;
-        return *this;
-    }
+    ArrayView<T> &operator=(const ArrayView<T> &other) = default;
 
     T &operator[](int index) {
         assert(index >= 0 && index < size_);
@@ -62,7 +58,7 @@ class PerStateArray : public PerStateInformationBase {
     segmented_vector::SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) {
         if (cached_registry != registry) {
             cached_registry = registry;
-            const auto it = entry_arrays_by_registry.find(registry);
+            auto it = entry_arrays_by_registry.find(registry);
             if (it == entry_arrays_by_registry.end()) {
                 cached_entries = new segmented_vector::SegmentedArrayVector<Element>(
                     default_array.size());
@@ -116,12 +112,12 @@ public:
         size_t virtual_size = registry->size();
         assert(utils::in_bounds(state_id, *registry));
         if (entries->size() < virtual_size) {
-            entries->resize(virtual_size, &default_array[0]);
+            entries->resize(virtual_size, default_array.data());
         }
         return ArrayView<Element>((*entries)[state_id], default_array.size());
     }
 
-    void remove_state_registry(StateRegistry *registry) {
+    virtual void remove_state_registry(StateRegistry *registry) override {
         delete entry_arrays_by_registry[registry];
         entry_arrays_by_registry.erase(registry);
         if (registry == cached_registry) {

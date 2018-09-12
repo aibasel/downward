@@ -31,8 +31,8 @@ class BitsetView {
 public:
     BitsetView(ArrayView<BitsetMath::Block> data, int num_bits);
 
-    BitsetView(const BitsetView &other);
-    BitsetView &operator=(const BitsetView &other);
+    BitsetView(const BitsetView &other) = default;
+    BitsetView &operator=(const BitsetView &other) = default;
 
     void set(int index);
     void reset(int index);
@@ -53,7 +53,7 @@ public:
     PerStateBitset &operator=(const PerStateBitset &) = delete;
 
     BitsetView operator[](const GlobalState &state);
-    void remove_state_registry(StateRegistry *registry);
+    virtual void remove_state_registry(StateRegistry *registry) override;
 };
 
 #endif

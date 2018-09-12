@@ -4,8 +4,7 @@ using namespace std;
 
 
 int BitsetMath::compute_num_blocks(size_t num_bits) {
-    return num_bits / bits_per_block +
-            static_cast<int>(num_bits % bits_per_block != 0);
+    return (num_bits + bits_per_block - 1) / bits_per_block;
 }
 
 size_t BitsetMath::block_index(size_t pos) {
@@ -24,14 +23,6 @@ BitsetMath::Block BitsetMath::bit_mask(size_t pos) {
 BitsetView::BitsetView(ArrayView<BitsetMath::Block> data, int num_bits) :
     data(data), num_bits(num_bits) {}
 
-BitsetView::BitsetView(const BitsetView &other)
-    : data(other.data), num_bits(other.num_bits) {}
-
-BitsetView &BitsetView::operator=(const BitsetView &other) {
-    data = other.data;
-    num_bits = other.num_bits;
-    return *this;
-}
 
 void BitsetView::set(int index) {
     assert(index >= 0 && index < array_size);
