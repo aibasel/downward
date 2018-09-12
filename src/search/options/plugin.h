@@ -36,6 +36,15 @@ public:
 };
 
 
+class PluginGroupPlugin {
+public:
+    PluginGroupPlugin(const std::string &group_id,
+                      const std::string &doc_title);
+    ~PluginGroupPlugin() = default;
+
+    PluginGroupPlugin(const PluginGroupPlugin &other) = delete;
+};
+
 
 template<typename T>
 class Plugin {
