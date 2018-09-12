@@ -117,6 +117,17 @@ public:
         return ArrayView<Element>((*entries)[state_id], default_array.size());
     }
 
+    void operator[](const GlobalState &state) const {
+        ABORT("PerStateArray::operator[] const not implemented. "
+              "See source code for more information.");
+        /*
+          This method is not implemented because it is currently not used and
+          would require quite a bit of boilerplate, introducing a ConstArrayView
+          class similar to ArrayView. If you need it, it should be easy to
+          implement based on PerStateInformation:operator[] const.
+        */
+    }
+
     virtual void remove_state_registry(StateRegistry *registry) override {
         delete entry_arrays_by_registry[registry];
         entry_arrays_by_registry.erase(registry);
