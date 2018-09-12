@@ -20,7 +20,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         OptionParser::NONE);
     parser.add_list_option<Evaluator *>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these evaluators", "[]");
 
     SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);

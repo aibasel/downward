@@ -71,7 +71,7 @@ public:
 };
 
 /*
-  Print heuristic values of all heuristics evaluated in the evaluation context.
+  Print evaluator values of all evaluators evaluated in the evaluation context.
 */
 extern void print_initial_evaluator_values(const EvaluationContext &eval_context);
 
