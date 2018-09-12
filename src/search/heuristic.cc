@@ -97,6 +97,18 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
+bool Heuristic::does_cache_estimates() const {
+    return cache_h_values;
+}
+
+bool Heuristic::is_estimate_cached(const GlobalState &state) const {
+    return heuristic_cache[state].h != NO_VALUE;
+}
+
+int Heuristic::get_cached_estimate(const GlobalState &state) const {
+    assert(is_estimate_cached(state));
+    return heuristic_cache[state].h;
+}
 
 static PluginTypePlugin<Heuristic> _type_plugin(
     "Heuristic",

@@ -37,7 +37,7 @@ public:
     explicit TypeBasedOpenList(const Options &opts);
     virtual ~TypeBasedOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
@@ -74,17 +74,11 @@ TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
 }
 
 template<class Entry>
-Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
+Entry TypeBasedOpenList<Entry>::remove_min() {
     size_t bucket_id = (*rng)(keys_and_buckets.size());
     auto &key_and_bucket = keys_and_buckets[bucket_id];
     const Key &min_key = key_and_bucket.first;
     Bucket &bucket = key_and_bucket.second;
-
-    if (key) {
-        assert(key->empty());
-        *key = min_key;
-    }
-
     int pos = (*rng)(bucket.size());
     Entry result = utils::swap_and_pop_from_vector(bucket, pos);
 

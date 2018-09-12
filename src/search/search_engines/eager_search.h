@@ -18,13 +18,13 @@ class Options;
 namespace eager_search {
 class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
-    const bool use_multi_path_dependence;
 
     std::unique_ptr<StateOpenList> open_list;
     Evaluator *f_evaluator;
 
     std::vector<Evaluator *> path_dependent_evaluators;
     std::vector<Heuristic *> preferred_operator_heuristics;
+    Evaluator *lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
 
