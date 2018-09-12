@@ -147,7 +147,7 @@ public:
         return (*entries)[state_id];
     }
 
-    void remove_state_registry(StateRegistry *registry) {
+    virtual void remove_state_registry(StateRegistry *registry) override {
         delete entries_by_registry[registry];
         entries_by_registry.erase(registry);
         if (registry == cached_registry) {
