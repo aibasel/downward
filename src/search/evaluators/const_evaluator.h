@@ -14,7 +14,7 @@ protected:
 public:
     explicit ConstEvaluator(const options::Options &opts);
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &) override {};
+        std::set<Evaluator *> &) override {}
     virtual ~ConstEvaluator() override = default;
 };
 }
