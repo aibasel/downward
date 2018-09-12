@@ -48,7 +48,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n--search eager(single(eval1))\n```\n", true);
 
     parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<Evaluator *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
     parser.add_option<int>(
