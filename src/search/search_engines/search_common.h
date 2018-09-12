@@ -42,11 +42,11 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
   object to construct an open list factory of the appropriate type.
 
   This is usually an alternation open list with:
-  - one sublist for each heuristic, considering all successors
-  - one sublist for each heuristic, considering only preferred successors
+  - one sublist for each evaluator, considering all successors
+  - one sublist for each evaluator, considering only preferred successors
 
   However, the preferred-only open lists are omitted if no preferred
-  operator heuristics are used, and if there would only be one sublist
+  operator evaluators are used, and if there would only be one sublist
   for the alternation open list, then that sublist is returned
   directly.
 */

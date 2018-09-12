@@ -205,15 +205,15 @@ SearchStatus EagerSearch::step() {
                   necessary, thus avoiding the incredible ugliness of
                   the old "set_evaluator_value" approach, which also
                   did not generalize properly to settings with more
-                  than one heuristic.
+                  than one evaluator.
 
                   Reopening should not happen all that frequently, so
                   the performance impact of this is hopefully not that
-                  large. In the medium term, we want the heuristics to
-                  remember heuristic values for states themselves if
+                  large. In the medium term, we want the evaluators to
+                  remember evaluator values for states themselves if
                   desired by the user, so that such recomputations
-                  will just involve a look-up by the Heuristic object
-                  rather than a recomputation of the heuristic value
+                  will just involve a look-up by the Evaluator object
+                  rather than a recomputation of the evaluator value
                   from scratch.
                 */
                 open_list->insert(eval_context, succ_state.get_id());

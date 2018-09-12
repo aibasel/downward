@@ -278,7 +278,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "PRUNE_BY_PREFERRED");
     parser.add_list_option<Evaluator *>(
         "preferred",
-        "use preferred operators of these heuristics",
+        "use preferred operators of these evaluators",
         "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();

@@ -13,7 +13,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Evaluator *>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these evaluators", "[]");
     SearchEngine::add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
