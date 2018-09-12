@@ -11,8 +11,7 @@ namespace landmarks {
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
-      lm_graph(graph),
-      do_intersection(true) {
+      lm_graph(graph) {
 }
 
 BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
@@ -79,35 +78,18 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
     assert(reached.size() == num_landmarks);
     assert(parent_reached.size() == num_landmarks);
 
-    if (do_intersection) {
-        /*
-           Set all landmarks not reached by this parent as "not reached".
-           Over multiple paths, this has the effect of computing the intersection
-           of "reached" for the parents. It is important here that upon first visit,
-           all elements in "reached" are true because true is the neutral element
-           of intersection.
+    /*
+       Set all landmarks not reached by this parent as "not reached".
+       Over multiple paths, this has the effect of computing the intersection
+       of "reached" for the parents. It is important here that upon first visit,
+       all elements in "reached" are true because true is the neutral element
+       of intersection.
 
-           In the case where the landmark we are setting to false here is actually
-           achieved right now, it is set to "true" again below.
-        */
-        reached.intersect(parent_reached);
-    } else {
-        /*
-           Copy "reached" information of the parent. This means that if a state
-           is visited on multiple paths, we always keep track of the *last* path
-           we explored. This is probably an implementation accident. In the long
-           run, we might want to consider getting rid of do_intersection (i.e.,
-           always having it "true"), as there is probably no good reason to
-           ignore landmark information from previous paths.
-        */
-        for (int i = 0; i < reached.size(); ++i) {
-            if (parent_reached.test(i)) {
-                reached.set(i);
-            } else {
-                reached.reset(i);
-            }
-        }
-    }
+       In the case where the landmark we are setting to false here is actually
+       achieved right now, it is set to "true" again below.
+    */
+    reached.intersect(parent_reached);
+
 
     // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
