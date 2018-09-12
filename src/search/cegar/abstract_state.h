@@ -118,8 +118,8 @@ public:
 
     bool includes(const State &concrete_state) const;
 
-    void set_h_value(int new_h);
-    int get_h_value() const;
+    void set_evaluator_value(int new_h);
+    int get_evaluator_value() const;
 
     const Transitions &get_outgoing_transitions() const {
         return outgoing_transitions;

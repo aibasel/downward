@@ -26,7 +26,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
           purpose, shouldn't the constructor take care of this?
         */
         vector<Evaluator *> preferred_list = opts.get_list<Evaluator *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
+        engine->set_preferred_operator_evaluators(preferred_list);
     }
 
     return engine;

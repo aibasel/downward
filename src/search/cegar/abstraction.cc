@@ -288,15 +288,15 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
 void Abstraction::update_h_and_g_values() {
     abstract_search.backwards_dijkstra(goals);
     for (AbstractState *state : states) {
-        state->set_h_value(state->get_search_info().get_g_value());
+        state->set_evaluator_value(state->get_search_info().get_g_value());
     }
     // Update g values.
     // TODO: updating h values overwrites g values. Find better solution.
     abstract_search.forward_dijkstra(init);
 }
 
-int Abstraction::get_h_value_of_initial_state() const {
-    return init->get_h_value();
+int Abstraction::get_evaluator_value_of_initial_state() const {
+    return init->get_evaluator_value();
 }
 
 vector<int> Abstraction::get_saturated_costs() {
@@ -306,7 +306,7 @@ vector<int> Abstraction::get_saturated_costs() {
     vector<int> saturated_costs(num_ops, min_cost);
     for (AbstractState *state : states) {
         const int g = state->get_search_info().get_g_value();
-        const int h = state->get_h_value();
+        const int h = state->get_evaluator_value();
 
         /*
           No need to maintain goal distances of unreachable (g == INF)
@@ -322,7 +322,7 @@ vector<int> Abstraction::get_saturated_costs() {
         for (const Transition &transition: state->get_outgoing_transitions()) {
             int op_id = transition.op_id;
             AbstractState *successor = transition.target;
-            const int succ_h = successor->get_h_value();
+            const int succ_h = successor->get_evaluator_value();
 
             if (succ_h == INF)
                 continue;
@@ -348,7 +348,7 @@ void Abstraction::print_statistics() {
     int total_loops = 0;
     int dead_ends = 0;
     for (AbstractState *state : states) {
-        if (state->get_h_value() == INF)
+        if (state->get_evaluator_value() == INF)
             ++dead_ends;
         total_incoming_transitions += state->get_incoming_transitions().size();
         total_outgoing_transitions += state->get_outgoing_transitions().size();
@@ -363,7 +363,7 @@ void Abstraction::print_statistics() {
     cout << "Total operator cost: " << total_cost << endl;
     cout << "States: " << get_num_states() << endl;
     cout << "Dead ends: " << dead_ends << endl;
-    cout << "Init h: " << get_h_value_of_initial_state() << endl;
+    cout << "Init h: " << get_evaluator_value_of_initial_state() << endl;
 
     assert(transition_updater.get_num_loops() == total_loops);
     assert(transition_updater.get_num_non_loops() == total_outgoing_transitions);

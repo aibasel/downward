@@ -73,10 +73,10 @@ public:
 /*
   Print heuristic values of all heuristics evaluated in the evaluation context.
 */
-extern void print_initial_h_values(const EvaluationContext &eval_context);
+extern void print_initial_evaluator_values(const EvaluationContext &eval_context);
 
 extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
-    const std::vector<Evaluator *> &preferred_operator_heuristics);
+    const std::vector<Evaluator *> &preferred_operator_evaluators);
 
 #endif

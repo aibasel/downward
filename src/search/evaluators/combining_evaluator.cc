@@ -31,9 +31,9 @@ EvaluationResult CombiningEvaluator::compute_result(
 
     // Collect component values. Return infinity if any is infinite.
     for (Evaluator *subevaluator : subevaluators) {
-        int h_val = eval_context.get_heuristic_value_or_infinity(subevaluator);
+        int h_val = eval_context.get_evaluator_value_or_infinity(subevaluator);
         if (h_val == EvaluationResult::INFTY) {
-            result.set_h_value(h_val);
+            result.set_evaluator_value(h_val);
             return result;
         } else {
             values.push_back(h_val);
@@ -41,7 +41,7 @@ EvaluationResult CombiningEvaluator::compute_result(
     }
 
     // If we arrived here, all subevaluator values are finite.
-    result.set_h_value(combine_values(values));
+    result.set_evaluator_value(combine_values(values));
     return result;
 }
 

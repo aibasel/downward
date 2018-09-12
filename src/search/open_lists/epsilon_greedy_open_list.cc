@@ -76,7 +76,7 @@ template<class Entry>
 void EpsilonGreedyOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     heap.emplace_back(
-        next_id++, eval_context.get_heuristic_value(evaluator), entry);
+        next_id++, eval_context.get_evaluator_value(evaluator), entry);
     push_heap(heap.begin(), heap.end(), greater<HeapNode>());
     ++size;
 }
@@ -109,7 +109,7 @@ Entry EpsilonGreedyOpenList<Entry>::remove_min() {
 template<class Entry>
 bool EpsilonGreedyOpenList<Entry>::is_dead_end(
     EvaluationContext &eval_context) const {
-    return eval_context.is_heuristic_infinite(evaluator);
+    return eval_context.is_evaluator_value_infinite(evaluator);
 }
 
 template<class Entry>

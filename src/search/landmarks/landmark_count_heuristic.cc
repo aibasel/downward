@@ -32,7 +32,7 @@ static Options get_exploration_options(
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      exploration(get_exploration_options(task, cache_h_values)),
+      exploration(get_exploration_options(task, cache_evaluator_values)),
       use_preferred_operators(opts.get<bool>("pref")),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
@@ -112,7 +112,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     int h = -1;
 
     if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value();
+        double h_val = lm_cost_assignment->cost_sharing_evaluator_value();
         h = static_cast<int>(ceil(h_val - epsilon));
     } else {
         lgraph->count_costs();
@@ -266,7 +266,7 @@ void LandmarkCountHeuristic::notify_state_transition(
     const GlobalState &parent_state, OperatorID op_id,
     const GlobalState &state) {
     lm_status_manager->update_reached_lms(parent_state, op_id, state);
-    if (cache_h_values) {
+    if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the reached landmark
            set has actually changed and only then mark the h value as dirty. */
         heuristic_cache[state].dirty = true;
