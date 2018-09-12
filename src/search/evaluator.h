@@ -84,6 +84,14 @@ public:
     bool is_used_for_reporting_minima() const;
     bool is_used_for_boosting() const;
     bool is_used_for_counting_evaluations() const;
+
+    virtual bool does_cache_estimates() const;
+    virtual bool is_estimate_cached(const GlobalState &state) const;
+    /*
+      Calling get_cached_estimate is only allowed if an estimate for
+      the given state is cached, i.e., is_estimate_cached returns true.
+    */
+    virtual int get_cached_estimate(const GlobalState &state) const;
 };
 
 #endif

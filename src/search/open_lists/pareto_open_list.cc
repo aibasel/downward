@@ -47,7 +47,7 @@ public:
     explicit ParetoOpenList(const Options &opts);
     virtual ~ParetoOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
@@ -157,7 +157,7 @@ void ParetoOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry ParetoOpenList<Entry>::remove_min(vector<int> *key) {
+Entry ParetoOpenList<Entry>::remove_min() {
     typename KeySet::iterator selected = nondominated.begin();
     int seen = 0;
     for (typename KeySet::iterator it = nondominated.begin();
@@ -171,11 +171,6 @@ Entry ParetoOpenList<Entry>::remove_min(vector<int> *key) {
         if ((*rng)(seen) < numerator)
             selected = it;
     }
-    if (key) {
-        assert(key->empty());
-        *key = *selected;
-    }
-
     Bucket &bucket = buckets[*selected];
     Entry result = bucket.front();
     bucket.pop_front();

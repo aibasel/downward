@@ -11,8 +11,10 @@ def configs_optimal_core():
             "--search",
             "astar(ipdb)"],
         "astar_lmcount_lm_merged_rhw_hm": [
+            "--heuristic",
+            "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
             "--search",
-            "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),mpd=true)"],
+            "astar(lmc,lazy_evaluator=lmc)"],
         "astar_lmcut": [
             "--search",
             "astar(lmcut)"],
@@ -117,8 +119,10 @@ def configs_satisficing_ipc():
 def configs_optimal_extended():
     return {
         "astar_lmcount_lm_merged_rhw_hm_no_order": [
+            "--heuristic",
+            "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
             "--search",
-            "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),mpd=true)"],
+            "astar(lmc,lazy_evaluator=lmc)"],
         "astar_cegar": [
             "--search",
             "astar(cegar())"],

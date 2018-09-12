@@ -28,7 +28,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
-        opts.set<bool>("mpd", false);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
 
