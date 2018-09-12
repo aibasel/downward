@@ -44,6 +44,20 @@ void DocPrinter::print_category(const string &plugin_type_name, const string &sy
             groups[info.group].push_back(info);
         }
     }
+    /*
+      Note on sorting: Because we use a map keyed on the group IDs,
+      the sections are sorted by these IDs. For the time being, this
+      seems as good as any other order. For the future, we might
+      consider influencing the sort order by adding a sort priority
+      item to PluginGroupPlugin.
+
+      Note on empty groups: if a group is not used (i.e., has no
+      plug-ins inside it), then it does not appear in the
+      documentation. This is intentional. For example, it means that
+      we could introduce groups in "core code" that may or may not be
+      used by plug-ins, and if they are not used, they do not clutter the
+      documentation.
+     */
     for (const auto &pair: groups) {
         print_section(pair.first, pair.second);
     }
@@ -51,9 +65,11 @@ void DocPrinter::print_category(const string &plugin_type_name, const string &sy
 }
 
 void DocPrinter::print_section(
-    const string &group, const vector<PluginInfo> &infos) {
-    if (!group.empty()) {
-        os << endl << "= " << group << " =" << endl << endl;
+    const string &group_id, const vector<PluginInfo> &infos) {
+    if (!group_id.empty()) {
+        const PluginGroupInfo &group =
+            PluginGroupRegistry::instance()->get(group_id);
+        os << endl << "= " << group.doc_title << " =" << endl << endl;
     }
     for (const PluginInfo &info : infos) {
         print_plugin(info.key, info);
