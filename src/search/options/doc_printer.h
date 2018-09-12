@@ -3,12 +3,14 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace options {
 struct PluginInfo;
 
 class DocPrinter {
     virtual void print_category(const std::string &plugin_type_name, const std::string &synopsis);
+    virtual void print_section(const std::string &group, const std::vector<PluginInfo> &infos);
     virtual void print_plugin(const std::string &name, const PluginInfo &info);
 
 protected:
