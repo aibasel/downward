@@ -18,7 +18,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
         OptionParser::NONE);
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<Evaluator *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
 

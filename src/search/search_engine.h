@@ -12,8 +12,6 @@
 
 #include <vector>
 
-class Heuristic;
-
 namespace options {
 class OptionParser;
 class Options;
@@ -79,6 +77,6 @@ extern void print_initial_h_values(const EvaluationContext &eval_context);
 
 extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
-    const std::vector<Heuristic *> &preferred_operator_heuristics);
+    const std::vector<Evaluator *> &preferred_operator_heuristics);
 
 #endif
