@@ -44,7 +44,7 @@ public:
 
 
 class PerStateBitset : public PerStateInformationBase {
-    int num_blocks;
+    int num_bits_per_entry;
     PerStateArray<BitsetMath::Block> data;
 public:
     explicit PerStateBitset(const std::vector<bool> &default_bits);

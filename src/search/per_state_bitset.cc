@@ -75,12 +75,12 @@ static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
 
 
 PerStateBitset::PerStateBitset(const vector<bool> &default_bits)
-    : num_blocks(BitsetMath::compute_num_blocks(default_bits.size())),
+    : num_bits_per_entry(default_bits.size()),
       data(pack_bit_vector(default_bits)) {
 }
 
 BitsetView PerStateBitset::operator[](const GlobalState &state) {
-    return BitsetView(data[state], num_blocks);
+    return BitsetView(data[state], num_bits_per_entry);
 }
 
 void PerStateBitset::remove_state_registry(StateRegistry *registry) {
