@@ -31,12 +31,12 @@ EvaluationResult WeightedEvaluator::compute_result(
     EvaluationContext &eval_context) {
     // Note that this produces no preferred operators.
     EvaluationResult result;
-    int h_val = eval_context.get_heuristic_value_or_infinity(evaluator);
-    if (h_val != EvaluationResult::INFTY) {
+    int value = eval_context.get_evaluator_value_or_infinity(evaluator);
+    if (value != EvaluationResult::INFTY) {
         // TODO: Check for overflow?
-        h_val *= w;
+        value *= w;
     }
-    result.set_h_value(h_val);
+    result.set_evaluator_value(value);
     return result;
 }
 

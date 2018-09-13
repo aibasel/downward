@@ -14,7 +14,7 @@ namespace landmarks {
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
       master(dynamic_cast<LamaSynergyHeuristic *>(
-                 opts.get<Heuristic *>("lama_synergy_heuristic"))) {
+                 opts.get<Evaluator *>("lama_synergy_heuristic"))) {
     cout << "Initializing LAMA-FF synergy slave" << endl;
     if (!master) {
         cerr << "ff_synergy requires a lama_synergy heuristic" << endl;
@@ -32,7 +32,7 @@ EvaluationResult FFSynergyHeuristic::compute_result(
        either case, the result is subsequently available in the
        master object.
     */
-    eval_context.get_heuristic_value_or_infinity(master);
+    eval_context.get_evaluator_value_or_infinity(master);
     return master->ff_result;
 }
 
@@ -41,7 +41,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "LAMA-FF synergy slave",
         "See Heuristic#LAMA-FF_synergy_master for the "
         "LAMA-FF synergy master.");
-    parser.add_option<Heuristic *>(
+    parser.add_option<Evaluator *>(
         "lama_synergy_heuristic",
         "The heuristic used here has to be an instance of the LAMA-FF synergy "
         "master, which can be achieved using the option name lama_synergy. "

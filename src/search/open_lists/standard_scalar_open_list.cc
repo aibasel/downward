@@ -32,7 +32,7 @@ public:
     StandardScalarOpenList(Evaluator *eval, bool preferred_only);
     virtual ~StandardScalarOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
@@ -61,21 +61,16 @@ StandardScalarOpenList<Entry>::StandardScalarOpenList(
 template<class Entry>
 void StandardScalarOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    int key = eval_context.get_heuristic_value(evaluator);
+    int key = eval_context.get_evaluator_value(evaluator);
     buckets[key].push_back(entry);
     ++size;
 }
 
 template<class Entry>
-Entry StandardScalarOpenList<Entry>::remove_min(vector<int> *key) {
+Entry StandardScalarOpenList<Entry>::remove_min() {
     assert(size > 0);
     auto it = buckets.begin();
     assert(it != buckets.end());
-    if (key) {
-        assert(key->empty());
-        key->push_back(it->first);
-    }
-
     Bucket &bucket = it->second;
     assert(!bucket.empty());
     Entry result = bucket.front();
@@ -106,7 +101,7 @@ void StandardScalarOpenList<Entry>::get_path_dependent_evaluators(
 template<class Entry>
 bool StandardScalarOpenList<Entry>::is_dead_end(
     EvaluationContext &eval_context) const {
-    return eval_context.is_heuristic_infinite(evaluator);
+    return eval_context.is_evaluator_value_infinite(evaluator);
 }
 
 template<class Entry>

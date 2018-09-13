@@ -42,9 +42,9 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
 */
 static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
     const vector<Evaluator *> &evals,
-    const vector<Heuristic *> &preferred_heuristics,
+    const vector<Evaluator *> &preferred_evaluators,
     int boost) {
-    if (evals.size() == 1 && preferred_heuristics.empty()) {
+    if (evals.size() == 1 && preferred_evaluators.empty()) {
         return create_standard_scalar_open_list_factory(evals[0], false);
     } else {
         vector<shared_ptr<OpenListFactory>> subfactories;
@@ -52,7 +52,7 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
             subfactories.push_back(
                 create_standard_scalar_open_list_factory(
                     evaluator, false));
-            if (!preferred_heuristics.empty()) {
+            if (!preferred_evaluators.empty()) {
                 subfactories.push_back(
                     create_standard_scalar_open_list_factory(
                         evaluator, true));
@@ -66,7 +66,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
     const Options &options) {
     return create_alternation_open_list_factory_aux(
         options.get_list<Evaluator *>("evals"),
-        options.get_list<Heuristic *>("preferred"),
+        options.get_list<Evaluator *>("preferred"),
         options.get<int>("boost"));
 }
 
@@ -77,7 +77,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 1, we do not introduce an unnecessary weighted evaluator:
   we use g + h instead of g + 1 * h.
 
-  If w = 0, we omit the heuristic altogether:
+  If w = 0, we omit the h-evaluator altogether:
   we use g instead of g + 0 * h.
 */
 static Evaluator *create_wastar_eval(GEval *g_eval, int w, Evaluator *h_eval) {
@@ -105,7 +105,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
     return create_alternation_open_list_factory_aux(
         f_evals,
-        options.get_list<Heuristic *>("preferred"),
+        options.get_list<Evaluator *>("preferred"),
         options.get<int>("boost"));
 }
 

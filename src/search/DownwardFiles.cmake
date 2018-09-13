@@ -63,6 +63,8 @@ fast_downward_plugin(
         operator_id
         option_parser
         option_parser_util
+        per_state_array
+        per_state_bitset
         per_state_information
         per_task_information
         plan_manager
@@ -693,6 +695,7 @@ fast_downward_plugin(
         pdbs/pattern_generator_manual
         pdbs/pattern_generator
         pdbs/pdb_heuristic
+        pdbs/plugin_group
         pdbs/types
         pdbs/validation
         pdbs/zero_one_pdbs
