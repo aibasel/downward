@@ -4,7 +4,7 @@
 #include "../evaluator.h"
 
 namespace options {
-    class Options;
+class Options;
 }
 
 namespace const_evaluator {
