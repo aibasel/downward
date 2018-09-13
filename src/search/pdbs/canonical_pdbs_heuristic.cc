@@ -99,5 +99,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new CanonicalPDBsHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("cpdbs", _parse, "heuristics_pdb");
+static Plugin<Evaluator> _plugin("cpdbs", _parse, "heuristics_pdb");
 }

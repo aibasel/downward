@@ -309,5 +309,5 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<Heuristic> _plugin("cg", _parse);
+static Plugin<Evaluator> _plugin("cg", _parse);
 }

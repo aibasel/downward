@@ -93,5 +93,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new LamaSynergyHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("lama_synergy", _parse);
+static Plugin<Evaluator> _plugin("lama_synergy", _parse);
 }
