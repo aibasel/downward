@@ -6,6 +6,7 @@
 
 #include "../global_state.h"
 #include "../option_parser.h"
+#include "../per_state_bitset.h"
 #include "../plugin.h"
 
 #include "../lp/lp_solver.h"
@@ -87,8 +88,8 @@ LandmarkCountHeuristic::~LandmarkCountHeuristic() {
 
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &global_state) {
     // Set additional goals for FF exploration
-    LandmarkSet reached_landmarks = convert_to_landmark_set(
-        lm_status_manager->get_reached_landmarks(global_state));
+    BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
+    LandmarkSet reached_landmarks = convert_to_landmark_set(landmark_info);
     vector<FactPair> lm_leaves = collect_lm_leaves(
         ff_search_disjunctive_lms, reached_landmarks);
     exploration.set_additional_goals(lm_leaves);
@@ -146,8 +147,8 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     // reached within next step, helpful actions are those occuring in a plan
     // to achieve one of the LM leaves.
 
-    LandmarkSet reached_lms = convert_to_landmark_set(
-        lm_status_manager->get_reached_landmarks(global_state));
+    BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
+    LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
 
     int num_reached = reached_lms.size();
     if (num_reached == lgraph->number_of_landmarks() ||
@@ -281,10 +282,10 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
 // functions in this class that use LandmarkSets for the reached LMs
 // (HACK).
 LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
-    const vector<bool> &landmark_vector) {
+    const BitsetView &landmark_bitset) {
     LandmarkSet landmark_set;
-    for (size_t i = 0; i < landmark_vector.size(); ++i)
-        if (landmark_vector[i])
+    for (int i = 0; i < landmark_bitset.size(); ++i)
+        if (landmark_bitset.test(i))
             landmark_set.insert(lgraph->get_lm_for_index(i));
     return landmark_set;
 }
