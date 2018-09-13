@@ -225,7 +225,4 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
     }
 }
 
-PerTaskInformation<AxiomEvaluator> g_axiom_evaluators(
-    [](const TaskProxy &task_proxy) {
-        return utils::make_unique_ptr<AxiomEvaluator>(task_proxy);
-    });
+PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
