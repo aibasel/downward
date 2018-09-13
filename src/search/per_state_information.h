@@ -6,19 +6,11 @@
 #include "state_registry.h"
 
 #include "algorithms/segmented_vector.h"
+#include "algorithms/subscriber.h"
 #include "utils/collections.h"
 
 #include <cassert>
 #include <unordered_map>
-
-class PerStateInformationBase {
-    friend class StateRegistry;
-    virtual void remove_state_registry(StateRegistry *registry) = 0;
-public:
-    PerStateInformationBase() {
-    }
-    virtual ~PerStateInformationBase() {}
-};
 
 /*
   PerStateInformation is used to associate information with states.
@@ -47,7 +39,7 @@ public:
   in that registry.
 */
 template<class Entry>
-class PerStateInformation : public PerStateInformationBase {
+class PerStateInformation : public subscriber::Subscriber<StateRegistry> {
     const Entry default_value;
     typedef std::unordered_map<const StateRegistry *,
                                segmented_vector::SegmentedVector<Entry> * > EntryVectorMap;
@@ -149,7 +141,7 @@ public:
         return (*entries)[state_id];
     }
 
-    void remove_state_registry(StateRegistry *registry) {
+    virtual void notify_service_destroyed(const StateRegistry *registry) override {
         delete entries_by_registry[registry];
         entries_by_registry.erase(registry);
         if (registry == cached_registry) {

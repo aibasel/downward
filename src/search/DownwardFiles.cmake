@@ -77,7 +77,7 @@ fast_downward_plugin(
         state_registry
         task_proxy
 
-    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
+    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES SUBSCRIBER
     CORE_PLUGIN
 )
 
@@ -225,6 +225,14 @@ fast_downward_plugin(
     HELP "Memory-friendly and vector-like data structure"
     SOURCES
         algorithms/segmented_vector
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME SUBSCRIBER
+    HELP "Allows object to subscribe to the destructor of other objects"
+    SOURCES
+        algorithms/subscriber
     DEPENDENCY_ONLY
 )
 
