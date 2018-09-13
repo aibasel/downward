@@ -16,9 +16,9 @@ EvaluationResult PrefEvaluator::compute_result(
     EvaluationContext &eval_context) {
     EvaluationResult result;
     if (eval_context.is_preferred())
-        result.set_h_value(0);
+        result.set_evaluator_value(0);
     else
-        result.set_h_value(1);
+        result.set_evaluator_value(1);
     return result;
 }
 

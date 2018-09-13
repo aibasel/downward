@@ -33,13 +33,14 @@ def _parse_plan(plan_filename):
 
 
 class PlanManager(object):
-    def __init__(self, plan_prefix, portfolio_bound=None):
+    def __init__(self, plan_prefix, portfolio_bound=None, single_plan=False):
         self._plan_prefix = plan_prefix
         self._plan_costs = []
         self._problem_type = None
         if portfolio_bound is None:
             portfolio_bound = "infinity"
         self._portfolio_bound = portfolio_bound
+        self._single_plan = single_plan
 
     def get_plan_prefix(self):
         return self._plan_prefix
@@ -59,6 +60,9 @@ class PlanManager(object):
             return self._plan_costs[-1]
         else:
             return self._portfolio_bound
+
+    def abort_portfolio_after_first_plan(self):
+        return self._single_plan
 
     def get_problem_type(self):
         if self._problem_type is None:
