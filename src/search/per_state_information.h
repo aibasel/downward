@@ -105,9 +105,8 @@ public:
     PerStateInformation(const PerStateInformation<Entry> &) = delete;
     PerStateInformation &operator=(const PerStateInformation<Entry> &) = delete;
 
-    ~PerStateInformation() {
+    virtual ~PerStateInformation() override {
         for (auto it : entries_by_registry) {
-            it.first->unsubscribe(this);
             delete it.second;
         }
     }

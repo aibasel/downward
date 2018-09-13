@@ -98,9 +98,8 @@ public:
     PerStateArray(const PerStateArray<Element> &) = delete;
     PerStateArray &operator=(const PerStateArray<Element> &) = delete;
 
-    ~PerStateArray() {
+    virtual ~PerStateArray() override {
         for (auto it : entry_arrays_by_registry) {
-            it.first->unsubscribe(this);
             delete it.second;
         }
     }

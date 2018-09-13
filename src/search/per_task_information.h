@@ -26,12 +26,6 @@ public:
         : entry_constructor(default_constructor) {
     }
 
-    ~PerTaskInformation() {
-        for (auto &it : entries) {
-            it.first->unsubscribe(this);
-        }
-    }
-
     Entry &operator[](const AbstractTask *task) {
         const auto &it = entries.find(task);
         if (it == entries.end()) {
