@@ -136,5 +136,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new AdditiveCartesianHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("cegar", _parse);
+static Plugin<Evaluator> _plugin("cegar", _parse);
 }

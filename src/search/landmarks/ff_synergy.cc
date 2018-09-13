@@ -64,5 +64,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new FFSynergyHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("ff_synergy", _parse);
+static Plugin<Evaluator> _plugin("ff_synergy", _parse);
 }

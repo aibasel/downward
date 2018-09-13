@@ -58,5 +58,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new LandmarkCutHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("lmcut", _parse);
+static Plugin<Evaluator> _plugin("lmcut", _parse);
 }
