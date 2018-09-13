@@ -166,7 +166,7 @@ class StateRegistry {
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
 public:
-    StateRegistry(const AbstractTask &task);
+    explicit StateRegistry(const AbstractTask &task);
     ~StateRegistry();
 
     /* TODO: Ideally, this should return a TaskProxy. (See comment above the

@@ -1,8 +1,8 @@
 #include "axioms.h"
 
 #include "algorithms/int_packer.h"
-#include "utils/memory.h"
 #include "task_utils/task_properties.h"
+#include "utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
