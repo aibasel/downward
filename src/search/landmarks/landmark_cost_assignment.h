@@ -25,7 +25,7 @@ public:
                            const LandmarkGraph &graph);
     virtual ~LandmarkCostAssignment() = default;
 
-    virtual double cost_sharing_evaluator_value() = 0;
+    virtual double cost_sharing_h_value() = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
@@ -35,7 +35,7 @@ public:
                                         const LandmarkGraph &graph,
                                         bool use_action_landmarks);
 
-    virtual double cost_sharing_evaluator_value() override;
+    virtual double cost_sharing_h_value() override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
@@ -54,7 +54,7 @@ public:
                                                  const LandmarkGraph &graph,
                                                  lp::LPSolverType solver_type);
 
-    virtual double cost_sharing_evaluator_value() override;
+    virtual double cost_sharing_h_value() override;
 };
 }
 
