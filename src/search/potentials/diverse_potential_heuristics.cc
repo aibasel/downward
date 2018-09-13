@@ -156,5 +156,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new PotentialMaxHeuristic(opts, factory.find_functions());
 }
 
-static Plugin<Heuristic> _plugin("diverse_potentials", _parse);
+static Plugin<Evaluator> _plugin("diverse_potentials", _parse);
 }

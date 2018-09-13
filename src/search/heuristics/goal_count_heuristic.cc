@@ -47,5 +47,5 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<Heuristic> _plugin("goalcount", _parse);
+static Plugin<Evaluator> _plugin("goalcount", _parse);
 }
