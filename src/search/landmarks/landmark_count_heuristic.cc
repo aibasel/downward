@@ -112,7 +112,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     int h = -1;
 
     if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_evaluator_value();
+        double h_val = lm_cost_assignment->cost_sharing_h_value();
         h = static_cast<int>(ceil(h_val - epsilon));
     } else {
         lgraph->count_costs();

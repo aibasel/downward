@@ -189,7 +189,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
 
 pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
     const vector<State> &samples,
-    const vector<int> &samples_evaluator_values,
+    const vector<int> &samples_h_values,
     PDBCollection &candidate_pdbs) {
     /*
       TODO: The original implementation by Haslum et al. uses A* to compute
@@ -237,8 +237,8 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
             current_pdbs->get_max_additive_subsets(pdb->get_pattern());
         for (int sample_id = 0; sample_id < num_samples; ++sample_id) {
             const State &sample = samples[sample_id];
-            assert(utils::in_bounds(sample_id, samples_evaluator_values));
-            int h_collection = samples_evaluator_values[sample_id];
+            assert(utils::in_bounds(sample_id, samples_h_values));
+            int h_collection = samples_h_values[sample_id];
             if (is_heuristic_improved(
                     *pdb, sample, h_collection, max_additive_subsets)) {
                 ++count;
@@ -328,7 +328,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     successor_generator::SuccessorGenerator successor_generator(task_proxy);
 
     vector<State> samples;
-    vector<int> samples_evaluator_values;
+    vector<int> samples_h_values;
 
     try {
         while (true) {
@@ -345,15 +345,15 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             }
 
             samples.clear();
-            samples_evaluator_values.clear();
+            samples_h_values.clear();
             sample_states(
                 task_proxy, successor_generator, samples, average_operator_cost);
             for (const State &sample : samples) {
-                samples_evaluator_values.push_back(current_pdbs->get_value(sample));
+                samples_h_values.push_back(current_pdbs->get_value(sample));
             }
 
             pair<int, int> improvement_and_index =
-                find_best_improving_pdb(samples, samples_evaluator_values, candidate_pdbs);
+                find_best_improving_pdb(samples, samples_h_values, candidate_pdbs);
             int improvement = improvement_and_index.first;
             int best_pdb_index = improvement_and_index.second;
 

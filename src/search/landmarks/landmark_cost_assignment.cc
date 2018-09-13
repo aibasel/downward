@@ -39,7 +39,7 @@ LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
 }
 
 
-double LandmarkUniformSharedCostAssignment::cost_sharing_evaluator_value() {
+double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
     vector<bool> action_landmarks(operator_costs.size(), false);
 
@@ -148,7 +148,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
 }
 
 
-double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_evaluator_value() {
+double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     /* TODO: We could also do the same thing with action landmarks we
              do in the uniform cost partitioning case. */
 
