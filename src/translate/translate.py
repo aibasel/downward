@@ -711,10 +711,10 @@ def handle_sigxcpu(signum, stackframe):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGXCPU, handle_sigxcpu)
-    # Reserve about 10 MB (in Python 2) of emergency memory.
-    # https://stackoverflow.com/questions/19469608/
-    emergency_memory = "x" * 10**7
     try:
+        # Reserve about 10 MB (in Python 2) of emergency memory.
+        # https://stackoverflow.com/questions/19469608/
+        emergency_memory = "x" * 10**7
         main()
     except MemoryError:
         emergency_memory = ""

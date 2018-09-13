@@ -531,7 +531,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "the differences between the original implementation from 2007 and the "
         "new one in Fast Downward.\n\n"
         "The aim of the algorithm is to output a pattern collection for which "
-        "the Heuristic#Canonical_PDB yields the best heuristic estimates.\n\n"
+        "the Evaluator#Canonical_PDB yields the best heuristic estimates.\n\n"
         "The algorithm is basically a local search (hill climbing) which "
         "searches the \"pattern neighbourhood\" (starting initially with a "
         "pattern for each goal variable) for improving the pattern collection. "

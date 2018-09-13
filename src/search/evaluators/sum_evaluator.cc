@@ -45,5 +45,5 @@ static Evaluator *_parse(OptionParser &parser) {
         return new SumEvaluator(opts);
 }
 
-static Plugin<Evaluator> _plugin("sum", _parse, "evaluator_basic");
+static Plugin<Evaluator> _plugin("sum", _parse, "evaluators_basic");
 }
