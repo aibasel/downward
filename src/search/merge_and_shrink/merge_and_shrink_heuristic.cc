@@ -628,5 +628,5 @@ static Heuristic *_parse(OptionParser &parser) {
     }
 }
 
-static Plugin<Heuristic> _plugin("merge_and_shrink", _parse);
+static Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
 }

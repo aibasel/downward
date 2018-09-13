@@ -615,6 +615,6 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     return new CanonicalPDBsHeuristic(heuristic_opts);
 }
 
-static Plugin<Heuristic> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
+static Plugin<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
 static PluginShared<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
 }

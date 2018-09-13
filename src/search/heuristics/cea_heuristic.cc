@@ -466,5 +466,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new ContextEnhancedAdditiveHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("cea", _parse);
+static Plugin<Evaluator> _plugin("cea", _parse);
 }
