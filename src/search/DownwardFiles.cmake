@@ -684,6 +684,7 @@ fast_downward_plugin(
         pdbs/pattern_generator_manual
         pdbs/pattern_generator
         pdbs/pdb_heuristic
+        pdbs/plugin_group
         pdbs/types
         pdbs/validation
         pdbs/zero_one_pdbs

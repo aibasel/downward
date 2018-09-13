@@ -48,7 +48,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n--search eager(single(eval1))\n```\n", true);
 
     parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<Evaluator *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
     parser.add_option<int>(
@@ -65,7 +65,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
-        opts.set("mpd", false);
         Evaluator *evaluator = nullptr;
         opts.set("f_eval", evaluator);
         engine = make_shared<eager_search::EagerSearch>(opts);

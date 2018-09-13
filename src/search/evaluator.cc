@@ -2,6 +2,8 @@
 
 #include "plugin.h"
 
+#include "utils/system.h"
+
 #include <cassert>
 
 using namespace std;
@@ -53,6 +55,17 @@ bool Evaluator::is_used_for_counting_evaluations() const {
     return use_for_counting_evaluations;
 }
 
+bool Evaluator::does_cache_estimates() const {
+    return false;
+}
+
+bool Evaluator::is_estimate_cached(const GlobalState &) const {
+    return false;
+}
+
+int Evaluator::get_cached_estimate(const GlobalState &) const {
+    ABORT("Called get_cached_estimate when estimate is not cached.");
+}
 
 static PluginTypePlugin<Evaluator> _type_plugin(
     "Evaluator",

@@ -56,7 +56,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         true);
 
     parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<Evaluator *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "true");
@@ -75,7 +75,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         opts.set("open", search_common::create_wastar_open_list_factory(opts));
         engine = make_shared<lazy_search::LazySearch>(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
+        vector<Evaluator *> preferred_list = opts.get_list<Evaluator *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
