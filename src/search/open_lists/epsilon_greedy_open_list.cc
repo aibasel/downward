@@ -49,7 +49,7 @@ public:
     explicit EpsilonGreedyOpenList(const Options &opts);
     virtual ~EpsilonGreedyOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
@@ -76,7 +76,7 @@ template<class Entry>
 void EpsilonGreedyOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     heap.emplace_back(
-        next_id++, eval_context.get_heuristic_value(evaluator), entry);
+        next_id++, eval_context.get_evaluator_value(evaluator), entry);
     push_heap(heap.begin(), heap.end(), greater<HeapNode>());
     ++size;
 }
@@ -92,7 +92,7 @@ EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const Options &opts)
 }
 
 template<class Entry>
-Entry EpsilonGreedyOpenList<Entry>::remove_min(vector<int> *key) {
+Entry EpsilonGreedyOpenList<Entry>::remove_min() {
     assert(size > 0);
     if ((*rng)() < epsilon) {
         int pos = (*rng)(size);
@@ -102,10 +102,6 @@ Entry EpsilonGreedyOpenList<Entry>::remove_min(vector<int> *key) {
     pop_heap(heap.begin(), heap.end(), greater<HeapNode>());
     HeapNode heap_node = heap.back();
     heap.pop_back();
-    if (key) {
-        assert(key->empty());
-        key->push_back(heap_node.h);
-    }
     --size;
     return heap_node.entry;
 }
@@ -113,7 +109,7 @@ Entry EpsilonGreedyOpenList<Entry>::remove_min(vector<int> *key) {
 template<class Entry>
 bool EpsilonGreedyOpenList<Entry>::is_dead_end(
     EvaluationContext &eval_context) const {
-    return eval_context.is_heuristic_infinite(evaluator);
+    return eval_context.is_evaluator_value_infinite(evaluator);
 }
 
 template<class Entry>

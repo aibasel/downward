@@ -38,9 +38,9 @@ LazySearch::LazySearch(const Options &opts)
     */
 }
 
-void LazySearch::set_pref_operator_heuristics(
-    vector<Heuristic *> &heur) {
-    preferred_operator_heuristics = heur;
+void LazySearch::set_preferred_operator_evaluators(
+    vector<Evaluator *> &evaluators) {
+    preferred_operator_evaluators = evaluators;
 }
 
 void LazySearch::initialize() {
@@ -50,10 +50,10 @@ void LazySearch::initialize() {
     set<Evaluator *> evals;
     open_list->get_path_dependent_evaluators(evals);
 
-    // Add heuristics that are used for preferred operators (in case they are
+    // Add evaluators that are used for preferred operators (in case they are
     // not also used in the open list).
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
-        heuristic->get_path_dependent_evaluators(evals);
+    for (Evaluator *evaluator : preferred_operator_evaluators) {
+        evaluator->get_path_dependent_evaluators(evals);
     }
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
@@ -90,7 +90,7 @@ vector<OperatorID> LazySearch::get_successor_operators(
 void LazySearch::generate_successors() {
     ordered_set::OrderedSet<OperatorID> preferred_operators =
         collect_preferred_operators(
-            current_eval_context, preferred_operator_heuristics);
+            current_eval_context, preferred_operator_evaluators);
     if (randomize_successors) {
         preferred_operators.shuffle(*rng);
     }
@@ -169,7 +169,7 @@ SearchStatus LazySearch::step() {
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
-            // TODO: Generalize code for using multiple heuristics.
+            // TODO: Generalize code for using multiple evaluators.
             if (current_predecessor_id == StateID::no_state) {
                 node.open_initial();
                 if (search_progress.check_progress(current_eval_context))
@@ -199,7 +199,7 @@ SearchStatus LazySearch::step() {
             statistics.inc_dead_ends();
         }
         if (current_predecessor_id == StateID::no_state) {
-            print_initial_h_values(current_eval_context);
+            print_initial_evaluator_values(current_eval_context);
         }
     }
     return fetch_next_state();

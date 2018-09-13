@@ -66,7 +66,7 @@ struct Flaw {
 };
 
 Abstraction::Abstraction(
-    const shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     int max_states,
     int max_non_looping_transitions,
     double max_time,

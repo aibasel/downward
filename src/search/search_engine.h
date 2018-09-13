@@ -12,8 +12,6 @@
 
 #include <vector>
 
-class Heuristic;
-
 namespace options {
 class OptionParser;
 class Options;
@@ -60,10 +58,10 @@ public:
     SearchStatus get_status() const;
     const Plan &get_plan() const;
     void search();
-    const SearchStatistics &get_statistics() const {return statistics; }
-    void set_bound(int b) {bound = b; }
-    int get_bound() {return bound; }
-    PlanManager &get_plan_manager() {return plan_manager; }
+    const SearchStatistics &get_statistics() const {return statistics;}
+    void set_bound(int b) {bound = b;}
+    int get_bound() {return bound;}
+    PlanManager &get_plan_manager() {return plan_manager;}
 
     /* The following three methods should become functions as they
        do not require access to private/protected class members. */
@@ -73,12 +71,12 @@ public:
 };
 
 /*
-  Print heuristic values of all heuristics evaluated in the evaluation context.
+  Print evaluator values of all evaluators evaluated in the evaluation context.
 */
-extern void print_initial_h_values(const EvaluationContext &eval_context);
+extern void print_initial_evaluator_values(const EvaluationContext &eval_context);
 
 extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
-    const std::vector<Heuristic *> &preferred_operator_heuristics);
+    const std::vector<Evaluator *> &preferred_operator_evaluators);
 
 #endif

@@ -42,9 +42,9 @@ int main(int, char **) {
     cout << endl;
     benchmark("times()",
               NUM_ITERATIONS,
-              [&]() {get_time_with_times(); });
+              [&]() {get_time_with_times();});
     benchmark("clock_gettime()",
               NUM_ITERATIONS,
-              [&]() {get_time_with_clock_gettime(); });
+              [&]() {get_time_with_clock_gettime();});
     return 0;
 }

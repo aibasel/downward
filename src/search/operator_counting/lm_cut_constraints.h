@@ -14,7 +14,7 @@ class LMCutConstraints : public ConstraintGenerator {
     std::unique_ptr<lm_cut_heuristic::LandmarkCutLandmarks> landmark_generator;
 public:
     virtual void initialize_constraints(
-        const std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> &task,
         std::vector<lp::LPConstraint> &constraints,
         double infinity) override;
     virtual bool update_constraints(const State &state,
