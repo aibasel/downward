@@ -57,5 +57,5 @@ static Evaluator *_parse(OptionParser &parser) {
         return new WeightedEvaluator(opts);
 }
 
-static Plugin<Evaluator> _plugin("weight", _parse);
+static Plugin<Evaluator> _plugin("weight", _parse, "evaluator_basic");
 }

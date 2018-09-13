@@ -59,11 +59,11 @@ static pair<string, string> split_predefinition(const string &arg) {
   Predefine landmarks and heuristics.
 */
 
-static void predefine_heuristic(const string &arg, bool dry_run) {
+static void predefine_evaluator(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split_predefinition(arg);
     OptionParser parser(predefinition.second, dry_run);
-    Predefinitions<Heuristic *>::instance()->predefine(
-        predefinition.first, parser.start_parsing<Heuristic *>());
+    Predefinitions<Evaluator *>::instance()->predefine(
+        predefinition.first, parser.start_parsing<Evaluator *>());
 }
 
 static void predefine_lmgraph(const string &arg, bool dry_run) {
@@ -182,7 +182,7 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine_heuristic(sanitize_argument(args[i]), dry_run);
+            predefine_evaluator(sanitize_argument(args[i]), dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
