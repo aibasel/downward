@@ -327,6 +327,9 @@ def parse_args():
     driver_other.add_argument(
         "--portfolio-bound", metavar="VALUE", default=None, type=int,
         help="exclusive bound on plan costs (only supported for satisficing portfolios)")
+    driver_other.add_argument(
+        "--portfolio-single-plan", action="store_true",
+        help="abort satisficing portfolio after finding the first plan")
 
     driver_other.add_argument(
         "--cleanup", action="store_true",
@@ -374,6 +377,8 @@ def parse_args():
         parser.error("--portfolio-bound may only be used for portfolios.")
     if args.portfolio_bound is not None and args.portfolio_bound < 0:
         parser.error("--portfolio-bound must not be negative.")
+    if args.portfolio_single_plan and not args.portfolio:
+        parser.error("--portfolio-single_plan may only be used for portfolios.")
 
     if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)

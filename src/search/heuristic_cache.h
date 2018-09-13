@@ -21,7 +21,7 @@ public:
     explicit HeuristicCache(const GlobalState &state);
     ~HeuristicCache() = default;
 
-    EvaluationResult &operator[](Evaluator *heur);
+    EvaluationResult &operator[](Evaluator *eval);
 
     const GlobalState &get_state() const;
 
