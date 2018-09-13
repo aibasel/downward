@@ -125,5 +125,5 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<Heuristic> _plugin("hmax", _parse);
+static Plugin<Evaluator> _plugin("hmax", _parse);
 }
