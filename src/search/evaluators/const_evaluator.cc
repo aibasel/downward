@@ -31,5 +31,5 @@ static Evaluator *_parse(OptionParser &parser) {
         return new ConstEvaluator(opts);
 }
 
-static Plugin<Evaluator> _plugin("const", _parse, "evaluator_basic");
+static Plugin<Evaluator> _plugin("const", _parse, "evaluators_basic");
 }
