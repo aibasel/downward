@@ -257,7 +257,7 @@ fast_downward_plugin(
     HELP "The combining evaluator"
     SOURCES
         evaluators/combining_evaluator
-    DEPENDS EVALUATORS_PLUGIN_GROUP
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
