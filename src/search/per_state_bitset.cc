@@ -25,13 +25,13 @@ BitsetView::BitsetView(ArrayView<BitsetMath::Block> data, int num_bits) :
 
 
 void BitsetView::set(int index) {
-    assert(index >= 0 && index < array_size);
+    assert(index >= 0 && index < num_bits);
     int block_index = BitsetMath::block_index(index);
     data[block_index] |= BitsetMath::bit_mask(index);
 }
 
 void BitsetView::reset(int index) {
-    assert(index >= 0 && index < array_size);
+    assert(index >= 0 && index < num_bits);
     int block_index = BitsetMath::block_index(index);
     data[block_index] &= ~BitsetMath::bit_mask(index);
 }
@@ -43,13 +43,13 @@ void BitsetView::reset() {
 }
 
 bool BitsetView::test(int index) const {
-    assert(index >= 0 && index < array_size);
+    assert(index >= 0 && index < num_bits);
     int block_index = BitsetMath::block_index(index);
     return (data[block_index] & BitsetMath::bit_mask(index)) != 0;
 }
 
 void BitsetView::intersect(const BitsetView &other) {
-    assert(array_size == other.array_size);
+    assert(num_bits == other.num_bits);
     for (int i = 0; i < data.size(); ++i) {
         data[i] &= other.data[i];
     }
