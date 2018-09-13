@@ -1,5 +1,5 @@
-#ifndef ALGORITHMS_SUBSCRIBER
-#define ALGORITHMS_SUBSCRIBER
+#ifndef ALGORITHMS_SUBSCRIBER_H
+#define ALGORITHMS_SUBSCRIBER_H
 
 #include <unordered_set>
 
