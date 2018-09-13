@@ -23,5 +23,5 @@ static Evaluator *_parse(OptionParser &parser) {
         return new GEvaluator;
 }
 
-static Plugin<Evaluator> _plugin("g", _parse);
+static Plugin<Evaluator> _plugin("g", _parse, "evaluator_basic");
 }
