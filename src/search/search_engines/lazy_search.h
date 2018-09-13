@@ -15,8 +15,6 @@
 #include <memory>
 #include <vector>
 
-class Heuristic;
-
 namespace options {
 class Options;
 }
