@@ -18,7 +18,7 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : Evaluator(opts.get_unparsed_config(), true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
-      cache_h_values(opts.get<bool>("cache_estimates")),
+      cache_evaluator_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task) {
 }
@@ -54,13 +54,13 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     int heuristic = NO_VALUE;
 
-    if (!calculate_preferred && cache_h_values &&
+    if (!calculate_preferred && cache_evaluator_values &&
         heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
         heuristic = heuristic_cache[state].h;
         result.set_count_evaluation(false);
     } else {
         heuristic = compute_heuristic(state);
-        if (cache_h_values) {
+        if (cache_evaluator_values) {
             heuristic_cache[state] = HEntry(heuristic, false);
         }
         result.set_count_evaluation(true);
@@ -90,7 +90,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     }
 #endif
 
-    result.set_h_value(heuristic);
+    result.set_evaluator_value(heuristic);
     result.set_preferred_operators(preferred_operators.pop_as_vector());
     assert(preferred_operators.empty());
 
@@ -98,7 +98,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 }
 
 bool Heuristic::does_cache_estimates() const {
-    return cache_h_values;
+    return cache_evaluator_values;
 }
 
 bool Heuristic::is_estimate_cached(const GlobalState &state) const {

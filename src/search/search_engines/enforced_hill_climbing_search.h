@@ -31,8 +31,8 @@ enum class PreferredUsage {
 class EnforcedHillClimbingSearch : public SearchEngine {
     std::unique_ptr<EdgeOpenList> open_list;
 
-    Evaluator *heuristic;
-    std::vector<Evaluator *> preferred_operator_heuristics;
+    Evaluator *evaluator;
+    std::vector<Evaluator *> preferred_operator_evaluators;
     std::set<Evaluator *> path_dependent_evaluators;
     bool use_preferred;
     PreferredUsage preferred_usage;

@@ -126,7 +126,7 @@ void ParetoOpenList<Entry>::do_insertion(
     vector<int> key;
     key.reserve(evaluators.size());
     for (Evaluator *evaluator : evaluators)
-        key.push_back(eval_context.get_heuristic_value_or_infinity(evaluator));
+        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator));
 
     Bucket &bucket = buckets[key];
     bool newkey = bucket.empty();
@@ -206,7 +206,7 @@ bool ParetoOpenList<Entry>::is_dead_end(
         return true;
     // Otherwise, return true if all heuristics agree this is a dead-end.
     for (Evaluator *evaluator : evaluators)
-        if (!eval_context.is_heuristic_infinite(evaluator))
+        if (!eval_context.is_evaluator_value_infinite(evaluator))
             return false;
     return true;
 }
@@ -215,7 +215,7 @@ template<class Entry>
 bool ParetoOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (Evaluator *evaluator : evaluators)
-        if (eval_context.is_heuristic_infinite(evaluator) &&
+        if (eval_context.is_evaluator_value_infinite(evaluator) &&
             evaluator->dead_ends_are_reliable())
             return true;
     return false;
