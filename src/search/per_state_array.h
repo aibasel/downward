@@ -117,7 +117,7 @@ public:
         return ArrayView<Element>((*entries)[state_id], default_array.size());
     }
 
-    ArrayView<Element> operator[](const GlobalState &state) const {
+    ArrayView<Element> operator[](const GlobalState &) const {
         ABORT("PerStateArray::operator[] const not implemented. "
               "See source code for more information.");
         /*
