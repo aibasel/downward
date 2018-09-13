@@ -41,7 +41,7 @@ public:
     explicit TieBreakingOpenList(const Options &opts);
     virtual ~TieBreakingOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
@@ -65,24 +65,20 @@ void TieBreakingOpenList<Entry>::do_insertion(
     vector<int> key;
     key.reserve(evaluators.size());
     for (Evaluator *evaluator : evaluators)
-        key.push_back(eval_context.get_heuristic_value_or_infinity(evaluator));
+        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator));
 
     buckets[key].push_back(entry);
     ++size;
 }
 
 template<class Entry>
-Entry TieBreakingOpenList<Entry>::remove_min(vector<int> *key) {
+Entry TieBreakingOpenList<Entry>::remove_min() {
     assert(size > 0);
     typename map<const vector<int>, Bucket>::iterator it;
     it = buckets.begin();
     assert(it != buckets.end());
     assert(!it->second.empty());
     --size;
-    if (key) {
-        assert(key->empty());
-        *key = it->first;
-    }
     Entry result = it->second.front();
     it->second.pop_front();
     if (it->second.empty())
@@ -123,11 +119,11 @@ bool TieBreakingOpenList<Entry>::is_dead_end(
     // If the first heuristic detects a dead-end and we allow "unsafe
     // pruning", return true.
     if (allow_unsafe_pruning &&
-        eval_context.is_heuristic_infinite(evaluators[0]))
+        eval_context.is_evaluator_value_infinite(evaluators[0]))
         return true;
     // Otherwise, return true if all heuristics agree this is a dead-end.
     for (Evaluator *evaluator : evaluators)
-        if (!eval_context.is_heuristic_infinite(evaluator))
+        if (!eval_context.is_evaluator_value_infinite(evaluator))
             return false;
     return true;
 }
@@ -136,7 +132,7 @@ template<class Entry>
 bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (Evaluator *evaluator : evaluators)
-        if (eval_context.is_heuristic_infinite(evaluator) &&
+        if (eval_context.is_evaluator_value_infinite(evaluator) &&
             evaluator->dead_ends_are_reliable())
             return true;
     return false;

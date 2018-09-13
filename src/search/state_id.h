@@ -11,6 +11,9 @@ class StateID {
     friend std::ostream &operator<<(std::ostream &os, StateID id);
     template<typename>
     friend class PerStateInformation;
+    template<typename>
+    friend class PerStateArray;
+    friend class PerStateBitset;
 
     int value;
     explicit StateID(int value_)

@@ -65,25 +65,25 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const Options &opts)
     : SearchEngine(opts),
-      heuristic(opts.get<Heuristic *>("h")),
-      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
+      evaluator(opts.get<Evaluator *>("h")),
+      preferred_operator_evaluators(opts.get_list<Evaluator *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    for (Heuristic *heur : preferred_operator_heuristics) {
-        heur->get_path_dependent_evaluators(path_dependent_evaluators);
+    for (Evaluator *eval : preferred_operator_evaluators) {
+        eval->get_path_dependent_evaluators(path_dependent_evaluators);
     }
-    heuristic->get_path_dependent_evaluators(path_dependent_evaluators);
+    evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
     const GlobalState &initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
-    use_preferred = find(preferred_operator_heuristics.begin(),
-                         preferred_operator_heuristics.end(), heuristic) !=
-                    preferred_operator_heuristics.end();
+    use_preferred = find(preferred_operator_evaluators.begin(),
+                         preferred_operator_evaluators.end(), evaluator) !=
+                    preferred_operator_evaluators.end();
 
     open_list = create_ehc_open_list_factory(
         use_preferred, preferred_usage)->create_edge_open_list();
@@ -100,7 +100,7 @@ void EnforcedHillClimbingSearch::reach_state(
 }
 
 void EnforcedHillClimbingSearch::initialize() {
-    assert(heuristic);
+    assert(evaluator);
     cout << "Conducting enforced hill-climbing search, (real) bound = "
          << bound << endl;
     if (use_preferred) {
@@ -109,13 +109,13 @@ void EnforcedHillClimbingSearch::initialize() {
             "ranking successors" : "pruning") << endl;
     }
 
-    bool dead_end = current_eval_context.is_heuristic_infinite(heuristic);
+    bool dead_end = current_eval_context.is_evaluator_value_infinite(evaluator);
     statistics.inc_evaluated_states();
-    print_initial_h_values(current_eval_context);
+    print_initial_evaluator_values(current_eval_context);
 
     if (dead_end) {
         cout << "Initial state is a dead end, no solution" << endl;
-        if (heuristic->dead_ends_are_reliable())
+        if (evaluator->dead_ends_are_reliable())
             utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
         else
             utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
@@ -149,7 +149,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
         preferred_operators = collect_preferred_operators(
-            eval_context, preferred_operator_heuristics);
+            eval_context, preferred_operator_evaluators);
     }
 
     if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -214,16 +214,16 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             reach_state(parent_state, last_op_id, state);
             statistics.inc_evaluated_states();
 
-            if (eval_context.is_heuristic_infinite(heuristic)) {
+            if (eval_context.is_evaluator_value_infinite(evaluator)) {
                 node.mark_as_dead_end();
                 statistics.inc_dead_ends();
                 continue;
             }
 
-            int h = eval_context.get_heuristic_value(heuristic);
+            int h = eval_context.get_evaluator_value(evaluator);
             node.open(parent_node, last_op);
 
-            if (h < current_eval_context.get_heuristic_value(heuristic)) {
+            if (h < current_eval_context.get_evaluator_value(evaluator)) {
                 ++num_ehc_phases;
                 if (d_counts.count(d) == 0) {
                     d_counts[d] = make_pair(0, 0);
@@ -267,7 +267,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 
 static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Lazy enforced hill-climbing", "");
-    parser.add_option<Heuristic *>("h", "heuristic");
+    parser.add_option<Evaluator *>("h", "heuristic");
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
@@ -276,9 +276,9 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         preferred_usages,
         "preferred operator usage",
         "PRUNE_BY_PREFERRED");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<Evaluator *>(
         "preferred",
-        "use preferred operators of these heuristics",
+        "use preferred operators of these evaluators",
         "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();

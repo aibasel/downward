@@ -155,7 +155,7 @@ void SearchEngine::add_succ_order_options(OptionParser &parser) {
     utils::add_rng_options(parser);
 }
 
-void print_initial_h_values(const EvaluationContext &eval_context) {
+void print_initial_evaluator_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_evaluator_result(
         [] (const Evaluator *eval, const EvaluationResult &result) {
             if (eval->is_used_for_reporting_minima()) {
@@ -174,16 +174,16 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
 
 ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
-    const vector<Heuristic *> &preferred_operator_heuristics) {
+    const vector<Evaluator *> &preferred_operator_evaluators) {
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
+    for (Evaluator *evaluator : preferred_operator_evaluators) {
         /*
           Unreliable heuristics might consider solvable states as dead
           ends. We only want preferred operators from finite-value
           heuristics.
         */
-        if (!eval_context.is_heuristic_infinite(heuristic)) {
-            for (OperatorID op_id : eval_context.get_preferred_operators(heuristic)) {
+        if (!eval_context.is_evaluator_value_infinite(evaluator)) {
+            for (OperatorID op_id : eval_context.get_preferred_operators(evaluator)) {
                 preferred_operators.insert(op_id);
             }
         }
