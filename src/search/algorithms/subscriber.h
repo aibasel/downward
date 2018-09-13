@@ -4,12 +4,45 @@
 #include <cassert>
 #include <unordered_set>
 
+/*
+  The classes in this file allow objects of one class to react to the
+  destruction of objects from a different class.
+  To react to the desctruction of objects from a class T, derive T from
+  SubscriberService<T>. Then derive the class that should react to the
+  destruction from Subscriber<T> and override the method
+  notify_service_destroyed.
+
+  Example:
+
+  class Star : public SubscriberService<Star> {
+      string name;
+      ...
+  }
+
+  vector<const Star *> galaxy;
+
+  class Astronomer : public Subscriber<Star> {
+      Astronomer() {
+          for (const Star *star : galaxy) {
+              star.subscribe(this);
+          }
+      }
+
+      virtual void notify_service_destroyed(const Star *star) {
+          cout << star->name << " is going supernova!\n";
+      }
+  }
+*/
+
+
 namespace subscriber {
 template<typename T>
 class SubscriberService;
+
 /*
   A Subscriber can subscribe to a SubscriberService and is notified if that
-  service is destroyed.
+  service is destroyed. The template parameter T should be the class of the
+  SubscriberService (see usage example above).
 */
 template<typename T>
 class Subscriber {
@@ -18,7 +51,7 @@ class Subscriber {
     virtual void notify_service_destroyed(const T *) = 0;
 public:
     virtual ~Subscriber() {
-        for (const SubscriberService<T> * service : services) {
+        for (const SubscriberService<T> *service : services) {
             service->unsubscribe(this);
         }
     }
@@ -27,11 +60,13 @@ public:
 template<typename T>
 class SubscriberService {
     /*
-      Note that conceptually the list of subscribers should not be mutable and
-      the methods to (un)subscribe should not be const. However, making these
-      methods non-const, would mean that the state registry could no longer be
-      const in PerStateInformation and AbstractTask could not be const in
-      PerTaskInformation.
+      We make the set of subscribers mutable, which means that it is possible
+      to subscribe to `const` objects. This can be justified by arguing that
+      subscribing to an object is not conceptually a mutation of the object,
+      and the set of subscribers is only incidentally (for implementation
+      efficiency) stored along with the object. Of course it is possible to
+      argue the other way, too. We made this design decision because being able
+      to subscribe to const objects is very useful in the planner.
     */
     mutable std::unordered_set<Subscriber<T> *> subscribers;
 public:
@@ -41,10 +76,6 @@ public:
         }
     }
 
-    /*
-      Remembers the given Subscriber. If this SubscriberService is
-      destroyed, it notifies all current subscribers.
-    */
     void subscribe(Subscriber<T> *subscriber) const {
         assert(subscribers.find(subscriber) == subscribers.end());
         subscribers.insert(subscriber);
