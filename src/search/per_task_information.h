@@ -45,8 +45,8 @@ public:
               }) {
     }
 
-    explicit PerTaskInformation(EntryConstructor default_constructor)
-        : entry_constructor(default_constructor) {
+    explicit PerTaskInformation(EntryConstructor entry_constructor)
+        : entry_constructor(entry_constructor) {
     }
 
     Entry &operator[](const AbstractTask *task) {
