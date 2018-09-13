@@ -63,6 +63,8 @@ fast_downward_plugin(
         operator_id
         option_parser
         option_parser_util
+        per_state_array
+        per_state_bitset
         per_state_information
         plan_manager
         plugin
