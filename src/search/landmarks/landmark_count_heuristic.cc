@@ -293,7 +293,7 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
-                             "See also Heuristic#LAMA-FF_synergy_master");
+                             "See also Evaluator#LAMA-FF_synergy_master");
     parser.document_note(
         "Note",
         "Regarding using different cost transformations, there are a few "
@@ -356,5 +356,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new LandmarkCountHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("lmcount", _parse);
+static Plugin<Evaluator> _plugin("lmcount", _parse);
 }

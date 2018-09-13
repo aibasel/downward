@@ -113,5 +113,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return new OperatorCountingHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("operatorcounting", _parse);
+static Plugin<Evaluator> _plugin("operatorcounting", _parse);
 }

@@ -168,5 +168,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new AdditiveHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("add", _parse);
+static Plugin<Evaluator> _plugin("add", _parse);
 }

@@ -79,5 +79,5 @@ static Heuristic *_parse(OptionParser &parser) {
         opts, create_sample_based_potential_functions(opts));
 }
 
-static Plugin<Heuristic> _plugin("sample_based_potentials", _parse);
+static Plugin<Evaluator> _plugin("sample_based_potentials", _parse);
 }

@@ -51,5 +51,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new BlindSearchHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("blind", _parse);
+static Plugin<Evaluator> _plugin("blind", _parse);
 }
