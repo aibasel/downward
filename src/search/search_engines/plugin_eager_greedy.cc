@@ -13,10 +13,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "Open list",
         "In most cases, eager greedy best first search uses "
         "an alternation open list with one queue for each evaluator. "
-        "If preferred operator heuristics are used, it adds an extra queue "
+        "If preferred operator evaluators are used, it adds an extra queue "
         "for each of these evaluators that includes only the nodes that "
         "are generated with a preferred operator. "
-        "If only one evaluator and no preferred operator heuristic is used, "
+        "If only one evaluator and no preferred operator evaluator is used, "
         "the search does not use an alternation open list but a "
         "standard open list with only one queue.");
     parser.document_note(
@@ -50,7 +50,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.add_list_option<Evaluator *>("evals", "evaluators");
     parser.add_list_option<Evaluator *>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these evaluators", "[]");
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
