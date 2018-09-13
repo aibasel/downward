@@ -42,7 +42,7 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
 */
 static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
     const vector<Evaluator *> &evals,
-    const vector<Heuristic *> &preferred_heuristics,
+    const vector<Evaluator *> &preferred_heuristics,
     int boost) {
     if (evals.size() == 1 && preferred_heuristics.empty()) {
         return create_standard_scalar_open_list_factory(evals[0], false);
@@ -66,7 +66,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
     const Options &options) {
     return create_alternation_open_list_factory_aux(
         options.get_list<Evaluator *>("evals"),
-        options.get_list<Heuristic *>("preferred"),
+        options.get_list<Evaluator *>("preferred"),
         options.get<int>("boost"));
 }
 
@@ -105,7 +105,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
     return create_alternation_open_list_factory_aux(
         f_evals,
-        options.get_list<Heuristic *>("preferred"),
+        options.get_list<Evaluator *>("preferred"),
         options.get<int>("boost"));
 }
 

@@ -39,7 +39,7 @@ LazySearch::LazySearch(const Options &opts)
 }
 
 void LazySearch::set_pref_operator_heuristics(
-    vector<Heuristic *> &heur) {
+    vector<Evaluator *> &heur) {
     preferred_operator_heuristics = heur;
 }
 
@@ -50,9 +50,9 @@ void LazySearch::initialize() {
     set<Evaluator *> evals;
     open_list->get_path_dependent_evaluators(evals);
 
-    // Add heuristics that are used for preferred operators (in case they are
+    // Add evaluators that are used for preferred operators (in case they are
     // not also used in the open list).
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
+    for (Evaluator *heuristic : preferred_operator_heuristics) {
         heuristic->get_path_dependent_evaluators(evals);
     }
 

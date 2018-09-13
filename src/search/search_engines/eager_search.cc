@@ -1,8 +1,8 @@
 #include "eager_search.h"
 
 #include "../evaluation_context.h"
+#include "../evaluator.h"
 #include "../globals.h"
-#include "../heuristic.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../pruning_method.h"
@@ -21,12 +21,16 @@ namespace eager_search {
 EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
       f_evaluator(opts.get<Evaluator *>("f_eval", nullptr)),
-      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
+      preferred_operator_heuristics(opts.get_list<Evaluator *>("preferred")),
+      lazy_evaluator(opts.get<Evaluator *>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+    if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+        cerr << "lazy_evaluator must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
 }
 
 void EagerSearch::initialize() {
@@ -34,24 +38,34 @@ void EagerSearch::initialize() {
          << (reopen_closed_nodes ? " with" : " without")
          << " reopening closed nodes, (real) bound = " << bound
          << endl;
-    if (use_multi_path_dependence)
-        cout << "Using multi-path dependence (LM-A*)" << endl;
     assert(open_list);
 
     set<Evaluator *> evals;
     open_list->get_path_dependent_evaluators(evals);
 
-    // Collect path-dependent evaluators that are used for preferred operators
-    // (in case they are not also used in the open list).
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
+    /*
+      Collect path-dependent evaluators that are used for preferred operators
+      (in case they are not also used in the open list).
+    */
+    for (Evaluator *heuristic : preferred_operator_heuristics) {
         heuristic->get_path_dependent_evaluators(evals);
     }
 
-    // Collect path-dependent evaluators that are used in the f_evaluator.
-    // They are usually also used in the open list and will hence already be
-    // included, but we want to be sure.
+    /*
+      Collect path-dependent evaluators that are used in the f_evaluator.
+      They are usually also used in the open list and will hence already be
+      included, but we want to be sure.
+    */
     if (f_evaluator) {
         f_evaluator->get_path_dependent_evaluators(evals);
+    }
+
+    /*
+      Collect path-dependent evaluators that are used in the lazy_evaluator
+      (in case they are not already included).
+    */
+    if (lazy_evaluator) {
+        lazy_evaluator->get_path_dependent_evaluators(evals);
     }
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
@@ -61,8 +75,10 @@ void EagerSearch::initialize() {
         evaluator->notify_initial_state(initial_state);
     }
 
-    // Note: we consider the initial state as reached by a preferred
-    // operator.
+    /*
+      Note: we consider the initial state as reached by a preferred
+      operator.
+    */
     EvaluationContext eval_context(initial_state, 0, true, &statistics);
 
     statistics.inc_evaluated_states();
@@ -132,16 +148,13 @@ SearchStatus EagerSearch::step() {
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
+        for (Evaluator *evaluator : path_dependent_evaluators) {
+            evaluator->notify_state_transition(s, op_id, succ_state);
+        }
+
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
             continue;
-
-        // update new path
-        if (use_multi_path_dependence || succ_node.is_new()) {
-            for (Evaluator *evaluator : path_dependent_evaluators) {
-                evaluator->notify_state_transition(s, op_id, succ_state);
-            }
-        }
 
         if (succ_node.is_new()) {
             // We have not seen this state before.
@@ -233,9 +246,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             SearchNode dummy_node = search_space.get_node(initial_state);
             return make_pair(dummy_node, false);
         }
-        vector<int> last_key_removed;
-        StateID id = open_list->remove_min(
-            use_multi_path_dependence ? &last_key_removed : nullptr);
+        StateID id = open_list->remove_min();
         // TODO is there a way we can avoid creating the state here and then
         //      recreate it outside of this function with node.get_state()?
         //      One way would be to store GlobalState objects inside SearchNodes
@@ -246,24 +257,42 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (node.is_closed())
             continue;
 
-        if (use_multi_path_dependence) {
-            assert(last_key_removed.size() == 2);
+        if (!lazy_evaluator)
+            assert(!node.is_dead_end());
+
+        if (lazy_evaluator) {
+            /*
+              With lazy evaluators (and only with these) we can have dead nodes
+              in the open list.
+
+              For example, consider a state s that is reached twice before it is expanded.
+              The first time we insert it into the open list, we compute a finite
+              heuristic value. The second time we insert it, the cached value is reused.
+
+              During first expansion, the heuristic value is recomputed and might become
+              infinite, for example because the reevaluation uses a stronger heuristic or
+              because the heuristic is path-dependent and we have accumulated more
+              information in the meantime. Then upon second expansion we have a dead-end
+              node which we must ignore.
+            */
             if (node.is_dead_end())
                 continue;
-            int pushed_h = last_key_removed[1];
 
-            if (!node.is_closed()) {
-                EvaluationContext eval_context(
-                    node.get_state(), node.get_g(), false, &statistics);
-
+            if (lazy_evaluator->is_estimate_cached(s)) {
+                int old_h = lazy_evaluator->get_cached_estimate(s);
+                /*
+                  We can pass calculate_preferred=false here
+                  since preferred operators are computed when the state is expanded.
+                */
+                EvaluationContext eval_context(s, node.get_g(), false, &statistics);
+                int new_h = eval_context.get_heuristic_value_or_infinity(lazy_evaluator);
                 if (open_list->is_dead_end(eval_context)) {
                     node.mark_as_dead_end();
                     statistics.inc_dead_ends();
                     continue;
                 }
-                if (pushed_h < eval_context.get_result(path_dependent_evaluators[0]).get_h_value()) {
-                    assert(node.is_open());
-                    open_list->insert(eval_context, node.get_state_id());
+                if (new_h != old_h) {
+                    open_list->insert(eval_context, id);
                     continue;
                 }
             }
