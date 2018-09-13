@@ -8,7 +8,7 @@
 namespace g_evaluator {
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
-    result.set_h_value(eval_context.get_g_value());
+    result.set_evaluator_value(eval_context.get_g_value());
     return result;
 }
 

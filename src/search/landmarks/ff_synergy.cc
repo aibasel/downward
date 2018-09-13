@@ -32,7 +32,7 @@ EvaluationResult FFSynergyHeuristic::compute_result(
        either case, the result is subsequently available in the
        master object.
     */
-    eval_context.get_heuristic_value_or_infinity(master);
+    eval_context.get_evaluator_value_or_infinity(master);
     return master->ff_result;
 }
 

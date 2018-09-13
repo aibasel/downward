@@ -53,7 +53,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
     key.reserve(evaluators.size());
     for (Evaluator *evaluator : evaluators) {
         key.push_back(
-            eval_context.get_heuristic_value_or_infinity(evaluator));
+            eval_context.get_evaluator_value_or_infinity(evaluator));
     }
 
     auto it = key_to_bucket_index.find(key);
@@ -110,7 +110,7 @@ bool TypeBasedOpenList<Entry>::is_dead_end(
         return true;
     // Otherwise, return true if all evaluators agree this is a dead-end.
     for (Evaluator *evaluator : evaluators) {
-        if (!eval_context.is_heuristic_infinite(evaluator))
+        if (!eval_context.is_evaluator_value_infinite(evaluator))
             return false;
     }
     return true;
@@ -121,7 +121,7 @@ bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (Evaluator *evaluator : evaluators) {
         if (evaluator->dead_ends_are_reliable() &&
-            eval_context.is_heuristic_infinite(evaluator))
+            eval_context.is_evaluator_value_infinite(evaluator))
             return true;
     }
     return false;

@@ -15,10 +15,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "Open lists",
         "In most cases, lazy greedy best first search uses "
         "an alternation open list with one queue for each evaluator. "
-        "If preferred operator heuristics are used, it adds an "
+        "If preferred operator evaluators are used, it adds an "
         "extra queue for each of these evaluators that includes "
         "only the nodes that are generated with a preferred operator. "
-        "If only one evaluator and no preferred operator heuristic is used, "
+        "If only one evaluator and no preferred operator evaluator is used, "
         "the search does not use an alternation open list "
         "but a standard open list with only one queue.");
     parser.document_note(
@@ -49,7 +49,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.add_list_option<Evaluator *>("evals", "evaluators");
     parser.add_list_option<Evaluator *>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these evaluators", "[]");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
     parser.add_option<int>(
@@ -67,7 +67,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         engine = make_shared<lazy_search::LazySearch>(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<Evaluator *> preferred_list = opts.get_list<Evaluator *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
+        engine->set_preferred_operator_evaluators(preferred_list);
     }
     return engine;
 }
