@@ -5,9 +5,6 @@
 
 #include <sstream>
 
-class Evaluator;
-class Heuristic;
-
 namespace options {
 class OptionParser;
 
@@ -140,27 +137,6 @@ static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, 
         return Predefinitions<TPtr>::instance()->get(value);
     }
     found = false;
-    return nullptr;
-}
-
-
-/*
-  TODO (post-issue586): We should decide how to handle subclasses more generally.
-  See http://issues.fast-downward.org/msg4686 (which is part of that issue).
-
-  For now, we use C-style casts since C++-style casts need complete types.
-*/
-template<>
-inline Evaluator *TokenParser<Evaluator *>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_root_value();
-    if (Predefinitions<Heuristic *>::instance()->contains(value)) {
-        return (Evaluator *)Predefinitions<Heuristic *>::instance()->get(value);
-    } else if (Registry<Evaluator *>::instance()->contains(value)) {
-        return Registry<Evaluator *>::instance()->get(value)(parser);
-    } else if (Registry<Heuristic *>::instance()->contains(value)) {
-        return (Evaluator *)Registry<Heuristic *>::instance()->get(value)(parser);
-    }
-    parser.error("Evaluator " + value + " not found");
     return nullptr;
 }
 
