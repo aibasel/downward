@@ -10,7 +10,7 @@ ConstEvaluator::ConstEvaluator(const Options &opts)
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     EvaluationResult result;
-    result.set_h_value(value);
+    result.set_evaluator_value(value);
     return result;
 }
 
