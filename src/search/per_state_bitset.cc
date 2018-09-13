@@ -83,6 +83,6 @@ BitsetView PerStateBitset::operator[](const GlobalState &state) {
     return BitsetView(data[state], num_blocks);
 }
 
-void PerStateBitset::remove_state_registry(StateRegistry *registry) {
-    data.remove_state_registry(registry);
+void PerStateBitset::notify_service_destroyed(const StateRegistry *registry) {
+    data.notify_service_destroyed(registry);
 }

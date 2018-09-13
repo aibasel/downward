@@ -43,7 +43,7 @@ public:
 };
 
 
-class PerStateBitset : public PerStateInformationBase {
+class PerStateBitset : public subscriber::Subscriber<StateRegistry> {
     int num_blocks;
     PerStateArray<BitsetMath::Block> data;
 public:
@@ -53,7 +53,7 @@ public:
     PerStateBitset &operator=(const PerStateBitset &) = delete;
 
     BitsetView operator[](const GlobalState &state);
-    virtual void remove_state_registry(StateRegistry *registry) override;
+    virtual void notify_service_destroyed(const StateRegistry *registry) override;
 };
 
 #endif
