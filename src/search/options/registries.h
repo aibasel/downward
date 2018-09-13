@@ -24,7 +24,7 @@ public:
     void insert(const std::string &key, Factory factory) {
         if (registered.count(key)) {
             std::cerr << "duplicate key in registry: " << key << std::endl;
-            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         registered[key] = factory;
     }
@@ -140,6 +140,36 @@ public:
     }
 
     static PluginTypeRegistry *instance();
+};
+
+
+/*
+  The plugin group registry collects information about plugin groups.
+  A plugin group is a set of plugins (which should be of the same
+  type, although the code does not enforce this) that should be
+  grouped together in user documentation.
+
+  For example, all PDB heuristics could be grouped together so that
+  the documention page for the heuristics looks nicer.
+*/
+
+// TODO: Reduce code duplication with Registry<T>.
+struct PluginGroupInfo {
+    std::string group_id;
+    std::string doc_title;
+};
+
+class PluginGroupRegistry {
+    using Map = std::map<std::string, PluginGroupInfo>;
+    PluginGroupRegistry() = default;
+    ~PluginGroupRegistry() = default;
+    Map registry;
+public:
+    void insert(const PluginGroupInfo &info);
+
+    const PluginGroupInfo &get(const std::string &key) const;
+
+    static PluginGroupRegistry *instance();
 };
 }
 

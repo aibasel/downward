@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
 #include <iostream>
 #include <limits>
 #include <utility>
@@ -79,9 +78,7 @@ template<typename Hasher, typename Equal>
 class IntHashSet {
     // Max distance from the ideal bucket to the actual bucket for each key.
     static const int MAX_DISTANCE = 32;
-    // MSVC 12.0 lacks support for constexpr. Other compilers allow using
-    // std::numeric_limits<unsigned int>::max() instead of the UINT_MAX macro.
-    static const unsigned int MAX_BUCKETS = UINT_MAX;
+    static const unsigned int MAX_BUCKETS = std::numeric_limits<unsigned int>::max();
 
     struct Bucket {
         KeyType key;
@@ -142,7 +139,7 @@ class IntHashSet {
                 " is an unexpectedly high number of hash collisions"
                 " that should be investigated. Aborting."
                       << std::endl;
-            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         rehash(num_buckets * 2);
     }

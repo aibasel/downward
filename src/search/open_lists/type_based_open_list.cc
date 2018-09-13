@@ -37,7 +37,7 @@ public:
     explicit TypeBasedOpenList(const Options &opts);
     virtual ~TypeBasedOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
@@ -53,7 +53,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
     key.reserve(evaluators.size());
     for (Evaluator *evaluator : evaluators) {
         key.push_back(
-            eval_context.get_heuristic_value_or_infinity(evaluator));
+            eval_context.get_evaluator_value_or_infinity(evaluator));
     }
 
     auto it = key_to_bucket_index.find(key);
@@ -74,17 +74,11 @@ TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
 }
 
 template<class Entry>
-Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
+Entry TypeBasedOpenList<Entry>::remove_min() {
     size_t bucket_id = (*rng)(keys_and_buckets.size());
     auto &key_and_bucket = keys_and_buckets[bucket_id];
     const Key &min_key = key_and_bucket.first;
     Bucket &bucket = key_and_bucket.second;
-
-    if (key) {
-        assert(key->empty());
-        *key = min_key;
-    }
-
     int pos = (*rng)(bucket.size());
     Entry result = utils::swap_and_pop_from_vector(bucket, pos);
 
@@ -116,7 +110,7 @@ bool TypeBasedOpenList<Entry>::is_dead_end(
         return true;
     // Otherwise, return true if all evaluators agree this is a dead-end.
     for (Evaluator *evaluator : evaluators) {
-        if (!eval_context.is_heuristic_infinite(evaluator))
+        if (!eval_context.is_evaluator_value_infinite(evaluator))
             return false;
     }
     return true;
@@ -127,7 +121,7 @@ bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (Evaluator *evaluator : evaluators) {
         if (evaluator->dead_ends_are_reliable() &&
-            eval_context.is_heuristic_infinite(evaluator))
+            eval_context.is_evaluator_value_infinite(evaluator))
             return true;
     }
     return false;

@@ -455,13 +455,13 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
 
     if (max_states < 1) {
         cerr << "error: transition system size must be at least 1" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     if (max_states_before_merge < 1) {
         cerr << "error: transition system size before merge must be at least 1"
              << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     if (threshold == -1) {
@@ -469,7 +469,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
     }
     if (threshold < 1) {
         cerr << "error: threshold must be at least 1" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (threshold > max_states) {
         cout << "warning: threshold exceeds max_states, correcting" << endl;
@@ -518,8 +518,8 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
+    parser.document_property("admissible", "yes (but see note)");
+    parser.document_property("consistent", "yes (but see note)");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
     parser.document_note(
@@ -530,6 +530,16 @@ static Heuristic *_parse(OptionParser &parser) {
         "merge-and-shrink heuristics are based are nondeterministic, "
         "which can lead to poor heuristics even when only perfect shrinking "
         "is performed.");
+    parser.document_note(
+        "Note",
+        "When pruning unreachable states, admissibility and consistency is "
+        "only guaranteed for reachable states and transitions between "
+        "reachable states. While this does not impact regular A* search which "
+        "will never encounter any unreachable state, it impacts techniques "
+        "like symmetry-based pruning: a reachable state which is mapped to an "
+        "unreachable symmetric state (which hence is pruned) would falsely be "
+        "considered a dead-end and also be pruned, thus violating optimality "
+        "of the search.");
     parser.document_note(
         "Note",
         "A currently recommended good configuration uses bisimulation "

@@ -13,10 +13,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "Open list",
         "In most cases, eager greedy best first search uses "
         "an alternation open list with one queue for each evaluator. "
-        "If preferred operator heuristics are used, it adds an extra queue "
+        "If preferred operator evaluators are used, it adds an extra queue "
         "for each of these evaluators that includes only the nodes that "
         "are generated with a preferred operator. "
-        "If only one evaluator and no preferred operator heuristic is used, "
+        "If only one evaluator and no preferred operator evaluator is used, "
         "the search does not use an alternation open list but a "
         "standard open list with only one queue.");
     parser.document_note(
@@ -48,9 +48,9 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n--search eager(single(eval1))\n```\n", true);
 
     parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<Evaluator *>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these evaluators", "[]");
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
@@ -65,7 +65,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
-        opts.set("mpd", false);
         Evaluator *evaluator = nullptr;
         opts.set("f_eval", evaluator);
         engine = make_shared<eager_search::EagerSearch>(opts);

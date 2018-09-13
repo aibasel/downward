@@ -27,7 +27,7 @@ void verify_no_axioms(TaskProxy task) {
     if (has_axioms(task)) {
         cerr << "This configuration does not support axioms!"
              << endl << "Terminating." << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
 }
 
@@ -53,7 +53,7 @@ void verify_no_conditional_effects(TaskProxy task) {
         cerr << "This configuration does not support conditional effects "
              << "(operator " << op.get_name() << ")!" << endl
              << "Terminating." << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
 }
 

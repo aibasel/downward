@@ -218,7 +218,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
             cerr << "You have to specify exactly one of the options merge_tree "
                 "and merge_selector!" << endl;
-            utils::exit_with(utils::ExitCode::INPUT_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
         return nullptr;
     } else {
