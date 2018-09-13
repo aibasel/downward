@@ -31,12 +31,12 @@ EvaluationResult CombiningEvaluator::compute_result(
 
     // Collect component values. Return infinity if any is infinite.
     for (Evaluator *subevaluator : subevaluators) {
-        int h_val = eval_context.get_evaluator_value_or_infinity(subevaluator);
-        if (h_val == EvaluationResult::INFTY) {
-            result.set_evaluator_value(h_val);
+        int value = eval_context.get_evaluator_value_or_infinity(subevaluator);
+        if (value == EvaluationResult::INFTY) {
+            result.set_evaluator_value(value);
             return result;
         } else {
-            values.push_back(h_val);
+            values.push_back(value);
         }
     }
 
