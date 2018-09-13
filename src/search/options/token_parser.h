@@ -5,9 +5,6 @@
 
 #include <sstream>
 
-class Evaluator;
-class Heuristic;
-
 namespace options {
 class OptionParser;
 

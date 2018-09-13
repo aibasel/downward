@@ -3,7 +3,6 @@
 #include "evaluation_context.h"
 #include "evaluator.h"
 #include "globals.h"
-#include "heuristic.h"
 #include "option_parser.h"
 #include "plugin.h"
 
