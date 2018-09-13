@@ -14,21 +14,6 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     return os;
 }
 
-
-AbstractTask::~AbstractTask() {
-    for (PerTaskInformationBase *pti : subscribers) {
-        pti->remove_task(this);
-    }
-}
-
-void AbstractTask::subscribe(PerTaskInformationBase *pti) const {
-    subscribers.insert(pti);
-}
-
-void AbstractTask::unsubscribe(PerTaskInformationBase *pti) const {
-    subscribers.erase(pti);
-}
-
 static PluginTypePlugin<AbstractTask> _type_plugin(
     "AbstractTask",
     // TODO: Replace empty string by synopsis for the wiki page.

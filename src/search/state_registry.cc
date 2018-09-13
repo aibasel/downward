@@ -21,10 +21,6 @@ StateRegistry::StateRegistry(const AbstractTask &task)
 
 
 StateRegistry::~StateRegistry() {
-    for (set<PerStateInformationBase *>::iterator it = subscribers.begin();
-         it != subscribers.end(); ++it) {
-        (*it)->remove_state_registry(this);
-    }
     delete cached_initial_state;
 }
 
@@ -93,14 +89,6 @@ int StateRegistry::get_bins_per_state() const {
 
 int StateRegistry::get_state_size_in_bytes() const {
     return get_bins_per_state() * sizeof(PackedStateBin);
-}
-
-void StateRegistry::subscribe(PerStateInformationBase *psi) const {
-    subscribers.insert(psi);
-}
-
-void StateRegistry::unsubscribe(PerStateInformationBase *const psi) const {
-    subscribers.erase(psi);
 }
 
 void StateRegistry::print_statistics() const {

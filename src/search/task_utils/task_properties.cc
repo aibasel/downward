@@ -94,5 +94,5 @@ PerTaskInformation<int_packer::IntPacker> g_state_packers(
         }
         return utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges);
     }
-);
+    );
 }

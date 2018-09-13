@@ -3,26 +3,23 @@
 
 #include "task_proxy.h"
 
+#include "algorithms/subscriber.h"
 #include "utils/memory.h"
 
 #include <functional>
 #include <unordered_map>
 
-class PerTaskInformationBase {
-public:
-    virtual void remove_task(const AbstractTask *task) = 0;
-};
-
 template<class Entry>
-class PerTaskInformation : public PerTaskInformationBase {
+class PerTaskInformation : public subscriber::Subscriber<AbstractTask> {
     using EntryConstructor = std::function<std::unique_ptr<Entry>(const TaskProxy &)>;
     EntryConstructor entry_constructor;
     std::unordered_map<const AbstractTask *, std::unique_ptr<Entry>> entries;
 public:
     PerTaskInformation()
-        : entry_constructor([](const TaskProxy &task_proxy) {
-              return utils::make_unique_ptr<Entry>(task_proxy);
-          }) {
+        : entry_constructor(
+              [](const TaskProxy &task_proxy) {
+                  return utils::make_unique_ptr<Entry>(task_proxy);
+              }) {
     }
 
     explicit PerTaskInformation(EntryConstructor default_constructor)
@@ -44,7 +41,7 @@ public:
         return *entries[task];
     }
 
-    virtual void remove_task(const AbstractTask *task) override {
+    virtual void notify_service_destroyed(const AbstractTask *task) override {
         entries.erase(task);
     }
 };
