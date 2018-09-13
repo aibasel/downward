@@ -18,6 +18,13 @@ class Subscriber {
 
 template<typename T>
 class SubscriberService {
+    /*
+      Note that conceptually the list of subscribers should not be mutable and
+      the methods to (un)subscribe should not be const. However, making these
+      methods non-const, would mean that the state registry could no longer be
+      const in PerStateInformation and AbstractTask could not be const in
+      PerTaskInformation.
+    */
     mutable std::unordered_set<Subscriber<T> *> subscribers;
 public:
     virtual ~SubscriberService() {
