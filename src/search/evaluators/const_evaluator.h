@@ -1,7 +1,11 @@
 #ifndef EVALUATORS_CONST_EVALUATOR_H
 #define EVALUATORS_CONST_EVALUATOR_H
 
-#include "../heuristic.h"
+#include "../evaluator.h"
+
+namespace options {
+    class Options;
+}
 
 namespace const_evaluator {
 class ConstEvaluator : public Evaluator {

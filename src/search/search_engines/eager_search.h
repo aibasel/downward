@@ -8,7 +8,6 @@
 #include <vector>
 
 class Evaluator;
-class Heuristic;
 class PruningMethod;
 
 namespace options {
