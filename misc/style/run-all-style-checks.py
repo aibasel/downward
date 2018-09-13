@@ -23,6 +23,19 @@ REPO = os.path.dirname(os.path.dirname(DIR))
 SRC_DIR = os.path.join(REPO, "src")
 
 
+def _get_src_files(path, extensions, ignore_dirs=None):
+    ignore_dirs = ignore_dirs or []
+    src_files = []
+    for root, dirs, files in os.walk(path):
+        for ignore_dir in ignore_dirs:
+            if ignore_dir in dirs:
+                dirs.remove(ignore_dir)
+        src_files.extend([
+            os.path.join(root, file)
+            for file in files if file.endswith(extensions)])
+    return src_files
+
+
 def check_translator_style():
     output = subprocess.check_output([
         "./reindent.py", "--dryrun", "--recurse", "--verbose",
@@ -39,11 +52,9 @@ def check_translator_style():
 
 
 def _run_pyflakes(path):
-    python_files = []
-    for root, dirs, files in os.walk(path):
-        python_files.extend([
-            os.path.join(root, f) for f in files
-            if f.endswith(".py") and f != "__init__.py"])
+    python_files = _get_src_files(path, (".py",))
+    python_files = [f for f in python_files if not f.endswith("__init__.py")]
+    print("Checking {} files with pyflakes".format(len(python_files)))
     try:
         return subprocess.check_call(["pyflakes"] + python_files) == 0
     except OSError as err:
@@ -70,9 +81,8 @@ def check_cc_files():
     Currently, we only check that there is no "std::" in .cc files.
     """
     search_dir = os.path.join(SRC_DIR, "search")
-    cc_files = (
-        glob.glob(os.path.join(search_dir, "*.cc")) +
-        glob.glob(os.path.join(search_dir, "*", "*.cc")))
+    cc_files = _get_src_files(search_dir, (".cc",))
+    print("Checking style of {} *.cc files".format(len(cc_files)))
     return subprocess.call(["./check-cc-file.py"] + cc_files, cwd=DIR) == 0
 
 
@@ -83,14 +93,8 @@ def check_cplusplus_style():
     ignored by mercurial). We therefore find the source files manually
     and call uncrustify directly.
     """
-    src_files = []
-    for root, dirs, files in os.walk(REPO):
-        for ignore_dir in ["builds", "data"]:
-            if ignore_dir in dirs:
-                dirs.remove(ignore_dir)
-        src_files.extend([
-            os.path.join(root, file)
-            for file in files if file.endswith((".h", ".cc"))])
+    src_files = _get_src_files(REPO, (".h", ".cc"), ignore_dirs=["builds", "data"])
+    print("Checking {} files with uncrustify".format(len(src_files)))
     config_file = os.path.join(REPO, ".uncrustify.cfg")
     executable = "uncrustify"
     try:
@@ -109,19 +113,6 @@ def check_cplusplus_style():
     return returncode == 0
 
 
-def get_src_files(path, extensions, ignore_dirs=None):
-    ignore_dirs = ignore_dirs or []
-    src_files = []
-    for root, dirs, files in os.walk(path):
-        for ignore_dir in ignore_dirs:
-            if ignore_dir in dirs:
-                dirs.remove(ignore_dir)
-        src_files.extend([
-            os.path.join(root, file)
-            for file in files if file.endswith(extensions)])
-    return src_files
-
-
 def check_search_code_with_clang_tidy():
     # clang-tidy needs the CMake files.
     build_dir = os.path.join(REPO, "builds", "clang-tidy")
@@ -134,7 +125,7 @@ def check_search_code_with_clang_tidy():
     # when passing -DCMAKE_EXPORT_COMPILE_COMMANDS=ON, but the resulting file
     # contains no header files.
     search_dir = os.path.join(REPO, "src/search")
-    src_files = get_src_files(search_dir, (".h", ".cc"))
+    src_files = _get_src_files(search_dir, (".h", ".cc"))
     compile_commands = [{
         "directory": os.path.join(build_dir, "search"),
         "command": "g++ -I{search_dir}/ext -std=c++11 -c {src_file}".format(**locals()),
@@ -187,7 +178,7 @@ def check_search_code_with_clang_tidy():
         # Include all non-system headers (.*) except the ones from search/ext/.
         "-header-filter=.*,-tree.hh,-tree_util.hh",
         "-checks=-*," + ",".join(checks)]
-    print("Running clang-tidy (enabled checks: {})".format(", ".join(checks)))
+    print("clang-tidy (enabled checks: {})".format(", ".join(checks)))
     print()
     try:
         output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)
@@ -207,9 +198,11 @@ def check_search_code_with_clang_tidy():
 
 
 def main():
-    tests = [test for test_name, test in sorted(globals().items())
-             if test_name.startswith("check_")]
-    results = [test() for test in tests]
+    results = []
+    for test_name, test in sorted(globals().items()):
+        if test_name.startswith("check_"):
+            print("Running {}".format(test_name))
+            results.append(test())
     if all(results):
         print("All style checks passed")
     else:
