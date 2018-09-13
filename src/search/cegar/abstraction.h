@@ -138,7 +138,7 @@ public:
     */
     std::vector<int> get_saturated_costs();
 
-    int get_evaluator_value_of_initial_state() const;
+    int get_h_value_of_initial_state() const;
 };
 }
 
