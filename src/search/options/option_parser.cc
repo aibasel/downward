@@ -178,14 +178,15 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = sanitize_argument(args[i]);
         bool is_last = (i == args.size() - 1);
-        if (arg == "--heuristic") {
-            if (is_last)
-                throw ArgError("missing argument after --heuristic");
-            ++i;
-            predefine_evaluator(sanitize_argument(args[i]), dry_run);
-        } else if (arg == "--evaluator") {
+        if (arg == "--evaluator") {
             if (is_last)
                 throw ArgError("missing argument after --evaluator");
+            ++i;
+            predefine_evaluator(sanitize_argument(args[i]), dry_run);
+        } else if (arg == "--heuristic") {
+            // deprecated alias for --evaluator
+            if (is_last)
+                throw ArgError("missing argument after --heuristic");
             ++i;
             predefine_evaluator(sanitize_argument(args[i]), dry_run);
         } else if (arg == "--landmarks") {
@@ -264,8 +265,8 @@ string OptionParser::usage(const string &progname) {
            "--landmarks LANDMARKS_PREDEFINITION\n"
            "    Predefines a set of landmarks that can afterwards be referenced\n"
            "    by the name that is specified in the definition.\n"
-           "--heuristic HEURISTIC_PREDEFINITION\n"
-           "    Predefines a heuristic that can afterwards be referenced\n"
+           "--evaluator EVALUATOR_PREDEFINITION\n"
+           "    Predefines an evaluator that can afterwards be referenced\n"
            "    by the name that is specified in the definition.\n"
            "--internal-plan-file FILENAME\n"
            "    Plan will be output to a file called FILENAME\n\n"

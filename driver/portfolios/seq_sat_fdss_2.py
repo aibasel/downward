@@ -4,35 +4,35 @@ OPTIMAL = False
 
 CONFIGS = [
     # eager_greedy_ff
-    (330, ["--heuristic", "h=ff(transform=H_COST_TRANSFORM)",
+    (330, ["--evaluator", "h=ff(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_ff
-    (411, ["--heuristic", "h=ff(transform=H_COST_TRANSFORM)",
+    (411, ["--evaluator", "h=ff(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # eager_greedy_cea
-    (213, ["--heuristic", "h=cea(transform=H_COST_TRANSFORM)",
+    (213, ["--evaluator", "h=cea(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_cea
-    (57, ["--heuristic", "h=cea(transform=H_COST_TRANSFORM)",
+    (57, ["--evaluator", "h=cea(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # eager_greedy_add
-    (204, ["--heuristic", "h=add(transform=H_COST_TRANSFORM)",
+    (204, ["--evaluator", "h=add(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # eager_greedy_cg
-    (208, ["--heuristic", "h=cg(transform=H_COST_TRANSFORM)",
+    (208, ["--evaluator", "h=cg(transform=H_COST_TRANSFORM)",
           "--search",
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_cg
-    (109, ["--heuristic", "h=cg(transform=H_COST_TRANSFORM)",
+    (109, ["--evaluator", "h=cg(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_add
-    (63, ["--heuristic", "h=add(transform=H_COST_TRANSFORM)",
+    (63, ["--evaluator", "h=add(transform=H_COST_TRANSFORM)",
           "--search",
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
      ]
