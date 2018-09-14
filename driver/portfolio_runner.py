@@ -48,7 +48,7 @@ def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
     print("next plan number: %d" % (plan_counter + 1))
 
     for index, arg in enumerate(args):
-        if arg == "--heuristic":
+        if arg == "--evaluator" or arg == "--heuristic":
             heuristic = args[index + 1]
             heuristic = adapt_heuristic_cost_type(heuristic, heuristic_cost_type)
             args[index + 1] = heuristic

@@ -11,7 +11,7 @@ def configs_optimal_core():
             "--search",
             "astar(ipdb)"],
         "astar_lmcount_lm_merged_rhw_hm": [
-            "--heuristic",
+            "--evaluator",
             "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
             "--search",
             "astar(lmc,lazy_evaluator=lmc)"],
@@ -62,38 +62,38 @@ def configs_satisficing_core():
             "astar(goalcount)"],
         # eager greedy
         "eager_greedy_ff": [
-            "--heuristic",
+            "--evaluator",
             "h=ff()",
             "--search",
             "eager_greedy([h],preferred=[h])"],
         "eager_greedy_add": [
-            "--heuristic",
+            "--evaluator",
             "h=add()",
             "--search",
             "eager_greedy([h],preferred=[h])"],
         "eager_greedy_cg": [
-            "--heuristic",
+            "--evaluator",
             "h=cg()",
             "--search",
             "eager_greedy([h],preferred=[h])"],
         "eager_greedy_cea": [
-            "--heuristic",
+            "--evaluator",
             "h=cea()",
             "--search",
             "eager_greedy([h],preferred=[h])"],
         # lazy greedy
         "lazy_greedy_ff": [
-            "--heuristic",
+            "--evaluator",
             "h=ff()",
             "--search",
             "lazy_greedy([h],preferred=[h])"],
         "lazy_greedy_add": [
-            "--heuristic",
+            "--evaluator",
             "h=add()",
             "--search",
             "lazy_greedy([h],preferred=[h])"],
         "lazy_greedy_cg": [
-            "--heuristic",
+            "--evaluator",
             "h=cg()",
             "--search",
             "lazy_greedy([h],preferred=[h])"],
@@ -119,7 +119,7 @@ def configs_satisficing_ipc():
 def configs_optimal_extended():
     return {
         "astar_lmcount_lm_merged_rhw_hm_no_order": [
-            "--heuristic",
+            "--evaluator",
             "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
             "--search",
             "astar(lmc,lazy_evaluator=lmc)"],
@@ -133,9 +133,9 @@ def configs_satisficing_extended():
     return {
         # eager greedy
         "eager_greedy_alt_ff_cg": [
-            "--heuristic",
+            "--evaluator",
             "hff=ff()",
-            "--heuristic",
+            "--evaluator",
             "hcg=cg()",
             "--search",
             "eager_greedy([hff,hcg],preferred=[hff,hcg])"],
@@ -144,9 +144,9 @@ def configs_satisficing_extended():
             "eager_greedy([ff()])"],
         # lazy greedy
         "lazy_greedy_alt_cea_cg": [
-            "--heuristic",
+            "--evaluator",
             "hcea=cea()",
-            "--heuristic",
+            "--evaluator",
             "hcg=cg()",
             "--search",
             "lazy_greedy([hcea,hcg],preferred=[hcea,hcg])"],
@@ -154,19 +154,19 @@ def configs_satisficing_extended():
             "--search",
             "lazy_greedy([ff()])"],
         "lazy_greedy_cea": [
-            "--heuristic",
+            "--evaluator",
             "h=cea()",
             "--search",
             "lazy_greedy([h],preferred=[h])"],
         # lazy wA*
         "lazy_wa3_ff": [
-            "--heuristic",
+            "--evaluator",
             "h=ff()",
             "--search",
             "lazy_wastar([h],w=3,preferred=[h])"],
         # eager wA*
         "eager_wa3_cg": [
-            "--heuristic",
+            "--evaluator",
             "h=cg()",
             "--search",
             "eager(single(sum([g(),weight(h,3)])),preferred=[h])"],
@@ -176,14 +176,14 @@ def configs_satisficing_extended():
             "ehc(ff())"],
         # iterated
         "iterated_wa_ff": [
-            "--heuristic",
+            "--evaluator",
             "h=ff()",
             "--search",
             "iterated([lazy_wastar([h],w=10), lazy_wastar([h],w=5), lazy_wastar([h],w=3),"
             "lazy_wastar([h],w=2), lazy_wastar([h],w=1)])"],
         # pareto open list
         "pareto_ff": [
-            "--heuristic",
+            "--evaluator",
             "h=ff()",
             "--search",
             "eager(pareto([sum([g(), h]), h]), reopen_closed=true,"
