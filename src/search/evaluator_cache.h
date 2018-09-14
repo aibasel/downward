@@ -1,5 +1,5 @@
-#ifndef HEURISTIC_CACHE_H
-#define HEURISTIC_CACHE_H
+#ifndef EVALUATOR_CACHE_H
+#define EVALUATOR_CACHE_H
 
 #include "evaluation_result.h"
 #include "global_state.h"

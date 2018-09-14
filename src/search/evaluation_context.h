@@ -2,7 +2,7 @@
 #define EVALUATION_CONTEXT_H
 
 #include "evaluation_result.h"
-#include "heuristic_cache.h"
+#include "evaluator_cache.h"
 #include "operator_id.h"
 
 #include <unordered_map>
