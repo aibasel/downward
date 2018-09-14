@@ -24,10 +24,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "Closed node are not re-opened");
     parser.document_note(
         "Equivalent statements using general eager search",
-        "\n```\n--heuristic h2=eval2\n"
+        "\n```\n--evaluator h2=eval2\n"
         "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "```\n--evaluator h1=eval1 --heuristic h2=eval2\n"
         "--search eager(alt([single(h1), single(h1, pref_only=true), single(h2), \n"
         "                    single(h2, pref_only=true)], boost=100),\n"
         "               preferred=h2)\n```\n"
@@ -36,10 +36,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--search eager(alt([single(eval1), single(eval2)]))\n```\n"
         "------------------------------------------------------------\n"
-        "```\n--heuristic h1=eval1\n"
+        "```\n--evaluator h1=eval1\n"
         "--search eager_greedy(h1, preferred=h1)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h1=eval1\n"
+        "```\n--evaluator h1=eval1\n"
         "--search eager(alt([single(h1), single(h1, pref_only=true)]),\n"
         "               preferred=h1)\n```\n"
         "------------------------------------------------------------\n"

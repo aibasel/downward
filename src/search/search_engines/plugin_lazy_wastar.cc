@@ -25,11 +25,11 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "is ranked by g + w * h. ");
     parser.document_note(
         "Equivalent statements using general lazy search",
-        "\n```\n--heuristic h1=eval1\n"
+        "\n```\n--evaluator h1=eval1\n"
         "--search lazy_wastar([h1, eval2], w=2, preferred=h1,\n"
         "                     bound=100, boost=500)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "```\n--evaluator h1=eval1 --heuristic h2=eval2\n"
         "--search lazy(alt([single(sum([g(), weight(h1, 2)])),\n"
         "                   single(sum([g(), weight(h1, 2)]), pref_only=true),\n"
         "                   single(sum([g(), weight(h2, 2)])),\n"
