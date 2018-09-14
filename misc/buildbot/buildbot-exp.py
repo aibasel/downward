@@ -44,7 +44,7 @@ BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
-BASELINE = cached_revision.get_global_rev(REPO, rev='92115dbcd1f2')
+BASELINE = cached_revision.get_global_rev(REPO, rev='e5e39fcb7a71')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
