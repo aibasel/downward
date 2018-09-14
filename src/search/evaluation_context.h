@@ -41,7 +41,7 @@ class SearchStatistics;
 */
 
 class EvaluationContext {
-    HeuristicCache cache;
+    EvaluatorCache cache;
     int g_value;
     bool preferred;
     SearchStatistics *statistics;
@@ -57,7 +57,7 @@ public:
       TODO: Can we reuse caches? Can we move them instead of copying them?
     */
     EvaluationContext(
-        const HeuristicCache &cache, int g_value, bool is_preferred,
+        const EvaluatorCache &cache, int g_value, bool is_preferred,
         SearchStatistics *statistics, bool calculate_preferred = false);
     /*
       Create new heuristic cache for caching heuristic values. Used for example
@@ -85,7 +85,7 @@ public:
     ~EvaluationContext() = default;
 
     const EvaluationResult &get_result(Evaluator *eval);
-    const HeuristicCache &get_cache() const;
+    const EvaluatorCache &get_cache() const;
     const GlobalState &get_state() const;
     int get_g_value() const;
     bool is_preferred() const;

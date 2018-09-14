@@ -13,13 +13,13 @@ using EvaluationResults = std::unordered_map<Evaluator *, EvaluationResult>;
 /*
   Store a state and evaluation results for this state.
 */
-class HeuristicCache {
+class EvaluatorCache {
     EvaluationResults eval_results;
     GlobalState state;
 
 public:
-    explicit HeuristicCache(const GlobalState &state);
-    ~HeuristicCache() = default;
+    explicit EvaluatorCache(const GlobalState &state);
+    ~EvaluatorCache() = default;
 
     EvaluationResult &operator[](Evaluator *eval);
 

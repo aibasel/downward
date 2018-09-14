@@ -3,14 +3,14 @@
 using namespace std;
 
 
-HeuristicCache::HeuristicCache(const GlobalState &state)
+EvaluatorCache::EvaluatorCache(const GlobalState &state)
     : state(state) {
 }
 
-EvaluationResult &HeuristicCache::operator[](Evaluator *eval) {
+EvaluationResult &EvaluatorCache::operator[](Evaluator *eval) {
     return eval_results[eval];
 }
 
-const GlobalState &HeuristicCache::get_state() const {
+const GlobalState &EvaluatorCache::get_state() const {
     return state;
 }
