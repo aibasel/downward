@@ -28,8 +28,7 @@ SearchEngine::SearchEngine(const Options &opts)
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
-      state_registry(
-          *task, *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
+      state_registry(*task),
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),

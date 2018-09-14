@@ -3,9 +3,11 @@
 
 #include "operator_id.h"
 
+#include "algorithms/subscriber.h"
 #include "utils/hash.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,10 +57,10 @@ struct hash<FactPair> {
 };
 }
 
-class AbstractTask {
+class AbstractTask : public subscriber::SubscriberService<AbstractTask> {
 public:
     AbstractTask() = default;
-    virtual ~AbstractTask() = default;
+    virtual ~AbstractTask() override = default;
     virtual int get_num_variables() const = 0;
     virtual std::string get_variable_name(int var) const = 0;
     virtual int get_variable_domain_size(int var) const = 0;

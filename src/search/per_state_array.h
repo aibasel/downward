@@ -46,7 +46,7 @@ public:
 */
 
 template<class Element>
-class PerStateArray : public PerStateInformationBase {
+class PerStateArray : public subscriber::Subscriber<StateRegistry> {
     const std::vector<Element> default_array;
     using EntryArrayVectorMap = std::unordered_map<const StateRegistry *,
                                                    segmented_vector::SegmentedArrayVector<Element> *>;
@@ -98,9 +98,8 @@ public:
     PerStateArray(const PerStateArray<Element> &) = delete;
     PerStateArray &operator=(const PerStateArray<Element> &) = delete;
 
-    ~PerStateArray() {
+    virtual ~PerStateArray() override {
         for (auto it : entry_arrays_by_registry) {
-            it.first->unsubscribe(this);
             delete it.second;
         }
     }
@@ -129,7 +128,7 @@ public:
         */
     }
 
-    virtual void remove_state_registry(StateRegistry *registry) override {
+    virtual void notify_service_destroyed(const StateRegistry *registry) override {
         delete entry_arrays_by_registry[registry];
         entry_arrays_by_registry.erase(registry);
         if (registry == cached_registry) {

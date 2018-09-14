@@ -2,7 +2,10 @@
 #define TASK_UTILS_TASK_PROPERTIES_H
 
 #include "../global_state.h"
+#include "../per_task_information.h"
 #include "../task_proxy.h"
+
+#include "../algorithms/int_packer.h"
 
 namespace task_properties {
 inline bool is_applicable(OperatorProxy op, const State &state) {
@@ -76,6 +79,10 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     }
     return fact_pairs;
 }
+
+/* Create or retrieve a state packer from global cache. If state packers are
+   created with this function, we build at most one per AbstractTask. */
+extern PerTaskInformation<int_packer::IntPacker> g_state_packers;
 }
 
 #endif

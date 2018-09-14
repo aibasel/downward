@@ -9,6 +9,7 @@
 #include "algorithms/int_hash_set.h"
 #include "algorithms/int_packer.h"
 #include "algorithms/segmented_vector.h"
+#include "algorithms/subscriber.h"
 #include "utils/hash.h"
 
 #include <set>
@@ -98,9 +99,7 @@
     state and each landmark whether it was reached in this state.
 */
 
-class PerStateInformationBase;
-
-class StateRegistry {
+class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     struct StateIDSemanticHash {
         const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
         int state_size;
@@ -155,21 +154,17 @@ class StateRegistry {
              members should come from the task. */
     const int_packer::IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
-    const std::vector<int> &initial_state_data;
     const int num_variables;
 
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
     GlobalState *cached_initial_state;
-    mutable std::set<PerStateInformationBase *> subscribers;
 
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
 public:
-    StateRegistry(
-        const AbstractTask &task, const int_packer::IntPacker &state_packer,
-        AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
+    explicit StateRegistry(const AbstractTask &task);
     ~StateRegistry();
 
     /* TODO: Ideally, this should return a TaskProxy. (See comment above the
@@ -213,15 +208,6 @@ public:
     }
 
     int get_state_size_in_bytes() const;
-
-    /*
-      Remembers the given PerStateInformation. If this StateRegistry is
-      destroyed, it notifies all subscribed PerStateInformation objects.
-      The information stored in them that relates to states from this
-      registry is then destroyed as well.
-    */
-    void subscribe(PerStateInformationBase *psi) const;
-    void unsubscribe(PerStateInformationBase *psi) const;
 
     void print_statistics() const;
 
