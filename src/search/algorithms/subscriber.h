@@ -51,7 +51,12 @@ class Subscriber {
     virtual void notify_service_destroyed(const T *) = 0;
 public:
     virtual ~Subscriber() {
-        for (const SubscriberService<T> *service : services) {
+        /*
+          We have to copy the services because unsubscribing erases the
+          current service during the iteration.
+        */
+        std::unordered_set<const SubscriberService<T> *> services_copy(services);
+        for (const SubscriberService<T> *service : services_copy) {
             service->unsubscribe(this);
         }
     }
@@ -71,7 +76,12 @@ class SubscriberService {
     mutable std::unordered_set<Subscriber<T> *> subscribers;
 public:
     virtual ~SubscriberService() {
-        for (Subscriber<T> *subscriber : subscribers) {
+        /*
+          We have to copy the subscribers because unsubscribing erases the
+          current subscriber during the iteration.
+        */
+        std::unordered_set<Subscriber<T> *> subscribers_copy(subscribers);
+        for (Subscriber<T> *subscriber : subscribers_copy) {
             subscriber->notify_service_destroyed(static_cast<T *>(this));
             unsubscribe(subscriber);
         }
