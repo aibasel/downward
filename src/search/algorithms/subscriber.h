@@ -6,11 +6,11 @@
 
 /*
   The classes in this file allow objects of one class to react to the
-  destruction of objects from a different class.
-  To react to the desctruction of objects from a class T, derive T from
-  SubscriberService<T>. Then derive the class that should react to the
-  destruction from Subscriber<T> and override the method
-  notify_service_destroyed.
+  destruction of objects of another class.
+
+  If a class T1 wants to react to the destruction of objects of a class T2,
+  derive T2 from SubscriberService<T2>, derive T1 from Subscriber<T1> and
+  override the method notify_service_destroyed in T1.
 
   Example:
 
