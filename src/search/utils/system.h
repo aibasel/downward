@@ -19,6 +19,7 @@
 #include "language.h"
 
 #include <iostream>
+#include <stdlib.h>
 
 #define ABORT(msg) \
     ( \
