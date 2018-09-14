@@ -183,6 +183,11 @@ shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
                 throw ArgError("missing argument after --heuristic");
             ++i;
             predefine_evaluator(sanitize_argument(args[i]), dry_run);
+        } else if (arg == "--evaluator") {
+            if (is_last)
+                throw ArgError("missing argument after --evaluator");
+            ++i;
+            predefine_evaluator(sanitize_argument(args[i]), dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
