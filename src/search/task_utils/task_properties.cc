@@ -1,5 +1,6 @@
 #include "task_properties.h"
 
+#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -82,4 +83,16 @@ int get_min_operator_cost(TaskProxy task_proxy) {
     }
     return min_cost;
 }
+
+PerTaskInformation<int_packer::IntPacker> g_state_packers(
+    [](const TaskProxy &task_proxy) {
+        VariablesProxy variables = task_proxy.get_variables();
+        vector<int> variable_ranges;
+        variable_ranges.reserve(variables.size());
+        for (VariableProxy var : variables) {
+            variable_ranges.push_back(var.get_domain_size());
+        }
+        return utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges);
+    }
+    );
 }

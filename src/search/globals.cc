@@ -1,7 +1,5 @@
 #include "globals.h"
 
-#include "axioms.h"
-
 #include "algorithms/int_packer.h"
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
@@ -27,27 +25,21 @@ void read_everything(istream &in) {
     tasks::read_root_task(in);
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
-    TaskProxy task_proxy(*tasks::g_root_task);
-    g_axiom_evaluator = new AxiomEvaluator(task_proxy);
-
     cout << "packing state variables..." << flush;
-    VariablesProxy variables = task_proxy.get_variables();
-    vector<int> variable_ranges;
-    variable_ranges.reserve(variables.size());
-    for (VariableProxy var : variables) {
-        variable_ranges.push_back(var.get_domain_size());
-    }
-    g_state_packer = new int_packer::IntPacker(variable_ranges);
+    const int_packer::IntPacker &state_packer =
+        task_properties::g_state_packers[tasks::g_root_task.get()];
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
     int num_facts = 0;
+    TaskProxy task_proxy(*tasks::g_root_task);
+    VariablesProxy variables = task_proxy.get_variables();
     for (VariableProxy var : variables)
         num_facts += var.get_domain_size();
 
     cout << "Variables: " << variables.size() << endl;
     cout << "FactPairs: " << num_facts << endl;
     cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() * sizeof(int_packer::IntPacker::Bin)
+         << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
          << endl;
 
     cout << "Building successor generator..." << flush;
@@ -100,9 +92,6 @@ bool is_unit_cost() {
     return is_unit_cost;
 }
 
-int_packer::IntPacker *g_state_packer;
-vector<int> g_initial_state_data;
-AxiomEvaluator *g_axiom_evaluator;
 successor_generator::SuccessorGenerator *g_successor_generator;
 
 utils::Log g_log;

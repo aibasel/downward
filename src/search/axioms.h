@@ -2,6 +2,7 @@
 #define AXIOMS_H
 
 #include "global_state.h"
+#include "per_task_information.h"
 #include "task_proxy.h"
 
 #include <memory>
@@ -56,10 +57,16 @@ class AxiomEvaluator {
       The queue is an instance variable rather than a local variable
       to reduce reallocation effort. See issue420.
     */
-    std::vector<AxiomLiteral *> queue;
+    std::vector<const AxiomLiteral *> queue;
 public:
     explicit AxiomEvaluator(const TaskProxy &task_proxy);
     void evaluate(PackedStateBin *buffer, const int_packer::IntPacker &state_packer);
+    void evaluate(std::vector<int> &state);
 };
+
+/* Create or retrieve an axiom evaluator from global cache. If axiom evaluators
+   are created with this function, we build at most one per AbstractTask. */
+extern PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
+
 
 #endif

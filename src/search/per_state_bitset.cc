@@ -82,7 +82,3 @@ PerStateBitset::PerStateBitset(const vector<bool> &default_bits)
 BitsetView PerStateBitset::operator[](const GlobalState &state) {
     return BitsetView(data[state], num_bits_per_entry);
 }
-
-void PerStateBitset::remove_state_registry(StateRegistry *registry) {
-    data.remove_state_registry(registry);
-}
