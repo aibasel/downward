@@ -73,6 +73,7 @@ public:
     virtual ~SubscriberService() {
         for (Subscriber<T> *subscriber : subscribers) {
             subscriber->notify_service_destroyed(static_cast<T *>(this));
+            unsubscribe(subscriber);
         }
     }
 
