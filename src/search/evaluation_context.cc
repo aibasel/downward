@@ -10,7 +10,7 @@ using namespace std;
 
 
 EvaluationContext::EvaluationContext(
-    const HeuristicCache &cache, int g_value, bool is_preferred,
+    const EvaluatorCache &cache, int g_value, bool is_preferred,
     SearchStatistics *statistics, bool calculate_preferred)
     : cache(cache),
       g_value(g_value),
@@ -22,13 +22,13 @@ EvaluationContext::EvaluationContext(
 EvaluationContext::EvaluationContext(
     const GlobalState &state, int g_value, bool is_preferred,
     SearchStatistics *statistics, bool calculate_preferred)
-    : EvaluationContext(HeuristicCache(state), g_value, is_preferred, statistics, calculate_preferred) {
+    : EvaluationContext(EvaluatorCache(state), g_value, is_preferred, statistics, calculate_preferred) {
 }
 
 EvaluationContext::EvaluationContext(
     const GlobalState &state,
     SearchStatistics *statistics, bool calculate_preferred)
-    : EvaluationContext(HeuristicCache(state), INVALID, false, statistics, calculate_preferred) {
+    : EvaluationContext(EvaluatorCache(state), INVALID, false, statistics, calculate_preferred) {
 }
 
 const EvaluationResult &EvaluationContext::get_result(Evaluator *evaluator) {
@@ -44,7 +44,7 @@ const EvaluationResult &EvaluationContext::get_result(Evaluator *evaluator) {
     return result;
 }
 
-const HeuristicCache &EvaluationContext::get_cache() const {
+const EvaluatorCache &EvaluationContext::get_cache() const {
     return cache;
 }
 
