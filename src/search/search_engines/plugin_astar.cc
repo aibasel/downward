@@ -23,7 +23,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "Equivalent statements using general eager search",
         "\n```\n--search astar(evaluator)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h=evaluator\n"
+        "```\n--evaluator h=evaluator\n"
         "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
         "               reopen_closed=true, f_eval=sum([g(), h]))\n"
         "```\n", true);

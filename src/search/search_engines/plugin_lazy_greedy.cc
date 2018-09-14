@@ -23,10 +23,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "but a standard open list with only one queue.");
     parser.document_note(
         "Equivalent statements using general lazy search",
-        "\n```\n--heuristic h2=eval2\n"
+        "\n```\n--evaluator h2=eval2\n"
         "--search lazy_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "```\n--evaluator h1=eval1 --heuristic h2=eval2\n"
         "--search lazy(alt([single(h1), single(h1, pref_only=true), single(h2),\n"
         "                  single(h2, pref_only=true)], boost=100),\n"
         "              preferred=h2)\n```\n"
@@ -35,9 +35,9 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--search lazy(alt([single(eval1), single(eval2)], boost=100))\n```\n"
         "------------------------------------------------------------\n"
-        "```\n--heuristic h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
+        "```\n--evaluator h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h1=eval1\n"
+        "```\n--evaluator h1=eval1\n"
         "--search lazy(alt([single(h1), single(h1, pref_only=true)], boost=1000),\n"
         "              preferred=h1)\n```\n"
         "------------------------------------------------------------\n"
