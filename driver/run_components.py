@@ -31,7 +31,8 @@ elif os.name == "nt":
     REL_SEARCH_PATH = "downward.exe"
     VALIDATE = "validate.exe"
 else:
-    sys.exit("Unsupported OS: " + os.name)
+    util.print_stderr("Unsupported OS: " + os.name)
+    sys.exit(returncodes.DRIVER_UNSUPPORTED)
 
 def get_executable(build, rel_path):
     # First, consider 'build' to be a path directly to the binaries.
@@ -77,7 +78,7 @@ def run_translate(args):
     # We collect stderr of the translator and print it here, unless
     # the translator ran out of memory and all output in stderr is
     # related to MemoryError.
-    print_stderr = True
+    do_print_on_stderr = True
     if returncode == returncodes.TRANSLATE_OUT_OF_MEMORY:
         output_related_to_memory_error = True
         if not stderr:
@@ -87,10 +88,10 @@ def run_translate(args):
                 output_related_to_memory_error = False
                 break
         if output_related_to_memory_error:
-            print_stderr = False
+            do_print_on_stderr = False
 
-    if print_stderr and stderr:
-        print(stderr, file=sys.stderr)
+    if do_print_on_stderr and stderr:
+        util.print_stderr(stderr)
 
     if returncode == 0:
         return (0, True)
@@ -172,7 +173,7 @@ def run_validate(args):
             memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
     except OSError as err:
         if err.errno == errno.ENOENT:
-            sys.exit("Error: {} not found. Is it on the PATH?".format(VALIDATE))
+            raise IOError("Error: {} not found. Is it on the PATH?".format(VALIDATE))
         else:
             raise
     else:

@@ -2,6 +2,7 @@
 
 from __future__ import division, print_function
 
+from . import returncodes
 from . import util
 
 import math
@@ -29,11 +30,11 @@ def _set_limit(kind, soft, hard=None):
     try:
         resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError) as err:
-        print(
+        util.print_stderr(
             "Limit for {} could not be set to ({},{}) ({}). "
             "Previous limit: {}".format(
-                kind, soft, hard, err, resource.getrlimit(kind)),
-            file=sys.stderr)
+                kind, soft, hard, err, resource.getrlimit(kind)))
+        sys.exit(returncodes.DRIVER_UNSUPPORTED)
 
 
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
@@ -170,4 +171,5 @@ def get_time_limit(component_limit, overall_limit):
     elif component_limit is None and overall_limit is None:
         return None
     else:
-        sys.exit(RESOURCE_MODULE_MISSING_MSG)
+        util.print_stderr(RESOURCE_MODULE_MISSING_MSG)
+        sys.exit(returncodes.DRIVER_UNSUPPORTED)
