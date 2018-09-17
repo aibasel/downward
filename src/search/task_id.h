@@ -2,12 +2,12 @@
 #define TASK_ID_H
 
 #include <cstdint>
-#include <iostream>
+#include <functional>
 
 class AbstractTask;
 
 /*
-  A TaskID uniquely identifies a task (for maps, unordered_maps and comparison)
+  A TaskID uniquely identifies a task (for unordered_maps and comparison)
   without publicly exposing the internal AbstractTask pointer.
 */
 class TaskID {
