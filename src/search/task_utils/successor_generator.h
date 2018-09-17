@@ -1,6 +1,8 @@
 #ifndef TASK_UTILS_SUCCESSOR_GENERATOR_H
 #define TASK_UTILS_SUCCESSOR_GENERATOR_H
 
+#include "../per_task_information.h"
+
 #include <memory>
 #include <vector>
 
@@ -30,6 +32,13 @@ public:
     void generate_applicable_ops(
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const;
 };
+
+/*
+  Create or retrieve a successor generator from global cache. If successor
+  generators are created with this function, we build at most one per
+  AbstractTask.
+*/
+extern PerTaskInformation<SuccessorGenerator> g_successor_generators;
 }
 
 #endif

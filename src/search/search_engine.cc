@@ -7,6 +7,7 @@
 #include "plugin.h"
 
 #include "algorithms/ordered_set.h"
+#include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
@@ -29,6 +30,7 @@ SearchEngine::SearchEngine(const Options &opts)
       task(tasks::g_root_task),
       task_proxy(*task),
       state_registry(*task),
+      successor_generator(successor_generator::g_successor_generators[task_proxy]),
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),

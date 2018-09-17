@@ -46,7 +46,7 @@ void read_everything(istream &in) {
     cout << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();
     utils::Timer successor_generator_timer;
-    g_successor_generator = new successor_generator::SuccessorGenerator(task_proxy);
+    successor_generator::g_successor_generators[task_proxy];
     successor_generator_timer.stop();
     cout << "done! [t=" << utils::g_timer << "]" << endl;
     int peak_memory_after = utils::get_peak_memory_in_kb();
@@ -92,7 +92,5 @@ bool is_unit_cost() {
     static bool is_unit_cost = task_properties::is_unit_cost(TaskProxy(*tasks::g_root_task));
     return is_unit_cost;
 }
-
-successor_generator::SuccessorGenerator *g_successor_generator;
 
 utils::Log g_log;
