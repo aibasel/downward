@@ -3,6 +3,7 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -39,7 +40,9 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
         build_unary_operators(axiom, -1);
 
     // Simplify unary operators.
+    utils::Timer simplify_timer;
     simplify();
+    cout << "time to simplify: " << simplify_timer << endl;
 
     // Cross-reference unary operators.
     for (size_t i = 0; i < unary_operators.size(); ++i) {
