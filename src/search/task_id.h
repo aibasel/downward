@@ -35,7 +35,7 @@ public:
 namespace std {
 template<>
 struct hash<TaskID> {
-    std::size_t operator()(TaskID id) const {
+    size_t operator()(TaskID id) const {
         return id.hash();
     }
 };
