@@ -17,50 +17,14 @@ SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue213-v7"]
 BUILDS = ["release32", "release64"]
-CONFIG_DICT = {
-    "eager_greedy_ff": [
-        "--heuristic",
-        "h=ff()",
-        "--search",
-        "eager_greedy([h], preferred=[h])"],
-    "eager_greedy_cea": [
-        "--heuristic",
-        "h=cea()",
-        "--search",
-        "eager_greedy([h], preferred=[h])"],
-    "lazy_greedy_add": [
-        "--heuristic",
-        "h=add()",
-        "--search",
-        "lazy_greedy([h], preferred=[h])"],
-    "lazy_greedy_cg": [
-        "--heuristic",
-        "h=cg()",
-        "--search",
-        "lazy_greedy([h], preferred=[h])"],
-    "lama-first": [
-        "--heuristic",
-        """hlm=lama_synergy(lm_rhw(reasonable_orders=true,lm_cost_type=one),
-                                   transform=adapt_costs(one))""",
-        "--heuristic", "hff=ff_synergy(hlm)",
-        "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
-                                   cost_type=one,reopen_closed=false)"""],
-    "ff-typed": [
-        "--heuristic", "hff=ff()",
-        "--search",
-            "lazy(alt([single(hff), single(hff, pref_only=true),"
-            " type_based([hff, g()])], boost=1000),"
-            " preferred=[hff], cost_type=one)"],
-}
 CONFIGS = [
     IssueConfig(
-        "-".join([config_nick, build]),
-        config,
+        "lama-" + build,
+        [],
         build_options=[build],
-        driver_options=["--build", build, "--overall-time-limit", "30m"])
+        driver_options=["--build", build, "--alias", "seq-sat-lama-2011", "--overall-time-limit", "5m"])
     for rev in REVISIONS
     for build in BUILDS
-    for config_nick, config in CONFIG_DICT.items()
 ]
 SUITE = common_setup.DEFAULT_SATISFICING_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
@@ -80,8 +44,7 @@ exp = IssueExperiment(
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_parser(exp.EXITCODE_PARSER)
-exp.add_parser(exp.TRANSLATOR_PARSER)
-exp.add_parser(exp.SINGLE_SEARCH_PARSER)
+exp.add_parser(exp.ANYTIME_SEARCH_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 
 exp.add_step('build', exp.build)
@@ -99,7 +62,7 @@ for build1, build2 in itertools.combinations(BUILDS, 2):
         ("{rev}-{config_nick}-{build1}".format(**locals()),
          "{rev}-{config_nick}-{build2}".format(**locals()),
          "Diff ({config_nick}-{rev})".format(**locals()))
-        for config_nick, _ in CONFIG_DICT.items()]
+        for config_nick in ["lama"]]
     exp.add_report(
         ComparativeReport(algorithm_pairs, attributes=attributes),
         name="issue213-{build1}-vs-{build2}-{SCRIPT_NAME}".format(**locals()))
