@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 /*
-  A PerTaskInformation<T> acts like an unordered_map<const AbstractTask *, T>
+  A PerTaskInformation<T> acts like an unordered_map<TaskID, T>
   with two main differences:
   (1) If an entry is accessed that does not exist yet, it is created using a
       factory function that is passed to the PerTaskInformation in its
@@ -31,7 +31,7 @@ class PerTaskInformation : public subscriber::Subscriber<AbstractTask> {
     */
     using EntryConstructor = std::function<std::unique_ptr<Entry>(const TaskProxy &)>;
     EntryConstructor entry_constructor;
-    std::unordered_map<const AbstractTask *, std::unique_ptr<Entry>> entries;
+    std::unordered_map<TaskID, std::unique_ptr<Entry>> entries;
 public:
     /*
       If no entry_constructor is passed to the PerTaskInformation explicitly,
@@ -49,17 +49,19 @@ public:
         : entry_constructor(entry_constructor) {
     }
 
-    Entry &operator[](const AbstractTask *task) {
-        const auto &it = entries.find(task);
+    Entry &operator[](const TaskProxy &task_proxy) {
+        TaskID id = task_proxy.get_id();
+        const auto &it = entries.find(id);
         if (it == entries.end()) {
-            entries[task] = entry_constructor(TaskProxy(*task));
-            task->subscribe(this);
+            entries[id] = entry_constructor(task_proxy);
+            task_proxy.subscribe_to_task_destruction(this);
         }
-        return *entries[task];
+        return *entries[id];
     }
 
     virtual void notify_service_destroyed(const AbstractTask *task) override {
-        entries.erase(task);
+        TaskID id = TaskProxy(*task).get_id();
+        entries.erase(id);
     }
 };
 
