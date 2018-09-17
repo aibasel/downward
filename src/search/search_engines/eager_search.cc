@@ -124,7 +124,7 @@ SearchStatus EagerSearch::step() {
         return SOLVED;
 
     vector<OperatorID> applicable_ops;
-    g_successor_generator->generate_applicable_ops(s, applicable_ops);
+    successor_generator.generate_applicable_ops(s, applicable_ops);
 
     /*
       TODO: When preferred operators are in use, a preferred operator will be
