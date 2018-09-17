@@ -20,7 +20,7 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         "Returns the g-value (path cost) of the search node.");
     parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return make_shared<GEvaluator>();
 }
