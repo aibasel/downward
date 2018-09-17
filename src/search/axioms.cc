@@ -80,77 +80,20 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     if (!task_has_axioms)
         return;
 
-    assert(queue.empty());
+    vector<int> values;
+    values.reserve(default_values.size());
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
-        int default_value = default_values[var_id];
-        if (default_value != -1) {
-            state_packer.set(buffer, var_id, default_value);
-        } else {
-            int value = state_packer.get(buffer, var_id);
-            queue.push_back(&axiom_literals[var_id][value]);
-        }
+        int value = state_packer.get(buffer, var_id);
+        values.push_back(value);
     }
 
-    for (AxiomRule &rule : rules) {
-        rule.unsatisfied_conditions = rule.condition_count;
+    evaluate(values);
 
-        /*
-          TODO: In a perfect world, trivial axioms would have been
-          compiled away, and we could have the following assertion
-          instead of the following block.
-          assert(rule.condition_count != 0);
-        */
-        if (rule.condition_count == 0) {
-            /*
-              NOTE: This duplicates code from the main loop below.
-              I don't mind because this is (hopefully!) going away
-              some time.
-            */
-            int var_no = rule.effect_var;
-            int val = rule.effect_val;
-            if (state_packer.get(buffer, var_no) != val) {
-                state_packer.set(buffer, var_no, val);
-                queue.push_back(rule.effect_literal);
-            }
-        }
-    }
-
-    for (size_t layer_no = 0; layer_no < nbf_info_by_layer.size(); ++layer_no) {
-        // Apply Horn rules.
-        while (!queue.empty()) {
-            const AxiomLiteral *curr_literal = queue.back();
-            queue.pop_back();
-            for (size_t i = 0; i < curr_literal->condition_of.size(); ++i) {
-                AxiomRule *rule = curr_literal->condition_of[i];
-                if (--rule->unsatisfied_conditions == 0) {
-                    int var_no = rule->effect_var;
-                    int val = rule->effect_val;
-                    if (state_packer.get(buffer, var_no) != val) {
-                        state_packer.set(buffer, var_no, val);
-                        queue.push_back(rule->effect_literal);
-                    }
-                }
-            }
-        }
-
-        /*
-          Apply negation by failure rules. Skip this in last iteration
-          to save some time (see issue420, msg3058).
-        */
-        if (layer_no != nbf_info_by_layer.size() - 1) {
-            const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
-            for (size_t i = 0; i < nbf_info.size(); ++i) {
-                int var_no = nbf_info[i].var_no;
-                // Verify that variable is derived.
-                assert(default_values[var_no] != -1);
-                if (state_packer.get(buffer, var_no) == default_values[var_no])
-                    queue.push_back(nbf_info[i].literal);
-            }
-        }
+    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
+        state_packer.set(buffer, var_id, values[var_id]);
     }
 }
 
-// TODO avoid code duplication (issue794)
 void AxiomEvaluator::evaluate(vector<int> &state) {
     if (!task_has_axioms)
         return;
