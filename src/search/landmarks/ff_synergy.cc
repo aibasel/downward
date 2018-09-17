@@ -36,7 +36,7 @@ EvaluationResult FFSynergyHeuristic::compute_result(
     return master->ff_result;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "LAMA-FF synergy slave",
         "See Evaluator#LAMA-FF_synergy_master for the "
@@ -61,8 +61,8 @@ static Heuristic *_parse(OptionParser &parser) {
     // explicitly in the slave.
     opts.set<bool>("cache_estimates", false);
 
-    return new FFSynergyHeuristic(opts);
+    return make_shared<FFSynergyHeuristic>(opts);
 }
 
-static Plugin<Evaluator> _plugin("ff_synergy", _parse);
+static PluginShared<Evaluator> _plugin("ff_synergy", _parse);
 }

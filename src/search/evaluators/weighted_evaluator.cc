@@ -44,7 +44,7 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 
-static Evaluator *_parse(OptionParser &parser) {
+static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Weighted evaluator",
         "Multiplies the value of the evaluator with the given weight.");
@@ -52,10 +52,10 @@ static Evaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("weight", "weight");
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new WeightedEvaluator(opts);
+        return make_shared<WeightedEvaluator>(opts);
 }
 
-static Plugin<Evaluator> _plugin("weight", _parse, "evaluators_basic");
+static PluginShared<Evaluator> _plugin("weight", _parse, "evaluators_basic");
 }

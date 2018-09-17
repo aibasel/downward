@@ -40,7 +40,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     return total_cost;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-cut heuristic", "");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
@@ -55,8 +55,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new LandmarkCutHeuristic(opts);
+        return make_shared<LandmarkCutHeuristic>(opts);
 }
 
-static Plugin<Evaluator> _plugin("lmcut", _parse);
+static PluginShared<Evaluator> _plugin("lmcut", _parse);
 }

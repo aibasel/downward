@@ -486,7 +486,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternCollectionGeneratorHillclimbing>(opts);
 }
 
-static Heuristic *_parse_ipdb(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
         "This pattern generation method is an adaption of the algorithm "
@@ -612,9 +612,9 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "max_time_dominance_pruning", opts.get<double>("max_time_dominance_pruning"));
 
     // Note: in the long run, this should return a shared pointer.
-    return new CanonicalPDBsHeuristic(heuristic_opts);
+    return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
 }
 
-static Plugin<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
+static PluginShared<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
 static PluginShared<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
 }
