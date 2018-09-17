@@ -22,7 +22,7 @@ void PruningMethod::prune_operators(const GlobalState &global_state,
     assert(task);
     /* Note that if the pruning method would use a different task than
        the search, we would have to convert the state before using it. */
-    State state(*task, global_state.get_values());
+    State state = global_state.unpack();
 
     prune_operators(state, op_ids);
 }
