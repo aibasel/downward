@@ -352,10 +352,10 @@ RootTask::RootTask(std::istream &in) {
        have reached the end of "in". */
 
     /*
-      HACK: Accessing g_axiom_evaluators here creates a TaskProxy which assumes
+      HACK: We use a TaskProxy to access g_axiom_evaluators here which assumes
       that this task is completely constructed.
     */
-    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[this];
+    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*this)];
     axiom_evaluator.evaluate(initial_state_values);
 }
 
