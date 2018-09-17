@@ -22,7 +22,6 @@ __all__ = ["run"]
 import os
 import subprocess
 import sys
-import traceback
 
 from . import call
 from . import limits
@@ -196,7 +195,6 @@ def get_portfolio_attributes(portfolio):
         try:
             exec(content, attributes)
         except Exception:
-            traceback.print_exc()
             raise ImportError(
                 "The portfolio %s could not be loaded. Maybe it still "
                 "uses the old portfolio syntax? See the FDSS portfolios "
@@ -221,17 +219,21 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
     if "TIMEOUT" in attributes:
-        sys.exit(
+        util.print_stderr(
             "The TIMEOUT attribute in portfolios has been removed. "
             "Please pass a time limit to fast-downward.py.")
+        sys.exit(returncodes.DRIVER_INPUT_ERROR)
 
     if time is None:
         if os.name == "nt":
-            sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+            util.print_stderr(limits.RESOURCE_MODULE_MISSING_MSG)
+            sys.exit(returncodes.DRIVER_UNSUPPORTED)
         else:
-            sys.exit(
+            util.print_stderr(
                 "Portfolios need a time limit. Please pass --search-time-limit "
                 "or --overall-time-limit to fast-downward.py.")
+            sys.exit(returncodes.DRIVER_INPUT_ERROR)
+
 
     timeout = util.get_elapsed_time() + time
 
