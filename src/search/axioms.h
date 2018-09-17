@@ -62,6 +62,10 @@ class AxiomEvaluator {
       to reduce reallocation effort. See issue420.
     */
     std::vector<const AxiomLiteral *> queue;
+
+
+    PackedStateBin *temporary_buffer;
+    const int_packer::IntPacker &task_state_packer;
 public:
     explicit AxiomEvaluator(const TaskProxy &task_proxy);
 

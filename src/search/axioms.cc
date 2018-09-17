@@ -15,7 +15,8 @@
 
 using namespace std;
 
-AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
+AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy)
+    : task_state_packer(task_properties::g_state_packers[task_proxy]) {
     task_has_axioms = task_properties::has_axioms(task_proxy);
     if (task_has_axioms) {
         VariablesProxy variables = task_proxy.get_variables();
@@ -76,35 +77,38 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
                 default_values.emplace_back(-1);
         }
     }
+
+    temporary_buffer = new int_packer::IntPacker::Bin[task_state_packer.get_num_bins()];
+
+    // HACK: remove before merge
+    accumulated_time_outer = 0;
+    accumulated_time_inner = 0;
 }
 
 // TODO rethink the way this is called: see issue348.
-void AxiomEvaluator::evaluate(PackedStateBin *buffer,
-                              const int_packer::IntPacker &state_packer) {
+void AxiomEvaluator::evaluate(vector<int> &state) {
     if (!task_has_axioms)
         return;
 
     // HACK: remove before merge
     utils::Timer timer;
 
-    vector<int> values;
-    values.reserve(default_values.size());
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
-        int value = state_packer.get(buffer, var_id);
-        values.push_back(value);
+        task_state_packer.set(temporary_buffer, var_id, state[var_id]);
     }
 
-    evaluate(values);
+    evaluate(temporary_buffer, task_state_packer);
 
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
-        state_packer.set(buffer, var_id, values[var_id]);
+        state[var_id] = task_state_packer.get(temporary_buffer, var_id);
     }
 
     // HACK: remove before merge
     accumulated_time_outer += timer();
 }
 
-void AxiomEvaluator::evaluate(vector<int> &state) {
+void AxiomEvaluator::evaluate(PackedStateBin *buffer,
+                              const int_packer::IntPacker &state_packer) {
     if (!task_has_axioms)
         return;
 
@@ -115,9 +119,9 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
         int default_value = default_values[var_id];
         if (default_value != -1) {
-            state[var_id] = default_value;
+            state_packer.set(buffer, var_id, default_value);
         } else {
-            int value = state[var_id];
+            int value = state_packer.get(buffer, var_id);
             queue.push_back(&axiom_literals[var_id][value]);
         }
     }
@@ -139,8 +143,8 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
             */
             int var_no = rule.effect_var;
             int val = rule.effect_val;
-            if (state[var_no] != val) {
-                state[var_no] = val;
+            if (state_packer.get(buffer, var_no) != val) {
+                state_packer.set(buffer, var_no, val);
                 queue.push_back(rule.effect_literal);
             }
         }
@@ -156,8 +160,8 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
                 if (--rule->unsatisfied_conditions == 0) {
                     int var_no = rule->effect_var;
                     int val = rule->effect_val;
-                    if (state[var_no] != val) {
-                        state[var_no] = val;
+                    if (state_packer.get(buffer, var_no) != val) {
+                        state_packer.set(buffer, var_no, val);
                         queue.push_back(rule->effect_literal);
                     }
                 }
@@ -174,7 +178,7 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
                 int var_no = nbf_info[i].var_no;
                 // Verify that variable is derived.
                 assert(default_values[var_no] != -1);
-                if (state[var_no] == default_values[var_no])
+                if (state_packer.get(buffer, var_no) == default_values[var_no])
                     queue.push_back(nbf_info[i].literal);
             }
         }
