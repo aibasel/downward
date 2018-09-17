@@ -9,6 +9,10 @@
 #include <iostream>
 #include <vector>
 
+
+// HACK: remove before merge
+#include "utils/timer.h"
+
 using namespace std;
 
 AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
@@ -80,6 +84,9 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     if (!task_has_axioms)
         return;
 
+    // HACK: remove before merge
+    utils::Timer timer;
+
     vector<int> values;
     values.reserve(default_values.size());
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
@@ -92,11 +99,17 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
         state_packer.set(buffer, var_id, values[var_id]);
     }
+
+    // HACK: remove before merge
+    accumulated_time_outer += timer();
 }
 
 void AxiomEvaluator::evaluate(vector<int> &state) {
     if (!task_has_axioms)
         return;
+
+    // HACK: remove before merge
+    utils::Timer timer;
 
     assert(queue.empty());
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
@@ -166,6 +179,16 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
             }
         }
     }
+
+    // HACK: remove before merge
+    accumulated_time_inner += timer();
 }
+
+// HACK: remove before merge
+AxiomEvaluator::~AxiomEvaluator() {
+    cout << "AxiomEvaluator time in outer evaluate: " << accumulated_time_outer << endl;
+    cout << "AxiomEvaluator time in inner evaluate: " << accumulated_time_inner << endl;
+}
+
 
 PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
