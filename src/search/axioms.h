@@ -63,9 +63,8 @@ class AxiomEvaluator {
     */
     std::vector<const AxiomLiteral *> queue;
 
-
-    PackedStateBin *temporary_buffer;
-    const int_packer::IntPacker &task_state_packer;
+    template<typename Values, typename Accessor>
+    void evaluate_aux(Values &values, const Accessor &accessor);
 public:
     explicit AxiomEvaluator(const TaskProxy &task_proxy);
 
