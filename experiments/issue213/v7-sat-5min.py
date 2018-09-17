@@ -57,7 +57,7 @@ CONFIGS = [
         "-".join([config_nick, build]),
         config,
         build_options=[build],
-        driver_options=["--build", build, "--overall-time-limit", "30m"])
+        driver_options=["--build", build, "--overall-time-limit", "5m"])
     for rev in REVISIONS
     for build in BUILDS
     for config_nick, config in CONFIG_DICT.items()
