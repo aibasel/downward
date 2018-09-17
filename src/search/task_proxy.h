@@ -675,8 +675,12 @@ public:
         return GoalsProxy(*task);
     }
 
+    State create_state(std::vector<int> &&state_values) const {
+        return State(*task, std::move(state_values));
+    }
+
     State get_initial_state() const {
-        return State(*task, task->get_initial_state_values());
+        return create_state(task->get_initial_state_values());
     }
 
     /*
@@ -691,7 +695,7 @@ public:
         // Create a copy of the state values for the new state.
         std::vector<int> state_values = ancestor_state.get_values();
         task->convert_state_values(state_values, ancestor_task_proxy.task);
-        return State(*task, std::move(state_values));
+        return create_state(std::move(state_values));
     }
 
     const causal_graph::CausalGraph &get_causal_graph() const;
