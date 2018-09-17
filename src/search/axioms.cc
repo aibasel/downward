@@ -15,8 +15,18 @@
 
 using namespace std;
 
-AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy)
-    : task_state_packer(task_properties::g_state_packers[task_proxy]) {
+class VectorAccessor {
+public:
+    void set(vector<int> &values, int index, int value) const {
+        values[index] = value;
+    }
+
+    int get(const vector<int> &values, int index) const {
+        return values[index];
+    }
+};
+
+AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
     task_has_axioms = task_properties::has_axioms(task_proxy);
     if (task_has_axioms) {
         VariablesProxy variables = task_proxy.get_variables();
@@ -78,8 +88,6 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy)
         }
     }
 
-    temporary_buffer = new int_packer::IntPacker::Bin[task_state_packer.get_num_bins()];
-
     // HACK: remove before merge
     accumulated_time_outer = 0;
     accumulated_time_inner = 0;
@@ -87,28 +95,16 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy)
 
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(vector<int> &state) {
-    if (!task_has_axioms)
-        return;
-
-    // HACK: remove before merge
-    utils::Timer timer;
-
-    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
-        task_state_packer.set(temporary_buffer, var_id, state[var_id]);
-    }
-
-    evaluate(temporary_buffer, task_state_packer);
-
-    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
-        state[var_id] = task_state_packer.get(temporary_buffer, var_id);
-    }
-
-    // HACK: remove before merge
-    accumulated_time_outer += timer();
+    evaluate_aux(state, VectorAccessor());
 }
 
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                               const int_packer::IntPacker &state_packer) {
+    evaluate_aux(buffer, state_packer);
+}
+
+template<typename Values, typename Accessor>
+inline void AxiomEvaluator::evaluate_aux(Values &values, const Accessor &accessor) {
     if (!task_has_axioms)
         return;
 
@@ -119,9 +115,9 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
         int default_value = default_values[var_id];
         if (default_value != -1) {
-            state_packer.set(buffer, var_id, default_value);
+            accessor.set(values, var_id, default_value);
         } else {
-            int value = state_packer.get(buffer, var_id);
+            int value = accessor.get(values, var_id);
             queue.push_back(&axiom_literals[var_id][value]);
         }
     }
@@ -143,8 +139,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
             */
             int var_no = rule.effect_var;
             int val = rule.effect_val;
-            if (state_packer.get(buffer, var_no) != val) {
-                state_packer.set(buffer, var_no, val);
+            if (accessor.get(values, var_no) != val) {
+                accessor.set(values, var_no, val);
                 queue.push_back(rule.effect_literal);
             }
         }
@@ -160,8 +156,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                 if (--rule->unsatisfied_conditions == 0) {
                     int var_no = rule->effect_var;
                     int val = rule->effect_val;
-                    if (state_packer.get(buffer, var_no) != val) {
-                        state_packer.set(buffer, var_no, val);
+                    if (accessor.get(values, var_no) != val) {
+                        accessor.set(values, var_no, val);
                         queue.push_back(rule->effect_literal);
                     }
                 }
@@ -178,7 +174,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                 int var_no = nbf_info[i].var_no;
                 // Verify that variable is derived.
                 assert(default_values[var_no] != -1);
-                if (state_packer.get(buffer, var_no) == default_values[var_no])
+                if (accessor.get(values, var_no) == default_values[var_no])
                     queue.push_back(nbf_info[i].literal);
             }
         }
