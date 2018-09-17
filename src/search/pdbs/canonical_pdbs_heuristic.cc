@@ -66,7 +66,7 @@ void add_canonical_pdbs_options_to_parser(options::OptionParser &parser) {
         Bounds("0.0", "infinity"));
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Canonical PDB",
         "The canonical pattern database heuristic is calculated as follows. "
@@ -96,8 +96,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new CanonicalPDBsHeuristic(opts);
+    return make_shared<CanonicalPDBsHeuristic>(opts);
 }
 
-static Plugin<Evaluator> _plugin("cpdbs", _parse, "heuristics_pdb");
+static PluginShared<Evaluator> _plugin("cpdbs", _parse, "heuristics_pdb");
 }

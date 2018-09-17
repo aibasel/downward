@@ -30,7 +30,7 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static Evaluator *_parse(OptionParser &parser) {
+static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis("Sum evaluator",
                              "Calculates the sum of the sub-evaluators.");
 
@@ -40,10 +40,10 @@ static Evaluator *_parse(OptionParser &parser) {
     opts.verify_list_non_empty<Evaluator *>("evals");
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new SumEvaluator(opts);
+        return make_shared<SumEvaluator>(opts);
 }
 
-static Plugin<Evaluator> _plugin("sum", _parse, "evaluators_basic");
+static PluginShared<Evaluator> _plugin("sum", _parse, "evaluators_basic");
 }

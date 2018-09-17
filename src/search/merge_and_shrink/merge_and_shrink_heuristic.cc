@@ -481,7 +481,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
     opts.set<int>("threshold_before_merge", threshold);
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
         "This heuristic implements the algorithm described in the following "
@@ -624,9 +624,9 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     } else {
-        return new MergeAndShrinkHeuristic(opts);
+        return make_shared<MergeAndShrinkHeuristic>(opts);
     }
 }
 
-static Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
+static PluginShared<Evaluator> _plugin("merge_and_shrink", _parse);
 }

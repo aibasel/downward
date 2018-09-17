@@ -24,7 +24,7 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static Evaluator *_parse(OptionParser &parser) {
+static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Max evaluator",
         "Calculates the maximum of the sub-evaluators.");
@@ -39,8 +39,8 @@ static Evaluator *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     }
-    return new MaxEvaluator(opts);
+    return make_shared<MaxEvaluator>(opts);
 }
 
-static Plugin<Evaluator> plugin("max", _parse);
+static PluginShared<Evaluator> plugin("max", _parse);
 }
