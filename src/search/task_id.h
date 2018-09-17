@@ -7,12 +7,11 @@
 class AbstractTask;
 
 /*
-  This class gives public access to an identify for a task proxy (for
-  comparison, maps and unordered_maps) without publicly exposing the internal
-  AbstractTask *.
+  A TaskID uniquely identifies a task (for maps, unordered_maps and comparison)
+  without publicly exposing the internal AbstractTask pointer.
 */
 class TaskID {
-    uintptr_t value;
+    const std::uintptr_t value;
 public:
     explicit TaskID(const AbstractTask *task)
         : value(reinterpret_cast<uintptr_t>(task)) {
@@ -27,7 +26,7 @@ public:
         return !(*this == other);
     }
 
-    size_t hash() const {
+    std::size_t hash() const {
         return value;
     }
 };
@@ -36,7 +35,7 @@ public:
 namespace std {
 template<>
 struct hash<TaskID> {
-    size_t operator()(TaskID id) const {
+    std::size_t operator()(TaskID id) const {
         return id.hash();
     }
 };
