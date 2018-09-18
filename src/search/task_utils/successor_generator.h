@@ -33,10 +33,6 @@ public:
         const GlobalState &state, std::vector<OperatorID> &applicable_ops) const;
 };
 
-/*
-  Create or retrieve a successor generator from global cache. If successor
-  generators are created, we build at most one per AbstractTask.
-*/
 extern PerTaskInformation<SuccessorGenerator> g_successor_generators;
 }
 

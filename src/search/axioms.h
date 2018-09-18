@@ -64,9 +64,6 @@ public:
     void evaluate(std::vector<int> &state);
 };
 
-/* Create or retrieve an axiom evaluator from global cache. If axiom evaluators
-   are created, we build at most one per AbstractTask. */
 extern PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
-
 
 #endif
