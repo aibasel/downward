@@ -32,7 +32,7 @@ class ParetoOpenList : public OpenList<Entry> {
     BucketMap buckets;
     KeySet nondominated;
     bool state_uniform_selection;
-    vector<Evaluator *> evaluators;
+    vector<shared_ptr<Evaluator>> evaluators;
 
     bool dominates(const KeyType &v1, const KeyType &v2) const;
     bool is_nondominated(
@@ -66,7 +66,7 @@ ParetoOpenList<Entry>::ParetoOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       rng(utils::parse_rng_from_options(opts)),
       state_uniform_selection(opts.get<bool>("state_uniform_selection")),
-      evaluators(opts.get_list<Evaluator *>("evals")) {
+      evaluators(opts.get_list<shared_ptr<Evaluator>>("evals")) {
 }
 
 template<class Entry>
@@ -127,8 +127,8 @@ void ParetoOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (Evaluator *evaluator : evaluators)
-        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator));
+    for (shared_ptr<Evaluator> &evaluator : evaluators)
+        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     Bucket &bucket = buckets[key];
     bool newkey = bucket.empty();
@@ -195,14 +195,14 @@ void ParetoOpenList<Entry>::clear() {
 template<class Entry>
 void ParetoOpenList<Entry>::get_path_dependent_evaluators(
     set<shared_ptr<Evaluator>> &evals) {
-    for (Evaluator *evaluator : evaluators)
+    for (shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 //TODO: remove when all search algorithms use shared_ptr for plugins
 template<class Entry>
 void ParetoOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
-    for (Evaluator *evaluator : evaluators)
+    for (shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 
@@ -214,8 +214,8 @@ bool ParetoOpenList<Entry>::is_dead_end(
     if (is_reliable_dead_end(eval_context))
         return true;
     // Otherwise, return true if all heuristics agree this is a dead-end.
-    for (Evaluator *evaluator : evaluators)
-        if (!eval_context.is_evaluator_value_infinite(evaluator))
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+        if (!eval_context.is_evaluator_value_infinite(evaluator.get()))
             return false;
     return true;
 }
@@ -223,8 +223,8 @@ bool ParetoOpenList<Entry>::is_dead_end(
 template<class Entry>
 bool ParetoOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    for (Evaluator *evaluator : evaluators)
-        if (eval_context.is_evaluator_value_infinite(evaluator) &&
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+        if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
             evaluator->dead_ends_are_reliable())
             return true;
     return false;
