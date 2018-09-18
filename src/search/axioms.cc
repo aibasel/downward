@@ -11,6 +11,17 @@
 
 using namespace std;
 
+/*
+  We use a template-based version of the strategy pattern to support both packed
+  and non-packed states (more precisely, int vectors) within the axiom
+  evaluator. This is encapsulated in the following two accessor classes.
+
+  As of this writing (i.e., if this comment is not out of date),
+  PackedStateAccessor is not actually needed because the IntPacker itself
+  already has the correct interface. However, having an explicit accessor helps
+  decouple this code from the interface of IntPacker.
+*/
+
 class VectorStateAccessor {
 public:
     void set(vector<int> &values, int var, int value) const {
