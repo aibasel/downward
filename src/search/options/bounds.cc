@@ -5,7 +5,7 @@
 using namespace std;
 
 namespace options {
-Bounds::Bounds(const std::string &min, const std::string &max)
+Bounds::Bounds(const string &min, const string &max)
     : min(min), max(max) {
 }
 
