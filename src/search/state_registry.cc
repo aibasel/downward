@@ -9,8 +9,8 @@ using namespace std;
 
 StateRegistry::StateRegistry(const AbstractTask &task)
     : task(task),
-      state_packer(task_properties::g_state_packers[&task]),
-      axiom_evaluator(g_axiom_evaluators[&task]),
+      state_packer(task_properties::g_state_packers[TaskProxy(task)]),
+      axiom_evaluator(g_axiom_evaluators[TaskProxy(task)]),
       num_variables(TaskProxy(task).get_variables().size()),
       state_data_pool(get_bins_per_state()),
       registered_states(
