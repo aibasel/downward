@@ -48,6 +48,8 @@ struct Proposition {
 
 class RelaxationHeuristic : public Heuristic {
     void build_unary_operators(const OperatorProxy &op, int operator_no);
+    int get_proposition_id(const Proposition &prop) const;
+    int get_operator_id(const UnaryOperator &op) const;
     void simplify();
 
     /*
