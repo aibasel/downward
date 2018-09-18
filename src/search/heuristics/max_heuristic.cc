@@ -34,7 +34,7 @@ HSPMaxHeuristic::~HSPMaxHeuristic() {
 void HSPMaxHeuristic::setup_exploration_queue() {
     queue.clear();
 
-    for (vector<Proposition> &props_of_var : propositions) {
+    for (vector<Proposition> &props_of_var : proposition_index) {
         for (Proposition &prop : props_of_var) {
             prop.cost = -1;
         }

@@ -20,9 +20,9 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     // Build propositions.
     int prop_id = 0;
     VariablesProxy variables = task_proxy.get_variables();
-    propositions.resize(variables.size());
+    proposition_index.resize(variables.size());
     for (FactProxy fact : variables.get_facts()) {
-        propositions[fact.get_variable().get_id()].push_back(Proposition(prop_id++));
+        proposition_index[fact.get_variable().get_id()].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
@@ -62,9 +62,9 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
     int var = fact.get_variable().get_id();
     int value = fact.get_value();
-    assert(utils::in_bounds(var, propositions));
-    assert(utils::in_bounds(value, propositions[var]));
-    return &propositions[var][value];
+    assert(utils::in_bounds(var, proposition_index));
+    assert(utils::in_bounds(value, proposition_index[var]));
+    return &proposition_index[var][value];
 }
 
 void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {

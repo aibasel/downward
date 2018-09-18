@@ -73,9 +73,9 @@ public:
     void compute_heuristic_for_cegar(const State &state);
 
     int get_cost_for_cegar(int var, int value) const {
-        assert(utils::in_bounds(var, propositions));
-        assert(utils::in_bounds(value, propositions[var]));
-        return propositions[var][value].cost;
+        assert(utils::in_bounds(var, proposition_index));
+        assert(utils::in_bounds(value, proposition_index[var]));
+        return proposition_index[var][value].cost;
     }
 };
 }
