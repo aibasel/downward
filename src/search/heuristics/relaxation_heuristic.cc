@@ -149,8 +149,10 @@ void RelaxationHeuristic::simplify() {
 
       This defines a strict partial order.
     */
+#ifndef NDEBUG
     for (const UnaryOperator &op : unary_operators)
         assert(utils::is_sorted_unique(op.precondition));
+#endif
 
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
