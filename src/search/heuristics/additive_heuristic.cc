@@ -38,12 +38,9 @@ void AdditiveHeuristic::write_overflow_warning() {
 void AdditiveHeuristic::setup_exploration_queue() {
     queue.clear();
 
-    for (size_t var = 0; var < proposition_index.size(); ++var) {
-        for (size_t value = 0; value < proposition_index[var].size(); ++value) {
-            Proposition &prop = proposition_index[var][value];
-            prop.cost = -1;
-            prop.marked = false;
-        }
+    for (Proposition &prop : propositions) {
+        prop.cost = -1;
+        prop.marked = false;
     }
 
     // Deal with operators and axioms without preconditions.

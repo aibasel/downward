@@ -18,11 +18,14 @@ namespace relaxation_heuristic {
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     : Heuristic(opts) {
     // Build propositions.
+    propositions.reserve(task_properties::get_num_facts(task_proxy));
     int prop_id = 0;
     VariablesProxy variables = task_proxy.get_variables();
     proposition_index.resize(variables.size());
     for (FactProxy fact : variables.get_facts()) {
-        proposition_index[fact.get_variable().get_id()].push_back(Proposition(prop_id++));
+        propositions.emplace_back(prop_id++);
+        int var_no = fact.get_variable().get_id();
+        proposition_index[var_no].push_back(&propositions.back());
     }
 
     // Build goal propositions.
@@ -66,7 +69,7 @@ Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
     int value = fact.get_value();
     assert(utils::in_bounds(var, proposition_index));
     assert(utils::in_bounds(value, proposition_index[var]));
-    return &proposition_index[var][value];
+    return proposition_index[var][value];
 }
 
 void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {
