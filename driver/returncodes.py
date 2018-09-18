@@ -54,7 +54,7 @@ def exit_with_driver_input_error(msg):
 
 def exit_with_driver_unsupported_error(msg):
     util.print_stderr(msg)
-    sys.exit(DRIVER_UNSUPPORTED_ERROR)
+    sys.exit(DRIVER_UNSUPPORTED)
 
 
 def generate_portfolio_exitcode(exitcodes):

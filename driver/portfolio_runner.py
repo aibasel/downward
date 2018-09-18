@@ -21,7 +21,6 @@ __all__ = ["run"]
 
 import os
 import subprocess
-import sys
 
 from . import call
 from . import limits
