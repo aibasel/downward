@@ -18,25 +18,23 @@ namespace relaxation_heuristic {
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     : Heuristic(opts) {
 
-    VariablesProxy variables = task_proxy.get_variables();
+    // Build propositions.
+    propositions.resize(task_properties::get_num_facts(task_proxy));
 
     // Build proposition offsets.
+    VariablesProxy variables = task_proxy.get_variables();
     proposition_offsets.reserve(variables.size());
     int offset = 0;
     for (VariableProxy var : variables) {
         proposition_offsets.push_back(offset);
         offset += var.get_domain_size();
     }
-
-    // Build propositions.
-    propositions.reserve(task_properties::get_num_facts(task_proxy));
-    int prop_id = 0;
-    for (FactProxy fact : variables.get_facts()) {
-        propositions.emplace_back(prop_id++);
-    }
+    assert(offset == static_cast<int>(propositions.size()));
 
     // Build goal propositions.
-    for (FactProxy goal : task_proxy.get_goals()) {
+    GoalsProxy goals = task_proxy.get_goals();
+    goal_propositions.reserve(goals.size());
+    for (FactProxy goal : goals) {
         Proposition *prop = get_proposition(goal);
         prop->is_goal = true;
         goal_propositions.push_back(prop);
@@ -106,7 +104,6 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_
 int RelaxationHeuristic::get_proposition_id(const Proposition &prop) const {
     int prop_no = &prop - propositions.data();
     assert(utils::in_bounds(prop_no, propositions));
-    assert(prop_no == prop.id);
     return prop_no;
 }
 
