@@ -14,7 +14,6 @@
 using namespace std;
 
 namespace relaxation_heuristic {
-
 Proposition::Proposition() {
     is_goal = false;
     cost = -1;
@@ -35,7 +34,6 @@ UnaryOperator::UnaryOperator(
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     : Heuristic(opts) {
-
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 
