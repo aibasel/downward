@@ -3,12 +3,10 @@ from __future__ import print_function
 
 import logging
 import sys
-import traceback
 
 from . import aliases
 from . import arguments
 from . import cleanup
-from . import returncodes
 from . import run_components
 
 
@@ -42,9 +40,8 @@ def main():
         if not continue_execution:
             print("Driver aborting after {}".format(component))
             break
-    # Exit with the exit code of the last component that ran successfully, or
-    # with a driver exit code if it failed. Leaving driver errors aside,
-    # this means for example that if no plan was found, validate is not run,
+    # Exit with the exit code of the last component that ran successfully.
+    # This means for example that if no plan was found, validate is not run,
     # and therefore the return code is that of the search.
     sys.exit(exitcode)
 

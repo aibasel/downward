@@ -231,7 +231,6 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
                 "Portfolios need a time limit. Please pass --search-time-limit "
                 "or --overall-time-limit to fast-downward.py.")
 
-
     timeout = util.get_elapsed_time() + time
 
     if optimal:
