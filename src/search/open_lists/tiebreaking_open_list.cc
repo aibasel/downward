@@ -23,7 +23,7 @@ class TieBreakingOpenList : public OpenList<Entry> {
     map<const vector<int>, Bucket> buckets;
     int size;
 
-    vector<Evaluator *> evaluators;
+    vector<shared_ptr<Evaluator>> evaluators;
     /*
       If allow_unsafe_pruning is true, we ignore (don't insert) states
       which the first evaluator considers a dead end, even if it is
@@ -57,7 +57,7 @@ public:
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
-      size(0), evaluators(opts.get_list<Evaluator *>("evals")),
+      size(0), evaluators(opts.get_list<shared_ptr<Evaluator>>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
 }
 
@@ -66,8 +66,8 @@ void TieBreakingOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (Evaluator *evaluator : evaluators)
-        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator));
+    for (shared_ptr<Evaluator> &evaluator : evaluators)
+        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     buckets[key].push_back(entry);
     ++size;
@@ -107,14 +107,14 @@ int TieBreakingOpenList<Entry>::dimension() const {
 template<class Entry>
 void TieBreakingOpenList<Entry>::get_path_dependent_evaluators(
     set<shared_ptr<Evaluator>> &evals) {
-    for (Evaluator *evaluator : evaluators)
+    for (shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 //TODO: remove when all search algorithms use shared_ptr for plugins
 template<class Entry>
 void TieBreakingOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
-    for (Evaluator *evaluator : evaluators)
+    for (shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 
@@ -128,11 +128,11 @@ bool TieBreakingOpenList<Entry>::is_dead_end(
     // If the first heuristic detects a dead-end and we allow "unsafe
     // pruning", return true.
     if (allow_unsafe_pruning &&
-        eval_context.is_evaluator_value_infinite(evaluators[0]))
+        eval_context.is_evaluator_value_infinite(evaluators[0].get()))
         return true;
     // Otherwise, return true if all heuristics agree this is a dead-end.
-    for (Evaluator *evaluator : evaluators)
-        if (!eval_context.is_evaluator_value_infinite(evaluator))
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+        if (!eval_context.is_evaluator_value_infinite(evaluator.get()))
             return false;
     return true;
 }
@@ -140,8 +140,8 @@ bool TieBreakingOpenList<Entry>::is_dead_end(
 template<class Entry>
 bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    for (Evaluator *evaluator : evaluators)
-        if (eval_context.is_evaluator_value_infinite(evaluator) &&
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+        if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
             evaluator->dead_ends_are_reliable())
             return true;
     return false;

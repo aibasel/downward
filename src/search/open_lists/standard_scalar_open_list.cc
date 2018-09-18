@@ -21,7 +21,7 @@ class StandardScalarOpenList : public OpenList<Entry> {
     map<int, Bucket> buckets;
     int size;
 
-    Evaluator *evaluator;
+    shared_ptr<Evaluator> evaluator;
 
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
@@ -63,7 +63,7 @@ StandardScalarOpenList<Entry>::StandardScalarOpenList(
 template<class Entry>
 void StandardScalarOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    int key = eval_context.get_evaluator_value(evaluator);
+    int key = eval_context.get_evaluator_value(evaluator.get());
     buckets[key].push_back(entry);
     ++size;
 }
@@ -109,7 +109,7 @@ void StandardScalarOpenList<Entry>::get_path_dependent_evaluators(
 template<class Entry>
 bool StandardScalarOpenList<Entry>::is_dead_end(
     EvaluationContext &eval_context) const {
-    return eval_context.is_evaluator_value_infinite(evaluator);
+    return eval_context.is_evaluator_value_infinite(evaluator.get());
 }
 
 template<class Entry>
