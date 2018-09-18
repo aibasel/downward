@@ -5,10 +5,6 @@
 
 #include "algorithms/int_packer.h"
 
-#include <cstddef>
-#include <iostream>
-#include <vector>
-
 class State;
 class StateRegistry;
 
