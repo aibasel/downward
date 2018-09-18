@@ -7,6 +7,9 @@ import re
 import sys
 
 
+from . import returncodes
+
+
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(DRIVER_DIR)
 BUILDS_DIR = os.path.join(REPO_ROOT_DIR, "builds")
