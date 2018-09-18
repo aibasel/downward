@@ -1,7 +1,6 @@
 #ifndef OPTIONS_COMMAND_LINE_H
 #define OPTIONS_COMMAND_LINE_H
 
-
 #include <memory>
 #include <string>
 #include <vector>
