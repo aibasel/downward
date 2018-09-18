@@ -33,6 +33,8 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     }
 
     // Build unary operators for operators and axioms.
+    unary_operators.reserve(
+        task_properties::get_num_total_effects(task_proxy));
     int op_no = 0;
     for (OperatorProxy op : task_proxy.get_operators())
         build_unary_operators(op, op_no++);
