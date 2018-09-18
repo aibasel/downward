@@ -4,6 +4,30 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
+PluginTypeInfo::PluginTypeInfo(const std::type_index &type,
+                               const std::string &type_name,
+                               const std::string &documentation)
+    : type(type),
+      type_name(type_name),
+      documentation(documentation) {
+}
+
+const std::type_index &PluginTypeInfo::get_type() const {
+    return type;
+}
+
+const std::string &PluginTypeInfo::get_type_name() const {
+    return type_name;
+}
+
+const std::string &PluginTypeInfo::get_documentation() const {
+    return documentation;
+}
+
+bool PluginTypeInfo::operator<(const PluginTypeInfo &other) const {
+    return make_pair(type_name, type) < make_pair(other.type_name, other.type);
+}
+
 PluginTypeRegistry *PluginTypeRegistry::instance() {
     static PluginTypeRegistry the_instance;
     return &the_instance;
@@ -24,6 +48,15 @@ const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
               string(type.name()));
     }
     return registry.at(type);
+}
+
+std::vector<PluginTypeInfo> PluginTypeRegistry::get_sorted_types() const {
+    std::vector<PluginTypeInfo> types;
+    for (auto it : registry) {
+        types.push_back(it.second);
+    }
+    sort(types.begin(), types.end());
+    return types;
 }
 
 PluginGroupRegistry *PluginGroupRegistry::instance() {
