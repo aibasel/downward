@@ -43,6 +43,8 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual void get_path_dependent_evaluators(set<shared_ptr<Evaluator>> &evals) override;
+    //TODO: remove when all search algorithms use shared_ptr for plugins
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
 };
 
@@ -127,6 +129,14 @@ bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
+template<class Entry>
+void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
+    set<shared_ptr<Evaluator>> &evals) {
+    for (Evaluator *evaluator : evaluators) {
+        evaluator->get_path_dependent_evaluators(evals);
+    }
+}
+//TODO: remove when all search algorithms use shared_ptr for plugins
 template<class Entry>
 void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
