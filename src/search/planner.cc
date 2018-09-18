@@ -2,6 +2,8 @@
 #include "option_parser.h"
 #include "search_engine.h"
 
+#include "tasks/root_task.h"
+#include "task_utils/task_properties.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -21,7 +23,8 @@ int main(int argc, const char **argv) {
     bool unit_cost = false;
     if (static_cast<string>(argv[1]) != "--help") {
         read_everything(cin);
-        unit_cost = is_unit_cost();
+        TaskProxy task_proxy(*tasks::g_root_task);
+        unit_cost = task_properties::is_unit_cost(task_proxy);
     }
 
     shared_ptr<SearchEngine> engine;

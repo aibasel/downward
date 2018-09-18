@@ -51,6 +51,7 @@ SearchEngine::SearchEngine(const Options &opts)
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
@@ -120,7 +121,7 @@ void SearchEngine::save_plan_if_necessary() {
 }
 
 int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
-    return get_adjusted_action_cost(op, cost_type);
+    return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
 /* TODO: merge this into add_options_to_parser when all search
