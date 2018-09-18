@@ -17,15 +17,22 @@ namespace relaxation_heuristic {
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     : Heuristic(opts) {
+
+    VariablesProxy variables = task_proxy.get_variables();
+
+    // Build proposition offsets.
+    proposition_offsets.reserve(variables.size());
+    int offset = 0;
+    for (VariableProxy var : variables) {
+        proposition_offsets.push_back(offset);
+        offset += var.get_domain_size();
+    }
+
     // Build propositions.
     propositions.reserve(task_properties::get_num_facts(task_proxy));
     int prop_id = 0;
-    VariablesProxy variables = task_proxy.get_variables();
-    proposition_index.resize(variables.size());
     for (FactProxy fact : variables.get_facts()) {
         propositions.emplace_back(prop_id++);
-        int var_no = fact.get_variable().get_id();
-        proposition_index[var_no].push_back(&propositions.back());
     }
 
     // Build goal propositions.
@@ -66,15 +73,13 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 
 const Proposition *RelaxationHeuristic::get_proposition(
     int var, int value) const {
-    assert(utils::in_bounds(var, proposition_index));
-    assert(utils::in_bounds(value, proposition_index[var]));
-    return proposition_index[var][value];
+    int offset = proposition_offsets[var];
+    return &propositions[offset + value];
 }
 
 Proposition *RelaxationHeuristic::get_proposition(int var, int value) {
-    assert(utils::in_bounds(var, proposition_index));
-    assert(utils::in_bounds(value, proposition_index[var]));
-    return proposition_index[var][value];
+    int offset = proposition_offsets[var];
+    return &propositions[offset + value];
 }
 
 Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {

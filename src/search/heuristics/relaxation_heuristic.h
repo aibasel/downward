@@ -50,7 +50,11 @@ class RelaxationHeuristic : public Heuristic {
     void build_unary_operators(const OperatorProxy &op, int operator_no);
     void simplify();
 
-    std::vector<std::vector<Proposition *>> proposition_index;
+    /*
+      proposition_offsets[var_no] is the index of the first proposition
+      related to variable var_no in propositions
+    */
+    std::vector<int> proposition_offsets;
 protected:
     std::vector<UnaryOperator> unary_operators;
     std::vector<Proposition> propositions;
