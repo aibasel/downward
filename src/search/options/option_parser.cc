@@ -1,24 +1,11 @@
 #include "option_parser.h"
 
-#include "doc_printer.h"
 #include "errors.h"
-#include "plugin.h"
-
-#include "../plan_manager.h"
-#include "../search_engine.h"
 
 #include "../ext/tree_util.hh"
 
-#include "../utils/rng.h"
-#include "../utils/system.h"
-
-#include <algorithm>
-#include <cassert>
 #include <iostream>
-#include <stdexcept>
-#include <string>
-#include <utility>
-#include <vector>
+
 
 using namespace std;
 
