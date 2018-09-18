@@ -103,6 +103,19 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_
     }
 }
 
+int RelaxationHeuristic::get_proposition_id(const Proposition &prop) const {
+    int prop_no = &prop - propositions.data();
+    assert(utils::in_bounds(prop_no, propositions));
+    assert(prop_no == prop.id);
+    return prop_no;
+}
+
+int RelaxationHeuristic::get_operator_id(const UnaryOperator &op) const {
+    int op_no = &op - unary_operators.data();
+    assert(utils::in_bounds(op_no, unary_operators));
+    return op_no;
+}
+
 void RelaxationHeuristic::simplify() {
     /*
       Remove dominated unary operators, including duplicates.
@@ -134,8 +147,9 @@ void RelaxationHeuristic::simplify() {
     */
     for (UnaryOperator &op : unary_operators) {
         sort(op.precondition.begin(), op.precondition.end(),
-             [] (const Proposition *p1, const Proposition *p2) {
-                 return p1->id < p2->id;
+             [&] (const Proposition *p1, const Proposition *p2) {
+                 return get_proposition_id(*p1) <
+                     get_proposition_id(*p2);
              });
     }
 
@@ -183,13 +197,6 @@ void RelaxationHeuristic::simplify() {
     */
     Key dominating_key;
 
-    // get_op_no: compute the index of an operator in `unary_operators`
-    auto get_op_no = [&](const UnaryOperator &op) {
-        int op_no = &op - unary_operators.data();
-        assert(utils::in_bounds(op_no, unary_operators));
-        return op_no;
-    };
-
     /*
       is_dominated: test if a given operator is dominated by an
       operator in the map.
@@ -204,7 +211,7 @@ void RelaxationHeuristic::simplify() {
           map.
         */
 
-        int op_no = get_op_no(op);
+        int op_no = get_operator_id(op);
         int cost = op.base_cost;
 
         const vector<Proposition *> &precondition = op.precondition;
