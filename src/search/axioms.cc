@@ -25,7 +25,7 @@ public:
 class PackedStateAccessor {
     const int_packer::IntPacker &state_packer;
 public:
-    PackedStateAccessor(const int_packer::IntPacker &state_packer)
+    explicit PackedStateAccessor(const int_packer::IntPacker &state_packer)
         : state_packer(state_packer) {
     }
 
