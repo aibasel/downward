@@ -103,16 +103,19 @@ Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
 void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {
     int base_cost = op.get_cost();
     vector<Proposition *> precondition_props;
-    for (FactProxy precondition : op.get_preconditions()) {
+    PreconditionsProxy preconditions = op.get_preconditions();
+    precondition_props.reserve(preconditions.size());
+    for (FactProxy precondition : preconditions) {
         precondition_props.push_back(get_proposition(precondition));
     }
     for (EffectProxy effect : op.get_effects()) {
         Proposition *effect_prop = get_proposition(effect.get_fact());
         EffectConditionsProxy eff_conds = effect.get_conditions();
+        precondition_props.reserve(preconditions.size() + eff_conds.size());
         for (FactProxy eff_cond : eff_conds) {
             precondition_props.push_back(get_proposition(eff_cond));
         }
-        unary_operators.push_back(UnaryOperator(precondition_props, effect_prop, op_no, base_cost));
+        unary_operators.emplace_back(precondition_props, effect_prop, op_no, base_cost);
         precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());
     }
 }
