@@ -90,6 +90,8 @@ fast_downward_plugin(
     SOURCES
         options/any
         options/bounds
+        options/command_line
+        options/command_line_utils
         options/doc_printer
         options/doc_store
         options/errors
