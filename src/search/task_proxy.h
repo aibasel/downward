@@ -4,6 +4,7 @@
 #include "abstract_task.h"
 #include "global_state.h"
 #include "operator_id.h"
+#include "task_id.h"
 
 #include "utils/collections.h"
 #include "utils/hash.h"
@@ -649,6 +650,14 @@ public:
     explicit TaskProxy(const AbstractTask &task)
         : task(&task) {}
     ~TaskProxy() = default;
+
+    TaskID get_id() const {
+        return TaskID(task);
+    }
+
+    void subscribe_to_task_destruction(subscriber::Subscriber<AbstractTask> *subscriber) const {
+        task->subscribe(subscriber);
+    }
 
     VariablesProxy get_variables() const {
         return VariablesProxy(*task);
