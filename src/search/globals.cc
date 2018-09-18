@@ -1,13 +1,10 @@
 #include "globals.h"
 
-#include "algorithms/int_packer.h"
-#include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/logging.h"
 
 #include <iostream>
-#include <limits>
 
 using namespace std;
 
