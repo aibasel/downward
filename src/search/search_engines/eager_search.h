@@ -19,11 +19,11 @@ class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
 
     std::unique_ptr<StateOpenList> open_list;
-    Evaluator *f_evaluator;
+    std::shared_ptr<Evaluator> f_evaluator;
 
     std::vector<Evaluator *> path_dependent_evaluators;
-    std::vector<Evaluator *> preferred_operator_evaluators;
-    Evaluator *lazy_evaluator;
+    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
+    std::shared_ptr<Evaluator> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
 

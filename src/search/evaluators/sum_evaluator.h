@@ -3,6 +3,7 @@
 
 #include "combining_evaluator.h"
 
+#include <memory>
 #include <vector>
 
 namespace options {
@@ -16,6 +17,7 @@ protected:
 public:
     explicit SumEvaluator(const options::Options &opts);
     explicit SumEvaluator(const std::vector<Evaluator *> &evals);
+    explicit SumEvaluator(const std::vector<std::shared_ptr<Evaluator>> &evals);
     virtual ~SumEvaluator() override;
 };
 }

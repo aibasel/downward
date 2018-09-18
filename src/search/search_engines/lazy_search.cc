@@ -87,9 +87,12 @@ vector<OperatorID> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    ordered_set::OrderedSet<OperatorID> preferred_operators =
-        collect_preferred_operators(
-            current_eval_context, preferred_operator_evaluators);
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
+    for (Evaluator *preferred_operator_evaluator : preferred_operator_evaluators) {
+        collect_preferred_operators(current_eval_context,
+                                    preferred_operator_evaluator,
+                                    preferred_operators);
+    }
     if (randomize_successors) {
         preferred_operators.shuffle(*rng);
     }
