@@ -64,12 +64,21 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
     return !task_properties::has_axioms(task_proxy);
 }
 
-Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
-    int var = fact.get_variable().get_id();
-    int value = fact.get_value();
+const Proposition *RelaxationHeuristic::get_proposition(
+    int var, int value) const {
     assert(utils::in_bounds(var, proposition_index));
     assert(utils::in_bounds(value, proposition_index[var]));
     return proposition_index[var][value];
+}
+
+Proposition *RelaxationHeuristic::get_proposition(int var, int value) {
+    assert(utils::in_bounds(var, proposition_index));
+    assert(utils::in_bounds(value, proposition_index[var]));
+    return proposition_index[var][value];
+}
+
+Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
+    return get_proposition(fact.get_variable().get_id(), fact.get_value());
 }
 
 void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {

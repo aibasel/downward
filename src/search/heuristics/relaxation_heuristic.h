@@ -49,12 +49,19 @@ struct Proposition {
 class RelaxationHeuristic : public Heuristic {
     void build_unary_operators(const OperatorProxy &op, int operator_no);
     void simplify();
+
+    std::vector<std::vector<Proposition *>> proposition_index;
 protected:
     std::vector<UnaryOperator> unary_operators;
     std::vector<Proposition> propositions;
-    std::vector<std::vector<Proposition *>> proposition_index;
     std::vector<Proposition *> goal_propositions;
 
+    /*
+      TODO: The const method is only needed for the CEGAR hack
+      in the additive heuristic and should eventually go away.
+    */
+    const Proposition *get_proposition(int var, int value) const;
+    Proposition *get_proposition(int var, int value);
     Proposition *get_proposition(const FactProxy &fact);
     virtual int compute_heuristic(const GlobalState &state) = 0;
 public:
