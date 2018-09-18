@@ -46,6 +46,7 @@ protected:
     SearchStatistics statistics;
     int bound;
     OperatorCost cost_type;
+    bool is_unit_cost;
     double max_time;
 
     virtual void initialize() {}

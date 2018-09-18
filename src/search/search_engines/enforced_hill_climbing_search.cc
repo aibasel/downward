@@ -220,7 +220,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = eval_context.get_evaluator_value(evaluator);
-            node.open(parent_node, last_op);
+            node.open(parent_node, last_op, get_adjusted_cost(last_op));
 
             if (h < current_eval_context.get_evaluator_value(evaluator)) {
                 ++num_ehc_phases;

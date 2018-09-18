@@ -178,10 +178,10 @@ SearchStatus LazySearch::step() {
                 SearchNode parent_node = search_space.get_node(parent_state);
                 OperatorProxy current_operator = task_proxy.get_operators()[current_operator_id];
                 if (reopen) {
-                    node.reopen(parent_node, current_operator);
+                    node.reopen(parent_node, current_operator, get_adjusted_cost(current_operator));
                     statistics.inc_reopened();
                 } else {
-                    node.open(parent_node, current_operator);
+                    node.open(parent_node, current_operator, get_adjusted_cost(current_operator));
                 }
             }
             node.close();
