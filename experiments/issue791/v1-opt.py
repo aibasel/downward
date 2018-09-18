@@ -13,9 +13,14 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue791-base", "issue791-v1"]
 CONFIGS = [
     IssueConfig(
-        'blind', ['--search', 'astar(blind())']
+        'blind-debug', ['--search', 'astar(blind())'],
         build_options=["debug32"],
         driver_options=["--build", "debug32", "--overall-time-limit", "5m"]
+    ),
+    IssueConfig(
+        'blind-release', ['--search', 'astar(blind())'],
+        build_options=["release32"],
+        driver_options=["--build", "release32", "--overall-time-limit", "5m"]
     ),
 ]
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
