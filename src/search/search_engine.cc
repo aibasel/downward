@@ -57,6 +57,7 @@ SearchEngine::SearchEngine(const Options &opts)
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
+    task_properties::print_variable_statistics(task_proxy);
 }
 
 SearchEngine::~SearchEngine() {
