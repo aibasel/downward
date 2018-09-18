@@ -6,10 +6,6 @@
 #include "option_parser.h"
 #include "predefinitions.h"
 
-#include "../search_engine.h"
-
-#include "../landmarks/landmark_factory.h"
-
 #include <string>
 #include <vector>
 
