@@ -13,10 +13,6 @@ class IntPacker;
 }
 
 class AxiomEvaluator {
-    // HACK: remove before merge
-    double accumulated_time_outer;
-    double accumulated_time_inner;
-
     struct AxiomRule;
     struct AxiomLiteral {
         std::vector<AxiomRule *> condition_of;
@@ -67,11 +63,6 @@ class AxiomEvaluator {
     void evaluate_aux(Values &values, const Accessor &accessor);
 public:
     explicit AxiomEvaluator(const TaskProxy &task_proxy);
-
-    // HACK: remove before merge
-    ~AxiomEvaluator();
-
-
 
     void evaluate(PackedStateBin *buffer, const int_packer::IntPacker &state_packer);
     void evaluate(std::vector<int> &state);

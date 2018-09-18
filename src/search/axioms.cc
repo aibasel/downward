@@ -9,10 +9,6 @@
 #include <iostream>
 #include <vector>
 
-
-// HACK: remove before merge
-#include "utils/timer.h"
-
 using namespace std;
 
 class VectorAccessor {
@@ -87,10 +83,6 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
                 default_values.emplace_back(-1);
         }
     }
-
-    // HACK: remove before merge
-    accumulated_time_outer = 0;
-    accumulated_time_inner = 0;
 }
 
 // TODO rethink the way this is called: see issue348.
@@ -100,30 +92,13 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
 
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                               const int_packer::IntPacker &state_packer) {
-    // evaluate_aux(buffer, state_packer);
-
-    // HACK: remove before merge
-    utils::Timer timer;
-    vector<int> values;
-    values.reserve(default_values.size());
-    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
-        int value = state_packer.get(buffer, var_id);
-        values.push_back(value);
-    }
-    evaluate_aux(values, VectorAccessor());
-    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
-        state_packer.set(buffer, var_id, values[var_id]);
-    }
-    accumulated_time_outer += timer();
+    evaluate_aux(buffer, state_packer);
 }
 
 template<typename Values, typename Accessor>
 inline void AxiomEvaluator::evaluate_aux(Values &values, const Accessor &accessor) {
     if (!task_has_axioms)
         return;
-
-    // HACK: remove before merge
-    utils::Timer timer;
 
     assert(queue.empty());
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
@@ -193,16 +168,6 @@ inline void AxiomEvaluator::evaluate_aux(Values &values, const Accessor &accesso
             }
         }
     }
-
-    // HACK: remove before merge
-    accumulated_time_inner += timer();
 }
-
-// HACK: remove before merge
-AxiomEvaluator::~AxiomEvaluator() {
-    cout << "AxiomEvaluator time in outer evaluate: " << accumulated_time_outer << endl;
-    cout << "AxiomEvaluator time in inner evaluate: " << accumulated_time_inner << endl;
-}
-
 
 PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
