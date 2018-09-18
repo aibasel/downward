@@ -14,6 +14,15 @@
 using namespace std;
 
 namespace relaxation_heuristic {
+UnaryOperator::UnaryOperator(
+    const vector<Proposition *> &pre, Proposition *eff,
+    int operator_no, int base_cost)
+    : operator_no(operator_no), precondition(pre), effect(eff),
+      base_cost(base_cost) {
+    sort(precondition.begin(), precondition.end());
+}
+
+
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     : Heuristic(opts) {
@@ -131,19 +140,12 @@ void RelaxationHeuristic::simplify() {
 
       This defines a strict partial order.
     */
+    for (const UnaryOperator &op : unary_operators)
+        assert(utils::is_sorted_unique(op.precondition));
 
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
-
-    /*
-      TODO: This sorting code does not belong here, but simplify
-      requires sorted preconditions to avoid missing simplification
-      opportunities. It would be better to require the input to
-      already be sorted and then assert that it is sorted.
-    */
-    for (UnaryOperator &op : unary_operators)
-        sort(op.precondition.begin(), op.precondition.end());
 
     /*
       First, we create a map that maps the preconditions and effect

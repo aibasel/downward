@@ -23,9 +23,7 @@ struct UnaryOperator {
     int cost; // Used for h^max cost or h^add cost;
               // includes operator cost (base_cost)
     UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
-                  int operator_no_, int base)
-        : operator_no(operator_no_), precondition(pre), effect(eff),
-          base_cost(base) {}
+                  int operator_no, int base);
 };
 
 struct Proposition {
