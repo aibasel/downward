@@ -142,13 +142,8 @@ void RelaxationHeuristic::simplify() {
       opportunities. It would be better to require the input to
       already be sorted and then assert that it is sorted.
     */
-    for (UnaryOperator &op : unary_operators) {
-        sort(op.precondition.begin(), op.precondition.end(),
-             [&] (const Proposition *p1, const Proposition *p2) {
-                 return get_proposition_id(*p1) <
-                     get_proposition_id(*p2);
-             });
-    }
+    for (UnaryOperator &op : unary_operators)
+        sort(op.precondition.begin(), op.precondition.end());
 
     /*
       First, we create a map that maps the preconditions and effect
