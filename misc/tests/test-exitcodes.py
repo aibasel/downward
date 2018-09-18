@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+from collections import defaultdict
+import itertools
 import os
 import subprocess
 import sys
@@ -20,10 +22,18 @@ TRANSLATE_TASKS = {
     "large": "satellite/p25-HC-pfile5.pddl",
 }
 
+"""A constant function that can be used as a factory for defaultdict."""
+def constant_factory(value):
+    return itertools.repeat(value).next
+
+"""
+Since we cannot enforce memory limits on macOS, we make sure that we get
+the DRIVER_UNSUPPORTED exit code in that case.
+"""
 TRANSLATE_TESTS = [
-    ("small", [], [], returncodes.SUCCESS),
-    ("large", ["--translate-time-limit", "1s"], [], returncodes.TRANSLATE_OUT_OF_TIME),
-    ("large", ["--translate-memory-limit", "50M"], [], returncodes.TRANSLATE_OUT_OF_MEMORY),
+    ("small", [], [], defaultdict(constant_factory(returncodes.SUCCESS))),
+    ("large", ["--translate-time-limit", "1s"], [], defaultdict(constant_factory(returncodes.TRANSLATE_OUT_OF_TIME))),
+    ("large", ["--translate-memory-limit", "50M"], [], defaultdict(constant_factory(returncodes.TRANSLATE_OUT_OF_MEMORY), darwin=returncodes.DRIVER_UNSUPPORTED)),
 ]
 
 SEARCH_TASKS = {
@@ -101,8 +111,8 @@ def run_translator_tests():
         sys.stdout.flush()
         cmd = [sys.executable, DRIVER] + driver_options + ["--translate"] + translate_options + [problem]
         exitcode = subprocess.call(cmd)
-        if exitcode != expected:
-            yield (cmd, expected, exitcode)
+        if exitcode != expected[sys.platform]:
+            yield (cmd, expected[sys.platform], exitcode)
         cleanup()
 
 
