@@ -34,5 +34,4 @@ std::ostream &operator<<(std::ostream &out, const ParseError &parse_error) {
     }
     return out;
 }
-
 }

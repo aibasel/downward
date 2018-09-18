@@ -3,11 +3,10 @@
 using namespace std;
 
 namespace options {
-
 Options::Options(bool help_mode)
-        : unparsed_config("<missing>"),
-          help_mode(help_mode) {
-    }
+    : unparsed_config("<missing>"),
+      help_mode(help_mode) {
+}
 
 int Options::get_enum(const std::string &key) const {
     return get<int>(key);
@@ -24,5 +23,4 @@ const std::string &Options::get_unparsed_config() const {
 void Options::set_unparsed_config(const std::string &config) {
     unparsed_config = config;
 }
-
 }
