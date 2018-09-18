@@ -13,7 +13,6 @@
 using namespace std;
 
 namespace options {
-
 /*
   Predefine landmarks and heuristics.
 */
