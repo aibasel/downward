@@ -1,34 +1,42 @@
 #ifndef OPTIONS_PREDEFINITIONS_H
 #define OPTIONS_PREDEFINITIONS_H
 
+#include "any.h"
+
 #include <string>
+#include <typeindex>
 #include <unordered_map>
 
 namespace options {
 /*
   Predefinitions<T> maps strings to pointers to already created plug-in objects.
 */
-template<typename T>
 class Predefinitions {
-    std::unordered_map<std::string, T> predefined;
+    std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> predefined;
 
-    Predefinitions<T>() = default;
+    Predefinitions() = default;
 
 public:
+    template<typename T>
     void predefine(std::string key, T object) {
-        predefined[key] = object;
+        predefined[std::type_index(typeid(T))][key] = object;
     }
 
+    template<typename T>
     bool contains(const std::string &key) const {
-        return predefined.find(key) != predefined.end();
+        std::type_index tmp(typeid(T));
+        return predefined.find(tmp) != predefined.end()
+               && predefined.at(tmp).find(key) != predefined.at(tmp).end();
     }
 
+    template<typename T>
     T get(const std::string &key) const {
-        return predefined.at(key);
+        std::type_index tmp(typeid(T));
+        return any_cast<T>(predefined.at(tmp).at(key));
     }
 
-    static Predefinitions<T> *instance() {
-        static Predefinitions<T> instance_;
+    static Predefinitions *instance() {
+        static Predefinitions instance_;
         return &instance_;
     }
 };
