@@ -14,6 +14,15 @@
 using namespace std;
 
 namespace relaxation_heuristic {
+
+Proposition::Proposition() {
+    is_goal = false;
+    cost = -1;
+    reached_by = nullptr;
+    marked = false;
+}
+
+
 UnaryOperator::UnaryOperator(
     const vector<Proposition *> &pre, Proposition *eff,
     int operator_no, int base_cost)
