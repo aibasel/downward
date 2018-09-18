@@ -100,7 +100,21 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
 
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                               const int_packer::IntPacker &state_packer) {
-    evaluate_aux(buffer, state_packer);
+    // evaluate_aux(buffer, state_packer);
+
+    // HACK: remove before merge
+    utils::Timer timer;
+    vector<int> values;
+    values.reserve(default_values.size());
+    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
+        int value = state_packer.get(buffer, var_id);
+        values.push_back(value);
+    }
+    evaluate_aux(values, VectorAccessor());
+    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
+        state_packer.set(buffer, var_id, values[var_id]);
+    }
+    accumulated_time_outer += timer();
 }
 
 template<typename Values, typename Accessor>
