@@ -22,7 +22,10 @@ int main(int argc, const char **argv) {
 
     bool unit_cost = false;
     if (static_cast<string>(argv[1]) != "--help") {
-        read_everything(cin);
+        cout << "reading input... [t=" << utils::g_timer << "]" << endl;
+        tasks::read_root_task(cin);
+        cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
+        cout << "done initializing global data [t=" << utils::g_timer << "]" << endl;
         TaskProxy task_proxy(*tasks::g_root_task);
         unit_cost = task_properties::is_unit_cost(task_proxy);
     }
