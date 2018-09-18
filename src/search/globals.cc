@@ -43,18 +43,6 @@ void read_everything(istream &in) {
          << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
          << endl;
 
-    cout << "Building successor generator..." << flush;
-    int peak_memory_before = utils::get_peak_memory_in_kb();
-    utils::Timer successor_generator_timer;
-    successor_generator::g_successor_generators[task_proxy];
-    successor_generator_timer.stop();
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
-    int peak_memory_after = utils::get_peak_memory_in_kb();
-    int memory_diff = peak_memory_after - peak_memory_before;
-    cout << "peak memory difference for root successor generator creation: "
-         << memory_diff << " KB" << endl
-         << "time for root successor generation creation: "
-         << successor_generator_timer << endl;
     cout << "done initializing global data [t=" << utils::g_timer << "]" << endl;
 }
 
