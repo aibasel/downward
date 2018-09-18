@@ -90,7 +90,7 @@ def run_translate(args):
             do_print_on_stderr = False
 
     if do_print_on_stderr and stderr:
-        util.print_stderr(stderr)
+        returncodes.print_stderr(stderr)
 
     if returncode == 0:
         return (0, True)

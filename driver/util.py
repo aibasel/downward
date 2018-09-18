@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import os
 import re
-import sys
 
 
 from . import returncodes
@@ -62,7 +61,3 @@ def shell_escape(s):
     # Use single quotes, and put single quotes into double quotes.
     # The string $'b is then quoted as '$'"'"'b'.
     return "'" + s.replace("'", "'\"'\"'") + "'"
-
-
-def print_stderr(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
