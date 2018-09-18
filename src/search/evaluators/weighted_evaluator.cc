@@ -12,11 +12,11 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(const Options &opts)
-    : evaluator(opts.get<Evaluator *>("eval")),
+    : evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
       w(opts.get<int>("weight")) {
 }
 
-WeightedEvaluator::WeightedEvaluator(Evaluator *eval, int weight)
+WeightedEvaluator::WeightedEvaluator(shared_ptr<Evaluator> eval, int weight)
     : evaluator(eval), w(weight) {
 }
 
@@ -31,7 +31,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     EvaluationContext &eval_context) {
     // Note that this produces no preferred operators.
     EvaluationResult result;
-    int value = eval_context.get_evaluator_value_or_infinity(evaluator);
+    int value = eval_context.get_evaluator_value_or_infinity(evaluator.get());
     if (value != EvaluationResult::INFTY) {
         // TODO: Check for overflow?
         value *= w;

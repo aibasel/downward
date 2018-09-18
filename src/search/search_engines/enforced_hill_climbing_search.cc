@@ -147,8 +147,12 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
-        preferred_operators = collect_preferred_operators(
-            eval_context, preferred_operator_evaluators);
+        ordered_set::OrderedSet<OperatorID> preferred_operators;
+        for (shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
+            collect_preferred_operators(eval_context,
+                                        preferred_operator_evaluator.get(),
+                                        preferred_operators);
+        }
     }
 
     if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {

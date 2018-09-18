@@ -10,10 +10,10 @@ using namespace std;
 
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(const Options &opts)
-    : CombiningEvaluator(opts.get_list<Evaluator *>("evals")) {
+    : CombiningEvaluator(opts.get_list<shared_ptr<Evaluator>>("evals")) {
 }
 
-SumEvaluator::SumEvaluator(const vector<Evaluator *> &evals)
+SumEvaluator::SumEvaluator(const vector<shared_ptr<Evaluator>> &evals)
     : CombiningEvaluator(evals) {
 }
 

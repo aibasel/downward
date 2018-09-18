@@ -9,7 +9,7 @@ using namespace std;
 
 namespace max_evaluator {
 MaxEvaluator::MaxEvaluator(const Options &opts)
-    : CombiningEvaluator(opts.get_list<Evaluator *>("evals")) {
+    : CombiningEvaluator(opts.get_list<shared_ptr<Evaluator>>("evals")) {
 }
 
 MaxEvaluator::~MaxEvaluator() {

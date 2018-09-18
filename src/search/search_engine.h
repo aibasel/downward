@@ -75,12 +75,8 @@ public:
 */
 extern void print_initial_evaluator_values(const EvaluationContext &eval_context);
 
-extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
-    EvaluationContext &eval_context,
-    const std::vector<std::shared_ptr<Evaluator>> &preferred_operator_evaluators);
-//TODO: remove when all search algorithms use shared_ptr for plugins
-extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
-    EvaluationContext &eval_context,
-    const std::vector<Evaluator *> &preferred_operator_evaluators);
+void collect_preferred_operators(EvaluationContext &eval_context,
+    Evaluator *preferred_operator_evaluator,
+    ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
 #endif
