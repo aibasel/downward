@@ -40,6 +40,10 @@ EvaluationResult WeightedEvaluator::compute_result(
     return result;
 }
 
+void WeightedEvaluator::get_path_dependent_evaluators(set<shared_ptr<Evaluator>> &evals) {
+    evaluator->get_path_dependent_evaluators(evals);
+}
+//TODO: remove when all search algorithms use shared_ptr for plugins
 void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }

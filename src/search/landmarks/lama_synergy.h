@@ -29,7 +29,7 @@ class LandmarkFactory;
   Note that both synergy classes forbid to call compute_heuristic but overwrite
   the public method compute_result for the computation of heuristic values.
 */
-class LamaSynergyHeuristic : public Heuristic {
+class LamaSynergyHeuristic : public Heuristic, public std::enable_shared_from_this<Evaluator> {
     friend FFSynergyHeuristic;
 
     const std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
@@ -50,6 +50,11 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
 
+    virtual void get_path_dependent_evaluators(
+        std::set<std::shared_ptr<Evaluator>> &evals) override {
+        evals.insert(shared_from_this());
+    }
+    //TODO: remove when all search algorithms use shared_ptr for plugins
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {
         evals.insert(this);

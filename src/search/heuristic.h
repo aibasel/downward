@@ -80,6 +80,10 @@ public:
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
+        std::set<std::shared_ptr<Evaluator>> & /*evals*/) override {
+    }
+    //TODO: remove if shared_ptr to evaluators are used by all search algorithms
+    virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {
     }
 

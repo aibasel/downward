@@ -3,6 +3,7 @@
 
 #include "evaluation_result.h"
 
+#include <memory>
 #include <set>
 
 class EvaluationContext;
@@ -41,7 +42,11 @@ public:
       state transitions".
     */
     virtual void get_path_dependent_evaluators(
+        std::set<std::shared_ptr<Evaluator>> &evals) = 0;
+    //TODO: remove when all search algorithms use shared_ptr for plugins
+    virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) = 0;
+
 
 
     virtual void notify_initial_state(const GlobalState & /*initial_state*/) {

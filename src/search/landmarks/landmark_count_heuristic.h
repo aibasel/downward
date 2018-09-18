@@ -16,7 +16,7 @@ namespace landmarks {
 class LandmarkCostAssignment;
 class LandmarkStatusManager;
 
-class LandmarkCountHeuristic : public Heuristic {
+class LandmarkCountHeuristic : public Heuristic, public std::enable_shared_from_this<Evaluator> {
     friend class LamaSynergyHeuristic;
     std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
@@ -53,6 +53,11 @@ public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
     ~LandmarkCountHeuristic();
 
+    virtual void get_path_dependent_evaluators(
+        std::set<std::shared_ptr<Evaluator>> &evals) override {
+        evals.insert(shared_from_this());
+    }
+    //TODO: remove when all search algorithms use shared_ptr for plugins
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {
         evals.insert(this);
