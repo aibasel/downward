@@ -1,6 +1,5 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 

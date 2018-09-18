@@ -1,6 +1,5 @@
 #include "operator_cost.h"
 
-#include "globals.h"
 #include "option_parser.h"
 #include "task_proxy.h"
 

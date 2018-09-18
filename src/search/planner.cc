@@ -1,4 +1,3 @@
-#include "globals.h"
 #include "option_parser.h"
 #include "search_engine.h"
 
