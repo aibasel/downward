@@ -167,14 +167,14 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             " on Artificial Intelligence (AAAI 2014)",
             "2395-2401",
             "AAAI Press 2014"));
-    parser.add_list_option<Evaluator *>(
+    parser.add_list_option<shared_ptr<Evaluator>>(
         "evaluators",
         "Evaluators used to determine the bucket for each entry.");
 
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();
-    opts.verify_list_non_empty<Evaluator *>("evaluators");
+    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evaluators");
     if (parser.dry_run())
         return nullptr;
     else
