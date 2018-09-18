@@ -10,50 +10,12 @@
 #include <limits>
 
 using namespace std;
-using utils::ExitCode;
-
-void dump_goal(const TaskProxy &task_proxy) {
-    cout << "Goal conditions:" << endl;
-    for (FactProxy goal : task_proxy.get_goals()) {
-        cout << "  " << goal.get_variable().get_name() << ": "
-             << goal.get_value() << endl;
-    }
-}
 
 void read_everything(istream &in) {
     cout << "reading input... [t=" << utils::g_timer << "]" << endl;
     tasks::read_root_task(in);
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
     cout << "done initializing global data [t=" << utils::g_timer << "]" << endl;
-}
-
-void dump_everything() {
-    TaskProxy task_proxy(*tasks::g_root_task);
-    OperatorsProxy operators = task_proxy.get_operators();
-    int min_action_cost = numeric_limits<int>::max();
-    int max_action_cost = 0;
-    for (OperatorProxy op : operators) {
-        min_action_cost = min(min_action_cost, op.get_cost());
-        max_action_cost = max(max_action_cost, op.get_cost());
-    }
-    cout << "Min Action Cost: " << min_action_cost << endl;
-    cout << "Max Action Cost: " << max_action_cost << endl;
-
-    VariablesProxy variables = task_proxy.get_variables();
-    cout << "Variables (" << variables.size() << "):" << endl;
-    for (VariableProxy var : variables) {
-        cout << "  " << var.get_name()
-             << " (range " << var.get_domain_size() << ")" << endl;
-        for (int val = 0; val < var.get_domain_size(); ++val) {
-            cout << "    " << val << ": " << var.get_fact(val).get_name() << endl;
-        }
-    }
-    State initial_state = task_proxy.get_initial_state();
-    cout << "Initial State (PDDL):" << endl;
-    initial_state.dump_pddl();
-    cout << "Initial State (FDR):" << endl;
-    initial_state.dump_fdr();
-    dump_goal(task_proxy);
 }
 
 bool is_unit_cost() {
