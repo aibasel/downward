@@ -35,8 +35,6 @@ public:
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<shared_ptr<Evaluator>> &evals) override;
-    //TODO: remove when all search algorithms use shared_ptr for plugins
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
@@ -94,12 +92,6 @@ void StandardScalarOpenList<Entry>::clear() {
     size = 0;
 }
 
-template<class Entry>
-void StandardScalarOpenList<Entry>::get_path_dependent_evaluators(
-    set<shared_ptr<Evaluator>> &evals) {
-    evaluator->get_path_dependent_evaluators(evals);
-}
-//TODO: remove when all search algorithms use shared_ptr for plugins
 template<class Entry>
 void StandardScalarOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {

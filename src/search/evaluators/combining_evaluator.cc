@@ -46,12 +46,6 @@ EvaluationResult CombiningEvaluator::compute_result(
 }
 
 void CombiningEvaluator::get_path_dependent_evaluators(
-    set<shared_ptr<Evaluator>> &evals) {
-    for (auto &subevaluator : subevaluators)
-        subevaluator->get_path_dependent_evaluators(evals);
-}
-//TODO: remove when all search algorithms use shared_ptr for plugins
-void CombiningEvaluator::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);

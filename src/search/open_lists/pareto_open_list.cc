@@ -50,8 +50,6 @@ public:
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<shared_ptr<Evaluator>> &evals) override;
-    //TODO: remove when all search algorithms use shared_ptr for plugins
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
@@ -97,7 +95,7 @@ void ParetoOpenList<Entry>::remove_key(const KeyType &key) {
     /*
       We must copy the key because it is likely to live inside the
       data structures from which we remove it here and hence becomes
-      invalid at that point.//TODO: remove when all search algorithms use shared_ptr for plugins
+      invalid at that point.
     */
     vector<int> copied_key(key);
     nondominated.erase(copied_key);
@@ -192,13 +190,6 @@ void ParetoOpenList<Entry>::clear() {
     nondominated.clear();
 }
 
-template<class Entry>
-void ParetoOpenList<Entry>::get_path_dependent_evaluators(
-    set<shared_ptr<Evaluator>> &evals) {
-    for (shared_ptr<Evaluator> &evaluator : evaluators)
-        evaluator->get_path_dependent_evaluators(evals);
-}
-//TODO: remove when all search algorithms use shared_ptr for plugins
 template<class Entry>
 void ParetoOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {

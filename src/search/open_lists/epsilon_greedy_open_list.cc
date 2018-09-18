@@ -54,8 +54,6 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual void get_path_dependent_evaluators(set<shared_ptr<Evaluator>> &evals) override;
-    //TODO: remove when all search algorithms use shared_ptr for plugins
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
     virtual bool empty() const override;
     virtual void clear() override;
@@ -120,12 +118,6 @@ bool EpsilonGreedyOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-template<class Entry>
-void EpsilonGreedyOpenList<Entry>::get_path_dependent_evaluators(
-    set<shared_ptr<Evaluator>> &evals) {
-    evaluator->get_path_dependent_evaluators(evals);
-}
-//TODO: remove when all search algorithms use shared_ptr for plugins
 template<class Entry>
 void EpsilonGreedyOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {

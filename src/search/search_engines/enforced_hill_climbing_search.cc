@@ -77,7 +77,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (const shared_ptr<Evaluator> &evaluator : path_dependent_evaluators) {
+    for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
@@ -93,7 +93,7 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 
 void EnforcedHillClimbingSearch::reach_state(
     const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
-    for (const shared_ptr<Evaluator> &evaluator : path_dependent_evaluators) {
+    for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_state_transition(parent, op_id, state);
     }
 }

@@ -1,7 +1,6 @@
 #ifndef OPEN_LIST_H
 #define OPEN_LIST_H
 
-#include <memory>
 #include <set>
 #include <vector>
 
@@ -89,9 +88,6 @@ public:
 
       TODO: This method can probably go away at some point.
     */
-    virtual void get_path_dependent_evaluators(
-        std::set<std::shared_ptr<Evaluator>> &evals) = 0;
-    //TODO: remove when all search algorithms use shared_ptr for plugins
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) = 0;
 
