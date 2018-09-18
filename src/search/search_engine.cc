@@ -173,6 +173,25 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
 
 ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
     EvaluationContext &eval_context,
+    const vector<shared_ptr<Evaluator>> &preferred_operator_evaluators) {
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
+    for (const shared_ptr<Evaluator> &evaluator : preferred_operator_evaluators) {
+        /*
+          Unreliable heuristics might consider solvable states as dead
+          ends. We only want preferred operators from finite-value
+          heuristics.
+        */
+        if (!eval_context.is_evaluator_value_infinite(evaluator.get())) {
+            for (OperatorID op_id : eval_context.get_preferred_operators(evaluator.get())) {
+                preferred_operators.insert(op_id);
+            }
+        }
+    }
+    return preferred_operators;
+}
+//TODO: remove when all search algorithms use shared_ptr for plugins
+ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
+    EvaluationContext &eval_context,
     const vector<Evaluator *> &preferred_operator_evaluators) {
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     for (Evaluator *evaluator : preferred_operator_evaluators) {
