@@ -40,9 +40,6 @@ public:
         EvaluationContext &eval_context) override;
 
     virtual void get_path_dependent_evaluators(
-        std::set<std::shared_ptr<Evaluator>> &evals) override;
-    //TODO: remove when all search algorithms use shared_ptr for plugins
-    virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override;
 };
 }

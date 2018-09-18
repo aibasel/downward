@@ -33,7 +33,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
 
     std::shared_ptr<Evaluator> evaluator;
     std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
-    std::set<std::shared_ptr<Evaluator>> path_dependent_evaluators;
+    std::set<Evaluator *> path_dependent_evaluators;
     bool use_preferred;
     PreferredUsage preferred_usage;
 
