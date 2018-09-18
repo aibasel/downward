@@ -46,8 +46,8 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n--search lazy(single(eval1))\n```\n",
         true);
 
-    parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Evaluator *>(
+    parser.add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+    parser.add_list_option<shared_ptr<Evaluator>>(
         "preferred",
         "use preferred operators of these evaluators", "[]");
     parser.add_option<bool>("reopen_closed",
@@ -66,7 +66,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         engine = make_shared<lazy_search::LazySearch>(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<Evaluator *> preferred_list = opts.get_list<Evaluator *>("preferred");
+        vector<shared_ptr<Evaluator>> preferred_list = opts.get_list<shared_ptr<Evaluator>>("preferred");
         engine->set_preferred_operator_evaluators(preferred_list);
     }
     return engine;
