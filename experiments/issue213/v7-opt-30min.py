@@ -13,6 +13,7 @@ from common_setup import IssueConfig, IssueExperiment
 from relativescatter import RelativeScatterPlotReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue213-v7"]
 BUILDS = ["release32", "release64"]
@@ -78,14 +79,13 @@ attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES
 
 # Compare builds.
 for build1, build2 in itertools.combinations(BUILDS, 2):
-    for rev in REVISIONS:
-        algorithm_pairs = [
-            ("{rev}-{search_nick}-{build1}".format(**locals()),
-             "{rev}-{search_nick}-{build2}".format(**locals()),
-             "Diff ({search_nick}-{rev})".format(**locals()))
-            for search_nick, search in SEARCHES]
-        exp.add_report(
-            ComparativeReport(algorithm_pairs, attributes=attributes),
-            name="issue213-{build1}-vs-{build2}-{rev}".format(**locals()))
+    algorithm_pairs = [
+        ("{rev}-{search_nick}-{build1}".format(**locals()),
+        "{rev}-{search_nick}-{build2}".format(**locals()),
+         "Diff ({search_nick}-{rev})".format(**locals()))
+        for search_nick, search in SEARCHES]
+    exp.add_report(
+        ComparativeReport(algorithm_pairs, attributes=attributes),
+        name="issue213-{build1}-vs-{build2}-{SCRIPT_NAME}".format(**locals()))
 
 exp.run_steps()
