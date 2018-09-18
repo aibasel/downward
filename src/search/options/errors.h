@@ -3,7 +3,7 @@
 
 #include "parse_tree.h"
 
-#include <iostream>
+#include <ostream>
 #include <string>
 
 namespace options {
