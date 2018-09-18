@@ -6,9 +6,11 @@
 #include "option_parser.h"
 #include "predefinitions.h"
 
-#include <string>
-#include <vector>
+#include "../search_engine.h"
 
+namespace landmarks {
+class LandmarkFactory;
+}
 
 using namespace std;
 
@@ -24,13 +26,13 @@ static void predefine_evaluator(const string &arg, bool dry_run) {
         predefinition.first, parser.start_parsing<Evaluator *>());
 }
 
+
 static void predefine_lmgraph(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, dry_run);
     Predefinitions<shared_ptr<landmarks::LandmarkFactory>>::instance()->predefine(
         predefinition.first, parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
 }
-
 
 
 shared_ptr<SearchEngine> parse_cmd_line_aux(
@@ -124,7 +126,6 @@ shared_ptr<SearchEngine> parse_cmd_line_aux(
 }
 
 
-
 shared_ptr<SearchEngine> parse_cmd_line(
     int argc, const char **argv, bool dry_run, bool is_unit_cost) {
     vector<string> args;
@@ -145,9 +146,6 @@ shared_ptr<SearchEngine> parse_cmd_line(
     }
     return parse_cmd_line_aux(args, dry_run);
 }
-
-
-
 
 
 string usage(const string &progname) {
