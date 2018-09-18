@@ -1,6 +1,5 @@
 #include "lazy_search.h"
 
-#include "../globals.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 

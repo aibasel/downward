@@ -3,8 +3,6 @@
 #include "abstract_state.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"

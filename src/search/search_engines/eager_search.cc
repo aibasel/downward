@@ -2,7 +2,6 @@
 
 #include "../evaluation_context.h"
 #include "../evaluator.h"
-#include "../globals.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../pruning_method.h"

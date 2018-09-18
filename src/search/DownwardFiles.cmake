@@ -54,7 +54,6 @@ fast_downward_plugin(
         evaluation_result
         evaluator
         evaluator_cache
-        globals
         global_state
         heuristic
         open_list
