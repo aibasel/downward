@@ -11,14 +11,30 @@
 
 using namespace std;
 
-class VectorAccessor {
+class VectorStateAccessor {
 public:
-    void set(vector<int> &values, int index, int value) const {
-        values[index] = value;
+    void set(vector<int> &values, int var, int value) const {
+        values[var] = value;
     }
 
-    int get(const vector<int> &values, int index) const {
-        return values[index];
+    int get(const vector<int> &values, int var) const {
+        return values[var];
+    }
+};
+
+class PackedStateAccessor {
+    const int_packer::IntPacker &state_packer;
+public:
+    PackedStateAccessor(const int_packer::IntPacker &state_packer)
+        : state_packer(state_packer) {
+    }
+
+    void set(PackedStateBin *buffer, int var, int value) const {
+        state_packer.set(buffer, var, value);
+    }
+
+    int get(const PackedStateBin *buffer, int var) const {
+        return state_packer.get(buffer, var);
     }
 };
 
@@ -87,12 +103,12 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
 
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(vector<int> &state) {
-    evaluate_aux(state, VectorAccessor());
+    evaluate_aux(state, VectorStateAccessor());
 }
 
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                               const int_packer::IntPacker &state_packer) {
-    evaluate_aux(buffer, state_packer);
+    evaluate_aux(buffer, PackedStateAccessor(state_packer));
 }
 
 template<typename Values, typename Accessor>
