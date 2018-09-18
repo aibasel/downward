@@ -120,9 +120,9 @@ static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
 template<typename T>
 static T *lookup_in_predefinitions(OptionParser &parser, bool &found) {
     const std::string &value = parser.get_root_value();
-    if (Predefinitions<T *>::instance()->contains(value)) {
+    if (Predefinitions::instance()->contains<T *>(value)) {
         found = true;
-        return Predefinitions<T *>::instance()->get(value);
+        return Predefinitions::instance()->get<T *>(value);
     }
     found = false;
     return nullptr;
@@ -132,9 +132,9 @@ template<typename T>
 static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
     const std::string &value = parser.get_root_value();
-    if (Predefinitions<TPtr>::instance()->contains(value)) {
+    if (Predefinitions::instance()->contains<TPtr>(value)) {
         found = true;
-        return Predefinitions<TPtr>::instance()->get(value);
+        return Predefinitions::instance()->get<TPtr>(value);
     }
     found = false;
     return nullptr;
