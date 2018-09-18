@@ -4,23 +4,23 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
-PluginTypeInfo::PluginTypeInfo(const std::type_index &type,
-                               const std::string &type_name,
-                               const std::string &documentation)
+PluginTypeInfo::PluginTypeInfo(const type_index &type,
+                               const string &type_name,
+                               const string &documentation)
     : type(type),
       type_name(type_name),
       documentation(documentation) {
 }
 
-const std::type_index &PluginTypeInfo::get_type() const {
+const type_index &PluginTypeInfo::get_type() const {
     return type;
 }
 
-const std::string &PluginTypeInfo::get_type_name() const {
+const string &PluginTypeInfo::get_type_name() const {
     return type_name;
 }
 
-const std::string &PluginTypeInfo::get_documentation() const {
+const string &PluginTypeInfo::get_documentation() const {
     return documentation;
 }
 
@@ -50,8 +50,8 @@ const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
     return registry.at(type);
 }
 
-std::vector<PluginTypeInfo> PluginTypeRegistry::get_sorted_types() const {
-    std::vector<PluginTypeInfo> types;
+vector<PluginTypeInfo> PluginTypeRegistry::get_sorted_types() const {
+    vector<PluginTypeInfo> types;
     for (auto it : registry) {
         types.push_back(it.second);
     }
