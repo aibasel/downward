@@ -31,8 +31,7 @@ elif os.name == "nt":
     REL_SEARCH_PATH = "downward.exe"
     VALIDATE = "validate.exe"
 else:
-    util.print_stderr("Unsupported OS: " + os.name)
-    sys.exit(returncodes.DRIVER_UNSUPPORTED)
+    returncodes.exit_with_driver_unsupported_error("Unsupported OS: " + os.name)
 
 def get_executable(build, rel_path):
     # First, consider 'build' to be a path directly to the binaries.
@@ -46,13 +45,13 @@ def get_executable(build, rel_path):
         #   '<repo-root>/builds/<buildname>/bin'.
         build_dir = os.path.join(util.BUILDS_DIR, build, "bin")
         if not os.path.exists(build_dir):
-            raise IOError(
+            returncodes.exit_with_driver_input_error(
                 "Could not find build '{build}' at {build_dir}. "
                 "Please run './build.py {build}'.".format(**locals()))
 
     abs_path = os.path.join(build_dir, rel_path)
     if not os.path.exists(abs_path):
-        raise IOError(
+        returncodes.exit_with_driver_input_error(
             "Could not find '{rel_path}' in build '{build}'. "
             "Please run './build.py {build}'.".format(**locals()))
 
@@ -127,7 +126,7 @@ def run_search(args):
             time_limit, memory_limit)
     else:
         if not args.search_options:
-            raise ValueError(
+            returncodes.exit_with_driver_input_error(
                 "search needs --alias, --portfolio, or search options")
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
@@ -160,7 +159,7 @@ def run_validate(args):
     elif num_files == 2:
         domain, task = args.filenames
     else:
-        raise ValueError("validate needs one or two PDDL input files.")
+        returncodes.exit_with_driver_input_error("validate needs one or two PDDL input files.")
 
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     validate_inputs = [domain, task] + plan_files
@@ -173,8 +172,8 @@ def run_validate(args):
             memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
     except OSError as err:
         if err.errno == errno.ENOENT:
-            raise IOError("Error: {} not found. Is it on the PATH?".format(VALIDATE))
+            returncodes.exit_with_driver_input_error("Error: {} not found. Is it on the PATH?".format(VALIDATE))
         else:
-            raise
+            returncodes.exit_with_driver_critical_error(err)
     else:
         return (0, True)
