@@ -63,7 +63,7 @@ protected:
     Proposition *get_proposition(const FactProxy &fact);
     virtual int compute_heuristic(const GlobalState &state) = 0;
 public:
-    RelaxationHeuristic(const options::Options &options);
+    explicit RelaxationHeuristic(const options::Options &options);
     virtual ~RelaxationHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };
