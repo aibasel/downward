@@ -13,6 +13,17 @@ namespace relaxation_heuristic {
 struct Proposition;
 struct UnaryOperator;
 
+struct Proposition {
+    Proposition();
+
+    bool is_goal;
+    std::vector<UnaryOperator *> precondition_of;
+
+    int cost; // Used for h^max cost or h^add cost
+    UnaryOperator *reached_by;
+    bool marked; // used when computing preferred operators for h^add and h^FF
+};
+
 struct UnaryOperator {
     UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
                   int operator_no, int base);
@@ -25,17 +36,6 @@ struct UnaryOperator {
     int unsatisfied_preconditions;
     int cost; // Used for h^max cost or h^add cost;
               // includes operator cost (base_cost)
-};
-
-struct Proposition {
-    Proposition();
-
-    bool is_goal;
-    std::vector<UnaryOperator *> precondition_of;
-
-    int cost; // Used for h^max cost or h^add cost
-    UnaryOperator *reached_by;
-    bool marked; // used when computing preferred operators for h^add and h^FF
 };
 
 class RelaxationHeuristic : public Heuristic {
