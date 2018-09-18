@@ -85,101 +85,157 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_
 }
 
 void RelaxationHeuristic::simplify() {
-    // Remove duplicate or dominated unary operators.
-
     /*
-      Algorithm: Put all unary operators into an unordered map
-      (key: condition and effect; value: index in operator vector.
-      This gets rid of operators with identical conditions.
+      Remove dominated unary operators, including duplicates.
 
-      Then go through the unordered map, checking for each element if
-      none of the possible dominators are part of the map.
-      Put the element into the new operator vector iff this is the case.
+      Unary operators with more than MAX_PRECONDITIONS_TO_TEST
+      preconditions are ignored because we cannot handle them
+      efficiently. (This is obviously an inelegant solution.)
 
-      In both loops, be careful to ensure that a higher-cost operator
-      never dominates a lower-cost operator.
+      Apart from this restriction, operator o1 dominates operator o2 if:
+      1. eff(o1) = eff(o2), and
+      2. pre(o1) is a (not necessarily strict) subset of pre(o2), and
+      3. cost(o1) <= cost(o2), and either
+      4a. At least one of 2. and 3. is strict, or
+      4b. id(o1) < id(o2).
+      (Here, "id" is the position in the unary_operators vector.)
 
-      In the end, the vector of unary operators is sorted by operator_no,
-      effect->id, base_cost and precondition.
+      This defines a strict partial order.
     */
 
+    const int MAX_PRECONDITIONS_TO_TEST = 5;
 
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
-    typedef pair<vector<Proposition *>, Proposition *> Key;
-    typedef unordered_map<Key, int> Map;
-    Map unary_operator_index;
-    unary_operator_index.reserve(unary_operators.size());
-
-
-    for (size_t i = 0; i < unary_operators.size(); ++i) {
-        UnaryOperator &op = unary_operators[i];
+    /*
+      TODO: This sorting code does not belong here, but simplify
+      requires sorted preconditions to avoid missing simplification
+      opportunities. It would be better to require the input to
+      already be sorted and then assert that it is sorted.
+    */
+    for (UnaryOperator &op : unary_operators) {
         sort(op.precondition.begin(), op.precondition.end(),
              [] (const Proposition *p1, const Proposition *p2) {
                  return p1->id < p2->id;
              });
-        Key key(op.precondition, op.effect);
-        pair<Map::iterator, bool> inserted = unary_operator_index.insert(
-            make_pair(key, i));
-        if (!inserted.second) {
-            // We already had an element with this key; check its cost.
-            Map::iterator iter = inserted.first;
-            int old_op_no = iter->second;
-            int old_cost = unary_operators[old_op_no].base_cost;
-            int new_cost = unary_operators[i].base_cost;
-            if (new_cost < old_cost)
-                iter->second = i;
-            assert(unary_operators[unary_operator_index[key]].base_cost ==
-                   min(old_cost, new_cost));
-        }
     }
 
-    vector<UnaryOperator> old_unary_operators;
-    old_unary_operators.swap(unary_operators);
+    /*
+      First, we create a map that maps the preconditions and effect
+      ("key") of each operator to its cost and index ("value").
+      If multiple operators have the same key, the one with lowest
+      cost wins. If this still results in a tie, the one with lowest
+      index wins. These rules can be tested with a lexicographical
+      comparison of the value.
 
-    for (Map::iterator it = unary_operator_index.begin();
-         it != unary_operator_index.end(); ++it) {
-        const Key &key = it->first;
-        int unary_operator_no = it->second;
-        bool match = false;
-        if (key.first.size() <= 5) { // HACK! Don't spend too much time here...
-            int powerset_size = (1 << key.first.size()) - 1; // -1: only consider proper subsets
-            for (int mask = 0; mask < powerset_size; ++mask) {
-                Key dominating_key = make_pair(vector<Proposition *>(), key.second);
-                for (size_t i = 0; i < key.first.size(); ++i)
-                    if (mask & (1 << i))
-                        dominating_key.first.push_back(key.first[i]);
-                Map::iterator found = unary_operator_index.find(
-                    dominating_key);
-                if (found != unary_operator_index.end()) {
-                    int my_cost = old_unary_operators[unary_operator_no].base_cost;
-                    int dominator_op_no = found->second;
-                    int dominator_cost = old_unary_operators[dominator_op_no].base_cost;
-                    if (dominator_cost <= my_cost) {
-                        match = true;
-                        break;
-                    }
-                }
+      Note that for operators sharing the same preconditions and
+      effect, our dominance relationship above is actually a strict
+      *total* order (order by cost, then by id).
+
+      For each key present in the data, the map stores the dominating
+      element in this total order.
+    */
+    using Key = pair<vector<Proposition *>, Proposition *>;
+    using Value = pair<int, int>;
+    using Map = unordered_map<Key, Value>;
+    Map unary_operator_index;
+    unary_operator_index.reserve(unary_operators.size());
+
+    for (size_t op_no = 0; op_no < unary_operators.size(); ++op_no) {
+        const UnaryOperator &op = unary_operators[op_no];
+        if (op.precondition.size() <= MAX_PRECONDITIONS_TO_TEST) {
+            Key key(op.precondition, op.effect);
+            Value value(op.base_cost, op_no);
+            auto inserted = unary_operator_index.insert(
+                make_pair(move(key), value));
+            if (!inserted.second) {
+                // We already had an element with this key; check its cost.
+                Map::iterator iter = inserted.first;
+                Value old_value = iter->second;
+                if (value < old_value)
+                    iter->second = value;
             }
         }
-        if (!match)
-            unary_operators.push_back(old_unary_operators[unary_operator_no]);
     }
 
-    sort(unary_operators.begin(), unary_operators.end(),
-         [&] (const UnaryOperator &o1, const UnaryOperator &o2) {
-             if (o1.operator_no != o2.operator_no)
-                 return o1.operator_no < o2.operator_no;
-             if (o1.effect != o2.effect)
-                 return o1.effect->id < o2.effect->id;
-             if (o1.base_cost != o2.base_cost)
-                 return o1.base_cost < o2.base_cost;
-             return lexicographical_compare(o1.precondition.begin(), o1.precondition.end(),
-                                            o2.precondition.begin(), o2.precondition.end(),
-                                            [] (const Proposition *p1, const Proposition *p2) {
-                                                return p1->id < p2->id;
-                                            });
-         });
+    /*
+      `dominating_key` is conceptually a local variable of `is_dominated`.
+      We declare it outside to reduce vector reallocation overhead.
+    */
+    Key dominating_key;
+
+    // get_op_no: compute the index of an operator in `unary_operators`
+    auto get_op_no = [&](const UnaryOperator &op) {
+        int op_no = &op - unary_operators.data();
+        assert(utils::in_bounds(op_no, unary_operators));
+        return op_no;
+    };
+
+    /*
+      is_dominated: test if a given operator is dominated by an
+      operator in the map.
+    */
+    auto is_dominated = [&](const UnaryOperator &op) {
+        if (op.precondition.size() > MAX_PRECONDITIONS_TO_TEST)
+            return false;
+
+        /*
+          Check all possible subsets X of pre(op) to see if there is a
+          dominating operator with preconditions X represented in the
+          map.
+        */
+
+        int op_no = get_op_no(op);
+        int cost = op.base_cost;
+
+        const vector<Proposition *> &precondition = op.precondition;
+
+        /*
+          We handle the case X = pre(op) specially for efficiency and
+          to ensure that an operator is not considered to be dominated
+          by itself.
+
+          From the discussion above that operators with the same
+          precondition and effect are actually totally ordered, it is
+          enough to test here whether looking up the key of op in the
+          map results in an entry including op itself.
+        */
+        if (unary_operator_index[make_pair(precondition, op.effect)].second != op_no)
+            return true;
+
+        /*
+          We now handle all cases where X is a strict subset of pre(op).
+          Our map lookup ensures conditions 1. and 2., and because X is
+          a strict subset, we also have 4a (which means we don't need 4b).
+          So it only remains to check 3 for all hits.
+        */
+        vector<Proposition *> &dominating_precondition = dominating_key.first;
+        dominating_key.second = op.effect;
+
+        // We subtract "- 1" to generate all *strict* subsets of precondition.
+        int powerset_size = (1 << precondition.size()) - 1;
+        for (int mask = 0; mask < powerset_size; ++mask) {
+            dominating_precondition.clear();
+            for (size_t i = 0; i < precondition.size(); ++i)
+                if (mask & (1 << i))
+                    dominating_precondition.push_back(precondition[i]);
+            Map::iterator found = unary_operator_index.find(dominating_key);
+            if (found != unary_operator_index.end()) {
+                Value dominator_value = found->second;
+                int dominator_cost = dominator_value.first;
+                if (dominator_cost <= cost)
+                    return true;
+            }
+        }
+        return false;
+    };
+
+    unary_operators.erase(
+        remove_if(
+            unary_operators.begin(),
+            unary_operators.end(),
+            is_dominated),
+        unary_operators.end());
 
     cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
 }
