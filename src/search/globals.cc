@@ -2,7 +2,7 @@
 
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
-#include "utils/logging.h"
+#include "utils/timer.h"
 
 #include <iostream>
 
@@ -21,4 +21,3 @@ bool is_unit_cost() {
     return is_unit_cost;
 }
 
-utils::Log g_log;

@@ -78,4 +78,6 @@ TraceBlock::~TraceBlock() {
 void trace(const string &msg) {
     _tracer.print_trace_message(msg);
 }
+
+utils::Log g_log;
 }
