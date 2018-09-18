@@ -34,6 +34,9 @@ public:
     virtual void clear() override;
     virtual void boost_preferred() override;
     virtual void get_path_dependent_evaluators(
+        set<shared_ptr<Evaluator>> &evals) override;
+    //TODO: remove when all search algorithms use shared_ptr for plugins
+    virtual void get_path_dependent_evaluators(
         set<Evaluator *> &evals) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
@@ -98,6 +101,13 @@ void AlternationOpenList<Entry>::boost_preferred() {
             priorities[i] -= boost_amount;
 }
 
+template<class Entry>
+void AlternationOpenList<Entry>::get_path_dependent_evaluators(
+    set<shared_ptr<Evaluator>> &evals) {
+    for (const auto &sublist : open_lists)
+        sublist->get_path_dependent_evaluators(evals);
+}
+//TODO: remove when all search algorithms use shared_ptr for plugins
 template<class Entry>
 void AlternationOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
