@@ -27,6 +27,9 @@ def can_set_limits():
 def _set_limit(kind, soft, hard=None):
     if hard is None:
         hard = soft
+    if sys.platform == "darwin" and kind == resource.RLIMIT_AS:
+        returncodes.exit_with_driver_unsupported_error(
+            "Memory limits are not enforced on macOS and thus not supported:")
     try:
         resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError) as err:
