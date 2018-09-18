@@ -153,7 +153,7 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     */
     using StateIDSet = int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
 
-    const TaskProxy task_proxy;
+    TaskProxy task_proxy;
     const int_packer::IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
     const int num_variables;

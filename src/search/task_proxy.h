@@ -573,9 +573,10 @@ public:
         other.task = nullptr;
     }
 
-    State &operator=(const State &&other) {
+    State &operator=(State &&other) {
         if (this != &other) {
             values = std::move(other.values);
+            other.task = nullptr;
         }
         return *this;
     }
