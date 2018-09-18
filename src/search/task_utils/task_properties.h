@@ -70,6 +70,12 @@ extern std::vector<int> get_operator_costs(const TaskProxy &task_proxy);
 extern double get_average_operator_cost(TaskProxy task_proxy);
 extern int get_min_operator_cost(TaskProxy task_proxy);
 
+/*
+  Return the number of facts of the task.
+  Runtime: O(n), where n is the number of state variables.
+*/
+extern int get_num_facts(const TaskProxy &task_proxy);
+
 template<class FactProxyCollection>
 std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     std::vector<FactPair> fact_pairs;
