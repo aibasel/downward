@@ -76,6 +76,13 @@ extern int get_min_operator_cost(TaskProxy task_proxy);
 */
 extern int get_num_facts(const TaskProxy &task_proxy);
 
+/*
+  Return the total number of effects of the task, including the
+  effects of axioms.
+  Runtime: O(n), where n is the number of operators and axioms.
+*/
+extern int get_num_total_effects(const TaskProxy &task_proxy);
+
 template<class FactProxyCollection>
 std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     std::vector<FactPair> fact_pairs;

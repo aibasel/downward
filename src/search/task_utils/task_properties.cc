@@ -86,10 +86,17 @@ int get_min_operator_cost(TaskProxy task_proxy) {
 
 int get_num_facts(const TaskProxy &task_proxy) {
     int num_facts = 0;
-    VariablesProxy variables = task_proxy.get_variables();
-    for (VariableProxy var : variables)
+    for (VariableProxy var : task_proxy.get_variables())
         num_facts += var.get_domain_size();
     return num_facts;
+}
+
+int get_num_total_effects(const TaskProxy &task_proxy) {
+    int num_effects = 0;
+    for (OperatorProxy op : task_proxy.get_operators())
+        num_effects += op.get_effects().size();
+    num_effects += task_proxy.get_axioms().size();
+    return num_effects;
 }
 
 PerTaskInformation<int_packer::IntPacker> g_state_packers(
