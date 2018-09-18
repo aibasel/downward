@@ -1,7 +1,7 @@
 #ifndef OPTIONS_BOUNDS_H
 #define OPTIONS_BOUNDS_H
 
-#include <iostream>
+#include <ostream>
 #include <string>
 
 namespace options {

@@ -1,7 +1,5 @@
 #include "bounds.h"
 
-#include <iostream>
-
 using namespace std;
 
 namespace options {
