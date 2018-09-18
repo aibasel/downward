@@ -197,7 +197,7 @@ void RelaxationHeuristic::simplify() {
 
     /*
       `dominating_key` is conceptually a local variable of `is_dominated`.
-      We declare it outside to reduce vector reallocation overhead.
+      We declare it outside to reduce vector allocation overhead.
     */
     Key dominating_key;
 
