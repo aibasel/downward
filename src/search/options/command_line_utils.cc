@@ -45,7 +45,7 @@ void trim(string &s) {
 }
 
 
-pair<string, string> split(const string &arg, const string& splitter) {
+pair<string, string> split(const string &arg, const string &splitter) {
     int split_pos = arg.find(splitter);
     string lhs = arg.substr(0, split_pos);
     trim(lhs);
@@ -53,5 +53,4 @@ pair<string, string> split(const string &arg, const string& splitter) {
     trim(rhs);
     return make_pair(lhs, rhs);
 }
-
 }

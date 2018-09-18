@@ -102,7 +102,6 @@ public:
     static const std::string NONE;
 };
 
-// START INCLUDING TOKEN _ PARSER
 
 /*
   TokenParser<T> wraps functions to parse supported types T.
@@ -276,7 +275,6 @@ inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
     return results;
 }
 
-// END INCLUDING TOKEN _ PARSER
 template<typename T>
 T OptionParser::start_parsing() {
     return TokenParser<T>::parse(*this);

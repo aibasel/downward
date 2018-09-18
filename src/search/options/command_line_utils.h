@@ -16,7 +16,6 @@ void rtrim(std::string &s);
 void trim(std::string &s);
 
 std::pair<std::string, std::string> split(
-    const std::string &arg, const std::string& splitter = "=");
-
+    const std::string &arg, const std::string &splitter = "=");
 }
 #endif

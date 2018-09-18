@@ -9,11 +9,10 @@
 
 class SearchEngine;
 namespace landmarks {
-    class LandmarkFactory;
+class LandmarkFactory;
 }
 
 namespace options {
-
 std::shared_ptr<SearchEngine> parse_cmd_line_aux(
     const std::vector<std::string> &args, bool dry_run);
 
@@ -23,4 +22,3 @@ std::shared_ptr<SearchEngine> parse_cmd_line(
 std::string usage(const std::string &progname);
 }
 #endif
-
