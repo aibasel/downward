@@ -24,13 +24,30 @@ using utils::ExitCode;
 
 class PruningMethod;
 
+successor_generator::SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy) {
+    cout << "Building successor generator..." << flush;
+    int peak_memory_before = utils::get_peak_memory_in_kb();
+    utils::Timer successor_generator_timer;
+    successor_generator::SuccessorGenerator &successor_generator =
+        successor_generator::g_successor_generators[task_proxy];
+    successor_generator_timer.stop();
+    cout << "done! [t=" << utils::g_timer << "]" << endl;
+    int peak_memory_after = utils::get_peak_memory_in_kb();
+    int memory_diff = peak_memory_after - peak_memory_before;
+    cout << "peak memory difference for successor generator creation: "
+         << memory_diff << " KB" << endl
+         << "time for successor generation creation: "
+         << successor_generator_timer << endl;
+    return successor_generator;
+}
+
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
       state_registry(*task),
-      successor_generator(successor_generator::g_successor_generators[task_proxy]),
+      successor_generator(get_successor_generator(task_proxy)),
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
