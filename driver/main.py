@@ -29,27 +29,18 @@ def main():
 
     exitcode = None
     for component in args.components:
-        try:
-            if component == "translate":
-                (exitcode, continue_execution) = run_components.run_translate(args)
-            elif component == "search":
-                (exitcode, continue_execution) = run_components.run_search(args)
-            elif component == "validate":
-                (exitcode, continue_execution) = run_components.run_validate(args)
-            else:
-                assert False, "Error: unhandled component: {}".format(component)
-            print("{component} exit code: {exitcode}".format(**locals()))
-            print()
-            if not continue_execution:
-                print("Driver aborting after {}".format(component))
-                break
-        except (ImportError, IOError, KeyError, NotImplementedError,
-            OSError, RuntimeError, SystemExit, ValueError) as err:
-            traceback.print_exc()
-            if type(err) in [KeyError, ValueError]:
-                exitcode = returncodes.DRIVER_INPUT_ERROR
-            else:
-                exitcode = returncodes.DRIVER_CRITICAL_ERROR
+        if component == "translate":
+            (exitcode, continue_execution) = run_components.run_translate(args)
+        elif component == "search":
+            (exitcode, continue_execution) = run_components.run_search(args)
+        elif component == "validate":
+            (exitcode, continue_execution) = run_components.run_validate(args)
+        else:
+            assert False, "Error: unhandled component: {}".format(component)
+        print()
+        print("{component} exit code: {exitcode}".format(**locals()))
+        if not continue_execution:
+            print("Driver aborting after {}".format(component))
             break
     # Exit with the exit code of the last component that ran successfully, or
     # with a driver exit code if it failed. Leaving driver errors aside,

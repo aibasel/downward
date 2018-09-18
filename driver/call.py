@@ -41,8 +41,7 @@ def _get_preexec_function(time_limit, memory_limit):
     elif limits.can_set_limits():
         return set_limits
     else:
-        util.print_stderr(limits.RESOURCE_MODULE_MISSING_MSG)
-        sys.exit(returncodes.DRIVER_UNSUPPORTED)
+        returncodes.exit_with_driver_unsupported_error(limits.RESOURCE_MODULE_MISSING_MSG)
 
 
 def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):

@@ -8,6 +8,9 @@ import os.path
 import re
 
 
+from . import returncodes
+
+
 _PLAN_INFO_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)\n")
 
 
@@ -66,7 +69,7 @@ class PlanManager(object):
 
     def get_problem_type(self):
         if self._problem_type is None:
-            raise ValueError("no plans found yet: cost type not set")
+            returncodes.exit_with_driver_critical_error("no plans found yet: cost type not set")
         return self._problem_type
 
     def process_new_plans(self):
@@ -80,7 +83,7 @@ class PlanManager(object):
         for counter in itertools.count(self.get_plan_counter() + 1):
             plan_filename = self._get_plan_file(counter)
             def bogus_plan(msg):
-                raise RuntimeError("%s: %s" % (plan_filename, msg))
+                returncodes.exit_with_driver_critical_error("%s: %s" % (plan_filename, msg))
             if not os.path.exists(plan_filename):
                 break
             if had_incomplete_plan:
