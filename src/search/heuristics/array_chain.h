@@ -2,14 +2,13 @@
 #define ARRAY_CHAIN_H
 
 #include <cassert>
-#include <deque>
 #include <vector>
 
 namespace array_chain {
 const int SENTINEL = -1;
 const int INVALID_INDEX = -1;
 
-using _Iterator = std::deque<int>::const_iterator;
+using _Iterator = std::vector<int>::const_iterator;
 using Value = int;
 
 class ArrayChainIndex {
@@ -94,7 +93,7 @@ public:
 };
 
 class ArrayChain {
-    std::deque<Value> data;
+    std::vector<Value> data;
 public:
     ArrayChainIndex append(const std::vector<Value> &vec) {
         ArrayChainIndex index(data.size());
