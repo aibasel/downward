@@ -47,7 +47,7 @@ struct UnaryOperator {
 };
 
 class RelaxationHeuristic : public Heuristic {
-    void build_unary_operators(const OperatorProxy &op, int operator_no);
+    void build_unary_operators(const OperatorProxy &op);
     void simplify();
 
     // proposition_offsets[var_no]: first PropID related to variable var_no
