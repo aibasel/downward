@@ -18,21 +18,20 @@ class Predefinitions {
 
 public:
     template<typename T>
-    void predefine(std::string key, T object) {
+    void predefine(const std::string &key, T object) {
         predefined[std::type_index(typeid(T))][key] = object;
     }
 
     template<typename T>
     bool contains(const std::string &key) const {
-        std::type_index tmp(typeid(T));
-        return predefined.find(tmp) != predefined.end()
-               && predefined.at(tmp).find(key) != predefined.at(tmp).end();
+        std::type_index type(typeid(T));
+        return predefined.count(type) && predefined.at(type).count(key);
     }
 
     template<typename T>
     T get(const std::string &key) const {
-        std::type_index tmp(typeid(T));
-        return any_cast<T>(predefined.at(tmp).at(key));
+        std::type_index type(typeid(T));
+        return any_cast<T>(predefined.at(type).at(key));
     }
 
     static Predefinitions *instance() {
