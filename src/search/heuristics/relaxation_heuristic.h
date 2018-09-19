@@ -25,9 +25,9 @@ struct Proposition {
     Proposition();
     int cost; // used for h^max cost or h^add cost
     // TODO: Make sure in constructor that reached_by does not overflow.
-    PropID reached_by /* : 30 */;
-    bool is_goal /* : 1 */;
-    bool marked /* : 1 */; // used for preferred operators of h^add and h^FF
+    PropID reached_by : 30;
+    bool is_goal : 1;
+    bool marked : 1; // used for preferred operators of h^add and h^FF
     std::vector<OpID> precondition_of;
 
 };
