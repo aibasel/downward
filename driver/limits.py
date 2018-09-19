@@ -2,6 +2,7 @@
 
 from __future__ import division, print_function
 
+from . import returncodes
 from . import util
 
 import math
@@ -26,14 +27,16 @@ def can_set_limits():
 def _set_limit(kind, soft, hard=None):
     if hard is None:
         hard = soft
+    if sys.platform == "darwin" and kind == resource.RLIMIT_AS:
+        returncodes.exit_with_driver_unsupported_error(
+            "Memory limits are not enforced on macOS and thus not supported:")
     try:
         resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError) as err:
-        print(
+        returncodes.exit_with_driver_critical_error(
             "Limit for {} could not be set to ({},{}) ({}). "
             "Previous limit: {}".format(
-                kind, soft, hard, err, resource.getrlimit(kind)),
-            file=sys.stderr)
+                kind, soft, hard, err, resource.getrlimit(kind)))
 
 
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
@@ -170,4 +173,4 @@ def get_time_limit(component_limit, overall_limit):
     elif component_limit is None and overall_limit is None:
         return None
     else:
-        sys.exit(RESOURCE_MODULE_MISSING_MSG)
+        returncodes.exit_with_driver_unsupported_error(RESOURCE_MODULE_MISSING_MSG)

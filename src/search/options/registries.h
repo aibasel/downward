@@ -39,30 +39,15 @@ class PluginTypeInfo {
 public:
     PluginTypeInfo(const std::type_index &type,
                    const std::string &type_name,
-                   const std::string &documentation)
-        : type(type),
-          type_name(type_name),
-          documentation(documentation) {
-    }
+                   const std::string &documentation);
 
-    ~PluginTypeInfo() {
-    }
+    ~PluginTypeInfo() = default;
 
-    const std::type_index &get_type() const {
-        return type;
-    }
+    const std::type_index &get_type() const;
+    const std::string &get_type_name() const;
+    const std::string &get_documentation() const;
 
-    const std::string &get_type_name() const {
-        return type_name;
-    }
-
-    const std::string &get_documentation() const {
-        return documentation;
-    }
-
-    bool operator<(const PluginTypeInfo &other) const {
-        return make_pair(type_name, type) < make_pair(other.type_name, other.type);
-    }
+    bool operator<(const PluginTypeInfo &other) const;
 };
 
 

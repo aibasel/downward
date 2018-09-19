@@ -1,6 +1,5 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -82,7 +81,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
                          preferred_operator_evaluators.end(), evaluator) !=
-                    preferred_operator_evaluators.end();
+        preferred_operator_evaluators.end();
 
     open_list = create_ehc_open_list_factory(
         use_preferred, preferred_usage)->create_edge_open_list();
@@ -160,11 +159,11 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
            by the open list. */
         vector<OperatorID> successor_operators;
-        g_successor_generator->generate_applicable_ops(
+        successor_generator.generate_applicable_ops(
             eval_context.get_state(), successor_operators);
         for (OperatorID op_id : successor_operators) {
             bool preferred = use_preferred &&
-                             preferred_operators.contains(op_id);
+                preferred_operators.contains(op_id);
             insert_successor_into_open_list(
                 eval_context, node_g, op_id, preferred);
         }
@@ -198,7 +197,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         // d: distance from initial node in this EHC phase
         int d = parent_node.get_g() - current_phase_start_g +
-                get_adjusted_cost(last_op);
+            get_adjusted_cost(last_op);
 
         if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
@@ -220,7 +219,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = eval_context.get_evaluator_value(evaluator);
-            node.open(parent_node, last_op);
+            node.open(parent_node, last_op, get_adjusted_cost(last_op));
 
             if (h < current_eval_context.get_evaluator_value(evaluator)) {
                 ++num_ehc_phases;

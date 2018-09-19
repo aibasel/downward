@@ -2,11 +2,11 @@
 
 #include "evaluation_context.h"
 #include "evaluator.h"
-#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
 
 #include "algorithms/ordered_set.h"
+#include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
@@ -23,21 +23,41 @@ using utils::ExitCode;
 
 class PruningMethod;
 
+successor_generator::SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy) {
+    cout << "Building successor generator..." << flush;
+    int peak_memory_before = utils::get_peak_memory_in_kb();
+    utils::Timer successor_generator_timer;
+    successor_generator::SuccessorGenerator &successor_generator =
+        successor_generator::g_successor_generators[task_proxy];
+    successor_generator_timer.stop();
+    cout << "done! [t=" << utils::g_timer << "]" << endl;
+    int peak_memory_after = utils::get_peak_memory_in_kb();
+    int memory_diff = peak_memory_after - peak_memory_before;
+    cout << "peak memory difference for successor generator creation: "
+         << memory_diff << " KB" << endl
+         << "time for successor generation creation: "
+         << successor_generator_timer << endl;
+    return successor_generator;
+}
+
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
       state_registry(*task),
+      successor_generator(get_successor_generator(task_proxy)),
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
+    task_properties::print_variable_statistics(task_proxy);
 }
 
 SearchEngine::~SearchEngine() {
@@ -100,7 +120,7 @@ void SearchEngine::save_plan_if_necessary() {
 }
 
 int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
-    return get_adjusted_action_cost(op, cost_type);
+    return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
 /* TODO: merge this into add_options_to_parser when all search
