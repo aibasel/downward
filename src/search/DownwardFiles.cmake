@@ -91,7 +91,6 @@ fast_downward_plugin(
         options/any
         options/bounds
         options/command_line
-        options/command_line_utils
         options/doc_printer
         options/doc_store
         options/errors
@@ -101,7 +100,7 @@ fast_downward_plugin(
         options/predefinitions
         options/plugin
         options/registries
-        options/token_parser
+        options/string_utils
         options/type_namer
     CORE_PLUGIN
 )

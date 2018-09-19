@@ -1,4 +1,4 @@
-#include "command_line_utils.h"
+#include "string_utils.h"
 
 #include "errors.h"
 
@@ -8,7 +8,7 @@
 using namespace std;
 
 namespace options {
-string sanitize_argument(string s) {
+string sanitize_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
     // Convert string to lower case.
