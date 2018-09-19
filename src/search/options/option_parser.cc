@@ -1,24 +1,11 @@
 #include "option_parser.h"
 
-#include "doc_printer.h"
 #include "errors.h"
-#include "plugin.h"
-
-#include "../plan_manager.h"
-#include "../search_engine.h"
 
 #include "../ext/tree_util.hh"
 
-#include "../utils/rng.h"
-#include "../utils/system.h"
-
-#include <algorithm>
-#include <cassert>
 #include <iostream>
-#include <stdexcept>
-#include <string>
-#include <utility>
-#include <vector>
+
 
 using namespace std;
 
@@ -29,49 +16,6 @@ class LandmarkFactory;
 namespace options {
 const string OptionParser::NONE = "<none>";
 
-static void ltrim(string &s) {
-    s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
-                                   return !isspace(ch);
-                               }));
-}
-
-static void rtrim(string &s) {
-    s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
-                        return !isspace(ch);
-                    }).base(), s.end());
-}
-
-static void trim(string &s) {
-    ltrim(s);
-    rtrim(s);
-}
-
-static pair<string, string> split_predefinition(const string &arg) {
-    int split_pos = arg.find("=");
-    string lhs = arg.substr(0, split_pos);
-    trim(lhs);
-    string rhs = arg.substr(split_pos + 1);
-    trim(rhs);
-    return make_pair(lhs, rhs);
-}
-
-/*
-  Predefine landmarks and heuristics.
-*/
-
-static void predefine_evaluator(const string &arg, bool dry_run) {
-    pair<string, string> predefinition = split_predefinition(arg);
-    OptionParser parser(predefinition.second, dry_run);
-    Predefinitions::instance()->predefine<Evaluator *>(
-        predefinition.first, parser.start_parsing<Evaluator *>());
-}
-
-static void predefine_lmgraph(const string &arg, bool dry_run) {
-    pair<string, string> predefinition = split_predefinition(arg);
-    OptionParser parser(predefinition.second, dry_run);
-    Predefinitions::instance()->predefine<shared_ptr<landmarks::LandmarkFactory>>(
-        predefinition.first, parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
-}
 
 
 template<class T>
@@ -121,161 +65,6 @@ void OptionParser::check_bounds<double>(
 }
 
 
-string sanitize_argument(string s) {
-    // Convert newlines to spaces.
-    replace(s.begin(), s.end(), '\n', ' ');
-    // Convert string to lower case.
-    transform(s.begin(), s.end(), s.begin(), ::tolower);
-    return s;
-}
-
-
-shared_ptr<SearchEngine> OptionParser::parse_cmd_line(
-    int argc, const char **argv, bool dry_run, bool is_unit_cost) {
-    vector<string> args;
-    bool active = true;
-    for (int i = 1; i < argc; ++i) {
-        string arg = sanitize_argument(argv[i]);
-
-        if (arg == "--if-unit-cost") {
-            active = is_unit_cost;
-        } else if (arg == "--if-non-unit-cost") {
-            active = !is_unit_cost;
-        } else if (arg == "--always") {
-            active = true;
-        } else if (active) {
-            // We use the unsanitized arguments because sanitizing is inappropriate for things like filenames.
-            args.push_back(argv[i]);
-        }
-    }
-    return parse_cmd_line_aux(args, dry_run);
-}
-
-
-int OptionParser::parse_int_arg(const string &name, const string &value) {
-    try {
-        return stoi(value);
-    } catch (invalid_argument &) {
-        throw ArgError("argument for " + name + " must be an integer");
-    } catch (out_of_range &) {
-        throw ArgError("argument for " + name + " is out of range");
-    }
-}
-
-
-shared_ptr<SearchEngine> OptionParser::parse_cmd_line_aux(
-    const vector<string> &args, bool dry_run) {
-    string plan_filename = "sas_plan";
-    int num_previously_generated_plans = 0;
-    bool is_part_of_anytime_portfolio = false;
-
-    shared_ptr<SearchEngine> engine;
-    /*
-      Note that we don’t sanitize all arguments beforehand because filenames should remain as-is
-      (no conversion to lower-case, no conversion of newlines to spaces).
-    */
-    // TODO: Remove code duplication.
-    for (size_t i = 0; i < args.size(); ++i) {
-        string arg = sanitize_argument(args[i]);
-        bool is_last = (i == args.size() - 1);
-        if (arg == "--evaluator") {
-            if (is_last)
-                throw ArgError("missing argument after --evaluator");
-            ++i;
-            predefine_evaluator(sanitize_argument(args[i]), dry_run);
-        } else if (arg == "--heuristic") {
-            // deprecated alias for --evaluator
-            if (is_last)
-                throw ArgError("missing argument after --heuristic");
-            ++i;
-            predefine_evaluator(sanitize_argument(args[i]), dry_run);
-        } else if (arg == "--landmarks") {
-            if (is_last)
-                throw ArgError("missing argument after --landmarks");
-            ++i;
-            predefine_lmgraph(sanitize_argument(args[i]), dry_run);
-        } else if (arg == "--search") {
-            if (is_last)
-                throw ArgError("missing argument after --search");
-            ++i;
-            OptionParser parser(sanitize_argument(args[i]), dry_run);
-            engine = parser.start_parsing<shared_ptr<SearchEngine>>();
-        } else if (arg == "--help" && dry_run) {
-            cout << "Help:" << endl;
-            bool txt2tags = false;
-            vector<string> plugin_names;
-            for (size_t j = i + 1; j < args.size(); ++j) {
-                string help_arg = sanitize_argument(args[j]);
-                if (help_arg == "--txt2tags") {
-                    txt2tags = true;
-                } else {
-                    plugin_names.push_back(help_arg);
-                }
-            }
-            unique_ptr<DocPrinter> doc_printer;
-            if (txt2tags)
-                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout);
-            else
-                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout);
-            if (plugin_names.empty()) {
-                doc_printer->print_all();
-            } else {
-                for (const string &name : plugin_names) {
-                    doc_printer->print_plugin(name);
-                }
-            }
-            cout << "Help output finished." << endl;
-            exit(0);
-        } else if (arg == "--internal-plan-file") {
-            if (is_last)
-                throw ArgError("missing argument after --internal-plan-file");
-            ++i;
-            plan_filename = args[i];
-        } else if (arg == "--internal-previous-portfolio-plans") {
-            if (is_last)
-                throw ArgError("missing argument after --internal-previous-portfolio-plans");
-            ++i;
-            is_part_of_anytime_portfolio = true;
-            num_previously_generated_plans = parse_int_arg(arg, args[i]);
-            if (num_previously_generated_plans < 0)
-                throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
-        } else {
-            throw ArgError("unknown option " + arg);
-        }
-    }
-
-    if (engine) {
-        PlanManager &plan_manager = engine->get_plan_manager();
-        plan_manager.set_plan_filename(plan_filename);
-        plan_manager.set_num_previously_generated_plans(num_previously_generated_plans);
-        plan_manager.set_is_part_of_anytime_portfolio(is_part_of_anytime_portfolio);
-    }
-    return engine;
-}
-
-string OptionParser::usage(const string &progname) {
-    return "usage: \n" +
-           progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
-           "* SEARCH (SearchEngine): configuration of the search algorithm\n"
-           "* OUTPUT (filename): translator output\n\n"
-           "Options:\n"
-           "--help [NAME]\n"
-           "    Prints help for all heuristics, open lists, etc. called NAME.\n"
-           "    Without parameter: prints help for everything available\n"
-           "--landmarks LANDMARKS_PREDEFINITION\n"
-           "    Predefines a set of landmarks that can afterwards be referenced\n"
-           "    by the name that is specified in the definition.\n"
-           "--evaluator EVALUATOR_PREDEFINITION\n"
-           "    Predefines an evaluator that can afterwards be referenced\n"
-           "    by the name that is specified in the definition.\n"
-           "--internal-plan-file FILENAME\n"
-           "    Plan will be output to a file called FILENAME\n\n"
-           "--internal-previous-portfolio-plans COUNTER\n"
-           "    This planner call is part of a portfolio which already created\n"
-           "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
-           "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
-           "See http://www.fast-downward.org/ for details.";
-}
 
 
 static ParseTree generate_parse_tree(const string &config) {

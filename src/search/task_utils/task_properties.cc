@@ -84,6 +84,21 @@ int get_min_operator_cost(TaskProxy task_proxy) {
     return min_cost;
 }
 
+void print_variable_statistics(const TaskProxy &task_proxy) {
+    const int_packer::IntPacker &state_packer = g_state_packers[task_proxy];
+
+    int num_facts = 0;
+    VariablesProxy variables = task_proxy.get_variables();
+    for (VariableProxy var : variables)
+        num_facts += var.get_domain_size();
+
+    cout << "Variables: " << variables.size() << endl;
+    cout << "FactPairs: " << num_facts << endl;
+    cout << "Bytes per state: "
+         << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
+         << endl;
+}
+
 PerTaskInformation<int_packer::IntPacker> g_state_packers(
     [](const TaskProxy &task_proxy) {
         VariablesProxy variables = task_proxy.get_variables();
