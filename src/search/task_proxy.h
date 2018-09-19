@@ -628,9 +628,6 @@ public:
         }
         return State(*task, std::move(new_values));
     }
-
-    void dump_pddl() const;
-    void dump_fdr() const;
 };
 
 

@@ -46,6 +46,8 @@ ostream &operator<<(ostream &stream, const vector<T> &vec) {
     stream << "]";
     return stream;
 }
+
+extern utils::Log g_log;
 }
 
 #endif
