@@ -49,19 +49,6 @@ void DocStore::add_arg(
         arg_name, help, type_name, default_value, bounds, value_explanations);
 }
 
-void DocStore::add_value_explanations(
-    const string &key,
-    const string &arg_name,
-    const ValueExplanations &value_explanations) {
-    vector<ArgumentInfo> &args = get(key).arg_help;
-    for (size_t i = 0; i < args.size(); ++i) {
-        if (args[i].key == arg_name) {
-            args[i].value_explanations = value_explanations;
-            break;
-        }
-    }
-}
-
 void DocStore::set_synopsis(
     const string &key, const string &name, const string &description) {
     get(key).name = name;
@@ -81,14 +68,6 @@ void DocStore::add_feature(
 void DocStore::add_note(
     const string &key, const string &name, const string &description, bool long_text) {
     get(key).notes.emplace_back(name, description, long_text);
-}
-
-void DocStore::hide(const string &key) {
-    get(key).hidden = true;
-}
-
-bool DocStore::contains(const string &key) {
-    return plugin_infos.find(key) != plugin_infos.end();
 }
 
 PluginInfo &DocStore::get(const string &key) {
