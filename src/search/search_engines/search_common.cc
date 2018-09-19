@@ -48,7 +48,7 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
         return create_standard_scalar_open_list_factory(evals[0], false);
     } else {
         vector<shared_ptr<OpenListFactory>> subfactories;
-        for (shared_ptr<Evaluator> evaluator : evals) {
+        for (const shared_ptr<Evaluator> &evaluator : evals) {
             subfactories.push_back(
                 create_standard_scalar_open_list_factory(
                     evaluator, false));
@@ -80,8 +80,8 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 0, we omit the h-evaluator altogether:
   we use g instead of g + 0 * h.
 */
-static shared_ptr<Evaluator> create_wastar_eval(shared_ptr<GEval> g_eval, int w,
-                                                shared_ptr<Evaluator> h_eval) {
+static shared_ptr<Evaluator> create_wastar_eval(const shared_ptr<GEval> &g_eval, int w,
+                                                const shared_ptr<Evaluator> &h_eval) {
     if (w == 0)
         return g_eval;
     shared_ptr<Evaluator> w_h_eval = nullptr;
@@ -101,7 +101,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     shared_ptr<GEval> g_eval = make_shared<GEval>();
     vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
-    for (shared_ptr<Evaluator> &eval : base_evals)
+    for (const shared_ptr<Evaluator> &eval : base_evals)
         f_evals.push_back(create_wastar_eval(g_eval, w, eval));
 
     return create_alternation_open_list_factory_aux(
@@ -110,7 +110,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get<int>("boost"));
 }
 
-pair<shared_ptr<OpenListFactory>, shared_ptr<Evaluator>>
+pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
     shared_ptr<GEval> g = make_shared<GEval>();
     shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");

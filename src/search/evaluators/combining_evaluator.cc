@@ -30,7 +30,7 @@ EvaluationResult CombiningEvaluator::compute_result(
     values.reserve(subevaluators.size());
 
     // Collect component values. Return infinity if any is infinite.
-    for (shared_ptr<Evaluator> &subevaluator : subevaluators) {
+    for (const shared_ptr<Evaluator> &subevaluator : subevaluators) {
         int value = eval_context.get_evaluator_value_or_infinity(subevaluator.get());
         if (value == EvaluationResult::INFTY) {
             result.set_evaluator_value(value);

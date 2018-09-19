@@ -75,7 +75,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return make_shared<PotentialMaxHeuristic> (
+    return make_shared<PotentialMaxHeuristic>(
         opts, create_sample_based_potential_functions(opts));
 }
 

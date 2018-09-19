@@ -47,7 +47,7 @@ void EagerSearch::initialize() {
       Collect path-dependent evaluators that are used for preferred operators
       (in case they are not also used in the open list).
     */
-    for (shared_ptr<Evaluator> &evaluator : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : preferred_operator_evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 
@@ -135,7 +135,7 @@ SearchStatus EagerSearch::step() {
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
         collect_preferred_operators(eval_context,
                                     preferred_operator_evaluator.get(),
                                     preferred_operators);

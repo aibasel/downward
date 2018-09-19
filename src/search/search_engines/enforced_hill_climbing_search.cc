@@ -71,7 +71,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    for (shared_ptr<Evaluator> &eval : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &eval : preferred_operator_evaluators) {
         eval->get_path_dependent_evaluators(path_dependent_evaluators);
     }
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
@@ -147,8 +147,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
-        ordered_set::OrderedSet<OperatorID> preferred_operators;
-        for (shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
+        for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
             collect_preferred_operators(eval_context,
                                         preferred_operator_evaluator.get(),
                                         preferred_operators);
