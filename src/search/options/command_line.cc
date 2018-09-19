@@ -24,7 +24,7 @@ namespace options {
 static void predefine_evaluator(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, dry_run);
-    Predefinitions<Evaluator *>::instance()->predefine(
+    Predefinitions::instance()->predefine<Evaluator *>(
         predefinition.first, parser.start_parsing<Evaluator *>());
 }
 
@@ -32,7 +32,7 @@ static void predefine_evaluator(const string &arg, bool dry_run) {
 static void predefine_lmgraph(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, dry_run);
-    Predefinitions<shared_ptr<landmarks::LandmarkFactory>>::instance()->predefine(
+    Predefinitions::instance()->predefine<shared_ptr<landmarks::LandmarkFactory>>(
         predefinition.first, parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
 }
 
