@@ -59,7 +59,6 @@ struct PluginGroupInfo {
 
 
 class Registry {
-private:
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
     /*
       plugin_type_infos collects information about all plugin types
@@ -95,27 +94,9 @@ public:
     }
 
     template<typename T>
-    bool contains_factory(const std::string &key) const {
-        std::type_index type(typeid(T));
-        return plugin_factories.count(type)
-               && plugin_factories.at(type).count(key);
-    }
-
-    template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {
         std::type_index type(typeid(T));
         return any_cast<std::function<T(OptionParser &)>>(plugin_factories.at(type).at(key));
-    }
-
-    template<typename T>
-    std::vector<std::string> get_sorted_factory_keys() const {
-        std::type_index type(typeid(T));
-        std::vector<std::string> keys;
-        for (auto it : plugin_factories.at(type)) {
-            keys.push_back(it.first);
-        }
-        sort(keys.begin(), keys.end());
-        return keys;
     }
 
     void insert_type_info(const PluginTypeInfo &info);
