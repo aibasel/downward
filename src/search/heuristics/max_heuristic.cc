@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <vector>
+
 using namespace std;
 
 namespace max_heuristic {
@@ -49,7 +50,7 @@ void HSPMaxHeuristic::setup_exploration_queue() {
 
 void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
     for (FactProxy fact : state) {
-        Proposition *init_prop = get_proposition(fact);
+        PropID init_prop = get_prop_id(fact);
         enqueue_if_necessary(init_prop, 0);
     }
 }
@@ -57,21 +58,22 @@ void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
 void HSPMaxHeuristic::relaxed_exploration() {
     int unsolved_goals = goal_propositions.size();
     while (!queue.empty()) {
-        pair<int, Proposition *> top_pair = queue.pop();
+        pair<int, PropID> top_pair = queue.pop();
         int distance = top_pair.first;
-        Proposition *prop = top_pair.second;
+        PropID prop_id = top_pair.second;
+        Proposition *prop = get_proposition(prop_id);
         int prop_cost = prop->cost;
+        assert(prop_cost >= 0);
         assert(prop_cost <= distance);
         if (prop_cost < distance)
             continue;
         if (prop->is_goal && --unsolved_goals == 0)
             return;
-        const vector<UnaryOperator *> &triggered_operators =
-            prop->precondition_of;
-        for (UnaryOperator *unary_op : triggered_operators) {
-            --unary_op->unsatisfied_preconditions;
+        for (OpID op_id : prop->precondition_of) {
+            UnaryOperator *unary_op = get_operator(op_id);
             unary_op->cost = max(unary_op->cost,
                                  unary_op->base_cost + prop_cost);
+            --unary_op->unsatisfied_preconditions;
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0)
                 enqueue_if_necessary(unary_op->effect, unary_op->cost);
@@ -87,14 +89,13 @@ int HSPMaxHeuristic::compute_heuristic(const GlobalState &global_state) {
     relaxed_exploration();
 
     int total_cost = 0;
-    for (Proposition *prop : goal_propositions) {
-        int prop_cost = prop->cost;
-        if (prop_cost == -1) {
+    for (PropID goal_id : goal_propositions) {
+        const Proposition *goal = get_proposition(goal_id);
+        int goal_cost = goal->cost;
+        if (goal_cost == -1)
             return DEAD_END;
-        }
-        total_cost = max(total_cost, prop_cost);
+        total_cost = max(total_cost, goal_cost);
     }
-
     return total_cost;
 }
 

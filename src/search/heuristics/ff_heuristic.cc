@@ -22,24 +22,30 @@ FFHeuristic::~FFHeuristic() {
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
-    const State &state, Proposition *goal) {
+    const State &state, PropID goal_id) {
+    Proposition *goal = get_proposition(goal_id);
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
-        UnaryOperator *unary_op = goal->reached_by;
-        if (unary_op) { // We have not yet chained back to a start node.
-            for (size_t i = 0; i < unary_op->precondition.size(); ++i)
+        OpID op_id = goal->reached_by;
+        if (op_id != NO_OP) { // We have not yet chained back to a start node.
+            UnaryOperator *unary_op = get_operator(op_id);
+            for (PropID precond : unary_op->precondition)
                 mark_preferred_operators_and_relaxed_plan(
-                    state, unary_op->precondition[i]);
+                    state, precond);
             int operator_no = unary_op->operator_no;
             if (operator_no != -1) {
                 // This is not an axiom.
                 relaxed_plan[operator_no] = true;
-
                 if (unary_op->cost == unary_op->base_cost) {
-                    // This test is implied by the next but cheaper,
-                    // so we perform it to save work.
-                    // If we had no 0-cost operators and axioms to worry
-                    // about, it would also imply applicability.
+                    /*
+                      Having cost == base_cost is a necessary
+                      condition for a preferred operator and is cheap
+                      to test, so we test this first before the more
+                      expensive applicability test.
+
+                      If we had no 0-cost operators to worry about,
+                      this would also be a sufficient condition.
+                    */
                     OperatorProxy op = task_proxy.get_operators()[operator_no];
                     if (task_properties::is_applicable(op, state))
                         set_preferred(op);
@@ -56,8 +62,8 @@ int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
         return h_add;
 
     // Collecting the relaxed plan also sets the preferred operators.
-    for (size_t i = 0; i < goal_propositions.size(); ++i)
-        mark_preferred_operators_and_relaxed_plan(state, goal_propositions[i]);
+    for (PropID goal_id : goal_propositions)
+        mark_preferred_operators_and_relaxed_plan(state, goal_id);
 
     int h_ff = 0;
     for (size_t op_no = 0; op_no < relaxed_plan.size(); ++op_no) {

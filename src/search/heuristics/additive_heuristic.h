@@ -11,6 +11,11 @@
 class State;
 
 namespace additive_heuristic {
+using relaxation_heuristic::PropID;
+using relaxation_heuristic::OpID;
+
+using relaxation_heuristic::NO_OP;
+
 using relaxation_heuristic::Proposition;
 using relaxation_heuristic::UnaryOperator;
 
@@ -24,20 +29,21 @@ class AdditiveHeuristic : public relaxation_heuristic::RelaxationHeuristic {
      */
     static const int MAX_COST_VALUE = 100000000;
 
-    priority_queues::AdaptiveQueue<Proposition *> queue;
+    priority_queues::AdaptiveQueue<PropID> queue;
     bool did_write_overflow_warning;
 
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void relaxed_exploration();
-    void mark_preferred_operators(const State &state, Proposition *goal);
+    void mark_preferred_operators(const State &state, PropID goal_id);
 
-    void enqueue_if_necessary(Proposition *prop, int cost, UnaryOperator *op) {
+    void enqueue_if_necessary(PropID prop_id, int cost, OpID op_id) {
         assert(cost >= 0);
+        Proposition *prop = get_proposition(prop_id);
         if (prop->cost == -1 || prop->cost > cost) {
             prop->cost = cost;
-            prop->reached_by = op;
-            queue.push(cost, prop);
+            prop->reached_by = op_id;
+            queue.push(cost, prop_id);
         }
         assert(prop->cost != -1 && prop->cost <= cost);
     }
@@ -62,7 +68,7 @@ protected:
     int compute_add_and_ff(const State &state);
 public:
     explicit AdditiveHeuristic(const options::Options &options);
-    ~AdditiveHeuristic();
+    virtual ~AdditiveHeuristic() override;
 
     /*
       TODO: The two methods below are temporarily needed for the CEGAR
