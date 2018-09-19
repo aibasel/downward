@@ -1,6 +1,5 @@
 #include "operator_cost.h"
 
-#include "globals.h"
 #include "option_parser.h"
 #include "task_proxy.h"
 
@@ -10,14 +9,14 @@
 #include <vector>
 using namespace std;
 
-int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
+static int get_adjusted_action_cost(int cost, OperatorCost cost_type, bool is_unit_cost) {
     switch (cost_type) {
     case NORMAL:
         return cost;
     case ONE:
         return 1;
     case PLUSONE:
-        if (is_unit_cost())
+        if (is_unit_cost)
             return 1;
         else
             return cost + 1;
@@ -26,11 +25,11 @@ int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
     }
 }
 
-int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type) {
+int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type, bool is_unit_cost) {
     if (op.is_axiom())
         return 0;
     else
-        return get_adjusted_action_cost(op.get_cost(), cost_type);
+        return get_adjusted_action_cost(op.get_cost(), cost_type, is_unit_cost);
 }
 
 void add_cost_type_option_to_parser(OptionParser &parser) {

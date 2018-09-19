@@ -2,7 +2,6 @@
 
 #include "../evaluation_context.h"
 #include "../evaluator.h"
-#include "../globals.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../pruning_method.h"
@@ -124,7 +123,7 @@ SearchStatus EagerSearch::step() {
         return SOLVED;
 
     vector<OperatorID> applicable_ops;
-    g_successor_generator->generate_applicable_ops(s, applicable_ops);
+    successor_generator.generate_applicable_ops(s, applicable_ops);
 
     /*
       TODO: When preferred operators are in use, a preferred operator will be
@@ -174,7 +173,7 @@ SearchStatus EagerSearch::step() {
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open(node, op);
+            succ_node.open(node, op, get_adjusted_cost(op));
 
             open_list->insert(eval_context, succ_state.get_id());
             if (search_progress.check_progress(eval_context)) {
@@ -194,7 +193,7 @@ SearchStatus EagerSearch::step() {
                     */
                     statistics.inc_reopened();
                 }
-                succ_node.reopen(node, op);
+                succ_node.reopen(node, op, get_adjusted_cost(op));
 
                 EvaluationContext eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
@@ -221,7 +220,7 @@ SearchStatus EagerSearch::step() {
                 // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back.
-                succ_node.update_parent(node, op);
+                succ_node.update_parent(node, op, get_adjusted_cost(op));
             }
         }
     }

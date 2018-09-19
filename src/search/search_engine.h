@@ -22,6 +22,10 @@ template<typename T>
 class OrderedSet;
 }
 
+namespace successor_generator {
+class SuccessorGenerator;
+}
+
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
@@ -36,11 +40,13 @@ protected:
 
     PlanManager plan_manager;
     StateRegistry state_registry;
+    const successor_generator::SuccessorGenerator &successor_generator;
     SearchSpace search_space;
     SearchProgress search_progress;
     SearchStatistics statistics;
     int bound;
     OperatorCost cost_type;
+    bool is_unit_cost;
     double max_time;
 
     virtual void initialize() {}
