@@ -51,7 +51,8 @@ StandardScalarOpenList<Entry>::StandardScalarOpenList(const Options &opts)
 }
 
 template<class Entry>
-StandardScalarOpenList<Entry>::StandardScalarOpenList(const shared_ptr<Evaluator> &evaluator, bool preferred_only)
+StandardScalarOpenList<Entry>::StandardScalarOpenList(
+    const shared_ptr<Evaluator> &evaluator, bool preferred_only)
     : OpenList<Entry>(preferred_only),
       size(0),
       evaluator(evaluator) {
