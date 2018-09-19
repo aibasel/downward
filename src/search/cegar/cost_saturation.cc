@@ -5,8 +5,6 @@
 #include "subtask_generators.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../tasks/modified_operator_costs_task.h"
 #include "../utils/countdown_timer.h"

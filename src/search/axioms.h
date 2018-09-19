@@ -58,15 +58,16 @@ class AxiomEvaluator {
       to reduce reallocation effort. See issue420.
     */
     std::vector<const AxiomLiteral *> queue;
+
+    template<typename Values, typename Accessor>
+    void evaluate_aux(Values &values, const Accessor &accessor);
 public:
     explicit AxiomEvaluator(const TaskProxy &task_proxy);
+
     void evaluate(PackedStateBin *buffer, const int_packer::IntPacker &state_packer);
     void evaluate(std::vector<int> &state);
 };
 
-/* Create or retrieve an axiom evaluator from global cache. If axiom evaluators
-   are created with this function, we build at most one per AbstractTask. */
 extern PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
-
 
 #endif
