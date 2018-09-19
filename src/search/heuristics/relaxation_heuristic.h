@@ -29,7 +29,6 @@ struct Proposition {
     bool is_goal : 1;
     bool marked : 1; // used for preferred operators of h^add and h^FF
     std::vector<OpID> precondition_of;
-
 };
 
 struct UnaryOperator {
