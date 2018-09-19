@@ -62,8 +62,8 @@ static pair<string, string> split_predefinition(const string &arg) {
 static void predefine_evaluator(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split_predefinition(arg);
     OptionParser parser(predefinition.second, dry_run);
-    Predefinitions<Evaluator *>::instance()->predefine(
-        predefinition.first, parser.start_parsing<Evaluator *>());
+    Predefinitions<shared_ptr<Evaluator>>::instance()->predefine(
+        predefinition.first, parser.start_parsing<shared_ptr<Evaluator>>());
 }
 
 static void predefine_lmgraph(const string &arg, bool dry_run) {

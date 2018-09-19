@@ -26,7 +26,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    Evaluator *g_evaluator = new GEval();
+    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>();
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -51,7 +51,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<Evaluator *> evals = {g_evaluator, new PrefEval()};
+        vector<shared_ptr<Evaluator>> evals = {g_evaluator, make_shared<PrefEval>()};
         Options options;
         options.set("evals", evals);
         options.set("pref_only", false);

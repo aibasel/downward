@@ -76,7 +76,7 @@ public:
 extern void print_initial_evaluator_values(const EvaluationContext &eval_context);
 
 void collect_preferred_operators(EvaluationContext &eval_context,
-    Evaluator *preferred_operator_evaluator,
-    ordered_set::OrderedSet<OperatorID> &preferred_operators);
+                                 Evaluator *preferred_operator_evaluator,
+                                 ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
 #endif
