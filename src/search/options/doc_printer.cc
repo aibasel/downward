@@ -24,7 +24,7 @@ DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    for (const PluginTypeInfo &info : PluginTypeRegistry::instance()->get_sorted_types()) {
+    for (const PluginTypeInfo &info : Registry::instance()->get_sorted_type_infos()) {
         print_category(info.get_type_name(), info.get_documentation());
     }
 }

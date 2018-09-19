@@ -34,7 +34,7 @@ struct TypeNamer<std::shared_ptr<T>> {
     static std::string name() {
         using TPtr = std::shared_ptr<T>;
         const PluginTypeInfo &type_info =
-            PluginTypeRegistry::instance()->get(std::type_index(typeid(TPtr)));
+            Registry::instance()->get_type_info(std::type_index(typeid(TPtr)));
         return type_info.get_type_name();
     }
 };
