@@ -23,8 +23,8 @@ const PluginTypeInfo &Registry::get_type_info(const type_index &type) const {
     return plugin_type_infos.at(type);
 }
 
-std::vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
-    std::vector<PluginTypeInfo> types;
+vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
+    vector<PluginTypeInfo> types;
     for (auto it : plugin_type_infos) {
         types.push_back(it.second);
     }
