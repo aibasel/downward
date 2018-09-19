@@ -1,5 +1,7 @@
 #include "registries.h"
 
+#include <iostream>
+
 using namespace std;
 using utils::ExitCode;
 
