@@ -194,8 +194,8 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
 template<typename T>
 static T *lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (Registry<T *>::instance()->contains(value)) {
-        return Registry<T *>::instance()->get(value)(parser);
+    if (Registry::instance()->contains_factory<T *>(value)) {
+        return Registry::instance()->get_factory<T *>(value)(parser);
     }
     parser.error(TypeNamer<T *>::name() + " " + value + " not found");
     return nullptr;
@@ -205,8 +205,8 @@ static T *lookup_in_registry(OptionParser &parser) {
 template<typename T>
 static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (Registry<std::shared_ptr<T>>::instance()->contains(value)) {
-        return Registry<std::shared_ptr<T>>::instance()->get(value)(parser);
+    if (Registry::instance()->contains_factory<std::shared_ptr<T>>(value)) {
+        return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
     }
     parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     return nullptr;
