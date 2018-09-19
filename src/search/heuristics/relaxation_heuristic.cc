@@ -58,11 +58,10 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     // Build unary operators for operators and axioms.
     unary_operators.reserve(
         task_properties::get_num_total_effects(task_proxy));
-    int op_no = 0;
     for (OperatorProxy op : task_proxy.get_operators())
-        build_unary_operators(op, op_no++);
+        build_unary_operators(op);
     for (OperatorProxy axiom : task_proxy.get_axioms())
-        build_unary_operators(axiom, -1);
+        build_unary_operators(axiom);
 
     // Simplify unary operators.
     utils::Timer simplify_timer;
@@ -106,7 +105,8 @@ Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
     return get_proposition(fact.get_variable().get_id(), fact.get_value());
 }
 
-void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {
+void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op) {
+    int op_no = op.is_axiom() ? -1 : op.get_id();
     int base_cost = op.get_cost();
     vector<PropID> precondition_props;
     PreconditionsProxy preconditions = op.get_preconditions();
