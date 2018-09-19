@@ -5,7 +5,6 @@ from __future__ import print_function
 """Make subprocess calls with time and memory limits."""
 
 from . import limits
-from . import returncodes
 from . import util
 
 import logging
@@ -33,15 +32,16 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
 
 def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
-        limits.set_time_limit(time_limit)
-        limits.set_memory_limit(memory_limit)
+        if limits.can_set_time_limit():
+            limits.set_time_limit(time_limit)
+        if limits.can_set_memory_limit():
+            limits.set_memory_limit(memory_limit)
 
     if time_limit is None and memory_limit is None:
         return None
-    elif limits.can_set_limits():
-        return set_limits
     else:
-        returncodes.exit_with_driver_unsupported_error(limits.RESOURCE_MODULE_MISSING_MSG)
+        assert limits.can_set_limits()
+        return set_limits
 
 
 def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
