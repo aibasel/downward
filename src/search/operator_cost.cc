@@ -9,7 +9,7 @@
 #include <vector>
 using namespace std;
 
-int get_adjusted_action_cost(int cost, OperatorCost cost_type, bool is_unit_cost) {
+static int get_adjusted_action_cost(int cost, OperatorCost cost_type, bool is_unit_cost) {
     switch (cost_type) {
     case NORMAL:
         return cost;

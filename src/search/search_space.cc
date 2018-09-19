@@ -1,10 +1,10 @@
 #include "search_space.h"
 
 #include "global_state.h"
+#include "search_node_info.h"
 #include "task_proxy.h"
 
 #include <cassert>
-#include "search_node_info.h"
 
 using namespace std;
 

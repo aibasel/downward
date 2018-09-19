@@ -549,8 +549,6 @@ public:
         assert(index < size());
         return FactProxy(*task, task->get_goal_fact(index));
     }
-
-    void dump() const;
 };
 
 
@@ -630,9 +628,6 @@ public:
         }
         return State(*task, std::move(new_values));
     }
-
-    void dump_pddl() const;
-    void dump_fdr() const;
 };
 
 
@@ -697,8 +692,6 @@ public:
     }
 
     const causal_graph::CausalGraph &get_causal_graph() const;
-
-    void dump() const;
 };
 
 
