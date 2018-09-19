@@ -16,7 +16,7 @@ WeightedEvaluator::WeightedEvaluator(const Options &opts)
       w(opts.get<int>("weight")) {
 }
 
-WeightedEvaluator::WeightedEvaluator(shared_ptr<Evaluator> eval, int weight)
+WeightedEvaluator::WeightedEvaluator(const shared_ptr<Evaluator> &eval, int weight)
     : evaluator(eval), w(weight) {
 }
 

@@ -51,7 +51,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (shared_ptr<Evaluator> &evaluator : evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
         key.push_back(
             eval_context.get_evaluator_value_or_infinity(evaluator.get()));
     }
@@ -130,7 +130,7 @@ bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
 template<class Entry>
 void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
-    for (shared_ptr<Evaluator> &evaluator : evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 }

@@ -125,7 +125,7 @@ void ParetoOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (shared_ptr<Evaluator> &evaluator : evaluators)
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     Bucket &bucket = buckets[key];
@@ -193,7 +193,7 @@ void ParetoOpenList<Entry>::clear() {
 template<class Entry>
 void ParetoOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
-    for (shared_ptr<Evaluator> &evaluator : evaluators)
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 

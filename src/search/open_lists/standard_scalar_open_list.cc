@@ -29,7 +29,7 @@ protected:
 
 public:
     explicit StandardScalarOpenList(const Options &opts);
-    StandardScalarOpenList(shared_ptr<Evaluator> eval, bool preferred_only);
+    StandardScalarOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
     virtual ~StandardScalarOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -51,7 +51,7 @@ StandardScalarOpenList<Entry>::StandardScalarOpenList(const Options &opts)
 }
 
 template<class Entry>
-StandardScalarOpenList<Entry>::StandardScalarOpenList(shared_ptr<Evaluator> evaluator, bool preferred_only)
+StandardScalarOpenList<Entry>::StandardScalarOpenList(const shared_ptr<Evaluator> &evaluator, bool preferred_only)
     : OpenList<Entry>(preferred_only),
       size(0),
       evaluator(evaluator) {

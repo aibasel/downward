@@ -44,7 +44,6 @@ public:
         std::set<Evaluator *> &evals) = 0;
 
 
-
     virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
     }
 

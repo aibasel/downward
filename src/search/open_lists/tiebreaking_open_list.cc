@@ -64,7 +64,7 @@ void TieBreakingOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (shared_ptr<Evaluator> &evaluator : evaluators)
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     buckets[key].push_back(entry);
@@ -105,7 +105,7 @@ int TieBreakingOpenList<Entry>::dimension() const {
 template<class Entry>
 void TieBreakingOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
-    for (shared_ptr<Evaluator> &evaluator : evaluators)
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 
