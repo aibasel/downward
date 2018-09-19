@@ -116,10 +116,11 @@ public:
     }
 
     void insert_type_info(const PluginTypeInfo &info);
-
     const PluginTypeInfo &get_type_info(const std::type_index &type) const;
-
     std::vector<PluginTypeInfo> get_sorted_type_infos() const;
+    
+    void insert_group_info(const PluginGroupInfo &info);
+    const PluginGroupInfo &get_group_info(const std::string &key) const;
     
     static Registry *instance() {
         static Registry instance_;
@@ -184,7 +185,7 @@ public:
 */
 
 // TODO: Reduce code duplication with Registry<T>.
-
+/*
 class PluginGroupRegistry {
     using Map = std::map<std::string, PluginGroupInfo>;
     PluginGroupRegistry() = default;
@@ -197,6 +198,7 @@ public:
 
     static PluginGroupRegistry *instance();
 };
+*/
 }
 
 #endif

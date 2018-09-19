@@ -30,26 +30,20 @@ std::vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
     return types;
 }
 
-PluginGroupRegistry *PluginGroupRegistry::instance() {
-    static PluginGroupRegistry the_instance;
-    return &the_instance;
-}
-
-void PluginGroupRegistry::insert(const PluginGroupInfo &info) {
-    if (registry.count(info.group_id)) {
+void Registry::insert_group_info(const PluginGroupInfo &info) {
+    if (plugin_group_infos.count(info.group_id)) {
         cerr << "duplicate group in registry: "
              << info.group_id << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    registry[info.group_id] = info;
+    plugin_group_infos[info.group_id] = info;
 }
 
-const PluginGroupInfo &PluginGroupRegistry::get(
-    const string &group) const {
-    if (!registry.count(group)) {
+const PluginGroupInfo &Registry::get_group_info(const string &group) const {
+    if (!plugin_group_infos.count(group)) {
         ABORT("attempt to retrieve non-existing group info from registry: " +
               string(group));
     }
-    return registry.at(group);
+    return plugin_group_infos.at(group);
 }
 }
