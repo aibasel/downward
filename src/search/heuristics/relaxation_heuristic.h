@@ -1,6 +1,8 @@
 #ifndef HEURISTICS_RELAXATION_HEURISTIC_H
 #define HEURISTICS_RELAXATION_HEURISTIC_H
 
+#include "array_chain.h"
+
 #include "../heuristic.h"
 
 #include "../utils/collections.h"
@@ -28,7 +30,7 @@ struct Proposition {
     PropID reached_by : 30;
     bool is_goal : 1;
     bool marked : 1; // used for preferred operators of h^add and h^FF
-    std::vector<OpID> precondition_of;
+    array_chain::ArrayChainIndex precondition_of;
 };
 
 struct UnaryOperator {
@@ -53,6 +55,8 @@ protected:
     std::vector<UnaryOperator> unary_operators;
     std::vector<Proposition> propositions;
     std::vector<PropID> goal_propositions;
+
+    array_chain::ArrayChain precondition_of_chain;
 
     /*
       TODO: Some of these protected methods are only needed for the
