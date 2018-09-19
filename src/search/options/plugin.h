@@ -5,6 +5,7 @@
 #include "registries.h"
 #include "type_namer.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <typeinfo>
@@ -51,9 +52,9 @@ class Plugin {
 public:
     Plugin(
         const std::string &key,
-        typename Registry<T *>::Factory factory,
+        typename std::function<T *(OptionParser &)> factory,
         const std::string &group = "") {
-        Registry<T *>::instance()->insert(key, factory);
+        Registry::instance()->insert_factory<T *>(key, factory);
         // See comment in PluginShared.
         DocFactory doc_factory = [factory](OptionParser &parser) {
                                      factory(parser);
@@ -74,10 +75,10 @@ class PluginShared {
 public:
     PluginShared(
         const std::string &key,
-        typename Registry<std::shared_ptr<T>>::Factory factory,
+        typename std::function<std::shared_ptr<T>(OptionParser &)> factory,
         const std::string &group = "") {
         using TPtr = std::shared_ptr<T>;
-        Registry<TPtr>::instance()->insert(key, factory);
+        Registry::instance()->insert_factory<TPtr>(key, factory);
         /*
           We cannot collect the plugin documentation here because this might
           require information from a TypePlugin object that has not yet been

@@ -3,6 +3,8 @@
 
 #include "../utils/system.h"
 
+#include "any.h"
+
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -74,41 +76,55 @@ struct PluginGroupInfo {
 
 class Registry {
 public:
-    using Factory = std::function<T(OptionParser &)>;
+    using Factory = std::function<Any(OptionParser &)>;
 
-    void insert(const std::string &key, Factory factory) {
-        if (registered.count(key)) {
+    template<typename T>
+    void insert_factory(
+        const std::string &key,
+        std::function<T(OptionParser &)> factory) {
+        std::type_index type(typeid(T));
+        
+        if (plugin_factories.count(type) && plugin_factories[type].count(key)){
             std::cerr << "duplicate key in registry: " << key << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        registered[key] = factory;
+        plugin_factories[type][key] = factory;
     }
 
-    bool contains(const std::string &key) const {
-        return registered.find(key) != registered.end();
+    template<typename T>
+    bool contains_factory(const std::string &key) const {
+        std::type_index type(typeid(T));
+        return plugin_factories.count(type) 
+                && plugin_factories.at(type).count(key);
     }
 
-    Factory get(const std::string &key) const {
-        return registered.at(key);
+    template<typename T>
+    std::function<T(OptionParser &)> get_factory(const std::string &key) const {
+        std::type_index type(typeid(T));
+        return any_cast<std::function<T(OptionParser &)>>(plugin_factories.at(type).at(key));
     }
 
+    template<typename T>
     std::vector<std::string> get_sorted_keys() const {
+        std::type_index type(typeid(T));
         std::vector<std::string> keys;
-        for (auto it : registered) {
+        for (auto it : plugin_factories.at(type)) {
             keys.push_back(it.first);
         }
         sort(keys.begin(), keys.end());
         return keys;
     }
 
-    static Registry<T> *instance() {
-        static Registry<T> instance_;
+    static Registry *instance() {
+        static Registry instance_;
         return &instance_;
     }
 
 private:
     // Define this below public methods since it needs "Factory" typedef.
-    std::unordered_map<std::string, Factory> registered;
+    std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
+    std::unordered_map<std::type_index, PluginTypeInfo> plugin_type_infos;
+    std::unordered_map<std::string, PluginGroupInfo> plugin_group_infos;
 
     Registry() = default;
 };
