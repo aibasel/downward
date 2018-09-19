@@ -21,7 +21,7 @@ CONFIGS = [
         build + "-{heuristic}".format(**locals()),
         ["--evaluator", "h={heuristic}()".format(**locals()), "--search", "lazy_greedy([h],preferred=[h])"],
         build_options=[build],
-        driver_options=["--build", build, "--overall-time-limit", "1m"])
+        driver_options=["--build", build, "--overall-time-limit", "5m"])
     for build in BUILDS
     for heuristic in ["add", "ff"]
 ]
