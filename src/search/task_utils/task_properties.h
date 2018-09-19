@@ -80,11 +80,11 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     return fact_pairs;
 }
 
-void print_variable_statistics(const TaskProxy &task_proxy);
-void dump_pddl(const State &state);
-void dump_fdr(const State &state);
-void dump_goals(const GoalsProxy &goals);
-void dump_task(const TaskProxy &task_proxy);
+extern void print_variable_statistics(const TaskProxy &task_proxy);
+extern void dump_pddl(const State &state);
+extern void dump_fdr(const State &state);
+extern void dump_goals(const GoalsProxy &goals);
+extern void dump_task(const TaskProxy &task_proxy);
 
 extern PerTaskInformation<int_packer::IntPacker> g_state_packers;
 }
