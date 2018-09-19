@@ -93,15 +93,15 @@ private:
     std::unordered_map<std::string, PluginGroupInfo> plugin_group_infos;
 
     Registry() = default;
-    
+
 public:
     template<typename T>
     void insert_factory(
         const std::string &key,
         std::function<T(OptionParser &)> factory) {
         std::type_index type(typeid(T));
-        
-        if (plugin_factories.count(type) && plugin_factories[type].count(key)){
+
+        if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
             std::cerr << "duplicate key in registry: " << key << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
@@ -111,8 +111,8 @@ public:
     template<typename T>
     bool contains_factory(const std::string &key) const {
         std::type_index type(typeid(T));
-        return plugin_factories.count(type) 
-                && plugin_factories.at(type).count(key);
+        return plugin_factories.count(type)
+               && plugin_factories.at(type).count(key);
     }
 
     template<typename T>
@@ -135,10 +135,10 @@ public:
     void insert_type_info(const PluginTypeInfo &info);
     const PluginTypeInfo &get_type_info(const std::type_index &type) const;
     std::vector<PluginTypeInfo> get_sorted_type_infos() const;
-    
+
     void insert_group_info(const PluginGroupInfo &info);
     const PluginGroupInfo &get_group_info(const std::string &key) const;
-    
+
     static Registry *instance() {
         static Registry instance_;
         return &instance_;
