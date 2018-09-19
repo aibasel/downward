@@ -33,7 +33,7 @@ namespace search_common {
   "pref_only" options.
 */
 extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
-    Evaluator *eval, bool pref_only);
+    const std::shared_ptr<Evaluator> &eval, bool pref_only);
 
 /*
   Create open list factory for the eager_greedy or lazy_greedy plugins.
@@ -75,7 +75,7 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
   ordered primarily on g + h and secondarily on h. Uses "eval" from
   the passed-in Options object as the h evaluator.
 */
-extern std::pair<std::shared_ptr<OpenListFactory>, Evaluator *>
+extern std::pair<std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const options::Options &opts);
 }
 

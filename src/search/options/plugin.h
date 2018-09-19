@@ -45,30 +45,6 @@ public:
     PluginGroupPlugin(const PluginGroupPlugin &other) = delete;
 };
 
-
-template<typename T>
-class Plugin {
-public:
-    Plugin(
-        const std::string &key,
-        typename Registry<T *>::Factory factory,
-        const std::string &group = "") {
-        Registry<T *>::instance()->insert(key, factory);
-        // See comment in PluginShared.
-        DocFactory doc_factory = [factory](OptionParser &parser) {
-                factory(parser);
-            };
-        PluginTypeNameGetter type_name_factory = [&]() {
-                return TypeNamer<T *>::name();
-            };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, group);
-    }
-    ~Plugin() = default;
-    Plugin(const Plugin<T> &other) = delete;
-};
-
-
-// TODO: This class will replace Plugin once we no longer need to support raw pointers.
 template<typename T>
 class PluginShared {
 public:

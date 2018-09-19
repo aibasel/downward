@@ -286,7 +286,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Causal graph heuristic", "");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported");
@@ -303,11 +303,11 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new CGHeuristic(opts);
+        return make_shared<CGHeuristic>(opts);
 }
 
 
-static Plugin<Evaluator> _plugin("cg", _parse);
+static PluginShared<Evaluator> _plugin("cg", _parse);
 }
