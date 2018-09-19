@@ -80,8 +80,8 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     return fact_pairs;
 }
 
-/* Create or retrieve a state packer from global cache. If state packers are
-   created with this function, we build at most one per AbstractTask. */
+void print_variable_statistics(const TaskProxy &task_proxy);
+
 extern PerTaskInformation<int_packer::IntPacker> g_state_packers;
 }
 
