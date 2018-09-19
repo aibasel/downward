@@ -214,64 +214,64 @@ void RelaxationHeuristic::simplify() {
       operator in the map.
     */
     auto is_dominated = [&](const UnaryOperator &op) {
-        /*
-          Check all possible subsets X of pre(op) to see if there is a
-          dominating operator with preconditions X represented in the
-          map.
-        */
-
-        int op_no = get_operator_id(op);
-        int cost = op.base_cost;
-
-        const vector<Proposition *> &precondition = op.precondition;
-
-        /*
-          We handle the case X = pre(op) specially for efficiency and
-          to ensure that an operator is not considered to be dominated
-          by itself.
-
-          From the discussion above that operators with the same
-          precondition and effect are actually totally ordered, it is
-          enough to test here whether looking up the key of op in the
-          map results in an entry including op itself.
-        */
-        if (unary_operator_index[make_pair(precondition, op.effect)].second != op_no)
-            return true;
-
-        /*
-          We now handle all cases where X is a strict subset of pre(op).
-          Our map lookup ensures conditions 1. and 2., and because X is
-          a strict subset, we also have 4a (which means we don't need 4b).
-          So it only remains to check 3 for all hits.
-        */
-        if (op.precondition.size() > MAX_PRECONDITIONS_TO_TEST) {
             /*
-              The runtime of the following code grows exponentially
-              with the number of preconditions.
+              Check all possible subsets X of pre(op) to see if there is a
+              dominating operator with preconditions X represented in the
+              map.
             */
-            return false;
-        }
 
-        vector<Proposition *> &dominating_precondition = dominating_key.first;
-        dominating_key.second = op.effect;
+            int op_no = get_operator_id(op);
+            int cost = op.base_cost;
 
-        // We subtract "- 1" to generate all *strict* subsets of precondition.
-        int powerset_size = (1 << precondition.size()) - 1;
-        for (int mask = 0; mask < powerset_size; ++mask) {
-            dominating_precondition.clear();
-            for (size_t i = 0; i < precondition.size(); ++i)
-                if (mask & (1 << i))
-                    dominating_precondition.push_back(precondition[i]);
-            Map::iterator found = unary_operator_index.find(dominating_key);
-            if (found != unary_operator_index.end()) {
-                Value dominator_value = found->second;
-                int dominator_cost = dominator_value.first;
-                if (dominator_cost <= cost)
-                    return true;
+            const vector<Proposition *> &precondition = op.precondition;
+
+            /*
+              We handle the case X = pre(op) specially for efficiency and
+              to ensure that an operator is not considered to be dominated
+              by itself.
+
+              From the discussion above that operators with the same
+              precondition and effect are actually totally ordered, it is
+              enough to test here whether looking up the key of op in the
+              map results in an entry including op itself.
+            */
+            if (unary_operator_index[make_pair(precondition, op.effect)].second != op_no)
+                return true;
+
+            /*
+              We now handle all cases where X is a strict subset of pre(op).
+              Our map lookup ensures conditions 1. and 2., and because X is
+              a strict subset, we also have 4a (which means we don't need 4b).
+              So it only remains to check 3 for all hits.
+            */
+            if (op.precondition.size() > MAX_PRECONDITIONS_TO_TEST) {
+                /*
+                  The runtime of the following code grows exponentially
+                  with the number of preconditions.
+                */
+                return false;
             }
-        }
-        return false;
-    };
+
+            vector<Proposition *> &dominating_precondition = dominating_key.first;
+            dominating_key.second = op.effect;
+
+            // We subtract "- 1" to generate all *strict* subsets of precondition.
+            int powerset_size = (1 << precondition.size()) - 1;
+            for (int mask = 0; mask < powerset_size; ++mask) {
+                dominating_precondition.clear();
+                for (size_t i = 0; i < precondition.size(); ++i)
+                    if (mask & (1 << i))
+                        dominating_precondition.push_back(precondition[i]);
+                Map::iterator found = unary_operator_index.find(dominating_key);
+                if (found != unary_operator_index.end()) {
+                    Value dominator_value = found->second;
+                    int dominator_cost = dominator_value.first;
+                    if (dominator_cost <= cost)
+                        return true;
+                }
+            }
+            return false;
+        };
 
     unary_operators.erase(
         remove_if(
