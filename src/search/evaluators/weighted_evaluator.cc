@@ -48,7 +48,7 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Weighted evaluator",
         "Multiplies the value of the evaluator with the given weight.");
-    parser.add_option<Evaluator *>("eval", "evaluator");
+    parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
     parser.add_option<int>("weight", "weight");
     Options opts = parser.parse();
     if (parser.dry_run())
