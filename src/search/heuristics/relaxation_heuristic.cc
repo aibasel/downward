@@ -13,18 +13,20 @@
 using namespace std;
 
 namespace relaxation_heuristic {
-Proposition::Proposition() {
-    is_goal = false;
-    cost = -1;
-    reached_by = NO_OP;
-    marked = false;
+Proposition::Proposition()
+    : cost(-1),
+      reached_by(NO_OP),
+      is_goal(false),
+      marked(false) {
 }
 
 
 UnaryOperator::UnaryOperator(
     const vector<PropID> &pre, PropID eff, int operator_no, int base_cost)
-    : operator_no(operator_no), precondition(pre), effect(eff),
-      base_cost(base_cost) {
+    : effect(eff),
+      base_cost(base_cost),
+      precondition(pre),
+      operator_no(operator_no) {
     // The sort-unique can eventually go away. See issue497.
     utils::sort_unique(precondition);
 }
