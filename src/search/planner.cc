@@ -14,7 +14,7 @@ int main(int argc, const char **argv) {
     utils::register_event_handlers();
 
     if (argc < 2) {
-        cout << OptionParser::usage(argv[0]) << endl;
+        cout << options::usage(argv[0]) << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
@@ -29,11 +29,11 @@ int main(int argc, const char **argv) {
     // The command line is parsed twice: once in dry-run mode, to
     // check for simple input errors, and then in normal mode.
     try {
-        OptionParser::parse_cmd_line(argc, argv, true, unit_cost);
-        engine = OptionParser::parse_cmd_line(argc, argv, false, unit_cost);
+        options::parse_cmd_line(argc, argv, true, unit_cost);
+        engine = options::parse_cmd_line(argc, argv, false, unit_cost);
     } catch (ArgError &error) {
         cerr << error << endl;
-        OptionParser::usage(argv[0]);
+        options::usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (ParseError &error) {
         cerr << error << endl;
