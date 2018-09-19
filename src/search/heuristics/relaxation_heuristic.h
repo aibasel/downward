@@ -87,7 +87,6 @@ protected:
     const Proposition *get_proposition(int var, int value) const;
     Proposition *get_proposition(int var, int value);
     Proposition *get_proposition(const FactProxy &fact);
-    virtual int compute_heuristic(const GlobalState &state) = 0;
 public:
     explicit RelaxationHeuristic(const options::Options &options);
     virtual ~RelaxationHeuristic() override;
