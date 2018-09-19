@@ -16,14 +16,13 @@ namespace relaxation_heuristic {
 Proposition::Proposition() {
     is_goal = false;
     cost = -1;
-    reached_by = nullptr;
+    reached_by = NO_OP;
     marked = false;
 }
 
 
 UnaryOperator::UnaryOperator(
-    const vector<Proposition *> &pre, Proposition *eff,
-    int operator_no, int base_cost)
+    const vector<PropID> &pre, PropID eff, int operator_no, int base_cost)
     : operator_no(operator_no), precondition(pre), effect(eff),
       base_cost(base_cost) {
     // The sort-unique can eventually go away. See issue497.
@@ -40,7 +39,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     // Build proposition offsets.
     VariablesProxy variables = task_proxy.get_variables();
     proposition_offsets.reserve(variables.size());
-    int offset = 0;
+    PropID offset = 0;
     for (VariableProxy var : variables) {
         proposition_offsets.push_back(offset);
         offset += var.get_domain_size();
@@ -51,9 +50,9 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     GoalsProxy goals = task_proxy.get_goals();
     goal_propositions.reserve(goals.size());
     for (FactProxy goal : goals) {
-        Proposition *prop = get_proposition(goal);
-        prop->is_goal = true;
-        goal_propositions.push_back(prop);
+        PropID prop_id = get_prop_id(goal);
+        propositions[prop_id].is_goal = true;
+        goal_propositions.push_back(prop_id);
     }
 
     // Build unary operators for operators and axioms.
@@ -71,10 +70,11 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     cout << "time to simplify: " << simplify_timer << endl;
 
     // Cross-reference unary operators.
-    for (size_t i = 0; i < unary_operators.size(); ++i) {
-        UnaryOperator *op = &unary_operators[i];
-        for (size_t j = 0; j < op->precondition.size(); ++j)
-            op->precondition[j]->precondition_of.push_back(op);
+    int num_unary_ops = unary_operators.size();
+    for (OpID op_id = 0; op_id < num_unary_ops; ++op_id) {
+        UnaryOperator &op = unary_operators[op_id];
+        for (PropID precond : op.precondition)
+            propositions[precond].precondition_of.push_back(op_id);
     }
 }
 
@@ -85,15 +85,21 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
     return !task_properties::has_axioms(task_proxy);
 }
 
+PropID RelaxationHeuristic::get_prop_id(int var, int value) const {
+    return proposition_offsets[var] + value;
+}
+
+PropID RelaxationHeuristic::get_prop_id(const FactProxy &fact) const {
+    return get_prop_id(fact.get_variable().get_id(), fact.get_value());
+}
+
 const Proposition *RelaxationHeuristic::get_proposition(
     int var, int value) const {
-    int offset = proposition_offsets[var];
-    return &propositions[offset + value];
+    return &propositions[get_prop_id(var, value)];
 }
 
 Proposition *RelaxationHeuristic::get_proposition(int var, int value) {
-    int offset = proposition_offsets[var];
-    return &propositions[offset + value];
+    return &propositions[get_prop_id(var, value)];
 }
 
 Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
@@ -102,34 +108,22 @@ Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
 
 void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {
     int base_cost = op.get_cost();
-    vector<Proposition *> precondition_props;
+    vector<PropID> precondition_props;
     PreconditionsProxy preconditions = op.get_preconditions();
     precondition_props.reserve(preconditions.size());
     for (FactProxy precondition : preconditions) {
-        precondition_props.push_back(get_proposition(precondition));
+        precondition_props.push_back(get_prop_id(precondition));
     }
     for (EffectProxy effect : op.get_effects()) {
-        Proposition *effect_prop = get_proposition(effect.get_fact());
+        PropID effect_prop = get_prop_id(effect.get_fact());
         EffectConditionsProxy eff_conds = effect.get_conditions();
         precondition_props.reserve(preconditions.size() + eff_conds.size());
         for (FactProxy eff_cond : eff_conds) {
-            precondition_props.push_back(get_proposition(eff_cond));
+            precondition_props.push_back(get_prop_id(eff_cond));
         }
         unary_operators.emplace_back(precondition_props, effect_prop, op_no, base_cost);
         precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());
     }
-}
-
-int RelaxationHeuristic::get_proposition_id(const Proposition &prop) const {
-    int prop_no = &prop - propositions.data();
-    assert(utils::in_bounds(prop_no, propositions));
-    return prop_no;
-}
-
-int RelaxationHeuristic::get_operator_id(const UnaryOperator &op) const {
-    int op_no = &op - unary_operators.data();
-    assert(utils::in_bounds(op_no, unary_operators));
-    return op_no;
 }
 
 void RelaxationHeuristic::simplify() {
@@ -175,8 +169,8 @@ void RelaxationHeuristic::simplify() {
       For each key present in the data, the map stores the dominating
       element in this total order.
     */
-    using Key = pair<vector<Proposition *>, Proposition *>;
-    using Value = pair<int, int>;
+    using Key = pair<vector<PropID>, PropID>;
+    using Value = pair<int, OpID>;
     using Map = unordered_map<Key, Value>;
     Map unary_operator_index;
     unary_operator_index.reserve(unary_operators.size());
@@ -220,10 +214,10 @@ void RelaxationHeuristic::simplify() {
               map.
             */
 
-            int op_no = get_operator_id(op);
+            OpID op_id = get_op_id(op);
             int cost = op.base_cost;
 
-            const vector<Proposition *> &precondition = op.precondition;
+            const vector<PropID> &precondition = op.precondition;
 
             /*
               We handle the case X = pre(op) specially for efficiency and
@@ -235,7 +229,7 @@ void RelaxationHeuristic::simplify() {
               enough to test here whether looking up the key of op in the
               map results in an entry including op itself.
             */
-            if (unary_operator_index[make_pair(precondition, op.effect)].second != op_no)
+            if (unary_operator_index[make_pair(precondition, op.effect)].second != op_id)
                 return true;
 
             /*
@@ -252,7 +246,7 @@ void RelaxationHeuristic::simplify() {
                 return false;
             }
 
-            vector<Proposition *> &dominating_precondition = dominating_key.first;
+            vector<PropID> &dominating_precondition = dominating_key.first;
             dominating_key.second = op.effect;
 
             // We subtract "- 1" to generate all *strict* subsets of precondition.
