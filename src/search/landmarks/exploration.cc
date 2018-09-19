@@ -228,7 +228,7 @@ void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
                 int depth = unary_op->is_induced_by_axiom(task_proxy)
-                            ? unary_op->depth : unary_op->depth + 1;
+                    ? unary_op->depth : unary_op->depth + 1;
                 if (use_h_max)
                     enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
                                          depth, unary_op, use_h_max);
