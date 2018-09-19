@@ -23,27 +23,25 @@ const OpID NO_OP = -1;
 
 struct Proposition {
     Proposition();
-
-    bool is_goal;
+    int cost; // used for h^max cost or h^add cost
+    // TODO: Make sure in constructor that reached_by does not overflow.
+    PropID reached_by /* : 30 */;
+    bool is_goal /* : 1 */;
+    bool marked /* : 1 */; // used for preferred operators of h^add and h^FF
     std::vector<OpID> precondition_of;
 
-    int cost; // Used for h^max cost or h^add cost
-    PropID reached_by;
-    bool marked; // used when computing preferred operators for h^add and h^FF
 };
 
 struct UnaryOperator {
     UnaryOperator(const std::vector<PropID> &pre, PropID eff,
                   int operator_no, int base);
-
-    int operator_no; // -1 for axioms; index into the task's operators otherwise
-    std::vector<PropID> precondition;
-    PropID effect;
-    int base_cost;
-
-    int unsatisfied_preconditions;
     int cost; // Used for h^max cost or h^add cost;
               // includes operator cost (base_cost)
+    int unsatisfied_preconditions;
+    PropID effect;
+    int base_cost;
+    std::vector<PropID> precondition;
+    int operator_no; // -1 for axioms; index into the task's operators otherwise
 };
 
 class RelaxationHeuristic : public Heuristic {
