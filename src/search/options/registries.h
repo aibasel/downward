@@ -7,8 +7,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <iostream>
-#include <map>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
@@ -75,9 +73,28 @@ struct PluginGroupInfo {
 
 
 class Registry {
-public:
-    using Factory = std::function<Any(OptionParser &)>;
+private:
+    std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
+    /*
+      plugin_type_infos collects information about all plugin types
+      in use and gives access to the underlying information. This is used,
+      for example, to generate the complete help output.
+    */
+    std::unordered_map<std::type_index, PluginTypeInfo> plugin_type_infos;
+    /*
+      The plugin group registry collects information about plugin groups.
+      A plugin group is a set of plugins (which should be of the same
+      type, although the code does not enforce this) that should be
+      grouped together in user documentation.
 
+      For example, all PDB heuristics could be grouped together so that
+      the documention page for the heuristics looks nicer.
+    */
+    std::unordered_map<std::string, PluginGroupInfo> plugin_group_infos;
+
+    Registry() = default;
+    
+public:
     template<typename T>
     void insert_factory(
         const std::string &key,
@@ -126,79 +143,7 @@ public:
         static Registry instance_;
         return &instance_;
     }
-private:
-    // Define this below public methods since it needs "Factory" typedef.
-    std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
-    std::unordered_map<std::type_index, PluginTypeInfo> plugin_type_infos;
-    std::unordered_map<std::string, PluginGroupInfo> plugin_group_infos;
-
-    Registry() = default;
 };
-
-
-
-
-/*
-  The plugin type registry collects information about all plugin types
-  in use and gives access to the underlying information. This is used,
-  for example, to generate the complete help output.
-
-  Note that the information for individual plugins (rather than plugin
-  types) is organized in separate registries, one for each plugin
-  type. For example, there is a Registry<Heuristic> that organizes the
-  Heuristic plugins.
-*/
-
-// TODO: Reduce code duplication with Registry<T>.
-/*
-class PluginTypeRegistry {
-    using Map = std::map<std::type_index, PluginTypeInfo>;
-    PluginTypeRegistry() = default;
-    ~PluginTypeRegistry() = default;
-    Map registry;
-public:
-    void insert(const PluginTypeInfo &info);
-
-    const PluginTypeInfo &get(const std::type_index &type) const;
-
-    std::vector<PluginTypeInfo> get_sorted_types() const {
-        std::vector<PluginTypeInfo> types;
-        for (auto it : registry) {
-            types.push_back(it.second);
-        }
-        sort(types.begin(), types.end());
-        return types;
-    }
-
-    static PluginTypeRegistry *instance();
-};
-*/
-
-/*
-  The plugin group registry collects information about plugin groups.
-  A plugin group is a set of plugins (which should be of the same
-  type, although the code does not enforce this) that should be
-  grouped together in user documentation.
-
-  For example, all PDB heuristics could be grouped together so that
-  the documention page for the heuristics looks nicer.
-*/
-
-// TODO: Reduce code duplication with Registry<T>.
-/*
-class PluginGroupRegistry {
-    using Map = std::map<std::string, PluginGroupInfo>;
-    PluginGroupRegistry() = default;
-    ~PluginGroupRegistry() = default;
-    Map registry;
-public:
-    void insert(const PluginGroupInfo &info);
-
-    const PluginGroupInfo &get(const std::string &key) const;
-
-    static PluginGroupRegistry *instance();
-};
-*/
 }
 
 #endif
