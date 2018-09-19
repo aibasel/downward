@@ -55,6 +55,10 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'max_states=50000,threshold_before_merge=1'
 '))')
 
+"""
+Since we cannot enforce memory limits on macOS, we make sure that we get
+the DRIVER_UNSUPPORTED exit code in that case.
+"""
 SEARCH_TESTS = [
     ("strips", [], "astar(add())", defaultdict(constant_factory(returncodes.SUCCESS))),
     ("strips", [], "astar(hm())", defaultdict(constant_factory(returncodes.SUCCESS))),
