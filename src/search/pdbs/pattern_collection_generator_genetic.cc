@@ -370,7 +370,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
 
     return make_shared<PatternCollectionGeneratorGenetic>(opts);
 }

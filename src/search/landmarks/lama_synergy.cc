@@ -51,7 +51,7 @@ void LamaSynergyHeuristic::notify_state_transition(
     }
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "LAMA-FF synergy master",
         "This class implements the LAMA-FF synergy. This synergy can be used "
@@ -90,8 +90,8 @@ static Heuristic *_parse(OptionParser &parser) {
     */
     opts.set("pref", true);
 
-    return new LamaSynergyHeuristic(opts);
+    return make_shared<LamaSynergyHeuristic>(opts);
 }
 
-static Plugin<Evaluator> _plugin("lama_synergy", _parse);
+static PluginShared<Evaluator> _plugin("lama_synergy", _parse);
 }

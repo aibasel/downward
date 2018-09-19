@@ -8,7 +8,6 @@
 */
 #include "options/plugin.h"
 
-using options::Plugin;
 using options::PluginGroupPlugin;
 using options::PluginShared;
 using options::PluginTypePlugin;
