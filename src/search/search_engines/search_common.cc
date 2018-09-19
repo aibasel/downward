@@ -21,7 +21,7 @@ using SumEval = sum_evaluator::SumEvaluator;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
-    shared_ptr<Evaluator> eval, bool pref_only) {
+    const shared_ptr<Evaluator> &eval, bool pref_only) {
     Options options;
     options.set("eval", eval);
     options.set("pref_only", pref_only);

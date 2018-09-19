@@ -35,7 +35,7 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
     };
 
     vector<HeapNode> heap;
-    std::shared_ptr<Evaluator> evaluator;
+    shared_ptr<Evaluator> evaluator;
 
     double epsilon;
     int size;
