@@ -11,7 +11,7 @@ from relativescatter import RelativeScatterPlotReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue814-v3", "issue814-v4"]
+REVISIONS = ["issue814-base", "issue814-v4"]
 if common_setup.is_test_run():
     BUILDS = ["release32"]
 else:
