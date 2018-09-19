@@ -81,7 +81,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
                          preferred_operator_evaluators.end(), evaluator) !=
-                    preferred_operator_evaluators.end();
+        preferred_operator_evaluators.end();
 
     open_list = create_ehc_open_list_factory(
         use_preferred, preferred_usage)->create_edge_open_list();
@@ -163,7 +163,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
             eval_context.get_state(), successor_operators);
         for (OperatorID op_id : successor_operators) {
             bool preferred = use_preferred &&
-                             preferred_operators.contains(op_id);
+                preferred_operators.contains(op_id);
             insert_successor_into_open_list(
                 eval_context, node_g, op_id, preferred);
         }
@@ -197,7 +197,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         // d: distance from initial node in this EHC phase
         int d = parent_node.get_g() - current_phase_start_g +
-                get_adjusted_cost(last_op);
+            get_adjusted_cost(last_op);
 
         if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
