@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 class SearchEngine;
 
@@ -194,10 +195,11 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
 template<typename T>
 static T *lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (Registry::instance()->contains_factory<T *>(value)) {
+    try {
         return Registry::instance()->get_factory<T *>(value)(parser);
+    } catch (const std::out_of_range &e) {
+        parser.error(TypeNamer<T *>::name() + " " + value + " not found");
     }
-    parser.error(TypeNamer<T *>::name() + " " + value + " not found");
     return nullptr;
 }
 
@@ -205,10 +207,11 @@ static T *lookup_in_registry(OptionParser &parser) {
 template<typename T>
 static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (Registry::instance()->contains_factory<std::shared_ptr<T>>(value)) {
+    try {
         return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
+    } catch (const std::out_of_range &e) {
+        parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     }
-    parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     return nullptr;
 }
 
