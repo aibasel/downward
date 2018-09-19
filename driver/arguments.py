@@ -88,7 +88,7 @@ Examples:
 %s
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
-COMPONENTS_PLUS_OVERALL = ["translate", "search", "overall"]
+COMPONENTS_PLUS_OVERALL = ["translate", "search", "validate", "overall"]
 
 
 """
