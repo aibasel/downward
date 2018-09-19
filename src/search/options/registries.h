@@ -15,49 +15,6 @@
 namespace options {
 class OptionParser;
 
-// A Registry<T> maps a string to a T-factory.
-template<typename T>
-class Registry {
-public:
-    using Factory = std::function<T(OptionParser &)>;
-
-    void insert(const std::string &key, Factory factory) {
-        if (registered.count(key)) {
-            std::cerr << "duplicate key in registry: " << key << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-        registered[key] = factory;
-    }
-
-    bool contains(const std::string &key) const {
-        return registered.find(key) != registered.end();
-    }
-
-    Factory get(const std::string &key) const {
-        return registered.at(key);
-    }
-
-    std::vector<std::string> get_sorted_keys() const {
-        std::vector<std::string> keys;
-        for (auto it : registered) {
-            keys.push_back(it.first);
-        }
-        sort(keys.begin(), keys.end());
-        return keys;
-    }
-
-    static Registry<T> *instance() {
-        static Registry<T> instance_;
-        return &instance_;
-    }
-
-private:
-    // Define this below public methods since it needs "Factory" typedef.
-    std::unordered_map<std::string, Factory> registered;
-
-    Registry() = default;
-};
-
 
 /*
   The plugin type info class contains meta-information for a given
@@ -108,6 +65,57 @@ public:
     }
 };
 
+
+struct PluginGroupInfo {
+    std::string group_id;
+    std::string doc_title;
+};
+
+
+class Registry {
+public:
+    using Factory = std::function<T(OptionParser &)>;
+
+    void insert(const std::string &key, Factory factory) {
+        if (registered.count(key)) {
+            std::cerr << "duplicate key in registry: " << key << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+        registered[key] = factory;
+    }
+
+    bool contains(const std::string &key) const {
+        return registered.find(key) != registered.end();
+    }
+
+    Factory get(const std::string &key) const {
+        return registered.at(key);
+    }
+
+    std::vector<std::string> get_sorted_keys() const {
+        std::vector<std::string> keys;
+        for (auto it : registered) {
+            keys.push_back(it.first);
+        }
+        sort(keys.begin(), keys.end());
+        return keys;
+    }
+
+    static Registry<T> *instance() {
+        static Registry<T> instance_;
+        return &instance_;
+    }
+
+private:
+    // Define this below public methods since it needs "Factory" typedef.
+    std::unordered_map<std::string, Factory> registered;
+
+    Registry() = default;
+};
+
+
+
+
 /*
   The plugin type registry collects information about all plugin types
   in use and gives access to the underlying information. This is used,
@@ -154,10 +162,6 @@ public:
 */
 
 // TODO: Reduce code duplication with Registry<T>.
-struct PluginGroupInfo {
-    std::string group_id;
-    std::string doc_title;
-};
 
 class PluginGroupRegistry {
     using Map = std::map<std::string, PluginGroupInfo>;
