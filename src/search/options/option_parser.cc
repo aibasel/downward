@@ -246,13 +246,6 @@ void OptionParser::error(const string &msg) const {
     throw ParseError(msg, parse_tree);
 }
 
-void OptionParser::document_values(
-    const string &argument,
-    const ValueExplanations &value_explanations) const {
-    DocStore::instance()->add_value_explanations(
-        get_root_value(), argument, value_explanations);
-}
-
 void OptionParser::document_synopsis(const string &name, const string &note) const {
     DocStore::instance()->set_synopsis(get_root_value(), name, note);
 }
@@ -269,10 +262,6 @@ void OptionParser::document_language_support(
 void OptionParser::document_note(
     const string &name, const string &note, bool long_text) const {
     DocStore::instance()->add_note(get_root_value(), name, note, long_text);
-}
-
-void OptionParser::document_hide() const {
-    DocStore::instance()->hide(get_root_value());
 }
 
 bool OptionParser::dry_run() const {

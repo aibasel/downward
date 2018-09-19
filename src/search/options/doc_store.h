@@ -126,11 +126,6 @@ public:
         const Bounds &bounds,
         const ValueExplanations &value_explanations = ValueExplanations());
 
-    void add_value_explanations(
-        const std::string &key,
-        const std::string &arg_name,
-        const ValueExplanations &value_explanations);
-
     void set_synopsis(
         const std::string &key, const std::string &name, const std::string &description);
 
@@ -145,10 +140,6 @@ public:
         const std::string &name,
         const std::string &description,
         bool long_text);
-
-    void hide(const std::string &key);
-
-    bool contains(const std::string &key);
 
     PluginInfo &get(const std::string &key);
 

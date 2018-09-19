@@ -69,10 +69,6 @@ public:
         const std::string &help = "",
         const std::string &default_value = "");
 
-    void document_values(
-        const std::string &argument,
-        const ValueExplanations &value_explanations) const;
-
     void document_synopsis(
         const std::string &name, const std::string &note) const;
 
@@ -84,8 +80,6 @@ public:
 
     void document_note(
         const std::string &name, const std::string &note, bool long_text = false) const;
-
-    void document_hide() const;
 
     void error(const std::string &msg) const;
 
