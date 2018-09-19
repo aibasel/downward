@@ -26,7 +26,8 @@ UnaryOperator::UnaryOperator(
     int operator_no, int base_cost)
     : operator_no(operator_no), precondition(pre), effect(eff),
       base_cost(base_cost) {
-    sort(precondition.begin(), precondition.end());
+    // The sort-unique can eventually go away. See issue497.
+    utils::sort_unique(precondition);
 }
 
 
