@@ -105,7 +105,7 @@ public:
     }
 
     template<typename T>
-    std::vector<std::string> get_sorted_keys() const {
+    std::vector<std::string> get_sorted_factory_keys() const {
         std::type_index type(typeid(T));
         std::vector<std::string> keys;
         for (auto it : plugin_factories.at(type)) {
@@ -115,11 +115,16 @@ public:
         return keys;
     }
 
+    void insert_type_info(const PluginTypeInfo &info);
+
+    const PluginTypeInfo &get_type_info(const std::type_index &type) const;
+
+    std::vector<PluginTypeInfo> get_sorted_type_infos() const;
+    
     static Registry *instance() {
         static Registry instance_;
         return &instance_;
     }
-
 private:
     // Define this below public methods since it needs "Factory" typedef.
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
@@ -144,6 +149,7 @@ private:
 */
 
 // TODO: Reduce code duplication with Registry<T>.
+/*
 class PluginTypeRegistry {
     using Map = std::map<std::type_index, PluginTypeInfo>;
     PluginTypeRegistry() = default;
@@ -165,7 +171,7 @@ public:
 
     static PluginTypeRegistry *instance();
 };
-
+*/
 
 /*
   The plugin group registry collects information about plugin groups.

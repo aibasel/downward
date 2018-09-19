@@ -4,26 +4,30 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
-PluginTypeRegistry *PluginTypeRegistry::instance() {
-    static PluginTypeRegistry the_instance;
-    return &the_instance;
-}
-
-void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
-    if (registry.count(info.get_type())) {
+void Registry::insert_type_info(const PluginTypeInfo &info) {
+    if (plugin_type_infos.count(info.get_type())) {
         cerr << "duplicate type in registry: "
              << info.get_type().name() << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    registry.insert(make_pair(info.get_type(), info));
+    plugin_type_infos.insert(make_pair(info.get_type(), info));
 }
 
-const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
-    if (!registry.count(type)) {
+const PluginTypeInfo &Registry::get_type_info(const type_index &type) const {
+    if (!plugin_type_infos.count(type)) {
         ABORT("attempt to retrieve non-existing type info from registry: " +
               string(type.name()));
     }
-    return registry.at(type);
+    return plugin_type_infos.at(type);
+}
+
+std::vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
+    std::vector<PluginTypeInfo> types;
+    for (auto it : plugin_type_infos) {
+        types.push_back(it.second);
+    }
+    sort(types.begin(), types.end());
+    return types;
 }
 
 PluginGroupRegistry *PluginGroupRegistry::instance() {
