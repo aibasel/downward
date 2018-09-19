@@ -1,3 +1,4 @@
+#if false
 #include "max_heuristic.h"
 
 #include "../global_state.h"
@@ -125,3 +126,4 @@ static Heuristic *_parse(OptionParser &parser) {
 
 static Plugin<Evaluator> _plugin("hmax", _parse);
 }
+#endif
