@@ -21,8 +21,6 @@ __all__ = ["run"]
 
 import os
 import subprocess
-import sys
-import traceback
 
 from . import call
 from . import limits
@@ -55,7 +53,7 @@ def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
         elif arg == "--search":
             search = args[index + 1]
             if "bound=BOUND" not in search:
-                raise ValueError(
+                returncodes.exit_with_driver_critical_error(
                     "Satisficing portfolios need the string "
                     "\"bound=BOUND\" in each search configuration. "
                     "See the FDSS portfolios for examples.")
@@ -196,15 +194,14 @@ def get_portfolio_attributes(portfolio):
         try:
             exec(content, attributes)
         except Exception:
-            traceback.print_exc()
-            raise ImportError(
+            returncodes.exit_with_driver_critical_error(
                 "The portfolio %s could not be loaded. Maybe it still "
                 "uses the old portfolio syntax? See the FDSS portfolios "
                 "for examples using the new syntax." % portfolio)
     if "CONFIGS" not in attributes:
-        raise ValueError("portfolios must define CONFIGS")
+        returncodes.exit_with_driver_critical_error("portfolios must define CONFIGS")
     if "OPTIMAL" not in attributes:
-        raise ValueError("portfolios must define OPTIMAL")
+        returncodes.exit_with_driver_critical_error("portfolios must define OPTIMAL")
     return attributes
 
 
@@ -221,15 +218,15 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
     if "TIMEOUT" in attributes:
-        sys.exit(
+        returncodes.exit_with_driver_input_error(
             "The TIMEOUT attribute in portfolios has been removed. "
             "Please pass a time limit to fast-downward.py.")
 
     if time is None:
         if os.name == "nt":
-            sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+            returncodes.exit_with_driver_unsupported_error(limits.RESOURCE_MODULE_MISSING_MSG)
         else:
-            sys.exit(
+            returncodes.exit_with_driver_input_error(
                 "Portfolios need a time limit. Please pass --search-time-limit "
                 "or --overall-time-limit to fast-downward.py.")
 

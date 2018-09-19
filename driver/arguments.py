@@ -2,9 +2,11 @@
 
 import argparse
 import os.path
+import sys
 
 from . import aliases
 from . import limits
+from . import returncodes
 from . import util
 
 
@@ -89,6 +91,15 @@ Examples:
 COMPONENTS_PLUS_OVERALL = ["translate", "search", "overall"]
 
 
+"""
+Function to emulate the behavior of ArgumentParser.error, but with our
+custom exit codes instead of 2.
+"""
+def print_usage_and_exit_with_driver_input_error(parser, msg):
+    parser.print_usage()
+    returncodes.exit_with_driver_input_error("{}: error: {}".format(os.path.basename(sys.argv[0]), msg))
+
+
 class RawHelpFormatter(argparse.HelpFormatter):
     """Preserve newlines and spacing."""
     def _fill_text(self, text, width, indent):
@@ -164,10 +175,12 @@ def _check_mutex_args(parser, args, required=False):
     for pos, (name1, is_specified1) in enumerate(args):
         for name2, is_specified2 in args[pos + 1:]:
             if is_specified1 and is_specified2:
-                parser.error("cannot combine %s with %s" % (name1, name2))
+                print_usage_and_exit_with_driver_input_error(
+                    parser, "cannot combine %s with %s" % (name1, name2))
     if required and not any(is_specified for _, is_specified in args):
-        parser.error("exactly one of {%s} has to be specified" %
-            ", ".join(name for name, _ in args))
+        print_usage_and_exit_with_driver_input_error(
+            parser, "exactly one of {%s} has to be specified" %
+                ", ".join(name for name, _ in args))
 
 
 def _looks_like_search_input(filename):
@@ -237,14 +250,16 @@ def _set_components_and_inputs(parser, args):
         elif num_files == 2:
             args.translate_inputs = args.filenames
         else:
-            parser.error("translator needs one or two input files")
+            print_usage_and_exit_with_driver_input_error(
+                parser, "translator needs one or two input files")
     elif first == "search":
         if "--help" in args.search_options:
             args.search_input = None
         elif num_files == 1:
             args.search_input, = args.filenames
         else:
-            parser.error("search needs exactly one input file")
+            print_usage_and_exit_with_driver_input_error(
+                parser, "search needs exactly one input file")
     else:
         assert False, first
 
@@ -350,8 +365,9 @@ def parse_args():
     args = parser.parse_args()
 
     if args.build and args.debug:
-        parser.error("The option --debug is an alias for --build=debug32 "
-                     "--validate. Do no specify both --debug and --build.")
+        print_usage_and_exit_with_driver_input_error(
+            parser, "The option --debug is an alias for --build=debug32 "
+                 "--validate. Do no specify both --debug and --build.")
     if not args.build:
         if args.debug:
             args.build = "debug32"
@@ -371,14 +387,18 @@ def parse_args():
         try:
             aliases.set_options_for_alias(args.alias, args)
         except KeyError:
-            parser.error("unknown alias: %r" % args.alias)
+            print_usage_and_exit_with_driver_input_error(
+                parser, "unknown alias: %r" % args.alias)
 
     if args.portfolio_bound is not None and not args.portfolio:
-        parser.error("--portfolio-bound may only be used for portfolios.")
+        print_usage_and_exit_with_driver_input_error(
+            parser, "--portfolio-bound may only be used for portfolios.")
     if args.portfolio_bound is not None and args.portfolio_bound < 0:
-        parser.error("--portfolio-bound must not be negative.")
+        print_usage_and_exit_with_driver_input_error(
+            parser, "--portfolio-bound must not be negative.")
     if args.portfolio_single_plan and not args.portfolio:
-        parser.error("--portfolio-single_plan may only be used for portfolios.")
+        print_usage_and_exit_with_driver_input_error(
+            parser, "--portfolio-single_plan may only be used for portfolios.")
 
     if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
