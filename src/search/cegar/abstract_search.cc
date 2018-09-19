@@ -73,8 +73,8 @@ AbstractState *AbstractSearch::astar_search(
             return state;
         }
         const Transitions &transitions = forward ?
-                                         state->get_outgoing_transitions() :
-                                         state->get_incoming_transitions();
+            state->get_outgoing_transitions() :
+            state->get_incoming_transitions();
         for (const Transition &transition : transitions) {
             int op_id = transition.op_id;
             AbstractState *successor = transition.target;

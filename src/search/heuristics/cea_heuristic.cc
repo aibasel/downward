@@ -153,8 +153,8 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
             LocalProblemNode &target = problem->nodes[target_value];
             for (const ValueTransitionLabel &label : dtg_trans.labels) {
                 OperatorProxy op = label.is_axiom ?
-                                   task_proxy.get_axioms()[label.op_id] :
-                                   task_proxy.get_operators()[label.op_id];
+                    task_proxy.get_axioms()[label.op_id] :
+                    task_proxy.get_operators()[label.op_id];
                 LocalTransition trans(&node, &target, &label, op.get_cost());
                 node.outgoing_transitions.push_back(trans);
             }
@@ -365,8 +365,8 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
             // Transition possibly applicable.
             const ValueTransitionLabel &label = *first_on_path->label;
             OperatorProxy op = label.is_axiom ?
-                               task_proxy.get_axioms()[label.op_id] :
-                               task_proxy.get_operators()[label.op_id];
+                task_proxy.get_axioms()[label.op_id] :
+                task_proxy.get_operators()[label.op_id];
             if (min_action_cost != 0 || task_properties::is_applicable(op, state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.

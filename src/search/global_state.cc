@@ -3,6 +3,8 @@
 #include "state_registry.h"
 #include "task_proxy.h"
 
+#include "task_utils/task_properties.h"
+
 #include <algorithm>
 #include <iostream>
 #include <cassert>
@@ -35,10 +37,10 @@ State GlobalState::unpack() const {
 
 void GlobalState::dump_pddl() const {
     State state = unpack();
-    state.dump_pddl();
+    task_properties::dump_pddl(state);
 }
 
 void GlobalState::dump_fdr() const {
     State state = unpack();
-    state.dump_fdr();
+    task_properties::dump_fdr(state);
 }

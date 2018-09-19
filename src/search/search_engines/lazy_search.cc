@@ -1,6 +1,5 @@
 #include "lazy_search.h"
 
-#include "../globals.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 
@@ -65,7 +64,7 @@ void LazySearch::initialize() {
 vector<OperatorID> LazySearch::get_successor_operators(
     const ordered_set::OrderedSet<OperatorID> &preferred_operators) const {
     vector<OperatorID> applicable_operators;
-    g_successor_generator->generate_applicable_ops(
+    successor_generator.generate_applicable_ops(
         current_state, applicable_operators);
 
     if (randomize_successors) {
@@ -155,7 +154,7 @@ SearchStatus LazySearch::step() {
 
     SearchNode node = search_space.get_node(current_state);
     bool reopen = reopen_closed_nodes && !node.is_new() &&
-                  !node.is_dead_end() && (current_g < node.get_g());
+        !node.is_dead_end() && (current_g < node.get_g());
 
     if (node.is_new() || reopen) {
         if (current_operator_id != OperatorID::no_operator) {
@@ -177,10 +176,10 @@ SearchStatus LazySearch::step() {
                 SearchNode parent_node = search_space.get_node(parent_state);
                 OperatorProxy current_operator = task_proxy.get_operators()[current_operator_id];
                 if (reopen) {
-                    node.reopen(parent_node, current_operator);
+                    node.reopen(parent_node, current_operator, get_adjusted_cost(current_operator));
                     statistics.inc_reopened();
                 } else {
-                    node.open(parent_node, current_operator);
+                    node.open(parent_node, current_operator, get_adjusted_cost(current_operator));
                 }
             }
             node.close();

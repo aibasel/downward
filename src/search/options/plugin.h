@@ -56,11 +56,11 @@ public:
         Registry<T *>::instance()->insert(key, factory);
         // See comment in PluginShared.
         DocFactory doc_factory = [factory](OptionParser &parser) {
-                                     factory(parser);
-                                 };
+                factory(parser);
+            };
         PluginTypeNameGetter type_name_factory = [&]() {
-                                                     return TypeNamer<T *>::name();
-                                                 };
+                return TypeNamer<T *>::name();
+            };
         DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, group);
     }
     ~Plugin() = default;
@@ -85,11 +85,11 @@ public:
           call them later, after all PluginType objects have been constructed.
         */
         DocFactory doc_factory = [factory](OptionParser &parser) {
-                                     factory(parser);
-                                 };
+                factory(parser);
+            };
         PluginTypeNameGetter type_name_factory = [&]() {
-                                                     return TypeNamer<TPtr>::name();
-                                                 };
+                return TypeNamer<TPtr>::name();
+            };
         DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, group);
     }
     ~PluginShared() = default;
