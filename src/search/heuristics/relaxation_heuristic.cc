@@ -136,8 +136,9 @@ void RelaxationHeuristic::simplify() {
       Remove dominated unary operators, including duplicates.
 
       Unary operators with more than MAX_PRECONDITIONS_TO_TEST
-      preconditions are ignored because we cannot handle them
-      efficiently. (This is obviously an inelegant solution.)
+      preconditions are (mostly; see code comments below for details)
+      ignored because we cannot handle them efficiently. This is
+      obviously an inelegant solution.
 
       Apart from this restriction, operator o1 dominates operator o2 if:
       1. eff(o1) = eff(o2), and
@@ -181,18 +182,23 @@ void RelaxationHeuristic::simplify() {
 
     for (size_t op_no = 0; op_no < unary_operators.size(); ++op_no) {
         const UnaryOperator &op = unary_operators[op_no];
-        if (op.precondition.size() <= MAX_PRECONDITIONS_TO_TEST) {
-            Key key(op.precondition, op.effect);
-            Value value(op.base_cost, op_no);
-            auto inserted = unary_operator_index.insert(
-                make_pair(move(key), value));
-            if (!inserted.second) {
-                // We already had an element with this key; check its cost.
-                Map::iterator iter = inserted.first;
-                Value old_value = iter->second;
-                if (value < old_value)
-                    iter->second = value;
-            }
+        /*
+          Note: we consider operators with more than
+          MAX_PRECONDITIONS_TO_TEST preconditions here because we can
+          still filter out "exact matches" for these, i.e., the first
+          test in `is_dominated`.
+        */
+
+        Key key(op.precondition, op.effect);
+        Value value(op.base_cost, op_no);
+        auto inserted = unary_operator_index.insert(
+            make_pair(move(key), value));
+        if (!inserted.second) {
+            // We already had an element with this key; check its cost.
+            Map::iterator iter = inserted.first;
+            Value old_value = iter->second;
+            if (value < old_value)
+                iter->second = value;
         }
     }
 
@@ -207,9 +213,6 @@ void RelaxationHeuristic::simplify() {
       operator in the map.
     */
     auto is_dominated = [&](const UnaryOperator &op) {
-        if (op.precondition.size() > MAX_PRECONDITIONS_TO_TEST)
-            return false;
-
         /*
           Check all possible subsets X of pre(op) to see if there is a
           dominating operator with preconditions X represented in the
@@ -240,6 +243,14 @@ void RelaxationHeuristic::simplify() {
           a strict subset, we also have 4a (which means we don't need 4b).
           So it only remains to check 3 for all hits.
         */
+        if (op.precondition.size() > MAX_PRECONDITIONS_TO_TEST) {
+            /*
+              The runtime of the following code grows exponentially
+              with the number of preconditions.
+            */
+            return false;
+        }
+
         vector<Proposition *> &dominating_precondition = dominating_key.first;
         dominating_key.second = op.effect;
 
