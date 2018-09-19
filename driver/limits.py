@@ -20,16 +20,29 @@ RESOURCE_MODULE_MISSING_MSG = (
     "portfolios is not possible.")
 
 
+"""
+On Windows, the resource module does not exist and hence we cannot enforce
+any limits there.
+"""
 def can_set_limits():
     return resource is not None
+
+
+def can_set_time_limit():
+    return can_set_limits()
+
+
+"""
+Memory limits are not enforced on macOS and hence we do not support adding
+memory limits on that platform.
+"""
+def can_set_memory_limit():
+    return can_set_limits() and sys.platform != "darwin"
 
 
 def _set_limit(kind, soft, hard=None):
     if hard is None:
         hard = soft
-    if sys.platform == "darwin" and kind == resource.RLIMIT_AS:
-        returncodes.exit_with_driver_unsupported_error(
-            "Memory limits are not enforced on macOS and thus not supported:")
     try:
         resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError) as err:
@@ -52,7 +65,7 @@ def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
 def set_time_limit(time_limit):
     if time_limit is None:
         return
-    assert can_set_limits()
+    assert can_set_time_limit()
     # Don't try to raise the hard limit.
     _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
     if external_hard_limit == resource.RLIM_INFINITY:
@@ -69,7 +82,7 @@ def set_memory_limit(memory):
     """*memory* must be given in bytes or None."""
     if memory is None:
         return
-    assert can_set_limits()
+    assert can_set_memory_limit()
     _set_limit(resource.RLIMIT_AS, memory)
 
 
@@ -91,13 +104,13 @@ def _get_external_limit(kind):
 
 def _get_external_time_limit():
     """Return external soft CPU limit in seconds or None if not set."""
-    if not can_set_limits():
+    if not can_set_time_limit():
         return None
     return _get_external_limit(resource.RLIMIT_CPU)
 
 def _get_external_memory_limit():
     """Return external soft memory limit in bytes or None if not set."""
-    if not can_set_limits():
+    if not can_set_memory_limit():
         return None
     return _get_external_limit(resource.RLIMIT_AS)
 
@@ -151,15 +164,22 @@ def get_memory_limit(component_limit, overall_limit):
     Return the lowest of the following memory limits:
     component, overall, external soft, external hard.
     """
-    limits = [component_limit, overall_limit, _get_external_memory_limit()]
-    limits = [limit for limit in limits if limit is not None]
-    return min(limits) if limits else None
+    if component_limit is None and overall_limit is None:
+        return None
+    elif can_set_memory_limit():
+        limits = [component_limit, overall_limit, _get_external_memory_limit()]
+        limits = [limit for limit in limits if limit is not None]
+        return min(limits) if limits else None
+    else:
+        returncodes.exit_with_driver_unsupported_error(RESOURCE_MODULE_MISSING_MSG)
 
 def get_time_limit(component_limit, overall_limit):
     """
     Return the minimum time limit imposed by any internal and external limit.
     """
-    if can_set_limits():
+    if component_limit is None and overall_limit is None:
+        return None
+    elif can_set_time_limit():
         elapsed_time = util.get_elapsed_time()
         external_limit = _get_external_time_limit()
         limits = []
@@ -170,7 +190,5 @@ def get_time_limit(component_limit, overall_limit):
         if external_limit is not None:
             limits.append(max(0, external_limit - elapsed_time))
         return min(limits) if limits else None
-    elif component_limit is None and overall_limit is None:
-        return None
     else:
         returncodes.exit_with_driver_unsupported_error(RESOURCE_MODULE_MISSING_MSG)

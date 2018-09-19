@@ -15,11 +15,14 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
-if limits.can_set_limits():
+if limits.can_set_memory_limit():
     VALIDATE_MEMORY_LIMIT_IN_B = 3.5 * 1024 * 1024 * 1024
-    VALIDATE_TIME_LIMIT = 1800
 else:
     VALIDATE_MEMORY_LIMIT_IN_B = None
+
+if limits.can_set_time_limit():
+    VALIDATE_TIME_LIMIT = 1800
+else:
     VALIDATE_TIME_LIMIT = None
 
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
