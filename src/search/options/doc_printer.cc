@@ -68,7 +68,7 @@ void DocPrinter::print_section(
     const string &group_id, const vector<PluginInfo> &infos) {
     if (!group_id.empty()) {
         const PluginGroupInfo &group =
-            PluginGroupRegistry::instance()->get(group_id);
+            Registry::instance()->get_group_info(group_id);
         os << endl << "= " << group.doc_title << " =" << endl << endl;
     }
     for (const PluginInfo &info : infos) {

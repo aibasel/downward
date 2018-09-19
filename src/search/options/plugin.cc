@@ -14,6 +14,6 @@ void register_plugin_type_plugin(
 PluginGroupPlugin::PluginGroupPlugin(const string &group_id,
                                      const string &doc_title) {
     PluginGroupInfo info {group_id, doc_title};
-    PluginGroupRegistry::instance()->insert(info);
+    Registry::instance()->insert_group_info(info);
 }
 }
