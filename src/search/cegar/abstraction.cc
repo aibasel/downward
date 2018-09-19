@@ -217,8 +217,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     int num_states = get_num_states();
     if (num_states % 1000 == 0) {
         utils::g_log << num_states << "/" << max_states << " states, "
-              << transition_updater.get_num_non_loops() << "/"
-              << max_non_looping_transitions << " transitions" << endl;
+                     << transition_updater.get_num_non_loops() << "/"
+                     << max_non_looping_transitions << " transitions" << endl;
     }
 
     delete state;
