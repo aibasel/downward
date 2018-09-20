@@ -4,6 +4,7 @@
 #include "../utils/system.h"
 
 #include "any.h"
+#include "doc_utils.h"
 
 #include <algorithm>
 #include <functional>
@@ -15,47 +16,6 @@
 
 namespace options {
 class OptionParser;
-
-
-/*
-  The plugin type info class contains meta-information for a given
-  type of plugins (e.g. "SearchEngine" or "MergeStrategyFactory").
-*/
-class PluginTypeInfo {
-    std::type_index type;
-
-    /*
-      The type name should be "user-friendly". It is for example used
-      as the name of the wiki page that documents this plugin type.
-      It follows wiki conventions (e.g. "Heuristic", "SearchEngine",
-      "ShrinkStrategy").
-    */
-    std::string type_name;
-
-    /*
-      General documentation for the plugin type. This is included at
-      the top of the wiki page for this plugin type.
-    */
-    std::string documentation;
-public:
-    PluginTypeInfo(const std::type_index &type,
-                   const std::string &type_name,
-                   const std::string &documentation);
-
-    ~PluginTypeInfo() = default;
-
-    const std::type_index &get_type() const;
-    const std::string &get_type_name() const;
-    const std::string &get_documentation() const;
-
-    bool operator<(const PluginTypeInfo &other) const;
-};
-
-
-struct PluginGroupInfo {
-    std::string group_id;
-    std::string doc_title;
-};
 
 
 class Registry {
