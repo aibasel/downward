@@ -181,5 +181,5 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         return make_shared<TypeBasedOpenListFactory>(opts);
 }
 
-static PluginShared<OpenListFactory> _plugin("type_based", _parse);
+static Plugin<OpenListFactory> _plugin("type_based", _parse);
 }

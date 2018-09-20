@@ -615,6 +615,6 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
 }
 
-static PluginShared<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
-static PluginShared<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
+static Plugin<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
+static Plugin<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
 }

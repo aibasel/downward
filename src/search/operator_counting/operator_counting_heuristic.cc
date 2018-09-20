@@ -113,5 +113,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return make_shared<OperatorCountingHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("operatorcounting", _parse);
+static Plugin<Evaluator> _plugin("operatorcounting", _parse);
 }
