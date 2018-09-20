@@ -15,23 +15,18 @@ import sys
 
 
 """
-On Windows, the resource module does not exist and hence we cannot enforce
-any limits there.
+Notes on limits: On Windows, the resource module does not exist and hence we
+cannot enforce any limits there. Furthermore, while the module exists on macOS,
+memory limits are not enforced by that OS and hence we do not support imposing
+memory limits there.
 """
-def can_set_limits():
+
+def can_set_time_limit():
     return resource is not None
 
 
-def can_set_time_limit():
-    return can_set_limits()
-
-
-"""
-Memory limits are not enforced on macOS and hence we do not support adding
-memory limits on that platform.
-"""
 def can_set_memory_limit():
-    return can_set_limits() and sys.platform != "darwin"
+    return resource is not None and sys.platform != "darwin"
 
 
 def _set_limit(kind, soft, hard=None):
@@ -85,7 +80,7 @@ def convert_to_mb(num_bytes):
 
 
 def _get_external_limit(kind):
-    if not can_set_limits():
+    if resource is not None:
         return None
     # Limits are either positive values or -1 (RLIM_INFINITY).
     soft, hard = resource.getrlimit(kind)

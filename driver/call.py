@@ -40,7 +40,7 @@ def _get_preexec_function(time_limit, memory_limit):
     if time_limit is None and memory_limit is None:
         return None
     else:
-        assert limits.can_set_limits()
+        assert limits.can_set_time_limit() or limits.can_set_memory_limit()
         return set_limits
 
 
