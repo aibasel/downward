@@ -80,7 +80,7 @@ def convert_to_mb(num_bytes):
 
 
 def _get_external_limit(kind):
-    if resource is not None:
+    if resource is None:
         return None
     # Limits are either positive values or -1 (RLIM_INFINITY).
     soft, hard = resource.getrlimit(kind)
