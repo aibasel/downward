@@ -71,7 +71,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     cout << "time to simplify: " << simplify_timer << endl;
 
     // Cross-reference unary operators.
-    vector<vector<OpID>> precondition_of_vectors(unary_operators.size());
+    vector<vector<OpID>> precondition_of_vectors(propositions.size());
 
     int num_unary_ops = unary_operators.size();
     for (OpID op_id = 0; op_id < num_unary_ops; ++op_id) {
