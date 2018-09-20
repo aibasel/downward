@@ -181,9 +181,8 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
 
 // Helper functions for the TokenParser-specializations.
 
-// TODO: Rename to lookup_in_registry() once all plugins use shared_ptr.
 template<typename T>
-static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
+static std::shared_ptr<T> lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     if (Registry<std::shared_ptr<T>>::instance()->contains(value)) {
         return Registry<std::shared_ptr<T>>::instance()->get(value)(parser);
@@ -193,7 +192,7 @@ static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
 }
 
 template<typename T>
-static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, bool &found) {
+static std::shared_ptr<T> lookup_in_predefinitions(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
     const std::string &value = parser.get_root_value();
     if (Predefinitions::instance()->contains<TPtr>(value)) {
@@ -207,10 +206,10 @@ static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, 
 template<typename T>
 inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &parser) {
     bool predefined;
-    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(parser, predefined);
+    std::shared_ptr<T> result = lookup_in_predefinitions<T>(parser, predefined);
     if (predefined)
         return result;
-    return lookup_in_registry_shared<T>(parser);
+    return lookup_in_registry<T>(parser);
 }
 
 // Needed for iterated search.
