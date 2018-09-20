@@ -21,8 +21,8 @@ namespace options {
   Predefine landmarks and heuristics.
 */
 
-static void predefine_evaluator(const string &arg, bool dry_run,
-                                Predefinitions &predefinitions) {
+static void predefine_evaluator(const string &arg, Predefinitions &predefinitions,
+                                bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, predefinitions, dry_run);
     predefinitions.predefine<shared_ptr<Evaluator>>(
@@ -30,8 +30,8 @@ static void predefine_evaluator(const string &arg, bool dry_run,
 }
 
 
-static void predefine_lmgraph(const string &arg, bool dry_run,
-                              Predefinitions &predefinitions) {
+static void predefine_lmgraph(const string &arg, Predefinitions &predefinitions,
+                              bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, predefinitions, dry_run);
     predefinitions.predefine<shared_ptr<landmarks::LandmarkFactory>>(
@@ -59,18 +59,18 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --evaluator");
             ++i;
-            predefine_evaluator(sanitize_string(args[i]), dry_run, predefinitions);
+            predefine_evaluator(sanitize_string(args[i]), predefinitions, dry_run);
         } else if (arg == "--heuristic") {
             // deprecated alias for --evaluator
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine_evaluator(sanitize_string(args[i]), dry_run, predefinitions);
+            predefine_evaluator(sanitize_string(args[i]), predefinitions, dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
-            predefine_lmgraph(sanitize_string(args[i]), dry_run, predefinitions);
+            predefine_lmgraph(sanitize_string(args[i]), predefinitions, dry_run);
         } else if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
@@ -91,9 +91,9 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             }
             unique_ptr<DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout, predefinitions);
+                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout);
             else
-                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout, predefinitions);
+                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
             } else {

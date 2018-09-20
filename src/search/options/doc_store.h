@@ -2,7 +2,6 @@
 #define OPTIONS_DOC_STORE_H
 
 #include "bounds.h"
-#include "predefinitions.h"
 
 #include <functional>
 #include <map>
@@ -94,7 +93,7 @@ struct PluginInfo {
     std::vector<NoteInfo> notes;
     bool hidden;
 
-    void fill_docs(const Predefinitions &predefinitions);
+    void fill_docs();
 
     std::string get_type_name() const;
 };

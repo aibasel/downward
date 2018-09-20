@@ -1,14 +1,15 @@
 #include "doc_store.h"
 
 #include "option_parser.h"
+#include "predefinitions.h"
 
 #include <algorithm>
 
 using namespace std;
 
 namespace options {
-void PluginInfo::fill_docs(const Predefinitions &predefinitions) {
-    OptionParser parser(key, predefinitions, true, true);
+void PluginInfo::fill_docs() {
+    OptionParser parser(key, Predefinitions(), true, true);
     doc_factory(parser);
 }
 
