@@ -1,9 +1,11 @@
 #include "cost_adapted_task.h"
 
+#include "../operator_cost.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
 #include "../tasks/root_task.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/system.h"
 
 #include <iostream>
@@ -18,39 +20,12 @@ CostAdaptedTask::CostAdaptedTask(
     OperatorCost cost_type)
     : DelegatingTask(parent),
       cost_type(cost_type),
-      parent_is_unit_cost(compute_parent_is_unit_cost()) {
-}
-
-bool CostAdaptedTask::compute_parent_is_unit_cost() const {
-    int num_ops = parent->get_num_operators();
-    for (int op_index = 0; op_index < num_ops; ++op_index) {
-        if (parent->get_operator_cost(op_index, false) != 1)
-            return false;
-    }
-    return true;
+      parent_is_unit_cost(task_properties::is_unit_cost(TaskProxy(*parent))) {
 }
 
 int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
-    int original_cost = parent->get_operator_cost(index, is_axiom);
-
-    // Don't change axiom costs. Usually they have cost 0, but we don't enforce this.
-    if (is_axiom)
-        return original_cost;
-
-    switch (cost_type) {
-    case NORMAL:
-        return original_cost;
-    case ONE:
-        return 1;
-    case PLUSONE:
-        if (parent_is_unit_cost)
-            return 1;
-        else
-            return original_cost + 1;
-    default:
-        cerr << "Unknown cost type" << endl;
-        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
-    }
+    OperatorProxy op(*parent, index, is_axiom);
+    return get_adjusted_action_cost(op, cost_type, parent_is_unit_cost);
 }
 
 
