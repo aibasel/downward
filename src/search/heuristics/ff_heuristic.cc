@@ -29,7 +29,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
         OpID op_id = goal->reached_by;
         if (op_id != NO_OP) { // We have not yet chained back to a start node.
             UnaryOperator *unary_op = get_operator(op_id);
-            for (PropID precond : unary_op->precondition)
+            for (PropID precond : get_preconditions(op_id))
                 mark_preferred_operators_and_relaxed_plan(
                     state, precond);
             int operator_no = unary_op->operator_no;

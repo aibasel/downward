@@ -22,13 +22,13 @@ Proposition::Proposition()
 
 
 UnaryOperator::UnaryOperator(
-    const vector<PropID> &pre, PropID eff, int operator_no, int base_cost)
-    : effect(eff),
+    int num_preconditions, array_chain::ArrayChainIndex preconditions,
+    PropID effect, int operator_no, int base_cost)
+    : effect(effect),
       base_cost(base_cost),
-      precondition(pre),
+      num_preconditions(num_preconditions),
+      preconditions(preconditions),
       operator_no(operator_no) {
-    // The sort-unique can eventually go away. See issue497.
-    utils::sort_unique(precondition);
 }
 
 
@@ -75,8 +75,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
 
     int num_unary_ops = unary_operators.size();
     for (OpID op_id = 0; op_id < num_unary_ops; ++op_id) {
-        UnaryOperator &op = unary_operators[op_id];
-        for (PropID precond : op.precondition)
+        for (PropID precond : get_preconditions(op_id))
             precondition_of_vectors[precond].push_back(op_id);
     }
 
@@ -132,7 +131,15 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op) {
         for (FactProxy eff_cond : eff_conds) {
             precondition_props.push_back(get_prop_id(eff_cond));
         }
-        unary_operators.emplace_back(precondition_props, effect_prop, op_no, base_cost);
+
+        // The sort-unique can eventually go away. See issue497.
+        vector<PropID> preconditions_copy(precondition_props);
+        utils::sort_unique(preconditions_copy);
+        array_chain::ArrayChainIndex precond_index =
+            preconditions_chain.append(preconditions_copy);
+        unary_operators.emplace_back(
+            preconditions_copy.size(), precond_index, effect_prop,
+            op_no, base_cost);
         precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());
     }
 }
@@ -157,8 +164,9 @@ void RelaxationHeuristic::simplify() {
       This defines a strict partial order.
     */
 #ifndef NDEBUG
-    for (const UnaryOperator &op : unary_operators)
-        assert(utils::is_sorted_unique(op.precondition));
+    int num_ops = unary_operators.size();
+    for (OpID op_id = 0; op_id < num_ops; ++op_id)
+        assert(utils::is_sorted_unique(get_preconditions_vector(op_id)));
 #endif
 
     const int MAX_PRECONDITIONS_TO_TEST = 5;
@@ -195,7 +203,7 @@ void RelaxationHeuristic::simplify() {
           test in `is_dominated`.
         */
 
-        Key key(op.precondition, op.effect);
+        Key key(get_preconditions_vector(op_no), op.effect);
         Value value(op.base_cost, op_no);
         auto inserted = unary_operator_index.insert(
             make_pair(move(key), value));
@@ -228,7 +236,7 @@ void RelaxationHeuristic::simplify() {
             OpID op_id = get_op_id(op);
             int cost = op.base_cost;
 
-            const vector<PropID> &precondition = op.precondition;
+            const vector<PropID> precondition = get_preconditions_vector(op_id);
 
             /*
               We handle the case X = pre(op) specially for efficiency and
@@ -249,7 +257,7 @@ void RelaxationHeuristic::simplify() {
               a strict subset, we also have 4a (which means we don't need 4b).
               So it only remains to check 3 for all hits.
             */
-            if (op.precondition.size() > MAX_PRECONDITIONS_TO_TEST) {
+            if (op.num_preconditions > MAX_PRECONDITIONS_TO_TEST) {
                 /*
                   The runtime of the following code grows exponentially
                   with the number of preconditions.

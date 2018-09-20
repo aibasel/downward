@@ -34,14 +34,17 @@ struct Proposition {
 };
 
 struct UnaryOperator {
-    UnaryOperator(const std::vector<PropID> &pre, PropID eff,
-                  int operator_no, int base);
+    UnaryOperator(int num_preconditions,
+                  array_chain::ArrayChainIndex preconditions,
+                  PropID effect,
+                  int operator_no, int base_cost);
     int cost; // Used for h^max cost or h^add cost;
               // includes operator cost (base_cost)
     int unsatisfied_preconditions;
     PropID effect;
     int base_cost;
-    std::vector<PropID> precondition;
+    int num_preconditions;
+    array_chain::ArrayChainIndex preconditions;
     int operator_no; // -1 for axioms; index into the task's operators otherwise
 };
 
@@ -56,7 +59,18 @@ protected:
     std::vector<Proposition> propositions;
     std::vector<PropID> goal_propositions;
 
+    array_chain::ArrayChain preconditions_chain;
     array_chain::ArrayChain precondition_of_chain;
+
+    array_chain::ArrayChainView get_preconditions(OpID op_id) const {
+        return preconditions_chain[unary_operators[op_id].preconditions];
+    }
+
+    // HACK!
+    std::vector<PropID> get_preconditions_vector(OpID op_id) const {
+        auto view = get_preconditions(op_id);
+        return std::vector<PropID>(view.begin(), view.end());
+    }
 
     /*
       TODO: Some of these protected methods are only needed for the
