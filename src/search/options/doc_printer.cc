@@ -1,6 +1,6 @@
 #include "doc_printer.h"
 
-#include "doc_store.h"
+#include "doc_utils.h"
 #include "registries.h"
 
 #include <iostream>
