@@ -7,9 +7,10 @@
 
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
+
 
 class SearchEngine;
 
@@ -197,7 +198,7 @@ static T *lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     try {
         return Registry::instance()->get_factory<T *>(value)(parser);
-    } catch (const std::out_of_range &e) {
+    } catch (const std::out_of_range &) {
         parser.error(TypeNamer<T *>::name() + " " + value + " not found");
     }
     return nullptr;
@@ -209,7 +210,7 @@ static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     try {
         return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
-    } catch (const std::out_of_range &e) {
+    } catch (const std::out_of_range &) {
         parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     }
     return nullptr;
