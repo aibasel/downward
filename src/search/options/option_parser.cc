@@ -177,7 +177,7 @@ void OptionParser::add_enum_option(
             value_explanations.emplace_back(names[i], docs[i]);
         }
 
-        DocStore::instance()->add_arg(
+        Registry::instance()->add_plugin_info_arg(
             get_root_value(), key, help, enum_descr, default_value,
             Bounds::unlimited(), value_explanations);
         return;
@@ -247,21 +247,21 @@ void OptionParser::error(const string &msg) const {
 }
 
 void OptionParser::document_synopsis(const string &name, const string &note) const {
-    DocStore::instance()->set_synopsis(get_root_value(), name, note);
+    Registry::instance()->set_plugin_info_synopsis(get_root_value(), name, note);
 }
 
 void OptionParser::document_property(const string &property, const string &note) const {
-    DocStore::instance()->add_property(get_root_value(), property, note);
+    Registry::instance()->add_plugin_info_property(get_root_value(), property, note);
 }
 
 void OptionParser::document_language_support(
     const string &feature, const string &note) const {
-    DocStore::instance()->add_feature(get_root_value(), feature, note);
+    Registry::instance()->add_plugin_info_feature(get_root_value(), feature, note);
 }
 
 void OptionParser::document_note(
     const string &name, const string &note, bool long_text) const {
-    DocStore::instance()->add_note(get_root_value(), name, note, long_text);
+    Registry::instance()->add_plugin_info_note(get_root_value(), name, note, long_text);
 }
 
 bool OptionParser::dry_run() const {

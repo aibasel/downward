@@ -139,54 +139,6 @@ struct PluginGroupInfo {
     std::string group_id;
     std::string doc_title;
 };
-
-
-// Store documentation for types parsed in help mode.
-class DocStore {
-    std::map<std::string, PluginInfo> plugin_infos;
-
-    DocStore() = default;
-
-public:
-    static DocStore *instance() {
-        static DocStore instance_;
-        return &instance_;
-    }
-
-    void register_plugin(
-        const std::string &key,
-        DocFactory factory,
-        PluginTypeNameGetter type_name_factory,
-        const std::string &group);
-
-    void add_arg(
-        const std::string &key,
-        const std::string &arg_name,
-        const std::string &help,
-        const std::string &type_name,
-        const std::string &default_value,
-        const Bounds &bounds,
-        const ValueExplanations &value_explanations = ValueExplanations());
-
-    void set_synopsis(
-        const std::string &key, const std::string &name, const std::string &description);
-
-    void add_property(
-        const std::string &key, const std::string &name, const std::string &description);
-
-    void add_feature(
-        const std::string &key, const std::string &feature, const std::string &description);
-
-    void add_note(
-        const std::string &key,
-        const std::string &name,
-        const std::string &description,
-        bool long_text);
-
-    PluginInfo &get(const std::string &key);
-
-    std::vector<std::string> get_keys();
-};
 }
 
 #endif

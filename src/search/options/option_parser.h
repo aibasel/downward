@@ -298,7 +298,7 @@ void OptionParser::add_option(
     const std::string &default_value,
     const Bounds &bounds) {
     if (help_mode()) {
-        DocStore::instance()->add_arg(
+        Registry::instance()->add_plugin_info_arg(
             get_root_value(),
             key,
             help,
