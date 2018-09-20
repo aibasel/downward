@@ -53,5 +53,5 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternCollectionGeneratorCombo>(opts);
 }
 
-static PluginShared<PatternCollectionGenerator> _plugin("combo", _parse);
+static Plugin<PatternCollectionGenerator> _plugin("combo", _parse);
 }

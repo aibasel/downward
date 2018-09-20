@@ -61,5 +61,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return make_shared<PDBHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("pdb", _parse, "heuristics_pdb");
+static Plugin<Evaluator> _plugin("pdb", _parse, "heuristics_pdb");
 }

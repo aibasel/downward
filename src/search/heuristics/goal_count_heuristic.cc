@@ -47,5 +47,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
 }
 
 
-static PluginShared<Evaluator> _plugin("goalcount", _parse);
+static Plugin<Evaluator> _plugin("goalcount", _parse);
 }
