@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -184,10 +185,11 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
 template<typename T>
 static std::shared_ptr<T> lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (Registry<std::shared_ptr<T>>::instance()->contains(value)) {
-        return Registry<std::shared_ptr<T>>::instance()->get(value)(parser);
+    try {
+        return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
+    } catch (const std::out_of_range &) {
+        parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     }
-    parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     return nullptr;
 }
 

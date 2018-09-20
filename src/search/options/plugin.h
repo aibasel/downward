@@ -5,6 +5,7 @@
 #include "registries.h"
 #include "type_namer.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <typeinfo>
@@ -50,10 +51,10 @@ class Plugin {
 public:
     Plugin(
         const std::string &key,
-        typename Registry<std::shared_ptr<T>>::Factory factory,
+        typename std::function<std::shared_ptr<T>(OptionParser &)> factory,
         const std::string &group = "") {
         using TPtr = std::shared_ptr<T>;
-        Registry<TPtr>::instance()->insert(key, factory);
+        Registry::instance()->insert_factory<TPtr>(key, factory);
         /*
           We cannot collect the plugin documentation here because this might
           require information from a TypePlugin object that has not yet been
