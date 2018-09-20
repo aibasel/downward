@@ -295,11 +295,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
                              "See also Evaluator#LAMA-FF_synergy_master");
     parser.document_note(
-        "Note",
-        "Regarding using different cost transformations, there are a few "
-        "caveats to be considered, see OptionCaveats."
-        );
-    parser.document_note(
         "Optimal search",
         "When using landmarks for optimal search (``admissible=true``), "
         "you probably also want to add this heuristic as a lazy_evaluator "
