@@ -290,5 +290,5 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         return make_shared<EnforcedHillClimbingSearch>(opts);
 }
 
-static PluginShared<SearchEngine> _plugin("ehc", _parse);
+static Plugin<SearchEngine> _plugin("ehc", _parse);
 }

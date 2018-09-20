@@ -71,5 +71,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return make_shared<ZeroOnePDBsHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("zopdbs", _parse, "heuristics_pdb");
+static Plugin<Evaluator> _plugin("zopdbs", _parse, "heuristics_pdb");
 }

@@ -9,7 +9,7 @@
 #include "options/plugin.h"
 
 using options::PluginGroupPlugin;
-using options::PluginShared;
+using options::Plugin;
 using options::PluginTypePlugin;
 
 #endif

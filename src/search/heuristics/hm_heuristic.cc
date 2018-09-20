@@ -286,5 +286,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         return make_shared<HMHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("hm", _parse);
+static Plugin<Evaluator> _plugin("hm", _parse);
 }

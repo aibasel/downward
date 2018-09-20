@@ -303,5 +303,5 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternCollectionGeneratorSystematic>(opts);
 }
 
-static PluginShared<PatternCollectionGenerator> _plugin("systematic", _parse);
+static Plugin<PatternCollectionGenerator> _plugin("systematic", _parse);
 }
