@@ -39,17 +39,6 @@ struct TypeNamer<std::shared_ptr<T>> {
     }
 };
 
-/*
-  The following partial specialization for raw pointers is legacy code.
-  This can go away once all plugins use shared_ptr.
-*/
-template<typename T>
-struct TypeNamer<T *> {
-    static std::string name() {
-        return TypeNamer<std::shared_ptr<T>>::name();
-    }
-};
-
 template<>
 struct TypeNamer<int> {
     static std::string name() {
