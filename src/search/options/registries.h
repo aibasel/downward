@@ -1,12 +1,14 @@
 #ifndef OPTIONS_REGISTRIES_H
 #define OPTIONS_REGISTRIES_H
 
-#include "../utils/system.h"
-
 #include "any.h"
+#include "doc_utils.h"
+
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
@@ -15,48 +17,6 @@
 
 namespace options {
 class OptionParser;
-
-
-/*
-  The plugin type info class contains meta-information for a given
-  type of plugins (e.g. "SearchEngine" or "MergeStrategyFactory").
-*/
-class PluginTypeInfo {
-    std::type_index type;
-
-    /*
-      The type name should be "user-friendly". It is for example used
-      as the name of the wiki page that documents this plugin type.
-      It follows wiki conventions (e.g. "Heuristic", "SearchEngine",
-      "ShrinkStrategy").
-    */
-    std::string type_name;
-
-    /*
-      General documentation for the plugin type. This is included at
-      the top of the wiki page for this plugin type.
-    */
-    std::string documentation;
-public:
-    PluginTypeInfo(const std::type_index &type,
-                   const std::string &type_name,
-                   const std::string &documentation);
-
-    ~PluginTypeInfo() = default;
-
-    const std::type_index &get_type() const;
-    const std::string &get_type_name() const;
-    const std::string &get_documentation() const;
-
-    bool operator<(const PluginTypeInfo &other) const;
-};
-
-
-struct PluginGroupInfo {
-    std::string group_id;
-    std::string doc_title;
-};
-
 
 class Registry {
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
@@ -76,10 +36,13 @@ class Registry {
       the documention page for the heuristics looks nicer.
     */
     std::unordered_map<std::string, PluginGroupInfo> plugin_group_infos;
-
+    /*
+       plugin_infos collects the information about all plugins. This is used,
+       for example, to generate the documentation.
+     */
+    std::unordered_map<std::string, PluginInfo> plugin_infos;
     Registry() = default;
 
-public:
     template<typename T>
     void insert_factory(
         const std::string &key,
@@ -91,6 +54,31 @@ public:
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         plugin_factories[type][key] = factory;
+    }
+
+    void insert_plugin_info(
+        const std::string &key,
+        DocFactory factory,
+        PluginTypeNameGetter type_name_factory,
+        const std::string &group);
+public:
+
+    template<typename T>
+    void insert_plugin(const std::string &key,
+                       std::function<std::shared_ptr<T>(OptionParser &)> factory,
+                       PluginTypeNameGetter type_name_factory, const std::string &group) {
+        using TPtr = std::shared_ptr<T>;
+        /*
+          We cannot collect the plugin documentation here because this might
+          require information from a TypePlugin object that has not yet been
+          constructed. We therefore collect the necessary functions here and
+          call them later, after all PluginType objects have been constructed.
+        */
+        DocFactory doc_factory = [factory](OptionParser &parser) {
+                factory(parser);
+            };
+        insert_plugin_info(key, doc_factory, type_name_factory, group);
+        insert_factory<TPtr>(key, factory);
     }
 
     template<typename T>
@@ -105,6 +93,36 @@ public:
 
     void insert_group_info(const PluginGroupInfo &info);
     const PluginGroupInfo &get_group_info(const std::string &key) const;
+
+
+    PluginInfo &get_plugin_info(const std::string &key);
+
+    void add_plugin_info_arg(
+        const std::string &key,
+        const std::string &arg_name,
+        const std::string &help,
+        const std::string &type_name,
+        const std::string &default_value,
+        const Bounds &bounds,
+        const ValueExplanations &value_explanations = ValueExplanations());
+
+    void set_plugin_info_synopsis(
+        const std::string &key, const std::string &name, const std::string &description);
+
+    void add_plugin_info_property(
+        const std::string &key, const std::string &name, const std::string &description);
+
+    void add_plugin_info_feature(
+        const std::string &key, const std::string &feature, const std::string &description);
+
+    void add_plugin_info_note(
+        const std::string &key,
+        const std::string &name,
+        const std::string &description,
+        bool long_text);
+
+    std::vector<std::string> get_sorted_plugin_info_keys();
+
 
     static Registry *instance() {
         static Registry instance_;

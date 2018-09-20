@@ -1,7 +1,7 @@
 #ifndef OPTIONS_OPTION_PARSER_H
 #define OPTIONS_OPTION_PARSER_H
 
-#include "doc_store.h"
+#include "doc_utils.h"
 #include "options.h"
 #include "predefinitions.h"
 
@@ -70,10 +70,6 @@ public:
         const std::string &help = "",
         const std::string &default_value = "");
 
-    void document_values(
-        const std::string &argument,
-        const ValueExplanations &value_explanations) const;
-
     void document_synopsis(
         const std::string &name, const std::string &note) const;
 
@@ -85,8 +81,6 @@ public:
 
     void document_note(
         const std::string &name, const std::string &note, bool long_text = false) const;
-
-    void document_hide() const;
 
     void error(const std::string &msg) const;
 
@@ -260,7 +254,7 @@ void OptionParser::add_option(
     const std::string &default_value,
     const Bounds &bounds) {
     if (help_mode()) {
-        DocStore::instance()->add_arg(
+        Registry::instance()->add_plugin_info_arg(
             get_root_value(),
             key,
             help,

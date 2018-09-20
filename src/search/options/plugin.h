@@ -1,7 +1,7 @@
 #ifndef OPTIONS_PLUGIN_H
 #define OPTIONS_PLUGIN_H
 
-#include "doc_store.h"
+#include "doc_utils.h"
 #include "registries.h"
 #include "type_namer.h"
 
@@ -54,20 +54,12 @@ public:
         typename std::function<std::shared_ptr<T>(OptionParser &)> factory,
         const std::string &group = "") {
         using TPtr = std::shared_ptr<T>;
-        Registry::instance()->insert_factory<TPtr>(key, factory);
-        /*
-          We cannot collect the plugin documentation here because this might
-          require information from a TypePlugin object that has not yet been
-          constructed. We therefore collect the necessary functions here and
-          call them later, after all PluginType objects have been constructed.
-        */
-        DocFactory doc_factory = [factory](OptionParser &parser) {
-                factory(parser);
-            };
         PluginTypeNameGetter type_name_factory = [&]() {
                 return TypeNamer<TPtr>::name();
             };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, group);
+
+        Registry::instance()->insert_plugin<T>(key, factory, type_name_factory,
+                                               group);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
