@@ -22,7 +22,7 @@ namespace type_based_open_list {
 template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
     shared_ptr<utils::RandomNumberGenerator> rng;
-    vector<Evaluator *> evaluators;
+    vector<shared_ptr<Evaluator>> evaluators;
 
     using Key = vector<int>;
     using Bucket = vector<Entry>;
@@ -51,9 +51,9 @@ void TypeBasedOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (Evaluator *evaluator : evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
         key.push_back(
-            eval_context.get_evaluator_value_or_infinity(evaluator));
+            eval_context.get_evaluator_value_or_infinity(evaluator.get()));
     }
 
     auto it = key_to_bucket_index.find(key);
@@ -70,7 +70,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
     : rng(utils::parse_rng_from_options(opts)),
-      evaluators(opts.get_list<Evaluator *>("evaluators")) {
+      evaluators(opts.get_list<shared_ptr<Evaluator>>("evaluators")) {
 }
 
 template<class Entry>
@@ -109,8 +109,8 @@ bool TypeBasedOpenList<Entry>::is_dead_end(
     if (is_reliable_dead_end(eval_context))
         return true;
     // Otherwise, return true if all evaluators agree this is a dead-end.
-    for (Evaluator *evaluator : evaluators) {
-        if (!eval_context.is_evaluator_value_infinite(evaluator))
+    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
+        if (!eval_context.is_evaluator_value_infinite(evaluator.get()))
             return false;
     }
     return true;
@@ -119,9 +119,9 @@ bool TypeBasedOpenList<Entry>::is_dead_end(
 template<class Entry>
 bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    for (Evaluator *evaluator : evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
         if (evaluator->dead_ends_are_reliable() &&
-            eval_context.is_evaluator_value_infinite(evaluator))
+            eval_context.is_evaluator_value_infinite(evaluator.get()))
             return true;
     }
     return false;
@@ -130,7 +130,7 @@ bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
 template<class Entry>
 void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
-    for (Evaluator *evaluator : evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 }
@@ -167,14 +167,14 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             " on Artificial Intelligence (AAAI 2014)",
             "2395-2401",
             "AAAI Press 2014"));
-    parser.add_list_option<Evaluator *>(
+    parser.add_list_option<shared_ptr<Evaluator>>(
         "evaluators",
         "Evaluators used to determine the bucket for each entry.");
 
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();
-    opts.verify_list_non_empty<Evaluator *>("evaluators");
+    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evaluators");
     if (parser.dry_run())
         return nullptr;
     else
