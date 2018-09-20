@@ -9,8 +9,6 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../tasks/cost_adapted_task.h"
-
 #include "../utils/memory.h"
 #include "../utils/timer.h"
 

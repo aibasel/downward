@@ -3,8 +3,6 @@
 
 #include "landmark_graph.h"
 
-#include "../operator_cost.h"
-
 #include <list>
 #include <map>
 #include <memory>
