@@ -191,7 +191,7 @@ template<typename T>
 static std::shared_ptr<T> lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     try {
-        return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
+        return parser.get_registry().get_factory<std::shared_ptr<T>>(value)(parser);
     } catch (const std::out_of_range &) {
         parser.error(TypeNamer<std::shared_ptr<T>>::name(parser.get_registry()) + " " + value + " not found");
     }
@@ -266,7 +266,7 @@ void OptionParser::add_option(
     const std::string &default_value,
     const Bounds &bounds) {
     if (help_mode()) {
-        Registry::instance()->add_plugin_info_arg(
+        registry.add_plugin_info_arg(
             get_root_value(),
             key,
             help,
