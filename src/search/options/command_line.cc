@@ -21,28 +21,30 @@ namespace options {
   Predefine landmarks and heuristics.
 */
 
-static void predefine_evaluator(const string &arg, bool dry_run) {
+static void predefine_evaluator(const string &arg, Registry &registry,
+    bool dry_run) {
     pair<string, string> predefinition = split(arg);
-    OptionParser parser(predefinition.second, dry_run);
+    OptionParser parser(predefinition.second, registry, dry_run);
     Predefinitions::instance()->predefine<shared_ptr<Evaluator>>(
         predefinition.first, parser.start_parsing<shared_ptr<Evaluator>>());
 }
 
 
-static void predefine_lmgraph(const string &arg, bool dry_run) {
+static void predefine_lmgraph(const string &arg, Registry &registry,
+    bool dry_run) {
     pair<string, string> predefinition = split(arg);
-    OptionParser parser(predefinition.second, dry_run);
+    OptionParser parser(predefinition.second, registry, dry_run);
     Predefinitions::instance()->predefine<shared_ptr<landmarks::LandmarkFactory>>(
         predefinition.first, parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
 }
 
 
 static shared_ptr<SearchEngine> parse_cmd_line_aux(
-    const vector<string> &args, bool dry_run) {
+    const vector<string> &args, Registry &registry, bool dry_run) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
-
+    
     shared_ptr<SearchEngine> engine;
     /*
       Note that we don’t sanitize all arguments beforehand because filenames should remain as-is
@@ -56,23 +58,23 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --evaluator");
             ++i;
-            predefine_evaluator(sanitize_string(args[i]), dry_run);
+            predefine_evaluator(sanitize_string(args[i]), registry, dry_run);
         } else if (arg == "--heuristic") {
             // deprecated alias for --evaluator
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine_evaluator(sanitize_string(args[i]), dry_run);
+            predefine_evaluator(sanitize_string(args[i]), registry, dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
-            predefine_lmgraph(sanitize_string(args[i]), dry_run);
+            predefine_lmgraph(sanitize_string(args[i]), registry, dry_run);
         } else if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
-            OptionParser parser(sanitize_string(args[i]), dry_run);
+            OptionParser parser(sanitize_string(args[i]), registry, dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
@@ -129,7 +131,7 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
 
 
 shared_ptr<SearchEngine> parse_cmd_line(
-    int argc, const char **argv, bool dry_run, bool is_unit_cost) {
+    int argc, const char **argv, Registry &registry, bool dry_run, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
@@ -146,7 +148,7 @@ shared_ptr<SearchEngine> parse_cmd_line(
             args.push_back(argv[i]);
         }
     }
-    return parse_cmd_line_aux(args, dry_run);
+    return parse_cmd_line_aux(args, registry, dry_run);
 }
 
 

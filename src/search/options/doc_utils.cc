@@ -7,8 +7,8 @@
 using namespace std;
 
 namespace options {
-void PluginInfo::fill_docs() {
-    OptionParser parser(key, true, true);
+void PluginInfo::fill_docs(Registry &registry) {
+    OptionParser parser(key, registry, true, true);
     doc_factory(parser);
 }
 
