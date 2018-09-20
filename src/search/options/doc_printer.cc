@@ -24,7 +24,7 @@ DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    for (const PluginTypeInfo &info : PluginTypeRegistry::instance()->get_sorted_types()) {
+    for (const PluginTypeInfo &info : Registry::instance()->get_sorted_type_infos()) {
         print_category(info.get_type_name(), info.get_documentation());
     }
 }
@@ -68,7 +68,7 @@ void DocPrinter::print_section(
     const string &group_id, const vector<PluginInfo> &infos) {
     if (!group_id.empty()) {
         const PluginGroupInfo &group =
-            PluginGroupRegistry::instance()->get(group_id);
+            Registry::instance()->get_group_info(group_id);
         os << endl << "= " << group.doc_title << " =" << endl << endl;
     }
     for (const PluginInfo &info : infos) {
