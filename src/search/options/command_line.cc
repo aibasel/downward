@@ -90,9 +90,11 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             }
             unique_ptr<DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout);
+                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout,
+                                                                      registry);
             else
-                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout);
+                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout,
+                                                                   registry);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
             } else {
