@@ -32,7 +32,8 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   solution.
 
   Landmark factories cache the first landmark graph they compute, so
-  each call to this function returns the same graph.
+  each call to this function returns the same graph. Asking for landmark graphs
+  of different tasks is an error and will exit with SEARCH_UNSUPPORTED.
 
   If you want to compute different landmark graphs for different
   Exploration objects, you have to use separate landmark factories.
@@ -47,8 +48,16 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
 */
 shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
-    if (lm_graph)
+    if (lm_graph) {
+        if (lm_graph_task != task.get()) {
+            cerr << "LandmarkFactory was asked to compute landmark graphs for "
+                    "two different tasks. This is currently not supported."
+                 << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+        }
         return lm_graph;
+    }
+    lm_graph_task = task.get();
     utils::Timer lm_generation_timer;
 
     TaskProxy task_proxy(*task);

@@ -41,6 +41,7 @@ public:
 
 protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
+    AbstractTask *lm_graph_task;
 
     bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
