@@ -13,10 +13,10 @@ static bool is_call(const string &s) {
     return s.find("(") != string::npos;
 }
 
-DocPrinter::DocPrinter(ostream &out)
+DocPrinter::DocPrinter(ostream &out, const Predefinitions &predefinitions)
     : os(out) {
     for (const string &key : DocStore::instance()->get_keys()) {
-        DocStore::instance()->get(key).fill_docs();
+        DocStore::instance()->get(key).fill_docs(predefinitions);
     }
 }
 
@@ -85,8 +85,8 @@ void DocPrinter::print_plugin(const string &name, const PluginInfo &info) {
     print_properties(info);
 }
 
-Txt2TagsPrinter::Txt2TagsPrinter(ostream &out)
-    : DocPrinter(out) {
+Txt2TagsPrinter::Txt2TagsPrinter(ostream &out, const Predefinitions &predefinitions)
+    : DocPrinter(out, predefinitions) {
 }
 
 void Txt2TagsPrinter::print_synopsis(const PluginInfo &info) {
@@ -174,8 +174,8 @@ void Txt2TagsPrinter::print_category_footer() {
        << ">>>>CATEGORYEND<<<<" << endl;
 }
 
-PlainPrinter::PlainPrinter(ostream &out, bool pa)
-    : DocPrinter(out),
+PlainPrinter::PlainPrinter(ostream &out, const Predefinitions &predefinitions, bool pa)
+    : DocPrinter(out,predefinitions),
       print_all(pa) {
 }
 
