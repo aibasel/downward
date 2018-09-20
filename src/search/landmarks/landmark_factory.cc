@@ -51,7 +51,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     if (lm_graph) {
         if (lm_graph_task != task.get()) {
             cerr << "LandmarkFactory was asked to compute landmark graphs for "
-                    "two different tasks. This is currently not supported."
+                 << "two different tasks. This is currently not supported."
                  << endl;
             utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
         }
