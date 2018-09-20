@@ -1,4 +1,3 @@
-#if false
 #include "max_heuristic.h"
 
 #include "../global_state.h"
@@ -41,7 +40,7 @@ void HSPMaxHeuristic::setup_exploration_queue() {
 
     // Deal with operators and axioms without preconditions.
     for (UnaryOperator &op : unary_operators) {
-        op.unsatisfied_preconditions = op.precondition.size();
+        op.unsatisfied_preconditions = op.num_preconditions;
         op.cost = op.base_cost; // will be increased by precondition costs
 
         if (op.unsatisfied_preconditions == 0)
@@ -70,7 +69,7 @@ void HSPMaxHeuristic::relaxed_exploration() {
             continue;
         if (prop->is_goal && --unsolved_goals == 0)
             return;
-        for (OpID op_id : prop->precondition_of) {
+        for (OpID op_id : precondition_of_chain[prop->precondition_of]) {
             UnaryOperator *unary_op = get_operator(op_id);
             unary_op->cost = max(unary_op->cost,
                                  unary_op->base_cost + prop_cost);
@@ -116,7 +115,6 @@ static Heuristic *_parse(OptionParser &parser) {
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return 0;
     else
@@ -126,4 +124,3 @@ static Heuristic *_parse(OptionParser &parser) {
 
 static Plugin<Evaluator> _plugin("hmax", _parse);
 }
-#endif
