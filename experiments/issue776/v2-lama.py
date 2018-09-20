@@ -13,10 +13,9 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue776-v2-base", "issue776-v2"]
 CONFIGS = [
-    IssueConfig('lama-first', [], driver_options=['--alias', 'lama-first', '--overall-time-limit', '5m']),
-    IssueConfig('bjolp', [], driver_options=['--alias', 'seq-opt-bjolp', '--overall-time-limit', '5m']),
+    IssueConfig('lama', [], driver_options=['--alias', 'seq-sat-lama-2011', '--overall-time-limit', '5m']),
 ]
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+SUITE = common_setup.DEFAULT_SATISFICING_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(email="florian.pommerening@unibas.ch")
 
 if common_setup.is_test_run():
@@ -32,7 +31,7 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.TRANSLATOR_PARSER)
-exp.add_parser(exp.SINGLE_SEARCH_PARSER)
+exp.add_parser(exp.ANYTIME_SEARCH_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 
 exp.add_step('build', exp.build)
