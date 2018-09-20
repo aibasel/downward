@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
 
 import copy
 
@@ -24,8 +23,7 @@ class PreconditionProxy(ConditionProxy):
     def build_rules(self, rules):
         action = self.owner
         rule_head = get_action_predicate(action)
-        rule_body = list(condition_to_rule_body(action.parameters,
-                                                self.condition))
+        rule_body = condition_to_rule_body(action.parameters, self.condition)
         rules.append((rule_body, rule_head))
     def get_type_map(self):
         return self.owner.type_map
@@ -64,7 +62,7 @@ class AxiomConditionProxy(ConditionProxy):
     def build_rules(self, rules):
         axiom = self.owner
         app_rule_head = get_axiom_predicate(axiom)
-        app_rule_body = list(condition_to_rule_body(axiom.parameters, self.condition))
+        app_rule_body = condition_to_rule_body(axiom.parameters, self.condition)
         rules.append((app_rule_body, app_rule_head))
         params = axiom.parameters[:axiom.num_external_parameters]
         eff_rule_head = pddl.Atom(axiom.name, [par.name for par in params])
@@ -90,9 +88,8 @@ class GoalConditionProxy(ConditionProxy):
         # (see substitute_complicated_goal)
         assert False, "Disjunctive goals not (yet) implemented."
     def build_rules(self, rules):
-        rule_head_name = "@goal-reachable"
         rule_head = pddl.Atom("@goal-reachable", [])
-        rule_body = list(condition_to_rule_body([], self.condition))
+        rule_body = condition_to_rule_body([], self.condition)
         rules.append((rule_body, rule_head))
     def get_type_map(self):
         # HACK!
@@ -143,13 +140,13 @@ def remove_universal_quantifiers(task):
         # Uses new_axioms_by_condition and type_map from surrounding scope.
         if isinstance(condition, pddl.UniversalCondition):
             axiom_condition = condition.negate()
-            parameters = axiom_condition.free_variables()
-            axiom = new_axioms_by_condition.get(axiom_condition)
+            parameters = sorted(axiom_condition.free_variables())
+            typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
+            axiom = new_axioms_by_condition.get((axiom_condition, typed_parameters))
             if not axiom:
-                typed_parameters = [pddl.TypedObject(v, type_map[v]) for v in parameters]
                 condition = recurse(axiom_condition)
-                axiom = task.add_axiom(typed_parameters, condition)
-                new_axioms_by_condition[condition] = axiom
+                axiom = task.add_axiom(list(typed_parameters), condition)
+                new_axioms_by_condition[(condition, typed_parameters)] = axiom
             return pddl.NegatedAtom(axiom.name, parameters)
         else:
             new_parts = [recurse(part) for part in condition.parts]
@@ -370,23 +367,31 @@ def build_exploration_rules(task):
     return result
 
 def condition_to_rule_body(parameters, condition):
+    result = []
     for par in parameters:
-        yield pddl.Atom(par.type, [par.name])
+        result.append(par.get_atom())
     if not isinstance(condition, pddl.Truth):
         if isinstance(condition, pddl.ExistentialCondition):
             for par in condition.parameters:
-                yield pddl.Atom(par.type, [par.name])
+                result.append(par.get_atom())
             condition = condition.parts[0]
         if isinstance(condition, pddl.Conjunction):
             parts = condition.parts
         else:
             parts = (condition,)
         for part in parts:
-            assert isinstance(part, pddl.Literal), "Condition not normalized"
+            if isinstance(part, pddl.Falsity):
+                # Use an atom in the body that is always false because
+                # it is not initially true and doesn't occur in the
+                # head of any rule.
+                return [pddl.Atom("@always-false", [])]
+            assert isinstance(part, pddl.Literal), "Condition not normalized: %r" % part
             if not part.negated:
-                yield part
+                result.append(part)
+    return result
 
 if __name__ == "__main__":
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
     normalize(task)
     task.dump()

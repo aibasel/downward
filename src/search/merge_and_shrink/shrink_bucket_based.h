@@ -3,8 +3,19 @@
 
 #include "shrink_strategy.h"
 
+#include <memory>
 #include <vector>
 
+namespace options {
+class OptionParser;
+class Options;
+}
+
+namespace utils {
+class RandomNumberGenerator;
+}
+
+namespace merge_and_shrink {
 /* A base class for bucket-based shrink strategies.
 
    A bucket-based strategy partitions the states into an ordered
@@ -22,32 +33,31 @@
    number of buckets, this works out in such a way that the
    high-priority buckets are not abstracted at all, the low-priority
    buckets are abstracted by combining all states in each bucket, and
-   (up to) one bucket "in the middle" is partially abstracted. */
-
-class Options;
-
+   (up to) one bucket "in the middle" is partially abstracted.
+*/
 class ShrinkBucketBased : public ShrinkStrategy {
 protected:
-    typedef std::vector<AbstractStateRef> Bucket;
+    using Bucket = std::vector<int>;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 private:
-    void compute_abstraction(
+    StateEquivalenceRelation compute_abstraction(
         const std::vector<Bucket> &buckets,
-        int target_size,
-        EquivalenceRelation &equivalence_relation) const;
+        int target_size) const;
 
 protected:
-    virtual void partition_into_buckets(
-        const Abstraction &abs, std::vector<Bucket> &buckets) const = 0;
-
+    virtual std::vector<Bucket> partition_into_buckets(
+        const TransitionSystem &ts,
+        const Distances &Distances) const = 0;
 public:
-    ShrinkBucketBased(const Options &opts);
-    virtual ~ShrinkBucketBased();
-
-    virtual bool reduce_labels_before_shrinking() const;
-
-    virtual void shrink(Abstraction &abs, int threshold,
-                        bool force = false);
+    explicit ShrinkBucketBased(const options::Options &opts);
+    virtual ~ShrinkBucketBased() override = default;
+    virtual StateEquivalenceRelation compute_equivalence_relation(
+        const TransitionSystem &ts,
+        const Distances &distances,
+        int target_size) const override;
+    static void add_options_to_parser(options::OptionParser &parser);
 };
+}
 
 #endif

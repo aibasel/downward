@@ -23,11 +23,11 @@ def invert_list(alist):
 
 
 def instantiate_factored_mapping(pairs):
-    part_mappings = [[zip(preimg, perm_img) for perm_img in tools.permutations(img)]
+    part_mappings = [[list(zip(preimg, perm_img)) for perm_img in itertools.permutations(img)]
                      for (preimg, img) in pairs]
     return tools.cartesian_product(part_mappings)
 
-                
+
 def find_unique_variables(action, invariant):
     # find unique names for invariant variables
     params = set([p.name for p in action.parameters])
@@ -35,9 +35,9 @@ def find_unique_variables(action, invariant):
         params.update([p.name for p in eff.parameters])
     inv_vars = []
     counter = itertools.count()
-    for _ in xrange(invariant.arity()):
+    for _ in range(invariant.arity()):
         while True:
-            new_name = "?v%i" % counter.next()
+            new_name = "?v%i" % next(counter)
             if new_name not in params:
                 inv_vars.append(new_name)
                 break
@@ -54,7 +54,7 @@ def get_literals(condition):
 
 def ensure_conjunction_sat(system, *parts):
     """Modifies the constraint system such that it is only solvable if the
-       conjunction of all parts is satisfiable. 
+       conjunction of all parts is satisfiable.
 
        Each part must be an iterator, generator, or an iterable over
        literals."""
@@ -74,11 +74,11 @@ def ensure_conjunction_sat(system, *parts):
             else:
                 pos[literal.predicate].add(literal)
 
-    for pred, posatoms in pos.iteritems():
+    for pred, posatoms in pos.items():
         if pred in neg:
             for posatom in posatoms:
                 for negatom in neg[pred]:
-                    parts = zip(negatom.args, posatom.args)
+                    parts = list(zip(negatom.args, posatom.args))
                     if parts:
                         negative_clause = constraints.NegativeClause(parts)
                         system.add_negative_clause(negative_clause)
@@ -88,6 +88,9 @@ def ensure_cover(system, literal, invariant, inv_vars):
     """Modifies the constraint system such that it is only solvable if the
        invariant covers the literal"""
     a = invariant.get_covering_assignments(inv_vars, literal)
+    assert(len(a) == 1)
+    # if invariants could contain several parts of one predicate, this would
+    # not be true but the depending code in parts relies on this assumption
     system.add_assignment_disjunction(a)
 
 
@@ -97,7 +100,7 @@ def ensure_inequality(system, literal1, literal2):
        the other is not)"""
     if (literal1.predicate == literal2.predicate and
         literal1.parts):
-        parts = zip(literal1.parts, literal2.parts)
+        parts = list(zip(literal1.parts, literal2.parts))
         system.add_negative_clause(constraints.NegativeClause(parts))
 
 
@@ -114,6 +117,12 @@ class InvariantPart:
     def __ne__(self, other):
         return self.predicate != other.predicate or self.order != other.order
 
+    def __le__(self, other):
+        return self.predicate <= other.predicate or self.order <= other.order
+
+    def __lt__(self, other):
+        return self.predicate < other.predicate or self.order < other.order
+
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
 
@@ -128,8 +137,8 @@ class InvariantPart:
         return len(self.order)
 
     def get_assignment(self, parameters, literal):
-        equalities = [(arg, literal.args[argpos]) 
-                      for arg, argpos in zip(parameters, self.order)] 
+        equalities = [(arg, literal.args[argpos])
+                      for arg, argpos in zip(parameters, self.order)]
         return constraints.Assignment(equalities)
 
     def get_parameters(self, literal):
@@ -150,7 +159,7 @@ class InvariantPart:
         other_arg_to_pos = invert_list(other_literal.args)
         factored_mapping = []
 
-        for key, other_positions in other_arg_to_pos.iteritems():
+        for key, other_positions in other_arg_to_pos.items():
             own_positions = arg_to_ordered_pos.get(key, [])
             len_diff = len(own_positions) - len(other_positions)
             if len_diff >= 1 or len_diff <= -2 or len_diff == -1 and not allowed_omissions:
@@ -191,21 +200,30 @@ class Invariant:
         self.predicates = set([part.predicate for part in parts])
         self.predicate_to_part = dict([(part.predicate, part) for part in parts])
         assert len(self.parts) == len(self.predicates)
-    
+
     def __eq__(self, other):
         return self.parts == other.parts
-    
+
     def __ne__(self, other):
         return self.parts != other.parts
-    
+
+    def __lt__(self, other):
+        return self.parts < other.parts
+
+    def __le__(self, other):
+        return self.parts <= other.parts
+
     def __hash__(self):
         return hash(self.parts)
 
     def __str__(self):
-        return "{%s}" % ", ".join(map(str, self.parts))
+        return "{%s}" % ", ".join(str(part) for part in self.parts)
+
+    def __repr__(self):
+        return '<Invariant %s>' % self
 
     def arity(self):
-        return iter(self.parts).next().arity()
+        return next(iter(self.parts)).arity()
 
     def get_parameters(self, atom):
         return self.predicate_to_part[atom.predicate].get_parameters(atom)
@@ -225,7 +243,7 @@ class Invariant:
         for part in self.parts:
             actions_to_check |= balance_checker.get_threats(part.predicate)
         for action in actions_to_check:
-            heavy_action = balance_checker.get_heavy_action(action.name)
+            heavy_action = balance_checker.get_heavy_action(action)
             if self.operator_too_heavy(heavy_action):
                 return False
             if self.operator_unbalanced(action, enqueue_func):
@@ -233,14 +251,14 @@ class Invariant:
         return True
 
     def operator_too_heavy(self, h_action):
-        add_effects = [eff for eff in h_action.effects 
+        add_effects = [eff for eff in h_action.effects
                        if not eff.literal.negated and
                           self.predicate_to_part.get(eff.literal.predicate)]
         inv_vars = find_unique_variables(h_action, self)
-      
+
         if len(add_effects) <= 1:
             return False
-            
+
         for eff1, eff2 in itertools.combinations(add_effects, 2):
             system = constraints.ConstraintSystem()
             ensure_inequality(system, eff1.literal, eff2.literal)
@@ -254,10 +272,10 @@ class Invariant:
             if system.is_solvable():
                 return True
         return False
-            
+
     def operator_unbalanced(self, action, enqueue_func):
         inv_vars = find_unique_variables(action, self)
-        relevant_effs = [eff for eff in action.effects 
+        relevant_effs = [eff for eff in action.effects
                          if self.predicate_to_part.get(eff.literal.predicate)]
         add_effects = [eff for eff in relevant_effs
                        if not eff.literal.negated]
@@ -271,19 +289,18 @@ class Invariant:
 
     def minimal_covering_renamings(self, action, add_effect, inv_vars):
         """computes the minimal renamings of the action parameters such
-           that the add effect is covered by the action. 
+           that the add effect is covered by the action.
            Each renaming is an constraint system"""
 
         # add_effect must be covered
         assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
 
+        # renaming of operator parameters must be minimal
         minimal_renamings = []
         params = [p.name for p in action.parameters]
         for assignment in assigs:
             system = constraints.ConstraintSystem()
             system.add_assignment(assignment)
-            # renaming of operator parameters must be minimal
-            minimality_clauses = []
             mapping = assignment.get_mapping()
             if len(params) > 1:
                 for (n1, n2) in itertools.combinations(params, 2):
@@ -292,13 +309,13 @@ class Invariant:
                         system.add_negative_clause(negative_clause)
             minimal_renamings.append(system)
         return minimal_renamings
-        
-    def add_effect_unbalanced(self, action, add_effect, del_effects, 
+
+    def add_effect_unbalanced(self, action, add_effect, del_effects,
                               inv_vars, enqueue_func):
 
         minimal_renamings = self.minimal_covering_renamings(action, add_effect,
                                                             inv_vars)
-       
+
         lhs_by_pred = defaultdict(list)
         for lit in itertools.chain(get_literals(action.precondition),
                                    get_literals(add_effect.condition),
@@ -310,7 +327,7 @@ class Invariant:
                 inv_vars, lhs_by_pred, minimal_renamings)
             if not minimal_renamings:
                 return False
-        
+
         # Otherwise, the balance check fails => Generate new candidates.
         self.refine_candidate(add_effect, action, enqueue_func)
         return True
@@ -321,7 +338,7 @@ class Invariant:
         part = self.predicate_to_part[add_effect.literal.predicate]
         for del_eff in [eff for eff in action.effects if eff.literal.negated]:
             if del_eff.literal.predicate not in self.predicate_to_part:
-                for match in part.possible_matches(add_effect.literal, 
+                for match in part.possible_matches(add_effect.literal,
                                                    del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
@@ -329,12 +346,39 @@ class Invariant:
         inv_vars, lhs_by_pred, unbalanced_renamings):
         """returns the renamings from unbalanced renamings for which
            the del_effect does not balance the add_effect."""
+
         system = constraints.ConstraintSystem()
-        ensure_inequality(system, add_effect.literal, del_effect.literal)
         ensure_cover(system, del_effect.literal, self, inv_vars)
-       
+
+        # Since we may only rename the quantified variables of the delete effect
+        # we need to check that "renamings" of constants are already implied by
+        # the unbalanced_renaming (of the of the operator parameters). The
+        # following system is used as a helper for this. It builds a conjunction
+        # that formulates that the constants are NOT renamed accordingly. We
+        # below check that this is impossible with each unbalanced renaming.
+        check_constants = False
+        constant_test_system = constraints.ConstraintSystem()
+        for a,b in system.combinatorial_assignments[0][0].equalities:
+            # first 0 because the system was empty before we called ensure_cover
+            # second 0 because ensure_cover only adds assignments with one entry
+            if b[0] != "?":
+                check_constants = True
+                neg_clause = constraints.NegativeClause([(a,b)])
+                constant_test_system.add_negative_clause(neg_clause)
+
+        ensure_inequality(system, add_effect.literal, del_effect.literal)
+
         still_unbalanced = []
         for renaming in unbalanced_renamings:
+            if check_constants:
+                new_sys = constant_test_system.combine(renaming)
+                if new_sys.is_solvable():
+                    # it is possible that the operator arguments are not
+                    # mapped to constants as required for covering the delete
+                    # effect
+                    still_unbalanced.append(renaming)
+                    continue
+
             new_sys = system.combine(renaming)
             if self.lhs_satisfiable(renaming, lhs_by_pred):
                 implies_system = self.imply_del_effect(del_effect, lhs_by_pred)
@@ -364,7 +408,7 @@ class Invariant:
                 if match.negated != literal.negated:
                     continue
                 else:
-                    a = constraints.Assignment(zip(literal.args, match.args))
+                    a = constraints.Assignment(list(zip(literal.args, match.args)))
                     poss_assignments.append(a)
             if not poss_assignments:
                 return None

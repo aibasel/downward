@@ -1,0 +1,117 @@
+#! /bin/bash
+
+## Set these variables to 1/0 do enable/disable the individual sanity
+## tests. Note that the "UNPACK" and "COMPILE" tests are prerequisites
+## for the following tests.
+
+SANITY_TEST_UNPACK=1
+SANITY_TEST_COMPILE=1
+SANITY_TEST_RUN_STRIPS=1
+SANITY_TEST_RUN_AXIOMS=0
+
+
+set -o errexit
+
+if [[ $# != 2 ]]; then
+    echo need exactly two arguments: seq-opt-bjolp 32, \
+         seq-sat-lama-2011 64 or some such
+    exit 2
+fi
+
+DIST=$1
+WORDSIZE=$2
+
+PLANNER_NAME="$DIST"
+
+PACKAGE=$DIST.tar.gz
+
+echo "Making sure destination is clear..."
+mkdir $DIST
+
+echo "Exporting code..."
+hg archive -I 're:src\/CMakeLists.txt' $DIST
+hg archive -I 're:src\/cmake_modules\/' $DIST
+hg archive -I 're:src\/translate\/' $DIST
+hg archive -I 're:src\/preprocess\/' $DIST
+hg archive -I 're:src\/search\/' $DIST
+hg archive -I 're:driver\/' $DIST
+hg archive -I 're:fast-downward.py' $DIST
+hg archive -I 're:build.py' $DIST
+hg archive -I 're:build_configs.py' $DIST
+hg id -i >> $DIST/src/VERSION
+echo "$WORDSIZE bit" >> $DIST/src/VERSION
+
+
+if [[ "$WORDSIZE" == "32" ]]; then
+    BUILD="release32"
+elif [[ "$WORDSIZE" == "64" ]]; then
+    BUILD="release64"
+else
+    echo "Second parameter must be 32 or 64"
+    exit 2
+fi
+
+echo "Preparing distribution directory..."
+echo '#! /bin/bash' > $DIST/build
+echo "./build.py $BUILD" > $DIST/build
+chmod 755 $DIST/build
+
+echo '#! /bin/bash' > $DIST/plan
+echo 'DOMAIN="$1"' >> $DIST/plan
+echo 'PROBLEM="$2"' >> $DIST/plan
+echo 'PLAN_FILE="$3"' >> $DIST/plan
+echo '"$(dirname "$0")"/fast-downward.py' \
+     "--build=$BUILD" \
+      '--plan-file "$PLAN_FILE"' \
+      '--alias' "$PLANNER_NAME" \
+      '"$DOMAIN"' '"$PROBLEM"' >> $DIST/plan
+chmod 755 $DIST/plan
+
+# Packaging
+echo "Packaging..."
+rm -f $PACKAGE
+tar czf $PACKAGE $DIST/
+rm -rf $DIST
+
+# Sanity tests
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+echo $DIR
+BENCHMARKS="$DIR/../misc/tests/benchmarks"
+VALIDATOR="validate"
+
+function planner-test-run () {
+    DOMAIN="$BENCHMARKS/$1"
+    PROBLEM="$BENCHMARKS/$2"
+    echo "Sanity test: $DOMAIN $PROBLEM ..."
+    ./plan "$DOMAIN" "$PROBLEM" sas_plan
+    for PLAN in $(ls sas_plan*); do
+        "$VALIDATOR" "$DOMAIN" "$PROBLEM" "$PLAN"
+    done
+
+    rm -f output.sas output sas_plan* plan_numbers_and_cost elapsed.time
+}
+
+if [[ "$SANITY_TEST_UNPACK" == 1 ]]; then
+    echo "Sanity test: Unpacking package..."
+    tar xzf $PACKAGE
+
+    if [[ "$SANITY_TEST_COMPILE" == 1 ]]; then
+        echo "Sanity test: Compiling..."
+        cd $DIST
+        ./build
+
+        if [[ "$SANITY_TEST_RUN_STRIPS" == 1 ]]; then
+            planner-test-run gripper/domain.pddl gripper/prob01.pddl
+        fi
+        if [[ "$SANITY_TEST_RUN_AXIOMS" == 1 ]]; then
+            planner-test-run psr-large/domain.pddl \
+                psr-large/p01-s29-n2-l5-f30.pddl
+        fi
+    fi
+
+    echo "Cleaning up..."
+    rm -rf $DIST
+fi
+
+echo "Done: $PACKAGE"

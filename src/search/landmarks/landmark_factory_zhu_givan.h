@@ -2,15 +2,15 @@
 #define LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
 
 #include "landmark_factory.h"
-#include "landmark_graph.h"
-#include "landmark_types.h"
-#include "../globals.h"
 
-using namespace __gnu_cxx;
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
+namespace landmarks {
+using lm_set = std::unordered_set<FactPair>;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactory {
-private:
-
     class plan_graph_node {
 public:
         lm_set labels;
@@ -21,55 +21,62 @@ public:
         }
     };
 
-    typedef vector<vector<plan_graph_node> > proposition_layer;
+    using PropositionLayer = std::vector<std::vector<plan_graph_node>>;
 
     // triggers[i][j] is a list of operators that could reach/change
     // labels on some proposition, after proposition (i,j) has changed
-    vector<vector<vector<int> > > triggers;
+    std::vector<std::vector<std::vector<int>>> triggers;
 
-    void compute_triggers();
+    void compute_triggers(const TaskProxy &task_proxy);
 
     // Note: must include operators that only have conditional effects
-    vector<int> operators_without_preconditions;
+    std::vector<int> operators_without_preconditions;
 
-    bool operator_applicable(const Operator &, const proposition_layer &) const;
+    bool operator_applicable(const OperatorProxy &op, const PropositionLayer &state) const;
 
-    bool operator_cond_effect_fires(const vector<Prevail> &cond,
-                                    const proposition_layer &layer) const;
+    bool operator_cond_effect_fires(const EffectConditionsProxy &effect_conditions,
+                                    const PropositionLayer &layer) const;
 
     // Apply operator and propagate labels to next layer. Returns set of
     // propositions that:
     // (a) have just been reached OR (b) had their labels changed in next
     // proposition layer
-    lm_set apply_operator_and_propagate_labels(const Operator &,
-                                               const proposition_layer &current, proposition_layer &next) const;
+    lm_set apply_operator_and_propagate_labels(const OperatorProxy &op,
+                                               const PropositionLayer &current, PropositionLayer &next) const;
 
     // Calculate the union of precondition labels of op, using the
     // labels from current
-    lm_set union_of_precondition_labels(const Operator &op,
-                                        const proposition_layer &current) const;
+    lm_set union_of_precondition_labels(const OperatorProxy &op,
+                                        const PropositionLayer &current) const;
 
     // Calculate the union of precondition labels of a conditional effect,
     // using the labels from current
-    lm_set union_of_condition_labels(const vector<Prevail> &cond,
-                                     const proposition_layer &current) const;
+    lm_set union_of_condition_labels(const EffectConditionsProxy &cond,
+                                     const PropositionLayer &current) const;
 
     // Relaxed exploration, returns the last proposition layer
     // (the fixpoint) with labels
-    proposition_layer build_relaxed_plan_graph_with_labels() const;
+    PropositionLayer build_relaxed_plan_graph_with_labels(const TaskProxy &task_proxy) const;
 
     // Extract landmarks from last proposition layer and add them to the
     // landmarks graph
-    void extract_landmarks(const proposition_layer &last_prop_layer);
+    void extract_landmarks(const TaskProxy &task_proxy,
+                           Exploration &exploration, const PropositionLayer &last_prop_layer);
 
     // test if layer satisfies goal
-    bool satisfies_goal_conditions(const proposition_layer &) const;
+    bool satisfies_goal_conditions(const GoalsProxy &goals, const PropositionLayer &layer) const;
 
-    void generate_landmarks();
+    // Link operators to its propositions in trigger list.
+    void add_operator_to_triggers(const OperatorProxy &op);
+
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
+                                    Exploration &exploration) override;
 
 public:
-    LandmarkFactoryZhuGivan(const Options &opts);
-    virtual ~LandmarkFactoryZhuGivan() {}
+    explicit LandmarkFactoryZhuGivan(const options::Options &opts);
+
+    virtual bool supports_conditional_effects() const override;
 };
+}
 
 #endif

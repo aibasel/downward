@@ -1,58 +1,28 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "operator_cost.h"
-
-#include <iosfwd>
-#include <string>
+#include <istream>
 #include <vector>
 
-class AxiomEvaluator;
-class CausalGraph;
-class DomainTransitionGraph;
-class Operator;
-class Axiom;
-class State;
-class SuccessorGenerator;
-class Timer;
-class RandomNumberGenerator;
+class TaskProxy;
 
-bool test_goal(const State &state);
-void save_plan(const std::vector<const Operator *> &plan, int iter);
-int calculate_plan_cost(const std::vector<const Operator *> &plan);
+namespace successor_generator {
+class SuccessorGenerator;
+}
+
+namespace utils {
+struct Log;
+}
 
 void read_everything(std::istream &in);
+// TODO: move this to task_utils or a new file with dump methods for all proxy objects.
 void dump_everything();
 
-void verify_no_axioms_no_cond_effects();
+// The following function is deprecated. Use task_properties.h instead.
+bool is_unit_cost();
 
-void check_magic(std::istream &in, std::string magic);
+extern successor_generator::SuccessorGenerator *g_successor_generator;
 
-bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
-
-
-extern bool g_use_metric;
-extern int g_min_action_cost;
-extern int g_max_action_cost;
-
-// TODO: The following five belong into a new Variable class.
-extern std::vector<std::string> g_variable_name;
-extern std::vector<int> g_variable_domain;
-extern std::vector<std::vector<std::string> > g_fact_names;
-extern std::vector<int> g_axiom_layers;
-extern std::vector<int> g_default_axiom_values;
-
-extern State *g_initial_state;
-extern std::vector<std::pair<int, int> > g_goal;
-
-extern std::vector<Operator> g_operators;
-extern std::vector<Operator> g_axioms;
-extern AxiomEvaluator *g_axiom_evaluator;
-extern SuccessorGenerator *g_successor_generator;
-extern std::vector<DomainTransitionGraph *> g_transition_graphs;
-extern CausalGraph *g_causal_graph;
-extern Timer g_timer;
-extern std::string g_plan_filename;
-extern RandomNumberGenerator g_rng;
+extern utils::Log g_log;
 
 #endif

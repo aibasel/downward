@@ -1,6 +1,6 @@
-import conditions
-import pddl_types
-import f_expression
+from __future__ import print_function
+
+from . import conditions
 
 def cartesian_product(*sequences):
     # TODO: Also exists in tools.py outside the pddl package (defined slightly
@@ -11,79 +11,6 @@ def cartesian_product(*sequences):
         for tup in cartesian_product(*sequences[1:]):
             for item in sequences[0]:
                 yield (item,) + tup
-
-def parse_effects(alist, result):
-    """Parse a PDDL effect (any combination of simple, conjunctive, conditional, and universal)."""
-    tmp_effect = parse_effect(alist)
-    normalized = tmp_effect.normalize()
-    cost_eff, rest_effect = normalized.extract_cost()
-    add_effect(rest_effect, result)
-    if cost_eff:
-        return cost_eff.effect
-    else:
-        return None
-
-def add_effect(tmp_effect, result):
-    """tmp_effect has the following structure:
-       [ConjunctiveEffect] [UniversalEffect] [ConditionalEffect] SimpleEffect."""
-
-    if isinstance(tmp_effect, ConjunctiveEffect):
-        for effect in tmp_effect.effects:
-            add_effect(effect, result)
-        return
-    else:
-        parameters = []
-        condition = conditions.Truth()
-        if isinstance(tmp_effect, UniversalEffect):
-            parameters = tmp_effect.parameters
-            if isinstance(tmp_effect.effect, ConditionalEffect):
-                condition = tmp_effect.effect.condition
-                assert isinstance(tmp_effect.effect.effect, SimpleEffect)
-                effect = tmp_effect.effect.effect.effect
-            else:
-                assert isinstance(tmp_effect.effect, SimpleEffect)
-                effect = tmp_effect.effect.effect
-        elif isinstance(tmp_effect, ConditionalEffect):
-            condition = tmp_effect.condition
-            assert isinstance(tmp_effect.effect, SimpleEffect)
-            effect = tmp_effect.effect.effect
-        else:
-            assert isinstance(tmp_effect, SimpleEffect)
-            effect = tmp_effect.effect
-        assert isinstance(effect, conditions.Literal)
-        # Check for contradictory effects
-        condition = condition.simplified()
-        new_effect = Effect(parameters, condition, effect)
-        contradiction = Effect(parameters, condition, effect.negate())
-        if not contradiction in result:
-            result.append(new_effect)
-        else:
-            # We use add-after-delete semantics, keep positive effect
-            if isinstance(contradiction.literal, conditions.NegatedAtom):
-                result.remove(contradiction)
-                result.append(new_effect)
-
-def parse_effect(alist):
-    tag = alist[0]
-    if tag == "and":
-        return ConjunctiveEffect([parse_effect(eff) for eff in alist[1:]])
-    elif tag == "forall":
-        assert len(alist) == 3
-        parameters = pddl_types.parse_typed_list(alist[1])
-        effect = parse_effect(alist[2])
-        return UniversalEffect(parameters, effect)
-    elif tag == "when":
-        assert len(alist) == 3
-        condition = conditions.parse_condition(alist[1])
-        effect = parse_effect(alist[2])
-        return ConditionalEffect(condition, effect)
-    elif tag == "increase":
-        assert len(alist) == 3
-        assert alist[1] == ['total-cost']
-        assignment = f_expression.parse_assignment(alist)
-        return CostEffect(assignment)
-    else:
-        return SimpleEffect(conditions.parse_literal(alist))
 
 
 class Effect(object):
@@ -99,14 +26,14 @@ class Effect(object):
     def dump(self):
         indent = "  "
         if self.parameters:
-            print "%sforall %s" % (indent, ", ".join(map(str, self.parameters)))
+            print("%sforall %s" % (indent, ", ".join(map(str, self.parameters))))
             indent += "  "
         if self.condition != conditions.Truth():
-            print "%sif" % indent
+            print("%sif" % indent)
             self.condition.dump(indent + "  ")
-            print "%sthen" % indent
+            print("%sthen" % indent)
             indent += "  "
-        print "%s%s" % (indent, self.literal)
+        print("%s%s" % (indent, self.literal))
     def copy(self):
         return Effect(self.parameters, self.condition, self.literal)
     def uniquify_variables(self, type_map):
@@ -119,7 +46,7 @@ class Effect(object):
                     objects_by_type, result):
         if self.parameters:
             var_mapping = var_mapping.copy() # Will modify this.
-            object_lists = [objects_by_type.get(par.type, [])
+            object_lists = [objects_by_type.get(par.type_name, [])
                             for par in self.parameters]
             for object_tuple in cartesian_product(*object_lists):
                 for (par, obj) in zip(self.parameters, object_tuple):
@@ -156,9 +83,9 @@ class ConditionalEffect(object):
             self.condition = condition
             self.effect = effect
     def dump(self, indent="  "):
-        print "%sif" % (indent)
+        print("%sif" % (indent))
         self.condition.dump(indent + "  ")
-        print "%sthen" % (indent)
+        print("%sthen" % (indent))
         self.effect.dump(indent + "  ")
     def normalize(self):
         norm_effect = self.effect.normalize()
@@ -186,7 +113,7 @@ class UniversalEffect(object):
             self.parameters = parameters
             self.effect = effect
     def dump(self, indent="  "):
-        print "%sforall %s" % (indent, ", ".join(map(str, self.parameters)))
+        print("%sforall %s" % (indent, ", ".join(map(str, self.parameters))))
         self.effect.dump(indent + "  ")
     def normalize(self):
         norm_effect = self.effect.normalize()
@@ -212,7 +139,7 @@ class ConjunctiveEffect(object):
                 flattened_effects.append(effect)
         self.effects = flattened_effects
     def dump(self, indent="  "):
-        print "%sand" % (indent)
+        print("%sand" % (indent))
         for eff in self.effects:
             eff.dump(indent + "  ")
     def normalize(self):
@@ -234,7 +161,7 @@ class SimpleEffect(object):
     def __init__(self, effect):
         self.effect = effect
     def dump(self, indent="  "):
-        print "%s%s" % (indent, self.effect)
+        print("%s%s" % (indent, self.effect))
     def normalize(self):
         return self
     def extract_cost(self):
@@ -244,7 +171,7 @@ class CostEffect(object):
     def __init__(self, effect):
         self.effect = effect
     def dump(self, indent="  "):
-        print "%s%s" % (indent, self.effect)
+        print("%s%s" % (indent, self.effect))
     def normalize(self):
         return self
     def extract_cost(self):

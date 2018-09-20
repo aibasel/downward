@@ -1,7 +1,7 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
 
-from __future__ import with_statement
+from __future__ import print_function
+
 from collections import defaultdict
 
 import build_model
@@ -25,8 +25,8 @@ def get_objects_by_type(typed_objects, types):
     for type in types:
         supertypes[type.name] = type.supertype_names
     for obj in typed_objects:
-        result[obj.type].append(obj.name)
-        for type in supertypes[obj.type]:
+        result[obj.type_name].append(obj.name)
+        for type in supertypes[obj.type_name]:
             result[type].append(obj.name)
     return result
 
@@ -54,7 +54,8 @@ def instantiate(task, model):
             variable_mapping = dict([(par.name, arg)
                                      for par, arg in zip(parameters, atom.args)])
             inst_action = action.instantiate(variable_mapping, init_facts,
-                                             fluent_facts, type_to_objects)
+                                             fluent_facts, type_to_objects,
+                                             task.use_min_cost_metric)
             if inst_action:
                 instantiated_actions.append(inst_action)
         elif isinstance(atom.predicate, pddl.Axiom):
@@ -68,7 +69,7 @@ def instantiate(task, model):
             relaxed_reachable = True
 
     return (relaxed_reachable, fluent_facts, instantiated_actions,
-           instantiated_axioms, reachable_action_parameters)
+            sorted(instantiated_axioms), reachable_action_parameters)
 
 def explore(task):
     prog = pddl_to_prolog.translate(task)
@@ -77,21 +78,20 @@ def explore(task):
         return instantiate(task, model)
 
 if __name__ == "__main__":
-    import pddl
-
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
     relaxed_reachable, atoms, actions, axioms, _ = explore(task)
-    print "goal relaxed reachable: %s" % relaxed_reachable
-    print "%d atoms:" % len(atoms)
+    print("goal relaxed reachable: %s" % relaxed_reachable)
+    print("%d atoms:" % len(atoms))
     for atom in atoms:
-        print " ", atom
-    print
-    print "%d actions:" % len(actions)
+        print(" ", atom)
+    print()
+    print("%d actions:" % len(actions))
     for action in actions:
         action.dump()
-        print
-    print
-    print "%d axioms:" % len(axioms)
+        print()
+    print()
+    print("%d axioms:" % len(axioms))
     for axiom in axioms:
         axiom.dump()
-        print
+        print()

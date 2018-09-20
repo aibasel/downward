@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 # -*- coding: utf-8 -*-
 
 import contextlib
@@ -25,13 +27,13 @@ class Timer(object):
 def timing(text, block=False):
     timer = Timer()
     if block:
-        print "%s..." % text
+        print("%s..." % text)
     else:
-        print "%s..." % text,
+        print("%s..." % text, end=' ')
     sys.stdout.flush()
     yield
     if block:
-        print "%s: %s" % (text, timer)
+        print("%s: %s" % (text, timer))
     else:
-        print timer
+        print(timer)
     sys.stdout.flush()

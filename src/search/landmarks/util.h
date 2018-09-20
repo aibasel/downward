@@ -1,22 +1,25 @@
 #ifndef LANDMARKS_UTIL_H
 #define LANDMARKS_UTIL_H
 
+#include <unordered_map>
 #include <vector>
-#include <ext/hash_map>
 
+class OperatorProxy;
+class TaskProxy;
+
+namespace landmarks {
 class LandmarkNode;
-class Operator;
-class Prevail;
 
-bool _possibly_fires(const std::vector<Prevail> &prevail,
-                     const std::vector<std::vector<int> > &lvl_var);
+std::unordered_map<int, int> _intersect(
+    const std::unordered_map<int, int> &a,
+    const std::unordered_map<int, int> &b);
 
-__gnu_cxx::hash_map<int, int> _intersect(
-    const __gnu_cxx::hash_map<int, int> &a,
-    const __gnu_cxx::hash_map<int, int> &b);
-
-bool _possibly_reaches_lm(const Operator &o,
-                          const std::vector<std::vector<int> > &lvl_var,
+bool _possibly_reaches_lm(const OperatorProxy &op,
+                          const std::vector<std::vector<int>> &lvl_var,
                           const LandmarkNode *lmp);
+
+OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id);
+int get_operator_or_axiom_id(const OperatorProxy &op);
+}
 
 #endif

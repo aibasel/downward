@@ -1,7 +1,6 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
 
-from __future__ import with_statement
+from __future__ import print_function
 
 import itertools
 
@@ -23,11 +22,11 @@ class PrologProgram:
         self.objects |= set(atom.args)
     def add_rule(self, rule):
         self.rules.append(rule)
-    def dump(self):
+    def dump(self, file=None):
         for fact in self.facts:
-            print fact
+            print(fact, file=file)
         for rule in self.rules:
-            print getattr(rule, "type", "none"), rule
+            print(getattr(rule, "type", "none"), rule, file=file)
     def normalize(self):
         # Normalized prolog programs have the following properties:
         # 1. Each variable that occurs in the effect of a rule also occurs in its
@@ -63,10 +62,10 @@ class PrologProgram:
             if not eff_vars.issubset(cond_vars):
                 must_add_predicate = True
                 eff_vars -= cond_vars
-                for var in eff_vars:
+                for var in sorted(eff_vars):
                     rule.add_condition(pddl.Atom("@object", [var]))
         if must_add_predicate:
-            print "Unbound effect variables: Adding @object predicate."
+            print("Unbound effect variables: Adding @object predicate.")
             self.facts += [Fact(pddl.Atom("@object", [obj])) for obj in self.objects]
     def split_duplicate_arguments(self):
         """Make sure that no variable occurs twice within the same symbolic fact,
@@ -78,8 +77,9 @@ class PrologProgram:
         printed_message = False
         for rule in self.rules:
             if rule.rename_duplicate_variables() and not printed_message:
-                print "Duplicate arguments: Adding equality conditions."
+                print("Duplicate arguments: Adding equality conditions.")
                 printed_message = True
+
     def convert_trivial_rules(self):
         """Convert rules with an empty condition into facts.
         This must be called after bounding rule effects, so that rules with an
@@ -93,7 +93,7 @@ class PrologProgram:
                 self.add_fact(pddl.Atom(rule.effect.predicate, rule.effect.args))
                 must_delete_rules.append(i)
         if must_delete_rules:
-            print "Trivial rules: Converted to facts."
+            print("Trivial rules: Converted to facts.")
             for rule_no in must_delete_rules[::-1]:
                 del self.rules[rule_no]
 
@@ -123,26 +123,30 @@ class Rule:
             if var_name[0] == "?":
                 if var_name in used_variables:
                     new_var_name = "%s@%d" % (var_name, len(new_conditions))
-                    atom = atom.rename_variables({var_name: new_var_name})
+                    atom = atom.replace_argument(i, new_var_name)
                     new_conditions.append(pddl.Atom("=", [var_name, new_var_name]))
                 else:
                     used_variables.add(var_name)
         return atom
     def rename_duplicate_variables(self):
-        new_conditions = []
-        self.effect = self._rename_duplicate_variables(self.effect, new_conditions)
-        for condition in self.conditions:
-            condition = self._rename_duplicate_variables(condition, new_conditions)
-        self.conditions += new_conditions
-        return bool(new_conditions)
+        extra_conditions = []
+        self.effect = self._rename_duplicate_variables(
+            self.effect, extra_conditions)
+        old_conditions = self.conditions
+        self.conditions = []
+        for condition in old_conditions:
+            self.conditions.append(self._rename_duplicate_variables(
+                    condition, extra_conditions))
+        self.conditions += extra_conditions
+        return bool(extra_conditions)
     def __str__(self):
         cond_str = ", ".join(map(str, self.conditions))
         return "%s :- %s." % (self.effect, cond_str)
 
 def translate_typed_object(prog, obj, type_dict):
-    supertypes = type_dict[obj.type].supertype_names
-    for type_name in [obj.type] + supertypes:
-        prog.add_fact(pddl.Atom(type_name, [obj.name]))
+    supertypes = type_dict[obj.type_name].supertype_names
+    for type_name in [obj.type_name] + supertypes:
+        prog.add_fact(pddl.TypedObject(obj.name, type_name).get_atom())
 
 def translate_facts(prog, task):
     type_dict = dict((type.name, type) for type in task.types)
@@ -154,8 +158,7 @@ def translate_facts(prog, task):
             prog.add_fact(fact)
 
 def translate(task):
-    with timers.timing("Normalizing task"):
-        normalize.normalize(task)
+    # Note: The function requires that the task has been normalized.
     with timers.timing("Generating Datalog program"):
         prog = PrologProgram()
         translate_facts(prog, task)
@@ -168,26 +171,10 @@ def translate(task):
         prog.split_rules()
     return prog
 
-def test_normalization():
-    prog = PrologProgram()
-    prog.add_fact(pddl.Atom("at", ["foo", "bar"]))
-    prog.add_fact(pddl.Atom("truck", ["bollerwagen"]))
-    prog.add_fact(pddl.Atom("truck", ["segway"]))
-    prog.add_rule(Rule([pddl.Atom("truck", ["?X"])], pddl.Atom("at", ["?X", "?Y"])))
-    prog.add_rule(Rule([pddl.Atom("truck", ["X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?Y"])))
-    prog.add_rule(Rule([pddl.Atom("truck", ["?X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?X"])))
-    prog.add_rule(Rule([pddl.Atom("p", ["?Y", "?Z", "?Y", "?Z"])],
-                  pddl.Atom("q", ["?Y", "?Y"])))
-    prog.add_rule(Rule([], pddl.Atom("foo", [])))
-    prog.add_rule(Rule([], pddl.Atom("bar", ["X"])))
-    prog.normalize()
-    prog.dump()
 
 if __name__ == "__main__":
-    # test_normalization()
-
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
+    normalize.normalize(task)
     prog = translate(task)
     prog.dump()

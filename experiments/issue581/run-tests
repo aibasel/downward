@@ -1,0 +1,17 @@
+#! /bin/bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")"
+cd ../..
+
+py.test driver/tests.py
+py.test src/translate/tests/test_scripts.py
+
+misc/buildbot/buildbot-exp.py --rev baseline 1
+
+misc/tests/run-all-code-tests
+
+# Commented out because compilation is slow.
+# misc/make-ipc-submission seq-sat-lama-2011 64
+
