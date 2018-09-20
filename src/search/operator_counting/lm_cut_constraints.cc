@@ -78,5 +78,5 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     return make_shared<LMCutConstraints>();
 }
 
-static PluginShared<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
+static Plugin<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
 }

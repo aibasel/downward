@@ -356,5 +356,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         return make_shared<LandmarkCountHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("lmcount", _parse);
+static Plugin<Evaluator> _plugin("lmcount", _parse);
 }

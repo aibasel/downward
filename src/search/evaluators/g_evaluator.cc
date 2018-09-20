@@ -25,5 +25,5 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         return make_shared<GEvaluator>();
 }
 
-static PluginShared<Evaluator> _plugin("g", _parse, "evaluators_basic");
+static Plugin<Evaluator> _plugin("g", _parse, "evaluators_basic");
 }
