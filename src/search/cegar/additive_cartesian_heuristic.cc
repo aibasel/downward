@@ -60,7 +60,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     return sum_h;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Additive CEGAR heuristic",
         "See the paper introducing Counterexample-guided Abstraction "
@@ -132,8 +132,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new AdditiveCartesianHeuristic(opts);
+    return make_shared<AdditiveCartesianHeuristic>(opts);
 }
 
-static Plugin<Evaluator> _plugin("cegar", _parse);
+static PluginShared<Evaluator> _plugin("cegar", _parse);
 }
