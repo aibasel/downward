@@ -1,5 +1,5 @@
-#ifndef OPTIONS_DOC_STORE_H
-#define OPTIONS_DOC_STORE_H
+#ifndef OPTIONS_DOC_UTILS_H
+#define OPTIONS_DOC_UTILS_H
 
 #include "bounds.h"
 

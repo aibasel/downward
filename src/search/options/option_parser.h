@@ -1,7 +1,7 @@
 #ifndef OPTIONS_OPTION_PARSER_H
 #define OPTIONS_OPTION_PARSER_H
 
-#include "doc_store.h"
+#include "doc_utils.h"
 #include "options.h"
 #include "predefinitions.h"
 
