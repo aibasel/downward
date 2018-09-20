@@ -151,5 +151,5 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         return make_shared<LandmarkFactoryMerged>(opts);
 }
 
-static PluginShared<LandmarkFactory> _plugin("lm_merged", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_merged", _parse);
 }

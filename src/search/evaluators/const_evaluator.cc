@@ -3,6 +3,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+using namespace std;
+
 namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(const Options &opts)
     : value(opts.get<int>("value")) {
@@ -14,7 +16,7 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     return result;
 }
 
-static Evaluator *_parse(OptionParser &parser) {
+static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Constant evaluator",
         "Returns a constant value.");
@@ -28,7 +30,7 @@ static Evaluator *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new ConstEvaluator(opts);
+        return make_shared<ConstEvaluator>(opts);
 }
 
 static Plugin<Evaluator> _plugin("const", _parse, "evaluators_basic");

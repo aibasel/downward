@@ -61,5 +61,5 @@ static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
         return make_shared<CostAdaptedTask>(opts);
 }
 
-static PluginShared<AbstractTask> _plugin("adapt_costs", _parse);
+static Plugin<AbstractTask> _plugin("adapt_costs", _parse);
 }

@@ -3,8 +3,11 @@
 
 #include "doc_store.h"
 #include "options.h"
+#include "predefinitions.h"
 
 #include <memory>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -31,9 +34,6 @@ class OptionParser {
     void check_bounds(
         const std::string &key, const T &value, const Bounds &bounds);
 
-    static int parse_int_arg(const std::string &name, const std::string &value);
-    static std::shared_ptr<SearchEngine> parse_cmd_line_aux(
-        const std::vector<std::string> &args, bool dry_run);
 
 public:
     OptionParser(const ParseTree &parse_tree, bool dry_run, bool help_mode = false);
@@ -101,23 +101,140 @@ public:
     bool help_mode() const;
 
     static const std::string NONE;
+};
 
-    static std::shared_ptr<SearchEngine> parse_cmd_line(
-        int argc, const char **argv, bool dry_run, bool is_unit_cost);
 
-    static std::string usage(const std::string &progname);
+/*
+  TokenParser<T> wraps functions to parse supported types T.
+*/
+template<typename T>
+class TokenParser {
+public:
+    static inline T parse(OptionParser &parser);
 };
 
 /*
-  TODO: OptionParser and TokenParser are currently so tangled that we
-  *must* have this #include statement right here, after defining
-  OptionParser and before defining its methods. This obviously needs
-  more work.
+  We need to give specializations of the class for the cases we want
+  to *partially* specialize, i.e., give a specialization that is still
+  templated. For fully specialized cases (e.g. parsing "int"), it is
+  not necessary to specialize the class; we just need to specialize
+  the method.
 */
-}
-#include "token_parser.h"
+template<typename T>
+class TokenParser<std::shared_ptr<T>> {
+public:
+    static inline std::shared_ptr<T> parse(OptionParser &parser);
+};
 
-namespace options {
+template<typename T>
+class TokenParser<std::vector<T>> {
+public:
+    static inline std::vector<T> parse(OptionParser &parser);
+};
+
+/*
+  If T has no template specialization, try to parse it directly from
+  the input string. As of this writing, this default implementation is
+  used only for string and bool.
+*/
+template<typename T>
+inline T TokenParser<T>::parse(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    std::istringstream stream(value);
+    T x;
+    if ((stream >> std::boolalpha >> x).fail()) {
+        parser.error("could not parse argument " + value + " of type " + TypeNamer<T>::name());
+    }
+    return x;
+}
+
+// int needs a specialization to allow "infinity".
+template<>
+inline int TokenParser<int>::parse(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    if (value == "infinity") {
+        return std::numeric_limits<int>::max();
+    } else {
+        std::istringstream stream(value);
+        int x;
+        if ((stream >> x).fail()) {
+            parser.error("could not parse int argument " + value);
+        }
+        return x;
+    }
+}
+
+// double needs a specialization to allow "infinity".
+template<>
+inline double TokenParser<double>::parse(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    if (value == "infinity") {
+        return std::numeric_limits<double>::infinity();
+    } else {
+        std::istringstream stream(value);
+        double x;
+        if ((stream >> x).fail()) {
+            parser.error("could not parse double argument " + value);
+        }
+        return x;
+    }
+}
+
+// Helper functions for the TokenParser-specializations.
+
+template<typename T>
+static std::shared_ptr<T> lookup_in_registry(OptionParser &parser) {
+    const std::string &value = parser.get_root_value();
+    try {
+        return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
+    } catch (const std::out_of_range &) {
+        parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
+    }
+    return nullptr;
+}
+
+template<typename T>
+static std::shared_ptr<T> lookup_in_predefinitions(OptionParser &parser, bool &found) {
+    using TPtr = std::shared_ptr<T>;
+    const std::string &value = parser.get_root_value();
+    if (Predefinitions::instance()->contains<TPtr>(value)) {
+        found = true;
+        return Predefinitions::instance()->get<TPtr>(value);
+    }
+    found = false;
+    return nullptr;
+}
+
+template<typename T>
+inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &parser) {
+    bool predefined;
+    std::shared_ptr<T> result = lookup_in_predefinitions<T>(parser, predefined);
+    if (predefined)
+        return result;
+    return lookup_in_registry<T>(parser);
+}
+
+// Needed for iterated search.
+template<>
+inline ParseTree TokenParser<ParseTree>::parse(OptionParser &parser) {
+    return *parser.get_parse_tree();
+}
+
+template<typename T>
+inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
+    if (parser.get_parse_tree()->begin()->value != "list") {
+        parser.error("expected list");
+    }
+    std::vector<T> results;
+    for (auto tree_it = first_child_of_root(*parser.get_parse_tree());
+         tree_it != end_of_roots_children(*parser.get_parse_tree());
+         ++tree_it) {
+        OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it), parser.dry_run());
+        results.push_back(TokenParser<T>::parse(subparser));
+    }
+    return results;
+}
+
 template<typename T>
 T OptionParser::start_parsing() {
     return TokenParser<T>::parse(*this);

@@ -39,11 +39,14 @@ public:
 
     void open_initial();
     void open(const SearchNode &parent_node,
-              const OperatorProxy &parent_op);
+              const OperatorProxy &parent_op,
+              int adjusted_cost);
     void reopen(const SearchNode &parent_node,
-                const OperatorProxy &parent_op);
+                const OperatorProxy &parent_op,
+                int adjusted_cost);
     void update_parent(const SearchNode &parent_node,
-                       const OperatorProxy &parent_op);
+                       const OperatorProxy &parent_op,
+                       int adjusted_cost);
     void close();
     void mark_as_dead_end();
 

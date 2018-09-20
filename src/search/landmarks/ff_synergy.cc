@@ -13,8 +13,8 @@ using namespace std;
 namespace landmarks {
 FFSynergyHeuristic::FFSynergyHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      master(dynamic_cast<LamaSynergyHeuristic *>(
-                 opts.get<Evaluator *>("lama_synergy_heuristic"))) {
+      master(dynamic_pointer_cast<LamaSynergyHeuristic>(
+                 opts.get<shared_ptr<Evaluator>>("lama_synergy_heuristic"))) {
     cout << "Initializing LAMA-FF synergy slave" << endl;
     if (!master) {
         cerr << "ff_synergy requires a lama_synergy heuristic" << endl;
@@ -32,16 +32,16 @@ EvaluationResult FFSynergyHeuristic::compute_result(
        either case, the result is subsequently available in the
        master object.
     */
-    eval_context.get_evaluator_value_or_infinity(master);
+    eval_context.get_evaluator_value_or_infinity(master.get());
     return master->ff_result;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "LAMA-FF synergy slave",
         "See Evaluator#LAMA-FF_synergy_master for the "
         "LAMA-FF synergy master.");
-    parser.add_option<Evaluator *>(
+    parser.add_option<shared_ptr<Evaluator>>(
         "lama_synergy_heuristic",
         "The heuristic used here has to be an instance of the LAMA-FF synergy "
         "master, which can be achieved using the option name lama_synergy. "
@@ -61,7 +61,7 @@ static Heuristic *_parse(OptionParser &parser) {
     // explicitly in the slave.
     opts.set<bool>("cache_estimates", false);
 
-    return new FFSynergyHeuristic(opts);
+    return make_shared<FFSynergyHeuristic>(opts);
 }
 
 static Plugin<Evaluator> _plugin("ff_synergy", _parse);

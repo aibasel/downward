@@ -55,8 +55,8 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n--search lazy(single(sum([g(), weight(eval1, 2)])), reopen_closed=true)\n```\n",
         true);
 
-    parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Evaluator *>(
+    parser.add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+    parser.add_list_option<shared_ptr<Evaluator>>(
         "preferred",
         "use preferred operators of these evaluators", "[]");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "true");
@@ -68,18 +68,18 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<Evaluator *>("evals");
+    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
 
     shared_ptr<lazy_search::LazySearch> engine;
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_wastar_open_list_factory(opts));
         engine = make_shared<lazy_search::LazySearch>(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<Evaluator *> preferred_list = opts.get_list<Evaluator *>("preferred");
+        vector<shared_ptr<Evaluator>> preferred_list = opts.get_list<shared_ptr<Evaluator>>("preferred");
         engine->set_preferred_operator_evaluators(preferred_list);
     }
     return engine;
 }
 
-static PluginShared<SearchEngine> _plugin("lazy_wastar", _parse);
+static Plugin<SearchEngine> _plugin("lazy_wastar", _parse);
 }
