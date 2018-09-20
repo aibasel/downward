@@ -129,7 +129,7 @@ template<typename Block>
 const Block DynamicBitset<Block>::zeros = Block(0);
 
 template<typename Block>
-// MSVC's bitwise negation always returns int.
+// MSVC's bitwise negation always returns a signed type.
 const Block DynamicBitset<Block>::ones = Block(~Block(0));
 }
 

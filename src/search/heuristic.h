@@ -47,12 +47,12 @@ class Heuristic : public Evaluator {
 protected:
     /*
       Cache for saving h values
-      Before accessing this cache always make sure that the cache_h_values
+      Before accessing this cache always make sure that the cache_evaluator_values
       flag is set to true - as soon as the cache is accessed it will create
       entries for all existing states
     */
     PerStateInformation<HEntry> heuristic_cache;
-    bool cache_h_values;
+    bool cache_evaluator_values;
 
     // Hold a reference to the task implementation and pass it to objects that need it.
     const std::shared_ptr<AbstractTask> task;
@@ -87,6 +87,10 @@ public:
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
+
+    virtual bool does_cache_estimates() const override;
+    virtual bool is_estimate_cached(const GlobalState &state) const override;
+    virtual int get_cached_estimate(const GlobalState &state) const override;
 };
 
 #endif

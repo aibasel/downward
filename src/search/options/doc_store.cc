@@ -8,7 +8,7 @@ using namespace std;
 
 namespace options {
 void PluginInfo::fill_docs() {
-    OptionParser parser(name, true, true);
+    OptionParser parser(key, true, true);
     doc_factory(parser);
 }
 
@@ -18,15 +18,21 @@ string PluginInfo::get_type_name() const {
 
 
 void DocStore::register_plugin(
-    const string &key, DocFactory doc_factory, PluginTypeNameGetter type_name_factory) {
+    const string &key,
+    DocFactory doc_factory,
+    PluginTypeNameGetter type_name_factory,
+    const string &group) {
     if (plugin_infos.count(key)) {
         ABORT("DocStore already contains a plugin with name \"" + key + "\"");
     }
     PluginInfo doc;
     doc.doc_factory = doc_factory;
     doc.type_name_factory = type_name_factory;
+    doc.key = key;
+    // Plugin names can be set with document_synopsis. Otherwise, we use the key.
     doc.name = key;
     doc.synopsis = "";
+    doc.group = group;
     doc.hidden = false;
     plugin_infos[key] = doc;
 }
@@ -93,7 +99,7 @@ PluginInfo &DocStore::get(const string &key) {
 
 vector<string> DocStore::get_keys() {
     vector<string> keys;
-    for (const auto it : plugin_infos) {
+    for (const auto &it : plugin_infos) {
         keys.push_back(it.first);
     }
     return keys;

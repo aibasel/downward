@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+#include <memory>
 #include <vector>
 
 namespace merge_and_shrink {
@@ -15,7 +16,8 @@ class TransitionSystem;
   and size2 before they are merged. Use the following rules:
   1) Right before merging, the transition systems may have at most
      max_states_before_merge states.
-  2) Right after merging, the product has at most max_states_after_merge states.
+  2) Right after merging, the product may have most max_states_after_merge
+     states.
   3) Transition systems are shrunk as little as necessary to satisfy the above
      constraints. (If possible, neither is shrunk at all.)
   There is often a Pareto frontier of solutions following these rules. In this
@@ -29,16 +31,23 @@ extern std::pair<int, int> compute_shrink_sizes(
     int max_states_after_merge);
 
 /*
-  This method checks if the transition system of the factor at index violates
-  the size limit given via new_size (e.g. as computed by compute_shrink_sizes)
-  or the threshold shrink_threshold_before_merge that triggers shrinking even
-  if the size limit is not violated. If so, trigger the shrinking process.
-  Return true iff the factor was actually shrunk.
+  This function first determines if any of the two factors at indices index1
+  and index2 must be shrunk according to the given size limits max_states and
+  max_states_before_merge, using the function compute_shrink_sizes (see above).
+  If not, then the function further checks if any of the two factors has a
+  size larger than shrink_treshold_before_merge, in which case shrinking is
+  still triggered.
+
+  If shrinking is triggered, apply the abstraction to the two factors
+  within the factored transition system. Return true iff at least one of the
+  factors was shrunk.
 */
-extern bool shrink_factor(
+extern bool shrink_before_merge_step(
     FactoredTransitionSystem &fts,
-    int index,
-    int new_size,
+    int index1,
+    int index2,
+    int max_states,
+    int max_states_before_merge,
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity);
@@ -48,9 +57,9 @@ extern bool shrink_factor(
   requires that init and/or goal distances have been computed accordingly.
   Return true iff any states have been pruned.
 
-  TODO: maybe this functionality belongs to a new class PruningStrategy.
+  TODO: maybe this functionality belongs to a new class PruneStrategy.
 */
-extern bool prune_factor(
+extern bool prune_step(
     FactoredTransitionSystem &fts,
     int index,
     bool prune_unreachable_states,

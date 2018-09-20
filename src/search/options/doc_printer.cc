@@ -4,6 +4,7 @@
 #include "registries.h"
 
 #include <iostream>
+#include <map>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    for (const PluginTypeInfo &info : PluginTypeRegistry::instance()->get_sorted_types()) {
+    for (const PluginTypeInfo &info : Registry::instance()->get_sorted_type_infos()) {
         print_category(info.get_type_name(), info.get_documentation());
     }
 }
@@ -35,14 +36,44 @@ void DocPrinter::print_plugin(const string &name) {
 void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
     print_category_header(plugin_type_name);
     print_category_synopsis(synopsis);
+    map<string, vector<PluginInfo>> groups;
     DocStore *doc_store = DocStore::instance();
     for (const string &key : doc_store->get_keys()) {
-        PluginInfo info = doc_store->get(key);
+        const PluginInfo &info = doc_store->get(key);
         if (info.get_type_name() == plugin_type_name && !info.hidden) {
-            print_plugin(key, info);
+            groups[info.group].push_back(info);
         }
     }
+    /*
+      Note on sorting: Because we use a map keyed on the group IDs,
+      the sections are sorted by these IDs. For the time being, this
+      seems as good as any other order. For the future, we might
+      consider influencing the sort order by adding a sort priority
+      item to PluginGroupPlugin.
+
+      Note on empty groups: if a group is not used (i.e., has no
+      plug-ins inside it), then it does not appear in the
+      documentation. This is intentional. For example, it means that
+      we could introduce groups in "core code" that may or may not be
+      used by plug-ins, and if they are not used, they do not clutter the
+      documentation.
+     */
+    for (const auto &pair: groups) {
+        print_section(pair.first, pair.second);
+    }
     print_category_footer();
+}
+
+void DocPrinter::print_section(
+    const string &group_id, const vector<PluginInfo> &infos) {
+    if (!group_id.empty()) {
+        const PluginGroupInfo &group =
+            Registry::instance()->get_group_info(group_id);
+        os << endl << "= " << group.doc_title << " =" << endl << endl;
+    }
+    for (const PluginInfo &info : infos) {
+        print_plugin(info.key, info);
+    }
 }
 
 void DocPrinter::print_plugin(const string &name, const PluginInfo &info) {

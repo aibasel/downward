@@ -35,14 +35,14 @@ public:
 
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task, Exploration &exploration);
 
-    bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
-    bool use_reasonable_orders() const {return reasonable_orders; }
+    bool use_disjunctive_landmarks() const {return disjunctive_landmarks;}
+    bool use_reasonable_orders() const {return reasonable_orders;}
     virtual bool supports_conditional_effects() const = 0;
 
 protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
 
-    bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
+    bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task, Exploration &exploration) = 0;
     void generate(const TaskProxy &task_proxy, Exploration &exploration);

@@ -54,7 +54,7 @@ bool Domains::is_superset_of(const Domains &other) const {
 
 ostream &operator<<(ostream &os, const Domains &domains) {
     int num_vars = domains.domain_subsets.size();
-    string var_sep = "";
+    string var_sep;
     os << "<";
     for (int var = 0; var < num_vars; ++var) {
         const Bitset &domain = domains.domain_subsets[var];
@@ -66,7 +66,7 @@ ostream &operator<<(ostream &os, const Domains &domains) {
         assert(!values.empty());
         if (values.size() < domain.size()) {
             os << var_sep << var << "={";
-            string value_sep = "";
+            string value_sep;
             for (int value : values) {
                 os << value_sep << value;
                 value_sep = ",";

@@ -75,7 +75,7 @@ def _run_uncrustify(config_file, filenames):
                 ["uncrustify", "--version"]).strip()
             raise util.Abort(
                 "uncrustify exited with {returncode}. Are you using an "
-                "outdated version? We require uncrustify 0.61, you "
+                "outdated version? We require uncrustify 0.67, you "
                 "have {uncrustify_version}. Please consult "
                 "www.fast-downward.org/ForDevelopers/Uncrustify".format(
                 **locals()))

@@ -35,7 +35,7 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &l
             return 0;
     } else if (lm.conjunctive) {
         cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
     return 0;
 }
@@ -84,7 +84,7 @@ void LandmarkFactoryMerged::generate_landmarks(
                 }
             } else if (node.conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
-                utils::exit_with(ExitCode::UNSUPPORTED);
+                utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
             }
         }
     }

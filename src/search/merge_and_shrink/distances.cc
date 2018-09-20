@@ -18,9 +18,6 @@ Distances::Distances(const TransitionSystem &transition_system)
     clear_distances();
 }
 
-Distances::~Distances() {
-}
-
 void Distances::clear_distances() {
     init_distances_computed = false;
     goal_distances_computed = false;

@@ -70,8 +70,8 @@ public:
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
-        const bool compute_init_distances,
-        const bool compute_goal_distances,
+        bool compute_init_distances,
+        bool compute_goal_distances,
         Verbosity verbosity);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
@@ -124,6 +124,7 @@ public:
 
     void statistics(int index) const;
     void dump(int index) const;
+    void dump() const;
 
     const TransitionSystem &get_ts(int index) const {
         return *transition_systems[index];

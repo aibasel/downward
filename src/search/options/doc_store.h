@@ -13,7 +13,7 @@ namespace options {
 class OptionParser;
 
 // See comment in constructor of PluginShared in plugin.h.
-using DocFactory = std::function<void(OptionParser &)>;
+using DocFactory = std::function<void (OptionParser &)>;
 using PluginTypeNameGetter = std::function<std::string()>;
 
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
@@ -83,8 +83,10 @@ struct LanguageSupportInfo {
 struct PluginInfo {
     DocFactory doc_factory;
     PluginTypeNameGetter type_name_factory;
+    std::string key;
     std::string name;
     std::string synopsis;
+    std::string group;
     std::vector<ArgumentInfo> arg_help;
     std::vector<PropertyInfo> property_help;
     std::vector<LanguageSupportInfo> support_help;
@@ -110,7 +112,10 @@ public:
     }
 
     void register_plugin(
-        const std::string &key, DocFactory factory, PluginTypeNameGetter type_name_factory);
+        const std::string &key,
+        DocFactory factory,
+        PluginTypeNameGetter type_name_factory,
+        const std::string &group);
 
     void add_arg(
         const std::string &key,
