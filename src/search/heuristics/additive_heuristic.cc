@@ -45,7 +45,7 @@ void AdditiveHeuristic::setup_exploration_queue() {
 
     // Deal with operators and axioms without preconditions.
     for (UnaryOperator &op : unary_operators) {
-        op.unsatisfied_preconditions = op.precondition.size();
+        op.unsatisfied_preconditions = op.num_preconditions;
         op.cost = op.base_cost; // will be increased by precondition costs
 
         if (op.unsatisfied_preconditions == 0)
@@ -94,7 +94,7 @@ void AdditiveHeuristic::mark_preferred_operators(
         OpID op_id = goal->reached_by;
         if (op_id != NO_OP) { // We have not yet chained back to a start node.
             UnaryOperator *unary_op = get_operator(op_id);
-            for (PropID precond : unary_op->precondition)
+            for (PropID precond : get_preconditions(op_id))
                 mark_preferred_operators(state, precond);
             int operator_no = unary_op->operator_no;
             if (operator_no != -1) {
