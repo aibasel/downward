@@ -72,4 +72,74 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
     }
     return plugin_group_infos.at(group);
 }
+
+
+
+void Registry::insert_plugin_info(
+    const string &key,
+    DocFactory doc_factory,
+    PluginTypeNameGetter type_name_factory,
+    const string &group) {
+    if (plugin_infos.count(key)) {
+        ABORT("Registry already contains a plugin with name \"" + key + "\"");
+    }
+    PluginInfo doc;
+    doc.doc_factory = doc_factory;
+    doc.type_name_factory = type_name_factory;
+    doc.key = key;
+    // Plugin names can be set with document_synopsis. Otherwise, we use the key.
+    doc.name = key;
+    doc.synopsis = "";
+    doc.group = group;
+    doc.hidden = false;
+    plugin_infos[key] = doc;
+}
+
+void Registry::add_plugin_info_arg(
+    const string &key,
+    const string &arg_name,
+    const string &help,
+    const string &type_name,
+    const string &default_value,
+    const Bounds &bounds,
+    const ValueExplanations &value_explanations) {
+    get_plugin_info(key).arg_help.emplace_back(
+        arg_name, help, type_name, default_value, bounds, value_explanations);
+}
+
+void Registry::set_plugin_info_synopsis(
+    const string &key, const string &name, const string &description) {
+    get_plugin_info(key).name = name;
+    get_plugin_info(key).synopsis = description;
+}
+
+void Registry::add_plugin_info_property(
+    const string &key, const string &name, const string &description) {
+    get_plugin_info(key).property_help.emplace_back(name, description);
+}
+
+void Registry::add_plugin_info_feature(
+    const string &key, const string &feature, const string &description) {
+    get_plugin_info(key).support_help.emplace_back(feature, description);
+}
+
+void Registry::add_plugin_info_note(
+    const string &key, const string &name, const string &description, bool long_text) {
+    get_plugin_info(key).notes.emplace_back(name, description, long_text);
+}
+
+PluginInfo &Registry::get_plugin_info(const string &key) {
+    /* Use at() to get an error when trying to modify a plugin that has not been
+       registered with insert_plugin_info. */
+    return plugin_infos.at(key);
+}
+
+vector<string> Registry::get_sorted_plugin_info_keys() {
+    vector<string> keys;
+    for (const auto &it : plugin_infos) {
+        keys.push_back(it.first);
+    }
+    sort(keys.begin(), keys.end());
+    return keys;
+}
 }
