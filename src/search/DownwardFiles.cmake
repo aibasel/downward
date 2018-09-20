@@ -91,7 +91,7 @@ fast_downward_plugin(
         options/bounds
         options/command_line
         options/doc_printer
-        options/doc_store
+        options/doc_utils
         options/errors
         options/option_parser
         options/options
