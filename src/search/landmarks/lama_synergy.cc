@@ -93,5 +93,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return make_shared<LamaSynergyHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("lama_synergy", _parse);
+static Plugin<Evaluator> _plugin("lama_synergy", _parse);
 }

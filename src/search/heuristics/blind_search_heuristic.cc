@@ -51,5 +51,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         return make_shared<BlindSearchHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("blind", _parse);
+static Plugin<Evaluator> _plugin("blind", _parse);
 }

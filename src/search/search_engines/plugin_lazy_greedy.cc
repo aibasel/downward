@@ -72,5 +72,5 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     return engine;
 }
 
-static PluginShared<SearchEngine> _plugin("lazy_greedy", _parse);
+static Plugin<SearchEngine> _plugin("lazy_greedy", _parse);
 }

@@ -58,8 +58,8 @@ static shared_ptr<Heuristic> _parse_all_states_potential(OptionParser &parser) {
     return _parse(parser, OptimizeFor::ALL_STATES);
 }
 
-static PluginShared<Evaluator> _plugin_initial_state(
+static Plugin<Evaluator> _plugin_initial_state(
     "initial_state_potential", _parse_initial_state_potential);
-static PluginShared<Evaluator> _plugin_all_states(
+static Plugin<Evaluator> _plugin_all_states(
     "all_states_potential", _parse_all_states_potential);
 }

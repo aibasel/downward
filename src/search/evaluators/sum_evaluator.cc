@@ -45,5 +45,5 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         return make_shared<SumEvaluator>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("sum", _parse, "evaluators_basic");
+static Plugin<Evaluator> _plugin("sum", _parse, "evaluators_basic");
 }
