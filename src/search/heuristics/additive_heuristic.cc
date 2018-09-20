@@ -168,5 +168,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         return make_shared<AdditiveHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("add", _parse);
+static Plugin<Evaluator> _plugin("add", _parse);
 }

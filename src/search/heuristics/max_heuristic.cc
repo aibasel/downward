@@ -125,5 +125,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
 }
 
 
-static PluginShared<Evaluator> _plugin("hmax", _parse);
+static Plugin<Evaluator> _plugin("hmax", _parse);
 }

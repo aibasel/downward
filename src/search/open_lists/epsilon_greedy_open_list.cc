@@ -186,5 +186,5 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     }
 }
 
-static PluginShared<OpenListFactory> _plugin("epsilon_greedy", _parse);
+static Plugin<OpenListFactory> _plugin("epsilon_greedy", _parse);
 }

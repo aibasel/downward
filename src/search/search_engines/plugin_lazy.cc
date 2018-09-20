@@ -31,5 +31,5 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     return engine;
 }
-static PluginShared<SearchEngine> _plugin("lazy", _parse);
+static Plugin<SearchEngine> _plugin("lazy", _parse);
 }

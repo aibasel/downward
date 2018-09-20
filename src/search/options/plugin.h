@@ -46,9 +46,9 @@ public:
 };
 
 template<typename T>
-class PluginShared {
+class Plugin {
 public:
-    PluginShared(
+    Plugin(
         const std::string &key,
         typename Registry<std::shared_ptr<T>>::Factory factory,
         const std::string &group = "") {
@@ -68,8 +68,8 @@ public:
             };
         DocStore::instance()->register_plugin(key, doc_factory, type_name_factory, group);
     }
-    ~PluginShared() = default;
-    PluginShared(const PluginShared<T> &other) = delete;
+    ~Plugin() = default;
+    Plugin(const Plugin<T> &other) = delete;
 };
 }
 
