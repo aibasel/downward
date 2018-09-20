@@ -15,5 +15,4 @@ void PluginInfo::fill_docs() {
 string PluginInfo::get_type_name() const {
     return type_name_factory();
 }
-
 }

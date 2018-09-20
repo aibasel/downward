@@ -57,9 +57,9 @@ public:
         PluginTypeNameGetter type_name_factory = [&]() {
                 return TypeNamer<TPtr>::name();
             };
-            
+
         Registry::instance()->insert_plugin<T>(key, factory, type_name_factory,
-            group);
+                                               group);
     }
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;
