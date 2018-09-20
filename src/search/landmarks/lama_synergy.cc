@@ -66,11 +66,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "OptionSyntax#Predefinitions), for example:\n"
         "```\n--evaluator \"lama_master=lama_synergy(lm_factory=lm_rhw))\"\n"
         "--evaluator \"lama_slave=ff_synergy(lama_master)\"\n```");
-    parser.document_note(
-        "Note",
-        "Regarding using different cost transformations, there are a few "
-        "caveats to be considered, see OptionCaveats."
-        );
     parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");

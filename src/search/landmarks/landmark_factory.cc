@@ -853,6 +853,5 @@ static PluginTypePlugin<LandmarkFactory> _type_plugin(
     "A landmark factory specification is either a newly created "
     "instance or a landmark factory that has been defined previously. "
     "This page describes how one can specify a new landmark factory instance. "
-    "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.\n\n"
-    "**Warning:** See OptionCaveats for using cost types with Landmarks");
+    "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.");
 }
