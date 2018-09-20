@@ -618,5 +618,5 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         return make_shared<LandmarkFactoryRpgSasp>(opts);
 }
 
-static PluginShared<LandmarkFactory> _plugin("lm_rhw", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_rhw", _parse);
 }

@@ -54,7 +54,6 @@ fast_downward_plugin(
         evaluation_result
         evaluator
         evaluator_cache
-        globals
         global_state
         heuristic
         open_list
@@ -90,6 +89,7 @@ fast_downward_plugin(
     SOURCES
         options/any
         options/bounds
+        options/command_line
         options/doc_printer
         options/doc_store
         options/errors
@@ -99,7 +99,7 @@ fast_downward_plugin(
         options/predefinitions
         options/plugin
         options/registries
-        options/token_parser
+        options/string_utils
         options/type_namer
     CORE_PLUGIN
 )

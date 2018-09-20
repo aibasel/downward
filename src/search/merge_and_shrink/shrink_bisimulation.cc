@@ -429,5 +429,5 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         return make_shared<ShrinkBisimulation>(opts);
 }
 
-static PluginShared<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
+static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
 }

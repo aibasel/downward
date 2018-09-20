@@ -1,6 +1,5 @@
 #include "root_task.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state_registry.h"
@@ -501,5 +500,5 @@ static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
         return g_root_task;
 }
 
-static PluginShared<AbstractTask> _plugin("no_transform", _parse);
+static Plugin<AbstractTask> _plugin("no_transform", _parse);
 }
