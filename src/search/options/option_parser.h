@@ -259,7 +259,7 @@ template<typename T>
 inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &parser) {
     bool predefined;
     std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(
-                parser, predefined);
+        parser, predefined);
     if (predefined)
         return result;
     return lookup_in_registry_shared<T>(parser);
