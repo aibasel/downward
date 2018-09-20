@@ -25,8 +25,8 @@ class OptionParser {
     const ParseTree parse_tree;
     /*
       Cannot be const in the current design. The plugin factory methods insert
-      PluginInfo structs into the registry when they are called. This could 
-      be improved later. 
+      PluginInfo structs into the registry when they are called. This could
+      be improved later.
     */
     Registry &registry;
     const bool dry_run_;
@@ -44,9 +44,9 @@ class OptionParser {
 
 public:
     OptionParser(const ParseTree &parse_tree, Registry &registry, bool dry_run,
-        bool help_mode = false);
+                 bool help_mode = false);
     OptionParser(const std::string &config, Registry &registry, bool dry_run,
-        bool help_mode = false);
+                 bool help_mode = false);
     ~OptionParser() = default;
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
@@ -100,7 +100,7 @@ public:
     const ParseTree *get_parse_tree();
     Registry &get_registry();
     const std::string &get_root_value() const;
-    
+
     bool dry_run() const;
     bool help_mode() const;
 
@@ -147,8 +147,8 @@ inline T TokenParser<T>::parse(OptionParser &parser) {
     std::istringstream stream(value);
     T x;
     if ((stream >> std::boolalpha >> x).fail()) {
-        parser.error("could not parse argument " + value + " of type " + 
-            TypeNamer<T>::name(parser.get_registry()));
+        parser.error("could not parse argument " + value + " of type " +
+                     TypeNamer<T>::name(parser.get_registry()));
     }
     return x;
 }
@@ -234,8 +234,8 @@ inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
     for (auto tree_it = first_child_of_root(*parser.get_parse_tree());
          tree_it != end_of_roots_children(*parser.get_parse_tree());
          ++tree_it) {
-        OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it), 
-            parser.get_registry(), parser.dry_run());
+        OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it),
+                               parser.get_registry(), parser.dry_run());
         results.push_back(TokenParser<T>::parse(subparser));
     }
     return results;
@@ -306,7 +306,7 @@ void OptionParser::add_option(
     }
     std::unique_ptr<OptionParser> subparser =
         use_default ?
-        utils::make_unique_ptr<OptionParser>(default_value,registry, dry_run()) :
+        utils::make_unique_ptr<OptionParser>(default_value, registry, dry_run()) :
         utils::make_unique_ptr<OptionParser>(subtree(parse_tree, arg), registry, dry_run());
     T result = TokenParser<T>::parse(*subparser);
     check_bounds<T>(key, result, bounds);

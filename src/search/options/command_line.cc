@@ -22,7 +22,7 @@ namespace options {
 */
 
 static void predefine_evaluator(const string &arg, Registry &registry,
-    bool dry_run) {
+                                bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, registry, dry_run);
     Predefinitions::instance()->predefine<shared_ptr<Evaluator>>(
@@ -31,7 +31,7 @@ static void predefine_evaluator(const string &arg, Registry &registry,
 
 
 static void predefine_lmgraph(const string &arg, Registry &registry,
-    bool dry_run) {
+                              bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, registry, dry_run);
     Predefinitions::instance()->predefine<shared_ptr<landmarks::LandmarkFactory>>(
@@ -44,7 +44,7 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
-    
+
     shared_ptr<SearchEngine> engine;
     /*
       Note that we don’t sanitize all arguments beforehand because filenames should remain as-is
