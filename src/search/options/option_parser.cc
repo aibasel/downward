@@ -135,8 +135,8 @@ static ParseTree generate_parse_tree(const string &config) {
 }
 
 
-OptionParser::OptionParser(const ParseTree &parse_tree, Registry &registry, 
-    bool dry_run, bool help_mode)
+OptionParser::OptionParser(const ParseTree &parse_tree, Registry &registry,
+                           bool dry_run, bool help_mode)
     : opts(help_mode),
       parse_tree(parse_tree),
       registry(registry),
@@ -146,7 +146,7 @@ OptionParser::OptionParser(const ParseTree &parse_tree, Registry &registry,
 }
 
 OptionParser::OptionParser(const string &config, Registry &registry,
-    bool dry_run, bool help_mode)
+                           bool dry_run, bool help_mode)
     : OptionParser(generate_parse_tree(config), registry, dry_run, help_mode) {
 }
 
@@ -250,12 +250,12 @@ void OptionParser::error(const string &msg) const {
 }
 
 void OptionParser::document_synopsis(const string &name,
-    const string &note) const {
+                                     const string &note) const {
     registry.set_plugin_info_synopsis(get_root_value(), name, note);
 }
 
-void OptionParser::document_property(const string &property, 
-    const string &note) const {
+void OptionParser::document_property(const string &property,
+                                     const string &note) const {
     registry.add_plugin_info_property(get_root_value(), property, note);
 }
 
@@ -281,7 +281,7 @@ const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
 }
 
-Registry& OptionParser::get_registry() {
+Registry &OptionParser::get_registry() {
     return registry;
 }
 

@@ -32,7 +32,7 @@ class IteratedSearch : public SearchEngine {
 
 public:
     explicit IteratedSearch(const options::Options &opts,
-        options::Registry &registry);
+                            options::Registry &registry);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
