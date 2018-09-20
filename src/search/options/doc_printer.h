@@ -1,8 +1,6 @@
 #ifndef OPTIONS_DOC_PRINTER_H
 #define OPTIONS_DOC_PRINTER_H
 
-#include "predefinitions.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -33,7 +31,7 @@ public:
       TODO: I am not happy about passing predefinitions here,
       but we need it for fill_docs in DocPrinter
     */
-    explicit DocPrinter(std::ostream &out, const Predefinitions &predefinitions);
+    explicit DocPrinter(std::ostream &out);
     virtual ~DocPrinter();
 
     void print_all();
@@ -54,7 +52,7 @@ protected:
     virtual void print_category_footer() override;
 
 public:
-    explicit Txt2TagsPrinter(std::ostream &out, const Predefinitions &predefinitions);
+    explicit Txt2TagsPrinter(std::ostream &out);
 };
 
 
@@ -74,8 +72,7 @@ protected:
     virtual void print_category_footer() override;
 
 public:
-    PlainPrinter(std::ostream &out, const Predefinitions &predefinitions,
-                 bool print_all = false);
+    PlainPrinter(std::ostream &out, bool print_all = false);
 };
 }
 
