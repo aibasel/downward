@@ -170,5 +170,5 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         return make_shared<TieBreakingOpenListFactory>(opts);
 }
 
-static PluginShared<OpenListFactory> _plugin("tiebreaking", _parse);
+static Plugin<OpenListFactory> _plugin("tiebreaking", _parse);
 }

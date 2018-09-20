@@ -466,5 +466,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         return make_shared<ContextEnhancedAdditiveHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("cea", _parse);
+static Plugin<Evaluator> _plugin("cea", _parse);
 }

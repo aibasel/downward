@@ -135,5 +135,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return make_shared<AdditiveCartesianHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("cegar", _parse);
+static Plugin<Evaluator> _plugin("cegar", _parse);
 }

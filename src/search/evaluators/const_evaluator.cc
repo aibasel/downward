@@ -33,5 +33,5 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         return make_shared<ConstEvaluator>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("const", _parse, "evaluators_basic");
+static Plugin<Evaluator> _plugin("const", _parse, "evaluators_basic");
 }

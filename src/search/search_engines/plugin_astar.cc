@@ -51,5 +51,5 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     return engine;
 }
 
-static PluginShared<SearchEngine> _plugin("astar", _parse);
+static Plugin<SearchEngine> _plugin("astar", _parse);
 }
