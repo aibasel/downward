@@ -7,7 +7,6 @@ import subprocess
 import sys
 
 from lab.experiment import ARGPARSER
-from lab.steps import Step
 from lab import tools
 
 from downward.experiment import FastDownwardExperiment
@@ -130,8 +129,7 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return ((platform.node() == "login-infai.scicore.unibas.ch")
-        or platform.node().endswith(".cluster.bc2.ch"))
+    return node.endswith(".scicore.unibas.ch") or node.endswith(".cluster.bc2.ch")
 
 
 def is_test_run():
@@ -161,7 +159,7 @@ class IssueConfig(object):
 class IssueExperiment(FastDownwardExperiment):
     """Subclass of FastDownwardExperiment with some convenience features."""
 
-    DEFAULT_TEST_SUITE = ["gripper:prob01.pddl"]
+    DEFAULT_TEST_SUITE = ["depot:p01.pddl", "gripper:prob01.pddl"]
 
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -257,12 +255,6 @@ class IssueExperiment(FastDownwardExperiment):
 
         self._revisions = revisions
         self._configs = configs
-
-        # Add default parsers to the experiment.
-        self.add_parser('lab_driver_parser', self.LAB_DRIVER_PARSER)
-        self.add_parser('exitcode_parser', self.EXITCODE_PARSER)
-        self.add_parser('translator_parser', self.TRANSLATOR_PARSER)
-        self.add_parser('single_search_parser', self.SINGLE_SEARCH_PARSER)
 
     @classmethod
     def _is_portfolio(cls, config_nick):
@@ -372,9 +364,10 @@ class IssueExperiment(FastDownwardExperiment):
             algo1 = "{}-{}".format(rev1, config_nick)
             algo2 = "{}-{}".format(rev2, config_nick)
             report = report_class(
-                filter_algorithm=[algo1, algo2],
+                filter_config=[algo1, algo2],
                 attributes=[attribute],
-                get_category=lambda run1, run2: run1["domain"])
+                get_category=lambda run1, run2: run1["domain"],
+                legend_location=(1.3, 0.5))
             report(
                 self.eval_dir,
                 os.path.join(scatter_dir, rev1 + "-" + rev2, name))
