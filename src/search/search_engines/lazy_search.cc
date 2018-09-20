@@ -37,7 +37,7 @@ LazySearch::LazySearch(const Options &opts)
 }
 
 void LazySearch::set_preferred_operator_evaluators(
-    vector<Evaluator *> &evaluators) {
+    vector<shared_ptr<Evaluator>> &evaluators) {
     preferred_operator_evaluators = evaluators;
 }
 
@@ -50,7 +50,7 @@ void LazySearch::initialize() {
 
     // Add evaluators that are used for preferred operators (in case they are
     // not also used in the open list).
-    for (Evaluator *evaluator : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : preferred_operator_evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 
@@ -86,9 +86,12 @@ vector<OperatorID> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    ordered_set::OrderedSet<OperatorID> preferred_operators =
-        collect_preferred_operators(
-            current_eval_context, preferred_operator_evaluators);
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
+        collect_preferred_operators(current_eval_context,
+                                    preferred_operator_evaluator.get(),
+                                    preferred_operators);
+    }
     if (randomize_successors) {
         preferred_operators.shuffle(*rng);
     }
@@ -123,8 +126,7 @@ SearchStatus LazySearch::fetch_next_state() {
     current_operator_id = next.second;
     GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
     OperatorProxy current_operator = task_proxy.get_operators()[current_operator_id];
-    assert(task_properties::is_applicable(
-               current_operator, State(*task, current_predecessor.get_values())));
+    assert(task_properties::is_applicable(current_operator, current_predecessor.unpack()));
     current_state = state_registry.get_successor_state(current_predecessor, current_operator);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);

@@ -24,15 +24,15 @@ namespace options {
 static void predefine_evaluator(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, dry_run);
-    Predefinitions<Evaluator *>::instance()->predefine(
-        predefinition.first, parser.start_parsing<Evaluator *>());
+    Predefinitions::instance()->predefine<shared_ptr<Evaluator>>(
+        predefinition.first, parser.start_parsing<shared_ptr<Evaluator>>());
 }
 
 
 static void predefine_lmgraph(const string &arg, bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, dry_run);
-    Predefinitions<shared_ptr<landmarks::LandmarkFactory>>::instance()->predefine(
+    Predefinitions::instance()->predefine<shared_ptr<landmarks::LandmarkFactory>>(
         predefinition.first, parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
 }
 
