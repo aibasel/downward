@@ -214,11 +214,11 @@ static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
         return make_shared<LandmarkDecomposition>(opts);
 }
 
-static PluginShared<SubtaskGenerator> _plugin_original(
+static Plugin<SubtaskGenerator> _plugin_original(
     "original", _parse_original);
-static PluginShared<SubtaskGenerator> _plugin_goals(
+static Plugin<SubtaskGenerator> _plugin_goals(
     "goals", _parse_goals);
-static PluginShared<SubtaskGenerator> _plugin_landmarks(
+static Plugin<SubtaskGenerator> _plugin_landmarks(
     "landmarks", _parse_landmarks);
 
 static PluginTypePlugin<SubtaskGenerator> _type_plugin(

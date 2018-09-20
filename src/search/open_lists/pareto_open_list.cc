@@ -263,5 +263,5 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         return make_shared<ParetoOpenListFactory>(opts);
 }
 
-static PluginShared<OpenListFactory> _plugin("pareto", _parse);
+static Plugin<OpenListFactory> _plugin("pareto", _parse);
 }

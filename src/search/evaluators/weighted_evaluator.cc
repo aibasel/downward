@@ -57,5 +57,5 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         return make_shared<WeightedEvaluator>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("weight", _parse, "evaluators_basic");
+static Plugin<Evaluator> _plugin("weight", _parse, "evaluators_basic");
 }

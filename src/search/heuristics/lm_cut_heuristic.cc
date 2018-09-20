@@ -58,5 +58,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         return make_shared<LandmarkCutHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("lmcut", _parse);
+static Plugin<Evaluator> _plugin("lmcut", _parse);
 }

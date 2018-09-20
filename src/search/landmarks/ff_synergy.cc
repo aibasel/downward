@@ -64,5 +64,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return make_shared<FFSynergyHeuristic>(opts);
 }
 
-static PluginShared<Evaluator> _plugin("ff_synergy", _parse);
+static Plugin<Evaluator> _plugin("ff_synergy", _parse);
 }
