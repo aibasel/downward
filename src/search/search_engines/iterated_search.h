@@ -4,12 +4,15 @@
 #include "../option_parser_util.h"
 #include "../search_engine.h"
 
+#include "../options/registries.h"
+
 namespace options {
 class Options;
 }
 
 namespace iterated_search {
 class IteratedSearch : public SearchEngine {
+    options::Registry registry;
     const std::vector<options::ParseTree> engine_configs;
     bool pass_bound;
     bool repeat_last_phase;
@@ -28,7 +31,8 @@ class IteratedSearch : public SearchEngine {
     virtual SearchStatus step() override;
 
 public:
-    explicit IteratedSearch(const options::Options &opts);
+    explicit IteratedSearch(const options::Options &opts,
+        options::Registry &registry);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;

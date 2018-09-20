@@ -8,8 +8,9 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const Options &opts)
+IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry)
     : SearchEngine(opts),
+      registry(registry),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
@@ -23,7 +24,7 @@ IteratedSearch::IteratedSearch(const Options &opts)
 
 shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     int engine_configs_index) {
-    OptionParser parser(engine_configs[engine_configs_index], false);
+    OptionParser parser(engine_configs[engine_configs_index], registry, false);
     shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
 
     cout << "Starting search: ";
@@ -177,12 +178,12 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         for (const ParseTree &config : opts.get_list<ParseTree>("engine_configs")) {
-            OptionParser test_parser(config, true);
+            OptionParser test_parser(config, parser.get_registry(), true);
             test_parser.start_parsing<shared_ptr<SearchEngine>>();
         }
         return nullptr;
     } else {
-        return make_shared<IteratedSearch>(opts);
+        return make_shared<IteratedSearch>(opts, parser.get_registry());
     }
 }
 

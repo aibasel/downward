@@ -16,7 +16,7 @@ static bool is_call(const string &s) {
 DocPrinter::DocPrinter(ostream &out)
     : os(out) {
     for (const string &key : Registry::instance()->get_sorted_plugin_info_keys()) {
-        Registry::instance()->get_plugin_info(key).fill_docs();
+        Registry::instance()->get_plugin_info(key).fill_docs(*Registry::instance());
     }
 }
 

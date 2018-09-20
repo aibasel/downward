@@ -29,8 +29,8 @@ public:
         const auto it = storage.find(key);
         if (it == storage.end()) {
             ABORT("Attempt to retrieve nonexisting object of name " +
-                  key + " (type: " + TypeNamer<T>::name() +
-                  ") from options.");
+                  key + " from options.");
+            // (type: " + TypeNamer<T>::name() + ")
         }
         try {
             T result = any_cast<T>(it->second);
@@ -38,7 +38,7 @@ public:
         } catch (const BadAnyCast &) {
             std::cerr << "Invalid conversion while retrieving config options!"
                       << std::endl
-                      << key << " is not of type " << TypeNamer<T>::name()
+                      << key << " is not the correct type"// << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
