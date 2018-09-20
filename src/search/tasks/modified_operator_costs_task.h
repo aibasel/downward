@@ -11,7 +11,7 @@ class ModifiedOperatorCostsTask : public tasks::DelegatingTask {
 
 public:
     ModifiedOperatorCostsTask(
-        const std::shared_ptr<AbstractTask> parent,
+        const std::shared_ptr<AbstractTask> &parent,
         std::vector<int> &&costs);
     virtual ~ModifiedOperatorCostsTask() override = default;
 

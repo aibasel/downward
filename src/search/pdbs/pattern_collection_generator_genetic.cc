@@ -57,7 +57,7 @@ void PatternCollectionGeneratorGenetic::select(
             // Find first entry which is strictly greater than random.
             selected = upper_bound(cumulative_fitness.begin(),
                                    cumulative_fitness.end(), random) -
-                       cumulative_fitness.begin();
+                cumulative_fitness.begin();
         }
         new_pattern_collections.push_back(pattern_collections[selected]);
     }
@@ -370,7 +370,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
 
     return make_shared<PatternCollectionGeneratorGenetic>(opts);
 }

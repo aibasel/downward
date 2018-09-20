@@ -132,7 +132,7 @@ public:
     explicit Exploration(const options::Options &opts);
 
     void set_additional_goals(const std::vector<FactPair> &goals);
-    void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
+    void set_recompute_heuristic() {heuristic_recomputation_needed = true;}
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
                                             std::vector<std::unordered_map<FactPair, int>> &lvl_op,
                                             bool level_out,

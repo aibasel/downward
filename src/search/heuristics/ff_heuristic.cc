@@ -70,10 +70,10 @@ int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "FF heuristic",
-        "See also Heuristic#LAMA-FF_synergy_master.");
+        "See also Evaluator#LAMA-FF_synergy_master.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported");
     parser.document_language_support(
@@ -89,10 +89,10 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new FFHeuristic(opts);
+        return make_shared<FFHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("ff", _parse);
+static PluginShared<Evaluator> _plugin("ff", _parse);
 }

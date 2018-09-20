@@ -4,11 +4,20 @@
 #include "../abstract_task.h"
 #include "../pruning_method.h"
 
+namespace options {
+class OptionParser;
+}
+
 namespace stubborn_sets {
 inline FactPair find_unsatisfied_condition(
     const std::vector<FactPair> &conditions, const State &state);
 
 class StubbornSets : public PruningMethod {
+    const double min_required_pruning_ratio;
+    const int num_expansions_before_checking_pruning_ratio;
+    int num_pruning_calls;
+    bool is_pruning_disabled;
+
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
 
@@ -82,6 +91,8 @@ protected:
     virtual void initialize_stubborn_set(const State &state) = 0;
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
+    explicit StubbornSets(const options::Options &opts);
+
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 
     /* TODO: move prune_operators, and also the statistics, to the
@@ -101,6 +112,8 @@ inline FactPair find_unsatisfied_condition(
     }
     return FactPair::no_fact;
 }
+
+void add_pruning_options(options::OptionParser &parser);
 }
 
 #endif

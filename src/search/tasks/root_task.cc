@@ -1,6 +1,5 @@
 #include "root_task.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state_registry.h"
@@ -60,15 +59,12 @@ class RootTask : public AbstractTask {
     vector<vector<set<FactPair>>> mutexes;
     vector<ExplicitOperator> operators;
     vector<ExplicitOperator> axioms;
-    mutable vector<int> initial_state_values;
+    vector<int> initial_state_values;
     vector<FactPair> goals;
-    mutable bool evaluated_axioms_on_initial_state;
 
     const ExplicitVariable &get_variable(int var) const;
     const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
     const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
-
-    void evaluate_axioms_on_initial_state() const;
 
 public:
     explicit RootTask(istream &in);
@@ -115,11 +111,11 @@ public:
 static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
         cerr << "Invalid variable id: " << fact.var << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
         cerr << "Invalid value for variable " << fact.var << ": " << fact.value << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -148,7 +144,7 @@ void check_magic(istream &in, const string &magic) {
                  << "on a translator output file from " << endl
                  << "an older version." << endl;
         }
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -231,7 +227,7 @@ void read_and_verify_version(istream &in) {
         cerr << "Expected translator output file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl
              << "Exiting." << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -309,7 +305,7 @@ vector<FactPair> read_goal(istream &in) {
     check_magic(in, "end_goal");
     if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     return goals;
 }
@@ -354,8 +350,12 @@ RootTask::RootTask(std::istream &in) {
     /* TODO: We should be stricter here and verify that we
        have reached the end of "in". */
 
-    // TODO: this global variable should disappear eventually.
-    g_initial_state_data = initial_state_values;
+    /*
+      HACK: We use a TaskProxy to access g_axiom_evaluators here which assumes
+      that this task is completely constructed.
+    */
+    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*this)];
+    axiom_evaluator.evaluate(initial_state_values);
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
@@ -379,17 +379,6 @@ const ExplicitOperator &RootTask::get_operator_or_axiom(
         assert(utils::in_bounds(index, operators));
         return operators[index];
     }
-}
-
-void RootTask::evaluate_axioms_on_initial_state() const {
-    if (!axioms.empty()) {
-        // HACK this should not have to go through a state registry.
-        // HACK on top of the HACK above: this should not use globals.
-        StateRegistry state_registry(
-            *this, *g_state_packer, *g_axiom_evaluator, initial_state_values);
-        initial_state_values = state_registry.get_initial_state().get_values();
-    }
-    evaluated_axioms_on_initial_state = true;
 }
 
 int RootTask::get_num_variables() const {
@@ -489,9 +478,6 @@ FactPair RootTask::get_goal_fact(int index) const {
 }
 
 vector<int> RootTask::get_initial_state_values() const {
-    if (!evaluated_axioms_on_initial_state) {
-        evaluate_axioms_on_initial_state();
-    }
     return initial_state_values;
 }
 

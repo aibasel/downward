@@ -3,8 +3,6 @@
 #include "abstract_state.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
@@ -32,22 +30,21 @@ struct Flaw {
         : concrete_state(move(concrete_state)),
           current_abstract_state(current_abstract_state),
           desired_abstract_state(move(desired_abstract_state)) {
+        assert(this->current_abstract_state->includes(this->concrete_state));
     }
 
     vector<Split> get_possible_splits() const {
         vector<Split> splits;
         /*
-          For each fact in the concrete state that is not contained in
-          the current abstract state (reason: abstract and concrete
-          traces diverged) or the desired abstract state (reason:
-          unsatisfied precondition or goal), loop over all values of
-          the corresponding variable. The values that are in both the
-          current and the desired abstract state are the "wanted" ones.
+          For each fact in the concrete state that is not contained in the
+          desired abstract state, loop over all values in the domain of the
+          corresponding variable. The values that are in both the current and
+          the desired abstract state are the "wanted" ones, i.e., the ones that
+          we want to split off.
         */
         for (FactProxy wanted_fact_proxy : concrete_state) {
             FactPair fact = wanted_fact_proxy.get_pair();
-            if (!current_abstract_state->contains(fact.var, fact.value) ||
-                !desired_abstract_state.contains(fact.var, fact.value)) {
+            if (!desired_abstract_state.contains(fact.var, fact.value)) {
                 VariableProxy var = wanted_fact_proxy.get_variable();
                 int var_id = var.get_id();
                 vector<int> wanted;
@@ -67,7 +64,7 @@ struct Flaw {
 };
 
 Abstraction::Abstraction(
-    const shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     int max_states,
     int max_non_looping_transitions,
     double max_time,
@@ -89,12 +86,12 @@ Abstraction::Abstraction(
       unmet_goals(0),
       debug(debug) {
     assert(max_states >= 1);
-    g_log << "Start building abstraction." << endl;
+    utils::g_log << "Start building abstraction." << endl;
     cout << "Maximum number of states: " << max_states << endl;
     cout << "Maximum number of transitions: "
          << max_non_looping_transitions << endl;
     build(rng);
-    g_log << "Done building abstraction." << endl;
+    utils::g_log << "Done building abstraction." << endl;
     cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
@@ -219,9 +216,9 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 
     int num_states = get_num_states();
     if (num_states % 1000 == 0) {
-        g_log << num_states << "/" << max_states << " states, "
-              << transition_updater.get_num_non_loops() << "/"
-              << max_non_looping_transitions << " transitions" << endl;
+        utils::g_log << num_states << "/" << max_states << " states, "
+                     << transition_updater.get_num_non_loops() << "/"
+                     << max_non_looping_transitions << " transitions" << endl;
     }
 
     delete state;

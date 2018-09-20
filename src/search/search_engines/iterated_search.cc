@@ -141,7 +141,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "5 times (once before each iteration).\n\n"
         "To avoid this, use heuristic predefinition, which avoids duplicate "
         "preprocessing, as follows:\n```\n"
-        "--heuristic \"h=merge_and_shrink()\" --search "
+        "--evaluator \"h=merge_and_shrink()\" --search "
         "\"iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3), "
         "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])\"\n"
         "```");

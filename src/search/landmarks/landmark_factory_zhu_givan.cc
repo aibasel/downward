@@ -225,10 +225,7 @@ static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
     // (old_labels.size() == 0) && (labels.size() >= 1)
     // if old_labels.size() == labels.size(), then labels have not been refined
     // by intersection.
-    if (old_labels.size() != labels.size())
-        return true;
-
-    return false;
+    return old_labels.size() != labels.size();
 }
 
 lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(

@@ -3,18 +3,20 @@
 
 #include "../evaluator.h"
 
+#include <memory>
+
 namespace options {
 class Options;
 }
 
 namespace weighted_evaluator {
 class WeightedEvaluator : public Evaluator {
-    Evaluator *evaluator;
+    std::shared_ptr<Evaluator> evaluator;
     int w;
 
 public:
     explicit WeightedEvaluator(const options::Options &opts);
-    WeightedEvaluator(Evaluator *eval, int weight);
+    WeightedEvaluator(const std::shared_ptr<Evaluator> &eval, int weight);
     virtual ~WeightedEvaluator() override;
 
     virtual bool dead_ends_are_reliable() const override;
