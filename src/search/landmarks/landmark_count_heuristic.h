@@ -1,65 +1,69 @@
 #ifndef LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 #define LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 
-#include "../state.h"
-#include "../heuristic.h"
-#include "landmark_graph.h"
 #include "exploration.h"
-#include "landmark_status_manager.h"
-#include "landmark_cost_assignment.h"
+#include "landmark_graph.h"
 
-extern LandmarkGraph *g_lgraph; // Make global so graph does not need to be built more than once
-// even when iterating search (TODO: clean up use of g_lgraph vs.
-// lgraph in this class).
+#include "../heuristic.h"
+
+class BitsetView;
+
+namespace successor_generator {
+class SuccessorGenerator;
+}
+
+namespace landmarks {
+class LandmarkCostAssignment;
+class LandmarkStatusManager;
 
 class LandmarkCountHeuristic : public Heuristic {
-    friend class LamaFFSynergy;
-    LandmarkGraph &lgraph;
-    Exploration *exploration;
-    bool use_preferred_operators;
-    int lookahead;
-    bool ff_search_disjunctive_lms;
+    friend class LamaSynergyHeuristic;
+    std::shared_ptr<LandmarkGraph> lgraph;
+    Exploration exploration;
+    const bool use_preferred_operators;
+    const bool ff_search_disjunctive_lms;
+    const bool conditional_effects_supported;
+    const bool admissible;
+    const bool dead_ends_reliable;
 
-    LandmarkStatusManager lm_status_manager;
-    LandmarkCostAssignment *lm_cost_assignment;
+    std::unique_ptr<LandmarkStatusManager> lm_status_manager;
+    std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
+    std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
-    bool use_cost_sharing;
+    int get_heuristic_value(const GlobalState &global_state);
 
-    int get_heuristic_value(const State &state);
+    std::vector<FactPair> collect_lm_leaves(
+        bool disjunctive_lms, const LandmarkSet &result);
 
-    void collect_lm_leaves(bool disjunctive_lms, LandmarkSet &result, vector<
-                               pair<int, int> > &leaves);
-    bool ff_search_lm_leaves(bool disjunctive_lms, const State &state,
-                             LandmarkSet &result);
-    // returns true iff relaxed reachable and marks relaxed operators
-
-    bool check_node_orders_disobeyed(LandmarkNode &node,
-                                     const LandmarkSet &reached) const;
+    bool check_node_orders_disobeyed(
+        const LandmarkNode &node, const LandmarkSet &reached) const;
 
     void add_node_children(LandmarkNode &node, const LandmarkSet &reached) const;
 
-    bool landmark_is_interesting(const State &s, const LandmarkSet &reached,
-                                 LandmarkNode &lm) const;
-    bool generate_helpful_actions(const State &state,
-                                  const LandmarkSet &reached);
-    void set_exploration_goals(const State &state);
+    bool landmark_is_interesting(
+        const State &state, const LandmarkSet &reached, LandmarkNode &lm) const;
+    bool generate_helpful_actions(
+        const State &state, const LandmarkSet &reached);
+    void set_exploration_goals(const GlobalState &global_state);
 
-    //int get_needed_landmarks(const State& state, LandmarkSet& needed) const;
-    Exploration *get_exploration() {return exploration; }
-    void convert_lms(LandmarkSet &lms_set, const vector<bool> &lms_vec);
+    LandmarkSet convert_to_landmark_set(const BitsetView &landmark_bitset);
 protected:
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state) override;
 public:
-    LandmarkCountHeuristic(const Options &opts);
-    ~LandmarkCountHeuristic() {
-    }
-    virtual bool reach_state(const State &parent_state, const Operator &op,
-                             const State &state);
-    virtual bool dead_ends_are_reliable() const {
-        return true;
+    explicit LandmarkCountHeuristic(const options::Options &opts);
+    ~LandmarkCountHeuristic();
+
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) override {
+        evals.insert(this);
     }
 
-    virtual void reset();
+    virtual void notify_initial_state(const GlobalState &initial_state) override;
+    virtual void notify_state_transition(const GlobalState &parent_state,
+                                         OperatorID op_id,
+                                         const GlobalState &state) override;
+    virtual bool dead_ends_are_reliable() const override;
 };
+}
 
 #endif

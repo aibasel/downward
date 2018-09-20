@@ -1,7 +1,4 @@
-from __future__ import with_statement
-
 import pddl
-import sas_tasks
 import timers
 
 def handle_axioms(operators, axioms, goals):
@@ -119,7 +116,7 @@ def simplify_axioms(axioms_by_atom, necessary_literals):
 
 def remove_duplicates(alist):
     next_elem = 1
-    for i in xrange(1, len(alist)):
+    for i in range(1, len(alist)):
         if alist[i] != alist[i - 1]:
             alist[next_elem] = alist[i]
             next_elem += 1
@@ -146,7 +143,7 @@ def simplify(axioms):
         if not axiom.condition: # empty condition: dominates everything
             return [axiom]
         literals = iter(axiom.condition)
-        dominated_axioms = axioms_by_literal[literals.next()]
+        dominated_axioms = axioms_by_literal[next(literals)]
         for literal in literals:
             dominated_axioms &= axioms_by_literal[literal]
         for dominated_axiom in dominated_axioms:
@@ -168,8 +165,12 @@ def negate(axioms):
     result = [pddl.PropositionalAxiom(axioms[0].name, [], axioms[0].effect.negate())]
     for axiom in axioms:
         condition = axiom.condition
-        assert len(condition) > 0, "Negated axiom impossible; cannot deal with that"
-        if len(condition) == 1: # Handle easy special case quickly.
+        if len(condition) == 0:
+            # The derived fact we want to negate is triggered with an
+            # empty condition, so it is always true and its negation
+            # is always false.
+            return []
+        elif len(condition) == 1: # Handle easy special case quickly.
             new_literal = condition[0].negate()
             for result_axiom in result:
                 result_axiom.condition.append(new_literal)

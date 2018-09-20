@@ -1,8 +1,7 @@
-# -*- coding: latin-1 -*-
-
-from __future__ import with_statement
+from __future__ import print_function
 
 import invariant_finder
+import options
 import pddl
 import timers
 
@@ -34,8 +33,7 @@ def instantiate_groups(groups, task, reachable_facts):
     return [expand_group(group, task, reachable_facts) for group in groups]
 
 class GroupCoverQueue:
-    def __init__(self, groups, partial_encoding):
-        self.partial_encoding = partial_encoding
+    def __init__(self, groups):
         if groups:
             self.max_size = max([len(group) for group in groups])
             self.groups_by_size = [[] for i in range(self.max_size + 1)]
@@ -48,11 +46,12 @@ class GroupCoverQueue:
             self._update_top()
         else:
             self.max_size = 0
-    def __nonzero__(self):
+    def __bool__(self):
         return self.max_size > 1
+    __nonzero__ = __bool__
     def pop(self):
         result = list(self.top) # Copy; this group will shrink further.
-        if self.partial_encoding:
+        if options.use_partial_encoding:
             for fact in result:
                 for group in self.groups_by_fact[fact]:
                     group.remove(fact)
@@ -69,17 +68,15 @@ class GroupCoverQueue:
                 self.groups_by_size[len(candidate)].append(candidate)
             self.max_size -= 1
 
-def choose_groups(groups, reachable_facts, partial_encoding=True):
-    queue = GroupCoverQueue(groups, partial_encoding=partial_encoding)
+def choose_groups(groups, reachable_facts):
+    queue = GroupCoverQueue(groups)
     uncovered_facts = reachable_facts.copy()
     result = []
     while queue:
         group = queue.pop()
         uncovered_facts.difference_update(group)
         result.append(group)
-    print len(uncovered_facts), "uncovered facts"
-    #for fact in uncovered_facts:
-    #  print fact
+    print(len(uncovered_facts), "uncovered facts")
     result += [[fact] for fact in uncovered_facts]
     return result
 
@@ -87,7 +84,10 @@ def build_translation_key(groups):
     group_keys = []
     for group in groups:
         group_key = [str(fact) for fact in group]
-        group_key.append("<none of those>")
+        if len(group) == 1:
+            group_key.append(str(group[0].negate()))
+        else:
+            group_key.append("<none of those>")
         group_keys.append(group_key)
     return group_keys
 
@@ -103,24 +103,31 @@ def collect_all_mutex_groups(groups, atoms):
     all_groups += [[fact] for fact in uncovered_facts]
     return all_groups
 
-def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
+def sort_groups(groups):
+    return sorted(sorted(group) for group in groups)
+
+def compute_groups(task, atoms, reachable_action_params):
     groups = invariant_finder.get_groups(task, reachable_action_params)
+
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
+    # Sort here already to get deterministic mutex groups.
+    groups = sort_groups(groups)
     # TODO: I think that collect_all_mutex_groups should do the same thing
     #       as choose_groups with partial_encoding=False, so these two should
     #       be unified.
     with timers.timing("Collecting mutex groups"):
         mutex_groups = collect_all_mutex_groups(groups, atoms)
     with timers.timing("Choosing groups", block=True):
-        groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
+        groups = choose_groups(groups, atoms)
+    groups = sort_groups(groups)
     with timers.timing("Building translation key"):
         translation_key = build_translation_key(groups)
 
     if DEBUG:
         for group in groups:
             if len(group) >= 2:
-                print "{%s}" % ", ".join(map(str, group))
+                print("{%s}" % ", ".join(map(str, group)))
 
     return groups, mutex_groups, translation_key

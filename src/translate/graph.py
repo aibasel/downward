@@ -1,5 +1,6 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
+
+from __future__ import print_function
 
 class Graph:
     def __init__(self, nodes):
@@ -18,10 +19,11 @@ class Graph:
                 if neighbour in remaining_nodes:
                     dfs(neighbour)
         while remaining_nodes:
-            node = iter(remaining_nodes).next()
+            node = next(iter(remaining_nodes))
             result.append([])
             dfs(node)
-        return result
+            result[-1].sort()
+        return sorted(result)
 
 
 def transitive_closure(pairs):
@@ -41,4 +43,4 @@ if __name__ == "__main__":
     g.connect(1, 2)
     g.connect(1, 3)
     g.connect(4, 5)
-    print g.connected_components()
+    print(g.connected_components())

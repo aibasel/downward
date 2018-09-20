@@ -1,9 +1,0 @@
-#! /bin/bash
-
-if [[ $# != 4 ]]; then
-    echo "usage: $(basename "$0") PLANNER_NAME DOMAIN PROBLEM PLAN_FILE" 1>&2
-    exit 1
-fi
-
-BASEDIR="$(dirname "$0")"
-"$BASEDIR/plan" "$2" "$3" ipc "$1" --plan-file "$4"
