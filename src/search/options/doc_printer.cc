@@ -175,7 +175,7 @@ void Txt2TagsPrinter::print_category_footer() {
 }
 
 PlainPrinter::PlainPrinter(ostream &out, const Predefinitions &predefinitions, bool pa)
-    : DocPrinter(out,predefinitions),
+    : DocPrinter(out, predefinitions),
       print_all(pa) {
 }
 
