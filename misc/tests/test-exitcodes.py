@@ -26,13 +26,11 @@ TRANSLATE_TASKS = {
 def constant_factory(value):
     return itertools.repeat(value).next
 
-"""
-Since we cannot enforce memory limits on macOS, we make sure that we get
-the DRIVER_UNSUPPORTED exit code in that case.
-"""
 TRANSLATE_TESTS = [
     ("small", [], [], defaultdict(constant_factory(returncodes.SUCCESS))),
     ("large", ["--translate-time-limit", "1s"], [], defaultdict(constant_factory(returncodes.TRANSLATE_OUT_OF_TIME))),
+    # Since we cannot enforce memory limits on macOS, we make sure that we get
+    # the DRIVER_UNSUPPORTED exit code in that case.
     ("large", ["--translate-memory-limit", "50M"], [], defaultdict(constant_factory(returncodes.TRANSLATE_OUT_OF_MEMORY), darwin=returncodes.DRIVER_UNSUPPORTED)),
 ]
 
@@ -55,10 +53,6 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'max_states=50000,threshold_before_merge=1'
 '))')
 
-"""
-Since we cannot enforce memory limits on macOS, we make sure that we get
-the DRIVER_UNSUPPORTED exit code in that case.
-"""
 SEARCH_TESTS = [
     ("strips", [], "astar(add())", defaultdict(constant_factory(returncodes.SUCCESS))),
     ("strips", [], "astar(hm())", defaultdict(constant_factory(returncodes.SUCCESS))),
@@ -98,6 +92,7 @@ SEARCH_TESTS = [
     ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
     ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=true))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
     ("cond-eff", [], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SUCCESS))),
+    # Since we cannot enforce memory limits on macOS, we make sure that we get the DRIVER_UNSUPPORTED exit code in that case.
     ("large", ["--search-memory-limit", "50M"], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SEARCH_OUT_OF_MEMORY), darwin=returncodes.DRIVER_UNSUPPORTED)),
     ("large", ["--search-time-limit", "1s"], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SEARCH_OUT_OF_TIME))),
 ]

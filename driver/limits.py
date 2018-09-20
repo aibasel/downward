@@ -14,12 +14,6 @@ except ImportError:
 import sys
 
 
-RESOURCE_MODULE_MISSING_MSG = (
-    "The 'resource' module is not available on your platform. "
-    "Therefore, setting time or memory limits, and running "
-    "portfolios is not possible.")
-
-
 """
 On Windows, the resource module does not exist and hence we cannot enforce
 any limits there.
@@ -171,7 +165,8 @@ def get_memory_limit(component_limit, overall_limit):
         limits = [limit for limit in limits if limit is not None]
         return min(limits) if limits else None
     else:
-        returncodes.exit_with_driver_unsupported_error(RESOURCE_MODULE_MISSING_MSG)
+        returncodes.exit_with_driver_unsupported_error(
+            "Setting memory limits is not supported on your platform.")
 
 def get_time_limit(component_limit, overall_limit):
     """
@@ -191,4 +186,5 @@ def get_time_limit(component_limit, overall_limit):
             limits.append(max(0, external_limit - elapsed_time))
         return min(limits) if limits else None
     else:
-        returncodes.exit_with_driver_unsupported_error(RESOURCE_MODULE_MISSING_MSG)
+        returncodes.exit_with_driver_unsupported_error(
+            "Setting time limits is not supported on your platform.")
