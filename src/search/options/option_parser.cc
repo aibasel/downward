@@ -38,11 +38,11 @@ void OptionParser::check_bounds<int>(
     int lower_bound = numeric_limits<int>::lowest();
     int upper_bound = numeric_limits<int>::max();
     if (!bounds.min.empty()) {
-        OptionParser bound_parser(bounds.min, dry_run());
+        OptionParser bound_parser(bounds.min, predefinitions, dry_run());
         lower_bound = TokenParser<int>::parse(bound_parser);
     }
     if (!bounds.max.empty()) {
-        OptionParser bound_parser(bounds.max, dry_run());
+        OptionParser bound_parser(bounds.max, predefinitions, dry_run());
         upper_bound = TokenParser<int>::parse(bound_parser);
     }
     _check_bounds(*this, key, value, lower_bound, upper_bound);
@@ -54,11 +54,11 @@ void OptionParser::check_bounds<double>(
     double lower_bound = -numeric_limits<double>::infinity();
     double upper_bound = numeric_limits<double>::infinity();
     if (!bounds.min.empty()) {
-        OptionParser bound_parser(bounds.min, dry_run());
+        OptionParser bound_parser(bounds.min, predefinitions, dry_run());
         lower_bound = TokenParser<double>::parse(bound_parser);
     }
     if (!bounds.max.empty()) {
-        OptionParser bound_parser(bounds.max, dry_run());
+        OptionParser bound_parser(bounds.max, predefinitions, dry_run());
         upper_bound = TokenParser<double>::parse(bound_parser);
     }
     _check_bounds(*this, key, value, lower_bound, upper_bound);
@@ -135,16 +135,21 @@ static ParseTree generate_parse_tree(const string &config) {
 }
 
 
-OptionParser::OptionParser(const ParseTree &parse_tree, bool dry_run, bool help_mode)
+OptionParser::OptionParser(const ParseTree &parse_tree,
+                           const Predefinitions &predefinitions,
+                           bool dry_run, bool help_mode)
     : opts(help_mode),
       parse_tree(parse_tree),
+      predefinitions(predefinitions),
       dry_run_(dry_run),
       help_mode_(help_mode),
       next_unparsed_argument(first_child_of_root(this->parse_tree)) {
 }
 
-OptionParser::OptionParser(const string &config, bool dry_run, bool help_mode)
-    : OptionParser(generate_parse_tree(config), dry_run, help_mode) {
+OptionParser::OptionParser(const string &config,
+                           const Predefinitions &predefinitions,
+                           bool dry_run, bool help_mode)
+    : OptionParser(generate_parse_tree(config), predefinitions, dry_run, help_mode) {
 }
 
 string OptionParser::get_unparsed_config() const {
@@ -285,6 +290,10 @@ bool OptionParser::help_mode() const {
 
 const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
+}
+
+const Predefinitions &OptionParser::get_predefinitions() const {
+    return predefinitions;
 }
 
 const string &OptionParser::get_root_value() const {

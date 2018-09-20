@@ -4,6 +4,8 @@
 #include "../option_parser_util.h"
 #include "../search_engine.h"
 
+#include "../options/predefinitions.h"
+
 namespace options {
 class Options;
 }
@@ -11,6 +13,12 @@ class Options;
 namespace iterated_search {
 class IteratedSearch : public SearchEngine {
     const std::vector<options::ParseTree> engine_configs;
+    /*
+      We need to copy the predefinitions here since it lives longer
+      than the object referenced in the constructor.
+      TODO: we maybe do not actually want to save Predefinitions here
+    */
+    options::Predefinitions predefinitions;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -28,7 +36,8 @@ class IteratedSearch : public SearchEngine {
     virtual SearchStatus step() override;
 
 public:
-    explicit IteratedSearch(const options::Options &opts);
+    explicit IteratedSearch(const options::Options &opts,
+                            const options::Predefinitions &predefinitions);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;

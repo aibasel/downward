@@ -23,6 +23,7 @@ namespace options {
 class OptionParser {
     Options opts;
     const ParseTree parse_tree;
+    const Predefinitions &predefinitions;
     const bool dry_run_;
     const bool help_mode_;
 
@@ -37,8 +38,12 @@ class OptionParser {
 
 
 public:
-    OptionParser(const ParseTree &parse_tree, bool dry_run, bool help_mode = false);
-    OptionParser(const std::string &config, bool dry_run, bool help_mode = false);
+    OptionParser(const ParseTree &parse_tree,
+                 const Predefinitions &predefinitions,
+                 bool dry_run, bool help_mode = false);
+    OptionParser(const std::string &config,
+                 const Predefinitions &predefinitions,
+                 bool dry_run, bool help_mode = false);
     ~OptionParser() = default;
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
@@ -96,6 +101,7 @@ public:
     Options parse();
 
     const ParseTree *get_parse_tree();
+    const Predefinitions &get_predefinitions() const;
     const std::string &get_root_value() const;
 
     bool dry_run() const;
@@ -219,9 +225,9 @@ static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
 template<typename T>
 static T *lookup_in_predefinitions(OptionParser &parser, bool &found) {
     const std::string &value = parser.get_root_value();
-    if (Predefinitions::instance()->contains<T *>(value)) {
+    if (parser.get_predefinitions().contains<T *>(value)) {
         found = true;
-        return Predefinitions::instance()->get<T *>(value);
+        return parser.get_predefinitions().get<T *>(value);
     }
     found = false;
     return nullptr;
@@ -231,9 +237,9 @@ template<typename T>
 static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
     const std::string &value = parser.get_root_value();
-    if (Predefinitions::instance()->contains<TPtr>(value)) {
+    if (parser.get_predefinitions().contains<TPtr>(value)) {
         found = true;
-        return Predefinitions::instance()->get<TPtr>(value);
+        return parser.get_predefinitions().get<TPtr>(value);
     }
     found = false;
     return nullptr;
@@ -252,7 +258,8 @@ inline T *TokenParser<T *>::parse(OptionParser &parser) {
 template<typename T>
 inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &parser) {
     bool predefined;
-    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(parser, predefined);
+    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(
+                parser, predefined);
     if (predefined)
         return result;
     return lookup_in_registry_shared<T>(parser);
@@ -273,7 +280,8 @@ inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
     for (auto tree_it = first_child_of_root(*parser.get_parse_tree());
          tree_it != end_of_roots_children(*parser.get_parse_tree());
          ++tree_it) {
-        OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it), parser.dry_run());
+        OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it),
+                               parser.get_predefinitions(), parser.dry_run());
         results.push_back(TokenParser<T>::parse(subparser));
     }
     return results;
@@ -344,8 +352,10 @@ void OptionParser::add_option(
     }
     std::unique_ptr<OptionParser> subparser =
         use_default ?
-        utils::make_unique_ptr<OptionParser>(default_value, dry_run()) :
-        utils::make_unique_ptr<OptionParser>(subtree(parse_tree, arg), dry_run());
+        utils::make_unique_ptr<OptionParser>(default_value,
+                                             predefinitions, dry_run()) :
+        utils::make_unique_ptr<OptionParser>(subtree(parse_tree, arg),
+                                             predefinitions, dry_run());
     T result = TokenParser<T>::parse(*subparser);
     check_bounds<T>(key, result, bounds);
     opts.set<T>(key, result);
