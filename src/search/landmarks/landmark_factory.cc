@@ -25,8 +25,7 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
-      no_orders(opts.get<bool>("no_orders")),
-      lm_cost_type(static_cast<OperatorCost>(opts.get_enum("lm_cost_type"))) {
+      no_orders(opts.get<bool>("no_orders")) {
 }
 /*
   Note: To allow reusing landmark graphs, we use the following temporary
@@ -52,15 +51,13 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
         return lm_graph;
     utils::Timer lm_generation_timer;
 
-    shared_ptr<AbstractTask> cost_adapted_task =
-        make_shared<tasks::CostAdaptedTask>(task, lm_cost_type);
-    TaskProxy cost_adapted_task_proxy(*cost_adapted_task);
+    TaskProxy task_proxy(*task);
 
-    lm_graph = make_shared<LandmarkGraph>(cost_adapted_task_proxy);
-    generate_landmarks(cost_adapted_task, exploration);
+    lm_graph = make_shared<LandmarkGraph>(task_proxy);
+    generate_landmarks(task, exploration);
 
     // the following replaces the old "build_lm_graph"
-    generate(cost_adapted_task_proxy, exploration);
+    generate(task_proxy, exploration);
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
@@ -840,17 +837,6 @@ void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("no_orders",
                             "discard all orderings",
                             "false");
-
-    /* TODO: This option should go away anyway once the landmark code
-       is properly cleaned up. */
-    vector<string> cost_types;
-    cost_types.push_back("NORMAL");
-    cost_types.push_back("ONE");
-    cost_types.push_back("PLUSONE");
-    parser.add_enum_option("lm_cost_type",
-                           cost_types,
-                           "landmark action cost adjustment",
-                           "NORMAL");
 }
 
 
