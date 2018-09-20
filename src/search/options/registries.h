@@ -55,18 +55,18 @@ class Registry {
         }
         plugin_factories[type][key] = factory;
     }
-    
+
     void insert_plugin_info(
         const std::string &key,
         DocFactory factory,
         PluginTypeNameGetter type_name_factory,
         const std::string &group);
 public:
-    
+
     template<typename T>
     void insert_plugin(const std::string &key,
-        std::function<std::shared_ptr<T>(OptionParser &)> factory,
-        PluginTypeNameGetter type_name_factory, const std::string &group) {
+                       std::function<std::shared_ptr<T>(OptionParser &)> factory,
+                       PluginTypeNameGetter type_name_factory, const std::string &group) {
         using TPtr = std::shared_ptr<T>;
         /*
           We cannot collect the plugin documentation here because this might
@@ -94,9 +94,9 @@ public:
     void insert_group_info(const PluginGroupInfo &info);
     const PluginGroupInfo &get_group_info(const std::string &key) const;
 
-    
+
     PluginInfo &get_plugin_info(const std::string &key);
-    
+
     void add_plugin_info_arg(
         const std::string &key,
         const std::string &arg_name,
@@ -122,8 +122,8 @@ public:
         bool long_text);
 
     std::vector<std::string> get_sorted_plugin_info_keys();
-    
-    
+
+
     static Registry *instance() {
         static Registry instance_;
         return &instance_;
