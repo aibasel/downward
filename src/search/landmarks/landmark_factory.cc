@@ -21,7 +21,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
-    : reasonable_orders(opts.get<bool>("reasonable_orders")),
+    : lm_graph_task(nullptr),
+      reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
