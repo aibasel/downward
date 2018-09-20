@@ -75,7 +75,6 @@ private:
     const bool disjunctive_landmarks;
     const bool conjunctive_landmarks;
     const bool no_orders;
-    const OperatorCost lm_cost_type;
 
     bool interferes(const TaskProxy &task_proxy,
                     const LandmarkNode *lm_node1,
