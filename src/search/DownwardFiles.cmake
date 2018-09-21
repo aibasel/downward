@@ -378,6 +378,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME PLUGIN_EAGER_WASTAR
+    HELP "Weighted eager best-first search"
+    SOURCES
+        search_engines/plugin_eager_wastar
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
     NAME PLUGIN_LAZY
     HELP "Best-first search with deferred evaluation (lazy)"
     SOURCES
