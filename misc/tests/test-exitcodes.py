@@ -120,7 +120,7 @@ def run_search_tests():
         cmd = [sys.executable, DRIVER] + driver_options + [problem, "--search", search_options]
         exitcode = subprocess.call(cmd)
         if not exitcode == expected[sys.platform]:
-            yield (cmd, expected, exitcode)
+            yield (cmd, expected[sys.platform], exitcode)
         cleanup()
 
 
