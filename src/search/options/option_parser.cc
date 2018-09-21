@@ -38,11 +38,11 @@ void OptionParser::check_bounds<int>(
     int lower_bound = numeric_limits<int>::lowest();
     int upper_bound = numeric_limits<int>::max();
     if (!bounds.min.empty()) {
-        OptionParser bound_parser(bounds.min, dry_run());
+        OptionParser bound_parser(bounds.min, registry, predefinitions, dry_run());
         lower_bound = TokenParser<int>::parse(bound_parser);
     }
     if (!bounds.max.empty()) {
-        OptionParser bound_parser(bounds.max, dry_run());
+        OptionParser bound_parser(bounds.max, registry, predefinitions, dry_run());
         upper_bound = TokenParser<int>::parse(bound_parser);
     }
     _check_bounds(*this, key, value, lower_bound, upper_bound);
@@ -54,11 +54,11 @@ void OptionParser::check_bounds<double>(
     double lower_bound = -numeric_limits<double>::infinity();
     double upper_bound = numeric_limits<double>::infinity();
     if (!bounds.min.empty()) {
-        OptionParser bound_parser(bounds.min, dry_run());
+        OptionParser bound_parser(bounds.min, registry, predefinitions, dry_run());
         lower_bound = TokenParser<double>::parse(bound_parser);
     }
     if (!bounds.max.empty()) {
-        OptionParser bound_parser(bounds.max, dry_run());
+        OptionParser bound_parser(bounds.max, registry, predefinitions, dry_run());
         upper_bound = TokenParser<double>::parse(bound_parser);
     }
     _check_bounds(*this, key, value, lower_bound, upper_bound);
@@ -135,16 +135,23 @@ static ParseTree generate_parse_tree(const string &config) {
 }
 
 
-OptionParser::OptionParser(const ParseTree &parse_tree, bool dry_run, bool help_mode)
+OptionParser::OptionParser(const ParseTree &parse_tree, Registry &registry,
+                           const Predefinitions &predefinitions,
+                           bool dry_run, bool help_mode)
     : opts(help_mode),
       parse_tree(parse_tree),
+      registry(registry),
+      predefinitions(predefinitions),
       dry_run_(dry_run),
       help_mode_(help_mode),
       next_unparsed_argument(first_child_of_root(this->parse_tree)) {
 }
 
-OptionParser::OptionParser(const string &config, bool dry_run, bool help_mode)
-    : OptionParser(generate_parse_tree(config), dry_run, help_mode) {
+OptionParser::OptionParser(const string &config, Registry &registry,
+                           const Predefinitions &predefinitions,
+                           bool dry_run, bool help_mode)
+    : OptionParser(generate_parse_tree(config), registry, predefinitions,
+                   dry_run, help_mode) {
 }
 
 string OptionParser::get_unparsed_config() const {
@@ -177,7 +184,7 @@ void OptionParser::add_enum_option(
             value_explanations.emplace_back(names[i], docs[i]);
         }
 
-        Registry::instance()->add_plugin_info_arg(
+        registry.add_plugin_info_arg(
             get_root_value(), key, help, enum_descr, default_value,
             Bounds::unlimited(), value_explanations);
         return;
@@ -246,22 +253,24 @@ void OptionParser::error(const string &msg) const {
     throw ParseError(msg, parse_tree);
 }
 
-void OptionParser::document_synopsis(const string &name, const string &note) const {
-    Registry::instance()->set_plugin_info_synopsis(get_root_value(), name, note);
+void OptionParser::document_synopsis(const string &name,
+                                     const string &note) const {
+    registry.set_plugin_info_synopsis(get_root_value(), name, note);
 }
 
-void OptionParser::document_property(const string &property, const string &note) const {
-    Registry::instance()->add_plugin_info_property(get_root_value(), property, note);
+void OptionParser::document_property(const string &property,
+                                     const string &note) const {
+    registry.add_plugin_info_property(get_root_value(), property, note);
 }
 
 void OptionParser::document_language_support(
     const string &feature, const string &note) const {
-    Registry::instance()->add_plugin_info_feature(get_root_value(), feature, note);
+    registry.add_plugin_info_feature(get_root_value(), feature, note);
 }
 
 void OptionParser::document_note(
     const string &name, const string &note, bool long_text) const {
-    Registry::instance()->add_plugin_info_note(get_root_value(), name, note, long_text);
+    registry.add_plugin_info_note(get_root_value(), name, note, long_text);
 }
 
 bool OptionParser::dry_run() const {
@@ -274,6 +283,14 @@ bool OptionParser::help_mode() const {
 
 const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
+}
+
+Registry &OptionParser::get_registry() {
+    return registry;
+}
+
+const Predefinitions &OptionParser::get_predefinitions() const {
+    return predefinitions;
 }
 
 const string &OptionParser::get_root_value() const {

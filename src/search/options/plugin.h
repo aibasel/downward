@@ -59,7 +59,7 @@ public:
         const std::string &group = "") {
         using TPtr = std::shared_ptr<T>;
         PluginTypeNameGetter type_name_factory = [&]() {
-                return TypeNamer<TPtr>::name();
+                return TypeNamer<TPtr>::name(*Registry::instance());
             };
         DocFactory doc_factory = [factory](OptionParser &parser) {
                 factory(parser);
