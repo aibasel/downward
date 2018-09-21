@@ -32,15 +32,12 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
 
 def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
-        if limits.can_set_time_limit():
-            limits.set_time_limit(time_limit)
-        if limits.can_set_memory_limit():
-            limits.set_memory_limit(memory_limit)
+        limits.set_time_limit(time_limit)
+        limits.set_memory_limit(memory_limit)
 
     if time_limit is None and memory_limit is None:
         return None
     else:
-        assert limits.can_set_time_limit() or limits.can_set_memory_limit()
         return set_limits
 
 
