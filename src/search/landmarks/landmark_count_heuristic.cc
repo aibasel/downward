@@ -55,8 +55,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     */
     if (task != tasks::g_root_task && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr) {
         cerr << "The landmark count heuristic currently only supports task "
-                "transformations that modify the operator costs. See issues 845 "
-                "and 686 for details." << endl;
+             << "transformations that modify the operator costs. See issues 845 "
+             << "and 686 for details."
+             << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
