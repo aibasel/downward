@@ -86,7 +86,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
     return make_shared<MergeStrategyFactoryStateless>(strategy_options);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin_dfp("merge_dfp", _parse_dfp);
+static options::Plugin<MergeStrategyFactory> _plugin_dfp("merge_dfp", _parse_dfp);
 
 static shared_ptr<MergeStrategyFactory> _parse_linear(
     options::OptionParser &parser) {
@@ -125,6 +125,6 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
         strategy_factory_options);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin_linear(
+static options::Plugin<MergeStrategyFactory> _plugin_linear(
     "merge_linear", _parse_linear);
 }

@@ -91,5 +91,5 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     return make_shared<PhOConstraints>(opts);
 }
 
-static PluginShared<ConstraintGenerator> _plugin("pho_constraints", _parse);
+static Plugin<ConstraintGenerator> _plugin("pho_constraints", _parse);
 }

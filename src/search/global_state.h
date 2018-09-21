@@ -5,10 +5,7 @@
 
 #include "algorithms/int_packer.h"
 
-#include <cstddef>
-#include <iostream>
-#include <vector>
-
+class State;
 class StateRegistry;
 
 using PackedStateBin = int_packer::IntPacker::Bin;
@@ -50,7 +47,7 @@ public:
 
     int operator[](int var) const;
 
-    std::vector<int> get_values() const;
+    State unpack() const;
 
     void dump_pddl() const;
     void dump_fdr() const;

@@ -86,12 +86,12 @@ Abstraction::Abstraction(
       unmet_goals(0),
       debug(debug) {
     assert(max_states >= 1);
-    g_log << "Start building abstraction." << endl;
+    utils::g_log << "Start building abstraction." << endl;
     cout << "Maximum number of states: " << max_states << endl;
     cout << "Maximum number of transitions: "
          << max_non_looping_transitions << endl;
     build(rng);
-    g_log << "Done building abstraction." << endl;
+    utils::g_log << "Done building abstraction." << endl;
     cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
@@ -216,9 +216,9 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 
     int num_states = get_num_states();
     if (num_states % 1000 == 0) {
-        g_log << num_states << "/" << max_states << " states, "
-              << transition_updater.get_num_non_loops() << "/"
-              << max_non_looping_transitions << " transitions" << endl;
+        utils::g_log << num_states << "/" << max_states << " states, "
+                     << transition_updater.get_num_non_loops() << "/"
+                     << max_non_looping_transitions << " transitions" << endl;
     }
 
     delete state;

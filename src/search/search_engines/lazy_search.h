@@ -31,7 +31,7 @@ protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     std::vector<Evaluator *> path_dependent_evaluators;
-    std::vector<Evaluator *> preferred_operator_evaluators;
+    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
 
     GlobalState current_state;
     StateID current_predecessor_id;
@@ -58,7 +58,7 @@ public:
     explicit LazySearch(const options::Options &opts);
     virtual ~LazySearch() = default;
 
-    void set_preferred_operator_evaluators(std::vector<Evaluator *> &evaluators);
+    void set_preferred_operator_evaluators(std::vector<std::shared_ptr<Evaluator>> &evaluators);
 
     virtual void print_statistics() const override;
 };

@@ -139,5 +139,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("sf_miasm", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("sf_miasm", _parse);
 }
