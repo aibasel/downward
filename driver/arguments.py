@@ -267,7 +267,7 @@ def _set_components_and_inputs(parser, args):
 def _get_time_limit_in_seconds(limit, parser):
     match = re.match(r"^(\d+)(s|m|h)?$", limit, flags=re.I)
     if not match:
-        parser.error("malformed time limit parameter: {}".format(limit))
+        print_usage_and_exit_with_driver_input_error("malformed time limit parameter: {}".format(limit))
     time = int(match.group(1))
     suffix = match.group(2)
     if suffix is not None:
@@ -282,7 +282,7 @@ def _get_time_limit_in_seconds(limit, parser):
 def _get_memory_limit_in_bytes(limit, parser):
     match = re.match(r"^(\d+)(k|m|g)?$", limit, flags=re.I)
     if not match:
-        parser.error("malformed memory limit parameter: {}".format(limit))
+        print_usage_and_exit_with_driver_input_error("malformed memory limit parameter: {}".format(limit))
     memory = int(match.group(1))
     suffix = match.group(2)
     if suffix is not None:
