@@ -5,6 +5,7 @@
 #include "../search_engine.h"
 
 #include "../options/registries.h"
+#include "../options/predefinitions.h"
 
 namespace options {
 class Options;
@@ -13,7 +14,12 @@ class Options;
 namespace iterated_search {
 class IteratedSearch : public SearchEngine {
     const std::vector<options::ParseTree> engine_configs;
+    /*
+      We need to copy the registry and predefinitions here since they live
+      longer than the objects referenced in the constructor.
+    */
     options::Registry registry;
+    options::Predefinitions predefinitions;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -31,7 +37,8 @@ class IteratedSearch : public SearchEngine {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const options::Options &opts, options::Registry &registry);
+    IteratedSearch(const options::Options &opts, options::Registry &registry
+                   const options::Predefinitions &predefinitions);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
