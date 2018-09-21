@@ -1,12 +1,13 @@
 #ifndef OPTIONS_OPTION_PARSER_H
 #define OPTIONS_OPTION_PARSER_H
 
-#include "doc_store.h"
+#include "doc_utils.h"
 #include "options.h"
 #include "predefinitions.h"
 
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -69,10 +70,6 @@ public:
         const std::string &help = "",
         const std::string &default_value = "");
 
-    void document_values(
-        const std::string &argument,
-        const ValueExplanations &value_explanations) const;
-
     void document_synopsis(
         const std::string &name, const std::string &note) const;
 
@@ -84,8 +81,6 @@ public:
 
     void document_note(
         const std::string &name, const std::string &note, bool long_text = false) const;
-
-    void document_hide() const;
 
     void error(const std::string &msg) const;
 
@@ -119,13 +114,6 @@ public:
   not necessary to specialize the class; we just need to specialize
   the method.
 */
-
-template<typename T>
-class TokenParser<T *> {
-public:
-    static inline T *parse(OptionParser &parser);
-};
-
 template<typename T>
 class TokenParser<std::shared_ptr<T>> {
 public:
@@ -188,43 +176,19 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
 
 // Helper functions for the TokenParser-specializations.
 
-/*
-  This function is legacy code. It can go away once all plugins use shared_ptr.
-*/
 template<typename T>
-static T *lookup_in_registry(OptionParser &parser) {
+static std::shared_ptr<T> lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
-    if (Registry<T *>::instance()->contains(value)) {
-        return Registry<T *>::instance()->get(value)(parser);
+    try {
+        return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
+    } catch (const std::out_of_range &) {
+        parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     }
-    parser.error(TypeNamer<T *>::name() + " " + value + " not found");
-    return nullptr;
-}
-
-// TODO: Rename to lookup_in_registry() once all plugins use shared_ptr.
-template<typename T>
-static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &parser) {
-    const std::string &value = parser.get_root_value();
-    if (Registry<std::shared_ptr<T>>::instance()->contains(value)) {
-        return Registry<std::shared_ptr<T>>::instance()->get(value)(parser);
-    }
-    parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
     return nullptr;
 }
 
 template<typename T>
-static T *lookup_in_predefinitions(OptionParser &parser, bool &found) {
-    const std::string &value = parser.get_root_value();
-    if (Predefinitions::instance()->contains<T *>(value)) {
-        found = true;
-        return Predefinitions::instance()->get<T *>(value);
-    }
-    found = false;
-    return nullptr;
-}
-
-template<typename T>
-static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, bool &found) {
+static std::shared_ptr<T> lookup_in_predefinitions(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
     const std::string &value = parser.get_root_value();
     if (Predefinitions::instance()->contains<TPtr>(value)) {
@@ -235,23 +199,13 @@ static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &parser, 
     return nullptr;
 }
 
-// TODO: The following method can go away once we use shared pointers for all plugins.
-template<typename T>
-inline T *TokenParser<T *>::parse(OptionParser &parser) {
-    bool predefined;
-    T *result = lookup_in_predefinitions<T>(parser, predefined);
-    if (predefined)
-        return result;
-    return lookup_in_registry<T>(parser);
-}
-
 template<typename T>
 inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &parser) {
     bool predefined;
-    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(parser, predefined);
+    std::shared_ptr<T> result = lookup_in_predefinitions<T>(parser, predefined);
     if (predefined)
         return result;
-    return lookup_in_registry_shared<T>(parser);
+    return lookup_in_registry<T>(parser);
 }
 
 // Needed for iterated search.
@@ -300,7 +254,7 @@ void OptionParser::add_option(
     const std::string &default_value,
     const Bounds &bounds) {
     if (help_mode()) {
-        DocStore::instance()->add_arg(
+        Registry::instance()->add_plugin_info_arg(
             get_root_value(),
             key,
             help,

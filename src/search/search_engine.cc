@@ -45,10 +45,9 @@ SearchEngine::SearchEngine(const Options &opts)
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
-      state_registry(*task),
+      state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy)),
-      search_space(state_registry,
-                   static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      search_space(state_registry),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")) {
@@ -190,22 +189,13 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
 
-
-ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
+void collect_preferred_operators(
     EvaluationContext &eval_context,
-    const vector<Evaluator *> &preferred_operator_evaluators) {
-    ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (Evaluator *evaluator : preferred_operator_evaluators) {
-        /*
-          Unreliable heuristics might consider solvable states as dead
-          ends. We only want preferred operators from finite-value
-          heuristics.
-        */
-        if (!eval_context.is_evaluator_value_infinite(evaluator)) {
-            for (OperatorID op_id : eval_context.get_preferred_operators(evaluator)) {
-                preferred_operators.insert(op_id);
-            }
+    Evaluator *preferred_operator_evaluator,
+    ordered_set::OrderedSet<OperatorID> &preferred_operators) {
+    if (!eval_context.is_evaluator_value_infinite(preferred_operator_evaluator)) {
+        for (OperatorID op_id : eval_context.get_preferred_operators(preferred_operator_evaluator)) {
+            preferred_operators.insert(op_id);
         }
     }
-    return preferred_operators;
 }

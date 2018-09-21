@@ -168,7 +168,7 @@ void CostSaturation::build_abstractions(
 }
 
 void CostSaturation::print_statistics(utils::Duration init_time) const {
-    g_log << "Done initializing additive Cartesian heuristic" << endl;
+    utils::g_log << "Done initializing additive Cartesian heuristic" << endl;
     cout << "Time for initializing additive Cartesian heuristic: "
          << init_time << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;

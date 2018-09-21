@@ -226,5 +226,5 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin("merge_sccs", _parse);
+static options::Plugin<MergeStrategyFactory> _plugin("merge_sccs", _parse);
 }

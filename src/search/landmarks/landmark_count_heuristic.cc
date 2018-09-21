@@ -291,14 +291,9 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 }
 
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
                              "See also Evaluator#LAMA-FF_synergy_master");
-    parser.document_note(
-        "Note",
-        "Regarding using different cost transformations, there are a few "
-        "caveats to be considered, see OptionCaveats."
-        );
     parser.document_note(
         "Optimal search",
         "When using landmarks for optimal search (``admissible=true``), "
@@ -353,7 +348,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new LandmarkCountHeuristic(opts);
+        return make_shared<LandmarkCountHeuristic>(opts);
 }
 
 static Plugin<Evaluator> _plugin("lmcount", _parse);

@@ -1,6 +1,6 @@
 #include "doc_printer.h"
 
-#include "doc_store.h"
+#include "doc_utils.h"
 #include "registries.h"
 
 #include <iostream>
@@ -15,8 +15,8 @@ static bool is_call(const string &s) {
 
 DocPrinter::DocPrinter(ostream &out)
     : os(out) {
-    for (const string &key : DocStore::instance()->get_keys()) {
-        DocStore::instance()->get(key).fill_docs();
+    for (const string &key : Registry::instance()->get_sorted_plugin_info_keys()) {
+        Registry::instance()->get_plugin_info(key).fill_docs();
     }
 }
 
@@ -24,22 +24,22 @@ DocPrinter::~DocPrinter() {
 }
 
 void DocPrinter::print_all() {
-    for (const PluginTypeInfo &info : PluginTypeRegistry::instance()->get_sorted_types()) {
+    for (const PluginTypeInfo &info : Registry::instance()->get_sorted_type_infos()) {
         print_category(info.get_type_name(), info.get_documentation());
     }
 }
 
 void DocPrinter::print_plugin(const string &name) {
-    print_plugin(name, DocStore::instance()->get(name));
+    print_plugin(name, Registry::instance()->get_plugin_info(name));
 }
 
 void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
     print_category_header(plugin_type_name);
     print_category_synopsis(synopsis);
     map<string, vector<PluginInfo>> groups;
-    DocStore *doc_store = DocStore::instance();
-    for (const string &key : doc_store->get_keys()) {
-        const PluginInfo &info = doc_store->get(key);
+    Registry *registry = Registry::instance();
+    for (const string &key : registry->get_sorted_plugin_info_keys()) {
+        const PluginInfo &info = registry->get_plugin_info(key);
         if (info.get_type_name() == plugin_type_name && !info.hidden) {
             groups[info.group].push_back(info);
         }
@@ -68,7 +68,7 @@ void DocPrinter::print_section(
     const string &group_id, const vector<PluginInfo> &infos) {
     if (!group_id.empty()) {
         const PluginGroupInfo &group =
-            PluginGroupRegistry::instance()->get(group_id);
+            Registry::instance()->get_group_info(group_id);
         os << endl << "= " << group.doc_title << " =" << endl << endl;
     }
     for (const PluginInfo &info : infos) {
