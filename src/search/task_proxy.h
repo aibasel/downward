@@ -479,9 +479,9 @@ public:
     }
 
     /*
-      Eventually, this method should not be part of OperatorProxy but live in
-      a class that handles the task transformation and known about both the
-      original and the transformed task.
+      Eventually, this method should perhaps not be part of OperatorProxy but
+      live in a class that handles the task transformation and known about both
+      the original and the transformed task.
     */
     OperatorID get_ancestor_operator_id(const AbstractTask *ancestor_task) const {
         assert(!is_an_axiom);
@@ -693,8 +693,8 @@ public:
       of task transformations on the ancestor task. If this is not the
       case, the function aborts.
 
-      Eventually, this method should not be part of TaskProxy but live in
-      a class that handles the task transformation and known about both the
+      Eventually, this method should perhaps not be part of TaskProxy but live
+      in a class that handles the task transformation and known about both the
       original and the transformed task.
     */
     State convert_ancestor_state(const State &ancestor_state) const {
