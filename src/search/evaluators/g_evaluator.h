@@ -3,8 +3,6 @@
 
 #include "../evaluator.h"
 
-class Heuristic;
-
 namespace g_evaluator {
 class GEvaluator : public Evaluator {
 public:

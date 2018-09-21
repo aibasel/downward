@@ -4,6 +4,7 @@
 #include "abstract_task.h"
 #include "global_state.h"
 #include "operator_id.h"
+#include "task_id.h"
 
 #include "utils/collections.h"
 #include "utils/hash.h"
@@ -477,9 +478,14 @@ public:
         return index;
     }
 
-    OperatorID get_global_operator_id() const {
+    /*
+      Eventually, this method should perhaps not be part of OperatorProxy but
+      live in a class that handles the task transformation and known about both
+      the original and the transformed task.
+    */
+    OperatorID get_ancestor_operator_id(const AbstractTask *ancestor_task) const {
         assert(!is_an_axiom);
-        return task->get_global_operator_id(OperatorID(index));
+        return OperatorID(task->convert_operator_index(index, ancestor_task));
     }
 };
 
@@ -572,9 +578,10 @@ public:
         other.task = nullptr;
     }
 
-    State &operator=(const State &&other) {
+    State &operator=(State &&other) {
         if (this != &other) {
             values = std::move(other.values);
+            other.task = nullptr;
         }
         return *this;
     }
@@ -627,9 +634,6 @@ public:
         }
         return State(*task, std::move(new_values));
     }
-
-    void dump_pddl() const;
-    void dump_fdr() const;
 };
 
 
@@ -650,6 +654,14 @@ public:
         : task(&task) {}
     ~TaskProxy() = default;
 
+    TaskID get_id() const {
+        return TaskID(task);
+    }
+
+    void subscribe_to_task_destruction(subscriber::Subscriber<AbstractTask> *subscriber) const {
+        task->subscribe(subscriber);
+    }
+
     VariablesProxy get_variables() const {
         return VariablesProxy(*task);
     }
@@ -666,8 +678,12 @@ public:
         return GoalsProxy(*task);
     }
 
+    State create_state(std::vector<int> &&state_values) const {
+        return State(*task, std::move(state_values));
+    }
+
     State get_initial_state() const {
-        return State(*task, task->get_initial_state_values());
+        return create_state(task->get_initial_state_values());
     }
 
     /*
@@ -676,13 +692,17 @@ public:
       this task in the sense that this task is the result of a sequence
       of task transformations on the ancestor task. If this is not the
       case, the function aborts.
+
+      Eventually, this method should perhaps not be part of TaskProxy but live
+      in a class that handles the task transformation and known about both the
+      original and the transformed task.
     */
     State convert_ancestor_state(const State &ancestor_state) const {
         TaskProxy ancestor_task_proxy = ancestor_state.get_task();
         // Create a copy of the state values for the new state.
         std::vector<int> state_values = ancestor_state.get_values();
         task->convert_state_values(state_values, ancestor_task_proxy.task);
-        return State(*task, std::move(state_values));
+        return create_state(std::move(state_values));
     }
 
     const causal_graph::CausalGraph &get_causal_graph() const;

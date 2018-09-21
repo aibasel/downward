@@ -62,5 +62,5 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         return make_shared<MergeStrategyFactoryPrecomputed>(opts);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin("merge_precomputed", _parse);
+static options::Plugin<MergeStrategyFactory> _plugin("merge_precomputed", _parse);
 }
