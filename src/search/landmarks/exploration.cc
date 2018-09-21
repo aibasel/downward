@@ -95,7 +95,7 @@ void Exploration::write_overflow_warning() {
     }
 }
 
-void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
+void Exploration::set_additional_goals(const vector<FactPair> &additional_goals) {
     //Clear previous additional goals.
     for (ExProposition *prop : termination_propositions) {
         propositions[prop->fact.var][prop->fact.value].is_termination_condition = false;
@@ -108,7 +108,7 @@ void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
         termination_propositions.push_back(&propositions[var_id][value]);
     }
     // Build new additional goal propositions.
-    for (const FactPair &fact : add_goals) {
+    for (const FactPair &fact : additional_goals) {
         int var_id = fact.var;
         int value = fact.value;
         if (!propositions[var_id][value].is_goal_condition) {
