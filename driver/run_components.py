@@ -155,6 +155,9 @@ def run_validate(args):
         returncodes.exit_with_driver_input_error("validate needs one or two PDDL input files.")
 
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
+    if not plan_files:
+        print("Not running validate since no plans found.")
+        return (0, True)
     validate_inputs = [domain, task] + plan_files
 
     try:
