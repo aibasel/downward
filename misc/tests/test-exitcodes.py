@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 from collections import defaultdict
-import itertools
 import os
 import subprocess
 import sys
@@ -22,18 +21,19 @@ TRANSLATE_TASKS = {
     "large": "satellite/p25-HC-pfile5.pddl",
 }
 
-"""A constant function that can be used as a factory for defaultdict."""
-def constant_factory(value):
-    return itertools.repeat(value).next
-
-"""
-Since we cannot enforce memory limits on macOS, we make sure that we get
-the DRIVER_UNSUPPORTED exit code in that case.
-"""
 TRANSLATE_TESTS = [
-    ("small", [], [], defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("large", ["--translate-time-limit", "1s"], [], defaultdict(constant_factory(returncodes.TRANSLATE_OUT_OF_TIME))),
-    ("large", ["--translate-memory-limit", "50M"], [], defaultdict(constant_factory(returncodes.TRANSLATE_OUT_OF_MEMORY), darwin=returncodes.DRIVER_UNSUPPORTED)),
+    ("small", [], [], defaultdict(lambda: returncodes.SUCCESS)),
+    # We cannot set time limits on Windows and thus expect DRIVER_UNSUPPORTED
+    # as exit code in this case.
+    ("large", ["--translate-time-limit", "1s"], [], defaultdict(
+        lambda: returncodes.TRANSLATE_OUT_OF_TIME,
+        win32=returncodes.DRIVER_UNSUPPORTED)),
+    # We cannot set/enforce memory limits on Windows/macOS and thus expect
+    # DRIVER_UNSUPPORTED as exit code in those cases.
+    ("large", ["--translate-memory-limit", "50M"], [], defaultdict(
+        lambda: returncodes.TRANSLATE_OUT_OF_MEMORY,
+        darwin=returncodes.DRIVER_UNSUPPORTED,
+        win32=returncodes.DRIVER_UNSUPPORTED)),
 ]
 
 SEARCH_TASKS = {
@@ -56,46 +56,85 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
 '))')
 
 SEARCH_TESTS = [
-    ("strips", [], "astar(add())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "astar(hm())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "ehc(hm())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "astar(ipdb())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "astar(lmcut())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "astar(lmcount(lm_rhw(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "astar(lmcount(lm_rhw(), admissible=true))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "astar(lmcount(lm_hm(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], "astar(lmcount(lm_hm(), admissible=true))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("strips", [], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("axioms", [], "astar(add())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("axioms", [], "astar(hm())", defaultdict(constant_factory(returncodes.SEARCH_UNSOLVED_INCOMPLETE))),
-    ("axioms", [], "ehc(hm())", defaultdict(constant_factory(returncodes.SEARCH_UNSOLVED_INCOMPLETE))),
-    ("axioms", [], "astar(ipdb())", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("axioms", [], "astar(lmcut())", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=true))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("axioms", [], "astar(lmcount(lm_zg(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("axioms", [], "astar(lmcount(lm_zg(), admissible=true))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
+    ("strips", [], "astar(add())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(hm())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "ehc(hm())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(ipdb())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcut())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_rhw(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_rhw(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_hm(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_hm(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], MERGE_AND_SHRINK, defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(add())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(hm())",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVED_INCOMPLETE)),
+    ("axioms", [], "ehc(hm())",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVED_INCOMPLETE)),
+    ("axioms", [], "astar(ipdb())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcut())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_zg(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(lmcount(lm_zg(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
     # h^m landmark factory explicitly forbids axioms.
-    ("axioms", [], "astar(lmcount(lm_hm(), admissible=false))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("axioms", [], "astar(lmcount(lm_hm(), admissible=true))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=true))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("axioms", [], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("cond-eff", [], "astar(add())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(hm())", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(ipdb())", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("cond-eff", [], "astar(lmcut())", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=true))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=true))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=true))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=false))", defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=true))", defaultdict(constant_factory(returncodes.SEARCH_UNSUPPORTED))),
-    ("cond-eff", [], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SUCCESS))),
-    ("large", ["--search-memory-limit", "50M"], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SEARCH_OUT_OF_MEMORY), darwin=returncodes.DRIVER_UNSUPPORTED)),
-    ("large", ["--search-time-limit", "1s"], MERGE_AND_SHRINK, defaultdict(constant_factory(returncodes.SEARCH_OUT_OF_TIME))),
+    ("axioms", [], "astar(lmcount(lm_hm(), admissible=false))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_hm(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(add())",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(hm())",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(ipdb())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(lmcut())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SUCCESS)),
+    # We cannot set/enforce memory limits on Windows/macOS and thus expect
+    # DRIVER_UNSUPPORTED as exit code in those cases.
+    ("large", ["--search-memory-limit", "50M"], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SEARCH_OUT_OF_MEMORY,
+                    darwin=returncodes.DRIVER_UNSUPPORTED,
+                    win32=returncodes.DRIVER_UNSUPPORTED)),
+    # We cannot set time limits on Windows and thus expect DRIVER_UNSUPPORTED
+    # as exit code in this case.
+    ("large", ["--search-time-limit", "1s"], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SEARCH_OUT_OF_TIME,
+                    win32=returncodes.DRIVER_UNSUPPORTED)),
 ]
 
 
@@ -125,7 +164,7 @@ def run_search_tests():
         cmd = [sys.executable, DRIVER] + driver_options + [problem, "--search", search_options]
         exitcode = subprocess.call(cmd)
         if not exitcode == expected[sys.platform]:
-            yield (cmd, expected, exitcode)
+            yield (cmd, expected[sys.platform], exitcode)
         cleanup()
 
 
