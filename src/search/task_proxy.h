@@ -478,9 +478,9 @@ public:
         return index;
     }
 
-    OperatorID get_global_operator_id() const {
+    OperatorID get_ancestor_operator_id(const AbstractTask *ancestor_task) const {
         assert(!is_an_axiom);
-        return task->get_global_operator_id(OperatorID(index));
+        return OperatorID(task->convert_operator_index(index, ancestor_task));
     }
 };
 
