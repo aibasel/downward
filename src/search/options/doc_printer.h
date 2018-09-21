@@ -27,10 +27,6 @@ protected:
     virtual void print_category_footer() = 0;
 
 public:
-    /*
-      TODO: I am not happy about passing predefinitions here,
-      but we need it for fill_docs in DocPrinter
-    */
     explicit DocPrinter(std::ostream &out);
     virtual ~DocPrinter();
 

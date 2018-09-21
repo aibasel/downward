@@ -16,7 +16,6 @@ class IteratedSearch : public SearchEngine {
     /*
       We need to copy the predefinitions here since it lives longer
       than the object referenced in the constructor.
-      TODO: we maybe do not actually want to save Predefinitions here
     */
     options::Predefinitions predefinitions;
     bool pass_bound;
@@ -36,8 +35,8 @@ class IteratedSearch : public SearchEngine {
     virtual SearchStatus step() override;
 
 public:
-    explicit IteratedSearch(const options::Options &opts,
-                            const options::Predefinitions &predefinitions);
+    IteratedSearch(const options::Options &opts,
+                   const options::Predefinitions &predefinitions);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;

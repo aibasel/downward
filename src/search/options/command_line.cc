@@ -25,8 +25,8 @@ static void predefine_evaluator(const string &arg, Predefinitions &predefinition
                                 bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, predefinitions, dry_run);
-    predefinitions.predefine<shared_ptr<Evaluator>>(
-        predefinition.first, parser.start_parsing<shared_ptr<Evaluator>>());
+    predefinitions.predefine(predefinition.first,
+                             parser.start_parsing<shared_ptr<Evaluator>>());
 }
 
 
@@ -34,8 +34,8 @@ static void predefine_lmgraph(const string &arg, Predefinitions &predefinitions,
                               bool dry_run) {
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, predefinitions, dry_run);
-    predefinitions.predefine<shared_ptr<landmarks::LandmarkFactory>>(
-        predefinition.first, parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
+    predefinitions.predefine(predefinition.first,
+                             parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
 }
 
 
