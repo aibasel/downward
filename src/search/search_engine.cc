@@ -47,8 +47,7 @@ SearchEngine::SearchEngine(const Options &opts)
       task_proxy(*task),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy)),
-      search_space(state_registry,
-                   static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      search_space(state_registry),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")) {

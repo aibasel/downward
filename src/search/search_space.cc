@@ -10,12 +10,10 @@ using namespace std;
 
 SearchNode::SearchNode(const StateRegistry &state_registry,
                        StateID state_id,
-                       SearchNodeInfo &info,
-                       OperatorCost cost_type)
+                       SearchNodeInfo &info)
     : state_registry(state_registry),
       state_id(state_id),
-      info(info),
-      cost_type(cost_type) {
+      info(info) {
     assert(state_id != StateID::no_state);
 }
 
@@ -119,14 +117,12 @@ void SearchNode::dump(const TaskProxy &task_proxy) const {
     }
 }
 
-SearchSpace::SearchSpace(StateRegistry &state_registry, OperatorCost cost_type)
-    : state_registry(state_registry),
-      cost_type(cost_type) {
+SearchSpace::SearchSpace(StateRegistry &state_registry)
+    : state_registry(state_registry) {
 }
 
 SearchNode SearchSpace::get_node(const GlobalState &state) {
-    return SearchNode(
-        state_registry, state.get_id(), search_node_infos[state], cost_type);
+    return SearchNode(state_registry, state.get_id(), search_node_infos[state]);
 }
 
 void SearchSpace::trace_path(const GlobalState &goal_state,
