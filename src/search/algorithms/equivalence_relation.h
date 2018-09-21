@@ -53,7 +53,7 @@ class EquivalenceRelation {
       Refining a relation with a block X is equivalent to splitting every block B
       into two blocks (B \cap X) and (B \setminus X).
     */
-    void refine(const Block &block_x);
+    void refine(const Block &block);
 
     BlockListIter add_empty_block();
 public:
