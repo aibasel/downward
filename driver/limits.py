@@ -6,7 +6,6 @@ from . import returncodes
 from . import util
 
 import math
-import re
 try:
     import resource
 except ImportError:
@@ -102,50 +101,6 @@ def _get_external_memory_limit():
     if not can_set_memory_limit():
         return None
     return _get_external_limit(resource.RLIMIT_AS)
-
-
-def _get_time_limit_in_seconds(limit, parser):
-    match = re.match(r"^(\d+)(s|m|h)?$", limit, flags=re.I)
-    if not match:
-        parser.error("malformed time limit parameter: {}".format(limit))
-    time = int(match.group(1))
-    suffix = match.group(2)
-    if suffix is not None:
-        suffix = suffix.lower()
-    if suffix == "m":
-        time *= 60
-    elif suffix == "h":
-        time *= 3600
-    return time
-
-def _get_memory_limit_in_bytes(limit, parser):
-    match = re.match(r"^(\d+)(k|m|g)?$", limit, flags=re.I)
-    if not match:
-        parser.error("malformed memory limit parameter: {}".format(limit))
-    memory = int(match.group(1))
-    suffix = match.group(2)
-    if suffix is not None:
-        suffix = suffix.lower()
-    if suffix == "k":
-        memory *= 1024
-    elif suffix is None or suffix == "m":
-        memory *= 1024 * 1024
-    elif suffix == "g":
-        memory *= 1024 * 1024 * 1024
-    return memory
-
-
-def set_time_limit_in_seconds(parser, args, component):
-    param = component + "_time_limit"
-    limit = getattr(args, param)
-    if limit is not None:
-        setattr(args, param, _get_time_limit_in_seconds(limit, parser))
-
-def set_memory_limit_in_bytes(parser, args, component):
-    param = component + "_memory_limit"
-    limit = getattr(args, param)
-    if limit is not None:
-        setattr(args, param, _get_memory_limit_in_bytes(limit, parser))
 
 
 def get_memory_limit(component_limit, overall_limit):
