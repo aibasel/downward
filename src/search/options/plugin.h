@@ -61,8 +61,13 @@ public:
         PluginTypeNameGetter type_name_factory = [&]() {
                 return TypeNamer<TPtr>::name();
             };
+        DocFactory doc_factory = [factory](OptionParser &parser) {
+                factory(parser);
+            };
 
-        RegistryDataCollection::instance()->insert_plugin_data(key, factory, group, type_name_factory, std::type_index(typeid(TPtr)));
+        RegistryDataCollection::instance()->insert_plugin_data(key, factory, 
+            group, type_name_factory, doc_factory, 
+            std::type_index(typeid(TPtr)));
         //Registry::instance()->insert_plugin<T>(key, factory, type_name_factory, group);
     }
     ~Plugin() = default;

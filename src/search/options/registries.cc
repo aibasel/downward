@@ -7,16 +7,23 @@ using utils::ExitCode;
 
 namespace options {
 
-void RegistryDataCollection::insert_plugin_type_data(const std::string& type_name, const std::string& documentation, std::type_index type_index) {
+void RegistryDataCollection::insert_plugin_type_data(
+    const std::string& type_name, const std::string& documentation, 
+    std::type_index type_index) {
     plugin_types.emplace_back(type_name, documentation, type_index);
 }
 
-void RegistryDataCollection::insert_plugin_group_data(const std::string& group_id, const std::string& doc_title) {
+void RegistryDataCollection::insert_plugin_group_data(
+    const std::string& group_id, const std::string& doc_title) {
     plugin_groups.emplace_back(group_id, doc_title);
 }
 
-void RegistryDataCollection::insert_plugin_data(const std::string& key, Any factory, const std::string& group, PluginTypeNameGetter type_name_factory, std::type_index type_index) {
-    plugins.emplace_back(key, factory, group, type_name_factory, type_index);
+void RegistryDataCollection::insert_plugin_data(
+    const std::string& key, Any factory, const std::string& group, 
+    PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
+    std::type_index type_index) {
+    plugins.emplace_back(key, factory, group, type_name_factory, doc_factory,
+        type_index);
  }
 
 
@@ -87,7 +94,22 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
     return plugin_group_infos.at(group);
 }
 
+void Registry::insert_plugin(const std::string &key, Any factory,
+        PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
+        const std::string &group, const std::type_index type) {
+        //using TPtr = std::shared_ptr<T>;
+        insert_plugin_info(key, doc_factory, type_name_factory, group);
+        insert_factory(key, factory, type);
+    }
 
+void Registry::insert_factory(const std::string &key, Any factory,
+    std::type_index type) {
+    if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
+        std::cerr << "duplicate key in registry: " << key << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    plugin_factories[type][key] = factory;
+    }
 
 void Registry::insert_plugin_info(
     const string &key,

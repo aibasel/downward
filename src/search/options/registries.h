@@ -23,7 +23,7 @@ class OptionParser;
 class RegistryDataCollection {
     using PluginTypeData = std::tuple<const std::string &/*type_name*/, const std::string &/*documentation*/, std::type_index>;
     using PluginGroupData = std::tuple<const std::string &/*group_id*/, const std::string &/*doc_title*/>;
-    using PluginData = std::tuple<const std::string &/*key*/, Any/*factory*/, const std::string &/*group*/, PluginTypeNameGetter /*type_name_factory*/, std::type_index>;
+    using PluginData = std::tuple<const std::string &/*key*/, Any/*factory*/, const std::string &/*group*/, PluginTypeNameGetter /*type_name_factory*/, DocFactory /*doc_factory*/, std::type_index>;
     
     std::vector<PluginTypeData> plugin_types;
     std::vector<PluginGroupData> plugin_groups;
@@ -42,6 +42,7 @@ public:
         Any factory,
         const std::string &group,
         PluginTypeNameGetter type_name_factory,
+        DocFactory doc_factory,
         std::type_index type_index);
     
     static RegistryDataCollection *instance() {
@@ -75,44 +76,19 @@ class Registry {
      */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
     Registry() = default;
-
-    template<typename T>
+    
+    void insert_plugin(const std::string &key, Any factory,
+        PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
+        const std::string &group, const std::type_index type);
     void insert_factory(
         const std::string &key,
-        std::function<T(OptionParser &)> factory) {
-        std::type_index type(typeid(T));
-
-        if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
-            std::cerr << "duplicate key in registry: " << key << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-        plugin_factories[type][key] = factory;
-    }
-
+        Any factory,
+        const std::type_index type);
     void insert_plugin_info(
         const std::string &key,
         DocFactory factory,
         PluginTypeNameGetter type_name_factory,
         const std::string &group);
-    
-    template<typename T>
-    void insert_plugin(const std::string &key,
-                       std::function<std::shared_ptr<T>(OptionParser &)> factory,
-                       PluginTypeNameGetter type_name_factory, const std::string &group) {
-        using TPtr = std::shared_ptr<T>;
-        /*
-          We cannot collect the plugin documentation here because this might
-          require information from a TypePlugin object that has not yet been
-          constructed. We therefore collect the necessary functions here and
-          call them later, after all PluginType objects have been constructed.
-        */
-        DocFactory doc_factory = [factory](OptionParser &parser) {
-                factory(parser);
-            };
-        insert_plugin_info(key, doc_factory, type_name_factory, group);
-        insert_factory<TPtr>(key, factory);
-    }
-    
     void insert_type_info(const PluginTypeInfo &info);
     void insert_group_info(const PluginGroupInfo &info);
     
