@@ -4,6 +4,7 @@
 #include "doc_utils.h"
 #include "options.h"
 #include "predefinitions.h"
+#include "registries.h"
 
 #include <memory>
 #include <sstream>
@@ -22,6 +23,12 @@ namespace options {
 class OptionParser {
     Options opts;
     const ParseTree parse_tree;
+    /*
+      Cannot be const in the current design. The plugin factory methods insert
+      PluginInfo structs into the registry when they are called. This could
+      be improved later.
+    */
+    Registry &registry;
     const Predefinitions &predefinitions;
     const bool dry_run_;
     const bool help_mode_;
@@ -37,12 +44,12 @@ class OptionParser {
 
 
 public:
-    OptionParser(const ParseTree &parse_tree,
-                 const Predefinitions &predefinitions,
-                 bool dry_run, bool help_mode = false);
-    OptionParser(const std::string &config,
-                 const Predefinitions &predefinitions,
-                 bool dry_run, bool help_mode = false);
+    OptionParser(const ParseTree &parse_tree, Registry &registry,
+		 const Predefinitions &predefinitions,
+		 bool dry_run, bool help_mode = false);
+    OptionParser(const std::string &config, Registry &registry,
+		 const Predefinitions &predefinitions,
+		 bool dry_run, bool help_mode = false);
     ~OptionParser() = default;
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
@@ -94,6 +101,7 @@ public:
     Options parse();
 
     const ParseTree *get_parse_tree();
+    Registry &get_registry();
     const Predefinitions &get_predefinitions() const;
     const std::string &get_root_value() const;
 
@@ -143,7 +151,8 @@ inline T TokenParser<T>::parse(OptionParser &parser) {
     std::istringstream stream(value);
     T x;
     if ((stream >> std::boolalpha >> x).fail()) {
-        parser.error("could not parse argument " + value + " of type " + TypeNamer<T>::name());
+        parser.error("could not parse argument " + value + " of type " +
+                     TypeNamer<T>::name(parser.get_registry()));
     }
     return x;
 }
@@ -186,9 +195,9 @@ template<typename T>
 static std::shared_ptr<T> lookup_in_registry(OptionParser &parser) {
     const std::string &value = parser.get_root_value();
     try {
-        return Registry::instance()->get_factory<std::shared_ptr<T>>(value)(parser);
+        return parser.get_registry().get_factory<std::shared_ptr<T>>(value)(parser);
     } catch (const std::out_of_range &) {
-        parser.error(TypeNamer<std::shared_ptr<T>>::name() + " " + value + " not found");
+        parser.error(TypeNamer<std::shared_ptr<T>>::name(parser.get_registry()) + " " + value + " not found");
     }
     return nullptr;
 }
@@ -230,7 +239,8 @@ inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
          tree_it != end_of_roots_children(*parser.get_parse_tree());
          ++tree_it) {
         OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it),
-                               parser.get_predefinitions(), parser.dry_run());
+                               parser.get_registry(), parser.get_predefinitions(),
+			       parser.dry_run());
         results.push_back(TokenParser<T>::parse(subparser));
     }
     return results;
@@ -261,11 +271,11 @@ void OptionParser::add_option(
     const std::string &default_value,
     const Bounds &bounds) {
     if (help_mode()) {
-        Registry::instance()->add_plugin_info_arg(
+        registry.add_plugin_info_arg(
             get_root_value(),
             key,
             help,
-            TypeNamer<T>::name(),
+            TypeNamer<T>::name(registry),
             default_value,
             bounds);
         return;
@@ -301,10 +311,10 @@ void OptionParser::add_option(
     }
     std::unique_ptr<OptionParser> subparser =
         use_default ?
-        utils::make_unique_ptr<OptionParser>(default_value,
-                                             predefinitions, dry_run()) :
-        utils::make_unique_ptr<OptionParser>(subtree(parse_tree, arg),
-                                             predefinitions, dry_run());
+        utils::make_unique_ptr<OptionParser>(default_value, registry, 
+         				     predefinitions, dry_run()) :
+        utils::make_unique_ptr<OptionParser>(subtree(parse_tree, arg), registry,
+					     predefinitions, dry_run());
     T result = TokenParser<T>::parse(*subparser);
     check_bounds<T>(key, result, bounds);
     opts.set<T>(key, result);
