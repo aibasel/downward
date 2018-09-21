@@ -13,7 +13,7 @@ void PluginInfo::fill_docs(Registry &registry) {
     doc_factory(parser);
 }
 
-string PluginInfo::get_type_name() const {
-    return type_name_factory();
+string PluginInfo::get_type_name(const Registry &registry) const {
+    return type_name_factory(registry);
 }
 }

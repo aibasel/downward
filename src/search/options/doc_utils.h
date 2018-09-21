@@ -16,7 +16,7 @@ class Registry;
 
 // See comment in constructor of Plugin in plugin.h.
 using DocFactory = std::function<void (OptionParser &)>;
-using PluginTypeNameGetter = std::function<std::string()>;
+using PluginTypeNameGetter = std::function<std::string(const Registry &registry)>;
 
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
@@ -97,7 +97,7 @@ struct PluginInfo {
 
     void fill_docs(Registry &registry);
 
-    std::string get_type_name() const;
+    std::string get_type_name(const Registry &registry) const;
 };
 
 
