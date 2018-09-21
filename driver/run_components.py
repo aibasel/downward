@@ -156,10 +156,8 @@ def run_validate(args):
 
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     validate_inputs = [domain, task] + plan_files
-    time_limit = limits.get_time_limit(
-        args.validate_time_limit, args.overall_time_limit)
-    memory_limit = limits.get_memory_limit(
-        args.validate_memory_limit, args.overall_memory_limit)
+    time_limit = args.validate_time_limit
+    memory_limit = args.validate_memory_limit
 
     try:
         call.check_call(
