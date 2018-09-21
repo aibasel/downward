@@ -37,7 +37,7 @@ class IteratedSearch : public SearchEngine {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const options::Options &opts, options::Registry &registry
+    IteratedSearch(const options::Options &opts, options::Registry &registry,
                    const options::Predefinitions &predefinitions);
 
     virtual void save_plan_if_necessary() override;
