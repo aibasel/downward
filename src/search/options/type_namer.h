@@ -12,11 +12,10 @@ namespace options {
 /*
   TypeNamer prints out names of types.
 
-  There is no default implementation for
-  Typenamer<T>::name(const Registry &registry): the template needs to be
-  specialized for each type we want to support. However, we have a generic
-  version below for shared_ptr<...> types, which are the ones we use for
-  plugins.
+  There is no default implementation for TypeNamer<T>::name: the template needs
+  to be specialized for each type we want to support. However, we have a
+  generic version below for shared_ptr<...> types, which are the ones we use
+  for plugins.
 */
 template<typename T>
 struct TypeNamer {
@@ -24,9 +23,8 @@ struct TypeNamer {
 };
 
 /*
-  Note: for plug-in types, we use TypeNamer<shared_ptr<T>>::name(
-  const Registry &registry). One might be tempted to strip away the
-  shared_ptr<...> here and use TypeNamer<T>::name(const Registry &registry)
+  Note: for plug-in types, we use TypeNamer<shared_ptr<T>>::name. One might be
+  tempted to strip away the shared_ptr<...> here and use TypeNamer<T>::name
   instead, but this has the disadvantage that typeid(T) requires T to be a
   complete type, while typeid(shared_ptr<T>) also accepts incomplete types.
 */
@@ -42,35 +40,35 @@ struct TypeNamer<std::shared_ptr<T>> {
 
 template<>
 struct TypeNamer<int> {
-    static std::string name(const Registry & /*registry*/) {
+    static std::string name(const Registry &) {
         return "int";
     }
 };
 
 template<>
 struct TypeNamer<bool> {
-    static std::string name(const Registry & /*registry*/) {
+    static std::string name(const Registry &) {
         return "bool";
     }
 };
 
 template<>
 struct TypeNamer<double> {
-    static std::string name(const Registry & /*registry*/) {
+    static std::string name(const Registry &) {
         return "double";
     }
 };
 
 template<>
 struct TypeNamer<std::string> {
-    static std::string name(const Registry & /*registry*/) {
+    static std::string name(const Registry &) {
         return "string";
     }
 };
 
 template<>
 struct TypeNamer<ParseTree> {
-    static std::string name(const Registry & /*registry*/) {
+    static std::string name(const Registry &) {
         return "ParseTree (this just means the input is parsed at a later point."
                " The real type is probably a search engine.)";
     }
