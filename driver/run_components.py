@@ -156,15 +156,13 @@ def run_validate(args):
 
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     validate_inputs = [domain, task] + plan_files
-    time_limit = args.validate_time_limit
-    memory_limit = args.validate_memory_limit
 
     try:
         call.check_call(
             "validate",
             [VALIDATE] + validate_inputs,
-            time_limit=time_limit,
-            memory_limit=memory_limit)
+            time_limit=args.validate_time_limit,
+            memory_limit=args.validate_memory_limit)
     except OSError as err:
         if err.errno == errno.ENOENT:
             returncodes.exit_with_driver_input_error("Error: {} not found. Is it on the PATH?".format(VALIDATE))
