@@ -7,6 +7,7 @@
 #include "../utils/system.h"
 
 #include <string>
+#include <typeinfo>
 #include <unordered_map>
 
 namespace options {
@@ -29,8 +30,7 @@ public:
         const auto it = storage.find(key);
         if (it == storage.end()) {
             ABORT("Attempt to retrieve nonexisting object of name " +
-                  key + " from options.");
-            // (type: " + TypeNamer<T>::name() + ")
+                  key + " (type: " + typeid(T).name() + ")");
         }
         try {
             T result = any_cast<T>(it->second);
@@ -38,7 +38,10 @@ public:
         } catch (const BadAnyCast &) {
             std::cerr << "Invalid conversion while retrieving config options!"
                       << std::endl
-                      << key << " is not the correct type"// << TypeNamer<T>::name()
+                      << key << " is not of type" << typeid(T).name()
+                      << std::endl << "To retrieve the correct c++ type, "
+                      << "you can call"
+                      << std::endl << "c++filt -t " << typeid(T).name()
                       << std::endl << "exiting" << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
