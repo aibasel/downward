@@ -1,6 +1,7 @@
 #include "option_parser.h"
 #include "search_engine.h"
 
+#include "options/registries.h"
 #include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
 #include "utils/system.h"
@@ -33,8 +34,9 @@ int main(int argc, const char **argv) {
     // The command line is parsed twice: once in dry-run mode, to
     // check for simple input errors, and then in normal mode.
     try {
-        options::parse_cmd_line(argc, argv, true, unit_cost);
-        engine = options::parse_cmd_line(argc, argv, false, unit_cost);
+        options::Registry &registry = *options::Registry::instance();
+        options::parse_cmd_line(argc, argv, registry, true, unit_cost);
+        engine = options::parse_cmd_line(argc, argv, registry, false, unit_cost);
     } catch (ArgError &error) {
         cerr << error << endl;
         options::usage(argv[0]);
