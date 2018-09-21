@@ -45,11 +45,11 @@ class OptionParser {
 
 public:
     OptionParser(const ParseTree &parse_tree, Registry &registry,
-		 const Predefinitions &predefinitions,
-		 bool dry_run, bool help_mode = false);
+                 const Predefinitions &predefinitions,
+                 bool dry_run, bool help_mode = false);
     OptionParser(const std::string &config, Registry &registry,
-		 const Predefinitions &predefinitions,
-		 bool dry_run, bool help_mode = false);
+                 const Predefinitions &predefinitions,
+                 bool dry_run, bool help_mode = false);
     ~OptionParser() = default;
     OptionParser(const OptionParser &other) = delete;
     OptionParser &operator=(const OptionParser &other) = delete;
@@ -240,7 +240,7 @@ inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &parser) {
          ++tree_it) {
         OptionParser subparser(subtree(*parser.get_parse_tree(), tree_it),
                                parser.get_registry(), parser.get_predefinitions(),
-			       parser.dry_run());
+                               parser.dry_run());
         results.push_back(TokenParser<T>::parse(subparser));
     }
     return results;
@@ -311,10 +311,10 @@ void OptionParser::add_option(
     }
     std::unique_ptr<OptionParser> subparser =
         use_default ?
-        utils::make_unique_ptr<OptionParser>(default_value, registry, 
-         				     predefinitions, dry_run()) :
+        utils::make_unique_ptr<OptionParser>(default_value, registry,
+                                             predefinitions, dry_run()) :
         utils::make_unique_ptr<OptionParser>(subtree(parse_tree, arg), registry,
-					     predefinitions, dry_run());
+                                             predefinitions, dry_run());
     T result = TokenParser<T>::parse(*subparser);
     check_bounds<T>(key, result, bounds);
     opts.set<T>(key, result);

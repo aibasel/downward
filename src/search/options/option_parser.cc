@@ -136,7 +136,7 @@ static ParseTree generate_parse_tree(const string &config) {
 
 
 OptionParser::OptionParser(const ParseTree &parse_tree, Registry &registry,
-			   const Predefinitions &predefinitions,
+                           const Predefinitions &predefinitions,
                            bool dry_run, bool help_mode)
     : opts(help_mode),
       parse_tree(parse_tree),
@@ -148,10 +148,10 @@ OptionParser::OptionParser(const ParseTree &parse_tree, Registry &registry,
 }
 
 OptionParser::OptionParser(const string &config, Registry &registry,
-			   const Predefinitions &predefinitions,
+                           const Predefinitions &predefinitions,
                            bool dry_run, bool help_mode)
     : OptionParser(generate_parse_tree(config), registry, predefinitions,
-		   dry_run, help_mode) {
+                   dry_run, help_mode) {
 }
 
 string OptionParser::get_unparsed_config() const {
