@@ -13,10 +13,9 @@ namespace options {
 */
 class Predefinitions {
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> predefined;
-
+public:
     Predefinitions() = default;
 
-public:
     template<typename T>
     void predefine(const std::string &key, T object) {
         predefined[std::type_index(typeid(T))][key] = object;
@@ -32,11 +31,6 @@ public:
     T get(const std::string &key) const {
         std::type_index type(typeid(T));
         return any_cast<T>(predefined.at(type).at(key));
-    }
-
-    static Predefinitions *instance() {
-        static Predefinitions instance_;
-        return &instance_;
     }
 };
 }

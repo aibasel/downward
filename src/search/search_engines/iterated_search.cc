@@ -8,10 +8,12 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry)
+IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry,
+			       const options::Predefinitions &predefinitions)
     : SearchEngine(opts),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
       registry(registry),
+      predefinitions(predefinitions),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
@@ -24,7 +26,7 @@ IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry)
 
 shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     int engine_configs_index) {
-    OptionParser parser(engine_configs[engine_configs_index], registry, false);
+    OptionParser parser(engine_configs[engine_configs_index], registry, predefinitions, false);
     shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
 
     cout << "Starting search: ";
@@ -178,12 +180,14 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         for (const ParseTree &config : opts.get_list<ParseTree>("engine_configs")) {
-            OptionParser test_parser(config, parser.get_registry(), true);
+            OptionParser test_parser(config, parser.get_registry(),
+				     parser.get_predefinitions(), true);
             test_parser.start_parsing<shared_ptr<SearchEngine>>();
         }
         return nullptr;
     } else {
-        return make_shared<IteratedSearch>(opts, parser.get_registry());
+        return make_shared<IteratedSearch>(opts, parser.get_registry(),
+					   parser.get_predefinitions());
     }
 }
 
