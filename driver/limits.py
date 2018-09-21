@@ -20,6 +20,10 @@ memory limits are not enforced by that OS and hence we do not support imposing
 memory limits there.
 """
 
+CANNOT_SET_MEMORY_MSG = "Setting memory limits is not supported on your platform."
+CANNOT_SET_TIME_MSG = "Setting time limits is not supported on your platform."
+
+
 def can_set_time_limit():
     return resource is not None
 
@@ -53,7 +57,8 @@ def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
 def set_time_limit(time_limit):
     if time_limit is None:
         return
-    assert can_set_time_limit()
+    if not can_set_time_limit():
+        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_TIME_MSG)
     # Don't try to raise the hard limit.
     _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
     if external_hard_limit == resource.RLIM_INFINITY:
@@ -70,7 +75,8 @@ def set_memory_limit(memory):
     """*memory* must be given in bytes or None."""
     if memory is None:
         return
-    assert can_set_memory_limit()
+    if not can_set_memory_limit():
+        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_MEMORY_MSG)
     _set_limit(resource.RLIMIT_AS, memory)
 
 
@@ -92,14 +98,10 @@ def _get_external_limit(kind):
 
 def _get_external_time_limit():
     """Return external soft CPU limit in seconds or None if not set."""
-    if not can_set_time_limit():
-        return None
     return _get_external_limit(resource.RLIMIT_CPU)
 
 def _get_external_memory_limit():
     """Return external soft memory limit in bytes or None if not set."""
-    if not can_set_memory_limit():
-        return None
     return _get_external_limit(resource.RLIMIT_AS)
 
 
@@ -115,8 +117,7 @@ def get_memory_limit(component_limit, overall_limit):
         limits = [limit for limit in limits if limit is not None]
         return min(limits) if limits else None
     else:
-        returncodes.exit_with_driver_unsupported_error(
-            "Setting memory limits is not supported on your platform.")
+        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_MEMORY_MSG)
 
 def get_time_limit(component_limit, overall_limit):
     """
@@ -136,5 +137,4 @@ def get_time_limit(component_limit, overall_limit):
             limits.append(max(0, external_limit - elapsed_time))
         return min(limits) if limits else None
     else:
-        returncodes.exit_with_driver_unsupported_error(
-            "Setting time limits is not supported on your platform.")
+        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_TIME_MSG)
