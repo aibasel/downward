@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
@@ -17,6 +18,38 @@
 
 namespace options {
 class OptionParser;
+
+
+class RegistryDataCollection {
+    using PluginTypeData = std::tuple<const std::string &/*type_name*/, const std::string &/*documentation*/, std::type_index>;
+    using PluginGroupData = std::tuple<const std::string &/*group_id*/, const std::string &/*doc_title*/>;
+    using PluginData = std::tuple<const std::string &/*key*/, Any/*factory*/, const std::string &/*group*/, PluginTypeNameGetter /*type_name_factory*/, std::type_index>;
+    
+    std::vector<PluginTypeData> plugin_types;
+    std::vector<PluginGroupData> plugin_groups;
+    std::vector<PluginData> plugins;
+    
+    RegistryDataCollection() = default;
+    
+public:
+    void insert_plugin_type_data(const std::string &type_name,
+        const std::string &documentation, std::type_index type_index);
+    
+    void insert_plugin_group_data(const std::string &group_id,
+        const std::string &doc_title);
+    
+    void insert_plugin_data(const std::string &key,
+        Any factory,
+        const std::string &group,
+        PluginTypeNameGetter type_name_factory,
+        std::type_index type_index);
+    
+    static RegistryDataCollection *instance() {
+        static RegistryDataCollection instance_;
+        return &instance_;
+    }
+};
+
 
 class Registry {
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
