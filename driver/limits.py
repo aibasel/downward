@@ -2,10 +2,10 @@
 
 from __future__ import division, print_function
 
+from . import returncodes
 from . import util
 
 import math
-import re
 try:
     import resource
 except ImportError:
@@ -13,14 +13,23 @@ except ImportError:
 import sys
 
 
-RESOURCE_MODULE_MISSING_MSG = (
-    "The 'resource' module is not available on your platform. "
-    "Therefore, setting time or memory limits, and running "
-    "portfolios is not possible.")
+"""
+Notes on limits: On Windows, the resource module does not exist and hence we
+cannot enforce any limits there. Furthermore, while the module exists on macOS,
+memory limits are not enforced by that OS and hence we do not support imposing
+memory limits there.
+"""
+
+CANNOT_LIMIT_MEMORY_MSG = "Setting memory limits is not supported on your platform."
+CANNOT_LIMIT_TIME_MSG = "Setting time limits is not supported on your platform."
 
 
-def can_set_limits():
+def can_set_time_limit():
     return resource is not None
+
+
+def can_set_memory_limit():
+    return resource is not None and sys.platform != "darwin"
 
 
 def _set_limit(kind, soft, hard=None):
@@ -29,11 +38,10 @@ def _set_limit(kind, soft, hard=None):
     try:
         resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError) as err:
-        print(
+        returncodes.exit_with_driver_critical_error(
             "Limit for {} could not be set to ({},{}) ({}). "
             "Previous limit: {}".format(
-                kind, soft, hard, err, resource.getrlimit(kind)),
-            file=sys.stderr)
+                kind, soft, hard, err, resource.getrlimit(kind)))
 
 
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
@@ -49,7 +57,8 @@ def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
 def set_time_limit(time_limit):
     if time_limit is None:
         return
-    assert can_set_limits()
+    if not can_set_time_limit():
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
     # Don't try to raise the hard limit.
     _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
     if external_hard_limit == resource.RLIM_INFINITY:
@@ -66,7 +75,8 @@ def set_memory_limit(memory):
     """*memory* must be given in bytes or None."""
     if memory is None:
         return
-    assert can_set_limits()
+    if not can_set_memory_limit():
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
     _set_limit(resource.RLIMIT_AS, memory)
 
 
@@ -75,7 +85,7 @@ def convert_to_mb(num_bytes):
 
 
 def _get_external_limit(kind):
-    if not can_set_limits():
+    if resource is None:
         return None
     # Limits are either positive values or -1 (RLIM_INFINITY).
     soft, hard = resource.getrlimit(kind)
@@ -88,59 +98,11 @@ def _get_external_limit(kind):
 
 def _get_external_time_limit():
     """Return external soft CPU limit in seconds or None if not set."""
-    if not can_set_limits():
-        return None
     return _get_external_limit(resource.RLIMIT_CPU)
 
 def _get_external_memory_limit():
     """Return external soft memory limit in bytes or None if not set."""
-    if not can_set_limits():
-        return None
     return _get_external_limit(resource.RLIMIT_AS)
-
-
-def _get_time_limit_in_seconds(limit, parser):
-    match = re.match(r"^(\d+)(s|m|h)?$", limit, flags=re.I)
-    if not match:
-        parser.error("malformed time limit parameter: {}".format(limit))
-    time = int(match.group(1))
-    suffix = match.group(2)
-    if suffix is not None:
-        suffix = suffix.lower()
-    if suffix == "m":
-        time *= 60
-    elif suffix == "h":
-        time *= 3600
-    return time
-
-def _get_memory_limit_in_bytes(limit, parser):
-    match = re.match(r"^(\d+)(k|m|g)?$", limit, flags=re.I)
-    if not match:
-        parser.error("malformed memory limit parameter: {}".format(limit))
-    memory = int(match.group(1))
-    suffix = match.group(2)
-    if suffix is not None:
-        suffix = suffix.lower()
-    if suffix == "k":
-        memory *= 1024
-    elif suffix is None or suffix == "m":
-        memory *= 1024 * 1024
-    elif suffix == "g":
-        memory *= 1024 * 1024 * 1024
-    return memory
-
-
-def set_time_limit_in_seconds(parser, args, component):
-    param = component + "_time_limit"
-    limit = getattr(args, param)
-    if limit is not None:
-        setattr(args, param, _get_time_limit_in_seconds(limit, parser))
-
-def set_memory_limit_in_bytes(parser, args, component):
-    param = component + "_memory_limit"
-    limit = getattr(args, param)
-    if limit is not None:
-        setattr(args, param, _get_memory_limit_in_bytes(limit, parser))
 
 
 def get_memory_limit(component_limit, overall_limit):
@@ -148,15 +110,22 @@ def get_memory_limit(component_limit, overall_limit):
     Return the lowest of the following memory limits:
     component, overall, external soft, external hard.
     """
-    limits = [component_limit, overall_limit, _get_external_memory_limit()]
-    limits = [limit for limit in limits if limit is not None]
-    return min(limits) if limits else None
+    if component_limit is None and overall_limit is None:
+        return None
+    elif can_set_memory_limit():
+        limits = [component_limit, overall_limit, _get_external_memory_limit()]
+        limits = [limit for limit in limits if limit is not None]
+        return min(limits) if limits else None
+    else:
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
 
 def get_time_limit(component_limit, overall_limit):
     """
     Return the minimum time limit imposed by any internal and external limit.
     """
-    if can_set_limits():
+    if component_limit is None and overall_limit is None:
+        return None
+    elif can_set_time_limit():
         elapsed_time = util.get_elapsed_time()
         external_limit = _get_external_time_limit()
         limits = []
@@ -167,7 +136,5 @@ def get_time_limit(component_limit, overall_limit):
         if external_limit is not None:
             limits.append(max(0, external_limit - elapsed_time))
         return min(limits) if limits else None
-    elif component_limit is None and overall_limit is None:
-        return None
     else:
-        sys.exit(RESOURCE_MODULE_MISSING_MSG)
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)

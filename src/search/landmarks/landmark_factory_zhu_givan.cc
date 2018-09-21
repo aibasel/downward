@@ -321,5 +321,5 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         return make_shared<LandmarkFactoryZhuGivan>(opts);
 }
 
-static PluginShared<LandmarkFactory> _plugin("lm_zg", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_zg", _parse);
 }

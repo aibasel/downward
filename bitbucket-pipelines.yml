@@ -19,14 +19,16 @@ pipelines:
           - python -c "import multiprocessing; print 'CPUs:', multiprocessing.cpu_count()"
 
           # Set up uncrustify.
-          - wget http://downloads.sourceforge.net/project/uncrustify/uncrustify/uncrustify-0.61/uncrustify-0.61.tar.gz
-          - tar -xzvf uncrustify-0.61.tar.gz
-          - cd uncrustify-0.61
-          - ./configure
+          - wget https://github.com/uncrustify/uncrustify/archive/uncrustify-0.67.tar.gz
+          - tar -xzvf uncrustify-0.67.tar.gz
+          - cd uncrustify-uncrustify-0.67
+          - mkdir build
+          - cd build
+          - cmake ../
           - make -j8
-          - mv src/uncrustify ../
-          - cd ../
-          - rm -rf uncrustify-0.61.tar.gz uncrustify-0.61
+          - mv uncrustify ../../
+          - cd ../../
+          - rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
 
           # Set up VAL.
           - apt-get -y install g++ git make flex bison

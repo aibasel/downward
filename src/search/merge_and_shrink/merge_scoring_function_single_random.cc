@@ -59,5 +59,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         return make_shared<MergeScoringFunctionSingleRandom>(options);
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("single_random", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("single_random", _parse);
 }

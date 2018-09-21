@@ -37,5 +37,5 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternGeneratorManual>(opts);
 }
 
-static PluginShared<PatternGenerator> _plugin("manual_pattern", _parse);
+static Plugin<PatternGenerator> _plugin("manual_pattern", _parse);
 }

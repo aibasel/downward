@@ -13,6 +13,46 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
     label_to_positions.resize(labels.get_max_size());
 }
 
+LabelEquivalenceRelation::LabelEquivalenceRelation(
+    const LabelEquivalenceRelation &other)
+    : labels(other.labels),
+      /* We copy label_to_positions to have identical vectors even on
+      "unused" positions (for label numbers that do not exist any more). */
+      label_to_positions(other.label_to_positions) {
+    /*
+      We need to reserve space for the potential maximum number of labels to
+      ensure that no move occurs in grouped_labels. Otherwise, iterators to
+      elements of list<int> of LabelGroup could become invalid!
+    */
+    grouped_labels.reserve(labels.get_max_size());
+    for (size_t other_group_id = 0;
+         other_group_id < other.grouped_labels.size();
+         ++other_group_id) {
+        // Add a new empty label group.
+        int group_id = grouped_labels.size();
+        assert(group_id == static_cast<int>(other_group_id));
+        grouped_labels.push_back(LabelGroup());
+        LabelGroup &label_group = grouped_labels.back();
+
+        /*
+          Go over the other label group, add all labels to this group.
+
+          To obtain exact copies of the label groups with the same cost, we do
+          not use add_label_to_group, which would recompute costs based on
+          given labels and leave cost=infinity for empty groups, but we
+          manually set the group's cost to match the other group's cost.
+        */
+        const LabelGroup &other_label_group =
+            other.grouped_labels[other_group_id];
+        for (int other_label_no : other_label_group) {
+            LabelIter label_it = label_group.insert(other_label_no);
+            assert(*label_it == other_label_no);
+            label_to_positions[other_label_no] = make_pair(group_id, label_it);
+        }
+        label_group.set_cost(other_label_group.get_cost());
+    }
+}
+
 void LabelEquivalenceRelation::add_label_to_group(int group_id,
                                                   int label_no) {
     LabelIter label_it = grouped_labels[group_id].insert(label_no);

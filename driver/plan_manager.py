@@ -7,6 +7,8 @@ import os
 import os.path
 import re
 
+from . import returncodes
+
 
 _PLAN_INFO_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)\n")
 
@@ -33,10 +35,14 @@ def _parse_plan(plan_filename):
 
 
 class PlanManager(object):
-    def __init__(self, plan_prefix):
+    def __init__(self, plan_prefix, portfolio_bound=None, single_plan=False):
         self._plan_prefix = plan_prefix
         self._plan_costs = []
         self._problem_type = None
+        if portfolio_bound is None:
+            portfolio_bound = "infinity"
+        self._portfolio_bound = portfolio_bound
+        self._single_plan = single_plan
 
     def get_plan_prefix(self):
         return self._plan_prefix
@@ -44,17 +50,25 @@ class PlanManager(object):
     def get_plan_counter(self):
         return len(self._plan_costs)
 
-    def get_best_plan_cost(self):
-        """Return best plan cost found so far. Return string
-        "infinity" if no plans found yet."""
+    def get_next_portfolio_cost_bound(self):
+        """Return the next plan cost bound to be used in a portfolio planner.
+
+        Initially, this is the user-specified cost bound, or "infinity"
+        if the user specified no bound. Once a plan has been found, it
+        is the cost of the best plan found so far. (This is always the
+        last plan found because plans must decrease in cost.)
+        """
         if self._plan_costs:
             return self._plan_costs[-1]
         else:
-            return "infinity"
+            return self._portfolio_bound
+
+    def abort_portfolio_after_first_plan(self):
+        return self._single_plan
 
     def get_problem_type(self):
         if self._problem_type is None:
-            raise ValueError("no plans found yet: cost type not set")
+            returncodes.exit_with_driver_critical_error("no plans found yet: cost type not set")
         return self._problem_type
 
     def process_new_plans(self):
@@ -68,7 +82,7 @@ class PlanManager(object):
         for counter in itertools.count(self.get_plan_counter() + 1):
             plan_filename = self._get_plan_file(counter)
             def bogus_plan(msg):
-                raise RuntimeError("%s: %s" % (plan_filename, msg))
+                returncodes.exit_with_driver_critical_error("%s: %s" % (plan_filename, msg))
             if not os.path.exists(plan_filename):
                 break
             if had_incomplete_plan:

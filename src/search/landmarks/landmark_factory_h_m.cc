@@ -568,7 +568,7 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     cout << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
     // Get all the m or less size subsets in the domain.
     vector<vector<FactPair>> msets;
@@ -996,5 +996,5 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         return make_shared<LandmarkFactoryHM>(opts);
 }
 
-static PluginShared<LandmarkFactory> _plugin("lm_hm", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_hm", _parse);
 }

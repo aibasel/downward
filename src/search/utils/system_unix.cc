@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>
@@ -162,7 +163,7 @@ void out_of_memory_handler() {
       memory for the stack of the signal handler and raising a signal here.
     */
     write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
-    exit_with(ExitCode::OUT_OF_MEMORY);
+    exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {
@@ -170,6 +171,9 @@ void signal_handler(int signal_number) {
     write_reentrant_str(STDOUT_FILENO, "caught signal ");
     write_reentrant_int(STDOUT_FILENO, signal_number);
     write_reentrant_str(STDOUT_FILENO, " -- exiting\n");
+    if (signal_number == SIGXCPU) {
+        exit_after_receiving_signal(ExitCode::SEARCH_OUT_OF_TIME);
+    }
     raise(signal_number);
 }
 

@@ -90,7 +90,7 @@ PatternDatabase::PatternDatabase(
         } else {
             cerr << "Given pattern is too large! (Overflow occured): " << endl;
             cerr << pattern << endl;
-            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
     }
     create_pdb(task_proxy, operator_costs);

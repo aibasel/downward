@@ -46,12 +46,12 @@ void LamaSynergyHeuristic::notify_state_transition(
     OperatorID op_id,
     const GlobalState &state) {
     lama_heuristic->notify_state_transition(parent_state, op_id, state);
-    if (cache_h_values) {
+    if (cache_evaluator_values) {
         heuristic_cache[state].dirty = true;
     }
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "LAMA-FF synergy master",
         "This class implements the LAMA-FF synergy. This synergy can be used "
@@ -62,15 +62,10 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_note(
         "Using the synergy",
         "To use the synergy, combine the master with the slave (see "
-        "Heuristic#LAMA-FF_synergy_slave) using predefinitions (see "
+        "Evaluator#LAMA-FF_synergy_slave) using predefinitions (see "
         "OptionSyntax#Predefinitions), for example:\n"
-        "```\n--heuristic \"lama_master=lama_synergy(lm_factory=lm_rhw))\"\n"
-        "--heuristic \"lama_slave=ff_synergy(lama_master)\"\n```");
-    parser.document_note(
-        "Note",
-        "Regarding using different cost transformations, there are a few "
-        "caveats to be considered, see OptionCaveats."
-        );
+        "```\n--evaluator \"lama_master=lama_synergy(lm_factory=lm_rhw))\"\n"
+        "--evaluator \"lama_slave=ff_synergy(lama_master)\"\n```");
     parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
@@ -90,8 +85,8 @@ static Heuristic *_parse(OptionParser &parser) {
     */
     opts.set("pref", true);
 
-    return new LamaSynergyHeuristic(opts);
+    return make_shared<LamaSynergyHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("lama_synergy", _parse);
+static Plugin<Evaluator> _plugin("lama_synergy", _parse);
 }

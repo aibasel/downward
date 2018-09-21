@@ -5,8 +5,6 @@
 #include "subtask_generators.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../tasks/modified_operator_costs_task.h"
 #include "../utils/countdown_timer.h"
@@ -170,7 +168,7 @@ void CostSaturation::build_abstractions(
 }
 
 void CostSaturation::print_statistics(utils::Duration init_time) const {
-    g_log << "Done initializing additive Cartesian heuristic" << endl;
+    utils::g_log << "Done initializing additive Cartesian heuristic" << endl;
     cout << "Time for initializing additive Cartesian heuristic: "
          << init_time << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
