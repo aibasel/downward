@@ -20,8 +20,8 @@ memory limits are not enforced by that OS and hence we do not support imposing
 memory limits there.
 """
 
-CANNOT_SET_MEMORY_MSG = "Setting memory limits is not supported on your platform."
-CANNOT_SET_TIME_MSG = "Setting time limits is not supported on your platform."
+CANNOT_LIMIT_MEMORY_MSG = "Setting memory limits is not supported on your platform."
+CANNOT_LIMIT_TIME_MSG = "Setting time limits is not supported on your platform."
 
 
 def can_set_time_limit():
@@ -58,7 +58,7 @@ def set_time_limit(time_limit):
     if time_limit is None:
         return
     if not can_set_time_limit():
-        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_TIME_MSG)
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
     # Don't try to raise the hard limit.
     _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
     if external_hard_limit == resource.RLIM_INFINITY:
@@ -76,7 +76,7 @@ def set_memory_limit(memory):
     if memory is None:
         return
     if not can_set_memory_limit():
-        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_MEMORY_MSG)
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
     _set_limit(resource.RLIMIT_AS, memory)
 
 
@@ -117,7 +117,7 @@ def get_memory_limit(component_limit, overall_limit):
         limits = [limit for limit in limits if limit is not None]
         return min(limits) if limits else None
     else:
-        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_MEMORY_MSG)
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
 
 def get_time_limit(component_limit, overall_limit):
     """
@@ -137,4 +137,4 @@ def get_time_limit(component_limit, overall_limit):
             limits.append(max(0, external_limit - elapsed_time))
         return min(limits) if limits else None
     else:
-        returncodes.exit_with_driver_unsupported_error(CANNOT_SET_TIME_MSG)
+        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
