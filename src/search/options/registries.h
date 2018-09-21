@@ -19,11 +19,11 @@
 namespace options {
 class OptionParser;
 
-
+using PluginTypeData = std::tuple<std::string /*type_name*/, std::string /*documentation*/, std::type_index>;
+using PluginGroupData = std::tuple<std::string /*group_id*/, std::string /*doc_title*/>;
+using PluginData = std::tuple<std::string /*key*/, Any /*factory*/, std::string /*group*/, PluginTypeNameGetter /*type_name_factory*/, DocFactory /*doc_factory*/, std::type_index>;
+    
 class RegistryDataCollection {
-    using PluginTypeData = std::tuple<const std::string &/*type_name*/, const std::string &/*documentation*/, std::type_index>;
-    using PluginGroupData = std::tuple<const std::string &/*group_id*/, const std::string &/*doc_title*/>;
-    using PluginData = std::tuple<const std::string &/*key*/, Any/*factory*/, const std::string &/*group*/, PluginTypeNameGetter /*type_name_factory*/, DocFactory /*doc_factory*/, std::type_index>;
     
     std::vector<PluginTypeData> plugin_types;
     std::vector<PluginGroupData> plugin_groups;
@@ -44,6 +44,10 @@ public:
         PluginTypeNameGetter type_name_factory,
         DocFactory doc_factory,
         std::type_index type_index);
+    
+    const std::vector<PluginTypeData> &get_plugin_type_data() const;
+    const std::vector<PluginGroupData> &get_plugin_group_data() const;
+    const std::vector<PluginData> &get_plugin_data() const;
     
     static RegistryDataCollection *instance() {
         static RegistryDataCollection instance_;
@@ -75,7 +79,13 @@ class Registry {
        for example, to generate the documentation.
      */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
-    Registry() = default;
+    Registry(const RegistryDataCollection &collection);
+    void collect_plugin_types(const RegistryDataCollection &collection,
+        std::vector<std::string> &errors);
+    void collect_plugin_groups(const RegistryDataCollection &collection,
+        std::vector<std::string> &errors);
+    void collect_plugins(const RegistryDataCollection &collection,
+        std::vector<std::string> &errors);
     
     void insert_plugin(const std::string &key, Any factory,
         PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
@@ -135,7 +145,7 @@ public:
 
 
     static Registry *instance() {
-        static Registry instance_;
+        static Registry instance_(*RegistryDataCollection::instance());
         return &instance_;
     }
 };

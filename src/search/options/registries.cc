@@ -1,30 +1,42 @@
 #include "registries.h"
 
 #include <iostream>
+#include <unordered_set>
 
 using namespace std;
 using utils::ExitCode;
 
 namespace options {
 
-void RegistryDataCollection::insert_plugin_type_data(
-    const std::string& type_name, const std::string& documentation, 
-    std::type_index type_index) {
+void RegistryDataCollection::insert_plugin_type_data(const string& type_name, 
+    const string& documentation, type_index type_index) {
     plugin_types.emplace_back(type_name, documentation, type_index);
 }
 
-void RegistryDataCollection::insert_plugin_group_data(
-    const std::string& group_id, const std::string& doc_title) {
+void RegistryDataCollection::insert_plugin_group_data(const string& group_id,
+    const string& doc_title) {
     plugin_groups.emplace_back(group_id, doc_title);
 }
 
 void RegistryDataCollection::insert_plugin_data(
-    const std::string& key, Any factory, const std::string& group, 
+    const string& key, Any factory, const string& group, 
     PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
-    std::type_index type_index) {
+    type_index type_index) {
     plugins.emplace_back(key, factory, group, type_name_factory, doc_factory,
         type_index);
- }
+}
+
+const vector<PluginTypeData>& RegistryDataCollection::get_plugin_type_data() const{
+    return plugin_types;
+}
+
+const vector<PluginGroupData>& RegistryDataCollection::get_plugin_group_data() const {
+    return plugin_groups;
+}
+
+const vector<PluginData>& RegistryDataCollection::get_plugin_data() const {
+    return plugins;
+}
 
 
 PluginTypeInfo::PluginTypeInfo(const type_index &type,
@@ -92,6 +104,53 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
               string(group));
     }
     return plugin_group_infos.at(group);
+}
+
+Registry::Registry(const RegistryDataCollection& collection) {
+    vector<string> errors;
+    collect_plugin_types(collection, errors);
+    collect_plugin_groups(collection, errors);
+    collect_plugins(collection, errors);
+}
+
+void Registry::collect_plugin_types(const RegistryDataCollection& collection,
+    vector<string> &/*errors*/) {
+    for (PluginTypeData ptd : collection.get_plugin_type_data()) {
+        const string &type_name = std::get<0>(ptd);
+        const string &documentation = std::get<1>(ptd);
+        const type_index type = std::get<2>(ptd);
+        cout << "START" << endl;
+        //cout << "TYPE" << type << endl;
+        cout << "NAME " << type_name << endl;
+        cout << "DOC" << documentation << endl;
+        PluginTypeInfo info(type, type_name, documentation);
+        insert_type_info(info);
+    }
+}
+
+void Registry::collect_plugin_groups(const RegistryDataCollection& collection,
+    vector<string> &/*errors*/) {
+    for (PluginGroupData pgd : collection.get_plugin_group_data()) {
+        const string &group_id = std::get<0>(pgd);
+        const string &doc_title = std::get<1>(pgd);
+        PluginGroupInfo info {group_id, doc_title};
+        insert_group_info(info);
+    }
+}
+
+void Registry::collect_plugins(const RegistryDataCollection& collection,
+    vector<string> &/*errors*/) {
+    for (PluginData pd : collection.get_plugin_data()) {
+        const string &key = std::get<0>(pd);
+        const Any &factory = std::get<1>(pd);
+        const string &group = std::get<2>(pd);
+        const PluginTypeNameGetter &type_name_factory = std::get<3>(pd);
+        const DocFactory &doc_factory = std::get<4>(pd);
+        type_index type = std::get<5>(pd);
+        
+        insert_plugin(key, factory, type_name_factory, doc_factory, group, 
+            type);
+    }
 }
 
 void Registry::insert_plugin(const std::string &key, Any factory,
