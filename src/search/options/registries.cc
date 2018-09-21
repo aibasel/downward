@@ -6,6 +6,20 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
+
+void RegistryDataCollection::insert_plugin_type_data(const std::string& type_name, const std::string& documentation, std::type_index type_index) {
+    plugin_types.emplace(type_name, documentation, type_index);
+}
+
+void RegistryDataCollection::insert_plugin_group_data(const std::string& group_id, const std::string& doc_title) {
+    plugin_groups.emplace(group_id, doc_title);
+}
+
+void RegistryDataCollection::insert_plugin_data(const std::string& key, Any factory, const std::string& group, PluginTypeNameGetter type_name_factory, std::type_index type_index) {
+    plugins.emplace(key, factory, group, type_name_factory, type_index);
+ }
+
+
 PluginTypeInfo::PluginTypeInfo(const type_index &type,
                                const string &type_name,
                                const string &documentation)
