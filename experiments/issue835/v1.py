@@ -13,9 +13,9 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue835-base", "issue835-v1"]
 CONFIGS = [
-    IssueConfig('lama-first', [], driver_options=['--alias', 'lama-first']),
+    IssueConfig('lama-first', [], driver_options=['--alias', 'lama-first', '--overall-time-limit', '5m']),
 ]
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+SUITE = common_setup.DEFAULT_SATISFICING_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(email="florian.pommerening@unibas.ch")
 
 if common_setup.is_test_run():
