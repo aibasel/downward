@@ -30,20 +30,18 @@ public:
         const auto it = storage.find(key);
         if (it == storage.end()) {
             ABORT("Attempt to retrieve nonexisting object of name " +
-                  key + " (type: " + typeid(T).name() + ")");
+                  key + " (type: " + typeid(T).name() + ")\n" +
+                  "To retrieve the correct C++ type for gcc/clang, you can " +
+                  "call \nc++filt -t \"" + typeid(T).name() + "\"");
         }
         try {
             T result = any_cast<T>(it->second);
             return result;
         } catch (const BadAnyCast &) {
-            std::cerr << "Invalid conversion while retrieving config options!"
-                      << std::endl
-                      << key << " is not of type" << typeid(T).name()
-                      << std::endl << "To retrieve the correct c++ type, "
-                      << "you can call"
-                      << std::endl << "c++filt -t " << typeid(T).name()
-                      << std::endl << "exiting" << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            ABORT("Invalid conversion while retrieving config options!\n" +
+                  key + " is not of type " + typeid(T).name() + "\n" +
+                  "To retrieve the correct C++ type for gcc/clang, you can " +
+                  "call \nc++filt -t \"" + typeid(T).name() + "\"");
         }
     }
 
