@@ -37,8 +37,6 @@ public:
     friend std::ostream &operator<<(
         std::ostream &os, const Domains &domains);
 };
-
-std::ostream &operator<<(std::ostream &os, const Domains &domains);
 }
 
 #endif

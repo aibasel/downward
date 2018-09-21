@@ -486,7 +486,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternCollectionGeneratorHillclimbing>(opts);
 }
 
-static Heuristic *_parse_ipdb(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
         "This pattern generation method is an adaption of the algorithm "
@@ -531,7 +531,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "the differences between the original implementation from 2007 and the "
         "new one in Fast Downward.\n\n"
         "The aim of the algorithm is to output a pattern collection for which "
-        "the Heuristic#Canonical_PDB yields the best heuristic estimates.\n\n"
+        "the Evaluator#Canonical_PDB yields the best heuristic estimates.\n\n"
         "The algorithm is basically a local search (hill climbing) which "
         "searches the \"pattern neighbourhood\" (starting initially with a "
         "pattern for each goal variable) for improving the pattern collection. "
@@ -612,9 +612,9 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "max_time_dominance_pruning", opts.get<double>("max_time_dominance_pruning"));
 
     // Note: in the long run, this should return a shared pointer.
-    return new CanonicalPDBsHeuristic(heuristic_opts);
+    return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
 }
 
-static Plugin<Heuristic> _plugin_ipdb("ipdb", _parse_ipdb);
-static PluginShared<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
+static Plugin<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
+static Plugin<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
 }

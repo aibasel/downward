@@ -12,13 +12,31 @@ class ShrinkStrategy;
 class TransitionSystem;
 
 /*
-  Determine if any of the two factors at indices index1 and index2 must be
-  shrunk according to the given size limits max_states* and
-  shrink_treshold_before_merge: before merging, the factors may have at most
-  max_states_before_merge states, and their product may hae at most
-  max_states_after_merge states. If the size of a factor is below
-  shrink_treshold_before_merge, shrinking is triggered with the current size
-  of the factor as the target, to allow exploiting perfect shrink opportunities.
+  Compute target sizes for shrinking two transition systems with sizes size1
+  and size2 before they are merged. Use the following rules:
+  1) Right before merging, the transition systems may have at most
+     max_states_before_merge states.
+  2) Right after merging, the product may have most max_states_after_merge
+     states.
+  3) Transition systems are shrunk as little as necessary to satisfy the above
+     constraints. (If possible, neither is shrunk at all.)
+  There is often a Pareto frontier of solutions following these rules. In this
+  case, balanced solutions (where the target sizes are close to each other)
+  are preferred over less balanced ones.
+*/
+extern std::pair<int, int> compute_shrink_sizes(
+    int size1,
+    int size2,
+    int max_states_before_merge,
+    int max_states_after_merge);
+
+/*
+  This function first determines if any of the two factors at indices index1
+  and index2 must be shrunk according to the given size limits max_states and
+  max_states_before_merge, using the function compute_shrink_sizes (see above).
+  If not, then the function further checks if any of the two factors has a
+  size larger than shrink_treshold_before_merge, in which case shrinking is
+  still triggered.
 
   If shrinking is triggered, apply the abstraction to the two factors
   within the factored transition system. Return true iff at least one of the

@@ -61,12 +61,12 @@ class RegressionCheckReport(AbsoluteReport):
             runs_new = [run for run in runs if not self._is_baseline_run(run)]
             assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new))
             for base, new in zip(runs_base, runs_new):
-                config = new['config']
+                algo = new['algorithm']
                 for check in self.checks:
                     error = check.get_error(base, new)
                     if error:
                         lines.append('| %(domain)s:%(problem)s '
-                                     '| %(config)s '
+                                     '| %(algo)s '
                                      '| %(error)s |' % locals())
         if lines:
             # Add header.
