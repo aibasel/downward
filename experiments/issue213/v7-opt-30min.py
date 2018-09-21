@@ -30,7 +30,7 @@ SEARCHES = [
         " merge_selector=score_based_filtering(scoring_functions=[goal_relevance, dfp, total_order])),"
         " label_reduction=exact(before_shrinking=true, before_merging=false),"
         " max_states=50000, threshold_before_merge=1))"),
-    ("occ", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))"),
+    ("seq", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))"),
     ("blind-sss-simple", "astar(blind(), pruning=stubborn_sets_simple())"),
     ("blind-sss-ec", "astar(blind(), pruning=stubborn_sets_ec())"),
     ("h2", "astar(hm(m=2))"),
