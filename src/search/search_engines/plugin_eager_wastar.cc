@@ -11,20 +11,20 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Eager best-first search", "");
 
     parser.add_list_option<shared_ptr<Evaluator>>(
-	"evals",
-	"evaluators");
+        "evals",
+        "evaluators");
     parser.add_list_option<shared_ptr<Evaluator>>(
         "preferred",
         "use preferred operators of these evaluators", "[]");
     parser.add_option<bool>(
-	"reopen_closed",
-	"reopen closed nodes", "true");
+        "reopen_closed",
+        "reopen closed nodes", "true");
     parser.add_option<int>(
-	"boost",
-	"boost value for preferred operator open lists", "0");
+        "boost",
+        "boost value for preferred operator open lists", "0");
     parser.add_option<int>(
-	"w",
-	"evaluator weight", "1");
+        "w",
+        "evaluator weight", "1");
 
     SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
