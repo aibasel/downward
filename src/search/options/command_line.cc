@@ -26,7 +26,7 @@ static void predefine_evaluator(const string &arg, Registry &registry,
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
     predefinitions.predefine(predefinition.first,
-			     parser.start_parsing<shared_ptr<Evaluator>>());
+                             parser.start_parsing<shared_ptr<Evaluator>>());
 }
 
 
@@ -35,7 +35,7 @@ static void predefine_lmgraph(const string &arg, Registry &registry,
     pair<string, string> predefinition = split(arg);
     OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
     predefinitions.predefine(predefinition.first,
-			     parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
+                             parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
 }
 
 
@@ -60,26 +60,26 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
                 throw ArgError("missing argument after --evaluator");
             ++i;
             predefine_evaluator(sanitize_string(args[i]), registry, predefinitions,
-			        dry_run);
+                                dry_run);
         } else if (arg == "--heuristic") {
             // deprecated alias for --evaluator
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
             predefine_evaluator(sanitize_string(args[i]), registry, predefinitions,
-				dry_run);
+                                dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
             predefine_lmgraph(sanitize_string(args[i]), registry, predefinitions,
-			      dry_run);
+                              dry_run);
         } else if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
             OptionParser parser(sanitize_string(args[i]), registry, predefinitions,
-				dry_run);
+                                dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
