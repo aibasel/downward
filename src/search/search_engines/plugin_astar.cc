@@ -27,8 +27,8 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
         "               reopen_closed=true, f_eval=sum([g(), h]))\n"
         "```\n", true);
-    parser.add_option<Evaluator *>("eval", "evaluator for h-value");
-    parser.add_option<Evaluator *>(
+    parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator for h-value");
+    parser.add_option<shared_ptr<Evaluator>>(
         "lazy_evaluator",
         "An evaluator that re-evaluates a state before it is expanded.",
         OptionParser::NONE);
@@ -43,7 +43,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         opts.set("open", temp.first);
         opts.set("f_eval", temp.second);
         opts.set("reopen_closed", true);
-        vector<Evaluator *> preferred_list;
+        vector<shared_ptr<Evaluator>> preferred_list;
         opts.set("preferred", preferred_list);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
@@ -51,5 +51,5 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     return engine;
 }
 
-static PluginShared<SearchEngine> _plugin("astar", _parse);
+static Plugin<SearchEngine> _plugin("astar", _parse);
 }

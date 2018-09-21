@@ -107,12 +107,10 @@ ALIASES["seq-sat-lama-2011"] = [
                      ],repeat_last=true,continue_on_fail=true)""",
     "--if-non-unit-cost",
     "--evaluator",
-    "hlm1=lama_synergy(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=one),transform=adapt_costs(one))",
+    "hlm1=lama_synergy(lm_rhw(reasonable_orders=true),transform=adapt_costs(one))",
     "--evaluator", "hff1=ff_synergy(hlm1)",
     "--evaluator",
-    "hlm2=lama_synergy(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=plusone),transform=adapt_costs(plusone))",
+    "hlm2=lama_synergy(lm_rhw(reasonable_orders=true),transform=adapt_costs(plusone))",
     "--evaluator", "hff2=ff_synergy(hlm2)",
     "--search", """iterated([
                      lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
@@ -130,7 +128,7 @@ ALIASES["seq-sat-lama-2011"] = [
 
 ALIASES["lama-first"] = [
     "--evaluator",
-    """hlm=lama_synergy(lm_rhw(reasonable_orders=true,lm_cost_type=one),
+    """hlm=lama_synergy(lm_rhw(reasonable_orders=true),
                                transform=adapt_costs(one))""",
     "--evaluator", "hff=ff_synergy(hlm)",
     "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],

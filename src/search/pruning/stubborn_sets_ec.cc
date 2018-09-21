@@ -354,5 +354,5 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     return make_shared<StubbornSetsEC>(opts);
 }
 
-static PluginShared<PruningMethod> _plugin("stubborn_sets_ec", _parse);
+static Plugin<PruningMethod> _plugin("stubborn_sets_ec", _parse);
 }

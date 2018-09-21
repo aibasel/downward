@@ -2,7 +2,6 @@
 
 #include "../evaluation_context.h"
 #include "../evaluator.h"
-#include "../globals.h"
 #include "../open_list_factory.h"
 #include "../option_parser.h"
 #include "../pruning_method.h"
@@ -23,9 +22,9 @@ EagerSearch::EagerSearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
-      f_evaluator(opts.get<Evaluator *>("f_eval", nullptr)),
-      preferred_operator_evaluators(opts.get_list<Evaluator *>("preferred")),
-      lazy_evaluator(opts.get<Evaluator *>("lazy_evaluator", nullptr)),
+      f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
+      preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
+      lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
@@ -47,7 +46,7 @@ void EagerSearch::initialize() {
       Collect path-dependent evaluators that are used for preferred operators
       (in case they are not also used in the open list).
     */
-    for (Evaluator *evaluator : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator : preferred_operator_evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 
@@ -124,7 +123,7 @@ SearchStatus EagerSearch::step() {
         return SOLVED;
 
     vector<OperatorID> applicable_ops;
-    g_successor_generator->generate_applicable_ops(s, applicable_ops);
+    successor_generator.generate_applicable_ops(s, applicable_ops);
 
     /*
       TODO: When preferred operators are in use, a preferred operator will be
@@ -134,8 +133,12 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    ordered_set::OrderedSet<OperatorID> preferred_operators =
-        collect_preferred_operators(eval_context, preferred_operator_evaluators);
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
+        collect_preferred_operators(eval_context,
+                                    preferred_operator_evaluator.get(),
+                                    preferred_operators);
+    }
 
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
@@ -174,7 +177,7 @@ SearchStatus EagerSearch::step() {
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open(node, op);
+            succ_node.open(node, op, get_adjusted_cost(op));
 
             open_list->insert(eval_context, succ_state.get_id());
             if (search_progress.check_progress(eval_context)) {
@@ -194,7 +197,7 @@ SearchStatus EagerSearch::step() {
                     */
                     statistics.inc_reopened();
                 }
-                succ_node.reopen(node, op);
+                succ_node.reopen(node, op, get_adjusted_cost(op));
 
                 EvaluationContext eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
@@ -221,7 +224,7 @@ SearchStatus EagerSearch::step() {
                 // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back.
-                succ_node.update_parent(node, op);
+                succ_node.update_parent(node, op, get_adjusted_cost(op));
             }
         }
     }
@@ -285,7 +288,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                   since preferred operators are computed when the state is expanded.
                 */
                 EvaluationContext eval_context(s, node.get_g(), false, &statistics);
-                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator);
+                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
                     node.mark_as_dead_end();
                     statistics.inc_dead_ends();
@@ -318,7 +321,7 @@ void EagerSearch::dump_search_space() const {
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
-        int f_value = eval_context.get_evaluator_value(f_evaluator);
+        int f_value = eval_context.get_evaluator_value(f_evaluator.get());
         statistics.report_f_value_progress(f_value);
     }
 }
@@ -332,7 +335,7 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
           an arbitrary f evaluator.
         */
         EvaluationContext eval_context(node.get_state(), node.get_g(), false, &statistics);
-        int f_value = eval_context.get_evaluator_value(f_evaluator);
+        int f_value = eval_context.get_evaluator_value(f_evaluator.get());
         statistics.report_f_value_progress(f_value);
     }
 }
