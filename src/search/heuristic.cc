@@ -27,12 +27,11 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
-    preferred_operators.insert(op.get_global_operator_id());
+    preferred_operators.insert(op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    State state(*tasks::g_root_task, global_state.get_values());
-    return task_proxy.convert_ancestor_state(state);
+    return task_proxy.convert_ancestor_state(global_state.unpack());
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
@@ -82,11 +81,11 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
 #ifndef NDEBUG
     TaskProxy global_task_proxy = TaskProxy(*tasks::g_root_task);
-    State global_state(*tasks::g_root_task, state.get_values());
+    State unpacked_state = state.unpack();
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)
-            assert(task_properties::is_applicable(global_operators[op_id], global_state));
+            assert(task_properties::is_applicable(global_operators[op_id], unpacked_state));
     }
 #endif
 

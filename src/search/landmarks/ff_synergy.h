@@ -8,7 +8,7 @@ class LamaSynergyHeuristic;
 
 // See documentation of LamaSynergyHeuristic.
 class FFSynergyHeuristic : public Heuristic {
-    LamaSynergyHeuristic *master;
+    std::shared_ptr<LamaSynergyHeuristic> master;
 
 protected:
     virtual int compute_heuristic(const GlobalState & /*state*/) override {

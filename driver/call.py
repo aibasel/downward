@@ -37,10 +37,8 @@ def _get_preexec_function(time_limit, memory_limit):
 
     if time_limit is None and memory_limit is None:
         return None
-    elif limits.can_set_limits():
-        return set_limits
     else:
-        sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+        return set_limits
 
 
 def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):

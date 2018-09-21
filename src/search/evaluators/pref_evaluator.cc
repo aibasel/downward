@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+using namespace std;
+
 namespace pref_evaluator {
 PrefEvaluator::PrefEvaluator() {
 }
@@ -22,14 +24,14 @@ EvaluationResult PrefEvaluator::compute_result(
     return result;
 }
 
-static Evaluator *_parse(OptionParser &parser) {
+static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis("Preference evaluator",
                              "Returns 0 if preferred is true and 1 otherwise.");
     parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new PrefEvaluator;
+        return make_shared<PrefEvaluator>();
 }
 
 static Plugin<Evaluator> _plugin("pref", _parse, "evaluators_basic");

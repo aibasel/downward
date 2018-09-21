@@ -4,7 +4,6 @@
 #include "cost_saturation.h"
 #include "utils.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -20,7 +19,7 @@ using namespace std;
 namespace cegar {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     const options::Options &opts) {
-    g_log << "Initializing additive Cartesian heuristic..." << endl;
+    utils::g_log << "Initializing additive Cartesian heuristic..." << endl;
     vector<shared_ptr<SubtaskGenerator>> subtask_generators =
         opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks");
     shared_ptr<utils::RandomNumberGenerator> rng =
@@ -61,7 +60,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     return sum_h;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Additive CEGAR heuristic",
         "See the paper introducing Counterexample-guided Abstraction "
@@ -133,7 +132,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new AdditiveCartesianHeuristic(opts);
+    return make_shared<AdditiveCartesianHeuristic>(opts);
 }
 
 static Plugin<Evaluator> _plugin("cegar", _parse);

@@ -47,8 +47,8 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--search eager(single(eval1))\n```\n", true);
 
-    parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Evaluator *>(
+    parser.add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+    parser.add_list_option<shared_ptr<Evaluator>>(
         "preferred",
         "use preferred operators of these evaluators", "[]");
     parser.add_option<int>(
@@ -59,18 +59,18 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();
-    opts.verify_list_non_empty<Evaluator *>("evals");
+    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
-        Evaluator *evaluator = nullptr;
+        shared_ptr<Evaluator> evaluator = nullptr;
         opts.set("f_eval", evaluator);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
     return engine;
 }
 
-static PluginShared<SearchEngine> _plugin("eager_greedy", _parse);
+static Plugin<SearchEngine> _plugin("eager_greedy", _parse);
 }
