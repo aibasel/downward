@@ -94,7 +94,8 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const override;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
-    virtual OperatorID get_global_operator_id(OperatorID id) const override;
+    virtual int convert_operator_index(
+        int index, const AbstractTask *ancestor_task) const override;
 
     virtual int get_num_axioms() const override;
 
@@ -460,8 +461,12 @@ FactPair RootTask::get_operator_effect(
     return get_effect(op_index, eff_index, is_axiom).fact;
 }
 
-OperatorID RootTask::get_global_operator_id(OperatorID id) const {
-    return id;
+int RootTask::convert_operator_index(
+    int index, const AbstractTask *ancestor_task) const {
+    if (this != ancestor_task) {
+        ABORT("Invalid operator ID conversion");
+    }
+    return index;
 }
 
 int RootTask::get_num_axioms() const {
