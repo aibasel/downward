@@ -94,8 +94,7 @@ class Registry {
         DocFactory factory,
         PluginTypeNameGetter type_name_factory,
         const std::string &group);
-public:
-
+    
     template<typename T>
     void insert_plugin(const std::string &key,
                        std::function<std::shared_ptr<T>(OptionParser &)> factory,
@@ -113,18 +112,20 @@ public:
         insert_plugin_info(key, doc_factory, type_name_factory, group);
         insert_factory<TPtr>(key, factory);
     }
-
+    
+    void insert_type_info(const PluginTypeInfo &info);
+    void insert_group_info(const PluginGroupInfo &info);
+    
+public:
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {
         std::type_index type(typeid(T));
         return any_cast<std::function<T(OptionParser &)>>(plugin_factories.at(type).at(key));
     }
 
-    void insert_type_info(const PluginTypeInfo &info);
     const PluginTypeInfo &get_type_info(const std::type_index &type) const;
     std::vector<PluginTypeInfo> get_sorted_type_infos() const;
 
-    void insert_group_info(const PluginGroupInfo &info);
     const PluginGroupInfo &get_group_info(const std::string &key) const;
 
 
