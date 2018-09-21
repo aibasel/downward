@@ -12,8 +12,8 @@
 #include "../lp/lp_solver.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
-#include "../tasks/root_task.h"
 #include "../tasks/cost_adapted_task.h"
+#include "../tasks/root_task.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -48,6 +48,11 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       successor_generator(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
 
+    /*
+      Actually, we should like to test if this is the root task or a
+      CostAdapatedTask *of the root task*, but there is currently no good way
+      to do this, so we use this incomplete, slightly less safe test.
+    */
     if (task != tasks::g_root_task && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr) {
         cerr << "The landmark count heuristic currently only supports task "
                 "transformations that modify the operator costs. See issues 845 "
