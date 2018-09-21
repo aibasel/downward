@@ -79,7 +79,7 @@ class Registry {
        for example, to generate the documentation.
      */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
-    Registry(const RegistryDataCollection &collection);
+    
     void collect_plugin_types(const RegistryDataCollection &collection,
         std::vector<std::string> &errors);
     void collect_plugin_groups(const RegistryDataCollection &collection,
@@ -103,6 +103,8 @@ class Registry {
     void insert_group_info(const PluginGroupInfo &info);
     
 public:
+    Registry(const RegistryDataCollection &collection);
+    
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {
         std::type_index type(typeid(T));
@@ -142,12 +144,6 @@ public:
         bool long_text);
 
     std::vector<std::string> get_sorted_plugin_info_keys();
-
-
-    static Registry *instance() {
-        static Registry instance_(*RegistryDataCollection::instance());
-        return &instance_;
-    }
 };
 }
 

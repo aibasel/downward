@@ -34,7 +34,7 @@ int main(int argc, const char **argv) {
     // The command line is parsed twice: once in dry-run mode, to
     // check for simple input errors, and then in normal mode.
     try {
-        options::Registry &registry = *options::Registry::instance();
+        options::Registry registry(*options::RegistryDataCollection::instance());
         options::parse_cmd_line(argc, argv, registry, true, unit_cost);
         engine = options::parse_cmd_line(argc, argv, registry, false, unit_cost);
     } catch (ArgError &error) {

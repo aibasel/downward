@@ -58,8 +58,8 @@ public:
         typename std::function<std::shared_ptr<T>(OptionParser &)> factory,
         const std::string &group = "") {
         using TPtr = std::shared_ptr<T>;
-        PluginTypeNameGetter type_name_factory = [&]() {
-                return TypeNamer<TPtr>::name(*Registry::instance());
+        PluginTypeNameGetter type_name_factory = [&](const Registry &registry) {
+                return TypeNamer<TPtr>::name(registry);
             };
         DocFactory doc_factory = [factory](OptionParser &parser) {
                 factory(parser);
