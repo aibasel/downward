@@ -155,9 +155,9 @@ bool LandmarkFactoryZhuGivan::operator_applicable(const OperatorProxy &op,
 }
 
 bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
-    const EffectConditionsProxy &effect_conditions, const PropositionLayer &state) const {
+    const EffectConditionsProxy &effect_conditions, const PropositionLayer &layer) const {
     for (FactProxy effect_condition : effect_conditions)
-        if (!state[effect_condition.get_variable().get_id()][effect_condition.get_value()].reached())
+        if (!layer[effect_condition.get_variable().get_id()][effect_condition.get_value()].reached())
             return false;
     return true;
 }

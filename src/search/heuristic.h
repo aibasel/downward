@@ -76,7 +76,7 @@ protected:
     State convert_global_state(const GlobalState &global_state) const;
 
 public:
-    explicit Heuristic(const options::Options &options);
+    explicit Heuristic(const options::Options &opts);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
