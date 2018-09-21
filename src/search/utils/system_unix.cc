@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>

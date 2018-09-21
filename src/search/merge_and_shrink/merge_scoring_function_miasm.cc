@@ -62,7 +62,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         */
         assert(num_states);
         double score = static_cast<double>(alive_states_count) /
-                       static_cast<double>(num_states);
+            static_cast<double>(num_states);
         scores.push_back(score);
     }
     return scores;
@@ -139,5 +139,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("sf_miasm", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("sf_miasm", _parse);
 }
