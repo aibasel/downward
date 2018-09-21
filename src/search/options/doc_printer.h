@@ -32,7 +32,7 @@ protected:
     virtual void print_category_footer() = 0;
 
 public:
-    explicit DocPrinter(std::ostream &out, Registry &registry);
+    DocPrinter(std::ostream &out, Registry &registry);
     virtual ~DocPrinter();
 
     void print_all();
@@ -53,7 +53,7 @@ protected:
     virtual void print_category_footer() override;
 
 public:
-    explicit Txt2TagsPrinter(std::ostream &out, Registry &registry);
+    Txt2TagsPrinter(std::ostream &out, Registry &registry);
 };
 
 

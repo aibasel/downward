@@ -10,8 +10,8 @@ using namespace std;
 namespace iterated_search {
 IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry)
     : SearchEngine(opts),
-      registry(registry),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
+      registry(registry),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
