@@ -12,6 +12,7 @@
 
 namespace options {
 class OptionParser;
+class Registry;
 
 // See comment in constructor of Plugin in plugin.h.
 using DocFactory = std::function<void (OptionParser &)>;
@@ -94,7 +95,7 @@ struct PluginInfo {
     std::vector<NoteInfo> notes;
     bool hidden;
 
-    void fill_docs();
+    void fill_docs(Registry &registry);
 
     std::string get_type_name() const;
 };
