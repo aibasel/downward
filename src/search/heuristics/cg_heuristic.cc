@@ -22,7 +22,9 @@ using namespace domain_transition_graph;
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
-      cache(new CGCache(task_proxy)), cache_hits(0), cache_misses(0),
+      cache(utils::make_unique_ptr<CGCache>(task_proxy)),
+      cache_hits(0),
+      cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing causal graph heuristic..." << endl;
