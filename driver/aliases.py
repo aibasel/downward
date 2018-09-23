@@ -132,9 +132,8 @@ ALIASES["lama"] = _get_lama(pref="false")
 
 ALIASES["lama-first"] = [
     "--evaluator",
-    """hlm=lama_synergy(lm_rhw(reasonable_orders=true),
-                               transform=adapt_costs(one))""",
-    "--evaluator", "hff=ff_synergy(hlm)",
+    "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true), transform=adapt_costs(one), pref=false)",
+    "--evaluator", "hff=ff(transform=adapt_costs(one))",
     "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                cost_type=one,reopen_closed=false)"""]
 
