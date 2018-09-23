@@ -16,9 +16,6 @@
 using namespace std;
 using namespace domain_transition_graph;
 
-// TODO: Turn this into an option and check its impact.
-#define USE_CACHE true
-
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
@@ -93,7 +90,7 @@ int CGHeuristic::get_transition_cost(const State &state,
     int var_no = dtg->var;
 
     // Check cache.
-    bool use_the_cache = USE_CACHE && cache->is_cached(var_no);
+    bool use_the_cache = cache && cache->is_cached(var_no);
     if (use_the_cache) {
         int cached_val = cache->lookup(var_no, state, start_val, goal_val);
         if (cached_val != CGCache::NOT_COMPUTED) {
@@ -258,7 +255,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     ValueTransitionLabel *helpful;
     int cost;
     // Check cache.
-    if (USE_CACHE && cache->is_cached(var_no)) {
+    if (cache && cache->is_cached(var_no)) {
         helpful = cache->lookup_helpful_transition(var_no, state, from, to);
         cost = cache->lookup(var_no, state, from, to);
         assert(helpful);
