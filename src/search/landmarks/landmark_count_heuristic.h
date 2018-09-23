@@ -17,7 +17,6 @@ class LandmarkCostAssignment;
 class LandmarkStatusManager;
 
 class LandmarkCountHeuristic : public Heuristic {
-    friend class LamaSynergyHeuristic;
     std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
     const bool use_preferred_operators;
