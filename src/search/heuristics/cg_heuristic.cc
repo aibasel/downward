@@ -19,7 +19,7 @@ using namespace domain_transition_graph;
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
-      cache(utils::make_unique_ptr<CGCache>(task_proxy)),
+      cache(opts.get<bool>("use_cache") ? utils::make_unique_ptr<CGCache>(task_proxy) : nullptr),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
@@ -298,6 +298,11 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_property("consistent", "no");
     parser.document_property("safe", "no");
     parser.document_property("preferred operators", "yes");
+
+    parser.add_option<bool>(
+        "use_cache",
+        "use cache to speed up calculations",
+        "true");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
