@@ -33,7 +33,7 @@ CONFIGS = [
     IssueConfig('eager_single_openlist_w100', ['--search', 'eager(single(sum([g(), weight(lmcut, 100)])), reopen_closed=true)'], [], driver_options=['--overall-time-limit', '5m']),
 ]
 
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+SUITE = common_setup.DEFAULT_SATISFICING_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
     partition="infai_1",
     export=["PATH", "DOWNWARD_BENCHMARKS"])

@@ -54,7 +54,7 @@ CONFIGS = [
     ])
 ]
 
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+SUITE = common_setup.DEFAULT_SATISFICING_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
     partition="infai_1",
     export=["PATH", "DOWNWARD_BENCHMARKS"])
