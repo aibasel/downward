@@ -31,8 +31,6 @@ public:
         using TPtr = std::shared_ptr<T>;
         RegistryDataCollection::instance()->insert_plugin_type_data(type_name,
                 documentation, std::type_index(typeid(TPtr)));
-        //register_plugin_type_plugin(typeid(TPtr), type_name, documentation);
-        //rmv register_plugin_type_plugin method later
     }
 
     ~PluginTypePlugin() = default;
@@ -68,7 +66,6 @@ public:
         RegistryDataCollection::instance()->insert_plugin_data(key, factory, 
             group, type_name_factory, doc_factory, 
             std::type_index(typeid(TPtr)));
-        //Registry::instance()->insert_plugin<T>(key, factory, type_name_factory, group);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
