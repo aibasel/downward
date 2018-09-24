@@ -28,10 +28,10 @@ std::string join(InputIt first, InputIt last, const std::string &delim = ", ") {
 }
 
 template<typename InputIt, typename T>
-std::string join(InputIt first, InputIt last, std::function<std::string(const T&)> f, const std::string &delim = ", ") {
+std::string join(InputIt first, InputIt last, std::function<std::string(const T &)> f, const std::string &delim = ", ") {
     std::ostringstream oss;
     bool first_round = true;
-    
+
     for (; first != last; ++first) {
         oss << (first_round ? "" : delim) << f(*first);
         first_round = false;
