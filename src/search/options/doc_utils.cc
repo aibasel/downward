@@ -3,8 +3,6 @@
 #include "option_parser.h"
 #include "predefinitions.h"
 
-#include <algorithm>
-
 using namespace std;
 
 namespace options {

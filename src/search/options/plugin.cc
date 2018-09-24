@@ -1,7 +1,5 @@
 #include "plugin.h"
 
-#include <typeindex>
-
 using namespace std;
 
 namespace options {

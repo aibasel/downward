@@ -115,17 +115,21 @@ Registry::Registry(const RegistryDataCollection& collection) {
     collect_plugin_groups(collection, errors);
     collect_plugins(collection, errors);
     if (errors.size() > 0) {
-        cerr << endl << "Plugin initialization errors:" << endl;
-        cerr << join(errors.begin(), errors.end(), "\n") <<endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        print_initialization_errors(errors);
     }
 }
 
+static void print_initialization_errors(const vector<string> &errors) {
+    cerr << endl << "Plugin initialization errors:" << endl
+         << join(errors.begin(), errors.end(), "\n") << endl << endl
+         << "To retrieve the correct C++ type for gcc/clang, you can "
+            "call \nc++filt -t [TYPE]" << endl;
+    utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+}
+
 template<typename K, typename T>
-static void generate_name_clash_errors(
-    const unordered_map<K, T> &occurrences,
-    vector<string> &errors,
-    function<bool(const T& obj)> f_cnd,
+static void generate_duplicate_errors(const unordered_map<K, T> &occurrences,
+    vector<string> &errors, function<bool(const T& obj)> f_cnd,
     function<string(const K &first,const T &second)> f_msg) {
     vector<string> name_clash_errors;
     
@@ -147,6 +151,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection& collection,
         const string &type_name = std::get<0>(ptd);
         const string &documentation = std::get<1>(ptd);
         const type_index type = std::get<2>(ptd);
+        
         occurrences_names[type_name].push_back(type);
         occurrences_types[type].push_back(type_name);
         if (occurrences_names[type_name].size() == 1 && 
@@ -156,7 +161,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection& collection,
         }
     }
     
-    generate_name_clash_errors<string, vector<type_index>>(
+    generate_duplicate_errors<string, vector<type_index>>(
         occurrences_names, errors, 
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
@@ -166,7 +171,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection& collection,
                 types.end(), [](const type_index &type) {return type.name();}) + ")";
         });
         
-    generate_name_clash_errors<type_index, vector<string>>(
+    generate_duplicate_errors<type_index, vector<string>>(
         occurrences_types, errors, 
         [](const vector<string> &names) {return names.size() > 1;},
         [](const type_index &type, const vector<string> &names) {
@@ -181,6 +186,7 @@ void Registry::collect_plugin_groups(const RegistryDataCollection& collection,
     for (PluginGroupData pgd : collection.get_plugin_group_data()) {
         const string &group_id = std::get<0>(pgd);
         const string &doc_title = std::get<1>(pgd);
+        
         occurrences[group_id]++;
         if (occurrences[group_id] == 1) {
             PluginGroupInfo info {group_id, doc_title};
@@ -188,7 +194,7 @@ void Registry::collect_plugin_groups(const RegistryDataCollection& collection,
         }
     }
     
-    generate_name_clash_errors<string, int>(occurrences, errors, 
+    generate_duplicate_errors<string, int>(occurrences, errors, 
         [](const int &count) {return count > 1;},
         [](const string &first, const int &count) {
             return "Multiple PluginGroupPlugins: " + first +
@@ -207,11 +213,7 @@ void Registry::collect_plugins(const RegistryDataCollection& collection,
         const PluginTypeNameGetter &type_name_factory = std::get<3>(pd);
         const DocFactory &doc_factory = std::get<4>(pd);
         const type_index type = std::get<5>(pd);
-        occurrences[key].push_back(type);
-        if (occurrences[key].size() == 1) {
-            insert_plugin(key, factory, type_name_factory, doc_factory, group, 
-                type);
-        }
+        
         if (group != "" && !plugin_group_infos.count(group)) {
             other_plugin_errors.push_back("Missing PluginGroupPlugin for "
             "Plugin " + key + " of type " + type.name() + ": " + group);
@@ -220,9 +222,14 @@ void Registry::collect_plugins(const RegistryDataCollection& collection,
             other_plugin_errors.push_back("Missing PluginTypePlugin for "
             "Plugin " + key + ": " + type.name());
         }
+        occurrences[key].push_back(type);
+        if (occurrences[key].size() == 1) {
+            insert_plugin(key, factory, type_name_factory, doc_factory, group, 
+                type);
+        }
     }
     
-    generate_name_clash_errors<string, vector<type_index>>(occurrences, errors, 
+    generate_duplicate_errors<string, vector<type_index>>(occurrences, errors, 
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple Plugins: " + type_name + " (types: " +
@@ -237,7 +244,6 @@ void Registry::collect_plugins(const RegistryDataCollection& collection,
 void Registry::insert_plugin(const std::string &key, Any factory,
         PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
         const std::string &group, const std::type_index type) {
-        //using TPtr = std::shared_ptr<T>;
         insert_plugin_info(key, doc_factory, type_name_factory, group);
         insert_factory(key, factory, type);
     }
