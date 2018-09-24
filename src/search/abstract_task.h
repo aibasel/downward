@@ -81,7 +81,14 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const = 0;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const = 0;
-    virtual OperatorID get_global_operator_id(OperatorID id) const = 0;
+
+    /*
+      Convert an operator index from this task, C (child), into an operator index
+      from an ancestor task A (ancestor). Task A has to be an ancestor of C in
+      the sense that C is the result of a sequence of task transformations on A.
+    */
+    virtual int convert_operator_index(
+        int index, const AbstractTask *ancestor_task) const = 0;
 
     virtual int get_num_axioms() const = 0;
 

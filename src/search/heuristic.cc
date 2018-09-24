@@ -27,7 +27,7 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
-    preferred_operators.insert(op.get_global_operator_id());
+    preferred_operators.insert(op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {

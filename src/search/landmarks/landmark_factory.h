@@ -66,7 +66,7 @@ protected:
 
     // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const OperatorProxy &o, const LandmarkNode *lmp) const;
-    bool is_landmark_precondition(const OperatorProxy &o, const LandmarkNode *lmp) const;
+    bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
 private:
     const bool reasonable_orders;
@@ -76,7 +76,7 @@ private:
     const bool no_orders;
 
     bool interferes(const TaskProxy &task_proxy,
-                    const LandmarkNode *lm_node1,
+                    const LandmarkNode *node_a,
                     const LandmarkNode *node_b) const;
     bool effect_always_happens(const VariablesProxy &variables,
                                const EffectsProxy &effects,
