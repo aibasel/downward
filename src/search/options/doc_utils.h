@@ -4,7 +4,6 @@
 #include "bounds.h"
 
 #include <functional>
-#include <map>
 #include <string>
 #include <typeindex>
 #include <utility>

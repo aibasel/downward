@@ -21,7 +21,8 @@ class OptionParser;
 
 using PluginTypeData = std::tuple<std::string /*type_name*/, std::string /*documentation*/, std::type_index>;
 using PluginGroupData = std::tuple<std::string /*group_id*/, std::string /*doc_title*/>;
-using PluginData = std::tuple<std::string /*key*/, Any /*factory*/, std::string /*group*/, PluginTypeNameGetter /*type_name_factory*/, DocFactory /*doc_factory*/, std::type_index>;
+using PluginData = std::tuple<std::string /*key*/, Any /*factory*/, std::string /*group*/, 
+        PluginTypeNameGetter /*type_name_factory*/, DocFactory /*doc_factory*/, std::type_index>;
     
 class RegistryDataCollection {
     
@@ -90,15 +91,10 @@ class Registry {
     void insert_plugin(const std::string &key, Any factory,
         PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
         const std::string &group, const std::type_index type);
-    void insert_factory(
-        const std::string &key,
-        Any factory,
+    void insert_factory(const std::string &key, Any factory,
         const std::type_index type);
-    void insert_plugin_info(
-        const std::string &key,
-        DocFactory factory,
-        PluginTypeNameGetter type_name_factory,
-        const std::string &group);
+    void insert_plugin_info(const std::string &key, DocFactory factory,
+        PluginTypeNameGetter type_name_factory, const std::string &group);
     void insert_type_info(const PluginTypeInfo &info);
     void insert_group_info(const PluginGroupInfo &info);
     
