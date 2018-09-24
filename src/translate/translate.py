@@ -710,7 +710,13 @@ def handle_sigxcpu(signum, stackframe):
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGXCPU, handle_sigxcpu)
+    try:
+        signal.signal(signal.SIGXCPU, handle_sigxcpu)
+    except AttributeError:
+        print("Warning! SIGXCPU is not available on your platform. "
+            "This means that the planner cannot be gracefully terminated "
+            "when using a time limit, which, however, is probably "
+            "supported on your platform anyway.")
     try:
         # Reserve about 10 MB (in Python 2) of emergency memory.
         # https://stackoverflow.com/questions/19469608/

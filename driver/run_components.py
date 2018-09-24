@@ -15,13 +15,6 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
-if limits.can_set_limits():
-    VALIDATE_MEMORY_LIMIT_IN_B = 3.5 * 1024 * 1024 * 1024
-    VALIDATE_TIME_LIMIT = 1800
-else:
-    VALIDATE_MEMORY_LIMIT_IN_B = None
-    VALIDATE_TIME_LIMIT = None
-
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
@@ -162,14 +155,17 @@ def run_validate(args):
         returncodes.exit_with_driver_input_error("validate needs one or two PDDL input files.")
 
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
+    if not plan_files:
+        print("Not running validate since no plans found.")
+        return (0, True)
     validate_inputs = [domain, task] + plan_files
 
     try:
         call.check_call(
             "validate",
             [VALIDATE] + validate_inputs,
-            time_limit=VALIDATE_TIME_LIMIT,
-            memory_limit=VALIDATE_MEMORY_LIMIT_IN_B)
+            time_limit=args.validate_time_limit,
+            memory_limit=args.validate_memory_limit)
     except OSError as err:
         if err.errno == errno.ENOENT:
             returncodes.exit_with_driver_input_error("Error: {} not found. Is it on the PATH?".format(VALIDATE))
