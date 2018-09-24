@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-Script to check correctness of eager_wastar.
+Script to compare WA* versions with w=1 with A*
 
-Comparing eager_wastar with the equivalent version using
-eager(single(w*h), reopen_closed=true).
-
-Results should be the same for a given same value w.
+Results should be slightly different because of the tie-breaking
+strategy used by the astar search
 '''
 
 import os
@@ -23,14 +21,10 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue311"]
 CONFIGS = [
     IssueConfig('eager_wastar_w1', ['--search', 'eager_wastar([lmcut], w=1)'], [], driver_options=['--overall-time-limit', '5m']),
-    IssueConfig('eager_wastar_w2', ['--search', 'eager_wastar([lmcut], w=2)'], [], driver_options=['--overall-time-limit', '5m']),
-    IssueConfig('eager_wastar_w5', ['--search', 'eager_wastar([lmcut], w=5)'], [], driver_options=['--overall-time-limit', '5m']),
-    IssueConfig('eager_wastar_w100', ['--search', 'eager_wastar([lmcut], w=100)'], [], driver_options=['--overall-time-limit', '5m']),
 
     IssueConfig('eager_single_openlist_w1', ['--search', 'eager(single(sum([g(), weight(lmcut, 1)])), reopen_closed=true)'], [], driver_options=['--overall-time-limit', '5m']),
-    IssueConfig('eager_single_openlist_w2', ['--search', 'eager(single(sum([g(), weight(lmcut, 2)])), reopen_closed=true)'], [], driver_options=['--overall-time-limit', '5m']),
-    IssueConfig('eager_single_openlist_w5', ['--search', 'eager(single(sum([g(), weight(lmcut, 5)])), reopen_closed=true)'], [], driver_options=['--overall-time-limit', '5m']),
-    IssueConfig('eager_single_openlist_w100', ['--search', 'eager(single(sum([g(), weight(lmcut, 100)])), reopen_closed=true)'], [], driver_options=['--overall-time-limit', '5m']),
+
+    IssueConfig('astar', ['--search', 'astar(lmcut)'], [], driver_options=['--overall-time-limit', '5m']),
 ]
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
