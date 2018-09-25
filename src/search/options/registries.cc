@@ -108,22 +108,22 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
     return plugin_group_infos.at(group);
 }
 
-Registry::Registry(const RegistryDataCollection &collection) {
-    vector<string> errors;
-    collect_plugin_types(collection, errors);
-    collect_plugin_groups(collection, errors);
-    collect_plugins(collection, errors);
-    if (errors.size() > 0) {
-        print_initialization_errors(errors);
-    }
-}
-
 static void print_initialization_errors(const vector<string> &errors) {
     cerr << endl << "Plugin initialization errors:" << endl
          << join(errors.begin(), errors.end(), "\n") << endl << endl
          << "To retrieve the correct C++ type for gcc/clang, you can "
         "call \nc++filt -t [TYPE]" << endl;
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+}
+
+Registry::Registry(const RegistryDataCollection &collection) {
+    vector<string> errors;
+    collect_plugin_types(collection, errors);
+    collect_plugin_groups(collection, errors);
+    collect_plugins(collection, errors);
+    if (!errors.empty()) {
+        print_initialization_errors(errors);
+    }
 }
 
 template<typename K, typename T>
@@ -148,9 +148,9 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
     for (PluginTypeData ptd : collection.get_plugin_type_data()) {
-        const string &type_name = std::get<0>(ptd);
-        const string &documentation = std::get<1>(ptd);
-        const type_index type = std::get<2>(ptd);
+        const string type_name = get<0>(ptd);
+        const string documentation = get<1>(ptd);
+        const type_index type = get<2>(ptd);
 
         occurrences_names[type_name].push_back(type);
         occurrences_types[type].push_back(type_name);
@@ -185,8 +185,8 @@ void Registry::collect_plugin_groups(const RegistryDataCollection &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
     for (PluginGroupData pgd : collection.get_plugin_group_data()) {
-        const string &group_id = std::get<0>(pgd);
-        const string &doc_title = std::get<1>(pgd);
+        const string group_id = get<0>(pgd);
+        const string doc_title = get<1>(pgd);
 
         occurrences[group_id]++;
         if (occurrences[group_id] == 1) {
@@ -209,14 +209,14 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
     for (PluginData pd : collection.get_plugin_data()) {
-        const string &key = std::get<0>(pd);
-        const Any &factory = std::get<1>(pd);
-        const string &group = std::get<2>(pd);
-        const PluginTypeNameGetter &type_name_factory = std::get<3>(pd);
-        const DocFactory &doc_factory = std::get<4>(pd);
-        const type_index type = std::get<5>(pd);
+        const string key = get<0>(pd);
+        const Any factory = get<1>(pd);
+        const string group = get<2>(pd);
+        const PluginTypeNameGetter type_name_factory = get<3>(pd);
+        const DocFactory doc_factory = get<4>(pd);
+        const type_index type = get<5>(pd);
 
-        if (group != "" && !plugin_group_infos.count(group)) {
+        if (!group.empty() && !plugin_group_infos.count(group)) {
             other_plugin_errors.push_back("Missing PluginGroupPlugin for "
                                           "Plugin " + key + " of type " + type.name() + ": " + group);
         }
@@ -245,16 +245,17 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
 }
 
 void Registry::insert_plugin(
-    const std::string &key, Any factory, PluginTypeNameGetter type_name_factory,
-    DocFactory doc_factory, const std::string &group, const std::type_index type) {
+    const string &key, const Any &factory,
+    const PluginTypeNameGetter &type_name_factory,
+    const DocFactory &doc_factory, const string &group, const type_index &type) {
     insert_plugin_info(key, doc_factory, type_name_factory, group);
     insert_factory(key, factory, type);
 }
 
-void Registry::insert_factory(const std::string &key, Any factory,
-                              std::type_index type) {
+void Registry::insert_factory(const string &key, const Any &factory,
+                              const type_index &type) {
     if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
-        std::cerr << "duplicate key in registry: " << key << std::endl;
+        cerr << "duplicate key in registry: " << key << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     plugin_factories[type][key] = factory;
@@ -262,8 +263,8 @@ void Registry::insert_factory(const std::string &key, Any factory,
 
 void Registry::insert_plugin_info(
     const string &key,
-    DocFactory doc_factory,
-    PluginTypeNameGetter type_name_factory,
+    const DocFactory &doc_factory,
+    const PluginTypeNameGetter &type_name_factory,
     const string &group) {
     if (plugin_infos.count(key)) {
         ABORT("Registry already contains a plugin with name \"" + key + "\"");
