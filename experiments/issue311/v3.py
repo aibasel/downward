@@ -25,7 +25,7 @@ CONFIGS = [
         "hlm=lama_synergy(lm_rhw(reasonable_orders=true))",
         "--evaluator", "hff=ff_synergy(hlm)",
         "--search", """iterated([
-        eager_greedy([hff,hlm],preferred=[hff,hlm]),
+        lazy_greedy([hff,hlm],preferred=[hff,hlm]),
         eager_wastar([hff,hlm],preferred=[hff,hlm],w=5),
         eager_wastar([hff,hlm],preferred=[hff,hlm],w=3),
         eager_wastar([hff,hlm],preferred=[hff,hlm],w=2),
@@ -41,9 +41,9 @@ CONFIGS = [
         "                           lm_cost_type=plusone),transform=adapt_costs(plusone))",
         "--evaluator", "hff2=ff_synergy(hlm2)",
         "--search", """iterated([
-        eager_greedy([hff1,hlm1],preferred=[hff1,hlm1],
+        lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
         cost_type=one,reopen_closed=false),
-        eager_greedy([hff2,hlm2],preferred=[hff2,hlm2],
+        lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],
         reopen_closed=false),
         eager_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=5),
         eager_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=3),

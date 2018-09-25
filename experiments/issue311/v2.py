@@ -27,7 +27,7 @@ CONFIGS = [
     IssueConfig('astar', ['--search', 'astar(lmcut)'], [], driver_options=['--overall-time-limit', '5m']),
 ]
 
-SUITE = common_setup.DEFAULT_SATISFICING_SUITE
+SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
     partition="infai_1",
     export=["PATH", "DOWNWARD_BENCHMARKS"])
