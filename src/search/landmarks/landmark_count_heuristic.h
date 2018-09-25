@@ -16,10 +16,16 @@ namespace landmarks {
 class LandmarkCostAssignment;
 class LandmarkStatusManager;
 
+enum class PreferredOperatorsType {
+    NONE,
+    SIMPLE,
+    ALL,
+};
+
 class LandmarkCountHeuristic : public Heuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
-    const bool use_preferred_operators;
+    const PreferredOperatorsType pref_ops_type;
     const bool ff_search_disjunctive_lms;
     const bool conditional_effects_supported;
     const bool admissible;

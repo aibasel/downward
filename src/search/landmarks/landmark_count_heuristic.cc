@@ -36,7 +36,7 @@ static Options get_exploration_options(
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
       exploration(get_exploration_options(task, cache_evaluator_values)),
-      use_preferred_operators(opts.get<bool>("pref")),
+      pref_ops_type(static_cast<PreferredOperatorsType>(opts.get_enum("preferred_operators"))),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
@@ -92,7 +92,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         lm_cost_assignment = nullptr;
     }
 
-    if (use_preferred_operators) {
+    if (pref_ops_type == PreferredOperatorsType::SIMPLE || pref_ops_type == PreferredOperatorsType::ALL) {
         /* Ideally, we should reuse the successor generator of the main task in cases
            where it's compatible. See issue564. */
         successor_generator = utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy);
@@ -154,7 +154,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     int h = get_heuristic_value(global_state);
 
     // no (need for) helpful actions, return
-    if (!use_preferred_operators) {
+    if (pref_ops_type == PreferredOperatorsType::NONE) {
         return h;
     }
 
@@ -166,9 +166,9 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
     LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
 
-    int num_reached = reached_lms.size();
-    if (num_reached == lgraph->number_of_landmarks() ||
-        !generate_helpful_actions(state, reached_lms)) {
+    generate_helpful_actions(state, reached_lms);
+
+    if (pref_ops_type == PreferredOperatorsType::ALL) {
         set_exploration_goals(global_state);
 
         // Use FF to plan to a landmark leaf.
@@ -352,9 +352,20 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "optimal",
         "use optimal (LP-based) cost sharing "
         "(only makes sense with ``admissible=true``)", "false");
-    parser.add_option<bool>("pref", "identify preferred operators "
-                            "(see OptionCaveats#Using_preferred_operators_"
-                            "with_the_lmcount_heuristic)", "false");
+    vector<string> pref_ops_types;
+    vector<string> pref_ops_types_doc;
+    pref_ops_types.push_back("NONE");
+    pref_ops_types_doc.push_back("none");
+    pref_ops_types.push_back("SIMPLE");
+    pref_ops_types_doc.push_back("simple");
+    pref_ops_types.push_back("ALL");
+    pref_ops_types_doc.push_back("all");
+    parser.add_enum_option(
+        "preferred_operators",
+        pref_ops_types,
+        "Which type of preferred operators to compute.",
+        "NONE",
+        pref_ops_types_doc);
     parser.add_option<bool>("alm", "use action landmarks", "true");
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
