@@ -56,7 +56,6 @@ class LandmarkCutLandmarks {
     int num_propositions;
     priority_queues::AdaptiveQueue<RelaxedProposition *> priority_queue;
 
-    void initialize();
     void build_relaxed_operator(const OperatorProxy &op);
     void add_relaxed_operator(std::vector<RelaxedProposition *> &&precondition,
                               std::vector<RelaxedProposition *> &&effects,
@@ -67,7 +66,7 @@ class LandmarkCutLandmarks {
     void first_exploration(const State &state);
     void first_exploration_incremental(std::vector<RelaxedOperator *> &cut);
     void second_exploration(const State &state,
-                            std::vector<RelaxedProposition *> &queue,
+                            std::vector<RelaxedProposition *> &second_exploration_queue,
                             std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {

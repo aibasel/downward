@@ -6,24 +6,33 @@
 #include "global_state.h"
 #include "state_id.h"
 
+#include "algorithms/int_hash_set.h"
 #include "algorithms/int_packer.h"
 #include "algorithms/segmented_vector.h"
+#include "algorithms/subscriber.h"
 #include "utils/hash.h"
 
 #include <set>
-#include <unordered_set>
 
 /*
   Overview of classes relevant to storing and working with registered states.
 
   GlobalState
-    This class is used for manipulating states.
-    It contains the (uncompressed) variable values for fast access by the heuristic.
-    A State is always registered in a StateRegistry and has a valid ID.
-    States can be constructed from a StateRegistry by factory methods for the
-    initial state and successor states.
-    They never own the actual state data which is borrowed from the StateRegistry
-    that created them.
+    This class is used for registered, packed states.
+    It contains a pointer to the (compressed) variable values and can be copied
+    cheaply. For fast access by the heuristic the state should be unpacked to a
+    State first.
+    A GlobalState is always registered in a StateRegistry and has a valid ID.
+    It can (only) be constructed from a StateRegistry by factory methods for
+    the initial state and successor states. It never owns the actual state data
+    which is borrowed from the StateRegistry that created it.
+
+  State
+    This class is used for fast access to state data. It contains and owns all
+    state data, so it is expensive to copy.
+    State objects can be created by unpacking a GlobalState or from given
+    variable values and a task. States are not registered, so they are not
+    guaranteed to be reachable and use no form of duplicate detection.
 
   StateID
     StateIDs identify states within a state registry.
@@ -37,7 +46,7 @@
     To minimize allocation overhead, the implementation stores the data of many
     such states in a single large array (see SegmentedArrayVector).
     PackedStateBin arrays are never manipulated directly but through
-    a global IntPacker object.
+    the task's state packer (see IntPacker).
 
   -------------
 
@@ -55,8 +64,9 @@
   PerStateInformation<T>
     Associates a value of type T with every state in a given StateRegistry.
     Can be thought of as a very compactly implemented map from GlobalState to T.
-    References stay valid forever. Memory usage is essentially the same as a
-    vector<T> whose size is the number of states in the registry.
+    References stay valid as long as the state registry exists. Memory usage is
+    essentially the same as a vector<T> whose size is the number of states in
+    the registry.
 
 
   ---------------
@@ -91,16 +101,14 @@
   Problem:
     In the LMcount heuristic each state should store which landmarks are
     already reached when this state is reached. This should only require
-    additional memory, when the LMcount heuristic is used.
+    additional memory when the LMcount heuristic is used.
 
   Solution:
-    The heuristic object uses a field of type PerStateInformation<std::vector<bool> >
-    to store for each state and each landmark whether it was reached in this state.
+    The heuristic object uses an attribute of type PerStateBitset to store for each
+    state and each landmark whether it was reached in this state.
 */
 
-class PerStateInformationBase;
-
-class StateRegistry {
+class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     struct StateIDSemanticHash {
         const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
         int state_size;
@@ -111,13 +119,13 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        size_t operator()(StateID id) const {
-            const PackedStateBin *data = state_data_pool[id.value];
+        int_hash_set::HashType operator()(int id) const {
+            const PackedStateBin *data = state_data_pool[id];
             utils::HashState hash_state;
             for (int i = 0; i < state_size; ++i) {
                 hash_state.feed(data[i]);
             }
-            return hash_state.get_hash64();
+            return hash_state.get_hash32();
         }
     };
 
@@ -131,9 +139,9 @@ class StateRegistry {
               state_size(state_size) {
         }
 
-        bool operator()(StateID lhs, StateID rhs) const {
-            const PackedStateBin *lhs_data = state_data_pool[lhs.value];
-            const PackedStateBin *rhs_data = state_data_pool[rhs.value];
+        bool operator()(int lhs, int rhs) const {
+            const PackedStateBin *lhs_data = state_data_pool[lhs];
+            const PackedStateBin *rhs_data = state_data_pool[rhs];
             return std::equal(lhs_data, lhs_data + state_size, rhs_data);
         }
     };
@@ -143,39 +151,26 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    using StateIDSet = std::unordered_set<StateID, StateIDSemanticHash, StateIDSemanticEqual>;
+    using StateIDSet = int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
 
-    /* TODO: The state registry still doesn't use the task interface completely.
-             Fixing this is part of issue509. */
-    /* TODO: AbstractTask is an implementation detail that is not supposed to
-             leak. In the long run, we should store a TaskProxy here. */
-    const AbstractTask &task;
-
-    /* TODO: When we switch StateRegistry to the task interface, the next three
-             members should come from the task. */
+    TaskProxy task_proxy;
     const int_packer::IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
-    const std::vector<int> &initial_state_data;
     const int num_variables;
 
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
     GlobalState *cached_initial_state;
-    mutable std::set<PerStateInformationBase *> subscribers;
 
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
 public:
-    StateRegistry(
-        const AbstractTask &task, const int_packer::IntPacker &state_packer,
-        AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
+    explicit StateRegistry(const TaskProxy &task_proxy);
     ~StateRegistry();
 
-    /* TODO: Ideally, this should return a TaskProxy. (See comment above the
-             declaration of task.) */
-    const AbstractTask &get_task() const {
-        return task;
+    const TaskProxy &get_task_proxy() const {
+        return task_proxy;
     }
 
     int get_num_variables() const {
@@ -214,14 +209,7 @@ public:
 
     int get_state_size_in_bytes() const;
 
-    /*
-      Remembers the given PerStateInformation. If this StateRegistry is
-      destroyed, it notifies all subscribed PerStateInformation objects.
-      The information stored in them that relates to states from this
-      registry is then destroyed as well.
-    */
-    void subscribe(PerStateInformationBase *psi) const;
-    void unsubscribe(PerStateInformationBase *psi) const;
+    void print_statistics() const;
 
     class const_iterator : public std::iterator<
                                std::forward_iterator_tag, StateID> {

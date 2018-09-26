@@ -1,5 +1,6 @@
 #include "task_properties.h"
 
+#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -27,7 +28,7 @@ void verify_no_axioms(TaskProxy task) {
     if (has_axioms(task)) {
         cerr << "This configuration does not support axioms!"
              << endl << "Terminating." << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
 }
 
@@ -53,7 +54,7 @@ void verify_no_conditional_effects(TaskProxy task) {
         cerr << "This configuration does not support conditional effects "
              << "(operator " << op.get_name() << ")!" << endl
              << "Terminating." << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
 }
 
@@ -82,4 +83,83 @@ int get_min_operator_cost(TaskProxy task_proxy) {
     }
     return min_cost;
 }
+
+void print_variable_statistics(const TaskProxy &task_proxy) {
+    const int_packer::IntPacker &state_packer = g_state_packers[task_proxy];
+
+    int num_facts = 0;
+    VariablesProxy variables = task_proxy.get_variables();
+    for (VariableProxy var : variables)
+        num_facts += var.get_domain_size();
+
+    cout << "Variables: " << variables.size() << endl;
+    cout << "FactPairs: " << num_facts << endl;
+    cout << "Bytes per state: "
+         << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
+         << endl;
+}
+
+void dump_pddl(const State &state) {
+    for (FactProxy fact : state) {
+        string fact_name = fact.get_name();
+        if (fact_name != "<none of those>")
+            cout << fact_name << endl;
+    }
+}
+
+void dump_fdr(const State &state) {
+    for (FactProxy fact : state) {
+        VariableProxy var = fact.get_variable();
+        cout << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
+             << fact.get_value() << endl;
+    }
+}
+
+void dump_goals(const GoalsProxy &goals) {
+    cout << "Goal conditions:" << endl;
+    for (FactProxy goal : goals) {
+        cout << "  " << goal.get_variable().get_name() << ": "
+             << goal.get_value() << endl;
+    }
+}
+
+void dump_task(const TaskProxy &task_proxy) {
+    OperatorsProxy operators = task_proxy.get_operators();
+    int min_action_cost = numeric_limits<int>::max();
+    int max_action_cost = 0;
+    for (OperatorProxy op : operators) {
+        min_action_cost = min(min_action_cost, op.get_cost());
+        max_action_cost = max(max_action_cost, op.get_cost());
+    }
+    cout << "Min action cost: " << min_action_cost << endl;
+    cout << "Max action cost: " << max_action_cost << endl;
+
+    VariablesProxy variables = task_proxy.get_variables();
+    cout << "Variables (" << variables.size() << "):" << endl;
+    for (VariableProxy var : variables) {
+        cout << "  " << var.get_name()
+             << " (range " << var.get_domain_size() << ")" << endl;
+        for (int val = 0; val < var.get_domain_size(); ++val) {
+            cout << "    " << val << ": " << var.get_fact(val).get_name() << endl;
+        }
+    }
+    State initial_state = task_proxy.get_initial_state();
+    cout << "Initial state (PDDL):" << endl;
+    dump_pddl(initial_state);
+    cout << "Initial state (FDR):" << endl;
+    dump_fdr(initial_state);
+    dump_goals(task_proxy.get_goals());
+}
+
+PerTaskInformation<int_packer::IntPacker> g_state_packers(
+    [](const TaskProxy &task_proxy) {
+        VariablesProxy variables = task_proxy.get_variables();
+        vector<int> variable_ranges;
+        variable_ranges.reserve(variables.size());
+        for (VariableProxy var : variables) {
+            variable_ranges.push_back(var.get_domain_size());
+        }
+        return utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges);
+    }
+    );
 }

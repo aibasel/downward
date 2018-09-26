@@ -14,7 +14,7 @@ public:
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
-    virtual void get_involved_heuristics(std::set<Heuristic *> &) override {}
+    virtual void get_path_dependent_evaluators(std::set<Evaluator *> &) override {}
 };
 }
 

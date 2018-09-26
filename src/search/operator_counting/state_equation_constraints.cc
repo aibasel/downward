@@ -1,6 +1,5 @@
 #include "state_equation_constraints.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -68,7 +67,7 @@ void StateEquationConstraints::add_constraints(
 }
 
 void StateEquationConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<lp::LPConstraint> &constraints,
+    const shared_ptr<AbstractTask> &task, vector<lp::LPConstraint> &constraints,
     double infinity) {
     cout << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);
@@ -151,5 +150,5 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     return make_shared<StateEquationConstraints>();
 }
 
-PluginShared<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
+static Plugin<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
 }

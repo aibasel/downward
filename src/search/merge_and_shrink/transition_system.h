@@ -139,6 +139,7 @@ public:
         std::vector<bool> &&goal_states,
         int init_state,
         bool compute_label_equivalence_relation);
+    TransitionSystem(const TransitionSystem &other);
     ~TransitionSystem();
     /*
       Factory method to construct the merge of two transition systems.

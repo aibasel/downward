@@ -59,7 +59,7 @@ def translate_task(python, python_version, task_file):
     for pattern in [
             r"\[.+s CPU, .+s wall-clock\]",
             r"\d+ KB",
-            r"callstring: .*/python\d(.\d)?"]:
+            r".* command line string: .*/python\d(.\d)?"]:
         output = re.sub(pattern, "", output)
     return output
 

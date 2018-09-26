@@ -5,19 +5,24 @@
 using namespace std;
 
 namespace landmarks {
+/*
+  By default we mark all landmarks as reached, since we do an intersection when
+  computing new landmark information.
+*/
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    : lm_graph(graph),
-      do_intersection(true) {
+    : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
+      lm_graph(graph) {
 }
 
-vector<bool> &LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
+BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
     return reached_lms[state];
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
     const GlobalState &initial_state) {
-    vector<bool> &reached = get_reached_landmarks(initial_state);
-    reached.resize(lm_graph.number_of_landmarks());
+    BitsetView reached = get_reached_landmarks(initial_state);
+    // This is necessary since the default is "true for all" (see comment above).
+    reached.reset();
 
     int inserted = 0;
     int num_goal_lms = 0;
@@ -28,7 +33,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
             ++num_goal_lms;
         }
 
-        if (node_p->parents.size() > 0) {
+        if (!node_p->parents.empty()) {
             continue;
         }
         if (node_p->conjunctive) {
@@ -40,13 +45,13 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                 }
             }
             if (lm_true) {
-                reached[node_p->get_id()] = true;
+                reached.set(node_p->get_id());
                 ++inserted;
             }
         } else {
             for (const FactPair &fact : node_p->facts) {
                 if (initial_state[fact.var] == fact.value) {
-                    reached[node_p->get_id()] = true;
+                    reached.set(node_p->get_id());
                     ++inserted;
                     break;
                 }
@@ -61,39 +66,38 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
                                                OperatorID,
                                                const GlobalState &global_state) {
-    vector<bool> &parent_reached = get_reached_landmarks(parent_global_state);
-    vector<bool> &reached = get_reached_landmarks(global_state);
-
-    if (&parent_reached == &reached) {
-        assert(global_state.get_id() == parent_global_state.get_id());
+    if (global_state.get_id() == parent_global_state.get_id()) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }
 
-    bool intersect = (do_intersection && !reached.empty());
-    vector<bool> old_reached;
-    if (intersect) {
-        // Save old reached landmarks for this state.
-        // Swapping is faster than old_reached = reached, and we assign
-        // a new value to reached next anyway.
-        old_reached.swap(reached);
-    }
-
-    reached = parent_reached;
+    const BitsetView parent_reached = get_reached_landmarks(parent_global_state);
+    BitsetView reached = get_reached_landmarks(global_state);
 
     int num_landmarks = lm_graph.number_of_landmarks();
-    assert(static_cast<int>(reached.size()) == num_landmarks);
-    assert(static_cast<int>(parent_reached.size()) == num_landmarks);
-    assert(!intersect || static_cast<int>(old_reached.size()) == num_landmarks);
+    assert(reached.size() == num_landmarks);
+    assert(parent_reached.size() == num_landmarks);
 
+    /*
+       Set all landmarks not reached by this parent as "not reached".
+       Over multiple paths, this has the effect of computing the intersection
+       of "reached" for the parents. It is important here that upon first visit,
+       all elements in "reached" are true because true is the neutral element
+       of intersection.
+
+       In the case where the landmark we are setting to false here is actually
+       achieved right now, it is set to "true" again below.
+    */
+    reached.intersect(parent_reached);
+
+
+    // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
-        if (intersect && !old_reached[id]) {
-            reached[id] = false;
-        } else if (!reached[id]) {
+        if (!reached.test(id)) {
             LandmarkNode *node = lm_graph.get_lm_for_index(id);
             if (node->is_true_in_state(global_state)) {
                 if (landmark_is_leaf(*node, reached)) {
-                    reached[id] = true;
+                    reached.set(id);
                 }
             }
         }
@@ -103,13 +107,13 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
 }
 
 bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    vector<bool> &reached = get_reached_landmarks(global_state);
+    const BitsetView reached = get_reached_landmarks(global_state);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
     for (LandmarkNode *node : nodes) {
         node->status = lm_not_reached;
-        if (reached[node->get_id()]) {
+        if (reached.test(node->get_id())) {
             node->status = lm_reached;
         }
     }
@@ -141,11 +145,11 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
 
         if (!node->is_derived) {
             if ((node->status == lm_not_reached) &&
-                (node->first_achievers.size() == 0)) {
+                node->first_achievers.empty()) {
                 dead_end_found = true;
             }
             if ((node->status == lm_needed_again) &&
-                (node->possible_achievers.size() == 0)) {
+                node->possible_achievers.empty()) {
                 dead_end_found = true;
             }
         }
@@ -164,16 +168,14 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
     return false;
 }
 
-bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
-                                             const vector<bool> &reached) const {
+bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node, const BitsetView &reached) const {
     //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
-        if (true) // Note: no condition on edge type here
-            if (!reached[parent_node->get_id()]) {
-                return false;
-            }
-
+        // Note: no condition on edge type here
+        if (!reached.test(parent_node->get_id())) {
+            return false;
+        }
     }
     return true;
 }

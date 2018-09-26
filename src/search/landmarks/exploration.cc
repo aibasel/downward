@@ -87,15 +87,13 @@ void Exploration::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
-        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
-             << MAX_COST_VALUE << endl;
-        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
+        cout << "WARNING: overflow on landmark exploration h^add! Costs clamped to "
              << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;
     }
 }
 
-void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
+void Exploration::set_additional_goals(const vector<FactPair> &additional_goals) {
     //Clear previous additional goals.
     for (ExProposition *prop : termination_propositions) {
         propositions[prop->fact.var][prop->fact.value].is_termination_condition = false;
@@ -108,7 +106,7 @@ void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
         termination_propositions.push_back(&propositions[var_id][value]);
     }
     // Build new additional goal propositions.
-    for (const FactPair &fact : add_goals) {
+    for (const FactPair &fact : additional_goals) {
         int var_id = fact.var;
         int value = fact.value;
         if (!propositions[var_id][value].is_goal_condition) {
@@ -228,7 +226,7 @@ void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
                 int depth = unary_op->is_induced_by_axiom(task_proxy)
-                            ? unary_op->depth : unary_op->depth + 1;
+                    ? unary_op->depth : unary_op->depth + 1;
                 if (use_h_max)
                     enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
                                          depth, unary_op, use_h_max);

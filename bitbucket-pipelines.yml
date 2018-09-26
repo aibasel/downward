@@ -1,30 +1,37 @@
+image: ubuntu:16.04
 pipelines:
   default:
     - step:
         script:
-          # Install dependencies.
-          - sudo apt-get update
-          - sudo apt-get -y install cmake g++ g++-multilib make mercurial python
-          - sudo apt-get -y install python-pip uncrustify
-          - sudo pip install -U pyflakes pytest
+          - apt-get update
+          - apt-get -y upgrade
+
+          # Install Fast Downward dependencies.
+          - apt-get -y install cmake g++ g++-multilib make mercurial python
+
+          # Install dependencies for running code tests.
+          - apt-get -y install clang-5.0 clang-tidy-5.0 python3 python-pip wget
+          - pip install -U pyflakes pytest
 
           # Print information about environment.
           - g++ --version
           - python --version
           - python -c "import multiprocessing; print 'CPUs:', multiprocessing.cpu_count()"
 
-          # Setup uncrustify.
-          - wget http://downloads.sourceforge.net/project/uncrustify/uncrustify/uncrustify-0.61/uncrustify-0.61.tar.gz
-          - tar -xzvf uncrustify-0.61.tar.gz
-          - cd uncrustify-0.61
-          - ./configure
+          # Set up uncrustify.
+          - wget https://github.com/uncrustify/uncrustify/archive/uncrustify-0.67.tar.gz
+          - tar -xzvf uncrustify-0.67.tar.gz
+          - cd uncrustify-uncrustify-0.67
+          - mkdir build
+          - cd build
+          - cmake ../
           - make -j8
-          - mv src/uncrustify ../
-          - cd ../
-          - rm -rf uncrustify-0.61.tar.gz uncrustify-0.61
+          - mv uncrustify ../../
+          - cd ../../
+          - rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
 
-          # Setup VAL.
-          - sudo apt-get -y install g++ git make flex bison
+          # Set up VAL.
+          - apt-get -y install g++ git make flex bison
           - git clone https://github.com/KCL-Planning/VAL.git
           - cd VAL
           - git checkout a5565396007eee73ac36527fbf904142b3077c74

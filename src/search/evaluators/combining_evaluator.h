@@ -3,6 +3,7 @@
 
 #include "../evaluator.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -13,13 +14,13 @@ namespace combining_evaluator {
   MaxEvaluator, which captures the common aspects of their behaviour.
 */
 class CombiningEvaluator : public Evaluator {
-    std::vector<Evaluator *> subevaluators;
+    std::vector<std::shared_ptr<Evaluator>> subevaluators;
     bool all_dead_ends_are_reliable;
 protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
     explicit CombiningEvaluator(
-        const std::vector<Evaluator *> &subevaluators_);
+        const std::vector<std::shared_ptr<Evaluator>> &subevaluators_);
     virtual ~CombiningEvaluator() override;
 
     /*
@@ -38,7 +39,9 @@ public:
     virtual bool dead_ends_are_reliable() const override;
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
+
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) override;
 };
 }
 

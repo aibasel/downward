@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
 import logging
 import os
 from os.path import dirname, join
@@ -21,21 +22,30 @@ BOT_USERNAME = "XmlRpcBot"
 PASSWORD_FILE = ".downward-xmlrpc.secret" # relative to this source file or in the home directory
 WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
+
+# a list of characters allowed to be used in doc titles
+TITLE_WHITE_LIST = "[\w\+-]" # match 'word characters' (including '_'), '+', and '-'
+
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--build", default="release32")
+    parser.add_argument("--dry-run", action="store_true")
+    return parser.parse_args()
 
 def read_password():
     path = join(dirname(__file__), PASSWORD_FILE)
     if not os.path.exists(path):
         path = os.path.expanduser(join('~', PASSWORD_FILE))
-    with open(path) as password_file:
-        try:
+    try:
+        with open(path) as password_file:
             return password_file.read().strip()
-        except IOError, e:
-            logging.critical("Could not find password file %s!\nIs it present?"
-                     % PASSWORD_FILE)
-            sys.exit(1)
+    except IOError, e:
+        logging.critical("Could not find password file %s!\nIs it present?"
+                 % PASSWORD_FILE)
+        sys.exit(1)
 
 def connect():
     wiki = xmlrpclib.ServerProxy(WIKI_URL + "?action=xmlrpc2", allow_none=True)
@@ -107,7 +117,7 @@ def insert_wiki_links(text, titles):
     def make_doc_link(m):
         return make_link(m, prefix=DOC_PREFIX)
 
-    re_link = "(?P<before>\W)(?P<link>%s)(#(?P<anchor>\w+))?(?P<after>\W)"
+    re_link = "(?P<before>\W)(?P<link>%s)(#(?P<anchor>" + TITLE_WHITE_LIST + "+))?(?P<after>\W)"
     doctitles = [title[4:] for title in titles if title.startswith(DOC_PREFIX)]
     for key in doctitles:
         text = re.sub(re_link % key, make_doc_link, text)
@@ -117,12 +127,13 @@ def insert_wiki_links(text, titles):
         text = re.sub(re_link % key, make_link, text)
     return text
 
-def build_planner():
-    subprocess.check_call(["./build.py", "release32", "downward"], cwd=REPO_ROOT_DIR)
+def build_planner(build):
+    subprocess.check_call(["./build.py", build, "downward"], cwd=REPO_ROOT_DIR)
 
-def get_pages_from_planner():
-    planner = os.path.join(REPO_ROOT_DIR, "builds", "release32", "bin", "downward")
-    out = subprocess.check_output([planner, "--help", "--txt2tags"])
+def get_pages_from_planner(build):
+    out = subprocess.check_output(
+        ["./fast-downward.py", "--build", build, "--search", "--", "--help", "--txt2tags"],
+        cwd=REPO_ROOT_DIR)
     #split the output into tuples (title, markup_text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
     pages = dict()
@@ -155,10 +166,18 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     return changed_pages
 
 if __name__ == '__main__':
+    args = parse_args()
     logging.info("building planner...")
-    build_planner()
+    build_planner(args.build)
     logging.info("getting new pages from planner...")
-    new_doc_pages = get_pages_from_planner()
+    new_doc_pages = get_pages_from_planner(args.build)
+    if args.dry_run:
+        for title, content in sorted(new_doc_pages.items()):
+            print "=" * 25, title, "=" * 25
+            print content
+            print
+            print
+        sys.exit()
     logging.info("getting existing page titles from wiki...")
     old_titles = attempt(get_all_titles_from_wiki)
     old_doc_titles = [title for title in old_titles if title.startswith(DOC_PREFIX)]

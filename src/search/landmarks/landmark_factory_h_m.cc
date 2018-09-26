@@ -568,7 +568,7 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     cout << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
     // Get all the m or less size subsets in the domain.
     vector<vector<FactPair>> msets;
@@ -972,7 +972,7 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }
 
-static LandmarkFactory *_parse(OptionParser &parser) {
+static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "h^m Landmarks",
         "The landmark generation method introduced by "
@@ -990,13 +990,11 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_language_support("conditional_effects",
                                      "ignored, i.e. not supported");
 
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return nullptr;
-    } else {
-        return new LandmarkFactoryHM(opts);
-    }
+    else
+        return make_shared<LandmarkFactoryHM>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin(
-    "lm_hm", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_hm", _parse);
 }

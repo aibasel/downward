@@ -1,7 +1,5 @@
 #include "variable_order_finder.h"
 
-#include "../globals.h"
-
 #include "../task_utils/causal_graph.h"
 #include "../utils/system.h"
 
@@ -30,8 +28,10 @@ VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
     }
 
     if (variable_order_type == CG_GOAL_RANDOM ||
-        variable_order_type == RANDOM)
+        variable_order_type == RANDOM) {
+        // TODO: use an instance of RandomNumberGenerator for shuffling.
         random_shuffle(remaining_vars.begin(), remaining_vars.end());
+    }
 
     is_causal_predecessor.resize(var_count, false);
     is_goal_variable.resize(var_count, false);
@@ -98,7 +98,7 @@ int VariableOrderFinder::next() {
         return var_no;
     }
     cerr << "Relevance analysis has not been performed." << endl;
-    utils::exit_with(ExitCode::INPUT_ERROR);
+    utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
 
 void dump_variable_order_type(VariableOrderType variable_order_type) {

@@ -4,19 +4,19 @@ using namespace std;
 
 const int EvaluationResult::INFTY = numeric_limits<int>::max();
 
-EvaluationResult::EvaluationResult() : h_value(UNINITIALIZED) {
+EvaluationResult::EvaluationResult() : evaluator_value(UNINITIALIZED) {
 }
 
 bool EvaluationResult::is_uninitialized() const {
-    return h_value == UNINITIALIZED;
+    return evaluator_value == UNINITIALIZED;
 }
 
 bool EvaluationResult::is_infinite() const {
-    return h_value == INFTY;
+    return evaluator_value == INFTY;
 }
 
-int EvaluationResult::get_h_value() const {
-    return h_value;
+int EvaluationResult::get_evaluator_value() const {
+    return evaluator_value;
 }
 
 const vector<OperatorID> &EvaluationResult::get_preferred_operators() const {
@@ -27,8 +27,8 @@ bool EvaluationResult::get_count_evaluation() const {
     return count_evaluation;
 }
 
-void EvaluationResult::set_h_value(int value) {
-    h_value = value;
+void EvaluationResult::set_evaluator_value(int value) {
+    evaluator_value = value;
 }
 
 void EvaluationResult::set_preferred_operators(
