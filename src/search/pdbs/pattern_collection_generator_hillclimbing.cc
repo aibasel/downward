@@ -10,6 +10,7 @@
 
 #include "../task_utils/causal_graph.h"
 #include "../task_utils/sampling.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
@@ -168,11 +169,11 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
 
 void PatternCollectionGeneratorHillclimbing::sample_states(
     const sampling::RandomWalkSampler &sampler,
-    const State &initial_state,
+    int init_h,
     vector<State> &samples) {
     assert(samples.empty());
 
-    int init_h = current_pdbs->get_value(initial_state);
+    samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
         samples.push_back(sampler.sample_state(
                               init_h,
@@ -294,6 +295,9 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
+    cout << "Average operator cost: "
+         << task_properties::get_average_operator_cost(task_proxy) << endl;
+
     const vector<vector<int>> relevant_neighbours =
         compute_relevant_neighbours(task_proxy);
 
@@ -328,6 +332,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     try {
         while (true) {
             ++num_iterations;
+            int init_h = current_pdbs->get_value(initial_state);
             cout << "current collection size is "
                  << current_pdbs->get_size() << endl;
             cout << "current initial h value: ";
@@ -335,13 +340,12 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
                 cout << "infinite => stopping hill climbing" << endl;
                 break;
             } else {
-                cout << current_pdbs->get_value(initial_state)
-                     << endl;
+                cout << init_h << endl;
             }
 
             samples.clear();
             samples_h_values.clear();
-            sample_states(sampler, initial_state, samples);
+            sample_states(sampler, init_h, samples);
             for (const State &sample : samples) {
                 samples_h_values.push_back(current_pdbs->get_value(sample));
             }
