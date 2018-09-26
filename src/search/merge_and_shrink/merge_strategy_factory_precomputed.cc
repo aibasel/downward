@@ -15,8 +15,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
     options::Options &options)
-    : MergeStrategyFactory(),
-      merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
+    : merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
@@ -63,5 +62,5 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         return make_shared<MergeStrategyFactoryPrecomputed>(opts);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin("merge_precomputed", _parse);
+static options::Plugin<MergeStrategyFactory> _plugin("merge_precomputed", _parse);
 }

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import errno
 import logging
 import os.path
@@ -13,7 +15,6 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
-VALIDATE_MEMORY_LIMIT_IN_MB = 3072
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
@@ -23,7 +24,7 @@ elif os.name == "nt":
     REL_SEARCH_PATH = "downward.exe"
     VALIDATE = "validate.exe"
 else:
-    sys.exit("Unsupported OS: " + os.name)
+    returncodes.exit_with_driver_unsupported_error("Unsupported OS: " + os.name)
 
 def get_executable(build, rel_path):
     # First, consider 'build' to be a path directly to the binaries.
@@ -37,48 +38,17 @@ def get_executable(build, rel_path):
         #   '<repo-root>/builds/<buildname>/bin'.
         build_dir = os.path.join(util.BUILDS_DIR, build, "bin")
         if not os.path.exists(build_dir):
-            raise IOError(
+            returncodes.exit_with_driver_input_error(
                 "Could not find build '{build}' at {build_dir}. "
                 "Please run './build.py {build}'.".format(**locals()))
 
     abs_path = os.path.join(build_dir, rel_path)
     if not os.path.exists(abs_path):
-        raise IOError(
+        returncodes.exit_with_driver_input_error(
             "Could not find '{rel_path}' in build '{build}'. "
             "Please run './build.py {build}'.".format(**locals()))
 
     return abs_path
-
-def print_component_settings(nick, inputs, options, time_limit, memory_limit):
-    logging.info("{} input: {}".format(nick, inputs))
-    logging.info("{} arguments: {}".format(nick, options))
-    if time_limit is not None:
-        time_limit = str(time_limit) + "s"
-    logging.info("{} time limit: {}".format(nick, time_limit))
-    if memory_limit is not None:
-        memory_limit = int(limits.convert_to_mb(memory_limit))
-        memory_limit = str(memory_limit) + " MB"
-    logging.info("{} memory limit: {}".format(nick, memory_limit))
-
-
-def print_callstring(executable, options, stdin):
-    parts = [executable] + options
-    parts = [util.shell_escape(x) for x in parts]
-    if stdin is not None:
-        parts.extend(["<", util.shell_escape(stdin)])
-    logging.info("callstring: %s" % " ".join(parts))
-
-
-def call_component(executable, options, stdin=None,
-                   time_limit=None, memory_limit=None):
-    if executable.endswith(".py"):
-        options.insert(0, executable)
-        executable = sys.executable
-        assert executable, "Path to interpreter could not be found"
-    print_callstring(executable, options, stdin)
-    call.check_call(
-        [executable] + options,
-        stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
 
 
 def run_translate(args):
@@ -87,13 +57,44 @@ def run_translate(args):
         args.translate_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.translate_memory_limit, args.overall_memory_limit)
-    print_component_settings(
-        "translator", args.translate_inputs, args.translate_options,
-        time_limit, memory_limit)
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
-    call_component(
-        translate, args.translate_inputs + args.translate_options,
-        time_limit=time_limit, memory_limit=memory_limit)
+    assert sys.executable, "Path to interpreter could not be found"
+    cmd = [sys.executable] + [translate] + args.translate_inputs + args.translate_options
+
+    stderr, returncode = call.get_error_output_and_returncode(
+        "translator",
+        cmd,
+        time_limit=time_limit,
+        memory_limit=memory_limit)
+
+    # We collect stderr of the translator and print it here, unless
+    # the translator ran out of memory and all output in stderr is
+    # related to MemoryError.
+    do_print_on_stderr = True
+    if returncode == returncodes.TRANSLATE_OUT_OF_MEMORY:
+        output_related_to_memory_error = True
+        if not stderr:
+            output_related_to_memory_error = False
+        for line in stderr.splitlines():
+            if "MemoryError" not in line:
+                output_related_to_memory_error = False
+                break
+        if output_related_to_memory_error:
+            do_print_on_stderr = False
+
+    if do_print_on_stderr and stderr:
+        returncodes.print_stderr(stderr)
+
+    if returncode == 0:
+        return (0, True)
+    elif returncode == 1:
+        # Unlikely case that the translator crashed without raising an
+        # exception.
+        return (returncodes.TRANSLATE_CRITICAL_ERROR, False)
+    else:
+        # Pass on any other exit code, including in particular signals or
+        # exit codes such as running out of memory or time.
+        return (returncode, False)
 
 
 def run_search(args):
@@ -102,40 +103,43 @@ def run_search(args):
         args.search_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.search_memory_limit, args.overall_memory_limit)
-    print_component_settings(
-        "search", args.search_input, args.search_options,
-        time_limit, memory_limit)
+    executable = get_executable(args.build, REL_SEARCH_PATH)
 
-    plan_manager = PlanManager(args.plan_file)
+    plan_manager = PlanManager(
+        args.plan_file,
+        portfolio_bound=args.portfolio_bound,
+        single_plan=args.portfolio_single_plan)
     plan_manager.delete_existing_plans()
-
-    search = get_executable(args.build, REL_SEARCH_PATH)
-    logging.info("search executable: %s" % search)
 
     if args.portfolio:
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
-        portfolio_runner.run(
-            args.portfolio, search, args.search_input, plan_manager,
+        return portfolio_runner.run(
+            args.portfolio, executable, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
         if not args.search_options:
-            raise ValueError(
+            returncodes.exit_with_driver_input_error(
                 "search needs --alias, --portfolio, or search options")
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
         try:
-            call_component(
-                search, args.search_options,
+            call.check_call(
+                "search",
+                [executable] + args.search_options,
                 stdin=args.search_input,
-                time_limit=time_limit, memory_limit=memory_limit)
+                time_limit=time_limit,
+                memory_limit=memory_limit)
         except subprocess.CalledProcessError as err:
-            if err.returncode in returncodes.EXPECTED_EXITCODES:
-                return err.returncode
-            else:
-                raise
+            # TODO: if we ever add support for SEARCH_PLAN_FOUND_AND_* directly
+            # in the planner, this assertion no longer holds. Furthermore, we
+            # would need to return (err.returncode, True) if the returncode is
+            # in [0..10].
+            # Negative exit codes are allowed for passing out signals.
+            assert err.returncode >= 10 or err.returncode < 0, "got returncode < 10: {}".format(err.returncode)
+            return (err.returncode, False)
         else:
-            return 0
+            return (0, True)
 
 
 def run_validate(args):
@@ -148,19 +152,24 @@ def run_validate(args):
     elif num_files == 2:
         domain, task = args.filenames
     else:
-        raise ValueError("validate needs one or two PDDL input files.")
+        returncodes.exit_with_driver_input_error("validate needs one or two PDDL input files.")
 
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
+    if not plan_files:
+        print("Not running validate since no plans found.")
+        return (0, True)
     validate_inputs = [domain, task] + plan_files
 
-    print_component_settings(
-        "validate", validate_inputs, [],
-        time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
-
     try:
-        call_component(VALIDATE, validate_inputs)
+        call.check_call(
+            "validate",
+            [VALIDATE] + validate_inputs,
+            time_limit=args.validate_time_limit,
+            memory_limit=args.validate_memory_limit)
     except OSError as err:
         if err.errno == errno.ENOENT:
-            sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
+            returncodes.exit_with_driver_input_error("Error: {} not found. Is it on the PATH?".format(VALIDATE))
         else:
-            raise
+            returncodes.exit_with_driver_critical_error(err)
+    else:
+        return (0, True)

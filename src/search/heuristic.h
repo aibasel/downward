@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalState;
 class TaskProxy;
 
 namespace options {
@@ -48,12 +47,12 @@ class Heuristic : public Evaluator {
 protected:
     /*
       Cache for saving h values
-      Before accessing this cache always make sure that the cache_h_values
+      Before accessing this cache always make sure that the cache_evaluator_values
       flag is set to true - as soon as the cache is accessed it will create
       entries for all existing states
     */
     PerStateInformation<HEntry> heuristic_cache;
-    bool cache_h_values;
+    bool cache_evaluator_values;
 
     // Hold a reference to the task implementation and pass it to objects that need it.
     const std::shared_ptr<AbstractTask> task;
@@ -77,29 +76,21 @@ protected:
     State convert_global_state(const GlobalState &global_state) const;
 
 public:
-    explicit Heuristic(const options::Options &options);
+    explicit Heuristic(const options::Options &opts);
     virtual ~Heuristic() override;
 
-    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
-    }
-
-    /*
-      TODO: I don't think we use the return value any more, in which
-      case we should make this void.
-    */
-    virtual bool notify_state_transition(
-        const GlobalState &parent_state, OperatorID op_id,
-        const GlobalState &state);
-
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
-        hset.insert(this);
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> & /*evals*/) override {
     }
 
     static void add_options_to_parser(options::OptionParser &parser);
-    static options::Options default_options();
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
+
+    virtual bool does_cache_estimates() const override;
+    virtual bool is_estimate_cached(const GlobalState &state) const override;
+    virtual int get_cached_estimate(const GlobalState &state) const override;
 };
 
 #endif

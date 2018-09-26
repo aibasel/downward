@@ -40,86 +40,86 @@ int main(int, char **) {
 
         benchmark("insert sequential int with BoostHash", NUM_CALLS,
                   [&]() {
-            unordered_set<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(i);
-            }
-        });
+                      unordered_set<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(i);
+                      }
+                  });
         benchmark("insert sequential int with BurtleFeed", NUM_CALLS,
                   [&]() {
-            utils::HashSet<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(i);
-            }
-        });
+                      utils::HashSet<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(i);
+                      }
+                  });
         cout << endl;
 
         benchmark("insert scrambled int with BoostHash", NUM_CALLS,
                   [&]() {
-            unordered_set<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(scramble(i));
-            }
-        });
+                      unordered_set<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(scramble(i));
+                      }
+                  });
         benchmark("insert scrambled int with BurtleFeed", NUM_CALLS,
                   [&]() {
-            utils::HashSet<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(scramble(i));
-            }
-        });
+                      utils::HashSet<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(scramble(i));
+                      }
+                  });
         cout << endl;
 
         benchmark("insert, then read sequential int with BoostHash", NUM_CALLS,
                   [&]() {
-            unordered_set<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(i);
-            }
-            for (int j = 0; j < NUM_READ_PASSES; ++j) {
-                for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                    s.count(i);
-                }
-            }
-        });
+                      unordered_set<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(i);
+                      }
+                      for (int j = 0; j < NUM_READ_PASSES; ++j) {
+                          for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                              s.count(i);
+                          }
+                      }
+                  });
         benchmark("insert, then read sequential int with BurtleFeed", NUM_CALLS,
                   [&]() {
-            utils::HashSet<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(i);
-            }
-            for (int j = 0; j < NUM_READ_PASSES; ++j) {
-                for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                    s.count(i);
-                }
-            }
-        });
+                      utils::HashSet<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(i);
+                      }
+                      for (int j = 0; j < NUM_READ_PASSES; ++j) {
+                          for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                              s.count(i);
+                          }
+                      }
+                  });
         cout << endl;
 
         benchmark("insert, then read scrambled int with BoostHash", NUM_CALLS,
                   [&]() {
-            unordered_set<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(scramble(i));
-            }
-            for (int j = 0; j < NUM_READ_PASSES; ++j) {
-                for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                    s.count(i);
-                }
-            }
-        });
+                      unordered_set<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(scramble(i));
+                      }
+                      for (int j = 0; j < NUM_READ_PASSES; ++j) {
+                          for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                              s.count(i);
+                          }
+                      }
+                  });
         benchmark("insert, then read scrambled int with BurtleFeed", NUM_CALLS,
                   [&]() {
-            utils::HashSet<int> s;
-            for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                s.insert(scramble(i));
-            }
-            for (int j = 0; j < NUM_READ_PASSES; ++j) {
-                for (int i = 0; i < NUM_INSERTIONS; ++i) {
-                    s.count(i);
-                }
-            }
-        });
+                      utils::HashSet<int> s;
+                      for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                          s.insert(scramble(i));
+                      }
+                      for (int j = 0; j < NUM_READ_PASSES; ++j) {
+                          for (int i = 0; i < NUM_INSERTIONS; ++i) {
+                              s.count(i);
+                          }
+                      }
+                  });
         cout << endl;
     }
 

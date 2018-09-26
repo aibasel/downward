@@ -32,7 +32,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     int total_cost = 0;
     bool dead_end = landmark_generator->compute_landmarks(
         state,
-        [&total_cost](int cut_cost) {total_cost += cut_cost; },
+        [&total_cost](int cut_cost) {total_cost += cut_cost;},
         nullptr);
 
     if (dead_end)
@@ -40,7 +40,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     return total_cost;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-cut heuristic", "");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
@@ -55,8 +55,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new LandmarkCutHeuristic(opts);
+        return make_shared<LandmarkCutHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("lmcut", _parse);
+static Plugin<Evaluator> _plugin("lmcut", _parse);
 }

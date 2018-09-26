@@ -6,6 +6,7 @@
 #include "../task_proxy.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <numeric>
 
@@ -34,6 +35,7 @@ MergeAndShrinkRepresentationLeaf::MergeAndShrinkRepresentationLeaf(
 
 void MergeAndShrinkRepresentationLeaf::set_distances(
     const Distances &distances) {
+    assert(distances.are_goal_distances_computed());
     for (int &entry : lookup_table) {
         if (entry != PRUNED_STATE) {
             entry = distances.get_goal_distance(entry);
@@ -59,6 +61,7 @@ int MergeAndShrinkRepresentationLeaf::get_value(const State &state) const {
 }
 
 void MergeAndShrinkRepresentationLeaf::dump() const {
+    cout << "lookup table: ";
     for (const auto &value : lookup_table) {
         cout << value << ", ";
     }
@@ -86,6 +89,7 @@ MergeAndShrinkRepresentationMerge::MergeAndShrinkRepresentationMerge(
 
 void MergeAndShrinkRepresentationMerge::set_distances(
     const Distances &distances) {
+    assert(distances.are_goal_distances_computed());
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
             if (entry != PRUNED_STATE) {
@@ -113,19 +117,20 @@ int MergeAndShrinkRepresentationMerge::get_value(
     const State &state) const {
     int state1 = left_child->get_value(state);
     int state2 = right_child->get_value(state);
-    if (state1 == PRUNED_STATE ||
-        state2 == PRUNED_STATE)
+    if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
         return PRUNED_STATE;
     return lookup_table[state1][state2];
 }
 
 void MergeAndShrinkRepresentationMerge::dump() const {
+    cout << "lookup table: ";
     for (const auto &row : lookup_table) {
         for (const auto &value : row) {
             cout << value << ", ";
         }
         cout << endl;
     }
+    cout << endl;
     cout << "dump left child:" << endl;
     left_child->dump();
     cout << "dump right child:" << endl;

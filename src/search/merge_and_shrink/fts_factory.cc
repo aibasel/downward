@@ -84,8 +84,8 @@ public:
       misuse because the class is only used internally in this file.
     */
     FactoredTransitionSystem create(
-        const bool compute_init_distances,
-        const bool compute_goal_distances,
+        bool compute_init_distances,
+        bool compute_goal_distances,
         Verbosity verbosity);
 };
 

@@ -1,8 +1,9 @@
 #include "global_state.h"
 
-#include "globals.h"
 #include "state_registry.h"
 #include "task_proxy.h"
+
+#include "task_utils/task_properties.h"
 
 #include <algorithm>
 #include <iostream>
@@ -25,20 +26,21 @@ int GlobalState::operator[](int var) const {
     return registry->get_state_value(buffer, var);
 }
 
-vector<int> GlobalState::get_values() const {
+State GlobalState::unpack() const {
     int num_variables = registry->get_num_variables();
     vector<int> values(num_variables);
     for (int var = 0; var < num_variables; ++var)
         values[var] = (*this)[var];
-    return values;
+    TaskProxy task_proxy = registry->get_task_proxy();
+    return task_proxy.create_state(move(values));
 }
 
 void GlobalState::dump_pddl() const {
-    State state(registry->get_task(), get_values());
-    state.dump_pddl();
+    State state = unpack();
+    task_properties::dump_pddl(state);
 }
 
 void GlobalState::dump_fdr() const {
-    State state(registry->get_task(), get_values());
-    state.dump_fdr();
+    State state = unpack();
+    task_properties::dump_fdr(state);
 }

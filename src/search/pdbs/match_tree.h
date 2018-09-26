@@ -30,7 +30,7 @@ class MatchTree {
                           int pre_index,
                           Node **edge_from_parent);
     void get_applicable_operators_recursive(
-        Node *node, const size_t state_index,
+        Node *node, size_t state_index,
         std::vector<const AbstractOperator *> &applicable_operators) const;
     void dump_recursive(Node *node) const;
 public:

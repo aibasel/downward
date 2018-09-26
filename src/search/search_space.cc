@@ -1,22 +1,19 @@
 #include "search_space.h"
 
 #include "global_state.h"
-#include "globals.h"
+#include "search_node_info.h"
 #include "task_proxy.h"
 
 #include <cassert>
-#include "search_node_info.h"
 
 using namespace std;
 
 SearchNode::SearchNode(const StateRegistry &state_registry,
                        StateID state_id,
-                       SearchNodeInfo &info,
-                       OperatorCost cost_type)
+                       SearchNodeInfo &info)
     : state_registry(state_registry),
       state_id(state_id),
-      info(info),
-      cost_type(cost_type) {
+      info(info) {
     assert(state_id != StateID::no_state);
 }
 
@@ -59,24 +56,26 @@ void SearchNode::open_initial() {
 }
 
 void SearchNode::open(const SearchNode &parent_node,
-                      const OperatorProxy &parent_op) {
+                      const OperatorProxy &parent_op,
+                      int adjusted_cost) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + get_adjusted_action_cost(parent_op, cost_type);
+    info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
 void SearchNode::reopen(const SearchNode &parent_node,
-                        const OperatorProxy &parent_op) {
+                        const OperatorProxy &parent_op,
+                        int adjusted_cost) {
     assert(info.status == SearchNodeInfo::OPEN ||
            info.status == SearchNodeInfo::CLOSED);
 
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + get_adjusted_action_cost(parent_op, cost_type);
+    info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = OperatorID(parent_op.get_id());
@@ -84,12 +83,13 @@ void SearchNode::reopen(const SearchNode &parent_node,
 
 // like reopen, except doesn't change status
 void SearchNode::update_parent(const SearchNode &parent_node,
-                               const OperatorProxy &parent_op) {
+                               const OperatorProxy &parent_op,
+                               int adjusted_cost) {
     assert(info.status == SearchNodeInfo::OPEN ||
            info.status == SearchNodeInfo::CLOSED);
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
-    info.g = parent_node.info.g + get_adjusted_action_cost(parent_op, cost_type);
+    info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = OperatorID(parent_op.get_id());
@@ -117,14 +117,12 @@ void SearchNode::dump(const TaskProxy &task_proxy) const {
     }
 }
 
-SearchSpace::SearchSpace(StateRegistry &state_registry, OperatorCost cost_type)
-    : state_registry(state_registry),
-      cost_type(cost_type) {
+SearchSpace::SearchSpace(StateRegistry &state_registry)
+    : state_registry(state_registry) {
 }
 
 SearchNode SearchSpace::get_node(const GlobalState &state) {
-    return SearchNode(
-        state_registry, state.get_id(), search_node_infos[state], cost_type);
+    return SearchNode(state_registry, state.get_id(), search_node_infos[state]);
 }
 
 void SearchSpace::trace_path(const GlobalState &goal_state,
@@ -164,6 +162,5 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
 }
 
 void SearchSpace::print_statistics() const {
-    cout << "Number of registered states: "
-         << state_registry.size() << endl;
+    state_registry.print_statistics();
 }

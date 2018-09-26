@@ -42,7 +42,7 @@ class CGHeuristic : public Heuristic {
         domain_transition_graph::DomainTransitionGraph *dtg,
         int to);
 protected:
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     CGHeuristic(const options::Options &opts);
     ~CGHeuristic();

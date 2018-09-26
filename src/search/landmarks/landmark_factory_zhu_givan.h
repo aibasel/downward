@@ -53,7 +53,7 @@ public:
 
     // Calculate the union of precondition labels of a conditional effect,
     // using the labels from current
-    lm_set union_of_condition_labels(const EffectConditionsProxy &cond,
+    lm_set union_of_condition_labels(const EffectConditionsProxy &effect_conditions,
                                      const PropositionLayer &current) const;
 
     // Relaxed exploration, returns the last proposition layer

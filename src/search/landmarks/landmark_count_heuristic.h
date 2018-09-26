@@ -6,6 +6,8 @@
 
 #include "../heuristic.h"
 
+class BitsetView;
+
 namespace successor_generator {
 class SuccessorGenerator;
 }
@@ -15,7 +17,6 @@ class LandmarkCostAssignment;
 class LandmarkStatusManager;
 
 class LandmarkCountHeuristic : public Heuristic {
-    friend class LamaFFSynergy;
     std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
     const bool use_preferred_operators;
@@ -31,7 +32,7 @@ class LandmarkCountHeuristic : public Heuristic {
     int get_heuristic_value(const GlobalState &global_state);
 
     std::vector<FactPair> collect_lm_leaves(
-        bool disjunctive_lms, const LandmarkSet &result);
+        bool disjunctive_lms, const LandmarkSet &reached_lms);
 
     bool check_node_orders_disobeyed(
         const LandmarkNode &node, const LandmarkSet &reached) const;
@@ -44,16 +45,20 @@ class LandmarkCountHeuristic : public Heuristic {
         const State &state, const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &global_state);
 
-    LandmarkSet convert_to_landmark_set(
-        const std::vector<bool> &landmark_vector);
+    LandmarkSet convert_to_landmark_set(const BitsetView &landmark_bitset);
 protected:
-    virtual int compute_heuristic(const GlobalState &state) override;
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
     ~LandmarkCountHeuristic();
 
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) override {
+        evals.insert(this);
+    }
+
     virtual void notify_initial_state(const GlobalState &initial_state) override;
-    virtual bool notify_state_transition(const GlobalState &parent_state,
+    virtual void notify_state_transition(const GlobalState &parent_state,
                                          OperatorID op_id,
                                          const GlobalState &state) override;
     virtual bool dead_ends_are_reliable() const override;
