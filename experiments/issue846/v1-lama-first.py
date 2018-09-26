@@ -62,7 +62,7 @@ exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
-exp.add_absolute_report_step()
+exp.add_absolute_report_step(filter_algorithm=["issue846-v1-lama-first-pref-none", "issue846-v1-lama-first-pref-simple", "issue846-v1-lama-first-pref-all"])
 #exp.add_comparison_table_step()
 
 exp.run_steps()
