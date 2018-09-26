@@ -75,7 +75,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     */
     void sample_states(
         const sampling::RandomWalkSampler &sampler,
-        const State &initial_state,
+        int init_h,
         std::vector<State> &samples);
 
     /*
