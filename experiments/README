@@ -5,14 +5,8 @@ Experiments using Downward Lab
 
 All experiments use their own common_setup.py module that simplifies the
 creation of experiments. We recommend using common_setup.py (and related
-*.py files) from issue773 for new experiments since it is the most
+*.py files) from issue839 for new experiments since it is the most
 recent version.
-
-Previously, most experiments imported lab's downward/configs.py module.
-To make experiments more self-contained, the module has been deprecated
-and we recommend either copying misc/tests/configs.py into the
-experiment directory (see issue77 for an example using an older
-configs.py) or manually specifying the configurations.
 
 Below we list some experiments that show how certain tasks can be
 performed. Some of them use Downward Lab's deprecated

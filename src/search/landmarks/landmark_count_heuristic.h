@@ -17,7 +17,6 @@ class LandmarkCostAssignment;
 class LandmarkStatusManager;
 
 class LandmarkCountHeuristic : public Heuristic {
-    friend class LamaSynergyHeuristic;
     std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
     const bool use_preferred_operators;
@@ -33,7 +32,7 @@ class LandmarkCountHeuristic : public Heuristic {
     int get_heuristic_value(const GlobalState &global_state);
 
     std::vector<FactPair> collect_lm_leaves(
-        bool disjunctive_lms, const LandmarkSet &result);
+        bool disjunctive_lms, const LandmarkSet &reached_lms);
 
     bool check_node_orders_disobeyed(
         const LandmarkNode &node, const LandmarkSet &reached) const;
@@ -48,7 +47,7 @@ class LandmarkCountHeuristic : public Heuristic {
 
     LandmarkSet convert_to_landmark_set(const BitsetView &landmark_bitset);
 protected:
-    virtual int compute_heuristic(const GlobalState &state) override;
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
     ~LandmarkCountHeuristic();

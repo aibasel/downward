@@ -48,7 +48,7 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     // Clears "reached_by" of visited nodes as a side effect to avoid
     // recursing to the same node again.
 protected:
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     explicit ContextEnhancedAdditiveHeuristic(const options::Options &opts);
     ~ContextEnhancedAdditiveHeuristic();
