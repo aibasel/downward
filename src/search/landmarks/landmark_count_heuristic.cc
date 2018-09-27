@@ -12,6 +12,8 @@
 #include "../lp/lp_solver.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
+#include "../tasks/cost_adapted_task.h"
+#include "../tasks/root_task.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -45,6 +47,20 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
+
+    /*
+      Actually, we should like to test if this is the root task or a
+      CostAdapatedTask *of the root task*, but there is currently no good way
+      to do this, so we use this incomplete, slightly less safe test.
+    */
+    if (task != tasks::g_root_task && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr) {
+        cerr << "The landmark count heuristic currently only supports task "
+             << "transformations that modify the operator costs. See issues 845 "
+             << "and 686 for details."
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
+
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
@@ -292,13 +308,7 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Landmark-count heuristic",
-                             "See also Evaluator#LAMA-FF_synergy_master");
-    parser.document_note(
-        "Note",
-        "Regarding using different cost transformations, there are a few "
-        "caveats to be considered, see OptionCaveats."
-        );
+    parser.document_synopsis("Landmark-count heuristic", "");
     parser.document_note(
         "Optimal search",
         "When using landmarks for optimal search (``admissible=true``), "

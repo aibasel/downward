@@ -25,7 +25,7 @@ public:
     virtual void prune_operators(const State &state,
                                  std::vector<OperatorID> &op_ids) = 0;
     // TODO remove this overload once the search uses the task interface.
-    virtual void prune_operators(const GlobalState &state,
+    virtual void prune_operators(const GlobalState &global_state,
                                  std::vector<OperatorID> &op_ids);
 
     virtual void print_statistics() const = 0;

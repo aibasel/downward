@@ -1,16 +1,18 @@
-#ifndef OPTIONS_DOC_STORE_H
-#define OPTIONS_DOC_STORE_H
+#ifndef OPTIONS_DOC_UTILS_H
+#define OPTIONS_DOC_UTILS_H
 
 #include "bounds.h"
 
 #include <functional>
 #include <map>
 #include <string>
+#include <typeindex>
 #include <utility>
 #include <vector>
 
 namespace options {
 class OptionParser;
+class Registry;
 
 // See comment in constructor of Plugin in plugin.h.
 using DocFactory = std::function<void (OptionParser &)>;
@@ -93,66 +95,50 @@ struct PluginInfo {
     std::vector<NoteInfo> notes;
     bool hidden;
 
-    void fill_docs();
+    void fill_docs(Registry &registry);
 
     std::string get_type_name() const;
 };
 
 
-// Store documentation for types parsed in help mode.
-class DocStore {
-    std::map<std::string, PluginInfo> plugin_infos;
+/*
+  The plugin type info class contains meta-information for a given
+  type of plugins (e.g. "SearchEngine" or "MergeStrategyFactory").
+*/
+class PluginTypeInfo {
+    std::type_index type;
 
-    DocStore() = default;
+    /*
+      The type name should be "user-friendly". It is for example used
+      as the name of the wiki page that documents this plugin type.
+      It follows wiki conventions (e.g. "Heuristic", "SearchEngine",
+      "ShrinkStrategy").
+    */
+    std::string type_name;
 
+    /*
+      General documentation for the plugin type. This is included at
+      the top of the wiki page for this plugin type.
+    */
+    std::string documentation;
 public:
-    static DocStore *instance() {
-        static DocStore instance_;
-        return &instance_;
-    }
+    PluginTypeInfo(const std::type_index &type,
+                   const std::string &type_name,
+                   const std::string &documentation);
 
-    void register_plugin(
-        const std::string &key,
-        DocFactory factory,
-        PluginTypeNameGetter type_name_factory,
-        const std::string &group);
+    ~PluginTypeInfo() = default;
 
-    void add_arg(
-        const std::string &key,
-        const std::string &arg_name,
-        const std::string &help,
-        const std::string &type_name,
-        const std::string &default_value,
-        const Bounds &bounds,
-        const ValueExplanations &value_explanations = ValueExplanations());
+    const std::type_index &get_type() const;
+    const std::string &get_type_name() const;
+    const std::string &get_documentation() const;
 
-    void add_value_explanations(
-        const std::string &key,
-        const std::string &arg_name,
-        const ValueExplanations &value_explanations);
+    bool operator<(const PluginTypeInfo &other) const;
+};
 
-    void set_synopsis(
-        const std::string &key, const std::string &name, const std::string &description);
 
-    void add_property(
-        const std::string &key, const std::string &name, const std::string &description);
-
-    void add_feature(
-        const std::string &key, const std::string &feature, const std::string &description);
-
-    void add_note(
-        const std::string &key,
-        const std::string &name,
-        const std::string &description,
-        bool long_text);
-
-    void hide(const std::string &key);
-
-    bool contains(const std::string &key);
-
-    PluginInfo &get(const std::string &key);
-
-    std::vector<std::string> get_keys();
+struct PluginGroupInfo {
+    std::string group_id;
+    std::string doc_title;
 };
 }
 

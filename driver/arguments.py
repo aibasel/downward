@@ -2,10 +2,10 @@
 
 import argparse
 import os.path
+import re
 import sys
 
 from . import aliases
-from . import limits
 from . import returncodes
 from . import util
 
@@ -88,7 +88,7 @@ Examples:
 %s
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
-COMPONENTS_PLUS_OVERALL = ["translate", "search", "overall"]
+COMPONENTS_PLUS_OVERALL = ["translate", "search", "validate", "overall"]
 
 
 """
@@ -264,10 +264,56 @@ def _set_components_and_inputs(parser, args):
         assert False, first
 
 
+def _get_time_limit_in_seconds(limit, parser):
+    match = re.match(r"^(\d+)(s|m|h)?$", limit, flags=re.I)
+    if not match:
+        print_usage_and_exit_with_driver_input_error("malformed time limit parameter: {}".format(limit))
+    time = int(match.group(1))
+    suffix = match.group(2)
+    if suffix is not None:
+        suffix = suffix.lower()
+    if suffix == "m":
+        time *= 60
+    elif suffix == "h":
+        time *= 3600
+    return time
+
+
+def _get_memory_limit_in_bytes(limit, parser):
+    match = re.match(r"^(\d+)(k|m|g)?$", limit, flags=re.I)
+    if not match:
+        print_usage_and_exit_with_driver_input_error("malformed memory limit parameter: {}".format(limit))
+    memory = int(match.group(1))
+    suffix = match.group(2)
+    if suffix is not None:
+        suffix = suffix.lower()
+    if suffix == "k":
+        memory *= 1024
+    elif suffix is None or suffix == "m":
+        memory *= 1024 * 1024
+    elif suffix == "g":
+        memory *= 1024 * 1024 * 1024
+    return memory
+
+
+def set_time_limit_in_seconds(parser, args, component):
+    param = component + "_time_limit"
+    limit = getattr(args, param)
+    if limit is not None:
+        setattr(args, param, _get_time_limit_in_seconds(limit, parser))
+
+
+def set_memory_limit_in_bytes(parser, args, component):
+    param = component + "_memory_limit"
+    limit = getattr(args, param)
+    if limit is not None:
+        setattr(args, param, _get_memory_limit_in_bytes(limit, parser))
+
+
 def _convert_limits_to_ints(parser, args):
     for component in COMPONENTS_PLUS_OVERALL:
-        limits.set_time_limit_in_seconds(parser, args, component)
-        limits.set_memory_limit_in_bytes(parser, args, component)
+        set_time_limit_in_seconds(parser, args, component)
+        set_memory_limit_in_bytes(parser, args, component)
 
 
 def parse_args():
