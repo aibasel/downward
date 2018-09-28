@@ -1,6 +1,8 @@
 #ifndef TASK_ID_H
 #define TASK_ID_H
 
+#include "utils/hash.h"
+
 #include <cstdint>
 #include <functional>
 
@@ -32,13 +34,10 @@ public:
 };
 
 
-namespace std {
-template<>
-struct hash<TaskID> {
-    size_t operator()(TaskID id) const {
-        return id.hash();
-    }
-};
+namespace utils {
+inline void feed(HashState &hash_state, TaskID id) {
+    feed(hash_state, id.hash());
+}
 }
 
 #endif

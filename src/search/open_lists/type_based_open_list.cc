@@ -27,7 +27,7 @@ class TypeBasedOpenList : public OpenList<Entry> {
     using Key = vector<int>;
     using Bucket = vector<Entry>;
     vector<pair<Key, Bucket>> keys_and_buckets;
-    unordered_map<Key, int> key_to_bucket_index;
+    utils::HashMap<Key, int> key_to_bucket_index;
 
 protected:
     virtual void do_insertion(
