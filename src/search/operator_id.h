@@ -1,7 +1,7 @@
 #ifndef OPERATOR_ID_H
 #define OPERATOR_ID_H
 
-#include "../utils/hash.h"
+#include "utils/hash.h"
 
 #include <iostream>
 
