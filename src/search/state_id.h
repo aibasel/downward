@@ -42,13 +42,4 @@ public:
 };
 
 
-namespace std {
-template<>
-struct hash<StateID> {
-    size_t operator()(StateID id) const {
-        return id.hash();
-    }
-};
-}
-
 #endif

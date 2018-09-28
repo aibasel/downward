@@ -435,7 +435,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
             // relaxed plan that propositions are achieved (in lvl_var) and operators
             // applied (in lvl_ops).
             vector<vector<int>> lvl_var;
-            vector<unordered_map<FactPair, int>> lvl_op;
+            vector<utils::HashMap<FactPair, int>> lvl_op;
             compute_predecessor_information(task_proxy, exploration, bp, lvl_var, lvl_op);
             // Use this information to determine all operators that can possibly achieve bp
             // for the first time, and collect any precondition propositions that all such
