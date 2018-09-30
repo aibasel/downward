@@ -28,7 +28,7 @@ public:
         return !(*this == other);
     }
 
-    std::uintptr_t hash() const {
+    std::uint64_t hash() const {
         return value;
     }
 };
