@@ -249,7 +249,7 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
       Feed vector size to ensure that no two different vectors of the same type
       have the same code prefix.
     */
-    feed(hash_state, vec.size());
+    feed(hash_state, static_cast<unsigned int>(vec.size()));
     for (const T &item : vec) {
         feed(hash_state, item);
     }
