@@ -45,7 +45,7 @@ public:
         return !(*this == other);
     }
 
-    size_t hash() const {
+    int hash() const {
         return index;
     }
 };
