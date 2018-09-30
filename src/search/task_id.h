@@ -28,7 +28,7 @@ public:
         return !(*this == other);
     }
 
-    std::size_t hash() const {
+    std::uintptr_t hash() const {
         return value;
     }
 };
