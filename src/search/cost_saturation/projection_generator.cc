@@ -80,5 +80,5 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
     return make_shared<ProjectionGenerator>(opts);
 }
 
-static PluginShared<AbstractionGenerator> _plugin("projections", _parse);
+static Plugin<AbstractionGenerator> _plugin("projections", _parse);
 }

@@ -1,9 +1,8 @@
-#include "system.h"
+#include "system_windows.h"
 
 #if OPERATING_SYSTEM == WINDOWS
-// TODO: find re-entrant alternatives on Windows.
 
-#include "system_windows.h"
+// TODO: find re-entrant alternatives on Windows.
 
 #include <csignal>
 #include <ctime>

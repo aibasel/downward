@@ -179,5 +179,5 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
     return make_shared<CartesianAbstractionGenerator>(opts);
 }
 
-static PluginShared<AbstractionGenerator> _plugin("cartesian", _parse);
+static Plugin<AbstractionGenerator> _plugin("cartesian", _parse);
 }

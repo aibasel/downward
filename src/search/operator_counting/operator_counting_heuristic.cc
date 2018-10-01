@@ -60,7 +60,7 @@ int OperatorCountingHeuristic::compute_heuristic(const State &state) {
     return result;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Operator counting heuristic",
         "An operator counting heuristic computes a linear program (LP) in each "
@@ -110,8 +110,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "constraint_generators");
     if (parser.dry_run())
         return nullptr;
-    return new OperatorCountingHeuristic(opts);
+    return make_shared<OperatorCountingHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("operatorcounting", _parse);
+static Plugin<Evaluator> _plugin("operatorcounting", _parse);
 }

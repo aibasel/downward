@@ -50,14 +50,8 @@ public:
 
     /*
       Remove and return the entry that should be expanded next.
-
-      TODO: We want to eventually get rid of the "key" argument, since
-      it breaks aspects of the abstraction. For example, see msg639 in
-      the tracker. Currently, if key is non-null, it must point to an
-      empty vector. Then remove_min stores the key for the popped
-      element there.
     */
-    virtual Entry remove_min(std::vector<int> *key = 0) = 0;
+    virtual Entry remove_min() = 0;
 
     // Return true if the open list is empty.
     virtual bool empty() const = 0;

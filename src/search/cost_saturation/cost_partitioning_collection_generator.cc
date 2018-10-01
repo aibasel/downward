@@ -24,7 +24,9 @@ static vector<vector<int>> sample_states_and_return_abstract_state_ids(
     const TaskProxy &task_proxy,
     const Abstractions &abstractions,
     sampling::RandomWalkSampler &sampler,
-    int num_samples) {
+    int num_samples,
+    int init_h,
+    const DeadEndDetector &is_dead_end) {
     assert(num_samples >= 1);
     utils::Timer sampling_timer;
     utils::Log() << "Start sampling" << endl;
@@ -33,7 +35,7 @@ static vector<vector<int>> sample_states_and_return_abstract_state_ids(
         get_abstract_state_ids(abstractions, task_proxy.get_initial_state()));
     while (static_cast<int>(abstract_state_ids_by_sample.size()) < num_samples) {
         abstract_state_ids_by_sample.push_back(
-            get_abstract_state_ids(abstractions, sampler.sample_state()));
+            get_abstract_state_ids(abstractions, sampler.sample_state(init_h, is_dead_end)));
     }
     utils::Log() << "Samples: " << abstract_state_ids_by_sample.size() << endl;
     utils::Log() << "Sampling time: " << sampling_timer << endl;
@@ -98,15 +100,15 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
 
     // Compute dead end detector which uses the sampling heuristic.
     DeadEndDetector is_dead_end = [&sampling_heuristic](const State &state) {
-                                      return sampling_heuristic(state) == INF;
-                                  };
-    sampling::RandomWalkSampler sampler(task_proxy, init_h, rng, is_dead_end);
+            return sampling_heuristic(state) == INF;
+        };
+    sampling::RandomWalkSampler sampler(task_proxy, *rng);
 
     unique_ptr<Diversifier> diversifier;
     if (diversify) {
         diversifier = utils::make_unique_ptr<Diversifier>(
             sample_states_and_return_abstract_state_ids(
-                task_proxy, abstractions, sampler, num_samples));
+                task_proxy, abstractions, sampler, num_samples, init_h, is_dead_end));
     }
 
     vector<CostPartitioningHeuristic> cp_heuristics;
@@ -116,7 +118,9 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
            !timer.is_expired()) {
         // Use initial state as first sample.
-        State sample = evaluated_orders == 0 ? initial_state : sampler.sample_state();
+        State sample = (evaluated_orders == 0)
+            ? initial_state
+            : sampler.sample_state(init_h, is_dead_end);
         assert(!is_dead_end(sample));
         // If sampling took too long and we already found a cost partitioning,
         // abort the loop.

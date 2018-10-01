@@ -79,7 +79,7 @@ static CostPartitioningCollectionGenerator get_cp_collection_generator_from_opti
         utils::parse_rng_from_options(opts));
 }
 
-static Heuristic *get_max_cp_heuristic(
+static shared_ptr<Heuristic> get_max_cp_heuristic(
     options::OptionParser &parser, CPFunction cp_function) {
     parser.document_language_support("action costs", "supported");
     parser.document_language_support(
@@ -118,13 +118,13 @@ static Heuristic *get_max_cp_heuristic(
     vector<CostPartitioningHeuristic> cp_heuristics =
         get_cp_collection_generator_from_options(opts).get_cost_partitionings(
             task_proxy, abstractions, costs, cp_function);
-    return new MaxCostPartitioningHeuristic(
+    return make_shared<MaxCostPartitioningHeuristic>(
         opts,
         move(abstractions),
         move(cp_heuristics));
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Saturated cost partitioning heuristic",
         "Compute the maximum over multiple saturated cost partitioning"

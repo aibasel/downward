@@ -144,7 +144,7 @@ class PatternDatabase {
       state is a goal state.
     */
     bool is_goal_state(
-        const std::size_t state_index,
+        std::size_t state_index,
         const std::vector<FactPair> &abstract_goals,
         const VariablesProxy &variables) const;
 

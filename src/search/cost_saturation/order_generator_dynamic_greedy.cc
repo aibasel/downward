@@ -106,6 +106,6 @@ static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
         return make_shared<OrderGeneratorDynamicGreedy>(opts);
 }
 
-static PluginShared<OrderGenerator> _plugin_greedy(
+static Plugin<OrderGenerator> _plugin_greedy(
     "dynamic_greedy_orders", _parse_greedy);
 }

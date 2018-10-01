@@ -103,8 +103,8 @@ void RelaxationHeuristic::simplify() {
 
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
-    typedef pair<vector<Proposition *>, Proposition *> Key;
-    typedef unordered_map<Key, int> Map;
+    using Key = pair<vector<Proposition *>, Proposition *>;
+    using Map = utils::HashMap<Key, int>;
     Map unary_operator_index;
     unary_operator_index.reserve(unary_operators.size());
 

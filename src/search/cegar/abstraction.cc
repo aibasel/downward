@@ -3,8 +3,6 @@
 #include "abstract_state.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
@@ -66,7 +64,7 @@ struct Flaw {
 };
 
 Abstraction::Abstraction(
-    const shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     int max_states,
     int max_non_looping_transitions,
     double max_time,
@@ -89,12 +87,12 @@ Abstraction::Abstraction(
       refinement_hierarchy(utils::make_unique_ptr<RefinementHierarchy>(task)),
       debug(debug) {
     assert(max_states >= 1);
-    g_log << "Start building abstraction." << endl;
+    utils::g_log << "Start building abstraction." << endl;
     cout << "Maximum number of states: " << max_states << endl;
     cout << "Maximum number of transitions: "
          << max_non_looping_transitions << endl;
     build(rng);
-    g_log << "Done building abstraction." << endl;
+    utils::g_log << "Done building abstraction." << endl;
     cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
@@ -119,7 +117,7 @@ void Abstraction::separate_facts_unreachable_before_goal() {
     assert(states.size() == 1);
     assert(task_proxy.get_goals().size() == 1);
     FactProxy goal = task_proxy.get_goals()[0];
-    unordered_set<FactProxy> reachable_facts = get_relaxed_possible_before(
+    utils::HashSet<FactProxy> reachable_facts = get_relaxed_possible_before(
         task_proxy, goal);
     for (VariableProxy var : task_proxy.get_variables()) {
         if (!may_keep_refining())
@@ -220,9 +218,9 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 
     int num_states = get_num_states();
     if (num_states % 1000 == 0) {
-        g_log << num_states << "/" << max_states << " states, "
-              << transition_updater.get_num_non_loops() << "/"
-              << max_non_looping_transitions << " transitions" << endl;
+        utils::g_log << num_states << "/" << max_states << " states, "
+                     << transition_updater.get_num_non_loops() << "/"
+                     << max_non_looping_transitions << " transitions" << endl;
     }
 
     delete state;

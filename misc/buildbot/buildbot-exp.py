@@ -44,13 +44,13 @@ BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
-BASELINE = cached_revision.get_global_rev(REPO, rev='92115dbcd1f2')
+BASELINE = cached_revision.get_global_rev(REPO, rev='e5e39fcb7a71')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
-    ('lazy-greedy-ff', ['--heuristic', 'h=ff()', '--search', 'lazy_greedy([h], preferred=[h])']),
-    ('lazy-greedy-cea', ['--heuristic', 'h=cea()', '--search', 'lazy_greedy([h], preferred=[h])']),
-    ('lazy-greedy-ff-cea', ['--heuristic', 'hff=ff()', '--heuristic',  'hcea=cea()',
+    ('lazy-greedy-ff', ['--evaluator', 'h=ff()', '--search', 'lazy_greedy([h], preferred=[h])']),
+    ('lazy-greedy-cea', ['--evaluator', 'h=cea()', '--search', 'lazy_greedy([h], preferred=[h])']),
+    ('lazy-greedy-ff-cea', ['--evaluator', 'hff=ff()', '--heuristic',  'hcea=cea()',
                             '--search', 'lazy_greedy([hff, hcea], preferred=[hff, hcea])']),
     ('blind', ['--search', 'astar(blind())']),
     # TODO: Revert to optimal=true.

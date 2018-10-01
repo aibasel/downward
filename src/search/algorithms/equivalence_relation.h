@@ -84,7 +84,7 @@ public:
     void refine(const EquivalenceRelation &other);
 
     // See refine(const Block &block)
-    void refine(ElementListConstIter block_X_begin, ElementListConstIter block_X_end);
+    void refine(ElementListConstIter block_x_begin, ElementListConstIter block_x_end);
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.
