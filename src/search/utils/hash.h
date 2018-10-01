@@ -248,8 +248,11 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
     /*
       Feed vector size to ensure that no two different vectors of the same type
       have the same code prefix.
+
+      Using uint64_t is wasteful on 32-bit platforms but feeding a size_t breaks
+      the build on MacOS (see msg7812).
     */
-    feed(hash_state, static_cast<unsigned int>(vec.size()));
+    feed(hash_state, static_cast<uint64_t>(vec.size()));
     for (const T &item : vec) {
         feed(hash_state, item);
     }
