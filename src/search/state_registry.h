@@ -234,6 +234,7 @@ public:
 
         bool operator==(const const_iterator &rhs) {
             assert(&registry == &rhs.registry);
+            utils::unused_variable(registry);
             return pos == rhs.pos;
         }
 
