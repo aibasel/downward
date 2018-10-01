@@ -3,10 +3,8 @@
 
 #include "../task_proxy.h"
 
-#include <exception>
 #include <functional>
 #include <memory>
-#include <vector>
 
 class State;
 
@@ -15,53 +13,42 @@ class SuccessorGenerator;
 }
 
 namespace utils {
-class CountdownTimer;
 class RandomNumberGenerator;
 }
 
 using DeadEndDetector = std::function<bool (State)>;
 
 namespace sampling {
-struct SamplingTimeout : public std::exception {};
-
 /*
-  Perform 'num_samples' random walks with biomially distributed walk
-  lenghts. Whenever a dead end is detected or a state has no
-  successors, restart from the initial state. The function
-  'is_dead_end' should return whether a given state is a dead end. If
-  omitted, no dead end detection is performed. If 'timer' is given the
-  sampling procedure will run for at most the specified time limit and
-  possibly return less than 'num_samples' states.
+  Sample states with random walks.
 */
-std::vector<State> sample_states_with_random_walks(
-    const TaskProxy &task_proxy,
-    const successor_generator::SuccessorGenerator &successor_generator,
-    int num_samples,
-    int init_h,
-    double average_operator_cost,
-    utils::RandomNumberGenerator &rng,
-    DeadEndDetector is_dead_end = [] (const State &) {return false;},
-    const utils::CountdownTimer *timer = nullptr);
-
-
 class RandomWalkSampler {
-    const TaskProxy task_proxy;
+    const OperatorsProxy operators;
     const std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
-    const std::unique_ptr<State> initial_state;
-    const int init_h;
+    const State initial_state;
     const double average_operator_costs;
-    const std::shared_ptr<utils::RandomNumberGenerator> rng;
-    const DeadEndDetector is_dead_end;
+    utils::RandomNumberGenerator &rng;
 
 public:
     RandomWalkSampler(
         const TaskProxy &task_proxy,
-        int init_h,
-        const std::shared_ptr<utils::RandomNumberGenerator> &rng,
-        DeadEndDetector is_dead_end = [] (const State &) {return false;});
+        utils::RandomNumberGenerator &rng);
     ~RandomWalkSampler();
 
-    State sample_state();
+    /*
+      Perform a single random walk and return the last visited state.
+
+      The walk length is taken from a binomial distribution centered around the
+      estimated plan length, which is computed as the ratio of the h value of
+      the initial state divided by the average operator costs. Whenever a dead
+      end is detected or a state has no successors, restart from the initial
+      state. The function 'is_dead_end' should return whether a given state is
+      a dead end. If omitted, no dead end detection is performed. The 'init_h'
+      value should be an estimate of the solution cost.
+    */
+    State sample_state(
+        int init_h,
+        const DeadEndDetector &is_dead_end = [](const State &) {return false;}) const;
 };
 }
 

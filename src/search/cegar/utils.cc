@@ -22,7 +22,7 @@ unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
 }
 
 static bool operator_applicable(
-    const OperatorProxy &op, const unordered_set<FactProxy> &facts) {
+    const OperatorProxy &op, const utils::HashSet<FactProxy> &facts) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (facts.count(precondition) == 0)
             return false;
@@ -39,9 +39,9 @@ static bool operator_achieves_fact(
     return false;
 }
 
-static unordered_set<FactProxy> compute_possibly_before_facts(
+static utils::HashSet<FactProxy> compute_possibly_before_facts(
     const TaskProxy &task, const FactProxy &last_fact) {
-    unordered_set<FactProxy> pb_facts;
+    utils::HashSet<FactProxy> pb_facts;
 
     // Add facts from initial state.
     for (FactProxy fact : task.get_initial_state())
@@ -74,9 +74,9 @@ static unordered_set<FactProxy> compute_possibly_before_facts(
     return pb_facts;
 }
 
-unordered_set<FactProxy> get_relaxed_possible_before(
+utils::HashSet<FactProxy> get_relaxed_possible_before(
     const TaskProxy &task, const FactProxy &fact) {
-    unordered_set<FactProxy> reachable_facts =
+    utils::HashSet<FactProxy> reachable_facts =
         compute_possibly_before_facts(task, fact);
     reachable_facts.insert(fact);
     return reachable_facts;
