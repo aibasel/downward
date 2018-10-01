@@ -6,8 +6,6 @@
 #include "transition_system.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"

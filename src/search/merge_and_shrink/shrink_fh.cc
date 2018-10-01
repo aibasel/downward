@@ -240,5 +240,5 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         return make_shared<ShrinkFH>(opts);
 }
 
-static PluginShared<ShrinkStrategy> _plugin("shrink_fh", _parse);
+static Plugin<ShrinkStrategy> _plugin("shrink_fh", _parse);
 }

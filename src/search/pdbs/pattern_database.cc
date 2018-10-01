@@ -7,7 +7,6 @@
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
-#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -25,18 +24,17 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
                                    const vector<FactPair> &pre_pairs,
                                    const vector<FactPair> &eff_pairs,
                                    int cost,
-                                   const vector<size_t> &hash_multipliers,
-                                   int concrete_operator_id)
-    : concrete_operator_id(concrete_operator_id),
-      cost(cost),
-      regression_preconditions(utils::make_unique_ptr<vector<FactPair>>(prev_pairs)) {
-    regression_preconditions->insert(
-        regression_preconditions->end(), eff_pairs.begin(), eff_pairs.end());
+                                   const vector<size_t> &hash_multipliers)
+    : cost(cost),
+      regression_preconditions(prev_pairs) {
+    regression_preconditions.insert(regression_preconditions.end(),
+                                    eff_pairs.begin(),
+                                    eff_pairs.end());
     // Sort preconditions for MatchTree construction.
-    sort(regression_preconditions->begin(), regression_preconditions->end());
-    for (size_t i = 1; i < regression_preconditions->size(); ++i) {
-        assert((*regression_preconditions)[i].var !=
-               (*regression_preconditions)[i - 1].var);
+    sort(regression_preconditions.begin(), regression_preconditions.end());
+    for (size_t i = 1; i < regression_preconditions.size(); ++i) {
+        assert(regression_preconditions[i].var !=
+               regression_preconditions[i - 1].var);
     }
     hash_effect = 0;
     assert(pre_pairs.size() == eff_pairs.size());
@@ -54,22 +52,13 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
 AbstractOperator::~AbstractOperator() {
 }
 
-int AbstractOperator::get_concrete_operator_id() const {
-    assert(concrete_operator_id != -1);
-    return concrete_operator_id;
-}
-
-void AbstractOperator::remove_regression_preconditions() {
-    regression_preconditions = nullptr;
-}
-
 void AbstractOperator::dump(const Pattern &pattern,
                             const VariablesProxy &variables) const {
     cout << "AbstractOperator:" << endl;
     cout << "Regression preconditions:" << endl;
-    for (size_t i = 0; i < get_regression_preconditions().size(); ++i) {
-        int var_id = get_regression_preconditions()[i].var;
-        int val = get_regression_preconditions()[i].value;
+    for (size_t i = 0; i < regression_preconditions.size(); ++i) {
+        int var_id = regression_preconditions[i].var;
+        int val = regression_preconditions[i].value;
         cout << "Variable: " << var_id << " (True name: "
              << variables[pattern[var_id]].get_name()
              << ", Index: " << i << ") Value: " << val << endl;
@@ -119,8 +108,9 @@ void PatternDatabase::multiply_out(
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
-            operators.emplace_back(
-                prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers);
+            operators.push_back(
+                AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost,
+                                 hash_multipliers));
         }
     } else {
         // For each possible value for the current variable, build an

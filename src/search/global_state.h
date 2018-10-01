@@ -5,10 +5,7 @@
 
 #include "algorithms/int_packer.h"
 
-#include <cstddef>
-#include <iostream>
-#include <vector>
-
+class State;
 class StateRegistry;
 
 using PackedStateBin = int_packer::IntPacker::Bin;
@@ -19,6 +16,9 @@ class GlobalState {
     friend class StateRegistry;
     template<typename Entry>
     friend class PerStateInformation;
+    template<typename>
+    friend class PerStateArray;
+    friend class PerStateBitset;
 
     // Values for vars are maintained in a packed state and accessed on demand.
     const PackedStateBin *buffer;
@@ -47,7 +47,7 @@ public:
 
     int operator[](int var) const;
 
-    std::vector<int> get_values() const;
+    State unpack() const;
 
     void dump_pddl() const;
     void dump_fdr() const;

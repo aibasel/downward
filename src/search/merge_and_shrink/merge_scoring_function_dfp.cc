@@ -124,5 +124,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         return make_shared<MergeScoringFunctionDFP>();
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("dfp", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("dfp", _parse);
 }

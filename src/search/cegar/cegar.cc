@@ -5,8 +5,6 @@
 #include "transition_system.h"
 #include "utils.h"
 
-#include "../globals.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/language.h"
 #include "../utils/logging.h"
@@ -87,12 +85,12 @@ CEGAR::CEGAR(
       timer(max_time),
       debug(debug) {
     assert(max_states >= 1);
-    g_log << "Start building abstraction." << endl;
+    utils::g_log << "Start building abstraction." << endl;
     cout << "Maximum number of states: " << max_states << endl;
     cout << "Maximum number of transitions: "
          << max_non_looping_transitions << endl;
     refinement_loop(rng);
-    g_log << "Done building abstraction." << endl;
+    utils::g_log << "Done building abstraction." << endl;
     cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
 
     print_statistics();
@@ -111,7 +109,7 @@ void CEGAR::separate_facts_unreachable_before_goal() {
     assert(abstraction->get_states().size() == 1);
     assert(task_proxy.get_goals().size() == 1);
     FactProxy goal = task_proxy.get_goals()[0];
-    unordered_set<FactProxy> reachable_facts = get_relaxed_possible_before(
+    utils::HashSet<FactProxy> reachable_facts = get_relaxed_possible_before(
         task_proxy, goal);
     for (VariableProxy var : task_proxy.get_variables()) {
         if (!may_keep_refining())
@@ -173,9 +171,9 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
             state_id, new_state_ids.first, new_state_ids.second);
 
         if (abstraction->get_num_states() % 1000 == 0) {
-            g_log << abstraction->get_num_states() << "/" << max_states << " states, "
-                  << abstraction->get_transition_system().get_num_non_loops() << "/"
-                  << max_non_looping_transitions << " transitions" << endl;
+            utils::g_log << abstraction->get_num_states() << "/" << max_states << " states, "
+                         << abstraction->get_transition_system().get_num_non_loops() << "/"
+                         << max_non_looping_transitions << " transitions" << endl;
         }
     }
     cout << "Concrete solution found: " << found_concrete_solution << endl;

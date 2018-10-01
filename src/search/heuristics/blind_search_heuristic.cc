@@ -30,7 +30,7 @@ int BlindSearchHeuristic::compute_heuristic(const GlobalState &global_state) {
         return min_operator_cost;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Blind heuristic",
                              "Returns cost of cheapest action for "
                              "non-goal states, "
@@ -46,10 +46,10 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new BlindSearchHeuristic(opts);
+        return make_shared<BlindSearchHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("blind", _parse);
+static Plugin<Evaluator> _plugin("blind", _parse);
 }

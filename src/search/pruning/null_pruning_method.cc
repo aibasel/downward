@@ -24,5 +24,5 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     return make_shared<NullPruningMethod>();
 }
 
-static PluginShared<PruningMethod> _plugin("null", _parse);
+static Plugin<PruningMethod> _plugin("null", _parse);
 }

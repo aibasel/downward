@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import os
 import re
+
+from . import returncodes
 
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -18,7 +22,7 @@ def get_elapsed_time():
         # The child time components of os.times() are 0 on Windows. If
         # we ever end up using this method on Windows, we need to be
         # aware of this, so it's prudent to complain loudly.
-        raise NotImplementedError("cannot use get_elapsed_time() on Windows")
+        returncodes.exit_with_driver_unsupported_error("cannot use get_elapsed_time() on Windows")
     return sum(os.times()[:4])
 
 
@@ -32,14 +36,15 @@ def find_domain_filename(task_filename):
         "domain.pddl",
         basename[:3] + "-domain.pddl",
         "domain_" + basename,
+        "domain-" + basename,
     ]
 
     for domain_basename in domain_basenames:
         domain_filename = os.path.join(dirname, domain_basename)
         if os.path.exists(domain_filename):
             return domain_filename
-            
-    raise SystemExit(
+
+    returncodes.exit_with_driver_input_error(
         "Error: Could not find domain file using automatic naming rules.")
 
 # Shell-escaping code taken from Python's shlex.quote (missing in Python < 3.3).

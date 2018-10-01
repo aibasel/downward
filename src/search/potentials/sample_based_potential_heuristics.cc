@@ -54,7 +54,7 @@ static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_funct
     return functions;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Sample-based potential heuristics",
         "Maximum over multiple potential heuristics optimized for samples. " +
@@ -75,9 +75,9 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new PotentialMaxHeuristic(
+    return make_shared<PotentialMaxHeuristic>(
         opts, create_sample_based_potential_functions(opts));
 }
 
-static Plugin<Heuristic> _plugin("sample_based_potentials", _parse);
+static Plugin<Evaluator> _plugin("sample_based_potentials", _parse);
 }

@@ -63,5 +63,5 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternGeneratorGreedy>(opts);
 }
 
-static PluginShared<PatternGenerator> _plugin("greedy", _parse);
+static Plugin<PatternGenerator> _plugin("greedy", _parse);
 }
