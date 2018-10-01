@@ -168,22 +168,21 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
 }
 
 void PatternCollectionGeneratorHillclimbing::sample_states(
-    const TaskProxy &task_proxy, const successor_generator::SuccessorGenerator &successor_generator,
-    vector<State> &samples, double average_operator_cost) {
-    int init_h = current_pdbs->get_value(
-        task_proxy.get_initial_state());
+    const sampling::RandomWalkSampler &sampler,
+    int init_h,
+    vector<State> &samples) {
+    assert(samples.empty());
 
-    try {
-        samples = sampling::sample_states_with_random_walks(
-            task_proxy, successor_generator, num_samples, init_h,
-            average_operator_cost,
-            *rng,
-            [this](const State &state) {
-                return current_pdbs->is_dead_end(state);
-            },
-            hill_climbing_timer);
-    } catch (sampling::SamplingTimeout &) {
-        throw HillClimbingTimeout();
+    samples.reserve(num_samples);
+    for (int i = 0; i < num_samples; ++i) {
+        samples.push_back(sampler.sample_state(
+                              init_h,
+                              [this](const State &state) {
+                                  return current_pdbs->is_dead_end(state);
+                              }));
+        if (hill_climbing_timer->is_expired()) {
+            throw HillClimbingTimeout();
+        }
     }
 }
 
@@ -296,8 +295,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
-    double average_operator_cost = task_properties::get_average_operator_cost(task_proxy);
-    cout << "Average operator cost: " << average_operator_cost << endl;
+    cout << "Average operator cost: "
+         << task_properties::get_average_operator_cost(task_proxy) << endl;
 
     const vector<vector<int>> relevant_neighbours =
         compute_relevant_neighbours(task_proxy);
@@ -325,14 +324,15 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
     int num_iterations = 0;
     State initial_state = task_proxy.get_initial_state();
-    successor_generator::SuccessorGenerator successor_generator(task_proxy);
 
+    sampling::RandomWalkSampler sampler(task_proxy, *rng);
     vector<State> samples;
     vector<int> samples_h_values;
 
     try {
         while (true) {
             ++num_iterations;
+            int init_h = current_pdbs->get_value(initial_state);
             cout << "current collection size is "
                  << current_pdbs->get_size() << endl;
             cout << "current initial h value: ";
@@ -340,14 +340,12 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
                 cout << "infinite => stopping hill climbing" << endl;
                 break;
             } else {
-                cout << current_pdbs->get_value(initial_state)
-                     << endl;
+                cout << init_h << endl;
             }
 
             samples.clear();
             samples_h_values.clear();
-            sample_states(
-                task_proxy, successor_generator, samples, average_operator_cost);
+            sample_states(sampler, init_h, samples);
             for (const State &sample : samples) {
                 samples_h_values.push_back(current_pdbs->get_value(sample));
             }
