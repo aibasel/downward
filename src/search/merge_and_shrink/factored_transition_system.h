@@ -165,6 +165,12 @@ public:
     }
 
     bool is_active(int index) const;
+
+    /*
+      Returns infinity iff the transition system at the given index is
+      unsolvable, and otherwise the goal distance estimate for its initial
+      state.
+    */
     int get_init_state_goal_distance(int index) const;
 };
 }
