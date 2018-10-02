@@ -1,5 +1,5 @@
-#ifndef HEURISTIC_CACHE_H
-#define HEURISTIC_CACHE_H
+#ifndef EVALUATOR_CACHE_H
+#define EVALUATOR_CACHE_H
 
 #include "evaluation_result.h"
 #include "global_state.h"
@@ -13,15 +13,15 @@ using EvaluationResults = std::unordered_map<Evaluator *, EvaluationResult>;
 /*
   Store a state and evaluation results for this state.
 */
-class HeuristicCache {
+class EvaluatorCache {
     EvaluationResults eval_results;
     GlobalState state;
 
 public:
-    explicit HeuristicCache(const GlobalState &state);
-    ~HeuristicCache() = default;
+    explicit EvaluatorCache(const GlobalState &state);
+    ~EvaluatorCache() = default;
 
-    EvaluationResult &operator[](Evaluator *heur);
+    EvaluationResult &operator[](Evaluator *eval);
 
     const GlobalState &get_state() const;
 

@@ -11,9 +11,9 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
     parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<shared_ptr<Evaluator>>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these evaluators", "[]");
     SearchEngine::add_succ_order_options(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -25,11 +25,11 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
           TODO: The following two lines look fishy. If they serve a
           purpose, shouldn't the constructor take care of this?
         */
-        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
+        vector<shared_ptr<Evaluator>> preferred_list = opts.get_list<shared_ptr<Evaluator>>("preferred");
+        engine->set_preferred_operator_evaluators(preferred_list);
     }
 
     return engine;
 }
-static PluginShared<SearchEngine> _plugin("lazy", _parse);
+static Plugin<SearchEngine> _plugin("lazy", _parse);
 }

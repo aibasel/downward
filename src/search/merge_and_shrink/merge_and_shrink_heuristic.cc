@@ -649,7 +649,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
     opts.set<int>("threshold_before_merge", threshold);
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
         "This heuristic implements the algorithm described in the following "
@@ -686,8 +686,8 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
+    parser.document_property("admissible", "yes (but see note)");
+    parser.document_property("consistent", "yes (but see note)");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
     parser.document_note(
@@ -698,6 +698,16 @@ static Heuristic *_parse(OptionParser &parser) {
         "merge-and-shrink heuristics are based are nondeterministic, "
         "which can lead to poor heuristics even when only perfect shrinking "
         "is performed.");
+    parser.document_note(
+        "Note",
+        "When pruning unreachable states, admissibility and consistency is "
+        "only guaranteed for reachable states and transitions between "
+        "reachable states. While this does not impact regular A* search which "
+        "will never encounter any unreachable state, it impacts techniques "
+        "like symmetry-based pruning: a reachable state which is mapped to an "
+        "unreachable symmetric state (which hence is pruned) would falsely be "
+        "considered a dead-end and also be pruned, thus violating optimality "
+        "of the search.");
     parser.document_note(
         "Note",
         "A currently recommended good configuration uses bisimulation "
@@ -855,9 +865,9 @@ static Heuristic *_parse(OptionParser &parser) {
         }
         return nullptr;
     } else {
-        return new MergeAndShrinkHeuristic(opts);
+        return make_shared<MergeAndShrinkHeuristic>(opts);
     }
 }
 
-static Plugin<Heuristic> _plugin("merge_and_shrink", _parse);
+static Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
 }

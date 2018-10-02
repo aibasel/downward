@@ -125,5 +125,5 @@ static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
         return make_shared<MergeSelectorScoreBasedFiltering>(opts);
 }
 
-static options::PluginShared<MergeSelector> _plugin("score_based_filtering", _parse);
+static options::Plugin<MergeSelector> _plugin("score_based_filtering", _parse);
 }

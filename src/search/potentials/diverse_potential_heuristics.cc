@@ -27,7 +27,7 @@ SamplesToFunctionsMap
 DiversePotentialHeuristics::filter_samples_and_compute_functions(
     const vector<State> &samples) {
     utils::Timer filtering_timer;
-    unordered_set<State> dead_ends;
+    utils::HashSet<State> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
     SamplesToFunctionsMap samples_to_functions;
@@ -132,7 +132,7 @@ DiversePotentialHeuristics::find_functions() {
     return move(diverse_functions);
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Diverse potential heuristics",
         get_admissible_potentials_reference());
@@ -153,8 +153,8 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     DiversePotentialHeuristics factory(opts);
-    return new PotentialMaxHeuristic(opts, factory.find_functions());
+    return make_shared<PotentialMaxHeuristic>(opts, factory.find_functions());
 }
 
-static Plugin<Heuristic> _plugin("diverse_potentials", _parse);
+static Plugin<Evaluator> _plugin("diverse_potentials", _parse);
 }

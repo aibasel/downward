@@ -33,10 +33,10 @@ enum class Verbosity;
 */
 extern FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
-    const bool compute_init_distances,
-    const bool compute_goal_distances,
+    bool compute_init_distances,
+    bool compute_goal_distances,
     Verbosity verbosity,
-    const double max_time,
+    double max_time,
     const utils::Timer &timer);
 }
 
