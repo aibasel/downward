@@ -21,6 +21,16 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 enum class Verbosity;
 
+/*
+  Note on how the time limit is handled: if running out of time during
+  computing the initialization of transition system data (except transitions,
+  which are built separately), then we store the index of the last transition
+  system with valid data and only do the remaining computation for all
+  valid transition systems. This certainly violates the time limit to some
+  extent. When running out of time during the computation of the actual
+  transitions, we immediately stop and only return all factors that have been
+  completely constructed, including transitions.
+*/
 extern FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
     const bool compute_init_distances,

@@ -55,6 +55,12 @@ class FTSFactory {
     vector<TransitionSystemData> transition_system_data_by_var;
     // see TODO in build_transitions()
     int task_has_conditional_effects;
+    /*
+      If running out of time during initializing the data of transition systems
+      (not computing transitions) or during computating transitions in the
+      end this variable stores the index to the last factor that it is in a
+      valid state. The resulting FTS will only consider valid factors.
+    */
     int max_valid_factor_index;
 
     bool check_time_and_set_valid_factors(
