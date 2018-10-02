@@ -1,7 +1,16 @@
 #ifndef MERGE_AND_SHRINK_FACTOR_SCORING_FUNCTIONS_H
 #define MERGE_AND_SHRINK_FACTOR_SCORING_FUNCTIONS_H
 
+#include <memory>
 #include <vector>
+
+namespace options {
+class Options;
+}
+
+namespace utils {
+class RandomNumberGenerator;
+}
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
@@ -33,8 +42,9 @@ public:
 };
 
 class FactorScoringFunctionRandom : public FactorScoringFunction {
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 public:
-    FactorScoringFunctionRandom() = default;
+    explicit FactorScoringFunctionRandom(const options::Options &options);
     virtual ~FactorScoringFunctionRandom() override = default;
     virtual std::vector<int> compute_scores(
         const FactoredTransitionSystem &fts,
