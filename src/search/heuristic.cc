@@ -18,7 +18,7 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : Evaluator(opts.get_unparsed_config(), true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
-      cache_h_values(opts.get<bool>("cache_estimates")),
+      cache_evaluator_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task) {
 }
@@ -27,12 +27,11 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
-    preferred_operators.insert(op.get_global_operator_id());
+    preferred_operators.insert(op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    State state(*tasks::g_root_task, global_state.get_values());
-    return task_proxy.convert_ancestor_state(state);
+    return task_proxy.convert_ancestor_state(global_state.unpack());
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
@@ -54,13 +53,13 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     int heuristic = NO_VALUE;
 
-    if (!calculate_preferred && cache_h_values &&
+    if (!calculate_preferred && cache_evaluator_values &&
         heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
         heuristic = heuristic_cache[state].h;
         result.set_count_evaluation(false);
     } else {
         heuristic = compute_heuristic(state);
-        if (cache_h_values) {
+        if (cache_evaluator_values) {
             heuristic_cache[state] = HEntry(heuristic, false);
         }
         result.set_count_evaluation(true);
@@ -82,33 +81,30 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
 #ifndef NDEBUG
     TaskProxy global_task_proxy = TaskProxy(*tasks::g_root_task);
-    State global_state(*tasks::g_root_task, state.get_values());
+    State unpacked_state = state.unpack();
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)
-            assert(task_properties::is_applicable(global_operators[op_id], global_state));
+            assert(task_properties::is_applicable(global_operators[op_id], unpacked_state));
     }
 #endif
 
-    result.set_h_value(heuristic);
+    result.set_evaluator_value(heuristic);
     result.set_preferred_operators(preferred_operators.pop_as_vector());
     assert(preferred_operators.empty());
 
     return result;
 }
 
+bool Heuristic::does_cache_estimates() const {
+    return cache_evaluator_values;
+}
 
-static PluginTypePlugin<Heuristic> _type_plugin(
-    "Heuristic",
-    "A heuristic specification is either a newly created heuristic "
-    "instance or a heuristic that has been defined previously. "
-    "This page describes how one can specify a new heuristic instance. "
-    "For re-using heuristics, see OptionSyntax#Heuristic_Predefinitions.\n\n"
-    "Definitions of //properties// in the descriptions below:\n\n"
-    " * **admissible:** h(s) <= h*(s) for all states s\n"
-    " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
-    "connected to states s' by an action with cost c(s, s')\n"
-    " * **safe:** h(s) = infinity is only true for states "
-    "with h*(s) = infinity\n"
-    " * **preferred operators:** this heuristic identifies "
-    "preferred operators ");
+bool Heuristic::is_estimate_cached(const GlobalState &state) const {
+    return heuristic_cache[state].h != NO_VALUE;
+}
+
+int Heuristic::get_cached_estimate(const GlobalState &state) const {
+    assert(is_estimate_cached(state));
+    return heuristic_cache[state].h;
+}

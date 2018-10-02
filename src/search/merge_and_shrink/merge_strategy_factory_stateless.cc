@@ -57,5 +57,5 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         return make_shared<MergeStrategyFactoryStateless>(opts);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin("merge_stateless", _parse);
+static options::Plugin<MergeStrategyFactory> _plugin("merge_stateless", _parse);
 }

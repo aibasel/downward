@@ -2,7 +2,10 @@
 #define TASK_UTILS_TASK_PROPERTIES_H
 
 #include "../global_state.h"
+#include "../per_task_information.h"
 #include "../task_proxy.h"
+
+#include "../algorithms/int_packer.h"
 
 namespace task_properties {
 inline bool is_applicable(OperatorProxy op, const State &state) {
@@ -76,6 +79,14 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     }
     return fact_pairs;
 }
+
+extern void print_variable_statistics(const TaskProxy &task_proxy);
+extern void dump_pddl(const State &state);
+extern void dump_fdr(const State &state);
+extern void dump_goals(const GoalsProxy &goals);
+extern void dump_task(const TaskProxy &task_proxy);
+
+extern PerTaskInformation<int_packer::IntPacker> g_state_packers;
 }
 
 #endif

@@ -1,10 +1,11 @@
 #ifndef OPTIONS_PLUGIN_H
 #define OPTIONS_PLUGIN_H
 
-#include "doc_store.h"
+#include "doc_utils.h"
 #include "registries.h"
 #include "type_namer.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <typeinfo>
@@ -36,49 +37,32 @@ public:
 };
 
 
+class PluginGroupPlugin {
+public:
+    PluginGroupPlugin(const std::string &group_id,
+                      const std::string &doc_title);
+    ~PluginGroupPlugin() = default;
+
+    PluginGroupPlugin(const PluginGroupPlugin &other) = delete;
+};
 
 template<typename T>
 class Plugin {
 public:
-    Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
-        Registry<T *>::instance()->insert(key, factory);
-        // See comment in PluginShared.
-        DocFactory doc_factory = [factory](OptionParser &parser) {
-                                     factory(parser);
-                                 };
+    Plugin(
+        const std::string &key,
+        typename std::function<std::shared_ptr<T>(OptionParser &)> factory,
+        const std::string &group = "") {
+        using TPtr = std::shared_ptr<T>;
         PluginTypeNameGetter type_name_factory = [&]() {
-                                                     return TypeNamer<T *>::name();
-                                                 };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
+                return TypeNamer<TPtr>::name(*Registry::instance());
+            };
+
+        Registry::instance()->insert_plugin<T>(key, factory, type_name_factory,
+                                               group);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
-};
-
-
-// TODO: This class will replace Plugin once we no longer need to support raw pointers.
-template<typename T>
-class PluginShared {
-public:
-    PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
-        using TPtr = std::shared_ptr<T>;
-        Registry<TPtr>::instance()->insert(key, factory);
-        /*
-          We cannot collect the plugin documentation here because this might
-          require information from a TypePlugin object that has not yet been
-          constructed. We therefore collect the necessary functions here and
-          call them later, after all PluginType objects have been constructed.
-        */
-        DocFactory doc_factory = [factory](OptionParser &parser) {
-                                     factory(parser);
-                                 };
-        PluginTypeNameGetter type_name_factory = [&]() {
-                                                     return TypeNamer<TPtr>::name();
-                                                 };
-        DocStore::instance()->register_plugin(key, doc_factory, type_name_factory);
-    }
-    ~PluginShared() = default;
-    PluginShared(const PluginShared<T> &other) = delete;
 };
 }
 

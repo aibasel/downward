@@ -16,7 +16,7 @@ using namespace std;
 
 namespace operator_counting {
 void LMCutConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<lp::LPConstraint> & /*constraints*/,
+    const shared_ptr<AbstractTask> &task, vector<lp::LPConstraint> & /*constraints*/,
     double /*infinity*/) {
     TaskProxy task_proxy(*task);
     landmark_generator =
@@ -78,5 +78,5 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     return make_shared<LMCutConstraints>();
 }
 
-static PluginShared<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
+static Plugin<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
 }

@@ -24,7 +24,7 @@ class SuccessorGeneratorFactory {
     GeneratorPtr construct_fork(std::vector<GeneratorPtr> nodes) const;
     GeneratorPtr construct_leaf(OperatorRange range) const;
     GeneratorPtr construct_switch(
-        int switch_var_id, ValuesAndGenerators generator_for_value) const;
+        int switch_var_id, ValuesAndGenerators values_and_generators) const;
     GeneratorPtr construct_recursive(int depth, OperatorRange range) const;
 public:
     explicit SuccessorGeneratorFactory(const TaskProxy &task_proxy);

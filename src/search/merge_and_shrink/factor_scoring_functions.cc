@@ -32,7 +32,7 @@ static shared_ptr<FactorScoringFunction> _parse_fsf_inith(options::OptionParser 
         return make_shared<FactorScoringFunctionInitH>();
 }
 
-static options::PluginShared<FactorScoringFunction> _plugin_fsf_inith("fsf_inith", _parse_fsf_inith);
+static options::Plugin<FactorScoringFunction> _plugin_fsf_inith("fsf_inith", _parse_fsf_inith);
 
 
 vector<int> FactorScoringFunctionSize::compute_scores(
@@ -53,7 +53,7 @@ static shared_ptr<FactorScoringFunction> _parse_fsf_size(options::OptionParser &
         return make_shared<FactorScoringFunctionSize>();
 }
 
-static options::PluginShared<FactorScoringFunction> _plugin_fsf_size("fsf_size", _parse_fsf_size);
+static options::Plugin<FactorScoringFunction> _plugin_fsf_size("fsf_size", _parse_fsf_size);
 
 FactorScoringFunctionRandom::FactorScoringFunctionRandom(
     const options::Options &options) :
@@ -78,7 +78,7 @@ static shared_ptr<FactorScoringFunction> _parse_fsf_random(options::OptionParser
         return make_shared<FactorScoringFunctionRandom>(opts);
 }
 
-static options::PluginShared<FactorScoringFunction> _plugin_fsf_random("fsf_random", _parse_fsf_random);
+static options::Plugin<FactorScoringFunction> _plugin_fsf_random("fsf_random", _parse_fsf_random);
 
 static options::PluginTypePlugin<FactorScoringFunction> _type_plugin(
     "FactorScoringFunction",

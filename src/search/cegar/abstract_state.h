@@ -133,6 +133,10 @@ public:
         return loops;
     }
 
+    Node *get_node() const {
+        return node;
+    }
+
     AbstractSearchInfo &get_search_info() {return search_info;}
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {

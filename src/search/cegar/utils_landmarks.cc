@@ -35,7 +35,6 @@ shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &tas
     hm_opts.set<bool>("disjunctive_landmarks", false);
     hm_opts.set<bool>("conjunctive_landmarks", false);
     hm_opts.set<bool>("no_orders", false);
-    hm_opts.set<int>("lm_cost_type", NORMAL);
     LandmarkFactoryHM lm_graph_factory(hm_opts);
 
     return lm_graph_factory.compute_lm_graph(task, exploration);
