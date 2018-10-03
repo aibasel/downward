@@ -56,7 +56,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     }
 
     pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
-        final_entry = fts.extract_factor(ts_index);
+    final_entry = fts.extract_factor(ts_index);
     cout << "Final transition system size: "
          << fts.get_ts(ts_index).get_size() << endl;
 
