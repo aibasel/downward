@@ -87,9 +87,7 @@ void Exploration::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
-        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
-             << MAX_COST_VALUE << endl;
-        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
+        cout << "WARNING: overflow on landmark exploration h^add! Costs clamped to "
              << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;
     }
@@ -319,7 +317,7 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
-                                                     vector<unordered_map<FactPair, int>> &lvl_op,
+                                                     vector<utils::HashMap<FactPair, int>> &lvl_op,
                                                      bool level_out,
                                                      const vector<FactPair> &excluded_props,
                                                      const unordered_set<int> &excluded_op_ids,
