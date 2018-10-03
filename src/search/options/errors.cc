@@ -34,4 +34,9 @@ ostream &operator<<(ostream &out, const ParseError &parse_error) {
     }
     return out;
 }
+
+std::string get_type_correction_string(const std::string &type){
+    return "To retrieve the correct C++ type for gcc/clang, you can "
+        "call \nc++filt -t " + type;
+}
 }
