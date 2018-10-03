@@ -218,8 +218,8 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
 
         if (!group.empty() && !plugin_group_infos.count(group)) {
             other_plugin_errors.push_back(
-            "Missing PluginGroupPlugin for Plugin " + key + 
-            " of type " + type.name() + ": " + group);
+                "Missing PluginGroupPlugin for Plugin " + key +
+                " of type " + type.name() + ": " + group);
         }
         if (!plugin_type_infos.count(type)) {
             other_plugin_errors.push_back("Missing PluginTypePlugin for "
