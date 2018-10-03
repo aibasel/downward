@@ -291,12 +291,29 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable) {
     int num_states = variable.get_domain_size();
     int num_labels = task_proxy.get_operators().size();
 
-    // Make all irrelevant labels explicit.
+    // Collect all irrelevant labels for this variable.
+    vector<int> irrelevant_labels;
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (!is_relevant(var_no, label_no)) {
-            for (int state = 0; state < num_states; ++state)
-                add_transition(var_no, label_no, state, state);
+            irrelevant_labels.push_back(label_no);
         }
+    }
+
+    /*
+      Create transitions for all irrelevant labels only once and put the
+      labels into a single label group.
+    */
+    TransitionSystemData &ts_data = transition_system_data_by_var[variable.get_id()];
+    LabelEquivalenceRelation &label_equivalence_relation = *ts_data.label_equivalence_relation;
+    if (!irrelevant_labels.empty()) {
+        int group_id = label_equivalence_relation.get_group_id(irrelevant_labels.front());
+        for (size_t i = 1; i < irrelevant_labels.size(); ++i) {
+            int label_no = irrelevant_labels[i];
+            label_equivalence_relation.move_group_into_group(
+                label_equivalence_relation.get_group_id(label_no), group_id);
+        }
+        for (int state = 0; state < num_states; ++state)
+            add_transition(var_no, group_id, state, state);
     }
 }
 
