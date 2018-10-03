@@ -308,8 +308,7 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Landmark-count heuristic",
-                             "See also Evaluator#LAMA-FF_synergy_master");
+    parser.document_synopsis("Landmark-count heuristic", "");
     parser.document_note(
         "Optimal search",
         "When using landmarks for optimal search (``admissible=true``), "

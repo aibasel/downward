@@ -45,12 +45,12 @@ bool PatternCollectionInformation::information_is_valid() const {
                 pdbs_in_union.insert(pdb.get());
             }
         }
-        unordered_set<Pattern> patterns_in_union;
+        utils::HashSet<Pattern> patterns_in_union;
         for (PatternDatabase *pdb : pdbs_in_union) {
             patterns_in_union.insert(pdb->get_pattern());
         }
-        unordered_set<Pattern> patterns_in_list(patterns->begin(),
-                                                patterns->end());
+        utils::HashSet<Pattern> patterns_in_list(patterns->begin(),
+                                                 patterns->end());
         if (patterns_in_list != patterns_in_union) {
             return false;
         }

@@ -35,20 +35,7 @@ public:
     bool operator!=(const StateID &other) const {
         return !(*this == other);
     }
-
-    size_t hash() const {
-        return value;
-    }
 };
 
-
-namespace std {
-template<>
-struct hash<StateID> {
-    size_t operator()(StateID id) const {
-        return id.hash();
-    }
-};
-}
 
 #endif

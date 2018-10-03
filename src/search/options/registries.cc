@@ -237,8 +237,9 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple Plugins: " + type_name + " (types: " +
-            join<vector<type_index>::const_iterator, type_index>(types.begin(),
-                                                                 types.end(), [](const type_index &type) {return type.name();}) + ")";
+            join<vector<type_index>::const_iterator, type_index>(
+                types.begin(), types.end(), 
+                [](const type_index &type) {return type.name();}) + ")";
         });
 
     sort(other_plugin_errors.begin(), other_plugin_errors.end());

@@ -6,8 +6,6 @@
 
 #include "../task_proxy.h"
 
-#include "../task_utils/successor_generator.h"
-
 #include <cstdlib>
 #include <memory>
 #include <set>
@@ -20,6 +18,10 @@ class Options;
 namespace utils {
 class CountdownTimer;
 class RandomNumberGenerator;
+}
+
+namespace sampling {
+class RandomWalkSampler;
 }
 
 namespace pdbs {
@@ -72,10 +74,9 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       a sample state, thus totalling exactly num_samples of sample states.
     */
     void sample_states(
-        const TaskProxy &task_proxy,
-        const successor_generator::SuccessorGenerator &successor_generator,
-        std::vector<State> &samples,
-        double average_operator_cost);
+        const sampling::RandomWalkSampler &sampler,
+        int init_h,
+        std::vector<State> &samples);
 
     /*
       Searches for the best improving pdb in candidate_pdbs according to the
