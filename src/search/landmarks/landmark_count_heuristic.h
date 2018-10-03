@@ -19,7 +19,6 @@ class LandmarkStatusManager;
 enum class PreferredOperatorsType {
     NONE,
     SIMPLE,
-    ALL,
 };
 
 class LandmarkCountHeuristic : public Heuristic {
@@ -37,9 +36,6 @@ class LandmarkCountHeuristic : public Heuristic {
 
     int get_heuristic_value(const GlobalState &global_state);
 
-    std::vector<FactPair> collect_lm_leaves(
-        bool disjunctive_lms, const LandmarkSet &reached_lms);
-
     bool check_node_orders_disobeyed(
         const LandmarkNode &node, const LandmarkSet &reached) const;
 
@@ -49,7 +45,6 @@ class LandmarkCountHeuristic : public Heuristic {
         const State &state, const LandmarkSet &reached, LandmarkNode &lm) const;
     bool generate_helpful_actions(
         const State &state, const LandmarkSet &reached);
-    void set_exploration_goals(const GlobalState &global_state);
 
     LandmarkSet convert_to_landmark_set(const BitsetView &landmark_bitset);
 protected:
