@@ -18,6 +18,14 @@
 using namespace std;
 
 namespace landmarks {
+static Options get_exploration_options(
+    const shared_ptr<AbstractTask> &task) {
+    Options opts;
+    opts.set<shared_ptr<AbstractTask>>("transform", task);
+    opts.set<bool>("cache_estimates", true);  // Required but unused.
+    return opts;
+}
+
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
     : lm_graph_task(nullptr),
       reasonable_orders(opts.get<bool>("reasonable_orders")),
@@ -46,7 +54,7 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   as the TaskProxy object passed to this function.
 */
 shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
-    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    const shared_ptr<AbstractTask> &task) {
     if (lm_graph) {
         if (lm_graph_task != task.get()) {
             cerr << "LandmarkFactory was asked to compute landmark graphs for "
@@ -62,6 +70,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     TaskProxy task_proxy(*task);
 
     lm_graph = make_shared<LandmarkGraph>(task_proxy);
+    Exploration exploration(get_exploration_options(task));
     generate_landmarks(task, exploration);
 
     // the following replaces the old "build_lm_graph"

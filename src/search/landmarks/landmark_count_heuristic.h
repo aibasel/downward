@@ -1,7 +1,6 @@
 #ifndef LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 #define LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 
-#include "exploration.h"
 #include "landmark_graph.h"
 
 #include "../heuristic.h"
@@ -23,7 +22,6 @@ enum class PreferredOperatorsType {
 
 class LandmarkCountHeuristic : public Heuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
-    Exploration exploration;
     const PreferredOperatorsType pref_ops_type;
     const bool ff_search_disjunctive_lms;
     const bool conditional_effects_supported;
@@ -51,7 +49,6 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
-    ~LandmarkCountHeuristic();
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {

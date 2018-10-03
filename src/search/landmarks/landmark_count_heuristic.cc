@@ -25,17 +25,8 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-static Options get_exploration_options(
-    const shared_ptr<AbstractTask> &task, bool cache_estimates) {
-    Options exploration_opts;
-    exploration_opts.set<shared_ptr<AbstractTask>>("transform", task);
-    exploration_opts.set<bool>("cache_estimates", cache_estimates);
-    return exploration_opts;
-}
-
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      exploration(get_exploration_options(task, cache_evaluator_values)),
       pref_ops_type(static_cast<PreferredOperatorsType>(opts.get_enum("preferred_operators"))),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
@@ -62,7 +53,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
+    lgraph = lm_graph_factory->compute_lm_graph(task);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
@@ -97,9 +88,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
            where it's compatible. See issue564. */
         successor_generator = utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy);
     }
-}
-
-LandmarkCountHeuristic::~LandmarkCountHeuristic() {
 }
 
 int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state) {
