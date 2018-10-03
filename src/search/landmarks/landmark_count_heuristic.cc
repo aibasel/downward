@@ -27,7 +27,7 @@ using utils::ExitCode;
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      pref_ops_type(static_cast<PreferredOperatorsType>(opts.get_enum("preferred_operators"))),
+      use_preferred_operators(opts.get<bool>("pref")),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
@@ -83,7 +83,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         lm_cost_assignment = nullptr;
     }
 
-    if (pref_ops_type == PreferredOperatorsType::SIMPLE) {
+    if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main task in cases
            where it's compatible. See issue564. */
         successor_generator = utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy);
@@ -133,7 +133,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     int h = get_heuristic_value(global_state);
 
     // no (need for) helpful actions, return
-    if (pref_ops_type == PreferredOperatorsType::NONE) {
+    if (!use_preferred_operators) {
         return h;
     }
 
@@ -296,18 +296,9 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "optimal",
         "use optimal (LP-based) cost sharing "
         "(only makes sense with ``admissible=true``)", "false");
-    vector<string> pref_ops_types;
-    vector<string> pref_ops_types_doc;
-    pref_ops_types.push_back("NONE");
-    pref_ops_types_doc.push_back("none");
-    pref_ops_types.push_back("SIMPLE");
-    pref_ops_types_doc.push_back("simple");
-    parser.add_enum_option(
-        "preferred_operators",
-        pref_ops_types,
-        "Which type of preferred operators to compute.",
-        "NONE",
-        pref_ops_types_doc);
+    parser.add_option<bool>("pref", "identify preferred operators "
+                            "(see OptionCaveats#Using_preferred_operators_"
+                            "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
