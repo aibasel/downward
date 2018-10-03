@@ -2,6 +2,7 @@
 #define OPTIONS_OPTIONS_H
 
 #include "any.h"
+#include "errors.h"
 #include "type_namer.h"
 
 #include "../utils/system.h"
@@ -31,8 +32,7 @@ public:
         if (it == storage.end()) {
             ABORT("Attempt to retrieve nonexisting object of name " +
                   key + " (type: " + typeid(T).name() + ")\n" +
-                  "To retrieve the correct C++ type for gcc/clang, you can " +
-                  "call \nc++filt -t \"" + typeid(T).name() + "\"");
+                  get_type_correction_string(typeid(T).name()));
         }
         try {
             T result = any_cast<T>(it->second);
@@ -40,8 +40,7 @@ public:
         } catch (const BadAnyCast &) {
             ABORT("Invalid conversion while retrieving config options!\n" +
                   key + " is not of type " + typeid(T).name() + "\n" +
-                  "To retrieve the correct C++ type for gcc/clang, you can " +
-                  "call \nc++filt -t \"" + typeid(T).name() + "\"");
+                  get_type_correction_string(typeid(T).name()));
         }
     }
 

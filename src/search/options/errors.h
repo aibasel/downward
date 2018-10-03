@@ -27,6 +27,8 @@ struct ParseError {
 
     friend std::ostream &operator<<(std::ostream &out, const ParseError &parse_error);
 };
+
+std::string get_type_correction_string(const std::string &type);
 }
 
 #endif

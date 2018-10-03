@@ -1,5 +1,6 @@
 #include "registries.h"
 
+#include "errors.h"
 #include "string_utils.h"
 
 #include <iostream>
@@ -111,8 +112,7 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
 static void print_initialization_errors(const vector<string> &errors) {
     cerr << endl << "Plugin initialization errors:" << endl
          << join(errors.begin(), errors.end(), "\n") << endl << endl
-         << "To retrieve the correct C++ type for gcc/clang, you can "
-        "call \nc++filt -t [TYPE]" << endl;
+         << get_type_correction_string("[TYPE]") << endl;
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
