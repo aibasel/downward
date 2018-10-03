@@ -272,7 +272,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         if (!fts.is_factor_solvable(merged_index)) {
             if (verbosity >= Verbosity::NORMAL) {
                 cout << "Abstract problem is unsolvable, stopping "
-                        "computation. " << endl << endl;
+                    "computation. " << endl << endl;
             }
             break;
         }
@@ -303,7 +303,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build(
     starting_peak_memory = utils::get_peak_memory_in_kb();
 
     if (label_reduction) {
-      label_reduction->initialize(task_proxy);
+        label_reduction->initialize(task_proxy);
     }
 
     utils::Timer timer;
