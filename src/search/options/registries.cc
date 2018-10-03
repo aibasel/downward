@@ -21,7 +21,7 @@ void RegistryDataCollection::insert_plugin_group_data(
 }
 
 void RegistryDataCollection::insert_plugin_data(
-    const string &key, Any factory, const string &group,
+    const string &key, const Any &factory, const string &group,
     PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
     type_index type_index) {
     plugins.emplace_back(key, factory, group, type_name_factory, doc_factory,
@@ -147,7 +147,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
                                     vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
-    for (PluginTypeData ptd : collection.get_plugin_type_data()) {
+    for (const PluginTypeData &ptd : collection.get_plugin_type_data()) {
         const string type_name = get<0>(ptd);
         const string documentation = get<1>(ptd);
         const type_index type = get<2>(ptd);
@@ -184,7 +184,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
 void Registry::collect_plugin_groups(const RegistryDataCollection &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
-    for (PluginGroupData pgd : collection.get_plugin_group_data()) {
+    for (const PluginGroupData &pgd : collection.get_plugin_group_data()) {
         const string group_id = get<0>(pgd);
         const string doc_title = get<1>(pgd);
 
@@ -208,7 +208,7 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
                                vector<string> &errors) {
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
-    for (PluginData pd : collection.get_plugin_data()) {
+    for (const PluginData &pd : collection.get_plugin_data()) {
         const string key = get<0>(pd);
         const Any factory = get<1>(pd);
         const string group = get<2>(pd);
@@ -217,8 +217,9 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
         const type_index type = get<5>(pd);
 
         if (!group.empty() && !plugin_group_infos.count(group)) {
-            other_plugin_errors.push_back("Missing PluginGroupPlugin for "
-                                          "Plugin " + key + " of type " + type.name() + ": " + group);
+            other_plugin_errors.push_back(
+            "Missing PluginGroupPlugin for Plugin " + key + 
+            " of type " + type.name() + ": " + group);
         }
         if (!plugin_type_infos.count(type)) {
             other_plugin_errors.push_back("Missing PluginTypePlugin for "
