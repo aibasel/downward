@@ -92,7 +92,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         lm_cost_assignment = nullptr;
     }
 
-    if (pref_ops_type == PreferredOperatorsType::SIMPLE || pref_ops_type == PreferredOperatorsType::ALL) {
+    if (pref_ops_type == PreferredOperatorsType::SIMPLE) {
         /* Ideally, we should reuse the successor generator of the main task in cases
            where it's compatible. See issue564. */
         successor_generator = utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy);
@@ -100,15 +100,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
 }
 
 LandmarkCountHeuristic::~LandmarkCountHeuristic() {
-}
-
-void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &global_state) {
-    // Set additional goals for FF exploration
-    BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
-    LandmarkSet reached_landmarks = convert_to_landmark_set(landmark_info);
-    vector<FactPair> lm_leaves = collect_lm_leaves(
-        ff_search_disjunctive_lms, reached_landmarks);
-    exploration.set_additional_goals(lm_leaves);
 }
 
 int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state) {
@@ -165,43 +156,8 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
 
     BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
     LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
-
     generate_helpful_actions(state, reached_lms);
-
-    if (pref_ops_type == PreferredOperatorsType::ALL) {
-        set_exploration_goals(global_state);
-
-        // Use FF to plan to a landmark leaf.
-        vector<FactPair> leaves = collect_lm_leaves(
-            ff_search_disjunctive_lms, reached_lms);
-        if (!exploration.plan_for_disj(leaves, state)) {
-            exploration.exported_op_ids.clear();
-            return DEAD_END;
-        }
-        OperatorsProxy operators = task_proxy.get_operators();
-        for (int exported_op_id : exploration.exported_op_ids) {
-            set_preferred(operators[exported_op_id]);
-        }
-        exploration.exported_op_ids.clear();
-    }
-
     return h;
-}
-
-vector<FactPair> LandmarkCountHeuristic::collect_lm_leaves(
-    bool disjunctive_lms, const LandmarkSet &reached_lms) {
-    vector<FactPair> leaves;
-    for (const LandmarkNode *node_p : lgraph->get_nodes()) {
-        if (!disjunctive_lms && node_p->disjunctive)
-            continue;
-
-        if (!reached_lms.count(node_p) &&
-            !check_node_orders_disobeyed(*node_p, reached_lms)) {
-            leaves.insert(
-                leaves.end(), node_p->facts.begin(), node_p->facts.end());
-        }
-    }
-    return leaves;
 }
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &node,
@@ -358,8 +314,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     pref_ops_types_doc.push_back("none");
     pref_ops_types.push_back("SIMPLE");
     pref_ops_types_doc.push_back("simple");
-    pref_ops_types.push_back("ALL");
-    pref_ops_types_doc.push_back("all");
     parser.add_enum_option(
         "preferred_operators",
         pref_ops_types,

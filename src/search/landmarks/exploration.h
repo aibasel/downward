@@ -119,9 +119,6 @@ class Exploration : public Heuristic {
     int compute_hsp_add_heuristic();
     int compute_ff_heuristic(const State &state);
 
-    void collect_helpful_actions(
-        ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
-
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
     void increase_cost(int &cost, int amount);
@@ -138,12 +135,6 @@ public:
                                             const std::vector<FactPair> &excluded_props,
                                             const std::unordered_set<int> &excluded_op_ids,
                                             bool compute_lvl_ops);
-    // Only needed for computing helpful actions for landmark count heuristic.
-    std::vector<int> exported_op_ids;
-
-    // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
-    // via "exported_ops". (This is the real reason why you might want to call this.)
-    bool plan_for_disj(std::vector<FactPair> &disj_goal, const State &state);
 };
 }
 
