@@ -2,7 +2,7 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "merge_and_shrink_heuristic.h"
+#include "merge_and_shrink_algorithm.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
 #include "merge_scoring_function_miasm_utils.h"
@@ -123,14 +123,14 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "shrink_strategy",
         "We recommend setting this to match the shrink strategy configuration "
         "given to {{{merge_and_shrink}}}, see note below.");
-    MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
+    MergeAndShrinkAlgorithm::add_shrink_limit_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     }
 
-    MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(options);
+    MergeAndShrinkAlgorithm::handle_shrink_limit_options_defaults(options);
 
     if (parser.dry_run()) {
         return nullptr;

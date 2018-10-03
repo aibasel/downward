@@ -261,7 +261,6 @@ bool LabelReduction::reduce(
 }
 
 void LabelReduction::dump_options() const {
-    assert(initialized());
     cout << "Label reduction options:" << endl;
     cout << "Before merging: "
          << (lr_before_merging ? "enabled" : "disabled") << endl;
