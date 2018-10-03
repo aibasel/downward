@@ -40,7 +40,7 @@ public:
         const std::string &group_id, const std::string &doc_title);
 
     void insert_plugin_data(
-        const std::string &key, Any factory, const std::string &group,
+        const std::string &key, const Any &factory, const std::string &group,
         PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
         std::type_index type_index);
 

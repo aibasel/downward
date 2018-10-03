@@ -23,7 +23,9 @@ std::pair<std::string, std::string> split(
 }
 
 template<typename InputIt, typename T>
-std::string join(InputIt first, InputIt last, std::function<std::string(const T &)> f, const std::string &delim = ", ") {
+std::string join(
+    InputIt first, InputIt last, std::function<std::string(const T &)> f,
+    const std::string &delim = ", ") {
     std::ostringstream oss;
     bool first_round = true;
 
@@ -36,6 +38,7 @@ std::string join(InputIt first, InputIt last, std::function<std::string(const T 
 
 template<typename InputIt>
 std::string join(InputIt first, InputIt last, const std::string &delim = ", ") {
-    return join<InputIt, std::string>(first, last, [](const std::string &str) {return str;}, delim);
+    return join<InputIt, std::string>(
+        first, last, [](const std::string &str) {return str;}, delim);
 }
 #endif
