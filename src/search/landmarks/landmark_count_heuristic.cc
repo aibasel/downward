@@ -14,6 +14,7 @@
 #include "../task_utils/task_properties.h"
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -248,7 +249,44 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
 
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Landmark-count heuristic", "");
+    parser.document_synopsis(
+        "Landmark-count heuristic",
+        "For the inadmissible variant see the papers" +
+        utils::format_paper_reference(
+            {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
+            "Landmarks Revisited",
+            "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
+            "Proceedings of the 23rd AAAI Conference on Artificial "
+            "Intelligence (AAAI 2008)",
+            "975-982",
+            "AAAI Press 2008") +
+        "and" +
+        utils::format_paper_reference(
+            {"Silvia Richter", "Matthias Westphal"},
+            "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
+            "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
+            "Journal of Artificial Intelligence Research 39",
+            "127-177",
+            "AAAI Press 2010") +
+        "For the admissible variant see the papers" +
+        utils::format_paper_reference(
+            {"Erez Karpas", "Carmel Domshlak"},
+            "Cost-Optimal Planning with Landmarks",
+            "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
+            "Proceedings of the 21st International Joint Conference on "
+            "Artificial Intelligence (IJCAI 2009)",
+            "1728-1733",
+            "AAAI Press 2009") +
+        "and" +
+        utils::format_paper_reference(
+            {"Emil Keyder and Silvia Richter and Malte Helmert"},
+            "Sound and Complete Landmarks for And/Or Graphs",
+            "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
+            "Proceedings of the 19th European Conference on Artificial "
+            "Intelligence (ECAI 2010)",
+            "335-340",
+            "IOS Press 2010"));
+
     parser.document_note(
         "Optimal search",
         "When using landmarks for optimal search (``admissible=true``), "
@@ -259,15 +297,25 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "To use ``optimal=true``, you must build the planner with LP support. "
         "See LPBuildInstructions.");
     parser.document_note(
-        "Preferred operators",
-        "The original implementation described in the literature computed two"
-        " kinds of preferred operators: 1) If there is an applicable operator"
-        " that reaches a landmark, all such operators are preferred. 2) If no"
-        " such operators exist, make an FF-style relaxed exploration towards"
-        " the nearest landmarks (according to the landmark orderings) and use"
-        " the preferred operators of that exploration. Since the preferred"
-        " operators of type 2 can also be computed directly with the FF"
-        " heuristic, we only compute preferred operators of type 1 here.");
+        "Differences to the literature",
+        "This heuristic differs from the description in the literature (see "
+        "references above) in the set of preferred operators computed. The "
+        "original implementation described in the literature computes two "
+        "kinds of preferred operators:\n\n"
+        "+ If there is an applicable operator that reaches a landmark, all "
+        "such operators are preferred.\n"
+        "+ If no such operators exist, perform an FF-style relaxed exploration "
+        "towards the nearest landmarks (according to the landmark orderings) "
+        "and use the preferred operators of this exploration.\n\n\n"
+        "Our implementation of the heuristic only considers preferred "
+        "operators of the first type and does not include the second type. The "
+        "rationale for this change is that it reduces code complexity and "
+        "helps more cleanly separate landmark-based and FF-based computations "
+        "in LAMA-like planner configurations. In our experiments, only "
+        "considering preferred operators of the first type reduces performance "
+        "when using the heuristic and its preferred operators in isolation but "
+        "improves performance when using this heuristic in conjunction with "
+        "the FF heuristic, as in LAMA-like planner configurations.");
 
     parser.document_language_support("action costs",
                                      "supported");
