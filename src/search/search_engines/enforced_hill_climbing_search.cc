@@ -76,8 +76,8 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
     const GlobalState &initial_state = state_registry.get_initial_state();
-    for (Evaluator *path_pendent_evaluator : path_dependent_evaluators) {
-        path_pendent_evaluator->notify_initial_state(initial_state);
+    for (Evaluator *path_dependent_evaluator : path_dependent_evaluators) {
+        path_dependent_evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
                          preferred_operator_evaluators.end(), evaluator) !=

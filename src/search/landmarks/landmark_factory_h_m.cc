@@ -344,15 +344,15 @@ void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp 
     for (size_t i = 0; i < op.cond_noops.size(); ++i) {
         cond_pc.clear();
         cond_eff.clear();
+        int pm_fluent_id;
         size_t j;
         cout << "PC:" << endl;
-        for (j = 0; op.cond_noops[i][j] != -1; ++j) {
-            int pm_fluent = op.cond_noops[i][j];
-            print_fluentset(variables, h_m_table_[pm_fluent].fluents);
+        for (j = 0; (pm_fluent_id = op.cond_noops[i][j]) != -1; ++j) {
+            print_fluentset(variables, h_m_table_[pm_fluent_id].fluents);
             cout << endl;
 
-            for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
-                cond_pc.insert(h_m_table_[pm_fluent].fluents[k]);
+            for (size_t k = 0; k < h_m_table_[pm_fluent_id].fluents.size(); ++k) {
+                cond_pc.insert(h_m_table_[pm_fluent_id].fluents[k]);
             }
         }
         // advance to effects section
@@ -475,9 +475,9 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
         // set unsatisfied pc count for op
         unsat_pc_count_[op.get_id()].first = pc_subsets.size();
 
-        for (const FluentSet &subset : pc_subsets) {
-            assert(set_indices_.find(subset) != set_indices_.end());
-            set_index = set_indices_[subset];
+        for (const FluentSet &pc_subset : pc_subsets) {
+            assert(set_indices_.find(pc_subset) != set_indices_.end());
+            set_index = set_indices_[pc_subset];
             pm_op.pc.push_back(set_index);
             h_m_table_[set_index].pc_for.emplace_back(op.get_id(), -1);
         }

@@ -54,7 +54,7 @@ CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
     helpful_transition_cache.resize(var_count);
 
     for (int var = 0; var < var_count; ++var) {
-        int required_cache_size = compute_required_cache_size(var);
+        int required_cache_size = compute_required_cache_size(var, depends_on[var]);
         if (required_cache_size != -1) {
             //  cout << "Cache for var " << var << ": "
             //       << required_cache_size << " entries" << endl;
@@ -69,13 +69,14 @@ CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
 CGCache::~CGCache() {
 }
 
-int CGCache::compute_required_cache_size(int var_id) const {
+int CGCache::compute_required_cache_size(
+    int var_id, const vector<int> &var_depends_on) const {
     /*
       Compute the size of the cache required for variable with ID "var_id",
-      which depends on the variables in "depends_on[var_id]". Requires that the
-      caches for all variables in "depends_on[var_id]" have already been
-      allocated. Returns -1 if the variable cannot be cached because the
-      required cache size would be too large.
+      which depends on the variables in "var_depends_on". Requires that the
+      caches for all variables in "var_depends_on" have already been allocated.
+      Returns -1 if the variable cannot be cached because the required cache
+      size would be too large.
     */
 
     const int MAX_CACHE_SIZE = 1000000;
@@ -88,7 +89,7 @@ int CGCache::compute_required_cache_size(int var_id) const {
 
     int required_size = var_domain * (var_domain - 1);
 
-    for (int depend_var_id : depends_on[var_id]) {
+    for (int depend_var_id : var_depends_on) {
         int depend_var_domain = variables[depend_var_id].get_domain_size();
 
         /*
