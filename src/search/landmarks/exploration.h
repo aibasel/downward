@@ -3,17 +3,15 @@
 
 #include "util.h"
 
-#include "../abstract_task.h"
-#include "../heuristic.h"
+#include "../task_proxy.h"
 
 #include "../algorithms/priority_queues.h"
 
 #include <cassert>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-class OperatorProxy;
 
 namespace landmarks {
 struct ExProposition;
@@ -85,48 +83,31 @@ struct ExUnaryOperator {
     }
 };
 
-class Exploration : public Heuristic {
+class Exploration {
     static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
 
-    using RelaxedPlan = std::set<int>;
-    RelaxedPlan relaxed_plan;
+    const TaskProxy task_proxy;
+
     std::vector<ExUnaryOperator> unary_operators;
     std::vector<std::vector<ExProposition>> propositions;
     std::vector<ExProposition *> goal_propositions;
     std::vector<ExProposition *> termination_propositions;
-
     priority_queues::AdaptiveQueue<ExProposition *> prop_queue;
     bool did_write_overflow_warning;
 
-    bool heuristic_recomputation_needed;
-
     void build_unary_operators(const OperatorProxy &op);
-    void simplify();
-
     void setup_exploration_queue(const State &state,
                                  const std::vector<FactPair> &excluded_props,
                                  const std::unordered_set<int> &excluded_op_ids,
                                  bool use_h_max);
-    void setup_exploration_queue(const State &state, bool h_max) {
-        std::vector<FactPair> excluded_props;
-        std::unordered_set<int> excluded_op_ids;
-        setup_exploration_queue(state, excluded_props, excluded_op_ids, h_max);
-    }
+    void setup_exploration_queue(const State &state, bool h_max);
     void relaxed_exploration(bool use_h_max, bool level_out);
-    void prepare_heuristic_computation(const State &state);
-    void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
-
-    int compute_hsp_add_heuristic();
-    int compute_ff_heuristic(const State &state);
-
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
-protected:
-    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
-    explicit Exploration(const options::Options &opts);
+    explicit Exploration(const TaskProxy &task_proxy);
 
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
                                             std::vector<std::unordered_map<FactPair, int>> &lvl_op,

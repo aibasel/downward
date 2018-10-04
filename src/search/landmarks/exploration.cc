@@ -31,8 +31,8 @@ namespace landmarks {
 */
 
 // Construction and destruction
-Exploration::Exploration(const options::Options &opts)
-    : Heuristic(opts),
+Exploration::Exploration(const TaskProxy &task_proxy)
+    : task_proxy(task_proxy),
       did_write_overflow_warning(false) {
     cout << "Initializing Exploration..." << endl;
 
@@ -68,9 +68,6 @@ Exploration::Exploration(const options::Options &opts)
         for (ExProposition *pre : op.precondition)
             pre->precondition_of.push_back(&op);
     }
-    // Set flag that before heuristic values can be used, computation
-    // (relaxed exploration) needs to be done
-    heuristic_recomputation_needed = true;
 }
 
 void Exploration::increase_cost(int &cost, int amount) {
@@ -172,6 +169,12 @@ void Exploration::setup_exploration_queue(const State &state,
     }
 }
 
+void Exploration::setup_exploration_queue(const State &state, bool h_max) {
+    vector<FactPair> excluded_props;
+    unordered_set<int> excluded_op_ids;
+    setup_exploration_queue(state, excluded_props, excluded_op_ids, h_max);
+}
+
 void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
     int unsolved_goals = termination_propositions.size();
     while (!prop_queue.empty()) {
@@ -237,61 +240,6 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
                prop->h_add_cost <= cost);
 }
 
-
-int Exploration::compute_hsp_add_heuristic() {
-    int total_cost = 0;
-    for (const ExProposition *goal : goal_propositions) {
-        int prop_cost = goal->h_add_cost;
-        if (prop_cost == -1)
-            return DEAD_END;
-        increase_cost(total_cost, prop_cost);
-    }
-    return total_cost;
-}
-
-
-int Exploration::compute_ff_heuristic(const State &state) {
-    int h_add_heuristic = compute_hsp_add_heuristic();
-    if (h_add_heuristic == DEAD_END) {
-        return DEAD_END;
-    } else {
-        relaxed_plan.clear();
-        // Collecting the relaxed plan also marks helpful actions as preferred.
-        for (ExProposition *goal : goal_propositions)
-            collect_relaxed_plan(goal, relaxed_plan, state);
-        int cost = 0;
-        for (int op_or_axiom_id : relaxed_plan)
-            cost += get_operator_or_axiom(task_proxy, op_or_axiom_id).get_cost();
-        return cost;
-    }
-}
-
-void Exploration::collect_relaxed_plan(ExProposition *goal,
-                                       RelaxedPlan &relaxed_plan, const State &state) {
-    if (!goal->marked) { // Only consider each subgoal once.
-        goal->marked = true;
-        ExUnaryOperator *unary_op = goal->reached_by;
-        if (unary_op) { // We have not yet chained back to a start node.
-            for (ExProposition *pre : unary_op->precondition)
-                collect_relaxed_plan(pre, relaxed_plan, state);
-            int op_or_axiom_id = unary_op->op_or_axiom_id;
-            bool added_to_relaxed_plan = false;
-            /* Using axioms in the relaxed plan actually improves
-               performance in many domains. We should look into this. */
-            added_to_relaxed_plan = relaxed_plan.insert(op_or_axiom_id).second;
-
-            assert(unary_op->depth != -1);
-            if (added_to_relaxed_plan
-                && unary_op->h_add_cost == unary_op->base_cost
-                && unary_op->depth == 0
-                && !unary_op->is_induced_by_axiom(task_proxy)) {
-                set_preferred(get_operator_or_axiom(task_proxy, op_or_axiom_id));
-                assert(task_properties::is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
-            }
-        }
-    }
-}
-
 void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
                                                      vector<unordered_map<FactPair, int>> &lvl_op,
                                                      bool level_out,
@@ -336,20 +284,5 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
                 lvl_op[op.op_or_axiom_id].find(effect)->second = new_lvl;
         }
     }
-    heuristic_recomputation_needed = true;
-}
-
-void Exploration::prepare_heuristic_computation(const State &state) {
-    setup_exploration_queue(state, false);
-    relaxed_exploration(false, false);
-    heuristic_recomputation_needed = false;
-}
-
-int Exploration::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
-    if (heuristic_recomputation_needed) {
-        prepare_heuristic_computation(state);
-    }
-    return compute_ff_heuristic(state);
 }
 }
