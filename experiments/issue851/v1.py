@@ -67,6 +67,7 @@ perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False
 ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, functions=[geometric_mean])
 ms_atomic_construction_time = Attribute('ms_atomic_construction_time', absolute=False, min_wins=True, functions=[geometric_mean])
 ms_abstraction_constructed = Attribute('ms_abstraction_constructed', absolute=True, min_wins=False)
+ms_atomic_fts_constructed = Attribute('ms_atomic_fts_constructed', absolute=True, min_wins=False)
 ms_final_size = Attribute('ms_final_size', absolute=False, min_wins=True)
 ms_out_of_memory = Attribute('ms_out_of_memory', absolute=True, min_wins=True)
 ms_out_of_time = Attribute('ms_out_of_time', absolute=True, min_wins=True)
@@ -79,6 +80,7 @@ extra_attributes = [
     ms_construction_time,
     ms_atomic_construction_time,
     ms_abstraction_constructed,
+    ms_atomic_fts_constructed,
     ms_final_size,
     ms_out_of_memory,
     ms_out_of_time,
@@ -88,6 +90,15 @@ extra_attributes = [
 attributes = exp.DEFAULT_TABLE_ATTRIBUTES
 attributes.extend(extra_attributes)
 
-exp.add_comparison_table_step(attributes=attributes)
+# TODO: remove this filter when re-running experiments
+def check_atomic_fts_constructed(run):
+    ms_atomic_construction_time = run.get('ms_atomic_construction_time')
+    ms_atomic_fts_constructed = False
+    if ms_atomic_construction_time is not None:
+        ms_atomic_fts_constructed = True
+    run['ms_atomic_fts_constructed'] = ms_atomic_fts_constructed
+    return run
+
+exp.add_comparison_table_step(attributes=attributes,filter=[check_atomic_fts_constructed])
 
 exp.run_steps()
