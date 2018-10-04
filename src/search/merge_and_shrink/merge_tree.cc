@@ -87,18 +87,18 @@ MergeTreeNode *MergeTreeNode::get_parent_of_ts_index(int index) {
         return this;
     }
 
-    MergeTreeNode *parent = nullptr;
+    MergeTreeNode *result = nullptr;
     if (left_child) {
-        parent = left_child->get_parent_of_ts_index(index);
+        result = left_child->get_parent_of_ts_index(index);
     }
-    if (parent) {
-        return parent;
+    if (result) {
+        return result;
     }
 
     if (right_child) {
-        parent = right_child->get_parent_of_ts_index(index);
+        result = right_child->get_parent_of_ts_index(index);
     }
-    return parent;
+    return result;
 }
 
 int MergeTreeNode::compute_num_internal_nodes() const {

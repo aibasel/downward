@@ -23,13 +23,13 @@ Node::~Node() {
     }
 }
 
-pair<Node *, Node *> Node::split(int var, const vector<int> &values) {
+pair<Node *, Node *> Node::split(int variable, const vector<int> &values) {
     Node *helper = this;
     right_child = new Node();
-    for (int value : values) {
+    for (int val : values) {
         Node *new_helper = new Node();
-        helper->var = var;
-        helper->value = value;
+        helper->var = variable;
+        helper->value = val;
         helper->left_child = new_helper;
         helper->right_child = right_child;
         assert(helper->is_split());
@@ -39,9 +39,9 @@ pair<Node *, Node *> Node::split(int var, const vector<int> &values) {
     return make_pair(helper, right_child);
 }
 
-Node *Node::get_child(int value) const {
+Node *Node::get_child(int val) const {
     assert(is_split());
-    if (value == this->value)
+    if (val == value)
         return right_child;
     return left_child;
 }
