@@ -2,7 +2,6 @@
 
 #include "../option_parser.h"
 
-#include "../landmarks/exploration.h"
 #include "../landmarks/landmark_factory_h_m.h"
 #include "../landmarks/landmark_graph.h"
 
