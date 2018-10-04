@@ -258,6 +258,16 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "Note",
         "To use ``optimal=true``, you must build the planner with LP support. "
         "See LPBuildInstructions.");
+    parser.document_note(
+        "Preferred operators",
+        "The original implementation described in the literature computed two"
+        " kinds of preferred operators: 1) If there is an applicable operator"
+        " that reaches a landmark, all such operators are preferred. 2) If no"
+        " such operators exist, make an FF-style relaxed exploration towards"
+        " the nearest landmarks (according to the landmark orderings) and use"
+        " the preferred operators of that exploration. Since the preferred"
+        " operators of type 2 can also be computed directly with the FF"
+        " heuristic, we only compute preferred operators of type 1 here.");
 
     parser.document_language_support("action costs",
                                      "supported");
