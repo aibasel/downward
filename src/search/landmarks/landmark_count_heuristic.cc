@@ -28,7 +28,6 @@ namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
-      ff_search_disjunctive_lms(false),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
       admissible(opts.get<bool>("admissible")),
