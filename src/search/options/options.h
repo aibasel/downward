@@ -30,17 +30,17 @@ public:
     T get(const std::string &key) const {
         const auto it = storage.find(key);
         if (it == storage.end()) {
-            ABORT("Attempt to retrieve nonexisting object of name " +
-                  key + " (type: " + typeid(T).name() + ")\n" +
-                  get_type_correction_string(typeid(T).name()));
+            ABORT_WITH_DEMANGLING_HINT(
+                "Attempt to retrieve nonexisting object of name " + key +
+                " (type: " + typeid(T).name() + ")");
         }
         try {
             T result = any_cast<T>(it->second);
             return result;
         } catch (const BadAnyCast &) {
-            ABORT("Invalid conversion while retrieving config options!\n" +
-                  key + " is not of type " + typeid(T).name() + "\n" +
-                  get_type_correction_string(typeid(T).name()));
+            ABORT_WITH_DEMANGLING_HINT(
+                "Invalid conversion while retrieving config options!\n" +
+                key + " is not of type " + typeid(T).name());
         }
     }
 

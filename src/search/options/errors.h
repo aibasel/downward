@@ -6,6 +6,17 @@
 #include <ostream>
 #include <string>
 
+#define ABORT_WITH_DEMANGLING_HINT(msg) \
+    ( \
+        (std::cerr << "Critical error in file " << __FILE__ \
+                   << ", line " << __LINE__ << ": " << std::endl \
+                   << (msg) << std::endl \
+                   << "To retrieve the demangled C++ type for gcc/clang, you " \
+                   << "can call \nc++filt -t [NAME]"), \
+        (abort()), \
+        (void)0 \
+    )
+
 namespace options {
 struct ArgError {
     std::string msg;
@@ -27,8 +38,6 @@ struct ParseError {
 
     friend std::ostream &operator<<(std::ostream &out, const ParseError &parse_error);
 };
-
-std::string get_type_correction_string(const std::string &type);
 }
 
 #endif

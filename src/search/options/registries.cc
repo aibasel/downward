@@ -68,9 +68,7 @@ bool PluginTypeInfo::operator<(const PluginTypeInfo &other) const {
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
     if (plugin_type_infos.count(info.get_type())) {
-        cerr << "duplicate type in registry: "
-             << info.get_type().name() << endl;
-        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+        ABORT(string("duplicate type in registry: ") + info.get_type().name());
     }
     plugin_type_infos.insert(make_pair(info.get_type(), info));
 }
@@ -94,9 +92,7 @@ vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
 
 void Registry::insert_group_info(const PluginGroupInfo &info) {
     if (plugin_group_infos.count(info.group_id)) {
-        cerr << "duplicate group in registry: "
-             << info.group_id << endl;
-        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+        ABORT("duplicate group in registry: " + info.group_id);
     }
     plugin_group_infos[info.group_id] = info;
 }
@@ -110,10 +106,8 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
 }
 
 static void print_initialization_errors(const vector<string> &errors) {
-    cerr << endl << "Plugin initialization errors:" << endl
-         << join(errors.begin(), errors.end(), "\n") << endl << endl
-         << get_type_correction_string("[TYPE]") << endl;
-    utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    ABORT_WITH_DEMANGLING_HINT(
+        "Plugin initialization errors:\n" + join(errors, "\n"));
 }
 
 Registry::Registry(const RegistryDataCollection &collection) {
@@ -167,9 +161,8 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple PluginTypePlugins with the same name: " +
             type_name + " (types: " +
-            join<vector<type_index>::const_iterator, type_index>(
-                types.begin(), types.end(),
-                [](const type_index &type) {return type.name();}) + ")";
+            join(map_to_vector<type_index, string>(
+                     types, [](const type_index &type) {return type.name();}));
         });
 
     generate_duplicate_errors<type_index, vector<string>>(
@@ -177,7 +170,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
         [](const vector<string> &names) {return names.size() > 1;},
         [](const type_index &type, const vector<string> &names) {
             return "Multiple PluginTypePlugins with the same type: " +
-            string(type.name()) + " (names: " + join(names.begin(), names.end()) + ")";
+            string(type.name()) + " (names: " + join(names) + ")";
         });
 }
 
@@ -237,9 +230,9 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple Plugins: " + type_name + " (types: " +
-            join<vector<type_index>::const_iterator, type_index>(
-                types.begin(), types.end(), 
-                [](const type_index &type) {return type.name();}) + ")";
+            join(map_to_vector<type_index, string>(
+                     types, [](const type_index &type) {return type.name();})) +
+            ")";
         });
 
     sort(other_plugin_errors.begin(), other_plugin_errors.end());
@@ -257,8 +250,7 @@ void Registry::insert_plugin(
 void Registry::insert_factory(const string &key, const Any &factory,
                               const type_index &type) {
     if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
-        cerr << "duplicate key in registry: " << key << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        ABORT("duplicate key in registry: " + key + "\n");
     }
     plugin_factories[type][key] = factory;
 }
