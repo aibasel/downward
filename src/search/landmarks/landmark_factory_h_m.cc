@@ -344,10 +344,10 @@ void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp 
     for (size_t i = 0; i < op.cond_noops.size(); ++i) {
         cond_pc.clear();
         cond_eff.clear();
-        int pm_fluent;
         size_t j;
         cout << "PC:" << endl;
-        for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
+        for (j = 0; op.cond_noops[i][j] != -1; ++j) {
+            int pm_fluent = op.cond_noops[i][j];
             print_fluentset(variables, h_m_table_[pm_fluent].fluents);
             cout << endl;
 
@@ -475,9 +475,9 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
         // set unsatisfied pc count for op
         unsat_pc_count_[op.get_id()].first = pc_subsets.size();
 
-        for (const FluentSet &pc : pc_subsets) {
-            assert(set_indices_.find(pc) != set_indices_.end());
-            set_index = set_indices_[pc];
+        for (const FluentSet &subset : pc_subsets) {
+            assert(set_indices_.find(subset) != set_indices_.end());
+            set_index = set_indices_[subset];
             pm_op.pc.push_back(set_index);
             h_m_table_[set_index].pc_for.emplace_back(op.get_id(), -1);
         }
@@ -487,9 +487,9 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
         get_m_sets(variables, m_, eff_subsets, eff);
         pm_op.eff.reserve(eff_subsets.size());
 
-        for (const FluentSet &eff : eff_subsets) {
-            assert(set_indices_.find(eff) != set_indices_.end());
-            set_index = set_indices_[eff];
+        for (const FluentSet &eff_subset : eff_subsets) {
+            assert(set_indices_.find(eff_subset) != set_indices_.end());
+            set_index = set_indices_[eff_subset];
             pm_op.eff.push_back(set_index);
         }
 
@@ -900,7 +900,6 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
 void LandmarkFactoryHM::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &) {
     TaskProxy task_proxy(*task);
-    int set_index;
     initialize(task_proxy);
     compute_h_m_landmarks(task_proxy);
     // now construct landmarks graph
@@ -912,7 +911,7 @@ void LandmarkFactoryHM::generate_landmarks(
     for (const FluentSet &goal_subset : goal_subsets) {
         assert(set_indices_.find(goal_subset) != set_indices_.end());
 
-        set_index = set_indices_[goal_subset];
+        int set_index = set_indices_[goal_subset];
 
         if (h_m_table_[set_index].level == -1) {
             cout << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;

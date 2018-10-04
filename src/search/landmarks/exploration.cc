@@ -291,18 +291,18 @@ int Exploration::compute_ff_heuristic(const State &state) {
 }
 
 void Exploration::collect_relaxed_plan(ExProposition *goal,
-                                       RelaxedPlan &relaxed_plan, const State &state) {
+                                       RelaxedPlan &relaxed_plan_, const State &state) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         ExUnaryOperator *unary_op = goal->reached_by;
         if (unary_op) { // We have not yet chained back to a start node.
             for (ExProposition *pre : unary_op->precondition)
-                collect_relaxed_plan(pre, relaxed_plan, state);
+                collect_relaxed_plan(pre, relaxed_plan_, state);
             int op_or_axiom_id = unary_op->op_or_axiom_id;
             bool added_to_relaxed_plan = false;
             /* Using axioms in the relaxed plan actually improves
                performance in many domains. We should look into this. */
-            added_to_relaxed_plan = relaxed_plan.insert(op_or_axiom_id).second;
+            added_to_relaxed_plan = relaxed_plan_.insert(op_or_axiom_id).second;
 
             assert(unary_op->depth != -1);
             if (added_to_relaxed_plan
@@ -379,18 +379,18 @@ int Exploration::compute_heuristic(const GlobalState &global_state) {
 
 
 void Exploration::collect_helpful_actions(
-    ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state) {
+    ExProposition *goal, RelaxedPlan &relaxed_plan_, const State &state) {
     // This is the same as collect_relaxed_plan, except that preferred operators
     // are saved in exported_ops rather than preferred_operators
 
     ExUnaryOperator *unary_op = goal->reached_by;
     if (unary_op) { // We have not yet chained back to a start node.
         for (ExProposition *pre : unary_op->precondition)
-            collect_helpful_actions(pre, relaxed_plan, state);
+            collect_helpful_actions(pre, relaxed_plan_, state);
         int op_or_axiom_id = unary_op->op_or_axiom_id;
         bool added_to_relaxed_plan = false;
         if (!unary_op->is_induced_by_axiom(task_proxy)) {
-            added_to_relaxed_plan = relaxed_plan.insert(op_or_axiom_id).second;
+            added_to_relaxed_plan = relaxed_plan_.insert(op_or_axiom_id).second;
         }
         if (added_to_relaxed_plan
             && unary_op->h_add_cost == unary_op->base_cost

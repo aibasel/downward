@@ -77,7 +77,7 @@ public:
       the right child as their right child and the next helper node as
       their left child.
     */
-    std::pair<Node *, Node *> split(int var, const std::vector<int> &values);
+    std::pair<Node *, Node *> split(int variable, const std::vector<int> &values);
 
     bool is_split() const {
         assert((!left_child && !right_child &&
