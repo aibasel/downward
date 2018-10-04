@@ -17,6 +17,15 @@ def check_ms_constructed(content, props):
 
 parser.add_function(check_ms_constructed)
 
+def check_atomic_fts_constructed(content, props):
+    ms_atomic_construction_time = props.get('ms_atomic_construction_time')
+    ms_atomic_fts_constructed = False
+    if ms_atomic_construction_time is not None:
+        ms_atomic_fts_constructed = True
+    props['ms_atomic_fts_constructed'] = ms_atomic_fts_constructed
+
+parser.add_function(check_ms_constructed)
+
 def check_planner_exit_reason(content, props):
     ms_abstraction_constructed = props.get('ms_abstraction_constructed')
     error = props.get('error')
