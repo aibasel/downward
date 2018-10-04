@@ -18,7 +18,6 @@ class LandmarkStatusManager;
 class LandmarkCountHeuristic : public Heuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
     const bool use_preferred_operators;
-    const bool ff_search_disjunctive_lms;
     const bool conditional_effects_supported;
     const bool admissible;
     const bool dead_ends_reliable;
