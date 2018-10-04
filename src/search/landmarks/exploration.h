@@ -7,8 +7,6 @@
 
 #include "../algorithms/priority_queues.h"
 
-#include <cassert>
-#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -100,7 +98,6 @@ class Exploration {
                                  const std::vector<FactPair> &excluded_props,
                                  const std::unordered_set<int> &excluded_op_ids,
                                  bool use_h_max);
-    void setup_exploration_queue(const State &state, bool h_max);
     void relaxed_exploration(bool use_h_max, bool level_out);
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);

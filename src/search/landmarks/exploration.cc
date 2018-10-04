@@ -169,12 +169,6 @@ void Exploration::setup_exploration_queue(const State &state,
     }
 }
 
-void Exploration::setup_exploration_queue(const State &state, bool h_max) {
-    vector<FactPair> excluded_props;
-    unordered_set<int> excluded_op_ids;
-    setup_exploration_queue(state, excluded_props, excluded_op_ids, h_max);
-}
-
 void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
     int unsolved_goals = termination_propositions.size();
     while (!prop_queue.empty()) {

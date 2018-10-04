@@ -132,15 +132,11 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
 
     int h = get_heuristic_value(global_state);
 
-    if (!use_preferred_operators) {
-        return h;
+    if (use_preferred_operators) {
+        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
+        LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
+        generate_helpful_actions(state, reached_lms);
     }
-
-    /* Try generating helpful actions (those that lead to new leaf LM in the
-       next step). */
-    BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
-    LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
-    generate_helpful_actions(state, reached_lms);
 
     return h;
 }
