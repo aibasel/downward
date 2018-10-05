@@ -504,7 +504,7 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
             {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
             "Efficient Implementation of Pattern Database Heuristics for"
             " Classical Planning",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
             "Proceedings of the Fifth Annual Symposium on Combinatorial"
             " Search (SoCS 2012)",
             "105-111",
@@ -562,7 +562,7 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
         "are relevant to the variables already included in the pattern by "
         "analyzing causal graphs. There is a mistake in the paper that leads "
         "to some relevant neighbouring patterns being ignored. See the [errata "
-        "http://ai.cs.unibas.ch/research/publications.html] for details. This "
+        "https://ai.dmi.unibas.ch/research/publications.html] for details. This "
         "mistake has been addressed in this implementation. "
         "The second approach described in the paper (statistical confidence "
         "interval) is not applicable to this implementation, as it doesn't use "
