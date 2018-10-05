@@ -19,17 +19,34 @@
 namespace options {
 class OptionParser;
 
-using PluginTypeData = std::tuple<std::string /*type_name*/,
-                                  std::string /*documentation*/,
-                                  std::type_index>;
-using PluginGroupData = std::tuple<std::string /*group_id*/,
-                                   std::string /*doc_title*/>;
-using PluginData = std::tuple<std::string /*key*/,
-                              Any /*factory*/,
-                              std::string /*group*/,
-                              PluginTypeNameGetter /*type_name_factory*/,
-                              DocFactory /*doc_factory*/,
-                              std::type_index>;
+struct PluginTypeData {
+    const std::string type_name;
+    const std::string documentation;
+    const std::type_index type_index;
+
+    PluginTypeData(const std::string type_name, const std::string documentation,
+                   const std::type_index type_index);
+};
+
+struct PluginGroupData {
+    const std::string group_id;
+    const std::string doc_title;
+
+    PluginGroupData(const std::string group_id, const std::string doc_title);
+};
+
+struct PluginData {
+    const std::string key;
+    const Any factory;
+    const std::string group;
+    const PluginTypeNameGetter type_name_factory;
+    const DocFactory doc_factory;
+    const std::type_index type_index;
+
+    PluginData(const std::string key, const Any factory, const std::string group,
+               const PluginTypeNameGetter type_name_factory,
+               const DocFactory doc_factory, const std::type_index type_index);
+};
 
 class RegistryDataCollection {
     std::vector<PluginTypeData> plugin_types;
