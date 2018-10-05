@@ -84,7 +84,7 @@ struct ExUnaryOperator {
 class Exploration {
     static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
 
-    const TaskProxy task_proxy;
+    TaskProxy task_proxy;
 
     std::vector<ExUnaryOperator> unary_operators;
     std::vector<std::vector<ExProposition>> propositions;
