@@ -4,9 +4,10 @@
 #include "errors.h"
 #include "option_parser.h"
 #include "predefinitions.h"
-#include "string_utils.h"
 
 #include "../search_engine.h"
+
+#include "../utils/strings.h"
 
 #include <vector>
 
@@ -17,13 +18,23 @@ class LandmarkFactory;
 using namespace std;
 
 namespace options {
+static int parse_int_arg(const string &name, const string &value) {
+    try {
+        return stoi(value);
+    } catch (invalid_argument &) {
+        throw ArgError("argument for " + name + " must be an integer");
+    } catch (out_of_range &) {
+        throw ArgError("argument for " + name + " is out of range");
+    }
+}
+
 /*
   Predefine landmarks and heuristics.
 */
 
 static void predefine_evaluator(const string &arg, Registry &registry,
                                 Predefinitions &predefinitions, bool dry_run) {
-    pair<string, string> predefinition = split(arg);
+    pair<string, string> predefinition = utils::split(arg);
     OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
     predefinitions.predefine(predefinition.first,
                              parser.start_parsing<shared_ptr<Evaluator>>());
@@ -32,7 +43,7 @@ static void predefine_evaluator(const string &arg, Registry &registry,
 
 static void predefine_lmgraph(const string &arg, Registry &registry,
                               Predefinitions &predefinitions, bool dry_run) {
-    pair<string, string> predefinition = split(arg);
+    pair<string, string> predefinition = utils::split(arg);
     OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
     predefinitions.predefine(predefinition.first,
                              parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
@@ -53,40 +64,40 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
     */
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
-        string arg = sanitize_string(args[i]);
+        string arg = utils::sanitize_string(args[i]);
         bool is_last = (i == args.size() - 1);
         if (arg == "--evaluator") {
             if (is_last)
                 throw ArgError("missing argument after --evaluator");
             ++i;
-            predefine_evaluator(sanitize_string(args[i]), registry, predefinitions,
-                                dry_run);
+            predefine_evaluator(utils::sanitize_string(args[i]), registry,
+                                predefinitions, dry_run);
         } else if (arg == "--heuristic") {
             // deprecated alias for --evaluator
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine_evaluator(sanitize_string(args[i]), registry, predefinitions,
-                                dry_run);
+            predefine_evaluator(utils::sanitize_string(args[i]), registry,
+                                predefinitions, dry_run);
         } else if (arg == "--landmarks") {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
-            predefine_lmgraph(sanitize_string(args[i]), registry, predefinitions,
-                              dry_run);
+            predefine_lmgraph(utils::sanitize_string(args[i]), registry,
+                              predefinitions, dry_run);
         } else if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
-            OptionParser parser(sanitize_string(args[i]), registry, predefinitions,
-                                dry_run);
+            OptionParser parser(utils::sanitize_string(args[i]), registry,
+                                predefinitions, dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
             vector<string> plugin_names;
             for (size_t j = i + 1; j < args.size(); ++j) {
-                string help_arg = sanitize_string(args[j]);
+                string help_arg = utils::sanitize_string(args[j]);
                 if (help_arg == "--txt2tags") {
                     txt2tags = true;
                 } else {
@@ -142,7 +153,7 @@ shared_ptr<SearchEngine> parse_cmd_line(
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
-        string arg = sanitize_string(argv[i]);
+        string arg = utils::sanitize_string(argv[i]);
 
         if (arg == "--if-unit-cost") {
             active = is_unit_cost;
