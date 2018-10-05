@@ -87,7 +87,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         + utils::format_paper_reference(
             {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
             "A Stubborn Set Algorithm for Optimal Planning",
-            "http://ai.cs.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
+            "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
             "Proceedings of the 20th European Conference on Artificial Intelligence "
             "(ECAI 2012)",
             "891-892",

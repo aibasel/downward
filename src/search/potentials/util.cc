@@ -36,7 +36,7 @@ string get_admissible_potentials_reference() {
     return "The algorithm is based on" + utils::format_paper_reference(
         {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
         "New Optimization Functions for Potential Heuristics",
-        "http://ai.cs.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
+        "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
         "Proceedings of the 25th International Conference on"
         " Automated Planning and Scheduling (ICAPS 2015)",
         "193-201",
