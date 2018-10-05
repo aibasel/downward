@@ -46,7 +46,7 @@ struct ParseError {
 
 
 NO_RETURN extern void exit_with_demangling_hint(
-    const utils::ExitCode returncode, const std::string &type_name);
+    utils::ExitCode returncode, const std::string &type_name);
 }
 
 #endif

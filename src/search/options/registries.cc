@@ -11,6 +11,31 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
+PluginTypeData::PluginTypeData(const std::string type_name,
+                               const std::string documentation,
+                               const std::type_index type_index)
+    : type_name(type_name),
+      documentation(documentation),
+      type_index(type_index) { }
+
+PluginGroupData::PluginGroupData(const std::string group_id,
+                                 const std::string doc_title)
+    : group_id(group_id),
+      doc_title(doc_title) { }
+
+PluginData::PluginData(const std::string key,
+                       const Any factory,
+                       const std::string group,
+                       const PluginTypeNameGetter type_name_factory,
+                       const DocFactory doc_factory,
+                       const std::type_index type_index)
+    : key(key),
+      factory(factory),
+      group(group),
+      type_name_factory(type_name_factory),
+      doc_factory(doc_factory),
+      type_index(type_index) { }
+
 void RegistryDataCollection::insert_plugin_type_data(
     const string &type_name, const string &documentation, type_index type_index) {
     plugin_types.emplace_back(type_name, documentation, type_index);
@@ -146,9 +171,9 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
     for (const PluginTypeData &ptd : collection.get_plugin_type_data()) {
-        const string type_name = get<0>(ptd);
-        const string documentation = get<1>(ptd);
-        const type_index type = get<2>(ptd);
+        const string type_name = ptd.type_name;
+        const string documentation = ptd.documentation;
+        const type_index type = ptd.type_index;
 
         occurrences_names[type_name].push_back(type);
         occurrences_types[type].push_back(type_name);
@@ -183,8 +208,8 @@ void Registry::collect_plugin_groups(const RegistryDataCollection &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
     for (const PluginGroupData &pgd : collection.get_plugin_group_data()) {
-        const string group_id = get<0>(pgd);
-        const string doc_title = get<1>(pgd);
+        const string group_id = pgd.group_id;
+        const string doc_title = pgd.doc_title;
 
         occurrences[group_id]++;
         if (occurrences[group_id] == 1) {
@@ -207,12 +232,12 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
     for (const PluginData &pd : collection.get_plugin_data()) {
-        const string key = get<0>(pd);
-        const Any factory = get<1>(pd);
-        const string group = get<2>(pd);
-        const PluginTypeNameGetter type_name_factory = get<3>(pd);
-        const DocFactory doc_factory = get<4>(pd);
-        const type_index type = get<5>(pd);
+        const string key = pd.key;
+        const Any factory = pd.factory;
+        const string group = pd.group;
+        const PluginTypeNameGetter type_name_factory = pd.type_name_factory;
+        const DocFactory doc_factory = pd.doc_factory;
+        const type_index type = pd.type_index;
 
         if (!group.empty() && !plugin_group_infos.count(group)) {
             other_plugin_errors.push_back(
