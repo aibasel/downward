@@ -68,7 +68,9 @@ bool PluginTypeInfo::operator<(const PluginTypeInfo &other) const {
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
     if (plugin_type_infos.count(info.get_type())) {
-        ABORT(string("duplicate type in registry: ") + info.get_type().name());
+        cerr << "duplicate type in registry: "
+             << info.get_type().name() << endl;
+        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
     plugin_type_infos.insert(make_pair(info.get_type(), info));
 }
@@ -92,7 +94,9 @@ vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
 
 void Registry::insert_group_info(const PluginGroupInfo &info) {
     if (plugin_group_infos.count(info.group_id)) {
-        ABORT("duplicate group in registry: " + info.group_id);
+        cerr << "duplicate group in registry: "
+             << info.group_id << endl;
+        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
     plugin_group_infos[info.group_id] = info;
 }
@@ -106,8 +110,8 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
 }
 
 static void print_initialization_errors(const vector<string> &errors) {
-    ABORT_WITH_DEMANGLING_HINT(
-        "Plugin initialization errors:\n" + join(errors, "\n"));
+    cerr << "Plugin initialization errors:\n" + join(errors, "\n") << endl;
+    exit_with_demangling_hint(ExitCode::SEARCH_CRITICAL_ERROR, "[TYPE]");
 }
 
 Registry::Registry(const RegistryDataCollection &collection) {
@@ -162,7 +166,8 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
             return "Multiple PluginTypePlugins with the same name: " +
             type_name + " (types: " +
             join(map_to_vector<type_index, string>(
-                     types, [](const type_index &type) {return type.name();}));
+                     types, [](const type_index &type) {return type.name();}),
+                 ", ");
         });
 
     generate_duplicate_errors<type_index, vector<string>>(
@@ -170,7 +175,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
         [](const vector<string> &names) {return names.size() > 1;},
         [](const type_index &type, const vector<string> &names) {
             return "Multiple PluginTypePlugins with the same type: " +
-            string(type.name()) + " (names: " + join(names) + ")";
+            string(type.name()) + " (names: " + join(names, ", ") + ")";
         });
 }
 
@@ -231,7 +236,8 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple Plugins: " + type_name + " (types: " +
             join(map_to_vector<type_index, string>(
-                     types, [](const type_index &type) {return type.name();})) +
+                     types, [](const type_index &type) {return type.name();}),
+                 ", ") +
             ")";
         });
 
