@@ -488,7 +488,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "paper:" + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
@@ -498,7 +498,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann", "Raz Nissim"},
             "Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds"
             " in Factored State Spaces",
-            "http://ai.cs.unibas.ch/papers/helmert-et-al-jacm2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/helmert-et-al-jacm2014.pdf",
             "Journal of the ACM 61 (3)",
             "16:1-63",
             "2014") + "\n" +
@@ -510,7 +510,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "and SCC-DFP):" + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
