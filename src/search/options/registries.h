@@ -22,17 +22,17 @@ class OptionParser;
 struct PluginTypeData {
     const std::string type_name;
     const std::string documentation;
-    const std::type_index type_index;
+    const std::type_index type;
 
-    PluginTypeData(const std::string type_name, const std::string documentation,
-                   const std::type_index type_index);
+    PluginTypeData(std::string type_name, std::string documentation,
+                   std::type_index type);
 };
 
 struct PluginGroupData {
     const std::string group_id;
     const std::string doc_title;
 
-    PluginGroupData(const std::string group_id, const std::string doc_title);
+    PluginGroupData(std::string group_id, std::string doc_title);
 };
 
 struct PluginData {
@@ -41,11 +41,11 @@ struct PluginData {
     const std::string group;
     const PluginTypeNameGetter type_name_factory;
     const DocFactory doc_factory;
-    const std::type_index type_index;
+    const std::type_index type;
 
-    PluginData(const std::string key, const Any factory, const std::string group,
-               const PluginTypeNameGetter type_name_factory,
-               const DocFactory doc_factory, const std::type_index type_index);
+    PluginData(std::string key, Any factory, std::string group,
+               PluginTypeNameGetter type_name_factory,
+               DocFactory doc_factory, std::type_index type);
 };
 
 class RegistryDataCollection {
@@ -58,7 +58,7 @@ class RegistryDataCollection {
 public:
     void insert_plugin_type_data(
         const std::string &type_name, const std::string &documentation,
-        std::type_index type_index);
+        std::type_index type);
 
     void insert_plugin_group_data(
         const std::string &group_id, const std::string &doc_title);
@@ -66,7 +66,7 @@ public:
     void insert_plugin_data(
         const std::string &key, const Any &factory, const std::string &group,
         PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
-        std::type_index type_index);
+        std::type_index type);
 
     const std::vector<PluginTypeData> &get_plugin_type_data() const;
     const std::vector<PluginGroupData> &get_plugin_group_data() const;
