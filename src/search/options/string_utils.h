@@ -26,6 +26,7 @@ template<typename From, typename To, typename Collection>
 std::vector<To> map_to_vector(const Collection &collection,
                               const std::function<To(const From &)> &func) {
     std::vector<To> transformed;
+    transformed.reserve(collection.size());
     for (const From &item : collection) {
         transformed.push_back(func(item));
     }
@@ -33,12 +34,12 @@ std::vector<To> map_to_vector(const Collection &collection,
 }
 
 template<typename Collection>
-std::string join(const Collection &collection, const std::string &delim = ", ") {
+std::string join(const Collection &collection, const std::string &delimiter) {
     std::ostringstream oss;
     bool first_round = true;
 
     for (const auto &item : collection) {
-        oss << (first_round ? "" : delim) << item;
+        oss << (first_round ? "" : delimiter) << item;
         first_round = false;
     }
     return oss.str();

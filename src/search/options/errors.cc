@@ -34,4 +34,10 @@ ostream &operator<<(ostream &out, const ParseError &parse_error) {
     }
     return out;
 }
+
+void exit_with_demangling_hint(
+    const utils::ExitCode returncode, const string& type_name) {
+    DEMANGLING_HINT(type_name);
+    utils::exit_with(returncode);
+}
 }

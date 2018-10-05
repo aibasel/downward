@@ -32,7 +32,7 @@ public:
         if (it == storage.end()) {
             ABORT_WITH_DEMANGLING_HINT(
                 "Attempt to retrieve nonexisting object of name " + key +
-                " (type: " + typeid(T).name() + ")");
+                " (type: " + typeid(T).name() + ")", typeid(T).name());
         }
         try {
             T result = any_cast<T>(it->second);
@@ -40,7 +40,7 @@ public:
         } catch (const BadAnyCast &) {
             ABORT_WITH_DEMANGLING_HINT(
                 "Invalid conversion while retrieving config options!\n" +
-                key + " is not of type " + typeid(T).name());
+                key + " is not of type " + typeid(T).name(), typeid(T).name());
         }
     }
 
