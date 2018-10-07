@@ -54,7 +54,8 @@ CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
     helpful_transition_cache.resize(var_count);
 
     for (int var = 0; var < var_count; ++var) {
-        int required_cache_size = compute_required_cache_size(var, depends_on[var]);
+        int required_cache_size = compute_required_cache_size(
+            var, depends_on[var]);
         if (required_cache_size != -1) {
             //  cout << "Cache for var " << var << ": "
             //       << required_cache_size << " entries" << endl;
