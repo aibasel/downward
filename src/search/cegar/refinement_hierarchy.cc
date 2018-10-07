@@ -8,7 +8,7 @@ namespace cegar {
 Node::Node()
     : left_child(nullptr),
       right_child(nullptr),
-      var(LEAF_NODE),
+      variable(LEAF_NODE),
       value(LEAF_NODE),
       h(0),
       state_id(-1) {
@@ -23,12 +23,12 @@ Node::~Node() {
     }
 }
 
-pair<Node *, Node *> Node::split(int variable, const vector<int> &values) {
+pair<Node *, Node *> Node::split(int var, const vector<int> &values) {
     Node *helper = this;
     right_child = new Node();
     for (int val : values) {
         Node *new_helper = new Node();
-        helper->var = variable;
+        helper->variable = var;
         helper->value = val;
         helper->left_child = new_helper;
         helper->right_child = right_child;
