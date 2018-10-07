@@ -24,7 +24,7 @@ def check_atomic_fts_constructed(content, props):
         ms_atomic_fts_constructed = True
     props['ms_atomic_fts_constructed'] = ms_atomic_fts_constructed
 
-parser.add_function(check_ms_constructed)
+parser.add_function(check_atomic_fts_constructed)
 
 def check_planner_exit_reason(content, props):
     ms_abstraction_constructed = props.get('ms_abstraction_constructed')
