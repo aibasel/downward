@@ -5,6 +5,8 @@ from lab.parser import Parser
 parser = Parser()
 parser.add_pattern('ms_final_size', 'Final transition system size: (\d+)', required=False, type=int)
 parser.add_pattern('ms_construction_time', 'Done initializing merge-and-shrink heuristic \[(.+)s\]', required=False, type=float)
+# TODO: replace above by below in future experiments
+parser.add_pattern('ms_construction_time', 'Merge-and-shrink algorithm runtime: (.+)s', required=False, type=float)
 parser.add_pattern('ms_atomic_construction_time', 't=(.+)s \(after computation of atomic transition systems\)', required=False, type=float)
 parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink computation: (\d+) KB', required=False, type=int)
 
