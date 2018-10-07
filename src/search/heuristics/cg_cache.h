@@ -18,7 +18,7 @@ class CGCache {
 
     int get_index(int var, const State &state, int from_val, int to_val) const;
     int compute_required_cache_size(int var_id,
-                                    const std::vector<int> &var_depends_on) const;
+                                    const std::vector<int> &depends_on) const;
 public:
     static const int NOT_COMPUTED = -2;
 
