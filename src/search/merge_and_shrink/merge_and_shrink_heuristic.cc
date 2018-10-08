@@ -27,7 +27,6 @@ namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     : Heuristic(opts) {
     cout << "Initializing merge-and-shrink heuristic..." << endl;
-    task_properties::verify_no_axioms(task_proxy);
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build(task_proxy);
     int ts_index = -1;
@@ -55,8 +54,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
         assert(ts_index != -1);
     }
 
-    pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
-    final_entry = fts.extract_factor(ts_index);
+    auto final_entry = fts.extract_factor(ts_index);
     cout << "Final transition system size: "
          << fts.get_ts(ts_index).get_size() << endl;
 
@@ -158,13 +156,13 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
         "merge_and_shrink_heuristic.cc for an example configuration.");
 
     Heuristic::add_options_to_parser(parser);
-    MergeAndShrinkAlgorithm::add_options_to_parser(parser);
+    add_merge_and_shrink_algorithm_options_to_parser(parser);
     options::Options opts = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     }
 
-    MergeAndShrinkAlgorithm::handle_shrink_limit_options_defaults(opts);
+    handle_shrink_limit_options_defaults(opts);
 
     if (parser.dry_run()) {
         return nullptr;

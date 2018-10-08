@@ -297,9 +297,6 @@ void MergeAndShrinkAlgorithm::main_loop(
 
 FactoredTransitionSystem MergeAndShrinkAlgorithm::build(
     const TaskProxy &task_proxy) {
-    assert(max_states_before_merge > 0);
-    assert(max_states >= max_states_before_merge);
-    assert(shrink_threshold_before_merge <= max_states_before_merge);
     starting_peak_memory = utils::get_peak_memory_in_kb();
 
     if (label_reduction) {
@@ -349,7 +346,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build(
     return fts;
 }
 
-void MergeAndShrinkAlgorithm::add_shrink_limit_options_to_parser(OptionParser &parser) {
+void add_shrink_limit_options_to_parser(OptionParser &parser) {
     parser.add_option<int>(
         "max_states",
         "maximum transition system size allowed at any time point.",
@@ -370,7 +367,7 @@ void MergeAndShrinkAlgorithm::add_shrink_limit_options_to_parser(OptionParser &p
         Bounds("-1", "infinity"));
 }
 
-void MergeAndShrinkAlgorithm::handle_shrink_limit_options_defaults(Options &opts) {
+void handle_shrink_limit_options_defaults(Options &opts) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
     int threshold = opts.get<int>("threshold_before_merge");
@@ -427,7 +424,7 @@ void MergeAndShrinkAlgorithm::handle_shrink_limit_options_defaults(Options &opts
     opts.set<int>("threshold_before_merge", threshold);
 }
 
-void MergeAndShrinkAlgorithm::add_options_to_parser(OptionParser &parser) {
+void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
     // Merge strategy option.
     parser.add_option<shared_ptr<MergeStrategyFactory>>(
         "merge_strategy",
@@ -463,7 +460,7 @@ void MergeAndShrinkAlgorithm::add_options_to_parser(OptionParser &parser) {
         "reached.",
         "true");
 
-    MergeAndShrinkAlgorithm::add_shrink_limit_options_to_parser(parser);
+    add_shrink_limit_options_to_parser(parser);
 
     vector<string> verbosity_levels;
     vector<string> verbosity_level_docs;

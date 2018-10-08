@@ -59,10 +59,11 @@ public:
     void dump_options() const;
     void warn_on_unusual_options() const;
     FactoredTransitionSystem build(const TaskProxy &task_proxy);
-    static void add_shrink_limit_options_to_parser(options::OptionParser &parser);
-    static void handle_shrink_limit_options_defaults(options::Options &opts);
-    static void add_options_to_parser(options::OptionParser &parser);
 };
+
+extern void add_shrink_limit_options_to_parser(options::OptionParser &parser);
+extern void handle_shrink_limit_options_defaults(options::Options &opts);
+extern void add_merge_and_shrink_algorithm_options_to_parser(options::OptionParser &parser);
 }
 
 #endif
