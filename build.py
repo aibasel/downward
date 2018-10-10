@@ -16,7 +16,6 @@ for config_file in sorted(glob.glob(os.path.join(script_dir, "*build_configs.py"
 
 DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
-del CONFIGS["supports_32bit_builds"]
 
 CMAKE = "cmake"
 DEFAULT_MAKE_PARAMETERS = []
