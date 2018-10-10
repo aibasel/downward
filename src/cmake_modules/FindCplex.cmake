@@ -90,16 +90,25 @@ elseif(MSVC)
         set(CPLEX_COMPILER_HINT "vs2012")
     elseif(MSVC12)
         set(CPLEX_COMPILER_HINT "vs2013")
+    elseif(MSVC13)
+        set(CPLEX_COMPILER_HINT "vs2015")
+    elseif(MSVC14)
+        set(CPLEX_COMPILER_HINT "vs2017")
     endif()
 
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mda")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
+      "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mda"
+      "lib/x64_windows_${CPLEX_COMPILER_HINT}/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64
+      "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mdd"
+      "lib/x64_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
+
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
         set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x86_win32")
     elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x86_win64")
+        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x64_win64")
     endif()
 endif()
 
@@ -125,6 +134,8 @@ find_library(CPLEX_LIBRARY_RELEASE
     NAMES
     cplex
     cplex1262
+    cplex1271
+    cplex1280
     HINTS
     ${CPLEX_HINT_PATHS_RELEASE}
     PATH_SUFFIXES
@@ -135,6 +146,8 @@ find_library(CPLEX_LIBRARY_DEBUG
     NAMES
     cplex
     cplex1262
+    cplex1271
+    cplex1280
     HINTS
     ${CPLEX_HINT_PATHS_DEBUG}
     PATH_SUFFIXES
