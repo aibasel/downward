@@ -7,9 +7,8 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
 
