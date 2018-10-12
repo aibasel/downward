@@ -2,7 +2,6 @@
 
 #include "../option_parser.h"
 
-#include "../landmarks/exploration.h"
 #include "../landmarks/landmark_factory_h_m.h"
 #include "../landmarks/landmark_graph.h"
 
@@ -22,11 +21,6 @@ static FactPair get_fact(const LandmarkNode &node) {
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {
-    Options exploration_opts;
-    exploration_opts.set<shared_ptr<AbstractTask>>("transform", task);
-    exploration_opts.set<bool>("cache_estimates", false);
-    Exploration exploration(exploration_opts);
-
     Options hm_opts;
     hm_opts.set<int>("m", 1);
     // h^m doesn't produce reasonable orders anyway.
@@ -37,7 +31,7 @@ shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &tas
     hm_opts.set<bool>("no_orders", false);
     LandmarkFactoryHM lm_graph_factory(hm_opts);
 
-    return lm_graph_factory.compute_lm_graph(task, exploration);
+    return lm_graph_factory.compute_lm_graph(task);
 }
 
 vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
