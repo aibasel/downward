@@ -28,6 +28,16 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build(task_proxy);
+
+    /*
+      TODO: This constructor has quite a bit of fiddling with aspects of
+      transition systems and the merge-and-shrink representation (checking
+      whether distances have been computed; computing them) that we would
+      like to have at a lower level. See also the TODO in
+      factored_transition_system.h on improving the interface of that class
+      (and also related classes like TransitionSystem etc).
+    */
+
     int ts_index = -1;
     if (fts.get_num_active_entries() == 1) {
         /*
