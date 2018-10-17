@@ -58,7 +58,7 @@ public:
     explicit MergeAndShrinkAlgorithm(const options::Options &opts);
     void dump_options() const;
     void warn_on_unusual_options() const;
-    FactoredTransitionSystem build(const TaskProxy &task_proxy);
+    FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
 };
 
 extern void add_shrink_limit_options_to_parser(options::OptionParser &parser);

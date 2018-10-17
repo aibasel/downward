@@ -295,7 +295,7 @@ void MergeAndShrinkAlgorithm::main_loop(
     label_reduction = nullptr;
 }
 
-FactoredTransitionSystem MergeAndShrinkAlgorithm::build(
+FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_system(
     const TaskProxy &task_proxy) {
     starting_peak_memory = utils::get_peak_memory_in_kb();
 

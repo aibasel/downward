@@ -27,7 +27,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     : Heuristic(opts) {
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
-    FactoredTransitionSystem fts = algorithm.build(task_proxy);
+    FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
 
     /*
       TODO: This constructor has quite a bit of fiddling with aspects of
