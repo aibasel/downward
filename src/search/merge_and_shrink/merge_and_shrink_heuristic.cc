@@ -40,7 +40,6 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
         for (int index = 0; index < last_factor_index; ++index) {
             assert(!fts.is_active(index));
         }
-        assert(fts.is_factor_solvable(last_factor_index));
         ts_index = last_factor_index;
     } else {
         // The computation stopped early because there is an unsolvable factor.
