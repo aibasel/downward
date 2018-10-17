@@ -54,7 +54,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
 
     auto final_entry = fts.extract_factor(ts_index);
     cout << "Final transition system size: "
-         << fts.get_ts(ts_index).get_size() << endl;
+         << fts.get_transition_system(ts_index).get_size() << endl;
 
     mas_representation = move(final_entry.first);
     if (!final_entry.second->are_goal_distances_computed()) {

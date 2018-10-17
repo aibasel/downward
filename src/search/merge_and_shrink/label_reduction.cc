@@ -129,7 +129,7 @@ equivalence_relation::EquivalenceRelation
 
     for (int index : fts) {
         if (index != ts_index) {
-            const TransitionSystem &ts = fts.get_ts(index);
+            const TransitionSystem &ts = fts.get_transition_system(index);
             for (const GroupAndTransitions &gat : ts) {
                 const LabelGroup &label_group = gat.label_group;
                 relation->refine(label_group.begin(), label_group.end());
