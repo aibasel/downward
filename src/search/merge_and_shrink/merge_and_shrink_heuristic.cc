@@ -57,15 +57,16 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
          << fts.get_transition_system(ts_index).get_size() << endl;
 
     mas_representation = move(final_entry.first);
-    if (!final_entry.second->are_goal_distances_computed()) {
+    unique_ptr<Distances> final_distances = move(final_entry.second);
+    if (!final_distances->are_goal_distances_computed()) {
         const bool compute_init = false;
         const bool compute_goal = true;
         Verbosity verbosity = static_cast<Verbosity>(opts.get_enum("verbosity"));
-        final_entry.second->compute_distances(
+        final_distances->compute_distances(
             compute_init, compute_goal, verbosity);
     }
-    assert(final_entry.second->are_goal_distances_computed());
-    mas_representation->set_distances(*final_entry.second);
+    assert(final_distances->are_goal_distances_computed());
+    mas_representation->set_distances(*final_distances);
     cout << "Done initializing merge-and-shrink heuristic." << endl << endl;
 }
 
