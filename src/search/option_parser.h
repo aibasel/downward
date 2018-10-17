@@ -5,7 +5,8 @@
   TODO: This file was intended to be a temporary stub. We should think
   of getting rid of it. This would entail including "options/options.h"
   and "options/option_parser.h" instead and explicitly using the options
-  namespace. See also plugin.h and issue588 for a discussion.
+  namespace. See also option_parser_util.h, plugin.h and issue588 for a
+  discussion.
 */
 #include "options/command_line.h"
 #include "options/errors.h"
