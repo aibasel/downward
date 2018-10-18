@@ -49,7 +49,8 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
     shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
     prune_unreachable_states(opts.get<bool>("prune_unreachable_states")),
     prune_irrelevant_states(opts.get<bool>("prune_irrelevant_states")),
-    verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))) {
+    verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))),
+    starting_peak_memory(0) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
     assert(shrink_threshold_before_merge <= max_states_before_merge);
@@ -297,6 +298,11 @@ void MergeAndShrinkAlgorithm::main_loop(
 
 FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_system(
     const TaskProxy &task_proxy) {
+    if (starting_peak_memory) {
+        cerr << "Calling build_factored_transition_system twice is not "
+                "supported!" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
     starting_peak_memory = utils::get_peak_memory_in_kb();
 
     if (label_reduction) {
@@ -305,7 +311,6 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
 
     utils::Timer timer;
     cout << "Computing merge-and-shrink algorithm..." << endl;
-    starting_peak_memory = utils::get_peak_memory_in_kb();
     task_properties::verify_no_axioms(task_proxy);
     dump_options();
     warn_on_unusual_options();
