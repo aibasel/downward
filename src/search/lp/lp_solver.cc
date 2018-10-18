@@ -214,11 +214,11 @@ double LPSolver::get_infinity() const {
 
 void LPSolver::set_objective_coefficients(const vector<double> &coefficients) {
     assert(static_cast<int>(coefficients.size()) == get_num_variables());
-    vector<int> tmp_indices(coefficients.size());
-    iota(tmp_indices.begin(), tmp_indices.end(), 0);
+    vector<int> indices(coefficients.size());
+    iota(indices.begin(), indices.end(), 0);
     try {
-        lp_solver->setObjCoeffSet(tmp_indices.data(),
-                                  tmp_indices.data() + tmp_indices.size(),
+        lp_solver->setObjCoeffSet(indices.data(),
+                                  indices.data() + indices.size(),
                                   coefficients.data());
     } catch (CoinError &error) {
         handle_coin_error(error);

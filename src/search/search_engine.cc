@@ -104,9 +104,9 @@ void SearchEngine::search() {
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         cout << "Solution found!" << endl;
-        Plan solution;
-        search_space.trace_path(state, solution);
-        set_plan(solution);
+        Plan plan;
+        search_space.trace_path(state, plan);
+        set_plan(plan);
         return true;
     }
     return false;
