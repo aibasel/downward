@@ -344,15 +344,15 @@ void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp 
     for (size_t i = 0; i < op.cond_noops.size(); ++i) {
         cond_pc.clear();
         cond_eff.clear();
-        int pm_fluent_id;
+        int pm_fluent;
         size_t j;
         cout << "PC:" << endl;
-        for (j = 0; (pm_fluent_id = op.cond_noops[i][j]) != -1; ++j) {
-            print_fluentset(variables, h_m_table_[pm_fluent_id].fluents);
+        for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
+            print_fluentset(variables, h_m_table_[pm_fluent].fluents);
             cout << endl;
 
-            for (size_t k = 0; k < h_m_table_[pm_fluent_id].fluents.size(); ++k) {
-                cond_pc.insert(h_m_table_[pm_fluent_id].fluents[k]);
+            for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
+                cond_pc.insert(h_m_table_[pm_fluent].fluents[k]);
             }
         }
         // advance to effects section

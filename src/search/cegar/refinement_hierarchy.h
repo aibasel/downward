@@ -54,7 +54,7 @@ class Node {
     Node *right_child;
 
     // Variable and value for which the corresponding state was split.
-    int variable;
+    int var;
     int value;
 
     // Estimated cost to nearest goal state from this node's state.
@@ -77,13 +77,13 @@ public:
       the right child as their right child and the next helper node as
       their left child.
     */
-    std::pair<Node *, Node *> split(int variable, const std::vector<int> &values);
+    std::pair<Node *, Node *> split(int var, const std::vector<int> &values);
 
     bool is_split() const {
         assert((!left_child && !right_child &&
-                variable == LEAF_NODE && value == LEAF_NODE) ||
+                var == LEAF_NODE && value == LEAF_NODE) ||
                (left_child && right_child &&
-                variable != LEAF_NODE && value != LEAF_NODE));
+                var != LEAF_NODE && value != LEAF_NODE));
         return left_child;
     }
 
@@ -94,7 +94,7 @@ public:
 
     int get_var() const {
         assert(is_split());
-        return variable;
+        return var;
     }
 
     Node *get_child(int value) const;
