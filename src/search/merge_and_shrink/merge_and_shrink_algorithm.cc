@@ -300,7 +300,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     const TaskProxy &task_proxy) {
     if (starting_peak_memory) {
         cerr << "Calling build_factored_transition_system twice is not "
-                "supported!" << endl;
+            "supported!" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     starting_peak_memory = utils::get_peak_memory_in_kb();
