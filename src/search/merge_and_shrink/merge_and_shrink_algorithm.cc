@@ -43,7 +43,7 @@ static void print_time(const utils::Timer &timer, string text) {
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
     merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),
     shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
-    label_reduction(opts.contains("label_reduction") ? opts.get<shared_ptr<LabelReduction>>("label_reduction") : nullptr),
+    label_reduction(opts.get<shared_ptr<LabelReduction>>("label_reduction", nullptr)),
     max_states(opts.get<int>("max_states")),
     max_states_before_merge(opts.get<int>("max_states_before_merge")),
     shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
