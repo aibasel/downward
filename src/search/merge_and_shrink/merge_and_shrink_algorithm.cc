@@ -310,7 +310,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     }
 
     utils::Timer timer;
-    cout << "Computing merge-and-shrink algorithm..." << endl;
+    cout << "Running merge-and-shrink algorithm..." << endl;
     task_properties::verify_no_axioms(task_proxy);
     dump_options();
     warn_on_unusual_options();
