@@ -46,6 +46,7 @@ class MergeAndShrinkAlgorithm {
     const Verbosity verbosity;
     long starting_peak_memory;
 
+    // Return true iff fts has been detected to be unsolvable.
     bool prune_fts(FactoredTransitionSystem &fts, const utils::Timer &timer) const;
     void statistics(int maximum_intermediate_size) const;
     void main_loop(
