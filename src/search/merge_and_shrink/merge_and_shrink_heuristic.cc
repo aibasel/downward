@@ -25,6 +25,8 @@ using utils::ExitCode;
 namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     : Heuristic(opts) {
+    Verbosity verbosity = static_cast<Verbosity>(opts.get_enum("verbosity"));
+
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
@@ -71,7 +73,6 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     if (!final_distances->are_goal_distances_computed()) {
         const bool compute_init = false;
         const bool compute_goal = true;
-        Verbosity verbosity = static_cast<Verbosity>(opts.get_enum("verbosity"));
         final_distances->compute_distances(
             compute_init, compute_goal, verbosity);
     }

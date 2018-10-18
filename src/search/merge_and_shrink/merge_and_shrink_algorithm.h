@@ -62,9 +62,9 @@ public:
     FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
 };
 
+extern void add_merge_and_shrink_algorithm_options_to_parser(options::OptionParser &parser);
 extern void add_shrink_limit_options_to_parser(options::OptionParser &parser);
 extern void handle_shrink_limit_options_defaults(options::Options &opts);
-extern void add_merge_and_shrink_algorithm_options_to_parser(options::OptionParser &parser);
 }
 
 #endif

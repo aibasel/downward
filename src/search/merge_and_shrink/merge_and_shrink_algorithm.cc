@@ -351,6 +351,66 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     return fts;
 }
 
+void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
+    // Merge strategy option.
+    parser.add_option<shared_ptr<MergeStrategyFactory>>(
+        "merge_strategy",
+        "See detailed documentation for merge strategies. "
+        "We currently recommend SCC-DFP, which can be achieved using "
+        "{{{merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
+        "score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order"
+        "]))}}}");
+
+    // Shrink strategy option.
+    parser.add_option<shared_ptr<ShrinkStrategy>>(
+        "shrink_strategy",
+        "See detailed documentation for shrink strategies. "
+        "We currently recommend non-greedy shrink_bisimulation, which can be "
+        "achieved using {{{shrink_strategy=shrink_bisimulation(greedy=false)}}}");
+
+    // Label reduction option.
+    parser.add_option<shared_ptr<LabelReduction>>(
+        "label_reduction",
+        "See detailed documentation for labels. There is currently only "
+        "one 'option' to use label_reduction, which is {{{label_reduction=exact}}} "
+        "Also note the interaction with shrink strategies.",
+        OptionParser::NONE);
+
+    // Pruning options.
+    parser.add_option<bool>(
+        "prune_unreachable_states",
+        "If true, prune abstract states unreachable from the initial state.",
+        "true");
+    parser.add_option<bool>(
+        "prune_irrelevant_states",
+        "If true, prune abstract states from which no goal state can be "
+        "reached.",
+        "true");
+
+    add_shrink_limit_options_to_parser(parser);
+
+    vector<string> verbosity_levels;
+    vector<string> verbosity_level_docs;
+    verbosity_levels.push_back("silent");
+    verbosity_level_docs.push_back(
+        "silent: no output during construction, only starting and final "
+        "statistics");
+    verbosity_levels.push_back("normal");
+    verbosity_level_docs.push_back(
+        "normal: basic output during construction, starting and final "
+        "statistics");
+    verbosity_levels.push_back("verbose");
+    verbosity_level_docs.push_back(
+        "verbose: full output during construction, starting and final "
+        "statistics");
+    parser.add_enum_option(
+        "verbosity",
+        verbosity_levels,
+        "Option to specify the level of verbosity.",
+        "verbose",
+        verbosity_level_docs);
+}
+
 void add_shrink_limit_options_to_parser(OptionParser &parser) {
     parser.add_option<int>(
         "max_states",
@@ -427,65 +487,5 @@ void handle_shrink_limit_options_defaults(Options &opts) {
     opts.set<int>("max_states", max_states);
     opts.set<int>("max_states_before_merge", max_states_before_merge);
     opts.set<int>("threshold_before_merge", threshold);
-}
-
-void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
-    // Merge strategy option.
-    parser.add_option<shared_ptr<MergeStrategyFactory>>(
-        "merge_strategy",
-        "See detailed documentation for merge strategies. "
-        "We currently recommend SCC-DFP, which can be achieved using "
-        "{{{merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
-        "score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order"
-        "]))}}}");
-
-    // Shrink strategy option.
-    parser.add_option<shared_ptr<ShrinkStrategy>>(
-        "shrink_strategy",
-        "See detailed documentation for shrink strategies. "
-        "We currently recommend non-greedy shrink_bisimulation, which can be "
-        "achieved using {{{shrink_strategy=shrink_bisimulation(greedy=false)}}}");
-
-    // Label reduction option.
-    parser.add_option<shared_ptr<LabelReduction>>(
-        "label_reduction",
-        "See detailed documentation for labels. There is currently only "
-        "one 'option' to use label_reduction, which is {{{label_reduction=exact}}} "
-        "Also note the interaction with shrink strategies.",
-        OptionParser::NONE);
-
-    // Pruning options.
-    parser.add_option<bool>(
-        "prune_unreachable_states",
-        "If true, prune abstract states unreachable from the initial state.",
-        "true");
-    parser.add_option<bool>(
-        "prune_irrelevant_states",
-        "If true, prune abstract states from which no goal state can be "
-        "reached.",
-        "true");
-
-    add_shrink_limit_options_to_parser(parser);
-
-    vector<string> verbosity_levels;
-    vector<string> verbosity_level_docs;
-    verbosity_levels.push_back("silent");
-    verbosity_level_docs.push_back(
-        "silent: no output during construction, only starting and final "
-        "statistics");
-    verbosity_levels.push_back("normal");
-    verbosity_level_docs.push_back(
-        "normal: basic output during construction, starting and final "
-        "statistics");
-    verbosity_levels.push_back("verbose");
-    verbosity_level_docs.push_back(
-        "verbose: full output during construction, starting and final "
-        "statistics");
-    parser.add_enum_option(
-        "verbosity",
-        verbosity_levels,
-        "Option to specify the level of verbosity.",
-        "verbose",
-        verbosity_level_docs);
 }
 }
