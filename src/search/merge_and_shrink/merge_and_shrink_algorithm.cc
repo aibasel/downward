@@ -387,7 +387,7 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
         "reached.",
         "true");
 
-    add_shrink_limit_options_to_parser(parser);
+    add_transition_system_size_limit_options_to_parser(parser);
 
     vector<string> verbosity_levels;
     vector<string> verbosity_level_docs;
@@ -411,7 +411,7 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
         verbosity_level_docs);
 }
 
-void add_shrink_limit_options_to_parser(OptionParser &parser) {
+void add_transition_system_size_limit_options_to_parser(OptionParser &parser) {
     parser.add_option<int>(
         "max_states",
         "maximum transition system size allowed at any time point.",
