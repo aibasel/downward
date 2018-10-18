@@ -63,7 +63,7 @@ public:
 };
 
 extern void add_merge_and_shrink_algorithm_options_to_parser(options::OptionParser &parser);
-extern void add_shrink_limit_options_to_parser(options::OptionParser &parser);
+extern void add_transition_system_size_limit_options_to_parser(options::OptionParser &parser);
 extern void handle_shrink_limit_options_defaults(options::Options &opts);
 }
 

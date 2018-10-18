@@ -123,7 +123,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "shrink_strategy",
         "We recommend setting this to match the shrink strategy configuration "
         "given to {{{merge_and_shrink}}}, see note below.");
-    add_shrink_limit_options_to_parser(parser);
+    add_transition_system_size_limit_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.help_mode()) {
