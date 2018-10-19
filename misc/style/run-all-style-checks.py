@@ -140,6 +140,10 @@ def check_search_code_with_clang_tidy():
     # categories instead of deleting them to see which additional checks
     # we could activate.
     checks = [
+        "misc-move-const-arg",
+        "misc-move-constructor-init",
+        "misc-use-after-move",
+
         "performance-for-range-copy",
         "performance-implicit-cast-in-loop",
         "performance-inefficient-vector-operation",
