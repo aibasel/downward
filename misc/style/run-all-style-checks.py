@@ -140,10 +140,10 @@ def check_search_code_with_clang_tidy():
     # categories instead of deleting them to see which additional checks
     # we could activate.
     checks = [
-        "misc-move-const-arg",
         # Enable with CheckTriviallyCopyableMove=0 when we require
         # clang-tidy >= 6.0 (see issue856).
-        #"misc-move-constructor-init",
+        #"misc-move-const-arg",
+        "misc-move-constructor-init",
         "misc-use-after-move",
 
         "performance-for-range-copy",
