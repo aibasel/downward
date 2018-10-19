@@ -26,8 +26,8 @@ public:
 
     // Visual Studio 2013 needs an explicit implementation.
     CartesianHeuristicFunction(CartesianHeuristicFunction &&other)
-        : task(std::move(other.task)),
-          task_proxy(std::move(other.task_proxy)),
+        : task(other.task),
+          task_proxy(other.task_proxy),
           refinement_hierarchy(std::move(other.refinement_hierarchy)) {
     }
 
