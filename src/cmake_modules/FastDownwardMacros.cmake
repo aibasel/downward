@@ -51,6 +51,11 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # conversion from size_t to int with possible loss of data
 
+        # The following are disabled because of what seems to be an OSI bug.
+        # "truncation of constant value";
+        # This happens once we do not use the "-m64" flag in the Windows 64-bits build
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4309")
+
         # The following are disabled because of what seems to be compiler bugs.
         # "unreferenced local function has been removed";
         # see http://stackoverflow.com/questions/3051992/compiler-warning-at-c-template-base-class
