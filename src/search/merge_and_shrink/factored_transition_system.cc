@@ -64,9 +64,9 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
       transition_systems(move(other.transition_systems)),
       mas_representations(move(other.mas_representations)),
       distances(move(other.distances)),
-      compute_init_distances(move(other.compute_init_distances)),
-      compute_goal_distances(move(other.compute_goal_distances)),
-      num_active_entries(move(other.num_active_entries)) {
+      compute_init_distances(other.compute_init_distances),
+      compute_goal_distances(other.compute_goal_distances),
+      num_active_entries(other.num_active_entries) {
     /*
       This is just a default move constructor. Unfortunately Visual
       Studio does not support "= default" for move construction or
