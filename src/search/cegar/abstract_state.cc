@@ -19,11 +19,11 @@ AbstractState::AbstractState(const Domains &domains, Node *node)
 
 AbstractState::AbstractState(AbstractState &&other)
     : domains(move(other.domains)),
-      node(other.node),
+      node(move(other.node)),
       incoming_transitions(move(other.incoming_transitions)),
       outgoing_transitions(move(other.outgoing_transitions)),
       loops(move(other.loops)),
-      search_info(other.search_info) {
+      search_info(move(other.search_info)) {
 }
 
 int AbstractState::count(int var) const {
