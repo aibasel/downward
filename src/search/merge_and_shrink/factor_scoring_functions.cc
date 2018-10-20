@@ -41,7 +41,7 @@ vector<int> FactorScoringFunctionSize::compute_scores(
     vector<int> scores;
     scores.reserve(indices.size());
     for (int index : indices) {
-        scores.push_back(fts.get_ts(index).get_size());
+        scores.push_back(fts.get_transition_system(index).get_size());
     }
     return scores;
 }
