@@ -11,6 +11,7 @@ from downward.reports.compare import ComparativeReport
 
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
+from generalscatter import GeneralScatterPlotReport
 from relativescatter import RelativeScatterPlotReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -100,5 +101,22 @@ def check_atomic_fts_constructed(run):
     return run
 
 exp.add_comparison_table_step(attributes=attributes,filter=[check_atomic_fts_constructed])
+
+exp.add_scatter_plot_step(attributes=[ms_atomic_construction_time])
+
+for algo_nick in ['dfp-b50k', 'rl-b50k', 'sccs-dfp-b50k']:
+    algo = "issue851-v1-{}".format(algo_nick)
+    exp.add_report(
+        GeneralScatterPlotReport(
+            x_algo = algo,
+            y_algo = algo,
+            x_attribute='ms_atomic_construction_time',
+            y_attribute='total_time',
+            filter_algorithm=[algo],
+            attributes=['total_time'],
+            get_category=lambda run1, run2: run1["domain"],
+        ),
+        outfile='{}-total_time_vs_ms_atomic_construction_time.png'.format(algo),
+    )
 
 exp.run_steps()
