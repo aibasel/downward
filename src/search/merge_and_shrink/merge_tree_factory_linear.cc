@@ -58,7 +58,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
             used_ts_indices[ts_index] = false;
         }
         const vector<int> &vars =
-            fts.get_ts(ts_index).get_incorporated_variables();
+            fts.get_transition_system(ts_index).get_incorporated_variables();
         for (int var : vars) {
             var_to_ts_index[var] = ts_index;
         }
