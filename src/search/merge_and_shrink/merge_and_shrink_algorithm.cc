@@ -163,7 +163,7 @@ bool MergeAndShrinkAlgorithm::prune_fts(
             pruned = pruned || pruned_factor;
         }
         if (!fts.is_factor_solvable(index)) {
-            unsolvable =  true;
+            unsolvable = true;
             break;
         }
     }
