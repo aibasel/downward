@@ -2,7 +2,14 @@
 
 from collections import defaultdict
 
-class SCC(object):
+__all__ = ["get_sccs"]
+
+
+def get_sccs(digraph):
+    return StronglyConnectedComponentComputation(digraph).get_result()
+
+
+class StronglyConnectedComponentComputation(object):
     """Tarjan's algorithm for maximal strongly connected components.
 
     Since the original recursive version exceeds python's maximal
@@ -29,7 +36,8 @@ class SCC(object):
         for i in range(len(self.graph)):
             if i not in self.indices:
                 self.visit(i)
-        return reversed(self.sccs)
+        self.sccs.reverse()
+        return self.sccs
 
     def visit(self, vertex):
         iter_stack = [(vertex, None, None, self.BEGIN)]
