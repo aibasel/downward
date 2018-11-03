@@ -1,26 +1,74 @@
 # -*- coding: utf-8 -*-
 
+"""Tarjan's algorithm for maximal strongly connected components.
+
+We provide two versions of the algorithm for different graph
+representations.
+
+Since the original recursive version exceeds python's maximal
+recursion depth on some planning instances, this is an iterative
+version with an explicit recursion stack (iter_stack).
+
+Note that the derived graph where each SCC is a single "supernode" is
+necessarily acyclic. The SCCs returned by the algorithm are in a
+topological sort order with respect to this derived DAG.
+"""
+
 from collections import defaultdict
 
-__all__ = ["get_sccs"]
+__all__ = ["get_sccs_adjacency_list", "get_sccs_adjacency_dict"]
 
 
-def get_sccs(digraph):
-    return StronglyConnectedComponentComputation(digraph).get_result()
+def get_sccs_adjacency_list(adjacency_list):
+    """Compute SCCs for a graph represented as an adjacency list.
+
+    `adjacency_list` is a list (or similar data structure) whose
+    indices correspond to the graph nodes. For example, if
+    `len(adjacency_list)` is N, the graph nodes are {0, ..., N-1}.
+
+    For every node `u`, `adjacency_list[u]` is the list (or similar data
+    structure) of successors of `u`.
+
+    Returns a list of lists that defines a partition of {0, ..., N-1},
+    where each block in the partition is an SCC of the graph, and
+    the partition is given in a topologically sort order."""
+    return StronglyConnectedComponentComputation(adjacency_list).get_result()
+
+def get_sccs_adjacency_dict(adjacency_dict):
+    """Compute SCCs for a graph represented as an adjacency dict.
+
+    `adjacency_dict` is a dictionary whose keys are the vertices of
+    the graph.
+
+    For every node `u`, adjacency_dict[u]` is the list (or similar
+    data structure) of successors of `u`.
+
+    Returns a list of lists that defines a partition of the graph
+    nodes, where each block in the partition is an SCC of the graph,
+    and the partition is given in a topologically sort order."""
+    node_to_index = {}
+    index_to_node = []
+    for index, node in enumerate(adjacency_dict):
+        node_to_index[node] = index
+        index_to_node.append(node)
+
+    size = len(index_to_node)
+    adjacency_list = []
+    for index, node in enumerate(index_to_node):
+        successors = adjacency_dict[node]
+        successor_indices = [node_to_index[v] for v in successors]
+        adjacency_list.append(successor_indices)
+
+    result_indices = get_sccs_adjacency_list(adjacency_list)
+
+    result = []
+    for block_indices in result_indices:
+        block = [index_to_node[index] for index in block_indices]
+        result.append(block)
+    return result
 
 
 class StronglyConnectedComponentComputation(object):
-    """Tarjan's algorithm for maximal strongly connected components.
-
-    Since the original recursive version exceeds python's maximal
-    recursion depth on some planning instances, this is an iterative
-    version with an explicit recursion stack (iter_stack).
-
-    Note that the derived graph where each SCC is a single "supernode"
-    is necessarily acyclic. The SCCs returned by get_result() are in a
-    topological sort order with respect to this derived DAG.
-    """
-
     def __init__(self, unweighted_graph):
         self.graph = unweighted_graph
         self.BEGIN, self.CONTINUE, self.RETURN = 0, 1, 2 # "recursion" handling
