@@ -74,7 +74,7 @@ class CausalGraph(object):
         assert(len(self.weighted_graph) <= self.num_variables)
         for source, target_weights in self.weighted_graph.items():
             unweighted_graph[source] = sorted(target_weights.keys())
-        return sccs.get_sccs(unweighted_graph)
+        return sccs.get_sccs_adjacency_list(unweighted_graph)
 
     def calculate_topological_pseudo_sort(self, sccs):
         for scc in sccs:
