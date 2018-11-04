@@ -1,5 +1,8 @@
 import pddl
+import sccs
 import timers
+
+from collections import defaultdict
 
 
 DEBUG = True
@@ -124,50 +127,111 @@ def get_axioms_by_atom(axioms):
     return axioms_by_atom
 
 def compute_axiom_layers(axioms, axiom_init):
-    NO_AXIOM = -1
-    UNKNOWN_LAYER = -2
-    FIRST_MARKER = -3
+    # We include this assertion to make sure testing membership in
+    # axiom_init is efficient.
+    assert isinstance(axiom_init, set)
 
-    depends_on = {}
+    # Collect all atoms for derived variables.
+    derived_atoms = set()
     for axiom in axioms:
-        effect_atom = axiom.effect.positive()
-        effect_sign = not axiom.effect.negated
-        effect_init_sign = effect_atom in axiom_init
-        if effect_sign != effect_init_sign:
-            depends_on.setdefault(effect_atom, set())
-            for condition in axiom.condition:
-                condition_atom = condition.positive()
-                condition_sign = not condition.negated
-                condition_init_sign = condition_atom in axiom_init
-                if condition_sign == condition_init_sign:
-                    depends_on[effect_atom].add((condition_atom, +1))
+        head_atom = axiom.effect.positive()
+        derived_atoms.add(head_atom)
+
+    # Collect dependencies between derived variables:
+    # 1. "u depends on v" if there is an axiom with variable u
+    #    in the head and variable v in the body.
+    # 2. "u NBF-depends on v" if additionally the value with which
+    #    v occurs in the body is its NBF (negation-by-failure) value.
+    #
+    # We represent depends_on as a dictionary mapping each "u" to
+    # the list of "v"s such that u depends on v. Note that we do not
+    # use a defaultdict because the SCC finding algorithm requires
+    # that all nodes are present as keys in the dict, even if they
+    # have no successors.
+    #
+    # We do not represent NBF-depends on independently, but we do keep
+    # of a set of triples "weighted_depends_on" which contains all
+    # triples (u, v, weight) representing dependencies from u to v,
+    # where weight is 1 for NBF dependencies and 0 for other
+    # dependencies. Each such triple represents the constraint
+    # layer(u) >= layer(v) + weight.
+    depends_on = dict((u, []) for u in derived_atoms)
+    weighted_depends_on = set()
+    for axiom in axioms:
+        u = axiom.effect.positive()
+        for condition in axiom.condition:
+            v = condition.positive()
+            if v in derived_atoms:
+                v_polarity = not condition.negated
+                v_init_polarity = v in axiom_init
+                depends_on[u].append(v)
+                if v_polarity == v_init_polarity:
+                    weight = 1
                 else:
-                    depends_on[effect_atom].add((condition_atom, +0))
+                    weight = 0
+                weighted_depends_on.add((u, v, weight))
 
-    layers = dict([(atom, UNKNOWN_LAYER) for atom in depends_on])
-    def find_level(atom, marker):
-        layer = layers.get(atom, NO_AXIOM)
-        if layer == NO_AXIOM:
-            return 0
+    # Compute the SCCs of dependencies according to depends_on,
+    # in topological order.
+    atom_sccs = sccs.get_sccs_adjacency_dict(depends_on)
 
-        if layer == marker:
-            # Found positive cycle: May return 0 but not set value.
-            return 0
-        elif layer <= FIRST_MARKER:
-            # Found negative cycle: Error.
-            assert False, "Cyclic dependencies in axioms; cannot stratify."
-        if layer == UNKNOWN_LAYER:
-            layers[atom] = marker
-            layer = 0
-            for (condition_atom, bonus) in depends_on[atom]:
-                layer = max(layer, find_level(condition_atom, marker - bonus) + bonus)
-            layers[atom] = layer
-        return layer
-    for atom in depends_on:
-        find_level(atom, FIRST_MARKER)
+    # Compute an index mapping each atom to the id of its SCC.
+    atom_to_scc_id = {}
+    for scc in atom_sccs:
+        scc_id = id(scc)
+        for atom in scc:
+            atom_to_scc_id[atom] = scc_id
 
-    #for atom, layer in layers.iteritems():
-    #  print "Layer %d: %s" % (layer, atom)
+    # Compute a weighted digraph representing the dependencies
+    # between SCCs. SCCs U and V are represented by their IDs.
+    # - We have id(V) in scc_weighted_depends_on[id(U)] iff
+    #   some variable u in U depends on some variable v in V.
+    # - If there is a dependency, scc_weighted_depends_on[id(U)][id(V)]
+    #   is the weight of the dependency: +1 if an NBF-dependency
+    #   exists, 0 otherwise.
+    # We want the digraph to be acyclic and hence ignore self-loops.
+    # A self-loop of weight 1 indicates non-stratifiability.
+    scc_weighted_depends_on = defaultdict(dict)
+    for u, v, weight in weighted_depends_on:
+        scc_u_id = atom_to_scc_id[u]
+        scc_v_id = atom_to_scc_id[v]
+        if scc_u_id == scc_v_id:
+            # Ignore self-loops unless they are self-loops based on
+            # NBF dependencies, which occur iff the axioms are
+            # non-stratifiable.
+            if weight == 1:
+                raise ValueError(
+                    "Cyclic dependencies in axioms; cannot stratify.")
+        else:
+            old_weight = scc_weighted_depends_on[scc_u_id].get(scc_v_id, -1)
+            if weight > old_weight:
+                scc_weighted_depends_on[scc_u_id][scc_v_id] = weight
+
+    # The layer of variable u is the longest path (taking into account
+    # the weights) in the weighted digraph defined by
+    # scc_weighted_depends_on from the SCC of u to any sink.
+
+    # We first compute the longest paths in the SCC digraph. This
+    # computation exploits that atom_sccs is given in
+    # topological sort order.
+    scc_id_to_layer = {}
+    for scc in reversed(atom_sccs):
+        scc_id = id(scc)
+        layer = 0
+        for succ_scc_id, weight in scc_weighted_depends_on[scc_id].items():
+            layer = max(layer, scc_id_to_layer[succ_scc_id] + weight)
+        scc_id_to_layer[scc_id] = layer
+
+    # Finally, we set the layers for all nodes based on the layers of
+    # their SCCs.
+    layers = {}
+    for scc in atom_sccs:
+        scc_layer = scc_id_to_layer[id(scc)]
+        for atom in scc:
+            layers[atom] = scc_layer
+
+    #for atom, layer in layers.items():
+    #    print("Layer %d: %s" % (layer, atom))
     return layers
 
 def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
