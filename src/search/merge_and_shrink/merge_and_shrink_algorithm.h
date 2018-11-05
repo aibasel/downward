@@ -20,7 +20,6 @@ class LabelReduction;
 class MergeAndShrinkRepresentation;
 class MergeStrategyFactory;
 class ShrinkStrategy;
-class TransitionSystem;
 enum class Verbosity;
 
 class MergeAndShrinkAlgorithm {
