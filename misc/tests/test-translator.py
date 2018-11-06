@@ -139,7 +139,7 @@ def main():
         assert len(interpreter_versions) == 2, "Code only tests difference between 2 versions"
         files = [version + ".sas" for version in interpreter_versions]
         try:
-            subprocess.check_call(["diff"] + files)
+            subprocess.check_call(["diff", "-q"] + files)
         except subprocess.CalledProcessError:
             sys.exit(
                 "Error: Translator output for %s differs between Python versions. "
