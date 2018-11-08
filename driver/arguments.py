@@ -265,8 +265,9 @@ def _set_components_and_inputs(parser, args):
 
 def _set_translator_output_options(parser, args):
     if any("--sas-file" in opt for opt in args.translate_options):
-        parser.error("Cannot pass the \"--sas-file\" option to translate.py from the fast-downward.py script."
-                     " Pass it directly to fast-downward.py instead.")
+        print_usage_and_exit_with_driver_input_error(
+            parser, "Cannot pass the \"--sas-file\" option to translate.py from the "
+                    "fast-downward.py script. Pass it directly to fast-downward.py instead.")
 
     args.search_input = args.sas_file
     args.translate_options += ["--sas-file", args.search_input]
