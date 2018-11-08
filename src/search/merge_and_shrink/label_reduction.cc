@@ -129,7 +129,7 @@ equivalence_relation::EquivalenceRelation
 
     for (int index : fts) {
         if (index != ts_index) {
-            const TransitionSystem &ts = fts.get_ts(index);
+            const TransitionSystem &ts = fts.get_transition_system(index);
             for (const GroupAndTransitions &gat : ts) {
                 const LabelGroup &label_group = gat.label_group;
                 relation->refine(label_group.begin(), label_group.end());
@@ -261,7 +261,6 @@ bool LabelReduction::reduce(
 }
 
 void LabelReduction::dump_options() const {
-    assert(initialized());
     cout << "Label reduction options:" << endl;
     cout << "Before merging: "
          << (lr_before_merging ? "enabled" : "disabled") << endl;
@@ -306,7 +305,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
@@ -346,9 +345,8 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
     vector<string> label_reduction_system_order_doc;
     label_reduction_system_order.push_back("REGULAR");
     label_reduction_system_order_doc.push_back(
-        "transition systems are considered in the FD given order for "
-        "atomic transition systems and in the order of their creation "
-        "for composite transition system.");
+        "transition systems are considered in the order given in the planner "
+        "input if atomic and in the order of their creation if composite.");
     label_reduction_system_order.push_back("REVERSE");
     label_reduction_system_order_doc.push_back(
         "inverse of REGULAR");
@@ -378,7 +376,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         if (!lr_before_shrinking && !lr_before_merging) {
             cerr << "Please turn on at least one of the options "
                  << "before_shrinking or before_merging!" << endl;
-            utils::exit_with(ExitCode::INPUT_ERROR);
+            utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         }
         return nullptr;
     } else {
@@ -390,5 +388,5 @@ static PluginTypePlugin<LabelReduction> _type_plugin(
     "LabelReduction",
     "This page describes the current single 'option' for label reduction.");
 
-static PluginShared<LabelReduction> _plugin("exact", _parse);
+static Plugin<LabelReduction> _plugin("exact", _parse);
 }

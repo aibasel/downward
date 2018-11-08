@@ -4,8 +4,7 @@ USAGE = """\
 Update baseline:
   * change BASELINE variable below
   * push the change
-  * login to buildbot server and become the buildslave user
-      sudo -u buildslave -H bash
+  * login to computer running the buildslave as the buildslave user
   * remove ~/experiments dir
   * run in an updated repo (e.g. in ~/lib/downward):
     export PYTHONPATH=~/lib/python/lab
@@ -30,7 +29,6 @@ import logging
 import os
 import shutil
 
-from lab.steps import Step
 from lab.experiment import ARGPARSER
 
 from downward import cached_revision
@@ -44,15 +42,15 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
 BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
-CACHE_DIR = os.path.expanduser('~/lab')
+REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
-BASELINE = cached_revision.get_global_rev(REPO, rev='eb9f8c86918f')
+BASELINE = cached_revision.get_global_rev(REPO, rev='8bf3979d39d4')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
-    ('lazy-greedy-ff', ['--heuristic', 'h=ff()', '--search', 'lazy_greedy([h], preferred=[h])']),
-    ('lazy-greedy-cea', ['--heuristic', 'h=cea()', '--search', 'lazy_greedy([h], preferred=[h])']),
-    ('lazy-greedy-ff-cea', ['--heuristic', 'hff=ff()', '--heuristic',  'hcea=cea()',
+    ('lazy-greedy-ff', ['--evaluator', 'h=ff()', '--search', 'lazy_greedy([h], preferred=[h])']),
+    ('lazy-greedy-cea', ['--evaluator', 'h=cea()', '--search', 'lazy_greedy([h], preferred=[h])']),
+    ('lazy-greedy-ff-cea', ['--evaluator', 'hff=ff()', '--heuristic',  'hcea=cea()',
                             '--search', 'lazy_greedy([hff, hcea], preferred=[hff, hcea])']),
     ('blind', ['--search', 'astar(blind())']),
     # TODO: Revert to optimal=true.
@@ -121,10 +119,19 @@ def main():
         rev = args.revision
         name = rev
 
-    exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), cache_dir=CACHE_DIR)
+    exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), revision_cache=REVISION_CACHE)
     exp.add_suite(BENCHMARKS_DIR, SUITES[args.test])
     for config_nick, config in CONFIGS[args.test]:
         exp.add_algorithm(rev + "-" + config_nick, REPO, rev, config)
+
+    exp.add_parser(exp.EXITCODE_PARSER)
+    exp.add_parser(exp.TRANSLATOR_PARSER)
+    exp.add_parser(exp.SINGLE_SEARCH_PARSER)
+    exp.add_parser(exp.PLANNER_PARSER)
+
+    exp.add_step('build', exp.build)
+    exp.add_step('start', exp.start_runs)
+    exp.add_fetcher(name='fetch')
     exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='report')
 
     # Only compare results if we are not running the baseline experiment.
@@ -140,14 +147,15 @@ def main():
         exp.add_fetcher(
             src=get_exp_dir('baseline', args.test) + '-eval',
             dest=exp.eval_dir,
+            merge=True,
             name='fetch-baseline-results')
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
         exp.add_report(
             RegressionCheckReport(BASELINE, RELATIVE_CHECKS), name='regression-check')
         # We abort if there is a regression and keep the directories.
-        exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path))
-        exp.add_step(Step('rm-eval-dir', shutil.rmtree, exp.eval_dir))
+        exp.add_step('rm-exp-dir', shutil.rmtree, exp.path)
+        exp.add_step('rm-eval-dir', shutil.rmtree, exp.eval_dir)
 
-    exp()
+    exp.run_steps()
 
 main()

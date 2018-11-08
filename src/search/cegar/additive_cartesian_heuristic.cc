@@ -19,7 +19,7 @@ using namespace std;
 namespace cegar {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     const options::Options &opts) {
-    g_log << "Initializing additive Cartesian heuristic..." << endl;
+    utils::g_log << "Initializing additive Cartesian heuristic..." << endl;
     vector<shared_ptr<SubtaskGenerator>> subtask_generators =
         opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks");
     shared_ptr<utils::RandomNumberGenerator> rng =
@@ -60,7 +60,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     return sum_h;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Additive CEGAR heuristic",
         "See the paper introducing Counterexample-guided Abstraction "
@@ -68,7 +68,7 @@ static Heuristic *_parse(OptionParser &parser) {
         utils::format_paper_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Counterexample-guided Cartesian Abstraction Refinement",
-            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
             "Proceedings of the 23rd International Conference on Automated "
             "Planning and Scheduling (ICAPS 2013)",
             "347-351",
@@ -77,7 +77,7 @@ static Heuristic *_parse(OptionParser &parser) {
         utils::format_paper_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Diverse and Additive Cartesian Abstraction Heuristics",
-            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
             "Proceedings of the 24th International Conference on "
             "Automated Planning and Scheduling (ICAPS 2014)",
             "289-297",
@@ -132,8 +132,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new AdditiveCartesianHeuristic(opts);
+    return make_shared<AdditiveCartesianHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("cegar", _parse);
+static Plugin<Evaluator> _plugin("cegar", _parse);
 }

@@ -146,7 +146,7 @@ void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
     compute_heuristic(state);
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Additive heuristic", "");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported");
@@ -163,10 +163,10 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new AdditiveHeuristic(opts);
+        return make_shared<AdditiveHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("add", _parse);
+static Plugin<Evaluator> _plugin("add", _parse);
 }

@@ -9,29 +9,34 @@
 using namespace std;
 
 namespace stubborn_sets_simple {
+StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
+    : StubbornSets(opts) {
+}
+
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
-    compute_interference_relation();
+    interference_relation.resize(num_operators);
+    interference_relation_computed.resize(num_operators, false);
     cout << "pruning method: stubborn sets simple" << endl;
 }
 
-
-void StubbornSetsSimple::compute_interference_relation() {
-    interference_relation.resize(num_operators);
-
+const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {
     /*
        TODO: as interference is symmetric, we only need to compute the
        relation for operators (o1, o2) with (o1 < o2) and add a lookup
        method that looks up (i, j) if i < j and (j, i) otherwise.
     */
-    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
-        vector<int> &interfere_op1 = interference_relation[op1_no];
+    vector<int> &interfere_op1 = interference_relation[op1_no];
+    if (!interference_relation_computed[op1_no]) {
         for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
             if (op1_no != op2_no && interfere(op1_no, op2_no)) {
                 interfere_op1.push_back(op2_no);
             }
         }
+        interfere_op1.shrink_to_fit();
+        interference_relation_computed[op1_no] = true;
     }
+    return interfere_op1;
 }
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
@@ -43,7 +48,7 @@ void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
 
 // Add all operators that interfere with op.
 void StubbornSetsSimple::add_interfering(int op_no) {
-    for (int interferer_no : interference_relation[op_no]) {
+    for (int interferer_no : get_interfering_operators(op_no)) {
         mark_as_stubborn(interferer_no);
     }
 }
@@ -82,7 +87,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         + utils::format_paper_reference(
             {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
             "A Stubborn Set Algorithm for Optimal Planning",
-            "http://ai.cs.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
+            "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
             "Proceedings of the 20th European Conference on Artificial Intelligence "
             "(ECAI 2012)",
             "891-892",
@@ -96,12 +101,16 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "323-331",
             "AAAI Press, 2014"));
 
+    stubborn_sets::add_pruning_options(parser);
+
+    Options opts = parser.parse();
+
     if (parser.dry_run()) {
         return nullptr;
     }
 
-    return make_shared<StubbornSetsSimple>();
+    return make_shared<StubbornSetsSimple>(opts);
 }
 
-static PluginShared<PruningMethod> _plugin("stubborn_sets_simple", _parse);
+static Plugin<PruningMethod> _plugin("stubborn_sets_simple", _parse);
 }

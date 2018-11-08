@@ -8,9 +8,12 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const Options &opts)
+IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry,
+                               const options::Predefinitions &predefinitions)
     : SearchEngine(opts),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
+      registry(registry),
+      predefinitions(predefinitions),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
@@ -23,7 +26,7 @@ IteratedSearch::IteratedSearch(const Options &opts)
 
 shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     int engine_configs_index) {
-    OptionParser parser(engine_configs[engine_configs_index], false);
+    OptionParser parser(engine_configs[engine_configs_index], registry, predefinitions, false);
     shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
 
     cout << "Starting search: ";
@@ -33,7 +36,7 @@ shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     return engine;
 }
 
-shared_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
+shared_ptr<SearchEngine> IteratedSearch::create_current_phase() {
     int num_phases = engine_configs.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
@@ -54,7 +57,7 @@ shared_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
 }
 
 SearchStatus IteratedSearch::step() {
-    shared_ptr<SearchEngine> current_search = create_phase(phase);
+    shared_ptr<SearchEngine> current_search = create_current_phase();
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -65,7 +68,7 @@ SearchStatus IteratedSearch::step() {
 
     current_search->search();
 
-    SearchEngine::Plan found_plan;
+    Plan found_plan;
     int plan_cost = 0;
     last_phase_found_solution = current_search->found_solution();
     if (last_phase_found_solution) {
@@ -73,7 +76,7 @@ SearchStatus IteratedSearch::step() {
         found_plan = current_search->get_plan();
         plan_cost = calculate_plan_cost(found_plan, task_proxy);
         if (plan_cost < best_bound) {
-            save_plan(found_plan, task_proxy, true);
+            plan_manager.save_plan(found_plan, task_proxy, true);
             best_bound = plan_cost;
             set_plan(found_plan);
         }
@@ -119,7 +122,7 @@ void IteratedSearch::print_statistics() const {
     statistics.print_detailed_statistics();
 }
 
-void IteratedSearch::save_plan_if_necessary() const {
+void IteratedSearch::save_plan_if_necessary() {
     // We don't need to save here, as we automatically save after
     // each successful search iteration.
 }
@@ -141,7 +144,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "5 times (once before each iteration).\n\n"
         "To avoid this, use heuristic predefinition, which avoids duplicate "
         "preprocessing, as follows:\n```\n"
-        "--heuristic \"h=merge_and_shrink()\" --search "
+        "--evaluator \"h=merge_and_shrink()\" --search "
         "\"iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3), "
         "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])\"\n"
         "```");
@@ -177,14 +180,16 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         for (const ParseTree &config : opts.get_list<ParseTree>("engine_configs")) {
-            OptionParser test_parser(config, true);
+            OptionParser test_parser(config, parser.get_registry(),
+                                     parser.get_predefinitions(), true);
             test_parser.start_parsing<shared_ptr<SearchEngine>>();
         }
         return nullptr;
     } else {
-        return make_shared<IteratedSearch>(opts);
+        return make_shared<IteratedSearch>(opts, parser.get_registry(),
+                                           parser.get_predefinitions());
     }
 }
 
-static PluginShared<SearchEngine> _plugin("iterated", _parse);
+static Plugin<SearchEngine> _plugin("iterated", _parse);
 }

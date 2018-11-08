@@ -67,6 +67,7 @@ void MergeScoringFunctionTotalOrder::initialize(const TaskProxy &task_proxy) {
 
     // Compute the order in which atomic transition systems are considered
     vector<int> atomic_tso;
+    atomic_tso.reserve(num_variables);
     for (int i = 0; i < num_variables; ++i) {
         atomic_tso.push_back(i);
     }
@@ -209,7 +210,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
@@ -227,5 +228,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         return make_shared<MergeScoringFunctionTotalOrder>(options);
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("total_order", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("total_order", _parse);
 }

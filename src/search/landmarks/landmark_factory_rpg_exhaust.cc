@@ -54,7 +54,7 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
     return false;
 }
 
-static LandmarkFactory *_parse(OptionParser &parser) {
+static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Exhaustive Landmarks",
         "Exhaustively checks for each fact if it is a landmark."
@@ -69,13 +69,11 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_language_support("conditional_effects",
                                      "ignored, i.e. not supported");
 
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return nullptr;
-    } else {
-        return new LandmarkFactoryRpgExhaust(opts);
-    }
+    else
+        return make_shared<LandmarkFactoryRpgExhaust>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin(
-    "lm_exhaust", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_exhaust", _parse);
 }

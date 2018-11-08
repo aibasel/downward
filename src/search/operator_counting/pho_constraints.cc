@@ -24,7 +24,7 @@ PhOConstraints::PhOConstraints(const Options &opts)
 }
 
 void PhOConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     vector<lp::LPConstraint> &constraints,
     double infinity) {
     assert(pattern_generator);
@@ -91,5 +91,5 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     return make_shared<PhOConstraints>(opts);
 }
 
-static PluginShared<ConstraintGenerator> _plugin("pho_constraints", _parse);
+static Plugin<ConstraintGenerator> _plugin("pho_constraints", _parse);
 }

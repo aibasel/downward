@@ -57,7 +57,7 @@ void PatternCollectionGeneratorGenetic::select(
             // Find first entry which is strictly greater than random.
             selected = upper_bound(cumulative_fitness.begin(),
                                    cumulative_fitness.end(), random) -
-                       cumulative_fitness.begin();
+                cumulative_fitness.begin();
         }
         new_pattern_collections.push_back(pattern_collections[selected]);
     }
@@ -254,9 +254,7 @@ void PatternCollectionGeneratorGenetic::bin_packing() {
     }
 }
 
-void PatternCollectionGeneratorGenetic::genetic_algorithm(
-    const shared_ptr<AbstractTask> &task_) {
-    task = task_;
+void PatternCollectionGeneratorGenetic::genetic_algorithm() {
     best_fitness = -1;
     best_patterns = nullptr;
     bin_packing();
@@ -274,9 +272,10 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm(
 }
 
 PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
-    const shared_ptr<AbstractTask> &task) {
+    const shared_ptr<AbstractTask> &task_) {
     utils::Timer timer;
-    genetic_algorithm(task);
+    task = task_;
+    genetic_algorithm();
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
     assert(best_patterns);
     TaskProxy task_proxy(*task);
@@ -370,10 +369,10 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
 
     return make_shared<PatternCollectionGeneratorGenetic>(opts);
 }
 
-static PluginShared<PatternCollectionGenerator> _plugin("genetic", _parse);
+static Plugin<PatternCollectionGenerator> _plugin("genetic", _parse);
 }

@@ -6,7 +6,7 @@
 #include <set>
 
 class EvaluationContext;
-class Heuristic;
+class GlobalState;
 
 class Evaluator {
     const std::string description;
@@ -31,17 +31,27 @@ public:
     virtual bool dead_ends_are_reliable() const;
 
     /*
-      get_involved_heuristics should insert all heuristics that this
-      evaluator directly or indirectly depends on into the result set,
-      including itself if it is a heuristic.
+      get_path_dependent_evaluators should insert all path-dependent
+      evaluators that this evaluator directly or indirectly depends on
+      into the result set, including itself if necessary.
 
-      TODO: We wanted to get rid of this at some point, and perhaps we
-      still should try to do that. Currently, the only legitimate use
-      for this seems to be to call "notify_state_transition" on all heuristics.
-      (There is also one "illegitimate" use, the remaining reference
-      to heuristics[0] in EagerSearch.)
+      The two notify methods below will be called for these and only
+      these evaluators. In other words, "path-dependent" for our
+      purposes means "needs to be notified of the initial state and
+      state transitions".
     */
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) = 0;
+
+
+    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
+    }
+
+    virtual void notify_state_transition(
+        const GlobalState & /*parent_state*/,
+        OperatorID /*op_id*/,
+        const GlobalState & /*state*/) {
+    }
 
     /*
       compute_result should compute the estimate and possibly
@@ -73,6 +83,14 @@ public:
     bool is_used_for_reporting_minima() const;
     bool is_used_for_boosting() const;
     bool is_used_for_counting_evaluations() const;
+
+    virtual bool does_cache_estimates() const;
+    virtual bool is_estimate_cached(const GlobalState &state) const;
+    /*
+      Calling get_cached_estimate is only allowed if an estimate for
+      the given state is cached, i.e., is_estimate_cached returns true.
+    */
+    virtual int get_cached_estimate(const GlobalState &state) const;
 };
 
 #endif

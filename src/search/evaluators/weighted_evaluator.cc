@@ -12,11 +12,11 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(const Options &opts)
-    : evaluator(opts.get<Evaluator *>("eval")),
+    : evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
       w(opts.get<int>("weight")) {
 }
 
-WeightedEvaluator::WeightedEvaluator(Evaluator *eval, int weight)
+WeightedEvaluator::WeightedEvaluator(const shared_ptr<Evaluator> &eval, int weight)
     : evaluator(eval), w(weight) {
 }
 
@@ -31,31 +31,31 @@ EvaluationResult WeightedEvaluator::compute_result(
     EvaluationContext &eval_context) {
     // Note that this produces no preferred operators.
     EvaluationResult result;
-    int h_val = eval_context.get_heuristic_value_or_infinity(evaluator);
-    if (h_val != EvaluationResult::INFTY) {
+    int value = eval_context.get_evaluator_value_or_infinity(evaluator.get());
+    if (value != EvaluationResult::INFTY) {
         // TODO: Check for overflow?
-        h_val *= w;
+        value *= w;
     }
-    result.set_h_value(h_val);
+    result.set_evaluator_value(value);
     return result;
 }
 
-void WeightedEvaluator::get_involved_heuristics(set<Heuristic *> &hset) {
-    evaluator->get_involved_heuristics(hset);
+void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
+    evaluator->get_path_dependent_evaluators(evals);
 }
 
-static Evaluator *_parse(OptionParser &parser) {
+static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Weighted evaluator",
         "Multiplies the value of the evaluator with the given weight.");
-    parser.add_option<Evaluator *>("eval", "evaluator");
+    parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
     parser.add_option<int>("weight", "weight");
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new WeightedEvaluator(opts);
+        return make_shared<WeightedEvaluator>(opts);
 }
 
-static Plugin<Evaluator> _plugin("weight", _parse);
+static Plugin<Evaluator> _plugin("weight", _parse, "evaluators_basic");
 }

@@ -59,7 +59,7 @@ def translate_task(python, python_version, task_file):
     for pattern in [
             r"\[.+s CPU, .+s wall-clock\]",
             r"\d+ KB",
-            r"callstring: .*/python\d(.\d)?"]:
+            r".* command line string: .*/python\d(.\d)?"]:
         output = re.sub(pattern, "", output)
     return output
 
@@ -139,7 +139,7 @@ def main():
         assert len(interpreter_versions) == 2, "Code only tests difference between 2 versions"
         files = [version + ".sas" for version in interpreter_versions]
         try:
-            subprocess.check_call(["diff"] + files)
+            subprocess.check_call(["diff", "-q"] + files)
         except subprocess.CalledProcessError:
             sys.exit(
                 "Error: Translator output for %s differs between Python versions. "

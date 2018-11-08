@@ -42,7 +42,7 @@ void AbstractSearch::forward_dijkstra(AbstractState *init) {
     astar_search(true, false);
 }
 
-void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
+void AbstractSearch::backwards_dijkstra(const AbstractStates &goals) {
     reset();
     for (AbstractState *goal : goals) {
         goal->get_search_info().decrease_g_value_to(0);
@@ -73,8 +73,8 @@ AbstractState *AbstractSearch::astar_search(
             return state;
         }
         const Transitions &transitions = forward ?
-                                         state->get_outgoing_transitions() :
-                                         state->get_incoming_transitions();
+            state->get_outgoing_transitions() :
+            state->get_incoming_transitions();
         for (const Transition &transition : transitions) {
             int op_id = transition.op_id;
             AbstractState *successor = transition.target;

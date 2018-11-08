@@ -1,6 +1,8 @@
 #ifndef OPERATOR_ID_H
 #define OPERATOR_ID_H
 
+#include "utils/hash.h"
+
 #include <iostream>
 
 /*
@@ -43,20 +45,17 @@ public:
         return !(*this == other);
     }
 
-    size_t hash() const {
+    int hash() const {
         return index;
     }
 };
 
 std::ostream &operator<<(std::ostream &os, OperatorID id);
 
-namespace std {
-template<>
-struct hash<OperatorID> {
-    size_t operator()(OperatorID id) const {
-        return id.hash();
-    }
-};
+namespace utils {
+inline void feed(HashState &hash_state, OperatorID id) {
+    feed(hash_state, id.hash());
+}
 }
 
 #endif

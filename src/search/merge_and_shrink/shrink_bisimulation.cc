@@ -94,8 +94,7 @@ struct Signature {
 
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
-    : ShrinkStrategy(),
-      greedy(opts.get<bool>("greedy")),
+    : greedy(opts.get<bool>("greedy")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
@@ -241,6 +240,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
     int target_size) const {
+    assert(distances.are_goal_distances_computed());
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
@@ -382,7 +382,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             {"Raz Nissim", "Joerg Hoffmann", "Malte Helmert"},
             "Computing Perfect Heuristics in Polynomial Time: On Bisimulation"
             " and Merge-and-Shrink Abstractions in Optimal Planning.",
-            "http://ai.cs.unibas.ch/papers/nissim-et-al-ijcai2011.pdf",
+            "https://ai.dmi.unibas.ch/papers/nissim-et-al-ijcai2011.pdf",
             "Proceedings of the Twenty-Second International Joint Conference"
             " on Artificial Intelligence (IJCAI 2011)",
             "1983-1990",
@@ -429,5 +429,5 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         return make_shared<ShrinkBisimulation>(opts);
 }
 
-static PluginShared<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
+static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
 }

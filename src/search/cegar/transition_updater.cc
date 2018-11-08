@@ -39,7 +39,7 @@ static vector<FactPair> get_postconditions(
     }
     vector<FactPair> postconditions;
     postconditions.reserve(var_to_post.size());
-    for (const pair<int, int> &fact : var_to_post) {
+    for (const auto &fact : var_to_post) {
         postconditions.emplace_back(fact.first, fact.second);
     }
     return postconditions;

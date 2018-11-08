@@ -21,7 +21,7 @@ using SumEval = sum_evaluator::SumEvaluator;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
-    Evaluator *eval, bool pref_only) {
+    const shared_ptr<Evaluator> &eval, bool pref_only) {
     Options options;
     options.set("eval", eval);
     options.set("pref_only", pref_only);
@@ -41,18 +41,18 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
   and create_wastar_open_list_factory.
 */
 static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
-    const vector<Evaluator *> &evals,
-    const vector<Heuristic *> &preferred_heuristics,
+    const vector<shared_ptr<Evaluator>> &evals,
+    const vector<shared_ptr<Evaluator>> &preferred_evaluators,
     int boost) {
-    if (evals.size() == 1 && preferred_heuristics.empty()) {
+    if (evals.size() == 1 && preferred_evaluators.empty()) {
         return create_standard_scalar_open_list_factory(evals[0], false);
     } else {
         vector<shared_ptr<OpenListFactory>> subfactories;
-        for (Evaluator *evaluator : evals) {
+        for (const shared_ptr<Evaluator> &evaluator : evals) {
             subfactories.push_back(
                 create_standard_scalar_open_list_factory(
                     evaluator, false));
-            if (!preferred_heuristics.empty()) {
+            if (!preferred_evaluators.empty()) {
                 subfactories.push_back(
                     create_standard_scalar_open_list_factory(
                         evaluator, true));
@@ -65,8 +65,8 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
 shared_ptr<OpenListFactory> create_greedy_open_list_factory(
     const Options &options) {
     return create_alternation_open_list_factory_aux(
-        options.get_list<Evaluator *>("evals"),
-        options.get_list<Heuristic *>("preferred"),
+        options.get_list<shared_ptr<Evaluator>>("evals"),
+        options.get_list<shared_ptr<Evaluator>>("preferred"),
         options.get<int>("boost"));
 }
 
@@ -77,44 +77,45 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 1, we do not introduce an unnecessary weighted evaluator:
   we use g + h instead of g + 1 * h.
 
-  If w = 0, we omit the heuristic altogether:
+  If w = 0, we omit the h-evaluator altogether:
   we use g instead of g + 0 * h.
 */
-static Evaluator *create_wastar_eval(GEval *g_eval, int w, Evaluator *h_eval) {
+static shared_ptr<Evaluator> create_wastar_eval(const shared_ptr<GEval> &g_eval, int w,
+                                                const shared_ptr<Evaluator> &h_eval) {
     if (w == 0)
         return g_eval;
-    Evaluator *w_h_eval = nullptr;
+    shared_ptr<Evaluator> w_h_eval = nullptr;
     if (w == 1)
         w_h_eval = h_eval;
     else
-        w_h_eval = new WeightedEval(h_eval, w);
-    return new SumEval(vector<Evaluator *>({g_eval, w_h_eval}));
+        w_h_eval = make_shared<WeightedEval>(h_eval, w);
+    return make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g_eval, w_h_eval}));
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     const Options &options) {
-    vector<Evaluator *> base_evals =
-        options.get_list<Evaluator *>("evals");
+    vector<shared_ptr<Evaluator>> base_evals =
+        options.get_list<shared_ptr<Evaluator>>("evals");
     int w = options.get<int>("w");
 
-    GEval *g_eval = new GEval();
-    vector<Evaluator *> f_evals;
+    shared_ptr<GEval> g_eval = make_shared<GEval>();
+    vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
-    for (Evaluator *eval : base_evals)
+    for (const shared_ptr<Evaluator> &eval : base_evals)
         f_evals.push_back(create_wastar_eval(g_eval, w, eval));
 
     return create_alternation_open_list_factory_aux(
         f_evals,
-        options.get_list<Heuristic *>("preferred"),
+        options.get_list<shared_ptr<Evaluator>>("preferred"),
         options.get<int>("boost"));
 }
 
-pair<shared_ptr<OpenListFactory>, Evaluator *>
+pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
-    GEval *g = new GEval();
-    Evaluator *h = opts.get<Evaluator *>("eval");
-    Evaluator *f = new SumEval(vector<Evaluator *>({g, h}));
-    vector<Evaluator *> evals = {f, h};
+    shared_ptr<GEval> g = make_shared<GEval>();
+    shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
+    shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h}));
+    vector<shared_ptr<Evaluator>> evals = {f, h};
 
     Options options;
     options.set("evals", evals);
