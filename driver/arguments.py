@@ -180,7 +180,7 @@ def _check_mutex_args(parser, args, required=False):
     if required and not any(is_specified for _, is_specified in args):
         print_usage_and_exit_with_driver_input_error(
             parser, "exactly one of {%s} has to be specified" %
-                ", ".join(name for name, _ in args))
+            ", ".join(name for name, _ in args))
 
 
 def _looks_like_search_input(filename):
@@ -231,7 +231,6 @@ def _set_components_and_inputs(parser, args):
         args.components.append("validate")
 
     args.translate_inputs = []
-    args.search_input = "output.sas"
 
     assert args.components
     first = args.components[0]
@@ -262,6 +261,16 @@ def _set_components_and_inputs(parser, args):
                 parser, "search needs exactly one input file")
     else:
         assert False, first
+
+
+def _set_translator_output_options(parser, args):
+    if any("--sas-file" in opt for opt in args.translate_options):
+        print_usage_and_exit_with_driver_input_error(
+            parser, "Cannot pass the \"--sas-file\" option to translate.py from the "
+                    "fast-downward.py script. Pass it directly to fast-downward.py instead.")
+
+    args.search_input = args.sas_file
+    args.translate_options += ["--sas-file", args.search_input]
 
 
 def _get_time_limit_in_seconds(limit, parser):
@@ -382,6 +391,11 @@ def parse_args():
     driver_other.add_argument(
         "--plan-file", metavar="FILE", default="sas_plan",
         help="write plan(s) to FILE (default: %(default)s; anytime configurations append .1, .2, ...)")
+
+    driver_other.add_argument(
+        "--sas-file", metavar="FILE", default="output.sas",
+        help="intermediate file for storing the translator output (default: %(default)s)")
+
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
         help="run a portfolio specified in FILE")
@@ -394,7 +408,7 @@ def parse_args():
 
     driver_other.add_argument(
         "--cleanup", action="store_true",
-        help="clean up temporary files (output.sas, sas_plan, sas_plan.*) and exit")
+        help="clean up temporary files (translator output and plan files) and exit")
 
 
     parser.add_argument(
@@ -413,7 +427,7 @@ def parse_args():
     if args.build and args.debug:
         print_usage_and_exit_with_driver_input_error(
             parser, "The option --debug is an alias for --build=debug32 "
-                 "--validate. Do no specify both --debug and --build.")
+                     "--validate. Do no specify both --debug and --build.")
     if not args.build:
         if args.debug:
             args.build = "debug32"
@@ -426,6 +440,8 @@ def parse_args():
             ("--alias", args.alias is not None),
             ("--portfolio", args.portfolio is not None),
             ("options for search component", bool(args.search_options))])
+
+    _set_translator_output_options(parser, args)
 
     _convert_limits_to_ints(parser, args)
 
