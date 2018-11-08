@@ -14,7 +14,7 @@ namespace utils {
   Logs are written to stdout.
 
   Usage:
-        g_log << "States: " << num_states << endl;
+        utils::g_log << "States: " << num_states << endl;
 */
 struct Log {
     template<typename T>
@@ -23,6 +23,8 @@ struct Log {
                          << get_peak_memory_in_kb() << " KB] " << elem;
     }
 };
+
+extern Log g_log;
 
 class TraceBlock {
     std::string block_name;

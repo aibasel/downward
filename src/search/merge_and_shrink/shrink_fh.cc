@@ -29,6 +29,8 @@ ShrinkFH::ShrinkFH(const Options &opts)
 vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
     const TransitionSystem &ts,
     const Distances &distances) const {
+    assert(distances.are_init_distances_computed());
+    assert(distances.are_goal_distances_computed());
     int max_h = 0;
     int max_f = 0;
     for (int state = 0; state < ts.get_size(); ++state) {
@@ -193,7 +195,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         " the paper:" + utils::format_paper_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
             "Flexible Abstraction Heuristics for Optimal Sequential Planning",
-            "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
+            "https://ai.dmi.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
             "Proceedings of the Seventeenth International Conference on"
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
@@ -238,5 +240,5 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         return make_shared<ShrinkFH>(opts);
 }
 
-static PluginShared<ShrinkStrategy> _plugin("shrink_fh", _parse);
+static Plugin<ShrinkStrategy> _plugin("shrink_fh", _parse);
 }

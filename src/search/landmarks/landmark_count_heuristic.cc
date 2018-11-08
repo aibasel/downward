@@ -6,11 +6,15 @@
 
 #include "../global_state.h"
 #include "../option_parser.h"
+#include "../per_state_bitset.h"
 #include "../plugin.h"
 
 #include "../lp/lp_solver.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
+#include "../tasks/cost_adapted_task.h"
+#include "../tasks/root_task.h"
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -22,21 +26,11 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-static Options get_exploration_options(
-    const shared_ptr<AbstractTask> &task, bool cache_estimates) {
-    Options exploration_opts;
-    exploration_opts.set<shared_ptr<AbstractTask>>("transform", task);
-    exploration_opts.set<bool>("cache_estimates", cache_estimates);
-    return exploration_opts;
-}
-
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      exploration(get_exploration_options(task, cache_h_values)),
       use_preferred_operators(opts.get<bool>("pref")),
-      ff_search_disjunctive_lms(false),
       conditional_effects_supported(
-          opts.get<LandmarkFactory *>("lm_factory")->supports_conditional_effects()),
+          opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
       admissible(opts.get<bool>("admissible")),
       dead_ends_reliable(
           admissible ||
@@ -44,22 +38,36 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
-    LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
-    lgraph = lm_graph_factory->compute_lm_graph(task, exploration);
+
+    /*
+      Actually, we should like to test if this is the root task or a
+      CostAdapatedTask *of the root task*, but there is currently no good way
+      to do this, so we use this incomplete, slightly less safe test.
+    */
+    if (task != tasks::g_root_task && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr) {
+        cerr << "The landmark count heuristic currently only supports task "
+             << "transformations that modify the operator costs. See issues 845 "
+             << "and 686 for details."
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
+
+    shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
+    lgraph = lm_graph_factory->compute_lm_graph(task);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (admissible) {
         if (reasonable_orders) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
-            utils::exit_with(ExitCode::INPUT_ERROR);
+            utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         } else if (task_properties::has_axioms(task_proxy)) {
             cerr << "cost partitioning does not support axioms" << endl;
-            utils::exit_with(ExitCode::UNSUPPORTED);
+            utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
         } else if (task_properties::has_conditional_effects(task_proxy) &&
                    !conditional_effects_supported) {
             cerr << "conditional effects not supported by the landmark generation method" << endl;
-            utils::exit_with(ExitCode::UNSUPPORTED);
+            utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
@@ -80,18 +88,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
            where it's compatible. See issue564. */
         successor_generator = utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy);
     }
-}
-
-LandmarkCountHeuristic::~LandmarkCountHeuristic() {
-}
-
-void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &global_state) {
-    // Set additional goals for FF exploration
-    LandmarkSet reached_landmarks = convert_to_landmark_set(
-        lm_status_manager->get_reached_landmarks(global_state));
-    vector<FactPair> lm_leaves = collect_lm_leaves(
-        ff_search_disjunctive_lms, reached_landmarks);
-    exploration.set_additional_goals(lm_leaves);
 }
 
 int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state) {
@@ -136,55 +132,13 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
 
     int h = get_heuristic_value(global_state);
 
-    // no (need for) helpful actions, return
-    if (!use_preferred_operators) {
-        return h;
-    }
-
-    // Try generating helpful actions (those that lead to new leaf LM in the
-    // next step). If all LMs have been reached before or no new ones can be
-    // reached within next step, helpful actions are those occuring in a plan
-    // to achieve one of the LM leaves.
-
-    LandmarkSet reached_lms = convert_to_landmark_set(
-        lm_status_manager->get_reached_landmarks(global_state));
-
-    int num_reached = reached_lms.size();
-    if (num_reached == lgraph->number_of_landmarks() ||
-        !generate_helpful_actions(state, reached_lms)) {
-        set_exploration_goals(global_state);
-
-        // Use FF to plan to a landmark leaf.
-        vector<FactPair> leaves = collect_lm_leaves(
-            ff_search_disjunctive_lms, reached_lms);
-        if (!exploration.plan_for_disj(leaves, state)) {
-            exploration.exported_op_ids.clear();
-            return DEAD_END;
-        }
-        OperatorsProxy operators = task_proxy.get_operators();
-        for (int exported_op_id : exploration.exported_op_ids) {
-            set_preferred(operators[exported_op_id]);
-        }
-        exploration.exported_op_ids.clear();
+    if (use_preferred_operators) {
+        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
+        LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
+        generate_helpful_actions(state, reached_lms);
     }
 
     return h;
-}
-
-vector<FactPair> LandmarkCountHeuristic::collect_lm_leaves(
-    bool disjunctive_lms, const LandmarkSet &reached_lms) {
-    vector<FactPair> leaves;
-    for (const LandmarkNode *node_p : lgraph->get_nodes()) {
-        if (!disjunctive_lms && node_p->disjunctive)
-            continue;
-
-        if (!reached_lms.count(node_p) &&
-            !check_node_orders_disobeyed(*node_p, reached_lms)) {
-            leaves.insert(
-                leaves.end(), node_p->facts.begin(), node_p->facts.end());
-        }
-    }
-    return leaves;
 }
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &node,
@@ -262,18 +216,15 @@ void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_sta
     lm_status_manager->set_landmarks_for_initial_state(initial_state);
 }
 
-bool LandmarkCountHeuristic::notify_state_transition(
+void LandmarkCountHeuristic::notify_state_transition(
     const GlobalState &parent_state, OperatorID op_id,
     const GlobalState &state) {
     lm_status_manager->update_reached_lms(parent_state, op_id, state);
-    /* TODO: The return value "true" signals that the LM set of this state
-             has changed and the h value should be recomputed. It's not
-             wrong to always return true, but it may be more efficient to
-             check that the LM set has actually changed. */
-    if (cache_h_values) {
+    if (cache_evaluator_values) {
+        /* TODO:  It may be more efficient to check that the reached landmark
+           set has actually changed and only then mark the h value as dirty. */
         heuristic_cache[state].dirty = true;
     }
-    return true;
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
@@ -284,27 +235,84 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
 // functions in this class that use LandmarkSets for the reached LMs
 // (HACK).
 LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
-    const vector<bool> &landmark_vector) {
+    const BitsetView &landmark_bitset) {
     LandmarkSet landmark_set;
-    for (size_t i = 0; i < landmark_vector.size(); ++i)
-        if (landmark_vector[i])
+    for (int i = 0; i < landmark_bitset.size(); ++i)
+        if (landmark_bitset.test(i))
             landmark_set.insert(lgraph->get_lm_for_index(i));
     return landmark_set;
 }
 
 
-static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Landmark-count heuristic",
-                             "See also Synergy");
-    parser.document_note(
-        "Note",
-        "to use ``optimal=true``, you must build the planner with LP support. "
-        "See LPBuildInstructions.");
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Landmark-count heuristic",
+        "For the inadmissible variant see the papers" +
+        utils::format_paper_reference(
+            {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
+            "Landmarks Revisited",
+            "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
+            "Proceedings of the 23rd AAAI Conference on Artificial "
+            "Intelligence (AAAI 2008)",
+            "975-982",
+            "AAAI Press 2008") +
+        "and" +
+        utils::format_paper_reference(
+            {"Silvia Richter", "Matthias Westphal"},
+            "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
+            "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
+            "Journal of Artificial Intelligence Research 39",
+            "127-177",
+            "AAAI Press 2010") +
+        "For the admissible variant see the papers" +
+        utils::format_paper_reference(
+            {"Erez Karpas", "Carmel Domshlak"},
+            "Cost-Optimal Planning with Landmarks",
+            "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
+            "Proceedings of the 21st International Joint Conference on "
+            "Artificial Intelligence (IJCAI 2009)",
+            "1728-1733",
+            "AAAI Press 2009") +
+        "and" +
+        utils::format_paper_reference(
+            {"Emil Keyder and Silvia Richter and Malte Helmert"},
+            "Sound and Complete Landmarks for And/Or Graphs",
+            "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
+            "Proceedings of the 19th European Conference on Artificial "
+            "Intelligence (ECAI 2010)",
+            "335-340",
+            "IOS Press 2010"));
+
     parser.document_note(
         "Optimal search",
-        "when using landmarks for optimal search (``admissible=true``), "
-        "you probably also want to enable the mpd option of the A* algorithm "
-        "to improve heuristic estimates");
+        "When using landmarks for optimal search (``admissible=true``), "
+        "you probably also want to add this heuristic as a lazy_evaluator "
+        "in the A* algorithm to improve heuristic estimates.");
+    parser.document_note(
+        "Note",
+        "To use ``optimal=true``, you must build the planner with LP support. "
+        "See LPBuildInstructions.");
+    parser.document_note(
+        "Differences to the literature",
+        "This heuristic differs from the description in the literature (see "
+        "references above) in the set of preferred operators computed. The "
+        "original implementation described in the literature computes two "
+        "kinds of preferred operators:\n\n"
+        "+ If there is an applicable operator that reaches a landmark, all "
+        "such operators are preferred.\n"
+        "+ If no such operators exist, perform an FF-style relaxed exploration "
+        "towards the nearest landmarks (according to the landmark orderings) "
+        "and use the preferred operators of this exploration.\n\n\n"
+        "Our implementation of the heuristic only considers preferred "
+        "operators of the first type and does not include the second type. The "
+        "rationale for this change is that it reduces code complexity and "
+        "helps more cleanly separate landmark-based and FF-based computations "
+        "in LAMA-like planner configurations. In our experiments, only "
+        "considering preferred operators of the first type reduces performance "
+        "when using the heuristic and its preferred operators in isolation but "
+        "improves performance when using this heuristic in conjunction with "
+        "the FF heuristic, as in LAMA-like planner configurations.");
+
     parser.document_language_support("action costs",
                                      "supported");
     parser.document_language_support("conditional_effects",
@@ -328,7 +336,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators",
                              "yes (if enabled; see ``pref`` option)");
 
-    parser.add_option<LandmarkFactory *>(
+    parser.add_option<shared_ptr<LandmarkFactory>>(
         "lm_factory",
         "the set of landmarks to use for this heuristic. "
         "The set of landmarks can be specified here, "
@@ -349,9 +357,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new LandmarkCountHeuristic(opts);
+        return make_shared<LandmarkCountHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin(
-    "lmcount", _parse);
+static Plugin<Evaluator> _plugin("lmcount", _parse);
 }

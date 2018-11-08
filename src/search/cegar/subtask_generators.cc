@@ -50,8 +50,8 @@ static void remove_initial_state_facts(
     const TaskProxy &task_proxy, Facts &facts) {
     State initial_state = task_proxy.get_initial_state();
     facts.erase(remove_if(facts.begin(), facts.end(), [&](FactPair fact) {
-            return initial_state[fact.var].get_value() == fact.value;
-        }), facts.end());
+                              return initial_state[fact.var].get_value() == fact.value;
+                          }), facts.end());
 }
 
 static void order_facts(
@@ -75,7 +75,7 @@ static void order_facts(
         break;
     default:
         cerr << "Invalid task order: " << static_cast<int>(fact_order) << endl;
-        utils::exit_with(utils::ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -98,6 +98,7 @@ TaskDuplicator::TaskDuplicator(const Options &opts)
 SharedTasks TaskDuplicator::get_subtasks(
     const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
+    subtasks.reserve(num_copies);
     for (int i = 0; i < num_copies; ++i) {
         subtasks.push_back(task);
     }
@@ -213,11 +214,11 @@ static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
         return make_shared<LandmarkDecomposition>(opts);
 }
 
-static PluginShared<SubtaskGenerator> _plugin_original(
+static Plugin<SubtaskGenerator> _plugin_original(
     "original", _parse_original);
-static PluginShared<SubtaskGenerator> _plugin_goals(
+static Plugin<SubtaskGenerator> _plugin_goals(
     "goals", _parse_goals);
-static PluginShared<SubtaskGenerator> _plugin_landmarks(
+static Plugin<SubtaskGenerator> _plugin_landmarks(
     "landmarks", _parse_landmarks);
 
 static PluginTypePlugin<SubtaskGenerator> _type_plugin(

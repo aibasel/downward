@@ -33,7 +33,7 @@ CGHeuristic::CGHeuristic(const Options &opts)
         prio_queues.push_back(new priority_queues::AdaptiveQueue<ValueNode *>);
 
     function<bool(int, int)> pruning_condition =
-        [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
+        [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
     DTGFactory factory(task_proxy, false, pruning_condition);
     transition_graphs = factory.build_dtgs();
 }
@@ -49,8 +49,8 @@ bool CGHeuristic::dead_ends_are_reliable() const {
     return false;
 }
 
-int CGHeuristic::compute_heuristic(const GlobalState &g_state) {
-    const State state = convert_global_state(g_state);
+int CGHeuristic::compute_heuristic(const GlobalState &global_state) {
+    const State state = convert_global_state(global_state);
     setup_domain_transition_graphs();
 
     int heuristic = 0;
@@ -150,8 +150,8 @@ int CGHeuristic::get_transition_cost(const State &state,
                 // Scan labels of the transition.
                 for (ValueTransitionLabel &label : transition.labels) {
                     OperatorProxy op = label.is_axiom ?
-                                       task_proxy.get_axioms()[label.op_id] :
-                                       task_proxy.get_operators()[label.op_id];
+                        task_proxy.get_axioms()[label.op_id] :
+                        task_proxy.get_operators()[label.op_id];
                     int new_distance = source_distance + op.get_cost();
                     for (LocalAssignment &assignment : label.precond) {
                         if (new_distance >= *target_distance_ptr)
@@ -268,8 +268,8 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 
     OperatorProxy op = helpful->is_axiom ?
-                       task_proxy.get_axioms()[helpful->op_id] :
-                       task_proxy.get_operators()[helpful->op_id];
+        task_proxy.get_axioms()[helpful->op_id] :
+        task_proxy.get_operators()[helpful->op_id];
     if (cost == op.get_cost() &&
         !op.is_axiom() &&
         task_properties::is_applicable(op, state)) {
@@ -286,7 +286,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Causal graph heuristic", "");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported");
@@ -303,11 +303,11 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new CGHeuristic(opts);
+        return make_shared<CGHeuristic>(opts);
 }
 
 
-static Plugin<Heuristic> _plugin("cg", _parse);
+static Plugin<Evaluator> _plugin("cg", _parse);
 }

@@ -25,7 +25,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
         "the following paper:" + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
@@ -86,7 +86,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
     return make_shared<MergeStrategyFactoryStateless>(strategy_options);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin_dfp("merge_dfp", _parse_dfp);
+static options::Plugin<MergeStrategyFactory> _plugin_dfp("merge_dfp", _parse_dfp);
 
 static shared_ptr<MergeStrategyFactory> _parse_linear(
     options::OptionParser &parser) {
@@ -97,7 +97,7 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
         "are described in the paper:" + utils::format_paper_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
             "Flexible Abstraction Heuristics for Optimal Sequential Planning",
-            "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
+            "https://ai.dmi.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
             "Proceedings of the Seventeenth International Conference on"
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
@@ -125,6 +125,6 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
         strategy_factory_options);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin_linear(
+static options::Plugin<MergeStrategyFactory> _plugin_linear(
     "merge_linear", _parse_linear);
 }

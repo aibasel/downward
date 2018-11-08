@@ -38,7 +38,7 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) const {
     return h;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Zero-One PDB",
         "The zero/one pattern database heuristic is simply the sum of the "
@@ -68,8 +68,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new ZeroOnePDBsHeuristic(opts);
+    return make_shared<ZeroOnePDBsHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("zopdbs", _parse);
+static Plugin<Evaluator> _plugin("zopdbs", _parse, "heuristics_pdb");
 }

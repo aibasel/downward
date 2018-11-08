@@ -1,7 +1,11 @@
 #ifndef TASK_UTILS_TASK_PROPERTIES_H
 #define TASK_UTILS_TASK_PROPERTIES_H
 
+#include "../global_state.h"
+#include "../per_task_information.h"
 #include "../task_proxy.h"
+
+#include "../algorithms/int_packer.h"
 
 namespace task_properties {
 inline bool is_applicable(OperatorProxy op, const State &state) {
@@ -19,6 +23,22 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
     }
     return true;
 }
+
+/*
+  TODO: get rid of this method and use the overload above instead.
+  To make this efficient however, the search should work with unpacked States
+  instead of packed GlobalStates internally.
+*/
+inline bool is_goal_state(const TaskProxy &task_proxy, const GlobalState &state) {
+    for (FactProxy goal : task_proxy.get_goals()) {
+        FactPair goal_fact = goal.get_pair();
+        if (state[goal_fact.var] != goal_fact.value) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 /*
   Return true iff all operators have cost 1.
@@ -59,6 +79,14 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     }
     return fact_pairs;
 }
+
+extern void print_variable_statistics(const TaskProxy &task_proxy);
+extern void dump_pddl(const State &state);
+extern void dump_fdr(const State &state);
+extern void dump_goals(const GoalsProxy &goals);
+extern void dump_task(const TaskProxy &task_proxy);
+
+extern PerTaskInformation<int_packer::IntPacker> g_state_packers;
 }
 
 #endif

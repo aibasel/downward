@@ -475,9 +475,9 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
         // set unsatisfied pc count for op
         unsat_pc_count_[op.get_id()].first = pc_subsets.size();
 
-        for (const FluentSet &pc : pc_subsets) {
-            assert(set_indices_.find(pc) != set_indices_.end());
-            set_index = set_indices_[pc];
+        for (const FluentSet &pc_subset : pc_subsets) {
+            assert(set_indices_.find(pc_subset) != set_indices_.end());
+            set_index = set_indices_[pc_subset];
             pm_op.pc.push_back(set_index);
             h_m_table_[set_index].pc_for.emplace_back(op.get_id(), -1);
         }
@@ -487,9 +487,9 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
         get_m_sets(variables, m_, eff_subsets, eff);
         pm_op.eff.reserve(eff_subsets.size());
 
-        for (const FluentSet &eff : eff_subsets) {
-            assert(set_indices_.find(eff) != set_indices_.end());
-            set_index = set_indices_[eff];
+        for (const FluentSet &eff_subset : eff_subsets) {
+            assert(set_indices_.find(eff_subset) != set_indices_.end());
+            set_index = set_indices_[eff_subset];
             pm_op.eff.push_back(set_index);
         }
 
@@ -568,7 +568,7 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     cout << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
-        utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
     // Get all the m or less size subsets in the domain.
     vector<vector<FactPair>> msets;
@@ -900,7 +900,6 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
 void LandmarkFactoryHM::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &) {
     TaskProxy task_proxy(*task);
-    int set_index;
     initialize(task_proxy);
     compute_h_m_landmarks(task_proxy);
     // now construct landmarks graph
@@ -912,7 +911,7 @@ void LandmarkFactoryHM::generate_landmarks(
     for (const FluentSet &goal_subset : goal_subsets) {
         assert(set_indices_.find(goal_subset) != set_indices_.end());
 
-        set_index = set_indices_[goal_subset];
+        int set_index = set_indices_[goal_subset];
 
         if (h_m_table_[set_index].level == -1) {
             cout << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
@@ -972,7 +971,7 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }
 
-static LandmarkFactory *_parse(OptionParser &parser) {
+static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "h^m Landmarks",
         "The landmark generation method introduced by "
@@ -990,13 +989,11 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_language_support("conditional_effects",
                                      "ignored, i.e. not supported");
 
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return nullptr;
-    } else {
-        return new LandmarkFactoryHM(opts);
-    }
+    else
+        return make_shared<LandmarkFactoryHM>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin(
-    "lm_hm", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_hm", _parse);
 }

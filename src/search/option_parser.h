@@ -1,17 +1,21 @@
 #ifndef OPTION_PARSER_H
 #define OPTION_PARSER_H
 
-/* We use this temporary stub to avoid merge conflicts while we move the
-   option parser code into a subdirectory. */
+/*
+  TODO: This file was intended to be a temporary stub. We should think
+  of getting rid of it. This would entail including "options/options.h"
+  and "options/option_parser.h" instead and explicitly using the options
+  namespace. See also option_parser_util.h, plugin.h and issue588 for a
+  discussion.
+*/
+#include "options/command_line.h"
 #include "options/errors.h"
 #include "options/option_parser.h"
-#include "options/synergy.h"
 
 using options::ArgError;
 using options::Bounds;
 using options::OptionParser;
 using options::Options;
 using options::ParseError;
-using options::Synergy;
 
 #endif

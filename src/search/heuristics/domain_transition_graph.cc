@@ -133,7 +133,7 @@ void DTGFactory::revert_new_local_vars(DomainTransitionGraph *dtg,
 
 ValueTransition *DTGFactory::get_transition(int origin, int target,
                                             DomainTransitionGraph *dtg) {
-    unordered_map<pair<int, int>, int> &trans_map = transition_index[dtg->var];
+    utils::HashMap<pair<int, int>, int> &trans_map = transition_index[dtg->var];
     pair<int, int> arc = make_pair(origin, target);
     ValueNode &origin_node = dtg->nodes[origin];
     // create new transition if necessary
@@ -148,7 +148,7 @@ ValueTransition *DTGFactory::get_transition(int origin, int target,
 void DTGFactory::collect_all_side_effects(vector<DomainTransitionGraph *> &dtgs) {
     for (auto *dtg : dtgs) {
         for (auto &node : dtg->nodes)
-            for (auto & transition: node.transitions)
+            for (auto &transition: node.transitions)
                 collect_side_effects(dtg, transition.labels);
     }
 }
@@ -239,7 +239,7 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
      */
 
     using HashKey = vector<FactPair>;
-    using HashMap = unordered_map<HashKey, int>;
+    using HashMap = utils::HashMap<HashKey, int>;
     HashMap label_index;
     label_index.reserve(labels.size());
 

@@ -53,6 +53,13 @@ pair<int, int> compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
+/*
+  This method checks if the transition system of the factor at index violates
+  the size limit given via new_size (e.g. as computed by compute_shrink_sizes)
+  or the threshold shrink_threshold_before_merge that triggers shrinking even
+  if the size limit is not violated. If so, trigger the shrinking process.
+  Return true iff the factor was actually shrunk.
+*/
 bool shrink_factor(
     FactoredTransitionSystem &fts,
     int index,
@@ -60,7 +67,11 @@ bool shrink_factor(
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
     Verbosity verbosity) {
-    const TransitionSystem &ts = fts.get_ts(index);
+    /*
+      TODO: think about factoring out common logic of this function and the
+      function copy_and_shrink_ts in merge_scoring_function_miasm_utils.cc.
+    */
+    const TransitionSystem &ts = fts.get_transition_system(index);
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
         if (verbosity >= Verbosity::VERBOSE) {
@@ -82,14 +93,63 @@ bool shrink_factor(
     return false;
 }
 
-bool prune_factor(
+bool shrink_before_merge_step(
+    FactoredTransitionSystem &fts,
+    int index1,
+    int index2,
+    int max_states,
+    int max_states_before_merge,
+    int shrink_threshold_before_merge,
+    const ShrinkStrategy &shrink_strategy,
+    Verbosity verbosity) {
+    /*
+      Compute the size limit for both transition systems as imposed by
+      max_states and max_states_before_merge.
+    */
+    pair<int, int> new_sizes = compute_shrink_sizes(
+        fts.get_transition_system(index1).get_size(),
+        fts.get_transition_system(index2).get_size(),
+        max_states_before_merge,
+        max_states);
+
+    /*
+      For both transition systems, possibly compute and apply an
+      abstraction.
+      TODO: we could better use the given limit by increasing the size limit
+      for the second shrinking if the first shrinking was larger than
+      required.
+    */
+    bool shrunk1 = shrink_factor(
+        fts,
+        index1,
+        new_sizes.first,
+        shrink_threshold_before_merge,
+        shrink_strategy,
+        verbosity);
+    if (verbosity >= Verbosity::VERBOSE && shrunk1) {
+        fts.statistics(index1);
+    }
+    bool shrunk2 = shrink_factor(
+        fts,
+        index2,
+        new_sizes.second,
+        shrink_threshold_before_merge,
+        shrink_strategy,
+        verbosity);
+    if (verbosity >= Verbosity::VERBOSE && shrunk2) {
+        fts.statistics(index2);
+    }
+    return shrunk1 || shrunk2;
+}
+
+bool prune_step(
     FactoredTransitionSystem &fts,
     int index,
     bool prune_unreachable_states,
     bool prune_irrelevant_states,
     Verbosity verbosity) {
     assert(prune_unreachable_states || prune_irrelevant_states);
-    const TransitionSystem &ts = fts.get_ts(index);
+    const TransitionSystem &ts = fts.get_transition_system(index);
     const Distances &distances = fts.get_distances(index);
     int num_states = ts.get_size();
     StateEquivalenceRelation state_equivalence_relation;
@@ -101,13 +161,19 @@ bool prune_factor(
         /* If pruning both unreachable and irrelevant states, a state which is
            dead is counted for both statistics! */
         bool prune_state = false;
-        if (prune_unreachable_states && distances.get_init_distance(state) == INF) {
-            ++unreachable_count;
-            prune_state = true;
+        if (prune_unreachable_states) {
+            assert(distances.are_init_distances_computed());
+            if (distances.get_init_distance(state) == INF) {
+                ++unreachable_count;
+                prune_state = true;
+            }
         }
-        if (prune_irrelevant_states && distances.get_goal_distance(state) == INF) {
-            ++irrelevant_count;
-            prune_state = true;
+        if (prune_irrelevant_states) {
+            assert(distances.are_goal_distances_computed());
+            if (distances.get_goal_distance(state) == INF) {
+                ++irrelevant_count;
+                prune_state = true;
+            }
         }
         if (prune_state) {
             ++dead_count;

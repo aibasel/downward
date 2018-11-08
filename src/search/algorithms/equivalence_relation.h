@@ -30,10 +30,10 @@ public:
     bool empty() const;
     ElementListIter insert(int element);
     void erase(ElementListIter it);
-    ElementListIter begin() {return elements.begin(); }
-    ElementListIter end() {return elements.end(); }
-    ElementListConstIter begin() const {return elements.begin(); }
-    ElementListConstIter end() const {return elements.end(); }
+    ElementListIter begin() {return elements.begin();}
+    ElementListIter end() {return elements.end();}
+    ElementListConstIter begin() const {return elements.begin();}
+    ElementListConstIter end() const {return elements.end();}
 };
 
 class EquivalenceRelation {
@@ -70,8 +70,8 @@ public:
     //       The same question goes for get_num_blocks().
     //       This is also a problem with get_num_elements() as there can be less
     //       explicitly specified elements than num_elements.
-    BlockListConstIter begin() const {return blocks.begin(); }
-    BlockListConstIter end() const {return blocks.end(); }
+    BlockListConstIter begin() const {return blocks.begin();}
+    BlockListConstIter end() const {return blocks.end();}
 
     /*
       Refines the current relation with an other relation.
@@ -84,7 +84,7 @@ public:
     void refine(const EquivalenceRelation &other);
 
     // See refine(const Block &block)
-    void refine(ElementListConstIter block_X_begin, ElementListConstIter block_X_end);
+    void refine(ElementListConstIter block_x_begin, ElementListConstIter block_x_end);
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.

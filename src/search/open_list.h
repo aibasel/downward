@@ -7,7 +7,6 @@
 #include "evaluation_context.h"
 #include "operator_id.h"
 
-class Heuristic;
 class StateID;
 
 
@@ -51,14 +50,8 @@ public:
 
     /*
       Remove and return the entry that should be expanded next.
-
-      TODO: We want to eventually get rid of the "key" argument, since
-      it breaks aspects of the abstraction. For example, see msg639 in
-      the tracker. Currently, if key is non-null, it must point to an
-      empty vector. Then remove_min stores the key for the popped
-      element there.
     */
-    virtual Entry remove_min(std::vector<int> *key = 0) = 0;
+    virtual Entry remove_min() = 0;
 
     // Return true if the open list is empty.
     virtual bool empty() const = 0;
@@ -90,12 +83,13 @@ public:
     virtual void boost_preferred();
 
     /*
-      Add all heuristics that this open lists uses (directly or
+      Add all path-dependent evaluators that this open lists uses (directly or
       indirectly) into the result set.
 
       TODO: This method can probably go away at some point.
     */
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &evals) = 0;
 
     /*
       Accessor method for only_preferred.

@@ -7,8 +7,6 @@
 #include "../option_parser.h"
 
 #include "../task_utils/sampling.h"
-#include "../task_utils/successor_generator.h"
-#include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 
 #include <limits>
@@ -24,18 +22,21 @@ vector<State> sample_without_dead_end_detection(
     const TaskProxy task_proxy(*task);
     State initial_state = task_proxy.get_initial_state();
     optimizer.optimize_for_state(initial_state);
-    successor_generator::SuccessorGenerator successor_generator(task_proxy);
     int init_h = optimizer.get_potential_function()->get_value(initial_state);
-    return sampling::sample_states_with_random_walks(
-        task_proxy, successor_generator, num_samples, init_h,
-        task_properties::get_average_operator_cost(task_proxy), rng);
+    sampling::RandomWalkSampler sampler(task_proxy, rng);
+    vector<State> samples;
+    samples.reserve(num_samples);
+    for (int i = 0; i < num_samples; ++i) {
+        samples.push_back(sampler.sample_state(init_h));
+    }
+    return samples;
 }
 
 string get_admissible_potentials_reference() {
     return "The algorithm is based on" + utils::format_paper_reference(
         {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
         "New Optimization Functions for Potential Heuristics",
-        "http://ai.cs.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
+        "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
         "Proceedings of the 25th International Conference on"
         " Automated Planning and Scheduling (ICAPS 2015)",
         "193-201",
@@ -52,7 +53,12 @@ void prepare_parser_for_admissible_potentials(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
     parser.add_option<double>(
         "max_potential",
-        "Bound potentials by this number",
+        "Bound potentials by this number. Using the bound {{{infinity}}} "
+        "disables the bounds. In some domains this makes the computation of "
+        "weights unbounded in which case no weights can be extracted. Using "
+        "very high weights can cause numerical instability in the LP solver, "
+        "while using very low weights limits the choice of potential "
+        "heuristics. For details, see the ICAPS paper cited above.",
         "1e8",
         Bounds("0.0", "infinity"));
     lp::add_lp_solver_option_to_parser(parser);

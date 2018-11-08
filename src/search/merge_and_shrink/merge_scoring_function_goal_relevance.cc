@@ -16,7 +16,7 @@ vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     int num_ts = fts.get_size();
     vector<bool> goal_relevant(num_ts, false);
     for (int ts_index : fts) {
-        const TransitionSystem &ts = fts.get_ts(ts_index);
+        const TransitionSystem &ts = fts.get_transition_system(ts_index);
         if (is_goal_relevant(ts)) {
             goal_relevant[ts_index] = true;
         }
@@ -53,5 +53,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         return make_shared<MergeScoringFunctionGoalRelevance>();
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("goal_relevance", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("goal_relevance", _parse);
 }
