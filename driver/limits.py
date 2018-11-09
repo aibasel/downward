@@ -84,47 +84,24 @@ def convert_to_mb(num_bytes):
     return num_bytes / (1024 * 1024)
 
 
-def _get_external_limit(kind):
-    if resource is None:
-        return None
-    # Limits are either positive values or -1 (RLIM_INFINITY).
-    soft, hard = resource.getrlimit(kind)
-    if soft != resource.RLIM_INFINITY:
-        return soft
-    elif hard != resource.RLIM_INFINITY:
-        return hard
-    else:
-        return None
-
-def _get_external_time_limit():
-    """Return external soft CPU limit in seconds or None if not set."""
-    return _get_external_limit(resource.RLIMIT_CPU)
-
-
 def get_memory_limit(component_limit, overall_limit):
     """
-    Return the lowest of the following memory limits:
-    component, overall, external soft, external hard.
+    Return the minimum of the component and overall limits or None if neither is set.
     """
     limits = [limit for limit in [component_limit, overall_limit] if limit is not None]
     return min(limits) if limits else None
 
+
 def get_time_limit(component_limit, overall_limit):
     """
-    Return the minimum time limit imposed by any internal and external limit.
+    Return the minimum time limit imposed by the component and overall limits.
     """
-    if component_limit is None and overall_limit is None:
-        return None
-    elif can_set_time_limit():
-        elapsed_time = util.get_elapsed_time()
-        external_limit = _get_external_time_limit()
-        limits = []
-        if component_limit is not None:
-            limits.append(component_limit)
-        if overall_limit is not None:
-            limits.append(max(0, overall_limit - elapsed_time))
-        if external_limit is not None:
-            limits.append(max(0, external_limit - elapsed_time))
-        return min(limits) if limits else None
-    else:
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
+    limits = []
+    if component_limit is not None:
+        limits.append(component_limit)
+    if overall_limit is not None:
+        if util.can_get_elapsed_time():
+            limits.append(max(0, overall_limit - util.get_elapsed_time()))
+        else:
+            returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
+    return min(limits) if limits else None
