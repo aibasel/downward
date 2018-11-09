@@ -47,7 +47,7 @@ def _set_limit(kind, soft, hard=None):
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
     soft_limit = min(int(math.ceil(internal_limit)), external_hard_limit)
     hard_limit = min(soft_limit + 1, external_hard_limit)
-    print("time limit %.2f -> (%d, %d)" %
+    print("time limit %.2f -> (soft: %d, hard: %d)" %
         (internal_limit, soft_limit, hard_limit))
     sys.stdout.flush()
     assert soft_limit <= hard_limit
@@ -63,7 +63,10 @@ def set_time_limit(time_limit):
     _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
     if external_hard_limit == resource.RLIM_INFINITY:
         external_hard_limit = float("inf")
-    assert time_limit <= external_hard_limit, (time_limit, external_hard_limit)
+    if time_limit > external_hard_limit:
+        returncodes.exit_with_driver_input_error(
+            "Time limit {time_limit}s exceeds external hard limit "
+            "{external_hard_limit}s.".format(**locals()))
     # Soft limit reached --> SIGXCPU.
     # Hard limit reached --> SIGKILL.
     soft_limit, hard_limit = _get_soft_and_hard_time_limits(
