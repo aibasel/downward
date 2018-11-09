@@ -32,7 +32,7 @@ def can_set_memory_limit():
     return resource is not None and sys.platform != "darwin"
 
 
-def _set_limit(kind, soft, hard=None):
+def _set_limit(kind, soft, hard=None, is_subprocess=False):
     if hard is None:
         hard = soft
     try:
@@ -41,7 +41,8 @@ def _set_limit(kind, soft, hard=None):
         returncodes.exit_with_driver_critical_error(
             "Limit for {} could not be set to ({},{}) ({}). "
             "Previous limit: {}".format(
-                kind, soft, hard, err, resource.getrlimit(kind)))
+                kind, soft, hard, err, resource.getrlimit(kind)),
+            is_subprocess=is_subprocess)
 
 
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
@@ -54,7 +55,7 @@ def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
     return soft_limit, hard_limit
 
 
-def set_time_limit(time_limit):
+def set_time_limit(time_limit, is_subprocess=False):
     if time_limit is None:
         return
     if not can_set_time_limit():
@@ -66,21 +67,23 @@ def set_time_limit(time_limit):
     if time_limit > external_hard_limit:
         returncodes.exit_with_driver_input_error(
             "Time limit {time_limit}s exceeds external hard limit "
-            "{external_hard_limit}s.".format(**locals()))
+            "{external_hard_limit}s.".format(**locals()),
+            is_subprocess=is_subprocess)
     # Soft limit reached --> SIGXCPU.
     # Hard limit reached --> SIGKILL.
     soft_limit, hard_limit = _get_soft_and_hard_time_limits(
         time_limit, external_hard_limit)
-    _set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
+    _set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit, is_subprocess=is_subprocess)
 
 
-def set_memory_limit(memory):
+def set_memory_limit(memory, is_subprocess=False):
     """*memory* must be given in bytes or None."""
     if memory is None:
         return
     if not can_set_memory_limit():
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
-    _set_limit(resource.RLIMIT_AS, memory)
+        returncodes.exit_with_driver_unsupported_error(
+            CANNOT_LIMIT_MEMORY_MSG, is_subprocess=is_subprocess)
+    _set_limit(resource.RLIMIT_AS, memory, is_subprocess=is_subprocess)
 
 
 def convert_to_mb(num_bytes):

@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import os
 import sys
 
 """
@@ -44,19 +45,26 @@ def is_unrecoverable(exitcode):
     return 30 <= exitcode < 40
 
 
-def exit_with_driver_critical_error(msg):
-    print_stderr(msg)
-    sys.exit(DRIVER_CRITICAL_ERROR)
+def _exit(exitcode, is_subprocess):
+    if is_subprocess:
+        os._exit(exitcode)
+    else:
+        sys.exit(exitcode)
 
 
-def exit_with_driver_input_error(msg):
+def exit_with_driver_critical_error(msg, is_subprocess=False):
     print_stderr(msg)
-    sys.exit(DRIVER_INPUT_ERROR)
+    _exit(DRIVER_CRITICAL_ERROR, is_subprocess)
+
+
+def exit_with_driver_input_error(msg, is_subprocess=False):
+    print_stderr(msg)
+    _exit(DRIVER_INPUT_ERROR, is_subprocess)
 
 
 def exit_with_driver_unsupported_error(msg):
     print_stderr(msg)
-    sys.exit(DRIVER_UNSUPPORTED)
+    _exit(DRIVER_UNSUPPORTED, is_subprocess)
 
 
 def generate_portfolio_exitcode(exitcodes):
