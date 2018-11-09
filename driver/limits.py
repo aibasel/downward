@@ -100,24 +100,14 @@ def _get_external_time_limit():
     """Return external soft CPU limit in seconds or None if not set."""
     return _get_external_limit(resource.RLIMIT_CPU)
 
-def _get_external_memory_limit():
-    """Return external soft memory limit in bytes or None if not set."""
-    return _get_external_limit(resource.RLIMIT_AS)
-
 
 def get_memory_limit(component_limit, overall_limit):
     """
     Return the lowest of the following memory limits:
     component, overall, external soft, external hard.
     """
-    if component_limit is None and overall_limit is None:
-        return None
-    elif can_set_memory_limit():
-        limits = [component_limit, overall_limit, _get_external_memory_limit()]
-        limits = [limit for limit in limits if limit is not None]
-        return min(limits) if limits else None
-    else:
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
+    limits = [limit for limit in [component_limit, overall_limit] if limit is not None]
+    return min(limits) if limits else None
 
 def get_time_limit(component_limit, overall_limit):
     """
