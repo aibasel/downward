@@ -62,7 +62,7 @@ def exit_with_driver_input_error(msg, is_subprocess=False):
     _exit(DRIVER_INPUT_ERROR, is_subprocess)
 
 
-def exit_with_driver_unsupported_error(msg):
+def exit_with_driver_unsupported_error(msg, is_subprocess=False):
     print_stderr(msg)
     _exit(DRIVER_UNSUPPORTED, is_subprocess)
 
