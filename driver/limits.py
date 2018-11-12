@@ -39,7 +39,7 @@ def _set_limit(kind, soft, hard=None):
         resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError) as err:
         returncodes.exit_with_driver_critical_error(
-            "Limit for {} could not be set to ({},{}) ({}). "
+            "Limit for {} could not be set to ({}, {}) (error: {}). "
             "Previous limit: {}".format(
                 kind, soft, hard, err, resource.getrlimit(kind)))
 
