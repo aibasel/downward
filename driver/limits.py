@@ -105,7 +105,7 @@ def get_time_limit(component_limit, overall_limit):
     if overall_limit is not None:
         try:
             elapsed_time = util.get_elapsed_time()
-        except SystemExit:
+        except NotImplementedError:
             returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
         else:
             limits.append(max(0, overall_limit - elapsed_time))

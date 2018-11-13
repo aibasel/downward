@@ -20,7 +20,7 @@ def get_elapsed_time():
     """
     if os.name == "nt":
         # The child time components of os.times() are 0 on Windows.
-        returncodes.exit_with_driver_unsupported_error("cannot use get_elapsed_time() on Windows")
+        raise NotImplementedError("cannot use get_elapsed_time() on Windows")
     return sum(os.times()[:4])
 
 
