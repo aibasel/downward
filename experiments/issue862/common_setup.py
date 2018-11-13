@@ -31,52 +31,62 @@ ARGS = parse_args()
 
 
 DEFAULT_OPTIMAL_SUITE = [
-    'airport', 'barman-opt11-strips', 'barman-opt14-strips', 'blocks',
-    'childsnack-opt14-strips', 'depot', 'driverlog',
+    'agricola-opt18-strips', 'airport', 'barman-opt11-strips',
+    'barman-opt14-strips', 'blocks', 'childsnack-opt14-strips',
+    'data-network-opt18-strips', 'depot', 'driverlog',
     'elevators-opt08-strips', 'elevators-opt11-strips',
     'floortile-opt11-strips', 'floortile-opt14-strips', 'freecell',
     'ged-opt14-strips', 'grid', 'gripper', 'hiking-opt14-strips',
     'logistics00', 'logistics98', 'miconic', 'movie', 'mprime',
     'mystery', 'nomystery-opt11-strips', 'openstacks-opt08-strips',
     'openstacks-opt11-strips', 'openstacks-opt14-strips',
-    'openstacks-strips', 'parcprinter-08-strips',
+    'openstacks-strips', 'organic-synthesis-opt18-strips',
+    'organic-synthesis-split-opt18-strips', 'parcprinter-08-strips',
     'parcprinter-opt11-strips', 'parking-opt11-strips',
     'parking-opt14-strips', 'pathways-noneg', 'pegsol-08-strips',
-    'pegsol-opt11-strips', 'pipesworld-notankage',
-    'pipesworld-tankage', 'psr-small', 'rovers', 'satellite',
-    'scanalyzer-08-strips', 'scanalyzer-opt11-strips',
-    'sokoban-opt08-strips', 'sokoban-opt11-strips', 'storage',
-    'tetris-opt14-strips', 'tidybot-opt11-strips',
-    'tidybot-opt14-strips', 'tpp', 'transport-opt08-strips',
-    'transport-opt11-strips', 'transport-opt14-strips',
-    'trucks-strips', 'visitall-opt11-strips', 'visitall-opt14-strips',
-    'woodworking-opt08-strips', 'woodworking-opt11-strips',
-    'zenotravel']
+    'pegsol-opt11-strips', 'petri-net-alignment-opt18-strips',
+    'pipesworld-notankage', 'pipesworld-tankage', 'psr-small', 'rovers',
+    'satellite', 'scanalyzer-08-strips', 'scanalyzer-opt11-strips',
+    'snake-opt18-strips', 'sokoban-opt08-strips',
+    'sokoban-opt11-strips', 'spider-opt18-strips', 'storage',
+    'termes-opt18-strips', 'tetris-opt14-strips',
+    'tidybot-opt11-strips', 'tidybot-opt14-strips', 'tpp',
+    'transport-opt08-strips', 'transport-opt11-strips',
+    'transport-opt14-strips', 'trucks-strips', 'visitall-opt11-strips',
+    'visitall-opt14-strips', 'woodworking-opt08-strips',
+    'woodworking-opt11-strips', 'zenotravel']
 
 DEFAULT_SATISFICING_SUITE = [
-    'airport', 'assembly', 'barman-sat11-strips',
-    'barman-sat14-strips', 'blocks', 'cavediving-14-adl',
-    'childsnack-sat14-strips', 'citycar-sat14-adl', 'depot',
-    'driverlog', 'elevators-sat08-strips', 'elevators-sat11-strips',
-    'floortile-sat11-strips', 'floortile-sat14-strips', 'freecell',
-    'ged-sat14-strips', 'grid', 'gripper', 'hiking-sat14-strips',
-    'logistics00', 'logistics98', 'maintenance-sat14-adl', 'miconic',
-    'miconic-fulladl', 'miconic-simpleadl', 'movie', 'mprime',
-    'mystery', 'nomystery-sat11-strips', 'openstacks',
+    'agricola-sat18-strips', 'airport', 'assembly',
+    'barman-sat11-strips', 'barman-sat14-strips', 'blocks',
+    'caldera-sat18-adl', 'caldera-split-sat18-adl', 'cavediving-14-adl',
+    'childsnack-sat14-strips', 'citycar-sat14-adl',
+    'data-network-sat18-strips', 'depot', 'driverlog',
+    'elevators-sat08-strips', 'elevators-sat11-strips',
+    'flashfill-sat18-adl', 'floortile-sat11-strips',
+    'floortile-sat14-strips', 'freecell', 'ged-sat14-strips', 'grid',
+    'gripper', 'hiking-sat14-strips', 'logistics00', 'logistics98',
+    'maintenance-sat14-adl', 'miconic', 'miconic-fulladl',
+    'miconic-simpleadl', 'movie', 'mprime', 'mystery',
+    'nomystery-sat11-strips', 'nurikabe-sat18-adl', 'openstacks',
     'openstacks-sat08-adl', 'openstacks-sat08-strips',
     'openstacks-sat11-strips', 'openstacks-sat14-strips',
-    'openstacks-strips', 'optical-telegraphs', 'parcprinter-08-strips',
+    'openstacks-strips', 'optical-telegraphs',
+    'organic-synthesis-sat18-strips',
+    'organic-synthesis-split-sat18-strips', 'parcprinter-08-strips',
     'parcprinter-sat11-strips', 'parking-sat11-strips',
     'parking-sat14-strips', 'pathways', 'pathways-noneg',
     'pegsol-08-strips', 'pegsol-sat11-strips', 'philosophers',
     'pipesworld-notankage', 'pipesworld-tankage', 'psr-large',
     'psr-middle', 'psr-small', 'rovers', 'satellite',
     'scanalyzer-08-strips', 'scanalyzer-sat11-strips', 'schedule',
-    'sokoban-sat08-strips', 'sokoban-sat11-strips', 'storage',
-    'tetris-sat14-strips', 'thoughtful-sat14-strips',
-    'tidybot-sat11-strips', 'tpp', 'transport-sat08-strips',
-    'transport-sat11-strips', 'transport-sat14-strips', 'trucks',
-    'trucks-strips', 'visitall-sat11-strips', 'visitall-sat14-strips',
+    'settlers-sat18-adl', 'snake-sat18-strips', 'sokoban-sat08-strips',
+    'sokoban-sat11-strips', 'spider-sat18-strips', 'storage',
+    'termes-sat18-strips', 'tetris-sat14-strips',
+    'thoughtful-sat14-strips', 'tidybot-sat11-strips', 'tpp',
+    'transport-sat08-strips', 'transport-sat11-strips',
+    'transport-sat14-strips', 'trucks', 'trucks-strips',
+    'visitall-sat11-strips', 'visitall-sat14-strips',
     'woodworking-sat08-strips', 'woodworking-sat11-strips',
     'zenotravel']
 
@@ -129,25 +139,7 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return (
-        "cluster" in node or
-        node.startswith("gkigrid") or
-        node in ["habakuk", "turtur"])
-
-
-def is_running_on_cluster_login_node():
-    return platform.node() == "login20.cluster.bc2.ch"
-
-
-def can_publish():
-    return is_running_on_cluster_login_node() or not is_running_on_cluster()
-
-
-def publish(report_file):
-    if can_publish():
-        subprocess.call(["publish", report_file])
-    else:
-        print "publishing reports is not supported on this node"
+    return node.endswith(".scicore.unibas.ch") or node.endswith(".cluster.bc2.ch")
 
 
 def is_test_run():
@@ -177,7 +169,7 @@ class IssueConfig(object):
 class IssueExperiment(FastDownwardExperiment):
     """Subclass of FastDownwardExperiment with some convenience features."""
 
-    DEFAULT_TEST_SUITE = ["gripper:prob01.pddl"]
+    DEFAULT_TEST_SUITE = ["depot:p01.pddl", "gripper:prob01.pddl"]
 
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -188,6 +180,8 @@ class IssueExperiment(FastDownwardExperiment):
         "expansions_until_last_jump",
         "generated",
         "memory",
+        "planner_memory",
+        "planner_time",
         "quality",
         "run_dir",
         "score_evaluations",
@@ -305,8 +299,9 @@ class IssueExperiment(FastDownwardExperiment):
         outfile = os.path.join(
             self.eval_dir,
             get_experiment_name() + "." + report.output_format)
-        self.add_report(report, name="make-absolute-report", outfile=outfile)
-        self.add_step("publish-absolute-report", publish, outfile)
+        self.add_report(report, outfile=outfile)
+        self.add_step(
+            'publish-absolute-report', subprocess.call, ['publish', outfile])
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -325,15 +320,8 @@ class IssueExperiment(FastDownwardExperiment):
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
 
-        def get_revision_pairs_and_files():
-            for rev1, rev2 in itertools.combinations(self._revisions, 2):
-                outfile = os.path.join(
-                    self.eval_dir,
-                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
-                yield (rev1, rev2, outfile)
-
         def make_comparison_tables():
-            for rev1, rev2, outfile in get_revision_pairs_and_files():
+            for rev1, rev2 in itertools.combinations(self._revisions, 2):
                 compared_configs = []
                 for config in self._configs:
                     config_nick = config.nick
@@ -342,14 +330,22 @@ class IssueExperiment(FastDownwardExperiment):
                          "%s-%s" % (rev2, config_nick),
                          "Diff (%s)" % config_nick))
                 report = ComparativeReport(compared_configs, **kwargs)
+                outfile = os.path.join(
+                    self.eval_dir,
+                    "%s-%s-%s-compare.%s" % (
+                        self.name, rev1, rev2, report.output_format))
                 report(self.eval_dir, outfile)
 
         def publish_comparison_tables():
-            for _, _, outfile in get_revision_pairs_and_files():
-                publish(outfile)
+            for rev1, rev2 in itertools.combinations(self._revisions, 2):
+                outfile = os.path.join(
+                    self.eval_dir,
+                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
+                subprocess.call(["publish", outfile])
 
         self.add_step("make-comparison-tables", make_comparison_tables)
-        self.add_step("publish-comparison-tables", publish_comparison_tables)
+        self.add_step(
+            "publish-comparison-tables", publish_comparison_tables)
 
     def add_scatter_plot_step(self, relative=False, attributes=None):
         """Add step creating (relative) scatter plots for all revision pairs.
