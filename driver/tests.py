@@ -9,9 +9,12 @@ Test module for Fast Downward driver script. Run with
 import os
 import subprocess
 
+import pytest
+
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
 from . import limits
+from . import returncodes
 from .util import REPO_ROOT_DIR, find_domain_filename
 
 
@@ -63,6 +66,23 @@ def test_time_limits():
             ]:
         assert (limits._get_soft_and_hard_time_limits(internal, external) ==
             (expected_soft, expected_hard))
+
+
+def test_hard_time_limit():
+    def preexec_fn():
+        limits.set_time_limit(10)
+
+    cmd = [
+        "./fast-downward.py", "--translate", "--translate-time-limit",
+        "10s", "misc/tests/benchmarks/gripper/prob01.pddl"]
+    subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+
+    cmd = [
+        "./fast-downward.py", "--translate", "--translate-time-limit",
+        "20s", "misc/tests/benchmarks/gripper/prob01.pddl"]
+    with pytest.raises(subprocess.CalledProcessError) as exception_info:
+        subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+    assert exception_info.value.returncode == returncodes.DRIVER_INPUT_ERROR
 
 
 def test_automatic_domain_file_name_computation():
