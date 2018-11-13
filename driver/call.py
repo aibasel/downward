@@ -8,6 +8,7 @@ from . import limits
 from . import util
 
 import logging
+import os
 import subprocess
 import sys
 
@@ -37,8 +38,8 @@ def _get_preexec_function(time_limit, memory_limit):
         try:
             limits.set_time_limit(time_limit)
             limits.set_memory_limit(memory_limit)
-        except SystemExit:
-            pass
+        except SystemExit as err:
+            os._exit(err.code)
 
     if time_limit is None and memory_limit is None:
         return None
