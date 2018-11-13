@@ -13,22 +13,15 @@ REPO_ROOT_DIR = os.path.dirname(DRIVER_DIR)
 BUILDS_DIR = os.path.join(REPO_ROOT_DIR, "builds")
 
 
-def can_get_elapsed_time():
-    """The child time components of os.times() are 0 on Windows."""
-    return os.name != "nt"
-
-
 def get_elapsed_time():
     """
     Return the CPU time taken by the python process and its child
     processes.
     """
-    if can_get_elapsed_time():
-        return sum(os.times()[:4])
-    else:
-        # If we ever end up using this method on Windows, we need to be
-        # aware of this, so it's prudent to complain loudly.
+    if os.name == "nt":
+        # The child time components of os.times() are 0 on Windows.
         returncodes.exit_with_driver_unsupported_error("cannot use get_elapsed_time() on Windows")
+    return sum(os.times()[:4])
 
 
 def find_domain_filename(task_filename):

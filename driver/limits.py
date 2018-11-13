@@ -47,7 +47,7 @@ def _set_limit(kind, soft, hard=None):
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
     soft_limit = min(int(math.ceil(internal_limit)), external_hard_limit)
     hard_limit = min(soft_limit + 1, external_hard_limit)
-    print("time limit %.2f -> (soft: %d, hard: %d)" %
+    print("Time limit %.2f -> (soft: %d, hard: %d)" %
         (internal_limit, soft_limit, hard_limit))
     sys.stdout.flush()
     assert soft_limit <= hard_limit
@@ -103,8 +103,10 @@ def get_time_limit(component_limit, overall_limit):
     if component_limit is not None:
         limits.append(component_limit)
     if overall_limit is not None:
-        if util.can_get_elapsed_time():
-            limits.append(max(0, overall_limit - util.get_elapsed_time()))
-        else:
+        try:
+            elapsed_time = util.get_elapsed_time()
+        except SystemExit:
             returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
+        else:
+            limits.append(max(0, overall_limit - elapsed_time))
     return min(limits) if limits else None
