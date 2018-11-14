@@ -35,13 +35,7 @@ def can_set_memory_limit():
 def _set_limit(kind, soft, hard=None):
     if hard is None:
         hard = soft
-    try:
-        resource.setrlimit(kind, (soft, hard))
-    except (OSError, ValueError) as err:
-        returncodes.exit_with_driver_critical_error(
-            "Limit for {} could not be set to ({}, {}) (error: {}). "
-            "Previous limit: {}".format(
-                kind, soft, hard, err, resource.getrlimit(kind)))
+    resource.setrlimit(kind, (soft, hard))
 
 
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
@@ -58,13 +52,13 @@ def set_time_limit(time_limit):
     if time_limit is None:
         return
     if not can_set_time_limit():
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
+        raise NotImplementedError(CANNOT_LIMIT_TIME_MSG)
     # Don't try to raise the hard limit.
     _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
     if external_hard_limit == resource.RLIM_INFINITY:
         external_hard_limit = float("inf")
     if time_limit > external_hard_limit:
-        returncodes.exit_with_driver_input_error(
+        raise ValueError(
             "Time limit {time_limit}s exceeds external hard limit "
             "{external_hard_limit}s.".format(**locals()))
     # Soft limit reached --> SIGXCPU.
@@ -79,7 +73,7 @@ def set_memory_limit(memory):
     if memory is None:
         return
     if not can_set_memory_limit():
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
+        raise NotImplementedError(CANNOT_LIMIT_MEMORY_MSG)
     _set_limit(resource.RLIMIT_AS, memory)
 
 

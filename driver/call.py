@@ -5,6 +5,7 @@ from __future__ import print_function
 """Make subprocess calls with time and memory limits."""
 
 from . import limits
+from . import returncodes
 from . import util
 
 import logging
@@ -33,13 +34,24 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
 
 def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
-        # If setting the limits fails, exit only the child process and not the
+        # If setting a limit fails, exit only the child process and not the
         # main process.
+        error_to_exitcode = {
+            NotImplementedError: returncodes.DRIVER_UNSUPPORTED,
+            OSError: returncodes.DRIVER_CRITICAL_ERROR,
+            ValueError: returncodes.DRIVER_INPUT_ERROR,
+        }
         try:
             limits.set_time_limit(time_limit)
+        except tuple(error_to_exitcode) as err:
+            logging.error("Setting time limit failed: {}".format(err))
+            os._exit(error_to_exitcode[type(err)])
+
+        try:
             limits.set_memory_limit(memory_limit)
-        except SystemExit as err:
-            os._exit(err.code)
+        except tuple(error_to_exitcode) as err:
+            logging.error("Setting memory limit failed: {}".format(err))
+            os._exit(error_to_exitcode[type(err)])
 
     if time_limit is None and memory_limit is None:
         return None
