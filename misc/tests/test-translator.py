@@ -65,11 +65,18 @@ def translate_task(python, python_version, task_file):
 
 
 def _get_all_tasks_by_domain(benchmarks_dir):
+    # Ignore domains where it takes too long to translate the first task.
+    blacklisted_domains = [
+        "agricola-sat18-strips",
+        "organic-synthesis-sat18-strips",
+        "organic-synthesis-split-opt18-strips",
+        "organic-synthesis-split-sat18-strips"]
     tasks = defaultdict(list)
     domains = [
         name for name in os.listdir(benchmarks_dir)
         if os.path.isdir(os.path.join(benchmarks_dir, name)) and
-        not name.startswith((".", "_"))]
+        not name.startswith((".", "_")) and
+        not name in blacklisted_domains]
     for domain in domains:
         path = os.path.join(benchmarks_dir, domain)
         tasks[domain] = [
