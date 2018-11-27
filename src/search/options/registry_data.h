@@ -1,5 +1,5 @@
-#ifndef OPTIONS_REGISTRY_DATA
-#define OPTIONS_REGISTRY_DATA
+#ifndef OPTIONS_REGISTRY_DATA_H
+#define OPTIONS_REGISTRY_DATA_H
 
 #include "any.h"
 #include "doc_utils.h"
@@ -9,7 +9,6 @@
 
 
 namespace options {
-
 struct PluginTypeData {
     std::string type_name;
     std::string documentation;
@@ -70,4 +69,3 @@ public:
 }
 
 #endif
-

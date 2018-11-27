@@ -73,7 +73,7 @@ void Registry::collect_plugin_types(const RegistryData &collection,
                 utils::map_vector<string>(
                     types,
                     [](const type_index &type) {return type.name();}),
-                    ", ");
+                ", ");
         });
 
     generate_duplicate_errors<type_index, vector<string>>(
@@ -141,12 +141,12 @@ void Registry::collect_plugins(const RegistryData &collection,
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple Plugins: " + type_name + " (types: " +
-                utils::join(
-                    utils::map_vector<string>(
-                        types,
-                        [](const type_index &type) {return type.name();}),
-                        ", ") +
-                ")";
+            utils::join(
+                utils::map_vector<string>(
+                    types,
+                    [](const type_index &type) {return type.name();}),
+                ", ") +
+            ")";
         });
 
     sort(other_plugin_errors.begin(), other_plugin_errors.end());

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace options{
+namespace options {
 PluginTypeData::PluginTypeData(const string type_name,
                                const string documentation,
                                const type_index type)
@@ -60,5 +60,4 @@ const vector<PluginGroupData> &RegistryData::get_plugin_group_data() const {
 const vector<PluginData> &RegistryData::get_plugin_data() const {
     return plugins;
 }
-
 }
