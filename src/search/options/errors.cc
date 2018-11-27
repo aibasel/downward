@@ -35,9 +35,15 @@ ostream &operator<<(ostream &out, const ParseError &parse_error) {
     return out;
 }
 
+
+void print_demangling_hint(const string &type_name) {
+    cerr << "To retrieve the demangled C++ type for gcc/clang, you "
+         << "can call \nc++filt -t " << type_name << endl;
+}
+
 void exit_with_demangling_hint(
     utils::ExitCode returncode, const string &type_name) {
-    DEMANGLING_HINT(type_name);
+    print_demangling_hint(type_name);
     utils::exit_with(returncode);
 }
 }
