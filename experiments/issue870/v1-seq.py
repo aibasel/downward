@@ -15,22 +15,10 @@ from relativescatter import RelativeScatterPlotReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue870-v1"]
-BUILDS = ["release64", "release64dynamic"]
+BUILDS_AND_REVISIONS = [("release64", "issue870-base"), ("release64dynamic", "issue870-v1")]
 CONFIG_NICKS = [
     ("seq", ["--search", "astar(operatorcounting([state_equation_constraints()]))"]),
 ]
-CONFIGS = [
-    IssueConfig(
-        config_nick + ":" + build,
-        config,
-        build_options=[build],
-        driver_options=["--build", build])
-    for rev in REVISIONS
-    for build in BUILDS
-    for config_nick, config in CONFIG_NICKS
-]
-
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
     partition="infai_2",
@@ -42,11 +30,20 @@ if common_setup.is_test_run():
     ENVIRONMENT = LocalEnvironment(processes=1)
 
 exp = IssueExperiment(
-    revisions=REVISIONS,
-    configs=CONFIGS,
+    revisions=[],
+    configs=[],
     environment=ENVIRONMENT,
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
+for build, rev in BUILDS_AND_REVISIONS:
+    for config_nick, config in CONFIG_NICKS:
+        exp.add_algorithm(
+            ":".join([config_nick, build, rev]),
+            common_setup.get_repo_base(),
+            rev,
+            config,
+            build_options=[build],
+            driver_options=["--build", build])
 
 exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.TRANSLATOR_PARSER)
@@ -57,20 +54,18 @@ exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
-#exp.add_absolute_report_step()
+exp.add_absolute_report_step()
 #exp.add_comparison_table_step()
 
 attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES
 
-for rev in REVISIONS:
-    algorithm_pairs = [
-        ("{rev}-{nick}:{build1}".format(**locals()),
-         "{rev}-{nick}:{build2}".format(**locals()),
-         "Diff ({rev}-{nick})".format(**locals()))
-        for build1, build2 in itertools.combinations(BUILDS, 2)
-        for nick, config in CONFIG_NICKS]
-    exp.add_report(
-        ComparativeReport(algorithm_pairs, attributes=attributes),
-        name="issue839-seq-static-vs-dynamic")
+algorithm_pairs = [
+    ("seq:release64:issue870-base",
+     "seq:release64dynamic:issue870-v1",
+     "Diff (seq)")
+    ]
+exp.add_report(
+    ComparativeReport(algorithm_pairs, attributes=attributes),
+    name="issue870-seq-static-vs-dynamic")
 
 exp.run_steps()
