@@ -40,6 +40,19 @@ public:
     }
 };
 
+/*
+  NOTE: A "factor" of this factored transition system is identfied by its
+  index as used in the vectors in this class. Since transformations like
+  merging also add and remove factors, not all indices are necessarily
+  associated with factors. This is what the class uses the notion of "active"
+  factors for: an index is active iff there exists a transition system, a
+  merge-and-shrink representation and an distances object in the corresponding
+  vectors.
+
+  TODO: The user of this class has to care more about the notion of active
+  factors as we would like it to be. We should change this and clean up the
+  interface that this class shows to the outside world.
+*/
 class FactoredTransitionSystem {
     std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
@@ -126,7 +139,7 @@ public:
     void dump(int index) const;
     void dump() const;
 
-    const TransitionSystem &get_ts(int index) const {
+    const TransitionSystem &get_transition_system(int index) const {
         return *transition_systems[index];
     }
 
