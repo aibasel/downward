@@ -125,7 +125,7 @@ void Registry::insert_group_info(const PluginGroupInfo &info) {
              << info.group_id << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    plugin_group_infos[info.group_id] = info;
+    plugin_group_infos.insert(make_pair(info.group_id, info));
 }
 
 const PluginGroupInfo &Registry::get_group_info(const string &group) const {
@@ -301,7 +301,7 @@ void Registry::insert_plugin_info(
     if (plugin_infos.count(key)) {
         ABORT("Registry already contains a plugin with name \"" + key + "\"");
     }
-    PluginInfo doc;
+    PluginInfo doc(*this);
     doc.doc_factory = doc_factory;
     doc.type_name_factory = type_name_factory;
     doc.key = key;
@@ -310,7 +310,7 @@ void Registry::insert_plugin_info(
     doc.synopsis = "";
     doc.group = group;
     doc.hidden = false;
-    plugin_infos[key] = doc;
+    plugin_infos.insert(make_pair(key, doc));
 }
 
 void Registry::add_plugin_info_arg(
