@@ -6,7 +6,6 @@
 #include "predefinitions.h"
 
 #include "../search_engine.h"
-
 #include "../utils/strings.h"
 
 #include <vector>

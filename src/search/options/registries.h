@@ -5,13 +5,8 @@
 #include "doc_utils.h"
 #include "registry_data.h"
 
-#include "../utils/system.h"
-
-#include <algorithm>
 #include <functional>
-#include <memory>
 #include <string>
-#include <tuple>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
@@ -64,7 +59,7 @@ class Registry {
     void insert_group_info(const PluginGroupInfo &info);
 
 public:
-    Registry(const RegistryData &collection);
+    explicit Registry(const RegistryData &collection);
 
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {
