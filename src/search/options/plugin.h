@@ -2,7 +2,6 @@
 #define OPTIONS_PLUGIN_H
 
 #include "doc_utils.h"
-#include "registries.h"
 #include "registry_data.h"
 #include "type_namer.h"
 

@@ -1,11 +1,11 @@
 #ifndef OPTIONS_DOC_PRINTER_H
 #define OPTIONS_DOC_PRINTER_H
 
+#include "registries.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include "registries.h"
 
 namespace options {
 struct PluginInfo;

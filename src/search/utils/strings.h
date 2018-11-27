@@ -1,11 +1,9 @@
 #ifndef UTILS_STRINGS_H
 #define UTILS_STRINGS_H
 
-#include <functional>
+
 #include <sstream>
 #include <string>
-#include <utility>
-#include <vector>
 
 namespace utils {
 std::string sanitize_string(std::string s);
