@@ -13,62 +13,9 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
-void Registry::insert_type_info(const PluginTypeInfo &info) {
-    if (plugin_type_infos.count(info.get_type())) {
-        cerr << "duplicate type in registry: "
-             << info.get_type().name() << endl;
-        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
-    }
-    plugin_type_infos.insert(make_pair(info.get_type(), info));
-}
-
-const PluginTypeInfo &Registry::get_type_info(const type_index &type) const {
-    if (!plugin_type_infos.count(type)) {
-        ABORT("attempt to retrieve non-existing type info from registry: " +
-              string(type.name()));
-    }
-    return plugin_type_infos.at(type);
-}
-
-vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
-    vector<PluginTypeInfo> types;
-    for (auto it : plugin_type_infos) {
-        types.push_back(it.second);
-    }
-    sort(types.begin(), types.end());
-    return types;
-}
-
-void Registry::insert_group_info(const PluginGroupInfo &info) {
-    if (plugin_group_infos.count(info.group_id)) {
-        cerr << "duplicate group in registry: "
-             << info.group_id << endl;
-        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
-    }
-    plugin_group_infos.insert(make_pair(info.group_id, info));
-}
-
-const PluginGroupInfo &Registry::get_group_info(const string &group) const {
-    if (!plugin_group_infos.count(group)) {
-        ABORT("attempt to retrieve non-existing group info from registry: " +
-              string(group));
-    }
-    return plugin_group_infos.at(group);
-}
-
 static void print_initialization_errors(const vector<string> &errors) {
     cerr << "Plugin initialization errors:\n" + utils::join(errors, "\n") << endl;
     exit_with_demangling_hint(ExitCode::SEARCH_CRITICAL_ERROR, "[TYPE]");
-}
-
-Registry::Registry(const RegistryData &collection) {
-    vector<string> errors;
-    collect_plugin_types(collection, errors);
-    collect_plugin_groups(collection, errors);
-    collect_plugins(collection, errors);
-    if (!errors.empty()) {
-        print_initialization_errors(errors);
-    }
 }
 
 template<typename K, typename T>
@@ -87,6 +34,16 @@ static void generate_duplicate_errors(
     }
     sort(name_clash_errors.begin(), name_clash_errors.end());
     errors.insert(errors.end(), name_clash_errors.begin(), name_clash_errors.end());
+}
+
+Registry::Registry(const RegistryData &collection) {
+    vector<string> errors;
+    collect_plugin_types(collection, errors);
+    collect_plugin_groups(collection, errors);
+    collect_plugins(collection, errors);
+    if (!errors.empty()) {
+        print_initialization_errors(errors);
+    }
 }
 
 void Registry::collect_plugin_types(const RegistryData &collection,
@@ -195,6 +152,49 @@ void Registry::collect_plugins(const RegistryData &collection,
 
     sort(other_plugin_errors.begin(), other_plugin_errors.end());
     errors.insert(errors.end(), other_plugin_errors.begin(), other_plugin_errors.end());
+}
+
+void Registry::insert_type_info(const PluginTypeInfo &info) {
+    if (plugin_type_infos.count(info.get_type())) {
+        cerr << "duplicate type in registry: "
+             << info.get_type().name() << endl;
+        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    plugin_type_infos.insert(make_pair(info.get_type(), info));
+}
+
+const PluginTypeInfo &Registry::get_type_info(const type_index &type) const {
+    if (!plugin_type_infos.count(type)) {
+        ABORT("attempt to retrieve non-existing type info from registry: " +
+              string(type.name()));
+    }
+    return plugin_type_infos.at(type);
+}
+
+vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
+    vector<PluginTypeInfo> types;
+    for (auto it : plugin_type_infos) {
+        types.push_back(it.second);
+    }
+    sort(types.begin(), types.end());
+    return types;
+}
+
+void Registry::insert_group_info(const PluginGroupInfo &info) {
+    if (plugin_group_infos.count(info.group_id)) {
+        cerr << "duplicate group in registry: "
+             << info.group_id << endl;
+        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    plugin_group_infos.insert(make_pair(info.group_id, info));
+}
+
+const PluginGroupInfo &Registry::get_group_info(const string &group) const {
+    if (!plugin_group_infos.count(group)) {
+        ABORT("attempt to retrieve non-existing group info from registry: " +
+              string(group));
+    }
+    return plugin_group_infos.at(group);
 }
 
 void Registry::insert_plugin(
