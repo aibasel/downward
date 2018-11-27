@@ -13,61 +13,6 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
-PluginTypeData::PluginTypeData(const string type_name,
-                               const string documentation,
-                               const type_index type)
-    : type_name(type_name),
-      documentation(documentation),
-      type(type) { }
-
-PluginGroupData::PluginGroupData(const string group_id,
-                                 const string doc_title)
-    : group_id(group_id),
-      doc_title(doc_title) { }
-
-PluginData::PluginData(const string key,
-                       const Any factory,
-                       const string group,
-                       const PluginTypeNameGetter type_name_factory,
-                       const DocFactory doc_factory,
-                       const type_index type)
-    : key(key),
-      factory(factory),
-      group(group),
-      type_name_factory(type_name_factory),
-      doc_factory(doc_factory),
-      type(type) { }
-
-void RegistryDataCollection::insert_plugin_type_data(
-    const string &type_name, const string &documentation, type_index type) {
-    plugin_types.emplace_back(type_name, documentation, type);
-}
-
-void RegistryDataCollection::insert_plugin_group_data(
-    const string &group_id, const string &doc_title) {
-    plugin_groups.emplace_back(group_id, doc_title);
-}
-
-void RegistryDataCollection::insert_plugin_data(
-    const string &key, const Any &factory, const string &group,
-    PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
-    type_index type) {
-    plugins.emplace_back(key, factory, group, type_name_factory, doc_factory,
-                         type);
-}
-
-const vector<PluginTypeData> &RegistryDataCollection::get_plugin_type_data() const {
-    return plugin_types;
-}
-
-const vector<PluginGroupData> &RegistryDataCollection::get_plugin_group_data() const {
-    return plugin_groups;
-}
-
-const vector<PluginData> &RegistryDataCollection::get_plugin_data() const {
-    return plugins;
-}
-
 
 PluginTypeInfo::PluginTypeInfo(const type_index &type,
                                const string &type_name,
@@ -141,7 +86,7 @@ static void print_initialization_errors(const vector<string> &errors) {
     exit_with_demangling_hint(ExitCode::SEARCH_CRITICAL_ERROR, "[TYPE]");
 }
 
-Registry::Registry(const RegistryDataCollection &collection) {
+Registry::Registry(const RegistryData &collection) {
     vector<string> errors;
     collect_plugin_types(collection, errors);
     collect_plugin_groups(collection, errors);
@@ -169,7 +114,7 @@ static void generate_duplicate_errors(
     errors.insert(errors.end(), name_clash_errors.begin(), name_clash_errors.end());
 }
 
-void Registry::collect_plugin_types(const RegistryDataCollection &collection,
+void Registry::collect_plugin_types(const RegistryData &collection,
                                     vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
@@ -209,7 +154,7 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
         });
 }
 
-void Registry::collect_plugin_groups(const RegistryDataCollection &collection,
+void Registry::collect_plugin_groups(const RegistryData &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
     for (const PluginGroupData &pgd : collection.get_plugin_group_data()) {
@@ -232,7 +177,7 @@ void Registry::collect_plugin_groups(const RegistryDataCollection &collection,
         });
 }
 
-void Registry::collect_plugins(const RegistryDataCollection &collection,
+void Registry::collect_plugins(const RegistryData &collection,
                                vector<string> &errors) {
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;

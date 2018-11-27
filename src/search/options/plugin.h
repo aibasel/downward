@@ -3,6 +3,7 @@
 
 #include "doc_utils.h"
 #include "registries.h"
+#include "registry_data.h"
 #include "type_namer.h"
 
 #include <functional>
@@ -29,7 +30,7 @@ public:
     PluginTypePlugin(const std::string &type_name,
                      const std::string &documentation) {
         using TPtr = std::shared_ptr<T>;
-        RegistryDataCollection::instance()->insert_plugin_type_data(
+        RegistryData::instance()->insert_plugin_type_data(
             type_name, documentation, std::type_index(typeid(TPtr)));
     }
 
@@ -63,7 +64,7 @@ public:
                 factory(parser);
             };
 
-        RegistryDataCollection::instance()->insert_plugin_data(
+        RegistryData::instance()->insert_plugin_data(
             key, factory, group, type_name_factory, doc_factory,
             std::type_index(typeid(TPtr)));
     }

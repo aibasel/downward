@@ -3,6 +3,7 @@
 
 #include "any.h"
 #include "doc_utils.h"
+#include "registry_data.h"
 
 #include "../utils/system.h"
 
@@ -18,66 +19,6 @@
 
 namespace options {
 class OptionParser;
-
-struct PluginTypeData {
-    const std::string type_name;
-    const std::string documentation;
-    const std::type_index type;
-
-    PluginTypeData(std::string type_name, std::string documentation,
-                   std::type_index type);
-};
-
-struct PluginGroupData {
-    const std::string group_id;
-    const std::string doc_title;
-
-    PluginGroupData(std::string group_id, std::string doc_title);
-};
-
-struct PluginData {
-    const std::string key;
-    const Any factory;
-    const std::string group;
-    const PluginTypeNameGetter type_name_factory;
-    const DocFactory doc_factory;
-    const std::type_index type;
-
-    PluginData(std::string key, Any factory, std::string group,
-               PluginTypeNameGetter type_name_factory,
-               DocFactory doc_factory, std::type_index type);
-};
-
-class RegistryDataCollection {
-    std::vector<PluginTypeData> plugin_types;
-    std::vector<PluginGroupData> plugin_groups;
-    std::vector<PluginData> plugins;
-
-    RegistryDataCollection() = default;
-
-public:
-    void insert_plugin_type_data(
-        const std::string &type_name, const std::string &documentation,
-        std::type_index type);
-
-    void insert_plugin_group_data(
-        const std::string &group_id, const std::string &doc_title);
-
-    void insert_plugin_data(
-        const std::string &key, const Any &factory, const std::string &group,
-        PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
-        std::type_index type);
-
-    const std::vector<PluginTypeData> &get_plugin_type_data() const;
-    const std::vector<PluginGroupData> &get_plugin_group_data() const;
-    const std::vector<PluginData> &get_plugin_data() const;
-
-    static RegistryDataCollection *instance() {
-        static RegistryDataCollection instance_;
-        return &instance_;
-    }
-};
-
 
 class Registry {
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
@@ -103,11 +44,11 @@ class Registry {
      */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
 
-    void collect_plugin_types(const RegistryDataCollection &collection,
+    void collect_plugin_types(const RegistryData &collection,
                               std::vector<std::string> &errors);
-    void collect_plugin_groups(const RegistryDataCollection &collection,
+    void collect_plugin_groups(const RegistryData &collection,
                                std::vector<std::string> &errors);
-    void collect_plugins(const RegistryDataCollection &collection,
+    void collect_plugins(const RegistryData &collection,
                          std::vector<std::string> &errors);
 
     void insert_plugin(const std::string &key, const Any &factory,
@@ -123,7 +64,7 @@ class Registry {
     void insert_group_info(const PluginGroupInfo &info);
 
 public:
-    Registry(const RegistryDataCollection &collection);
+    Registry(const RegistryData &collection);
 
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {
