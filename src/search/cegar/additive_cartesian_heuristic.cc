@@ -68,7 +68,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         utils::format_paper_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Counterexample-guided Cartesian Abstraction Refinement",
-            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
             "Proceedings of the 23rd International Conference on Automated "
             "Planning and Scheduling (ICAPS 2013)",
             "347-351",
@@ -77,7 +77,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         utils::format_paper_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Diverse and Additive Cartesian Abstraction Heuristics",
-            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
             "Proceedings of the 24th International Conference on "
             "Automated Planning and Scheduling (ICAPS 2014)",
             "289-297",
