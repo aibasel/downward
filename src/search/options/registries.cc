@@ -154,14 +154,15 @@ Registry::Registry(const RegistryDataCollection &collection) {
 template<typename K, typename T>
 static void generate_duplicate_errors(
     const unordered_map<K, T> &occurrences, vector<string> &errors,
-    function<bool(const T &obj)> f_cnd,
-    function<string(const K &first, const T &second)> f_msg) {
+    function<bool(const T &obj)> duplicate_condition,
+    function<string(const K &first, const T &second)> message_generator) {
     vector<string> name_clash_errors;
 
     typename unordered_map<K, T>::const_iterator it;
     for (it = occurrences.begin(); it != occurrences.end(); ++it) {
-        if (f_cnd(it->second)) {
-            name_clash_errors.push_back(f_msg(it->first, it->second));
+        if (duplicate_condition(it->second)) {
+            name_clash_errors.push_back(
+                message_generator(it->first, it->second));
         }
     }
     sort(name_clash_errors.begin(), name_clash_errors.end());
@@ -173,9 +174,9 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
     for (const PluginTypeData &ptd : collection.get_plugin_type_data()) {
-        const string type_name = ptd.type_name;
-        const string documentation = ptd.documentation;
-        const type_index type = ptd.type;
+        string type_name = ptd.type_name;
+        string documentation = ptd.documentation;
+        type_index type = ptd.type;
 
         occurrences_names[type_name].push_back(type);
         occurrences_types[type].push_back(type_name);
@@ -192,9 +193,11 @@ void Registry::collect_plugin_types(const RegistryDataCollection &collection,
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple PluginTypePlugins with the same name: " +
             type_name + " (types: " +
-            utils::join(utils::map_vector<string>(
-                            types, [](const type_index &type) {return type.name();}),
-                        ", ");
+            utils::join(
+                utils::map_vector<string>(
+                    types,
+                    [](const type_index &type) {return type.name();}),
+                    ", ");
         });
 
     generate_duplicate_errors<type_index, vector<string>>(
@@ -210,8 +213,8 @@ void Registry::collect_plugin_groups(const RegistryDataCollection &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
     for (const PluginGroupData &pgd : collection.get_plugin_group_data()) {
-        const string group_id = pgd.group_id;
-        const string doc_title = pgd.doc_title;
+        string group_id = pgd.group_id;
+        string doc_title = pgd.doc_title;
 
         occurrences[group_id]++;
         if (occurrences[group_id] == 1) {
@@ -234,12 +237,12 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
     for (const PluginData &pd : collection.get_plugin_data()) {
-        const string key = pd.key;
-        const Any factory = pd.factory;
-        const string group = pd.group;
-        const PluginTypeNameGetter type_name_factory = pd.type_name_factory;
-        const DocFactory doc_factory = pd.doc_factory;
-        const type_index type = pd.type;
+        string key = pd.key;
+        Any factory = pd.factory;
+        string group = pd.group;
+        PluginTypeNameGetter type_name_factory = pd.type_name_factory;
+        DocFactory doc_factory = pd.doc_factory;
+        type_index type = pd.type;
 
         if (!group.empty() && !plugin_group_infos.count(group)) {
             other_plugin_errors.push_back(
@@ -262,10 +265,12 @@ void Registry::collect_plugins(const RegistryDataCollection &collection,
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
             return "Multiple Plugins: " + type_name + " (types: " +
-            utils::join(utils::map_vector<string>(
-                            types, [](const type_index &type) {return type.name();}),
+                utils::join(
+                    utils::map_vector<string>(
+                        types,
+                        [](const type_index &type) {return type.name();}),
                         ", ") +
-            ")";
+                ")";
         });
 
     sort(other_plugin_errors.begin(), other_plugin_errors.end());
