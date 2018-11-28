@@ -141,6 +141,10 @@ public:
 struct PluginGroupInfo {
     std::string group_id;
     std::string doc_title;
+    
+    PluginGroupInfo(const std::string &group_id, const std::string &doc_title) 
+        : group_id(group_id), doc_title(doc_title) {
+    }
 };
 }
 

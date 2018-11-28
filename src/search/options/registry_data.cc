@@ -3,18 +3,6 @@
 using namespace std;
 
 namespace options {
-PluginTypeData::PluginTypeData(const string type_name,
-                               const string documentation,
-                               const type_index type)
-    : type_name(type_name),
-      documentation(documentation),
-      type(type) { }
-
-PluginGroupData::PluginGroupData(const string group_id,
-                                 const string doc_title)
-    : group_id(group_id),
-      doc_title(doc_title) { }
-
 PluginData::PluginData(const string key,
                        const Any factory,
                        const string group,
@@ -29,11 +17,9 @@ PluginData::PluginData(const string key,
       type(type) { }
 
 
-
-
 void RegistryData::insert_plugin_type_data(
     const string &type_name, const string &documentation, type_index type) {
-    plugin_types.emplace_back(type_name, documentation, type);
+    plugin_types.emplace_back(type, type_name, documentation);
 }
 
 void RegistryData::insert_plugin_group_data(
@@ -49,11 +35,11 @@ void RegistryData::insert_plugin_data(
                          type);
 }
 
-const vector<PluginTypeData> &RegistryData::get_plugin_type_data() const {
+const vector<PluginTypeInfo> &RegistryData::get_plugin_type_data() const {
     return plugin_types;
 }
 
-const vector<PluginGroupData> &RegistryData::get_plugin_group_data() const {
+const vector<PluginGroupInfo> &RegistryData::get_plugin_group_data() const {
     return plugin_groups;
 }
 

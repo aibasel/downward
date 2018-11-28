@@ -9,21 +9,6 @@
 
 
 namespace options {
-struct PluginTypeData {
-    std::string type_name;
-    std::string documentation;
-    std::type_index type;
-
-    PluginTypeData(std::string type_name, std::string documentation,
-                   std::type_index type);
-};
-
-struct PluginGroupData {
-    std::string group_id;
-    std::string doc_title;
-
-    PluginGroupData(std::string group_id, std::string doc_title);
-};
 
 struct PluginData {
     std::string key;
@@ -40,8 +25,8 @@ struct PluginData {
 
 
 class RegistryData {
-    std::vector<PluginTypeData> plugin_types;
-    std::vector<PluginGroupData> plugin_groups;
+    std::vector<PluginTypeInfo> plugin_types;
+    std::vector<PluginGroupInfo> plugin_groups;
     std::vector<PluginData> plugins;
 
 public:
@@ -57,8 +42,8 @@ public:
         PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
         std::type_index type);
 
-    const std::vector<PluginTypeData> &get_plugin_type_data() const;
-    const std::vector<PluginGroupData> &get_plugin_group_data() const;
+    const std::vector<PluginTypeInfo> &get_plugin_type_data() const;
+    const std::vector<PluginGroupInfo> &get_plugin_group_data() const;
     const std::vector<PluginData> &get_plugin_data() const;
 
     static RegistryData *instance() {
