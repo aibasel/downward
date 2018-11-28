@@ -111,17 +111,23 @@ void Registry::collect_plugins(const RegistryData &collection,
         DocFactory doc_factory = pd.doc_factory;
         type_index type = pd.type;
 
+        bool error = false;
         if (!group.empty() && !plugin_group_infos.count(group)) {
             other_plugin_errors.push_back(
                 "Missing PluginGroupPlugin for Plugin " + key +
                 " of type " + type.name() + ": " + group);
+            error = true;
         }
         if (!plugin_type_infos.count(type)) {
             other_plugin_errors.push_back("Missing PluginTypePlugin for "
                                           "Plugin " + key + ": " + type.name());
+            error = true;
         }
         occurrences[key].push_back(type);
-        if (occurrences[key].size() == 1) {
+        if (occurrences[key].size() != 1) {
+            error = true;
+        }
+        if (!error) {
             insert_plugin(key, factory, type_name_factory, doc_factory, group,
                           type);
         }
