@@ -49,17 +49,12 @@ void Registry::collect_plugin_types(const RegistryData &collection,
                                     vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
-    for (const PluginTypeData &ptd : collection.get_plugin_type_data()) {
-        string type_name = ptd.type_name;
-        string documentation = ptd.documentation;
-        type_index type = ptd.type;
-
-        occurrences_names[type_name].push_back(type);
-        occurrences_types[type].push_back(type_name);
-        if (occurrences_names[type_name].size() == 1 &&
-            occurrences_types[type].size() == 1) {
-            PluginTypeInfo info(type, type_name, documentation);
-            insert_type_info(info);
+    for (const PluginTypeInfo &pti : collection.get_plugin_type_data()) {
+        occurrences_names[pti.get_type_name()].push_back(pti.get_type());
+        occurrences_types[pti.get_type()].push_back(pti.get_type_name());
+        if (occurrences_names[pti.get_type_name()].size() == 1 &&
+            occurrences_types[pti.get_type()].size() == 1) {
+            insert_type_info(pti);
         }
     }
 
@@ -88,14 +83,10 @@ void Registry::collect_plugin_types(const RegistryData &collection,
 void Registry::collect_plugin_groups(const RegistryData &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
-    for (const PluginGroupData &pgd : collection.get_plugin_group_data()) {
-        string group_id = pgd.group_id;
-        string doc_title = pgd.doc_title;
-
-        occurrences[group_id]++;
-        if (occurrences[group_id] == 1) {
-            PluginGroupInfo info {group_id, doc_title};
-            insert_group_info(info);
+    for (const PluginGroupInfo &pgi : collection.get_plugin_group_data()) {
+        occurrences[pgi.group_id]++;
+        if (occurrences[pgi.group_id] == 1) {
+            insert_group_info(pgi);
         }
     }
 
