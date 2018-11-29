@@ -52,7 +52,6 @@ static vector<int> get_active_operators_from_graph(
     for (int target = 0; target < num_states; ++target) {
         for (const Successor &transition : backward_graph[target]) {
             int op_id = transition.op;
-            assert(transition.state != target);
             active_operators.insert(op_id);
         }
     }
@@ -72,11 +71,14 @@ ExplicitAbstraction::ExplicitAbstraction(
       looping_operators(move(looping_operators)),
       goal_states(move(goal_states)) {
 #ifndef NDEBUG
-    // Check that no transition is stored multiple times.
     for (int target = 0; target < get_num_states(); ++target) {
+        // Check that no transition is stored multiple times.
         vector<Successor> copied_transitions = this->backward_graph[target];
         sort(copied_transitions.begin(), copied_transitions.end());
         assert(utils::is_sorted_unique(copied_transitions));
+        // Check that we don't store self-loops.
+        assert(all_of(copied_transitions.begin(), copied_transitions.end(),
+                      [target](const Successor &succ) {return succ.state != target;}));
     }
 #endif
 }
@@ -100,7 +102,6 @@ vector<Transition> ExplicitAbstraction::get_transitions() const {
         for (const Successor &transition : backward_graph[target]) {
             int op_id = transition.op;
             int src = transition.state;
-            assert(src != target);
             transitions.emplace_back(src, op_id, target);
         }
     }
@@ -129,7 +130,6 @@ vector<int> ExplicitAbstraction::compute_saturated_costs(
         for (const Successor &transition : backward_graph[target]) {
             int op_id = transition.op;
             int src = transition.state;
-            assert(src != target);
             assert(utils::in_bounds(src, h_values));
             int src_h = h_values[src];
             if (src_h == INF) {
