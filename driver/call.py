@@ -32,26 +32,25 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
     logging.info("{} command line string: {}".format(nick, " ".join(escaped_cmd)))
 
 
+def _try_or_exit(function, description):
+    def fail(exception, exitcode):
+        logging.error("{} failed: {}".format(description, exception))
+        os._exit(exitcode)
+
+    try:
+        function()
+    except NotImplementedError as err:
+        fail(err, returncodes.DRIVER_UNSUPPORTED)
+    except OSError as err:
+        fail(err, returncodes.DRIVER_CRITICAL_ERROR)
+    except ValueError as err:
+        fail(err, returncodes.DRIVER_INPUT_ERROR)
+
+
 def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
-        # If setting a limit fails, exit only the child process and not the
-        # main process.
-        error_to_exitcode = {
-            NotImplementedError: returncodes.DRIVER_UNSUPPORTED,
-            OSError: returncodes.DRIVER_CRITICAL_ERROR,
-            ValueError: returncodes.DRIVER_INPUT_ERROR,
-        }
-        try:
-            limits.set_time_limit(time_limit)
-        except tuple(error_to_exitcode) as err:
-            logging.error("Setting time limit failed: {}".format(err))
-            os._exit(error_to_exitcode[type(err)])
-
-        try:
-            limits.set_memory_limit(memory_limit)
-        except tuple(error_to_exitcode) as err:
-            logging.error("Setting memory limit failed: {}".format(err))
-            os._exit(error_to_exitcode[type(err)])
+        _try_or_exit(lambda: limits.set_time_limit(time_limit), "Setting time limit")
+        _try_or_exit(lambda: limits.set_memory_limit(memory_limit), "Setting memory limit")
 
     if time_limit is None and memory_limit is None:
         return None
