@@ -191,11 +191,11 @@ class Projection : public Abstraction {
     std::vector<int> compute_distances(const std::vector<int> &costs) const;
 
     /*
-      Return true iff the given state is an abstract goal state.
+      Return true iff all abstract facts hold in the given state.
     */
     bool is_consistent(
         std::size_t state_index,
-        const std::vector<FactPair> &abstract_goals) const;
+        const std::vector<FactPair> &abstract_facts) const;
 
     /*
       Use the given concrete state to calculate the index of the corresponding

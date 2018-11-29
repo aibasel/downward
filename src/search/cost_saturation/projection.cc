@@ -404,8 +404,8 @@ vector<int> Projection::compute_distances(const vector<int> &costs) const {
 
 bool Projection::is_consistent(
     size_t state_index,
-    const vector<FactPair> &abstract_goals) const {
-    for (const FactPair &abstract_goal : abstract_goals) {
+    const vector<FactPair> &abstract_facts) const {
+    for (const FactPair &abstract_goal : abstract_facts) {
         int pattern_var_id = abstract_goal.var;
         int temp = state_index / hash_multipliers[pattern_var_id];
         int val = temp % pattern_domain_sizes[pattern_var_id];
