@@ -32,12 +32,6 @@ def can_set_memory_limit():
     return resource is not None and sys.platform != "darwin"
 
 
-def _set_limit(kind, soft, hard=None):
-    if hard is None:
-        hard = soft
-    resource.setrlimit(kind, (soft, hard))
-
-
 def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
     soft_limit = min(int(math.ceil(internal_limit)), external_hard_limit)
     hard_limit = min(soft_limit + 1, external_hard_limit)
@@ -65,7 +59,7 @@ def set_time_limit(time_limit):
     # Hard limit reached --> SIGKILL.
     soft_limit, hard_limit = _get_soft_and_hard_time_limits(
         time_limit, external_hard_limit)
-    _set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
+    resource.setrlimit(resource.RLIMIT_CPU, (soft_limit, hard_limit))
 
 
 def set_memory_limit(memory):
@@ -74,7 +68,7 @@ def set_memory_limit(memory):
         return
     if not can_set_memory_limit():
         raise NotImplementedError(CANNOT_LIMIT_MEMORY_MSG)
-    _set_limit(resource.RLIMIT_AS, memory)
+    resource.setrlimit(resource.RLIMIT_AS, (memory, memory))
 
 
 def convert_to_mb(num_bytes):
