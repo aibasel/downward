@@ -87,14 +87,14 @@ def get_time_limit(component_limit, overall_limit):
     """
     Return the minimum time limit imposed by the component and overall limits.
     """
-    limits = []
-    if component_limit is not None:
-        limits.append(component_limit)
+    limit = component_limit
     if overall_limit is not None:
         try:
             elapsed_time = util.get_elapsed_time()
         except NotImplementedError:
             returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
         else:
-            limits.append(max(0, overall_limit - elapsed_time))
-    return min(limits) if limits else None
+            remaining_time = max(0, overall_limit - elapsed_time)
+            if limit is None or remaining_time < limit:
+                limit = remaining_time
+    return limit
