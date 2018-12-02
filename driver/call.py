@@ -32,23 +32,21 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
     logging.info("{} command line string: {}".format(nick, " ".join(escaped_cmd)))
 
 
-def _try_or_exit(function, description):
-    def fail(exception, exitcode):
-        logging.error("{} failed: {}".format(description, exception))
-        os._exit(exitcode)
-
-    try:
-        function()
-    except NotImplementedError as err:
-        fail(err, returncodes.DRIVER_UNSUPPORTED)
-    except OSError as err:
-        fail(err, returncodes.DRIVER_CRITICAL_ERROR)
-    except ValueError as err:
-        fail(err, returncodes.DRIVER_INPUT_ERROR)
-
-
 def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
+        def _try_or_exit(function, description):
+            def fail(exception, exitcode):
+                logging.error("{} failed: {}".format(description, exception))
+                os._exit(exitcode)
+            try:
+                function()
+            except NotImplementedError as err:
+                fail(err, returncodes.DRIVER_UNSUPPORTED)
+            except OSError as err:
+                fail(err, returncodes.DRIVER_CRITICAL_ERROR)
+            except ValueError as err:
+                fail(err, returncodes.DRIVER_INPUT_ERROR)
+
         _try_or_exit(lambda: limits.set_time_limit(time_limit), "Setting time limit")
         _try_or_exit(lambda: limits.set_memory_limit(memory_limit), "Setting memory limit")
 
