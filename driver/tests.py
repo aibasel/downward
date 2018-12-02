@@ -55,19 +55,6 @@ def test_portfolios():
         run_driver(cmd)
 
 
-def test_time_limits():
-    for internal, external, expected_soft, expected_hard in [
-            (1.5, 10, 2, 3),
-            (1.0, 10, 1, 2),
-            (0.5, 10, 1, 2),
-            (0.5, 1, 1, 1),
-            (0.5, float("inf"), 1, 2),
-            (0.5, 0, 0, 0),
-            ]:
-        assert (limits._get_soft_and_hard_time_limits(internal, external) ==
-            (expected_soft, expected_hard))
-
-
 def test_hard_time_limit():
     def preexec_fn():
         limits.set_time_limit(10)
