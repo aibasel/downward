@@ -41,11 +41,13 @@ def set_time_limit(time_limit):
     # a SIGKILL, which is unpreventable. We set a hard limit one second
     # higher than the soft limit to make sure we abort also in cases where
     # the graceful shutdown doesn't work, or doesn't work reasonably
-    # quickly. In case the time limit equals the external hard limit, we
-    # forgo the extra second.
+    # quickly.
     try:
         resource.setrlimit(resource.RLIMIT_CPU, (time_limit, time_limit + 1))
-    except:
+    except ValueError:
+        # If the previous call failed, we try again without the extra second.
+        # In particular, this is necessary if there already exists an external
+        # hard limit equal to time_limit.
         resource.setrlimit(resource.RLIMIT_CPU, (time_limit, time_limit))
 
 
