@@ -5,7 +5,6 @@ from __future__ import division, print_function
 from . import returncodes
 from . import util
 
-import math
 try:
     import resource
 except ImportError:
@@ -32,34 +31,22 @@ def can_set_memory_limit():
     return resource is not None and sys.platform != "darwin"
 
 
-def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
-    soft_limit = min(int(math.ceil(internal_limit)), external_hard_limit)
-    hard_limit = min(soft_limit + 1, external_hard_limit)
-    print("Time limit %.2f -> (soft: %d, hard: %d)" %
-        (internal_limit, soft_limit, hard_limit))
-    sys.stdout.flush()
-    assert soft_limit <= hard_limit
-    return soft_limit, hard_limit
-
-
 def set_time_limit(time_limit):
     if time_limit is None:
         return
     if not can_set_time_limit():
         raise NotImplementedError(CANNOT_LIMIT_TIME_MSG)
-    # Don't try to raise the hard limit.
-    _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
-    if external_hard_limit == resource.RLIM_INFINITY:
-        external_hard_limit = float("inf")
-    if time_limit > external_hard_limit:
-        raise ValueError(
-            "Time limit {time_limit}s exceeds external hard limit "
-            "{external_hard_limit}s.".format(**locals()))
-    # Soft limit reached --> SIGXCPU.
-    # Hard limit reached --> SIGKILL.
-    soft_limit, hard_limit = _get_soft_and_hard_time_limits(
-        time_limit, external_hard_limit)
-    resource.setrlimit(resource.RLIMIT_CPU, (soft_limit, hard_limit))
+    # Reaching the soft time limit leads to a (catchable) SIGXCPU signal,
+    # which we catch to gracefully exit. Reaching the hard limit leads to
+    # a SIGKILL, which is unpreventable. We set a hard limit one second
+    # higher than the soft limit to make sure we abort also in cases where
+    # the graceful shutdown doesn't work, or doesn't work reasonably
+    # quickly. In case the time limit equals the external hard limit, we
+    # forgo the extra second.
+    try:
+        resource.setrlimit(resource.RLIMIT_CPU, (time_limit, time_limit + 1))
+    except:
+        resource.setrlimit(resource.RLIMIT_CPU, (time_limit, time_limit))
 
 
 def set_memory_limit(memory):
