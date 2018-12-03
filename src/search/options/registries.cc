@@ -121,7 +121,7 @@ void Registry::collect_plugins(const RawRegistry &collection,
         }
         if (!plugin_type_infos.count(plugin.type)) {
             other_plugin_errors.push_back("Missing PluginTypePlugin for "
-                                          "Plugin " + plugin.key + ": " + 
+                                          "Plugin " + plugin.key + ": " +
                                           plugin.type.name());
             error = true;
         }

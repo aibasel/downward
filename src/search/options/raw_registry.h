@@ -17,9 +17,9 @@ struct RawPluginInfo {
     std::type_index type;
 
     RawPluginInfo(
-        const std::string &key, 
+        const std::string &key,
         const std::function<Any(OptionParser &)> &factory,
-        const std::string &group, 
+        const std::string &group,
         const PluginTypeNameGetter &type_name_factory,
         const DocFactory &doc_factory, const std::type_index &type);
 };
@@ -39,7 +39,7 @@ public:
         const std::string &group_id, const std::string &doc_title);
 
     void insert_plugin_data(
-        const std::string &key, 
+        const std::string &key,
         const std::function<Any(OptionParser &)> &factory,
         const std::string &group,
         PluginTypeNameGetter type_name_factory,
