@@ -30,7 +30,7 @@ public:
                      const std::string &documentation) {
         using TPtr = std::shared_ptr<T>;
         RawRegistry::instance()->insert_plugin_type_data(
-            type_name, documentation, std::type_index(typeid(TPtr)));
+            std::type_index(typeid(TPtr)), type_name, documentation);
     }
 
     ~PluginTypePlugin() = default;

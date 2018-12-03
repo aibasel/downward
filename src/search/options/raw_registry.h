@@ -10,15 +10,18 @@
 namespace options {
 struct RawPluginInfo {
     std::string key;
-    Any factory;
+    const std::function<Any(OptionParser &)> factory;
     std::string group;
     PluginTypeNameGetter type_name_factory;
     DocFactory doc_factory;
     std::type_index type;
 
-    RawPluginInfo(std::string key, Any factory, std::string group,
-                  PluginTypeNameGetter type_name_factory,
-                  DocFactory doc_factory, std::type_index type);
+    RawPluginInfo(
+        const std::string &key, 
+        const std::function<Any(OptionParser &)> &factory,
+        const std::string &group, 
+        const PluginTypeNameGetter &type_name_factory,
+        const DocFactory &doc_factory, const std::type_index &type);
 };
 
 
@@ -29,15 +32,18 @@ class RawRegistry {
 
 public:
     void insert_plugin_type_data(
-        const std::string &type_name, const std::string &documentation,
-        std::type_index type);
+        std::type_index type, const std::string &type_name,
+        const std::string &documentation);
 
     void insert_plugin_group_data(
         const std::string &group_id, const std::string &doc_title);
 
     void insert_plugin_data(
-        const std::string &key, const Any &factory, const std::string &group,
-        PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
+        const std::string &key, 
+        const std::function<Any(OptionParser &)> &factory,
+        const std::string &group,
+        PluginTypeNameGetter type_name_factory,
+        DocFactory doc_factory,
         std::type_index type);
 
     const std::vector<PluginTypeInfo> &get_plugin_type_data() const;

@@ -98,8 +98,8 @@ fast_downward_plugin(
         options/parse_tree
         options/predefinitions
         options/plugin
-        options/registries
         options/raw_registry
+        options/registries
         options/type_namer
     CORE_PLUGIN
 )
