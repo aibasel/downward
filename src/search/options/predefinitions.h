@@ -24,9 +24,10 @@ public:
                       << key << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        predefined.emplace(
-            key,
-            std::pair<std::type_index, Any>(std::type_index(typeid(T)), object));
+        predefined.emplace(key, std::make_pair(std::type_index(typeid(T)), object));
+        //predefined.emplace(
+        //    key,
+        //    std::pair<std::type_index, Any>(std::type_index(typeid(T)), object));
     }
 
     template<typename T>
@@ -38,7 +39,7 @@ public:
         } else if (it->second.first == type) {
             return true;
         } else {
-            std::cerr << "Attempt to use a predefinition with a wrong type: "
+            std::cerr << "Tried to look up a predefinition with a wrong type: "
                       << key << "(type: " << typeid(T).name()
                       << ")" << std::endl;
             //Add demangling hint from issue842
@@ -50,8 +51,8 @@ public:
     T get(const std::string &key) const {
         try {
             return any_cast<T>(predefined.at(key).second);
-        } catch (BadAnyCast&) {
-            std::cerr << "Attempt to use a predefinition with a wrong type: "
+        } catch (BadAnyCast &) {
+            std::cerr << "Tried to look up a predefinition with a wrong type: "
                       << key << "(type: " << typeid(T).name()
                       << ")" << std::endl;
             //Add demangling hint from issue842
