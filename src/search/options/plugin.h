@@ -2,7 +2,7 @@
 #define OPTIONS_PLUGIN_H
 
 #include "doc_utils.h"
-#include "registry_data.h"
+#include "raw_registry.h"
 #include "type_namer.h"
 
 #include <functional>
@@ -29,7 +29,7 @@ public:
     PluginTypePlugin(const std::string &type_name,
                      const std::string &documentation) {
         using TPtr = std::shared_ptr<T>;
-        RegistryData::instance()->insert_plugin_type_data(
+        RawRegistry::instance()->insert_plugin_type_data(
             type_name, documentation, std::type_index(typeid(TPtr)));
     }
 
@@ -63,7 +63,7 @@ public:
                 factory(parser);
             };
 
-        RegistryData::instance()->insert_plugin_data(
+        RawRegistry::instance()->insert_plugin_data(
             key, factory, group, type_name_factory, doc_factory,
             std::type_index(typeid(TPtr)));
     }

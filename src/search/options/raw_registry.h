@@ -1,5 +1,5 @@
-#ifndef OPTIONS_REGISTRY_DATA_H
-#define OPTIONS_REGISTRY_DATA_H
+#ifndef OPTIONS_RAW_REGISTRY_H
+#define OPTIONS_RAW_REGISTRY_H
 
 #include "any.h"
 #include "doc_utils.h"
@@ -7,9 +7,8 @@
 #include <vector>
 
 
-
 namespace options {
-struct PluginData {
+struct RawPluginInfo {
     std::string key;
     Any factory;
     std::string group;
@@ -17,16 +16,16 @@ struct PluginData {
     DocFactory doc_factory;
     std::type_index type;
 
-    PluginData(std::string key, Any factory, std::string group,
+    RawPluginInfo(std::string key, Any factory, std::string group,
                PluginTypeNameGetter type_name_factory,
                DocFactory doc_factory, std::type_index type);
 };
 
 
-class RegistryData {
+class RawRegistry {
     std::vector<PluginTypeInfo> plugin_types;
     std::vector<PluginGroupInfo> plugin_groups;
-    std::vector<PluginData> plugins;
+    std::vector<RawPluginInfo> plugins;
 
 public:
     void insert_plugin_type_data(
@@ -43,10 +42,10 @@ public:
 
     const std::vector<PluginTypeInfo> &get_plugin_type_data() const;
     const std::vector<PluginGroupInfo> &get_plugin_group_data() const;
-    const std::vector<PluginData> &get_plugin_data() const;
+    const std::vector<RawPluginInfo> &get_plugin_data() const;
 
-    static RegistryData *instance() {
-        static RegistryData instance_;
+    static RawRegistry *instance() {
+        static RawRegistry instance_;
         return &instance_;
     }
 };

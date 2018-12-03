@@ -36,7 +36,7 @@ static void generate_duplicate_errors(
     errors.insert(errors.end(), name_clash_errors.begin(), name_clash_errors.end());
 }
 
-Registry::Registry(const RegistryData &collection) {
+Registry::Registry(const RawRegistry &collection) {
     vector<string> errors;
     collect_plugin_types(collection, errors);
     collect_plugin_groups(collection, errors);
@@ -46,7 +46,7 @@ Registry::Registry(const RegistryData &collection) {
     }
 }
 
-void Registry::collect_plugin_types(const RegistryData &collection,
+void Registry::collect_plugin_types(const RawRegistry &collection,
                                     vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
@@ -81,7 +81,7 @@ void Registry::collect_plugin_types(const RegistryData &collection,
         });
 }
 
-void Registry::collect_plugin_groups(const RegistryData &collection,
+void Registry::collect_plugin_groups(const RawRegistry &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
     for (const PluginGroupInfo &pgi : collection.get_plugin_group_data()) {
@@ -100,11 +100,11 @@ void Registry::collect_plugin_groups(const RegistryData &collection,
         });
 }
 
-void Registry::collect_plugins(const RegistryData &collection,
+void Registry::collect_plugins(const RawRegistry &collection,
                                vector<string> &errors) {
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
-    for (const PluginData &pd : collection.get_plugin_data()) {
+    for (const RawPluginInfo &pd : collection.get_plugin_data()) {
         string key = pd.key;
         Any factory = pd.factory;
         string group = pd.group;
