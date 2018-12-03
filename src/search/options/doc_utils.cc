@@ -6,15 +6,6 @@
 using namespace std;
 
 namespace options {
-void PluginInfo::fill_docs() {
-    OptionParser parser(key, registry, Predefinitions(), true, true);
-    doc_factory(parser);
-}
-
-string PluginInfo::get_type_name() const {
-    return type_name_factory(registry);
-}
-
 PluginTypeInfo::PluginTypeInfo(const type_index &type,
                                const string &type_name,
                                const string &documentation)
