@@ -17,8 +17,8 @@ struct RawPluginInfo {
     std::type_index type;
 
     RawPluginInfo(std::string key, Any factory, std::string group,
-               PluginTypeNameGetter type_name_factory,
-               DocFactory doc_factory, std::type_index type);
+                  PluginTypeNameGetter type_name_factory,
+                  DocFactory doc_factory, std::type_index type);
 };
 
 
