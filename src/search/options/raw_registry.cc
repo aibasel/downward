@@ -5,7 +5,7 @@ using namespace std;
 namespace options {
 RawPluginInfo::RawPluginInfo(
     const string &key,
-    const function<Any(OptionParser &)> &factory,
+    const Any &factory,
     const string &group,
     const PluginTypeNameGetter &type_name_factory,
     const DocFactory &doc_factory,
@@ -30,10 +30,11 @@ void RawRegistry::insert_plugin_group_data(
 
 void RawRegistry::insert_plugin_data(
     const string &key,
-    const function<Any(OptionParser &)> &factory,
+    const Any &factory,
     const string &group,
-    PluginTypeNameGetter type_name_factory, DocFactory doc_factory,
-    type_index type) {
+    PluginTypeNameGetter &type_name_factory,
+    DocFactory &doc_factory,
+    type_index &type) {
     plugins.emplace_back(key, factory, group, type_name_factory, doc_factory,
                          type);
 }
