@@ -13,19 +13,19 @@ using namespace std;
 using utils::ExitCode;
 
 namespace options {
-static void print_initialization_errors(const vector<string> &errors) {
+static void print_initialization_errors_and_exit(const vector<string> &errors) {
     cerr << "Plugin initialization errors:\n" + utils::join(errors, "\n") << endl;
     exit_with_demangling_hint(ExitCode::SEARCH_CRITICAL_ERROR, "[TYPE]");
 }
 
-template<typename K, typename T>
+template<typename Key, typename Type>
 static void generate_duplicate_errors(
-    const unordered_map<K, T> &occurrences, vector<string> &errors,
-    function<bool(const T &obj)> duplicate_condition,
-    function<string(const K &first, const T &second)> message_generator) {
+    const unordered_map<Key, Type> &occurrences, vector<string> &errors,
+    function<bool(const Type &obj)> duplicate_condition,
+    function<string(const Key &first, const Type &second)> message_generator) {
     vector<string> name_clash_errors;
 
-    typename unordered_map<K, T>::const_iterator it;
+    typename unordered_map<Key, Type>::const_iterator it;
     for (it = occurrences.begin(); it != occurrences.end(); ++it) {
         if (duplicate_condition(it->second)) {
             name_clash_errors.push_back(
@@ -42,7 +42,7 @@ Registry::Registry(const RawRegistry &collection) {
     collect_plugin_groups(collection, errors);
     collect_plugins(collection, errors);
     if (!errors.empty()) {
-        print_initialization_errors(errors);
+        print_initialization_errors_and_exit(errors);
     }
 }
 
@@ -104,33 +104,35 @@ void Registry::collect_plugins(const RawRegistry &collection,
                                vector<string> &errors) {
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
-    for (const RawPluginInfo &pd : collection.get_plugin_data()) {
-        string key = pd.key;
-        Any factory = pd.factory;
-        string group = pd.group;
-        PluginTypeNameGetter type_name_factory = pd.type_name_factory;
-        DocFactory doc_factory = pd.doc_factory;
-        type_index type = pd.type;
+    for (const RawPluginInfo &plugin : collection.get_plugin_data()) {
+        //string key = info.key;
+        //Any factory = info.factory;
+        //string group = info.group;
+        //PluginTypeNameGetter type_name_factory = info.type_name_factory;
+        //DocFactory doc_factory = info.doc_factory;
+        //type_index type = info.type;
 
         bool error = false;
-        if (!group.empty() && !plugin_group_infos.count(group)) {
+        if (!plugin.group.empty() && !plugin_group_infos.count(plugin.group)) {
             other_plugin_errors.push_back(
-                "Missing PluginGroupPlugin for Plugin " + key +
-                " of type " + type.name() + ": " + group);
+                "Missing PluginGroupPlugin for Plugin " + plugin.key +
+                " of type " + plugin.type.name() + ": " + plugin.group);
             error = true;
         }
-        if (!plugin_type_infos.count(type)) {
+        if (!plugin_type_infos.count(plugin.type)) {
             other_plugin_errors.push_back("Missing PluginTypePlugin for "
-                                          "Plugin " + key + ": " + type.name());
+                                          "Plugin " + plugin.key + ": " + 
+                                          plugin.type.name());
             error = true;
         }
-        occurrences[key].push_back(type);
-        if (occurrences[key].size() != 1) {
+        occurrences[plugin.key].push_back(plugin.type);
+        if (occurrences[plugin.key].size() != 1) {
+            // Error message generated in generate_duplicate_errors<...> ...
             error = true;
         }
         if (!error) {
-            insert_plugin(key, factory, type_name_factory, doc_factory, group,
-                          type);
+            insert_plugin(plugin.key, plugin.factory, plugin.type_name_factory,
+                          plugin.doc_factory, plugin.group, plugin.type);
         }
     }
 
