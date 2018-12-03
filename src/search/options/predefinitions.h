@@ -8,9 +8,6 @@
 #include <unordered_map>
 
 namespace options {
-/*
-  Predefinitions<T> maps strings to pointers to already created plug-in objects.
-*/
 class Predefinitions {
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> predefined;
 public:
