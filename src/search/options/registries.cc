@@ -226,7 +226,7 @@ void Registry::insert_plugin_info(
     doc.synopsis = "";
     doc.group = group;
     doc.hidden = false;
-    
+
     plugin_infos.insert(make_pair(key, doc));
     OptionParser parser(key, *this, Predefinitions(), true, true);
     doc_factory(parser);

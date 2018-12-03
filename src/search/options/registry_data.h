@@ -9,7 +9,6 @@
 
 
 namespace options {
-
 struct PluginData {
     std::string key;
     Any factory;
