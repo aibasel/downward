@@ -18,18 +18,17 @@ static void print_initialization_errors_and_exit(const vector<string> &errors) {
     exit_with_demangling_hint(ExitCode::SEARCH_CRITICAL_ERROR, "[TYPE]");
 }
 
-template<typename Key, typename Type>
+template<typename KeyType, typename ValueType>
 static void generate_duplicate_errors(
-    const unordered_map<Key, Type> &occurrences, vector<string> &errors,
-    function<bool(const Type &obj)> duplicate_condition,
-    function<string(const Key &first, const Type &second)> message_generator) {
+    const unordered_map<KeyType, ValueType> &occurrences, vector<string> &errors,
+    function<bool(const ValueType &obj)> duplicate_condition,
+    function<string(const KeyType &first, const ValueType &second)> message_generator) {
     vector<string> name_clash_errors;
 
-    typename unordered_map<Key, Type>::const_iterator it;
-    for (it = occurrences.begin(); it != occurrences.end(); ++it) {
-        if (duplicate_condition(it->second)) {
+    for (auto it : occurrences){
+        if (duplicate_condition(it.second)) {
             name_clash_errors.push_back(
-                message_generator(it->first, it->second));
+                message_generator(it.first, it.second));
         }
     }
     sort(name_clash_errors.begin(), name_clash_errors.end());
@@ -63,7 +62,7 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
         occurrences_names, errors,
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
-            return "Multiple PluginTypePlugins with the same name: " +
+            return "Multiple definitions for PluginTypePlugin name " +
             type_name + " (types: " +
             utils::join(
                 utils::map_vector<string>(
@@ -76,7 +75,7 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
         occurrences_types, errors,
         [](const vector<string> &names) {return names.size() > 1;},
         [](const type_index &type, const vector<string> &names) {
-            return "Multiple PluginTypePlugins with the same type: " +
+            return "Multiple definitions for PluginTypePlugin type " +
             string(type.name()) + " (names: " + utils::join(names, ", ") + ")";
         });
 }
@@ -95,7 +94,7 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
         occurrences, errors,
         [](const int &count) {return count > 1;},
         [](const string &first, const int &count) {
-            return "Multiple PluginGroupPlugins: " + first +
+            return "Multiple definitions for PluginGroupPlugin name " + first +
             " (count: " + to_string(count) + ")";
         });
 }
@@ -133,7 +132,7 @@ void Registry::collect_plugins(const RawRegistry &collection,
         occurrences, errors,
         [](const vector<type_index> &types) {return types.size() > 1;},
         [](const string &type_name, const vector<type_index> &types) {
-            return "Multiple Plugins: " + type_name + " (types: " +
+            return "Multiple definitions for Plugin " + type_name + " (types: " +
             utils::join(
                 utils::map_vector<string>(
                     types,
