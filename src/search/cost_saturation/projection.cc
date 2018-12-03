@@ -482,10 +482,6 @@ vector<int> Projection::compute_goal_distances(const vector<int> &costs) const {
     return compute_distances(costs);
 }
 
-vector<Transition> Projection::get_transitions() const {
-    ABORT("TODO: Remove get_transitions() and use for_each_transition() instead.");
-}
-
 int Projection::get_num_states() const {
     return num_states;
 }

@@ -70,7 +70,6 @@ public:
     // operators.
     virtual const std::vector<int> &get_looping_operators() const = 0;
 
-    virtual std::vector<Transition> get_transitions() const = 0;
     virtual int get_num_states() const = 0;
     virtual const std::vector<int> &get_goal_states() const = 0;
 
