@@ -1,6 +1,7 @@
 #ifndef COST_SATURATION_TYPES_H
 #define COST_SATURATION_TYPES_H
 
+#include <functional>
 #include <limits>
 #include <memory>
 #include <vector>

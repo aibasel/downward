@@ -360,6 +360,7 @@ void Projection::build_abstract_forward_operators(
 }
 
 vector<int> Projection::compute_distances(const vector<int> &costs) const {
+    assert(all_of(costs.begin(), costs.end(), [](int c) {return c >= 0;}));
     vector<int> distances(num_states, INF);
 
     // Initialize queue.

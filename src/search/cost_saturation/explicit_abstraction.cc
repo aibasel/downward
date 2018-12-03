@@ -15,6 +15,7 @@ static void dijkstra_search(
     const vector<int> &costs,
     priority_queues::AdaptiveQueue<int> &queue,
     vector<int> &distances) {
+    assert(all_of(costs.begin(), costs.end(), [](int c) {return c >= 0;}));
     while (!queue.empty()) {
         pair<int, int> top_pair = queue.pop();
         int distance = top_pair.first;
