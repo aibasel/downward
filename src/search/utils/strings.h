@@ -6,13 +6,11 @@
 #include <string>
 
 namespace utils {
-std::string sanitize_string(std::string s);
+void lstrip(std::string &s);
 
-void ltrim(std::string &s);
+void rstrip(std::string &s);
 
-void rtrim(std::string &s);
-
-void trim(std::string &s);
+void strip(std::string &s);
 
 std::pair<std::string, std::string> split(
     const std::string &arg, const std::string &splitter = "=");
@@ -20,11 +18,14 @@ std::pair<std::string, std::string> split(
 template<typename Collection>
 std::string join(const Collection &collection, const std::string &delimiter) {
     std::ostringstream oss;
-    bool first_round = true;
+    bool first_item = true;
 
     for (const auto &item : collection) {
-        oss << (first_round ? "" : delimiter) << item;
-        first_round = false;
+        if (first_item)
+            first_item = false;
+        else
+            oss << delimiter;
+        oss << item;
     }
     return oss.str();
 }
