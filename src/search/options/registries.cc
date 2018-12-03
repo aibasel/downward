@@ -105,13 +105,6 @@ void Registry::collect_plugins(const RawRegistry &collection,
     vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
     for (const RawPluginInfo &plugin : collection.get_plugin_data()) {
-        //string key = info.key;
-        //Any factory = info.factory;
-        //string group = info.group;
-        //PluginTypeNameGetter type_name_factory = info.type_name_factory;
-        //DocFactory doc_factory = info.doc_factory;
-        //type_index type = info.type;
-
         bool error = false;
         if (!plugin.group.empty() && !plugin_group_infos.count(plugin.group)) {
             other_plugin_errors.push_back(
