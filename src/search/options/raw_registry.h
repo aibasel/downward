@@ -10,7 +10,7 @@
 namespace options {
 struct RawPluginInfo {
     std::string key;
-    const std::function<Any(OptionParser &)> factory;
+    Any factory;
     std::string group;
     PluginTypeNameGetter type_name_factory;
     DocFactory doc_factory;
@@ -18,10 +18,11 @@ struct RawPluginInfo {
 
     RawPluginInfo(
         const std::string &key,
-        const std::function<Any(OptionParser &)> &factory,
+        const Any &factory,
         const std::string &group,
         const PluginTypeNameGetter &type_name_factory,
-        const DocFactory &doc_factory, const std::type_index &type);
+        const DocFactory &doc_factory,
+        const std::type_index &type);
 };
 
 
@@ -40,11 +41,11 @@ public:
 
     void insert_plugin_data(
         const std::string &key,
-        const std::function<Any(OptionParser &)> &factory,
+        const Any &factory,
         const std::string &group,
-        PluginTypeNameGetter type_name_factory,
-        DocFactory doc_factory,
-        std::type_index type);
+        PluginTypeNameGetter &type_name_factory,
+        DocFactory &doc_factory,
+        std::type_index &type);
 
     const std::vector<PluginTypeInfo> &get_plugin_type_data() const;
     const std::vector<PluginGroupInfo> &get_plugin_group_data() const;

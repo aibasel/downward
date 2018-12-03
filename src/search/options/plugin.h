@@ -62,10 +62,10 @@ public:
         DocFactory doc_factory = [factory](OptionParser &parser) {
                 factory(parser);
             };
-
+        std::type_index type(typeid(TPtr));
         RawRegistry::instance()->insert_plugin_data(
             key, factory, group, type_name_factory, doc_factory,
-            std::type_index(typeid(TPtr)));
+            type);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
