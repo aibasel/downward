@@ -26,19 +26,21 @@ static vector<vector<int>> sample_states_and_return_abstract_state_ids(
     sampling::RandomWalkSampler &sampler,
     int num_samples,
     int init_h,
-    const DeadEndDetector &is_dead_end) {
+    const DeadEndDetector &is_dead_end,
+    double max_sampling_time) {
     assert(num_samples >= 1);
-    utils::Timer sampling_timer;
+    utils::CountdownTimer sampling_timer(max_sampling_time);
     utils::Log() << "Start sampling" << endl;
     vector<vector<int>> abstract_state_ids_by_sample;
     abstract_state_ids_by_sample.push_back(
         get_abstract_state_ids(abstractions, task_proxy.get_initial_state()));
-    while (static_cast<int>(abstract_state_ids_by_sample.size()) < num_samples) {
+    while (static_cast<int>(abstract_state_ids_by_sample.size()) < num_samples
+           && !sampling_timer.is_expired()) {
         abstract_state_ids_by_sample.push_back(
             get_abstract_state_ids(abstractions, sampler.sample_state(init_h, is_dead_end)));
     }
     utils::Log() << "Samples: " << abstract_state_ids_by_sample.size() << endl;
-    utils::Log() << "Sampling time: " << sampling_timer << endl;
+    utils::Log() << "Sampling time: " << sampling_timer.get_elapsed_time() << endl;
     return abstract_state_ids_by_sample;
 }
 
@@ -104,19 +106,20 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
         };
     sampling::RandomWalkSampler sampler(task_proxy, *rng);
 
+    utils::CountdownTimer timer(max_time);
     unique_ptr<Diversifier> diversifier;
     if (diversify) {
+        double max_sampling_time = timer.get_remaining_time();
         diversifier = utils::make_unique_ptr<Diversifier>(
             sample_states_and_return_abstract_state_ids(
-                task_proxy, abstractions, sampler, num_samples, init_h, is_dead_end));
+                task_proxy, abstractions, sampler, num_samples, init_h, is_dead_end, max_sampling_time));
     }
 
     vector<CostPartitioningHeuristic> cp_heuristics;
-    utils::CountdownTimer timer(max_time);
     int evaluated_orders = 0;
     log << "Start computing cost partitionings" << endl;
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
-           !timer.is_expired()) {
+           (!timer.is_expired() || cp_heuristics.empty())) {
         // Use initial state as first sample.
         State sample = (evaluated_orders == 0)
             ? initial_state
@@ -153,7 +156,7 @@ CostPartitioningCollectionGenerator::get_cost_partitionings(
 
         // If diversify=true, only add order if it improves upon previously
         // added orders.
-        if (!diversify || diversifier->is_diverse(cp_heuristic)) {
+        if (!diversifier || diversifier->is_diverse(cp_heuristic)) {
             cp_heuristics.push_back(move(cp_heuristic));
             if (diversify) {
                 log << "Sum over max h values for " << num_samples
