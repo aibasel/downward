@@ -5,14 +5,13 @@
 
 #include "../task_proxy.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
 namespace pdbs {
 class AbstractOperator {
-    // The ID of the concrete operator is needed for cost partitioning.
-    const int concrete_operator_id;
+    // We use the concrete operator ID for cost partitioning.
+    int concrete_operator_id;
 
     /*
       This class represents an abstract operator how it is needed for
@@ -29,7 +28,7 @@ class AbstractOperator {
       Preconditions for the regression search, corresponds to normal
       effects and prevail of concrete operators.
     */
-    std::unique_ptr<std::vector<FactPair>> regression_preconditions;
+    std::vector<FactPair> regression_preconditions;
 
     /*
       Effect of the operator during regression search on a given
@@ -51,8 +50,6 @@ public:
                      int concrete_operator_id = -1);
     ~AbstractOperator();
 
-    AbstractOperator(AbstractOperator &&) = default;
-
     int get_concrete_operator_id() const;
 
     /*
@@ -60,8 +57,7 @@ public:
       the abstract operator in a regression search
     */
     const std::vector<FactPair> &get_regression_preconditions() const {
-        assert(regression_preconditions);
-        return *regression_preconditions;
+        return regression_preconditions;
     }
 
     /*
@@ -75,9 +71,6 @@ public:
       the original concrete operator)
     */
     int get_cost() const {return cost;}
-
-    void remove_regression_preconditions();
-
     void dump(const Pattern &pattern,
               const VariablesProxy &variables) const;
 };

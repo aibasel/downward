@@ -125,10 +125,6 @@ Projection::Projection(
         match_tree->insert(op);
     }
 
-    for (pdbs::AbstractOperator &op : abstract_operators) {
-        op.remove_regression_preconditions();
-    }
-
     goal_states = compute_goal_states();
 }
 
