@@ -8,10 +8,10 @@
 namespace cost_saturation {
 class CostPartitioningHeuristic {
     struct LookupTable {
-        const int heuristic_index;
+        int heuristic_index;
         /* h_values[i] is the goal distance of abstract state i under the cost
            function assigned to the associated abstraction. */
-        const std::vector<int> h_values;
+        std::vector<int> h_values;
 
         LookupTable(int heuristic_index, std::vector<int> &&h_values)
             : heuristic_index(heuristic_index),
@@ -30,6 +30,9 @@ public:
 
     // Return the number of stored lookup tables.
     int get_num_lookup_tables() const;
+
+    // Return the total number of stored heuristic values.
+    int get_num_heuristic_values() const;
 
     // Add the indices of stored lookup tables to the bit vector.
     void mark_useful_heuristics(std::vector<bool> &useful_heuristics) const;

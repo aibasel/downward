@@ -45,6 +45,20 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
                  << num_stored_lookup_tables / static_cast<double>(num_lookup_tables)
                  << endl;
 
+    // Print statistics about the number of stored values.
+    int num_stored_values = 0;
+    for (const auto &cp_heuristic : cp_heuristics) {
+        num_stored_values += cp_heuristic.get_num_heuristic_values();
+    }
+    int num_total_values = 0;
+    for (const auto &abstraction : abstractions) {
+        num_total_values += abstraction->get_num_states();
+    }
+    num_total_values *= cp_heuristics.size();
+    utils::Log() << "Stored values: " << num_stored_values << "/"
+                 << num_total_values << " = "
+                 << num_stored_values / static_cast<double>(num_total_values) << endl;
+
     // Collect IDs of useful abstractions.
     vector<bool> useful_abstractions(num_abstractions, false);
     for (const auto &cp_heuristic : cp_heuristics) {

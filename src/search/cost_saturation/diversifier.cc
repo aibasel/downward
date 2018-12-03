@@ -5,6 +5,7 @@
 #include "../utils/collections.h"
 
 #include <cassert>
+#include <numeric>
 
 using namespace std;
 

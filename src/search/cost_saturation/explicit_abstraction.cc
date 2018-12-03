@@ -162,7 +162,7 @@ void ExplicitAbstraction::release_transition_system_memory() {
 void ExplicitAbstraction::dump() const {
     assert(has_transition_system());
     cout << "State-changing transitions:" << endl;
-    for (size_t state = 0; state < backward_graph.size(); ++state) {
+    for (int state = 0; state < get_num_states(); ++state) {
         if (!backward_graph[state].empty()) {
             cout << "  " << state << " <- " << backward_graph[state] << endl;
         }

@@ -36,6 +36,14 @@ int CostPartitioningHeuristic::get_num_lookup_tables() const {
     return lookup_tables.size();
 }
 
+int CostPartitioningHeuristic::get_num_heuristic_values() const {
+    int num_values = 0;
+    for (const auto &lookup_table : lookup_tables) {
+        num_values += lookup_table.h_values.size();
+    }
+    return num_values;
+}
+
 void CostPartitioningHeuristic::mark_useful_heuristics(vector<bool> &useful_heuristics) const {
     for (const auto &lookup_table : lookup_tables) {
         assert(utils::in_bounds(lookup_table.heuristic_index, useful_heuristics));
