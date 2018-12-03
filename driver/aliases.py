@@ -146,6 +146,15 @@ ALIASES["seq-opt-bjolp"] = [
 ALIASES["seq-opt-lmcut"] = [
     "--search", "astar(lmcut())"]
 
+# Note: The IPC 2018 version of Scorpion used h^2 mutexes to prune operators
+# between the translation and the search phase.
+ALIASES["scorpion"] = [
+    "--search",
+    """astar(saturated_cost_partitioning([
+        projections(systematic(2)), projections(hillclimbing(max_time=100)), cartesian()],
+        max_time=200, max_optimization_time=2, diversify=true, orders=greedy_orders()),
+        pruning=stubborn_sets_simple(min_required_pruning_ratio=0.2))"""]
+
 
 PORTFOLIOS = {}
 for portfolio in os.listdir(PORTFOLIO_DIR):
