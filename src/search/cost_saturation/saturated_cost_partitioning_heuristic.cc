@@ -133,5 +133,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return get_max_cp_heuristic(parser, compute_saturated_cost_partitioning);
 }
 
-static Plugin<Heuristic> _plugin("saturated_cost_partitioning", _parse);
+static Plugin<Evaluator> _plugin("saturated_cost_partitioning", _parse);
 }
