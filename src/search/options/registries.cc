@@ -69,7 +69,7 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
                 utils::map_vector<string>(
                     types,
                     [](const type_index &type) {return type.name();}),
-                ", ");
+                ", ") + ")";
         });
 
     generate_duplicate_errors<type_index, vector<string>>(
