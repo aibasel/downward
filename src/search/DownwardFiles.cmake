@@ -99,7 +99,7 @@ fast_downward_plugin(
         options/predefinitions
         options/plugin
         options/registries
-        options/registry_data
+        options/raw_registry
         options/type_namer
     CORE_PLUGIN
 )
