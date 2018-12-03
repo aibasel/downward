@@ -25,7 +25,7 @@ static void generate_duplicate_errors(
     function<string(const KeyType &first, const ValueType &second)> message_generator) {
     vector<string> name_clash_errors;
 
-    for (auto it : occurrences){
+    for (auto it : occurrences) {
         if (duplicate_condition(it.second)) {
             name_clash_errors.push_back(
                 message_generator(it.first, it.second));
