@@ -21,6 +21,14 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS_DEBUG "-O3 -D_GLIBCXX_DEBUG")
         set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
     elseif(MSVC)
+        # We force linking to be static on Windows because this makes compiling OSI simpler
+        # (dynamic linking would require DLLs for OSI). On Windows this is a compiler
+        # setting, not a linker setting.
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+        string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+        string(REPLACE "/MDd" "/MTd" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+
         # Enable exceptions.
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 
