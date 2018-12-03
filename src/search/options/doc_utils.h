@@ -82,11 +82,9 @@ struct LanguageSupportInfo {
 
 // Store documentation for a plugin.
 struct PluginInfo {
-    Registry &registry;
-    DocFactory doc_factory;
-    PluginTypeNameGetter type_name_factory;
     std::string key;
     std::string name;
+    std::string type_name;
     std::string synopsis;
     std::string group;
     std::vector<ArgumentInfo> arg_help;
@@ -94,12 +92,6 @@ struct PluginInfo {
     std::vector<LanguageSupportInfo> support_help;
     std::vector<NoteInfo> notes;
     bool hidden;
-
-    PluginInfo(Registry &registry) : registry(registry) {
-    }
-
-    void fill_docs();
-    std::string get_type_name() const;
 };
 
 

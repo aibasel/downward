@@ -1,6 +1,7 @@
 #include "registries.h"
 
 #include "errors.h"
+#include "option_parser.h"
 
 #include "../utils/collections.h"
 #include "../utils/strings.h"
@@ -217,16 +218,18 @@ void Registry::insert_plugin_info(
     if (plugin_infos.count(key)) {
         ABORT("Registry already contains a plugin with name \"" + key + "\"");
     }
-    PluginInfo doc(*this);
-    doc.doc_factory = doc_factory;
-    doc.type_name_factory = type_name_factory;
+    PluginInfo doc;
     doc.key = key;
     // Plugin names can be set with document_synopsis. Otherwise, we use the key.
     doc.name = key;
+    doc.type_name = type_name_factory(*this);
     doc.synopsis = "";
     doc.group = group;
     doc.hidden = false;
+    
     plugin_infos.insert(make_pair(key, doc));
+    OptionParser parser(key, *this, Predefinitions(), true, true);
+    doc_factory(parser);
 }
 
 void Registry::add_plugin_info_arg(
