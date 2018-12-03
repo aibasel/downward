@@ -4,11 +4,11 @@ using namespace std;
 
 namespace options {
 RawPluginInfo::RawPluginInfo(const string key,
-                       const Any factory,
-                       const string group,
-                       const PluginTypeNameGetter type_name_factory,
-                       const DocFactory doc_factory,
-                       const type_index type)
+                             const Any factory,
+                             const string group,
+                             const PluginTypeNameGetter type_name_factory,
+                             const DocFactory doc_factory,
+                             const type_index type)
     : key(key),
       factory(factory),
       group(group),
