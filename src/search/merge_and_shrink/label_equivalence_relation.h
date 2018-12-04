@@ -79,11 +79,9 @@ class LabelEquivalenceRelation {
 
     void add_label_to_group(int group_id, int label_no);
 public:
-    /*
-      Constructs an empty label equivalence relation. It can be filled using
-      the public add_label_group method below.
-    */
-    explicit LabelEquivalenceRelation(const Labels &labels);
+    // Construct a label equivalence relation from the given label groups.
+    LabelEquivalenceRelation(
+        const Labels &labels, const std::vector<std::vector<int>> &label_groups);
     /*
       NOTE: we need a custom copy constructor here because we need to fill
       label_to_positions with correct LabelIter objects that point to the
@@ -91,11 +89,6 @@ public:
       LabelEquivalenceRelation other.
     */
     LabelEquivalenceRelation(const LabelEquivalenceRelation &other);
-    /*
-      Construct a label equivalence relation from the given label groups.
-    */
-    LabelEquivalenceRelation(
-        const Labels &labels, const std::vector<std::vector<int>> &label_groups);
 
     /*
       The given label mappings (from label reduction) contain the new label

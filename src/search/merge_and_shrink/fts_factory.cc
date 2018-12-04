@@ -382,7 +382,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
                 labels, ts_data.label_groups);
         /* With label reduction, there can be at most 2n-1 label groups if
            there are initially n label groups. */
-        ts_data.transitions_by_group_id.resize(ts_data.transitions_by_group_id.size() * 2 - 1);
+        ts_data.transitions_by_group_id.reserve(ts_data.transitions_by_group_id.size() * 2 - 1);
         result.push_back(utils::make_unique_ptr<TransitionSystem>(
                              ts_data.num_variables,
                              move(ts_data.incorporated_variables),

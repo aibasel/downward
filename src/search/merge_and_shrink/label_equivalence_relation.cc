@@ -7,10 +7,19 @@
 using namespace std;
 
 namespace merge_and_shrink {
-LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
+LabelEquivalenceRelation::LabelEquivalenceRelation(
+    const Labels &labels, const vector<vector<int>> &label_groups)
     : labels(labels) {
-    grouped_labels.reserve(labels.get_max_size());
+    /*
+      We need to reserve space for the potential maximum number of label
+      groups to ensure that no move occurs in grouped_labels. Otherwise,
+      iterators to elements of list<int> (LabelGroup) could become invalid!
+    */
+    grouped_labels.reserve(label_groups.size() * 2 - 1);
     label_to_positions.resize(labels.get_max_size());
+    for (const vector<int> &label_group : label_groups) {
+        add_label_group(label_group);
+    }
 }
 
 LabelEquivalenceRelation::LabelEquivalenceRelation(
@@ -50,21 +59,6 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
             label_to_positions[other_label_no] = make_pair(group_id, label_it);
         }
         label_group.set_cost(other_label_group.get_cost());
-    }
-}
-
-LabelEquivalenceRelation::LabelEquivalenceRelation(
-    const Labels &labels, const vector<vector<int>> &label_groups)
-    : labels(labels) {
-    /*
-      We need to reserve space for the potential maximum number of labels
-      groups to ensure that no move occurs in grouped_labels. Otherwise,
-      iterators to elements of list<int> (LabelGroup) could become invalid!
-    */
-    grouped_labels.reserve(label_groups.size() * 2 - 1);
-    label_to_positions.resize(labels.get_max_size());
-    for (const vector<int> &label_group : label_groups) {
-        add_label_group(label_group);
     }
 }
 
