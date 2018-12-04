@@ -35,10 +35,10 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
     for (const PluginTypeInfo &pti : collection.get_plugin_type_data()) {
-        occurrences_names[pti.get_type_name()].push_back(pti.get_type());
-        occurrences_types[pti.get_type()].push_back(pti.get_type_name());
-        if (occurrences_names[pti.get_type_name()].size() == 1 &&
-            occurrences_types[pti.get_type()].size() == 1) {
+        occurrences_names[pti.type_name].push_back(pti.type);
+        occurrences_types[pti.type].push_back(pti.type_name);
+        if (occurrences_names[pti.type_name].size() == 1 &&
+            occurrences_types[pti.type].size() == 1) {
             insert_type_info(pti);
         }
     }
@@ -66,7 +66,7 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
     for (const PluginGroupInfo &pgi : collection.get_plugin_group_data()) {
-        occurrences[pgi.group_id]++;
+        ++occurrences[pgi.group_id];
         if (occurrences[pgi.group_id] == 1) {
             insert_group_info(pgi);
         }
@@ -101,12 +101,13 @@ void Registry::collect_plugins(const RawRegistry &collection,
         }
         occurrences[plugin.key].push_back(plugin.type);
         if (occurrences[plugin.key].size() != 1) {
-            // Error message generated in generate_duplicate_errors<...> ...
+            // Error message generated below.
             error = true;
         }
         if (!error) {
-            insert_plugin(plugin.key, plugin.factory, plugin.type_name_factory,
-                          plugin.doc_factory, plugin.group, plugin.type);
+            insert_plugin_info(plugin.key, plugin.doc_factory, 
+                               plugin.type_name_factory, plugin.group);
+            insert_plugin_factory(plugin.key, plugin.factory, plugin.type);
         }
     }
 
@@ -123,12 +124,12 @@ void Registry::collect_plugins(const RawRegistry &collection,
 }
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
-    if (plugin_type_infos.count(info.get_type())) {
+    if (plugin_type_infos.count(info.type)) {
         cerr << "duplicate type in registry: "
-             << info.get_type().name() << endl;
+             << info.type.name() << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    plugin_type_infos.insert(make_pair(info.get_type(), info));
+    plugin_type_infos.insert(make_pair(info.type, info));
 }
 
 const PluginTypeInfo &Registry::get_type_info(const type_index &type) const {
@@ -165,15 +166,7 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
     return plugin_group_infos.at(group);
 }
 
-void Registry::insert_plugin(
-    const string &key, const Any &factory,
-    const PluginTypeNameGetter &type_name_factory,
-    const DocFactory &doc_factory, const string &group, const type_index &type) {
-    insert_plugin_info(key, doc_factory, type_name_factory, group);
-    insert_factory(key, factory, type);
-}
-
-void Registry::insert_factory(const string &key, const Any &factory,
+void Registry::insert_plugin_factory(const string &key, const Any &factory,
                               const type_index &type) {
     if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
         ABORT("duplicate key in registry: " + key + "\n");

@@ -46,11 +46,7 @@ class Registry {
     void collect_plugins(const RawRegistry &collection,
                          std::vector<std::string> &errors);
 
-    void insert_plugin(const std::string &key, const Any &factory,
-                       const PluginTypeNameGetter &type_name_factory,
-                       const DocFactory &doc_factory,
-                       const std::string &group, const std::type_index &type);
-    void insert_factory(const std::string &key, const Any &factory,
+    void insert_plugin_factory(const std::string &key, const Any &factory,
                         const std::type_index &type);
     void insert_plugin_info(const std::string &key, const DocFactory &factory,
                             const PluginTypeNameGetter &type_name_factory,
