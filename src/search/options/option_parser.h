@@ -6,13 +6,14 @@
 #include "predefinitions.h"
 #include "registries.h"
 
+#include "../utils/strings.h"
+
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-class SearchEngine;
 
 namespace options {
 /*
@@ -331,6 +332,15 @@ void OptionParser::add_list_option(
     const std::string &help,
     const std::string &default_value) {
     add_option<std::vector<T>>(key, help, default_value);
+}
+
+template<typename T>
+void predefine_object(const std::string &arg, Registry &registry,
+                      Predefinitions &predefinitions, bool dry_run) {
+    std::pair<std::string, std::string> predefinition = utils::split(arg);
+    OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
+    predefinitions.predefine(predefinition.first,
+                             parser.start_parsing<std::shared_ptr<T>>());
 }
 }
 
