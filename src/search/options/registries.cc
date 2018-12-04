@@ -45,7 +45,7 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
 
     for (auto it : occurrences_names) {
         if (it.second.size() > 1) {
-            errors.push_back("Multiple definitions for PluginTypePlugin name " +
+            errors.push_back("Multiple definitions for PluginTypePlugin " +
                              it.first + " (types: " +
                              utils::join(utils::map_vector<string>(
                                              it.second,
@@ -56,7 +56,7 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
 
     for (auto it : occurrences_types) {
         if (it.second.size() > 1) {
-            errors.push_back("Multiple definitions for PluginTypePlugin type " +
+            errors.push_back("Multiple definitions for PluginTypePlugin of type " +
                              string(it.first.name()) + " (names: " + utils::join(it.second, ", ") + ")");
         }
     }
@@ -74,8 +74,8 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
 
     for (auto it : occurrences) {
         if (it.second > 1) {
-            errors.push_back("Multiple definitions for PluginGroupPlugin name " +
-                             it.first + " (count: " + to_string(it.second) + ")");
+            errors.push_back("Multiple definitions (" + to_string(it.second) + 
+                             ") for PluginGroupPlugin " + it.first);
         }
     }
 }
@@ -87,15 +87,16 @@ void Registry::collect_plugins(const RawRegistry &collection,
         bool error = false;
         if (!plugin.group.empty() && !plugin_group_infos.count(plugin.group)) {
             errors.push_back(
-                "Missing PluginGroupPlugin for Plugin " + plugin.key +
-                " of type " + plugin.type.name() + ": " + plugin.group);
+                "No PluginGroupPlugin with name " + plugin.group + 
+                " for Plugin " + plugin.key +
+                " of type " + plugin.type.name());
             error = true;
         }
         if (!plugin_type_infos.count(plugin.type)) {
             errors.push_back(
-                "Missing PluginTypePlugin for Plugin " + plugin.key + ": " +
-                plugin.type.name() + " (can be spurious if associated "
-                "PluginTypePlugin has a name clash error)");
+                "No PluginTypePlugin of type " + string(plugin.type.name()) +
+                " for Plugin " + plugin.key + " (can be spurious if associated "
+                "PluginTypePlugin is defined multiple times)");
             error = true;
         }
         occurrences[plugin.key].push_back(plugin.type);
