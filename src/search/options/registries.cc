@@ -23,10 +23,14 @@ Registry::Registry(const RawRegistry &collection) {
     vector<string> errors;
     collect_plugin_types(collection, errors);
     collect_plugin_groups(collection, errors);
-    collect_plugins(collection, errors);
+    vector<RawPluginInfo> inserted = collect_plugins(collection, errors);
     if (!errors.empty()) {
         sort(errors.begin(), errors.end());
         print_initialization_errors_and_exit(errors);
+    }
+    for (const RawPluginInfo &plugin : inserted) {
+        OptionParser parser(plugin.key, *this, Predefinitions(), true, true);
+        plugin.doc_factory(parser);
     }
 }
 
@@ -80,8 +84,9 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
     }
 }
 
-void Registry::collect_plugins(const RawRegistry &collection,
-                               vector<string> &errors) {
+vector<RawPluginInfo> Registry::collect_plugins(const RawRegistry &collection,
+                                                vector<string> &errors) {
+    vector<RawPluginInfo> inserted;
     unordered_map<string, vector<type_index>> occurrences;
     for (const RawPluginInfo &plugin : collection.get_plugin_data()) {
         bool error = false;
@@ -105,9 +110,9 @@ void Registry::collect_plugins(const RawRegistry &collection,
             error = true;
         }
         if (!error) {
-            insert_plugin_info(plugin.key, plugin.doc_factory,
-                               plugin.type_name_factory, plugin.group);
+            insert_plugin_info(plugin.key, plugin.type_name_factory, plugin.group);
             insert_plugin_factory(plugin.key, plugin.factory, plugin.type);
+            inserted.push_back(plugin);
         }
     }
 
@@ -121,6 +126,7 @@ void Registry::collect_plugins(const RawRegistry &collection,
                              ")");
         }
     }
+    return inserted;
 }
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
@@ -176,7 +182,6 @@ void Registry::insert_plugin_factory(const string &key, const Any &factory,
 
 void Registry::insert_plugin_info(
     const string &key,
-    const DocFactory &doc_factory,
     const PluginTypeNameGetter &type_name_factory,
     const string &group) {
     if (plugin_infos.count(key)) {
@@ -192,8 +197,6 @@ void Registry::insert_plugin_info(
     doc.hidden = false;
 
     plugin_infos.insert(make_pair(key, doc));
-    OptionParser parser(key, *this, Predefinitions(), true, true);
-    doc_factory(parser);
 }
 
 void Registry::add_plugin_info_arg(
