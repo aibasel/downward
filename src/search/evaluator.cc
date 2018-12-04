@@ -2,6 +2,7 @@
 
 #include "plugin.h"
 
+#include "option_parser.h"
 #include "utils/system.h"
 
 #include <cassert>
@@ -81,4 +82,8 @@ static PluginTypePlugin<Evaluator> _type_plugin(
     " * **safe:** h(s) = infinity is only true for states "
     "with h*(s) = infinity\n"
     " * **preferred operators:** this heuristic identifies "
-    "preferred operators ");
+    "preferred operators ",
+    make_pair<vector<string>, 
+    options::PredefinitionFunctional>({"--evaluator", "--heuristic"}, 
+    options::predefine_object<Evaluator>));
+//TODO PAT static assert?

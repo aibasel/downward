@@ -6,14 +6,11 @@
 #include "plugin.h"
 
 #include "algorithms/ordered_set.h"
-#include "options/predefinitions.h"
-#include "options/doc_utils.h"
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
 #include "utils/rng_options.h"
-#include "utils/strings.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -185,20 +182,11 @@ void print_initial_evaluator_values(const EvaluationContext &eval_context) {
         }
         );
 }
-namespace options{
-class Registry;}
-static void predefine_search(const string &arg, options::Registry &registry,
-                                options::Predefinitions &predefinitions, bool dry_run) {
-    pair<string, string> predefinition = utils::split(arg);
-    OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
-    predefinitions.predefine(predefinition.first,
-                             parser.start_parsing<shared_ptr<SearchEngine>>());
-}
 
 static PluginTypePlugin<SearchEngine> _type_plugin(
     "SearchEngine",
     // TODO: Replace empty string by synopsis for the wiki page.
-    "", make_pair<vector<string>, options::PredefinitionFunctional>({"--searchengine"}, predefine_search));
+    "");
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,
