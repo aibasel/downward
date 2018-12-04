@@ -91,6 +91,11 @@ public:
       LabelEquivalenceRelation other.
     */
     LabelEquivalenceRelation(const LabelEquivalenceRelation &other);
+    /*
+      Construct a label equivalence relation from the given label groups.
+    */
+    LabelEquivalenceRelation(
+        const Labels &labels, const std::vector<std::vector<int>> &label_groups);
 
     /*
       The given label mappings (from label reduction) contain the new label

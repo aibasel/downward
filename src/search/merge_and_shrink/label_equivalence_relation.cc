@@ -20,11 +20,11 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
       "unused" positions (for label numbers that do not exist any more). */
       label_to_positions(other.label_to_positions) {
     /*
-      We need to reserve space for the potential maximum number of labels to
-      ensure that no move occurs in grouped_labels. Otherwise, iterators to
-      elements of list<int> of LabelGroup could become invalid!
+      We need to reserve space for the potential maximum number of labels
+      groups to ensure that no move occurs in grouped_labels. Otherwise,
+      iterators to elements of list<int> (LabelGroup) could become invalid!
     */
-    grouped_labels.reserve(labels.get_max_size());
+    grouped_labels.reserve(other.grouped_labels.capacity());
     for (size_t other_group_id = 0;
          other_group_id < other.grouped_labels.size();
          ++other_group_id) {
@@ -50,6 +50,21 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
             label_to_positions[other_label_no] = make_pair(group_id, label_it);
         }
         label_group.set_cost(other_label_group.get_cost());
+    }
+}
+
+LabelEquivalenceRelation::LabelEquivalenceRelation(
+    const Labels &labels, const vector<vector<int>> &label_groups)
+    : labels(labels) {
+    /*
+      We need to reserve space for the potential maximum number of labels
+      groups to ensure that no move occurs in grouped_labels. Otherwise,
+      iterators to elements of list<int> (LabelGroup) could become invalid!
+    */
+    grouped_labels.reserve(label_groups.size() * 2 - 1);
+    label_to_positions.resize(labels.get_max_size());
+    for (const vector<int> &label_group : label_groups) {
+        add_label_group(label_group);
     }
 }
 

@@ -84,8 +84,7 @@ TransitionSystem::TransitionSystem(
     vector<vector<Transition>> &&transitions_by_label,
     int num_states,
     vector<bool> &&goal_states,
-    int init_state,
-    bool compute_label_equivalence_relation)
+    int init_state)
     : num_variables(num_variables),
       incorporated_variables(move(incorporated_variables)),
       label_equivalence_relation(move(label_equivalence_relation)),
@@ -93,9 +92,6 @@ TransitionSystem::TransitionSystem(
       num_states(num_states),
       goal_states(move(goal_states)),
       init_state(init_state) {
-    if (compute_label_equivalence_relation) {
-        compute_locally_equivalent_labels();
-    }
     assert(are_transitions_sorted_unique());
 }
 
@@ -226,7 +222,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         label_equivalence_relation->add_label_group(dead_labels);
     }
 
-    const bool compute_label_equivalence_relation = false;
     return utils::make_unique_ptr<TransitionSystem>(
         num_variables,
         move(incorporated_variables),
@@ -234,8 +229,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         move(transitions_by_group_id),
         num_states,
         move(goal_states),
-        init_state,
-        compute_label_equivalence_relation
+        init_state
         );
 }
 
