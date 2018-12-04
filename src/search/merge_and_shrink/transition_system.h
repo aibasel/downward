@@ -137,8 +137,7 @@ public:
         std::vector<std::vector<Transition>> &&transitions_by_label,
         int num_states,
         std::vector<bool> &&goal_states,
-        int init_state,
-        bool compute_label_equivalence_relation);
+        int init_state);
     TransitionSystem(const TransitionSystem &other);
     ~TransitionSystem();
     /*
