@@ -199,6 +199,7 @@ public:
       sorted (by source, by target) and there are no duplicates.
     */
     bool are_transitions_sorted_unique() const;
+    bool in_synch_with_label_equivalence_relation() const;
 
     bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;

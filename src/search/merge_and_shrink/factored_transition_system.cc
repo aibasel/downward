@@ -96,7 +96,8 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
     if (compute_goal_distances && !distances[index]->are_goal_distances_computed()) {
         return false;
     }
-    return transition_systems[index]->are_transitions_sorted_unique();
+    return transition_systems[index]->are_transitions_sorted_unique() &&
+            transition_systems[index]->in_synch_with_label_equivalence_relation();
 }
 
 void FactoredTransitionSystem::assert_all_components_valid() const {
