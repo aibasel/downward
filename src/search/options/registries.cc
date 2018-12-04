@@ -46,18 +46,18 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
     for (auto it : occurrences_names) {
         if (it.second.size() > 1) {
             errors.push_back("Multiple definitions for PluginTypePlugin name " +
-            it.first + " (types: " +
-            utils::join(utils::map_vector<string>(
-                it.second,
-                [](const type_index &type) {return type.name();}),
-                ", ") + ")");
+                             it.first + " (types: " +
+                             utils::join(utils::map_vector<string>(
+                                             it.second,
+                                             [](const type_index &type) {return type.name();}),
+                                         ", ") + ")");
         }
     }
-    
+
     for (auto it : occurrences_types) {
         if (it.second.size() > 1) {
             errors.push_back("Multiple definitions for PluginTypePlugin type " +
-            string(it.first.name()) + " (names: " + utils::join(it.second, ", ") + ")");
+                             string(it.first.name()) + " (names: " + utils::join(it.second, ", ") + ")");
         }
     }
 }
@@ -75,7 +75,7 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
     for (auto it : occurrences) {
         if (it.second > 1) {
             errors.push_back("Multiple definitions for PluginGroupPlugin name " +
-            it.first + " (count: " + to_string(it.second) + ")");
+                             it.first + " (count: " + to_string(it.second) + ")");
         }
     }
 }
@@ -112,11 +112,11 @@ void Registry::collect_plugins(const RawRegistry &collection,
     for (auto it : occurrences) {
         if (it.second.size() > 1) {
             errors.push_back("Multiple definitions for Plugin " + it.first + " (types: " +
-            utils::join(utils::map_vector<string>(
-                it.second,
-                [](const type_index &type) {return type.name();}),
-                ", ") +
-            ")");
+                             utils::join(utils::map_vector<string>(
+                                             it.second,
+                                             [](const type_index &type) {return type.name();}),
+                                         ", ") +
+                             ")");
         }
     }
 }
