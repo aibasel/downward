@@ -74,7 +74,7 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
 
     for (auto it : occurrences) {
         if (it.second > 1) {
-            errors.push_back("Multiple definitions (" + to_string(it.second) + 
+            errors.push_back("Multiple definitions (" + to_string(it.second) +
                              ") for PluginGroupPlugin " + it.first);
         }
     }
@@ -87,7 +87,7 @@ void Registry::collect_plugins(const RawRegistry &collection,
         bool error = false;
         if (!plugin.group.empty() && !plugin_group_infos.count(plugin.group)) {
             errors.push_back(
-                "No PluginGroupPlugin with name " + plugin.group + 
+                "No PluginGroupPlugin with name " + plugin.group +
                 " for Plugin " + plugin.key +
                 " of type " + plugin.type.name());
             error = true;
@@ -105,7 +105,7 @@ void Registry::collect_plugins(const RawRegistry &collection,
             error = true;
         }
         if (!error) {
-            insert_plugin_info(plugin.key, plugin.doc_factory, 
+            insert_plugin_info(plugin.key, plugin.doc_factory,
                                plugin.type_name_factory, plugin.group);
             insert_plugin_factory(plugin.key, plugin.factory, plugin.type);
         }
@@ -167,7 +167,7 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
 }
 
 void Registry::insert_plugin_factory(const string &key, const Any &factory,
-                              const type_index &type) {
+                                     const type_index &type) {
     if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
         ABORT("duplicate key in registry: " + key + "\n");
     }
