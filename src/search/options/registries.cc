@@ -36,9 +36,9 @@ void Registry::insert_type_info(const PluginTypeInfo &info) {
              << info.get_type().name() << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    //TODO pat check for not existence (also check in raw registry data)
+    //TODO PAT check in collect for duplicates!
     for (const string &predefinition_arg: info.get_predefine().first) {
-        if (has_predefinition_function(predefinition_arg)){
+        if (has_predefinition_function(predefinition_arg)) {
             cerr << "duplicate predefinition argument: " << predefinition_arg
                  << endl;
             utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
@@ -152,12 +152,12 @@ vector<string> Registry::get_sorted_plugin_info_keys() {
     return keys;
 }
 
-bool Registry::has_predefinition_function(const std::string& key) const {
+bool Registry::has_predefinition_function(const string &key) const {
     return predefinition_functions.count(key);
 }
 
 PredefinitionFunctional &Registry::get_predefinition_function(
-    const std::string& key) {
+    const string &key) {
     return predefinition_functions.at(key);
 }
 }

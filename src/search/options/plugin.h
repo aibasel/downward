@@ -34,7 +34,9 @@ public:
     PluginTypePlugin(
         const std::string &type_name,
         const std::string &documentation,
-        const PredefinitionConfig &predefine={{},[](const std::string &, Registry &, Predefinitions &, bool){}}) {
+        const PredefinitionConfig &predefine = {{}, [](
+                                                    const std::string &, Registry &, Predefinitions &, bool) {}
+        }) {
         using TPtr = std::shared_ptr<T>;
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,

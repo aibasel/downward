@@ -9,7 +9,6 @@
 #include <vector>
 
 
-
 namespace options {
 struct RawPluginInfo {
     std::string key;
@@ -37,7 +36,7 @@ class RawRegistry {
 public:
     void insert_plugin_type_data(
         std::type_index type, const std::string &type_name,
-        const std::string &documentation, 
+        const std::string &documentation,
         const PredefinitionConfig &predefine);
 
     void insert_plugin_group_data(
