@@ -36,6 +36,15 @@ void Registry::insert_type_info(const PluginTypeInfo &info) {
              << info.get_type().name() << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
+    //TODO pat check for not existence (also check in raw registry data)
+    for (const string &predefinition_arg: info.get_predefine().first) {
+        if (has_predefinition_function(predefinition_arg)){
+            cerr << "duplicate predefinition argument: " << predefinition_arg
+                 << endl;
+            utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+        predefinition_functions[predefinition_arg] = info.get_predefine().second;
+    }
     plugin_type_infos.insert(make_pair(info.get_type(), info));
 }
 
@@ -141,5 +150,14 @@ vector<string> Registry::get_sorted_plugin_info_keys() {
     }
     sort(keys.begin(), keys.end());
     return keys;
+}
+
+bool Registry::has_predefinition_function(const std::string& key) const {
+    return predefinition_functions.count(key);
+}
+
+PredefinitionFunctional &Registry::get_predefinition_function(
+    const std::string& key) {
+    return predefinition_functions.at(key);
 }
 }

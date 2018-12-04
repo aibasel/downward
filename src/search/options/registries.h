@@ -3,12 +3,9 @@
 
 #include "any.h"
 #include "doc_utils.h"
+#include "raw_registry.h"
 
-#include "../utils/system.h"
-
-#include <algorithm>
 #include <functional>
-#include <memory>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
@@ -41,45 +38,30 @@ class Registry {
        for example, to generate the documentation.
      */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
-    Registry() = default;
+    
+    std::unordered_map<std::string, PredefinitionFunctional> predefinition_functions;
 
-    template<typename T>
-    void insert_factory(
-        const std::string &key,
-        std::function<T(OptionParser &)> factory) {
-        std::type_index type(typeid(T));
+    void collect_plugin_types(const RawRegistry &collection,
+                              std::vector<std::string> &errors);
+    void collect_plugin_groups(const RawRegistry &collection,
+                               std::vector<std::string> &errors);
+    void collect_plugins(const RawRegistry &collection,
+                         std::vector<std::string> &errors);
 
-        if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
-            std::cerr << "duplicate key in registry: " << key << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-        plugin_factories[type][key] = factory;
-    }
+    void insert_plugin(const std::string &key, const Any &factory,
+                       const PluginTypeNameGetter &type_name_factory,
+                       const DocFactory &doc_factory,
+                       const std::string &group, const std::type_index &type);
+    void insert_factory(const std::string &key, const Any &factory,
+                        const std::type_index &type);
+    void insert_plugin_info(const std::string &key, const DocFactory &factory,
+                            const PluginTypeNameGetter &type_name_factory,
+                            const std::string &group);
+    void insert_type_info(const PluginTypeInfo &info);
+    void insert_group_info(const PluginGroupInfo &info);
 
-    void insert_plugin_info(
-        const std::string &key,
-        DocFactory factory,
-        PluginTypeNameGetter type_name_factory,
-        const std::string &group);
 public:
-
-    template<typename T>
-    void insert_plugin(const std::string &key,
-                       std::function<std::shared_ptr<T>(OptionParser &)> factory,
-                       PluginTypeNameGetter type_name_factory, const std::string &group) {
-        using TPtr = std::shared_ptr<T>;
-        /*
-          We cannot collect the plugin documentation here because this might
-          require information from a TypePlugin object that has not yet been
-          constructed. We therefore collect the necessary functions here and
-          call them later, after all PluginType objects have been constructed.
-        */
-        DocFactory doc_factory = [factory](OptionParser &parser) {
-                factory(parser);
-            };
-        insert_plugin_info(key, doc_factory, type_name_factory, group);
-        insert_factory<TPtr>(key, factory);
-    }
+    explicit Registry(const RawRegistry &collection);
 
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {
@@ -87,11 +69,12 @@ public:
         return any_cast<std::function<T(OptionParser &)>>(plugin_factories.at(type).at(key));
     }
 
-    void insert_type_info(const PluginTypeInfo &info);
+    bool has_predefinition_function(const std::string &key) const;
+    PredefinitionFunctional &get_predefinition_function(const std::string &key);
+    
     const PluginTypeInfo &get_type_info(const std::type_index &type) const;
     std::vector<PluginTypeInfo> get_sorted_type_infos() const;
 
-    void insert_group_info(const PluginGroupInfo &info);
     const PluginGroupInfo &get_group_info(const std::string &key) const;
 
 
@@ -122,12 +105,6 @@ public:
         bool long_text);
 
     std::vector<std::string> get_sorted_plugin_info_keys();
-
-
-    static Registry *instance() {
-        static Registry instance_;
-        return &instance_;
-    }
 };
 }
 

@@ -122,6 +122,14 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             num_previously_generated_plans = parse_int_arg(arg, args[i]);
             if (num_previously_generated_plans < 0)
                 throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
+        } else if (registry.has_predefinition_function(arg)) {
+            cout << "MY PRED" << endl;
+            if (is_last)
+                throw ArgError("missing argument after " + arg);
+            ++i;
+            registry.get_predefinition_function(arg)(
+                sanitize_arg_string(args[i]), registry, predefinitions, dry_run);
+            cout << "DONE MY PRED" << endl;
         } else {
             throw ArgError("unknown option " + arg);
         }
