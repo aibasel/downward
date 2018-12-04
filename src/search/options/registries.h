@@ -36,9 +36,12 @@ class Registry {
     /*
        plugin_infos collects the information about all plugins. This is used,
        for example, to generate the documentation.
-     */
+    */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
-    
+    /*
+       Mapping from argument to use to predefine plugins of PluginTypes (e.g.
+       --evaluator) to the functions used to do the predefinition.
+    */
     std::unordered_map<std::string, PredefinitionFunctional> predefinition_functions;
 
     void collect_plugin_types(const RawRegistry &collection,
@@ -71,7 +74,7 @@ public:
 
     bool has_predefinition_function(const std::string &key) const;
     PredefinitionFunctional &get_predefinition_function(const std::string &key);
-    
+
     const PluginTypeInfo &get_type_info(const std::type_index &type) const;
     std::vector<PluginTypeInfo> get_sorted_type_infos() const;
 
