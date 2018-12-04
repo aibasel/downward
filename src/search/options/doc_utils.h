@@ -120,8 +120,6 @@ struct PluginTypeInfo {
                    const std::string &type_name,
                    const std::string &documentation);
 
-    ~PluginTypeInfo() = default;
-
     bool operator<(const PluginTypeInfo &other) const;
 };
 
