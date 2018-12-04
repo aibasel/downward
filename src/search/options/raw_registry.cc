@@ -15,7 +15,8 @@ RawPluginInfo::RawPluginInfo(
       group(group),
       type_name_factory(type_name_factory),
       doc_factory(doc_factory),
-      type(type) { }
+      type(type) {
+}
 
 
 void RawRegistry::insert_plugin_type_data(
