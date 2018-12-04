@@ -18,22 +18,6 @@ static void print_initialization_errors_and_exit(const vector<string> &errors) {
     exit_with_demangling_hint(ExitCode::SEARCH_CRITICAL_ERROR, "[TYPE]");
 }
 
-template<typename KeyType, typename ValueType>
-static void generate_duplicate_errors(
-    const unordered_map<KeyType, ValueType> &occurrences, vector<string> &errors,
-    function<bool(const ValueType &obj)> duplicate_condition,
-    function<string(const KeyType &first, const ValueType &second)> message_generator) {
-    vector<string> name_clash_errors;
-
-    for (auto it : occurrences) {
-        if (duplicate_condition(it.second)) {
-            name_clash_errors.push_back(
-                message_generator(it.first, it.second));
-        }
-    }
-    sort(name_clash_errors.begin(), name_clash_errors.end());
-    errors.insert(errors.end(), name_clash_errors.begin(), name_clash_errors.end());
-}
 
 Registry::Registry(const RawRegistry &collection) {
     vector<string> errors;
@@ -41,6 +25,7 @@ Registry::Registry(const RawRegistry &collection) {
     collect_plugin_groups(collection, errors);
     collect_plugins(collection, errors);
     if (!errors.empty()) {
+        sort(errors.begin(), errors.end());
         print_initialization_errors_and_exit(errors);
     }
 }
@@ -58,26 +43,23 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
         }
     }
 
-    generate_duplicate_errors<string, vector<type_index>>(
-        occurrences_names, errors,
-        [](const vector<type_index> &types) {return types.size() > 1;},
-        [](const string &type_name, const vector<type_index> &types) {
-            return "Multiple definitions for PluginTypePlugin name " +
-            type_name + " (types: " +
-            utils::join(
-                utils::map_vector<string>(
-                    types,
-                    [](const type_index &type) {return type.name();}),
-                ", ") + ")";
-        });
-
-    generate_duplicate_errors<type_index, vector<string>>(
-        occurrences_types, errors,
-        [](const vector<string> &names) {return names.size() > 1;},
-        [](const type_index &type, const vector<string> &names) {
-            return "Multiple definitions for PluginTypePlugin type " +
-            string(type.name()) + " (names: " + utils::join(names, ", ") + ")";
-        });
+    for (auto it : occurrences_names) {
+        if (it.second.size() > 1) {
+            errors.push_back("Multiple definitions for PluginTypePlugin name " +
+            it.first + " (types: " +
+            utils::join(utils::map_vector<string>(
+                it.second,
+                [](const type_index &type) {return type.name();}),
+                ", ") + ")");
+        }
+    }
+    
+    for (auto it : occurrences_types) {
+        if (it.second.size() > 1) {
+            errors.push_back("Multiple definitions for PluginTypePlugin type " +
+            string(it.first.name()) + " (names: " + utils::join(it.second, ", ") + ")");
+        }
+    }
 }
 
 void Registry::collect_plugin_groups(const RawRegistry &collection,
@@ -90,31 +72,30 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
         }
     }
 
-    generate_duplicate_errors<string, int>(
-        occurrences, errors,
-        [](const int &count) {return count > 1;},
-        [](const string &first, const int &count) {
-            return "Multiple definitions for PluginGroupPlugin name " + first +
-            " (count: " + to_string(count) + ")";
-        });
+    for (auto it : occurrences) {
+        if (it.second > 1) {
+            errors.push_back("Multiple definitions for PluginGroupPlugin name " +
+            it.first + " (count: " + to_string(it.second) + ")");
+        }
+    }
 }
 
 void Registry::collect_plugins(const RawRegistry &collection,
                                vector<string> &errors) {
-    vector<string> other_plugin_errors;
     unordered_map<string, vector<type_index>> occurrences;
     for (const RawPluginInfo &plugin : collection.get_plugin_data()) {
         bool error = false;
         if (!plugin.group.empty() && !plugin_group_infos.count(plugin.group)) {
-            other_plugin_errors.push_back(
+            errors.push_back(
                 "Missing PluginGroupPlugin for Plugin " + plugin.key +
                 " of type " + plugin.type.name() + ": " + plugin.group);
             error = true;
         }
         if (!plugin_type_infos.count(plugin.type)) {
-            other_plugin_errors.push_back("Missing PluginTypePlugin for "
-                                          "Plugin " + plugin.key + ": " +
-                                          plugin.type.name());
+            errors.push_back(
+                "Missing PluginTypePlugin for Plugin " + plugin.key + ": " +
+                plugin.type.name() + " (can be spurious if associated "
+                "PluginTypePlugin has a name clash error)");
             error = true;
         }
         occurrences[plugin.key].push_back(plugin.type);
@@ -128,21 +109,16 @@ void Registry::collect_plugins(const RawRegistry &collection,
         }
     }
 
-    generate_duplicate_errors<string, vector<type_index>>(
-        occurrences, errors,
-        [](const vector<type_index> &types) {return types.size() > 1;},
-        [](const string &type_name, const vector<type_index> &types) {
-            return "Multiple definitions for Plugin " + type_name + " (types: " +
-            utils::join(
-                utils::map_vector<string>(
-                    types,
-                    [](const type_index &type) {return type.name();}),
+    for (auto it : occurrences) {
+        if (it.second.size() > 1) {
+            errors.push_back("Multiple definitions for Plugin " + it.first + " (types: " +
+            utils::join(utils::map_vector<string>(
+                it.second,
+                [](const type_index &type) {return type.name();}),
                 ", ") +
-            ")";
-        });
-
-    sort(other_plugin_errors.begin(), other_plugin_errors.end());
-    errors.insert(errors.end(), other_plugin_errors.begin(), other_plugin_errors.end());
+            ")");
+        }
+    }
 }
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
