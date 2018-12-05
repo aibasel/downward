@@ -1,24 +1,29 @@
 #! /usr/bin/env python
 
 USAGE = """\
-Update baseline:
+1) Use through buildbot:
+
+The buildbot weekly and nightky tests use this script to check for
+performance regressions. To update the baseline:
   * change BASELINE variable below
   * push the change
-  * login to computer running the buildslave as the buildslave user
-  * remove ~/experiments dir
-  * run in an updated repo (e.g. in ~/lib/downward):
-    export PYTHONPATH=~/lib/python/lab
-    export DOWNWARD_COIN_ROOT=~/lib/coin
-    export DOWNWARD_CPLEX_ROOT=~/lib/cplex/cplex
-    cd misc/buildbot
-    ./buildbot-exp.py --test nightly --rev baseline --all
-    ./buildbot-exp.py --test weekly --rev baseline --all
+  * login to http://buildbot.fast-downward.org
+  * Under Builds > Builders > recreate-baseline-worker-gcc8-lp select
+    "force-recreate-baseline"
+  You can find the experiment data on the linux build slave in the
+  docker volume "buildbot-experiments".
 
-Compare the current revision to the baseline (add to master.cfg):
+
+2) Use as commandline tool:
+
+Create baseline data
+  ./buildbot-exp.py --test nightly --rev baseline --all
+  ./buildbot-exp.py --test weekly --rev baseline --all
+
+Compare the current revision to the baseline (these commands exit
+with 1 if a regression was found):
   ./buildbot-exp.py --test nightly --all
   ./buildbot-exp.py --test weekly --all
-
-These commands exit with 1 if a regression was found.
 
 You can adapt the experiment by changing the values for BASELINE,
 CONFIGS, SUITES and RELATIVE_CHECKS below.
