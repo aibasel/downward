@@ -18,9 +18,6 @@ FFHeuristic::FFHeuristic(const Options &opts)
     cout << "Initializing FF heuristic..." << endl;
 }
 
-FFHeuristic::~FFHeuristic() {
-}
-
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
     const State &state, PropID goal_id) {
     Proposition *goal = get_proposition(goal_id);

@@ -30,10 +30,9 @@ class FFHeuristic : public additive_heuristic::AdditiveHeuristic {
     void mark_preferred_operators_and_relaxed_plan(
         const State &state, PropID goal_id);
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
     explicit FFHeuristic(const options::Options &options);
-    virtual ~FFHeuristic() override;
 };
 }
 

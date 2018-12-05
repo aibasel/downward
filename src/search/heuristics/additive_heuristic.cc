@@ -19,9 +19,6 @@ AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     cout << "Initializing additive heuristic..." << endl;
 }
 
-AdditiveHeuristic::~AdditiveHeuristic() {
-}
-
 void AdditiveHeuristic::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle

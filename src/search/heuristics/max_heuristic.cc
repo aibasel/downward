@@ -28,9 +28,6 @@ HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
     cout << "Initializing HSP max heuristic..." << endl;
 }
 
-HSPMaxHeuristic::~HSPMaxHeuristic() {
-}
-
 // heuristic computation
 void HSPMaxHeuristic::setup_exploration_queue() {
     queue.clear();
