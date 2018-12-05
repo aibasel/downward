@@ -1,7 +1,5 @@
 #include "domain_abstracted_task.h"
 
-#include "../global_state.h"
-
 #include "../utils/system.h"
 
 using namespace std;

@@ -36,7 +36,7 @@ string get_admissible_potentials_reference() {
     return "The algorithm is based on" + utils::format_paper_reference(
         {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
         "New Optimization Functions for Potential Heuristics",
-        "http://ai.cs.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
+        "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
         "Proceedings of the 25th International Conference on"
         " Automated Planning and Scheduling (ICAPS 2015)",
         "193-201",
@@ -53,7 +53,12 @@ void prepare_parser_for_admissible_potentials(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
     parser.add_option<double>(
         "max_potential",
-        "Bound potentials by this number",
+        "Bound potentials by this number. Using the bound {{{infinity}}} "
+        "disables the bounds. In some domains this makes the computation of "
+        "weights unbounded in which case no weights can be extracted. Using "
+        "very high weights can cause numerical instability in the LP solver, "
+        "while using very low weights limits the choice of potential "
+        "heuristics. For details, see the ICAPS paper cited above.",
         "1e8",
         Bounds("0.0", "infinity"));
     lp::add_lp_solver_option_to_parser(parser);

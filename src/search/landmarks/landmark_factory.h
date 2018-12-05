@@ -31,7 +31,7 @@ public:
 
     LandmarkFactory(const LandmarkFactory &) = delete;
 
-    std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task, Exploration &exploration);
+    std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks;}
     bool use_reasonable_orders() const {return reasonable_orders;}
