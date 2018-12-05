@@ -61,8 +61,8 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
     int max_states,
     int max_states_before_merge,
     int shrink_threshold_before_merge) {
-    const TransitionSystem &original_ts1 = fts.get_ts(index1);
-    const TransitionSystem &original_ts2 = fts.get_ts(index2);
+    const TransitionSystem &original_ts1 = fts.get_transition_system(index1);
+    const TransitionSystem &original_ts2 = fts.get_transition_system(index2);
 
     /*
       Determine size limits and if shrinking is necessary or possible as done

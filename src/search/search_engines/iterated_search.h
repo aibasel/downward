@@ -31,7 +31,7 @@ class IteratedSearch : public SearchEngine {
     bool iterated_found_solution;
 
     std::shared_ptr<SearchEngine> get_search_engine(int engine_configs_index);
-    std::shared_ptr<SearchEngine> create_phase(int phase);
+    std::shared_ptr<SearchEngine> create_current_phase();
     SearchStatus step_return_value();
 
     virtual SearchStatus step() override;
