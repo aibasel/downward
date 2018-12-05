@@ -28,6 +28,7 @@ Registry::Registry(const RawRegistry &raw_registry) {
         sort(errors.begin(), errors.end());
         print_initialization_errors_and_exit(errors);
     }
+    // The documentation generation requires an error free, fully initialized registry.
     for (const RawPluginInfo &plugin : raw_registry.get_plugin_data()) {
         OptionParser parser(plugin.key, *this, Predefinitions(), true, true);
         plugin.doc_factory(parser);

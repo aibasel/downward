@@ -18,7 +18,6 @@ RawPluginInfo::RawPluginInfo(
       type(type) {
 }
 
-
 void RawRegistry::insert_plugin_type_data(
     type_index type, const string &type_name, const string &documentation) {
     plugin_types.emplace_back(type, type_name, documentation);
