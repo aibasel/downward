@@ -2,12 +2,13 @@
 #define OPTIONS_PLUGIN_H
 
 #include "doc_utils.h"
-#include "registries.h"
+#include "raw_registry.h"
 #include "type_namer.h"
 
 #include <functional>
 #include <memory>
 #include <string>
+#include <typeindex>
 #include <typeinfo>
 
 namespace options {
@@ -28,7 +29,8 @@ public:
     PluginTypePlugin(const std::string &type_name,
                      const std::string &documentation) {
         using TPtr = std::shared_ptr<T>;
-        register_plugin_type_plugin(typeid(TPtr), type_name, documentation);
+        RawRegistry::instance()->insert_plugin_type_data(
+            std::type_index(typeid(TPtr)), type_name, documentation);
     }
 
     ~PluginTypePlugin() = default;
@@ -54,12 +56,16 @@ public:
         typename std::function<std::shared_ptr<T>(OptionParser &)> factory,
         const std::string &group = "") {
         using TPtr = std::shared_ptr<T>;
-        PluginTypeNameGetter type_name_factory = [&]() {
-                return TypeNamer<TPtr>::name(*Registry::instance());
+        PluginTypeNameGetter type_name_factory = [&](const Registry &registry) {
+                return TypeNamer<TPtr>::name(registry);
             };
-
-        Registry::instance()->insert_plugin<T>(key, factory, type_name_factory,
-                                               group);
+        DocFactory doc_factory = [factory](OptionParser &parser) {
+                factory(parser);
+            };
+        std::type_index type(typeid(TPtr));
+        RawRegistry::instance()->insert_plugin_data(
+            key, factory, group, type_name_factory, doc_factory,
+            type);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
