@@ -110,8 +110,8 @@ vector<RawPluginInfo> Registry::insert_plugins(const RawRegistry &raw_registry,
             error = true;
         }
         if (!error) {
-            insert_plugin_info(plugin.key, plugin.type_name_factory, plugin.group);
-            insert_plugin_factory(plugin.key, plugin.factory, plugin.type);
+            insert_plugin(plugin.key, plugin.factory, plugin.group, 
+                          plugin.type_name_factory, plugin.type);
             inserted.push_back(plugin);
         }
     }
@@ -172,21 +172,15 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
     return plugin_group_infos.at(group);
 }
 
-void Registry::insert_plugin_factory(const string &key, const Any &factory,
-                                     const type_index &type) {
-    if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
-        ABORT("duplicate key in registry: " + key + "\n");
-    }
-    plugin_factories[type][key] = factory;
-}
-
-void Registry::insert_plugin_info(
-    const string &key,
-    const PluginTypeNameGetter &type_name_factory,
-    const string &group) {
+void Registry::insert_plugin(
+    const std::string &key, const Any &factory,
+    const std::string &group,
+    const PluginTypeNameGetter &type_name_factory,                        
+    const std::type_index &type) {
     if (plugin_infos.count(key)) {
         ABORT("Registry already contains a plugin with name \"" + key + "\"");
     }
+    // Insert PluginInfo object.
     PluginInfo doc;
     doc.key = key;
     // Plugin names can be set with document_synopsis. Otherwise, we use the key.
@@ -197,6 +191,12 @@ void Registry::insert_plugin_info(
     doc.hidden = false;
 
     plugin_infos.insert(make_pair(key, doc));
+    
+    // Insert plugin factory.
+    if (plugin_factories.count(type) && plugin_factories[type].count(key)) {
+        ABORT("duplicate key in registry: " + key + "\n");
+    }
+    plugin_factories[type][key] = factory;
 }
 
 void Registry::add_plugin_info_arg(
