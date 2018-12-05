@@ -162,10 +162,10 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
 }
 
 void Registry::insert_plugin(
-    const std::string &key, const Any &factory,
-    const std::string &group,
+    const string &key, const Any &factory,
+    const string &group,
     const PluginTypeNameGetter &type_name_factory,
-    const std::type_index &type) {
+    const type_index &type) {
     assert(!plugin_infos.count(key));
     assert(!plugin_factories.count(type) || !plugin_factories[type].count(key));
 
