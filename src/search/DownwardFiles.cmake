@@ -98,8 +98,8 @@ fast_downward_plugin(
         options/parse_tree
         options/predefinitions
         options/plugin
+        options/raw_registry
         options/registries
-        options/string_utils
         options/type_namer
     CORE_PLUGIN
 )
@@ -118,6 +118,7 @@ fast_downward_plugin(
         utils/memory
         utils/rng
         utils/rng_options
+        utils/strings
         utils/system
         utils/system_unix
         utils/system_windows
