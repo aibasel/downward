@@ -143,11 +143,7 @@ void Registry::insert_plugins(const RawRegistry &raw_registry,
 void Registry::insert_type_info(const PluginTypeInfo &info) {
     assert(!plugin_type_infos.count(info.type));
     for (const string &predefinition_arg: info.predefine.first) {
-        if (has_predefinition_function(predefinition_arg)) {
-            cerr << "duplicate predefinition argument: " << predefinition_arg
-                 << endl;
-            utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
-        }
+        assert(!has_predefinition_function(predefinition_arg));
         predefinition_functions[predefinition_arg] = info.predefine.second;
     }
     plugin_type_infos.insert(make_pair(info.type, info));
