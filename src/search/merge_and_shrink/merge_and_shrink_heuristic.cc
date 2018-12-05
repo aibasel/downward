@@ -112,8 +112,8 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
     for (int index = 0; index < fts.get_size(); ++index) {
         if (fts.is_active(index) && !fts.is_factor_solvable(index)) {
             finalize_factor(fts, index);
-            cout << "Use the unsolvable factor as heuristic: "
-                 << fts.get_transition_system(index).tag()
+            cout << fts.get_transition_system(index).tag()
+                 << "use this unsolvable factor as heuristic."
                  << endl;
             return;
         }
@@ -131,8 +131,8 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
             assert(!fts.is_active(index));
         }
         finalize_factor(fts, last_factor_index);
-        cout << "Use the only solvable factor as heuristic: "
-             << fts.get_transition_system(last_factor_index).tag()
+        cout << fts.get_transition_system(last_factor_index).tag()
+             << "use this single remaining factor as heuristic."
              << endl;
     } else {
         assert(partial_mas_method != PartialMASMethod::None);
@@ -146,8 +146,8 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
             factor_scoring_functions.clear();
             finalize_factor(fts, index);
             if (verbosity >= Verbosity::NORMAL) {
-                cout << "Chose single factor as heuristic: "
-                     << fts.get_transition_system(index).tag()
+                cout << fts.get_transition_system(index).tag()
+                     << "chose this factor as heuristic."
                      << endl;
             }
         } else if (partial_mas_method == PartialMASMethod::Maximum) {
