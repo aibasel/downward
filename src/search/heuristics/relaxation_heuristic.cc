@@ -87,9 +87,6 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     }
 }
 
-RelaxationHeuristic::~RelaxationHeuristic() {
-}
-
 bool RelaxationHeuristic::dead_ends_are_reliable() const {
     return !task_properties::has_axioms(task_proxy);
 }

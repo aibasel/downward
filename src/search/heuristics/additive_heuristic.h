@@ -62,13 +62,12 @@ class AdditiveHeuristic : public relaxation_heuristic::RelaxationHeuristic {
 
     int compute_heuristic(const State &state);
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);
 public:
     explicit AdditiveHeuristic(const options::Options &options);
-    virtual ~AdditiveHeuristic() override;
 
     /*
       TODO: The two methods below are temporarily needed for the CEGAR

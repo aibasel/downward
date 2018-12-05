@@ -104,7 +104,7 @@ protected:
     Proposition *get_proposition(const FactProxy &fact);
 public:
     explicit RelaxationHeuristic(const options::Options &options);
-    virtual ~RelaxationHeuristic() override;
+
     virtual bool dead_ends_are_reliable() const override;
 };
 }
