@@ -43,8 +43,8 @@ class Registry {
                               std::vector<std::string> &errors);
     void insert_plugin_groups(const RawRegistry &raw_registry,
                                std::vector<std::string> &errors);
-    std::vector<RawPluginInfo> insert_plugins(const RawRegistry &raw_registry,
-                                               std::vector<std::string> &errors);
+    void insert_plugins(const RawRegistry &raw_registry,
+                        std::vector<std::string> &errors);
 
     void insert_plugin(const std::string &key, const Any &factory,
                             const std::string &group,

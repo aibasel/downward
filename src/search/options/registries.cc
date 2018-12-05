@@ -23,12 +23,12 @@ Registry::Registry(const RawRegistry &raw_registry) {
     vector<string> errors;
     insert_plugin_types(raw_registry, errors);
     insert_plugin_groups(raw_registry, errors);
-    vector<RawPluginInfo> inserted = insert_plugins(raw_registry, errors);
+    insert_plugins(raw_registry, errors);
     if (!errors.empty()) {
         sort(errors.begin(), errors.end());
         print_initialization_errors_and_exit(errors);
     }
-    for (const RawPluginInfo &plugin : inserted) {
+    for (const RawPluginInfo &plugin : raw_registry.get_plugin_data()) {
         OptionParser parser(plugin.key, *this, Predefinitions(), true, true);
         plugin.doc_factory(parser);
     }
@@ -84,9 +84,8 @@ void Registry::insert_plugin_groups(const RawRegistry &raw_registry,
     }
 }
 
-vector<RawPluginInfo> Registry::insert_plugins(const RawRegistry &raw_registry,
-                                                vector<string> &errors) {
-    vector<RawPluginInfo> inserted;
+void Registry::insert_plugins(const RawRegistry &raw_registry,
+                              vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences;
     for (const RawPluginInfo &plugin : raw_registry.get_plugin_data()) {
         bool error = false;
@@ -112,7 +111,6 @@ vector<RawPluginInfo> Registry::insert_plugins(const RawRegistry &raw_registry,
         if (!error) {
             insert_plugin(plugin.key, plugin.factory, plugin.group, 
                           plugin.type_name_factory, plugin.type);
-            inserted.push_back(plugin);
         }
     }
 
@@ -126,7 +124,6 @@ vector<RawPluginInfo> Registry::insert_plugins(const RawRegistry &raw_registry,
                              ")");
         }
     }
-    return inserted;
 }
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
