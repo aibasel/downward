@@ -89,6 +89,7 @@ Examples:
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
 COMPONENTS_PLUS_OVERALL = ["translate", "search", "validate", "overall"]
+DEFAULT_SAS_FILE = "output.sas"
 
 
 """
@@ -393,8 +394,12 @@ def parse_args():
         help="write plan(s) to FILE (default: %(default)s; anytime configurations append .1, .2, ...)")
 
     driver_other.add_argument(
-        "--sas-file", metavar="FILE", default="output.sas",
+        "--sas-file", metavar="FILE", default=DEFAULT_SAS_FILE,
         help="intermediate file for storing the translator output (default: %(default)s)")
+    driver_other.add_argument(
+        "--keep-sas-file", action="store_true",
+        help="keep translator output file (default: keep if --sas-file is "
+            "given or only one of the translate and search components is active)")
 
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
@@ -464,5 +469,9 @@ def parse_args():
 
     if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
+
+    if (not set(["translate", "search"]) <= set(args.components)
+            or args.sas_file != DEFAULT_SAS_FILE):
+        args.keep_sas_file = True
 
     return args
