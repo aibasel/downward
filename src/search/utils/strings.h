@@ -1,16 +1,15 @@
 #ifndef UTILS_STRINGS_H
 #define UTILS_STRINGS_H
 
-
 #include <sstream>
 #include <string>
 
 namespace utils {
-void lstrip(std::string &s);
+extern void lstrip(std::string &s);
 
-void rstrip(std::string &s);
+extern void rstrip(std::string &s);
 
-void strip(std::string &s);
+extern void strip(std::string &s);
 
 std::pair<std::string, std::string> split(
     const std::string &arg, const std::string &splitter = "=");
