@@ -44,27 +44,22 @@ class Registry {
     */
     std::unordered_map<std::string, PredefinitionFunctional> predefinition_functions;
 
-    void collect_plugin_types(const RawRegistry &collection,
+    void insert_plugin_types(const RawRegistry &raw_registry,
+                             std::vector<std::string> &errors);
+    void insert_plugin_groups(const RawRegistry &raw_registry,
                               std::vector<std::string> &errors);
-    void collect_plugin_groups(const RawRegistry &collection,
-                               std::vector<std::string> &errors);
-    void collect_plugins(const RawRegistry &collection,
-                         std::vector<std::string> &errors);
+    void insert_plugins(const RawRegistry &raw_registry,
+                        std::vector<std::string> &errors);
 
     void insert_plugin(const std::string &key, const Any &factory,
+                       const std::string &group,
                        const PluginTypeNameGetter &type_name_factory,
-                       const DocFactory &doc_factory,
-                       const std::string &group, const std::type_index &type);
-    void insert_factory(const std::string &key, const Any &factory,
-                        const std::type_index &type);
-    void insert_plugin_info(const std::string &key, const DocFactory &factory,
-                            const PluginTypeNameGetter &type_name_factory,
-                            const std::string &group);
+                       const std::type_index &type);
     void insert_type_info(const PluginTypeInfo &info);
     void insert_group_info(const PluginGroupInfo &info);
 
 public:
-    explicit Registry(const RawRegistry &collection);
+    explicit Registry(const RawRegistry &raw_registry);
 
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {

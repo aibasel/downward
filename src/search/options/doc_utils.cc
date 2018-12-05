@@ -16,22 +16,6 @@ PluginTypeInfo::PluginTypeInfo(const type_index &type,
       predefine(predefine) {
 }
 
-const type_index &PluginTypeInfo::get_type() const {
-    return type;
-}
-
-const string &PluginTypeInfo::get_type_name() const {
-    return type_name;
-}
-
-const string &PluginTypeInfo::get_documentation() const {
-    return documentation;
-}
-
-const PredefinitionConfig &PluginTypeInfo::get_predefine() const {
-    return predefine;
-}
-
 bool PluginTypeInfo::operator<(const PluginTypeInfo &other) const {
     return make_pair(type_name, type) < make_pair(other.type_name, other.type);
 }

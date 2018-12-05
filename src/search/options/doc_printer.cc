@@ -16,9 +16,6 @@ static bool is_call(const string &s) {
 DocPrinter::DocPrinter(ostream &out, Registry &registry)
     : os(out),
       registry(registry) {
-    for (const string &key : registry.get_sorted_plugin_info_keys()) {
-        registry.get_plugin_info(key).fill_docs(registry);
-    }
 }
 
 DocPrinter::~DocPrinter() {
@@ -26,7 +23,7 @@ DocPrinter::~DocPrinter() {
 
 void DocPrinter::print_all() {
     for (const PluginTypeInfo &info : registry.get_sorted_type_infos()) {
-        print_category(info.get_type_name(), info.get_documentation());
+        print_category(info.type_name, info.documentation);
     }
 }
 
@@ -40,7 +37,7 @@ void DocPrinter::print_category(const string &plugin_type_name, const string &sy
     map<string, vector<PluginInfo>> groups;
     for (const string &key : registry.get_sorted_plugin_info_keys()) {
         const PluginInfo &info = registry.get_plugin_info(key);
-        if (info.get_type_name() == plugin_type_name && !info.hidden) {
+        if (info.type_name == plugin_type_name && !info.hidden) {
             groups[info.group].push_back(info);
         }
     }
