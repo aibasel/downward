@@ -34,7 +34,7 @@ struct TypeNamer<std::shared_ptr<T>> {
         using TPtr = std::shared_ptr<T>;
         const PluginTypeInfo &type_info =
             registry.get_type_info(std::type_index(typeid(TPtr)));
-        return type_info.get_type_name();
+        return type_info.type_name;
     }
 };
 
