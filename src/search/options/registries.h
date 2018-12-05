@@ -40,16 +40,16 @@ class Registry {
     std::unordered_map<std::string, PluginInfo> plugin_infos;
 
     void insert_plugin_types(const RawRegistry &raw_registry,
-                              std::vector<std::string> &errors);
+                             std::vector<std::string> &errors);
     void insert_plugin_groups(const RawRegistry &raw_registry,
-                               std::vector<std::string> &errors);
+                              std::vector<std::string> &errors);
     void insert_plugins(const RawRegistry &raw_registry,
                         std::vector<std::string> &errors);
 
     void insert_plugin(const std::string &key, const Any &factory,
-                            const std::string &group,
-                            const PluginTypeNameGetter &type_name_factory,                        
-                            const std::type_index &type);
+                       const std::string &group,
+                       const PluginTypeNameGetter &type_name_factory,
+                       const std::type_index &type);
     void insert_type_info(const PluginTypeInfo &info);
     void insert_group_info(const PluginGroupInfo &info);
 

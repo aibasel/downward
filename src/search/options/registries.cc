@@ -35,7 +35,7 @@ Registry::Registry(const RawRegistry &raw_registry) {
 }
 
 void Registry::insert_plugin_types(const RawRegistry &raw_registry,
-                                    vector<string> &errors) {
+                                   vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
     for (const PluginTypeInfo &pti : raw_registry.get_plugin_type_data()) {
@@ -67,7 +67,7 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
 }
 
 void Registry::insert_plugin_groups(const RawRegistry &raw_registry,
-                                     vector<string> &errors) {
+                                    vector<string> &errors) {
     unordered_map<string, int> occurrences;
     for (const PluginGroupInfo &pgi : raw_registry.get_plugin_group_data()) {
         ++occurrences[pgi.group_id];
@@ -109,7 +109,7 @@ void Registry::insert_plugins(const RawRegistry &raw_registry,
             error = true;
         }
         if (!error) {
-            insert_plugin(plugin.key, plugin.factory, plugin.group, 
+            insert_plugin(plugin.key, plugin.factory, plugin.group,
                           plugin.type_name_factory, plugin.type);
         }
     }
@@ -164,11 +164,11 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
 void Registry::insert_plugin(
     const std::string &key, const Any &factory,
     const std::string &group,
-    const PluginTypeNameGetter &type_name_factory,                        
+    const PluginTypeNameGetter &type_name_factory,
     const std::type_index &type) {
     assert(!plugin_infos.count(key));
     assert(!plugin_factories.count(type) || !plugin_factories[type].count(key));
-    
+
     PluginInfo doc;
     doc.key = key;
     // Plugin names can be set with document_synopsis. Otherwise, we use the key.
@@ -177,7 +177,7 @@ void Registry::insert_plugin(
     doc.synopsis = "";
     doc.group = group;
     doc.hidden = false;
-    
+
     plugin_infos.insert(make_pair(key, doc));
     plugin_factories[type][key] = factory;
 }
