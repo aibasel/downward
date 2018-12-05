@@ -102,7 +102,7 @@ struct PluginInfo {
   The plugin type info class contains meta-information for a given
   type of plugins (e.g. "SearchEngine" or "MergeStrategyFactory").
 */
-class PluginTypeInfo {
+struct PluginTypeInfo {
     std::type_index type;
 
     /*
@@ -129,13 +129,6 @@ public:
                    const std::string &type_name,
                    const std::string &documentation,
                    const PredefinitionConfig &predefine);
-
-    ~PluginTypeInfo() = default;
-
-    const std::type_index &get_type() const;
-    const std::string &get_type_name() const;
-    const std::string &get_documentation() const;
-    const PredefinitionConfig &get_predefine() const;
 
     bool operator<(const PluginTypeInfo &other) const;
 };
