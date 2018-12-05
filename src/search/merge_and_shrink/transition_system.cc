@@ -132,6 +132,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         back_inserter(incorporated_variables));
     vector<vector<int>> label_groups;
     vector<vector<Transition>> transitions_by_group_id;
+    transitions_by_group_id.reserve(labels.get_max_size());
 
     int ts1_size = ts1.get_size();
     int ts2_size = ts2.get_size();
@@ -209,10 +210,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
             }
         }
     }
-
-    /* With label reduction, there can be at most 2n-1 label groups if
-       there are now n label groups. */
-    transitions_by_group_id.reserve(transitions_by_group_id.size() * 2 - 1);
 
     /*
       We collect all dead labels separately, because the bucket refining
