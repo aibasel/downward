@@ -2,6 +2,7 @@
 #define OPTIONS_PREDEFINITIONS_H
 
 #include "any.h"
+#include "errors.h"
 
 #include "../utils/system.h"
 
@@ -39,8 +40,7 @@ public:
             std::cerr << "Tried to look up a predefinition with a wrong type: "
                       << key << "(type: " << typeid(T).name()
                       << ")" << std::endl;
-            //Add demangling hint from issue842
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            exit_with_demangling_hint(utils::ExitCode::SEARCH_CRITICAL_ERROR, typeid(T).name());
         }
     }
 
@@ -52,8 +52,7 @@ public:
             std::cerr << "Tried to look up a predefinition with a wrong type: "
                       << key << "(type: " << typeid(T).name()
                       << ")" << std::endl;
-            //Add demangling hint from issue842
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            exit_with_demangling_hint(utils::ExitCode::SEARCH_CRITICAL_ERROR, typeid(T).name());
         }
     }
 };
