@@ -91,25 +91,19 @@ void AdditiveHeuristic::mark_preferred_operators(
         OpID op_id = goal->reached_by;
         if (op_id != NO_OP) { // We have not yet chained back to a start node.
             UnaryOperator *unary_op = get_operator(op_id);
-            for (PropID precond : get_preconditions(op_id))
+            bool is_preferred = true;
+            for (PropID precond : get_preconditions(op_id)) {
                 mark_preferred_operators(state, precond);
-            int operator_no = unary_op->operator_no;
-            if (operator_no != -1) {
-                // This is not an axiom.
-                if (unary_op->cost == unary_op->base_cost) {
-                    /*
-                      Having cost == base_cost is a necessary
-                      condition for a preferred operator and is cheap
-                      to test, so we test this first before the more
-                      expensive applicability test.
-
-                      If we had no 0-cost operators to worry about,
-                      this would also be a sufficient condition.
-                    */
-                    OperatorProxy op = task_proxy.get_operators()[operator_no];
-                    if (task_properties::is_applicable(op, state))
-                        set_preferred(op);
+                if (get_proposition(precond)->reached_by != NO_OP) {
+                    is_preferred = false;
                 }
+            }
+            int operator_no = unary_op->operator_no;
+            if (is_preferred && operator_no != -1) {
+                // This is not an axiom.
+                OperatorProxy op = task_proxy.get_operators()[operator_no];
+                assert(task_properties::is_applicable(op, state));
+                set_preferred(op);
             }
         }
     }
