@@ -39,11 +39,11 @@ class Registry {
      */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
 
-    void collect_plugin_types(const RawRegistry &collection,
+    void insert_plugin_types(const RawRegistry &raw_registry,
                               std::vector<std::string> &errors);
-    void collect_plugin_groups(const RawRegistry &collection,
+    void insert_plugin_groups(const RawRegistry &raw_registry,
                                std::vector<std::string> &errors);
-    std::vector<RawPluginInfo> collect_plugins(const RawRegistry &collection,
+    std::vector<RawPluginInfo> insert_plugins(const RawRegistry &raw_registry,
                                                std::vector<std::string> &errors);
 
     void insert_plugin_factory(const std::string &key, const Any &factory,
@@ -55,7 +55,7 @@ class Registry {
     void insert_group_info(const PluginGroupInfo &info);
 
 public:
-    explicit Registry(const RawRegistry &collection);
+    explicit Registry(const RawRegistry &raw_registry);
 
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {

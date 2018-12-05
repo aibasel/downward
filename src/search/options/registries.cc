@@ -19,11 +19,11 @@ static void print_initialization_errors_and_exit(const vector<string> &errors) {
 }
 
 
-Registry::Registry(const RawRegistry &collection) {
+Registry::Registry(const RawRegistry &raw_registry) {
     vector<string> errors;
-    collect_plugin_types(collection, errors);
-    collect_plugin_groups(collection, errors);
-    vector<RawPluginInfo> inserted = collect_plugins(collection, errors);
+    insert_plugin_types(raw_registry, errors);
+    insert_plugin_groups(raw_registry, errors);
+    vector<RawPluginInfo> inserted = insert_plugins(raw_registry, errors);
     if (!errors.empty()) {
         sort(errors.begin(), errors.end());
         print_initialization_errors_and_exit(errors);
@@ -34,11 +34,11 @@ Registry::Registry(const RawRegistry &collection) {
     }
 }
 
-void Registry::collect_plugin_types(const RawRegistry &collection,
+void Registry::insert_plugin_types(const RawRegistry &raw_registry,
                                     vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
-    for (const PluginTypeInfo &pti : collection.get_plugin_type_data()) {
+    for (const PluginTypeInfo &pti : raw_registry.get_plugin_type_data()) {
         occurrences_names[pti.type_name].push_back(pti.type);
         occurrences_types[pti.type].push_back(pti.type_name);
         if (occurrences_names[pti.type_name].size() == 1 &&
@@ -66,10 +66,10 @@ void Registry::collect_plugin_types(const RawRegistry &collection,
     }
 }
 
-void Registry::collect_plugin_groups(const RawRegistry &collection,
+void Registry::insert_plugin_groups(const RawRegistry &raw_registry,
                                      vector<string> &errors) {
     unordered_map<string, int> occurrences;
-    for (const PluginGroupInfo &pgi : collection.get_plugin_group_data()) {
+    for (const PluginGroupInfo &pgi : raw_registry.get_plugin_group_data()) {
         ++occurrences[pgi.group_id];
         if (occurrences[pgi.group_id] == 1) {
             insert_group_info(pgi);
@@ -84,11 +84,11 @@ void Registry::collect_plugin_groups(const RawRegistry &collection,
     }
 }
 
-vector<RawPluginInfo> Registry::collect_plugins(const RawRegistry &collection,
+vector<RawPluginInfo> Registry::insert_plugins(const RawRegistry &raw_registry,
                                                 vector<string> &errors) {
     vector<RawPluginInfo> inserted;
     unordered_map<string, vector<type_index>> occurrences;
-    for (const RawPluginInfo &plugin : collection.get_plugin_data()) {
+    for (const RawPluginInfo &plugin : raw_registry.get_plugin_data()) {
         bool error = false;
         if (!plugin.group.empty() && !plugin_group_infos.count(plugin.group)) {
             errors.push_back(
