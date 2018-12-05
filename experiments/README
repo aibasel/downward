@@ -5,14 +5,8 @@ Experiments using Downward Lab
 
 All experiments use their own common_setup.py module that simplifies the
 creation of experiments. We recommend using common_setup.py (and related
-*.py files) from issue814 for new experiments since it is the most
+*.py files) from issue839 for new experiments since it is the most
 recent version.
-
-Previously, most experiments imported lab's downward/configs.py module.
-To make experiments more self-contained, the module has been deprecated
-and we recommend either copying misc/tests/configs.py into the
-experiment directory (see issue77 for an example using an older
-configs.py) or manually specifying the configurations.
 
 Below we list some experiments that show how certain tasks can be
 performed. Some of them use Downward Lab's deprecated
@@ -44,7 +38,7 @@ DownwardExperiment:
   * issue77/issue77-v7-opt.py
 
 * M&S: configs and additional parsing and a check for availability of matplotlib
-  * issue742/v1.py and issue742/ms-parser.py
+  * issue849/v1.py and issue849/ms-parser.py
 
 * Run experiment in debug mode (with assertions):
   * issue650/v2.py
@@ -53,8 +47,9 @@ DownwardExperiment:
   * issue671/v1.py runs simple configs on the entire set of suites and
     reports also translator-specific attributes
 
-* Translator-only experiment:
+* Translator-only experiments:
   * issue733/v1.py compares translator time and memory under Python 2 and 3
+  * issue869/base-translate-all.py translates all benchmarks
 
 
 Microbenchmarks

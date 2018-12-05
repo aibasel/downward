@@ -24,10 +24,10 @@ template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
     shared_ptr<utils::RandomNumberGenerator> rng;
 
-    typedef deque<Entry> Bucket;
-    typedef vector<int> KeyType;
-    typedef unordered_map<KeyType, Bucket> BucketMap;
-    typedef set<KeyType> KeySet;
+    using Bucket = deque<Entry>;
+    using KeyType = vector<int>;
+    using BucketMap = utils::HashMap<KeyType, Bucket>;
+    using KeySet = set<KeyType>;
 
     BucketMap buckets;
     KeySet nondominated;

@@ -31,7 +31,7 @@ public:
 
     LandmarkFactory(const LandmarkFactory &) = delete;
 
-    std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task, Exploration &exploration);
+    std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks;}
     bool use_reasonable_orders() const {return reasonable_orders;}
@@ -54,7 +54,7 @@ protected:
                                       const LandmarkNode *exclude,
                                       bool compute_lvl_op = false) const {
         std::vector<std::vector<int>> lvl_var;
-        std::vector<std::unordered_map<FactPair, int>> lvl_op;
+        std::vector<utils::HashMap<FactPair, int>> lvl_op;
         return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
@@ -62,11 +62,11 @@ protected:
                                          Exploration &exploration,
                                          LandmarkNode *bp,
                                          std::vector<std::vector<int>> &lvl_var,
-                                         std::vector<std::unordered_map<FactPair, int>> &lvl_op);
+                                         std::vector<utils::HashMap<FactPair, int>> &lvl_op);
 
     // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const OperatorProxy &o, const LandmarkNode *lmp) const;
-    bool is_landmark_precondition(const OperatorProxy &o, const LandmarkNode *lmp) const;
+    bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
 private:
     const bool reasonable_orders;
@@ -76,7 +76,7 @@ private:
     const bool no_orders;
 
     bool interferes(const TaskProxy &task_proxy,
-                    const LandmarkNode *lm_node1,
+                    const LandmarkNode *node_a,
                     const LandmarkNode *node_b) const;
     bool effect_always_happens(const VariablesProxy &variables,
                                const EffectsProxy &effects,
@@ -94,12 +94,12 @@ private:
                            bool use_reasonable);
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                std::vector<std::vector<int>> &lvl_var,
-                               std::vector<std::unordered_map<FactPair, int>> &lvl_op,
+                               std::vector<utils::HashMap<FactPair, int>> &lvl_op,
                                bool level_out,
                                const LandmarkNode *exclude,
                                bool compute_lvl_op = false) const;
     void add_operator_and_propositions_to_list(const OperatorProxy &op,
-                                               std::vector<std::unordered_map<FactPair, int>> &lvl_op) const;
+                                               std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
     bool is_causal_landmark(const TaskProxy &task_proxy, Exploration &exploration, const LandmarkNode &landmark) const;
     virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration); // keep this virtual because HMLandmarks overrides it!
 };

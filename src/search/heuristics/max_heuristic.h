@@ -33,7 +33,7 @@ class HSPMaxHeuristic : public relaxation_heuristic::RelaxationHeuristic {
 protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
-    explicit HSPMaxHeuristic(const options::Options &options);
+    explicit HSPMaxHeuristic(const options::Options &opts);
 };
 }
 

@@ -187,7 +187,7 @@ void RelaxationHeuristic::simplify() {
     */
     using Key = pair<vector<PropID>, PropID>;
     using Value = pair<int, OpID>;
-    using Map = unordered_map<Key, Value>;
+    using Map = utils::HashMap<Key, Value>;
     Map unary_operator_index;
     unary_operator_index.reserve(unary_operators.size());
 

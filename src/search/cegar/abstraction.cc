@@ -84,6 +84,7 @@ Abstraction::Abstraction(
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
+      refinement_hierarchy(utils::make_unique_ptr<RefinementHierarchy>(task)),
       debug(debug) {
     assert(max_states >= 1);
     utils::g_log << "Start building abstraction." << endl;
@@ -99,6 +100,7 @@ Abstraction::Abstraction(
     update_h_and_g_values();
 
     print_statistics();
+    set_state_ids();
 }
 
 Abstraction::~Abstraction() {
@@ -115,7 +117,7 @@ void Abstraction::separate_facts_unreachable_before_goal() {
     assert(states.size() == 1);
     assert(task_proxy.get_goals().size() == 1);
     FactProxy goal = task_proxy.get_goals()[0];
-    unordered_set<FactProxy> reachable_facts = get_relaxed_possible_before(
+    utils::HashSet<FactProxy> reachable_facts = get_relaxed_possible_before(
         task_proxy, goal);
     for (VariableProxy var : task_proxy.get_variables()) {
         if (!may_keep_refining())
@@ -136,7 +138,7 @@ void Abstraction::separate_facts_unreachable_before_goal() {
 
 void Abstraction::create_trivial_abstraction() {
     init = AbstractState::get_trivial_abstract_state(
-        task_proxy, refinement_hierarchy.get_root());
+        task_proxy, refinement_hierarchy->get_root());
     transition_updater.add_loops_to_trivial_abstract_state(init);
     goals.insert(init);
     states.insert(init);
@@ -295,6 +297,33 @@ void Abstraction::update_h_and_g_values() {
 
 int Abstraction::get_h_value_of_initial_state() const {
     return init->get_h_value();
+}
+
+void Abstraction::set_state_ids() {
+    int state_id = 0;
+    for (const AbstractState *state: states) {
+        state->get_node()->set_state_id(state_id++);
+    }
+}
+
+vector<int> Abstraction::compute_looping_operators() const {
+    int num_operators = task_proxy.get_operators().size();
+
+    vector<bool> operator_induces_self_loop(num_operators, false);
+    for (AbstractState *state : states) {
+        for (int op_id : state->get_loops()) {
+            operator_induces_self_loop[op_id] = true;
+        }
+    }
+
+    vector<int> looping_operators;
+    for (int op_id = 0; op_id < num_operators; ++op_id) {
+        if (operator_induces_self_loop[op_id]) {
+            looping_operators.push_back(op_id);
+        }
+    }
+    looping_operators.shrink_to_fit();
+    return looping_operators;
 }
 
 vector<int> Abstraction::get_saturated_costs() {
