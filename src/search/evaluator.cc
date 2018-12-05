@@ -1,8 +1,7 @@
 #include "evaluator.h"
 
-#include "plugin.h"
-
 #include "option_parser.h"
+#include "plugin.h"
 
 #include "utils/system.h"
 
@@ -86,4 +85,3 @@ static PluginTypePlugin<Evaluator> _type_plugin(
     "preferred operators ",
     make_pair<vector<string>, options::PredefinitionFunctional>(
         {"--evaluator", "--heuristic"}, options::predefine_object<Evaluator>));
-//TODO PAT static assert?
