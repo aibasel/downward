@@ -46,7 +46,7 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   as the TaskProxy object passed to this function.
 */
 shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
-    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    const shared_ptr<AbstractTask> &task) {
     if (lm_graph) {
         if (lm_graph_task != task.get()) {
             cerr << "LandmarkFactory was asked to compute landmark graphs for "
@@ -62,6 +62,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     TaskProxy task_proxy(*task);
 
     lm_graph = make_shared<LandmarkGraph>(task_proxy);
+    Exploration exploration(task_proxy);
     generate_landmarks(task, exploration);
 
     // the following replaces the old "build_lm_graph"
@@ -136,7 +137,7 @@ bool LandmarkFactory::is_landmark_precondition(const OperatorProxy &op,
 bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
                                             Exploration &exploration,
                                             vector<vector<int>> &lvl_var,
-                                            vector<unordered_map<FactPair, int>> &lvl_op,
+                                            vector<utils::HashMap<FactPair, int>> &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
@@ -187,7 +188,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
 }
 
 void LandmarkFactory::add_operator_and_propositions_to_list(const OperatorProxy &op,
-                                                            vector<unordered_map<FactPair, int>> &lvl_op) const {
+                                                            vector<utils::HashMap<FactPair, int>> &lvl_op) const {
     int op_or_axiom_id = get_operator_or_axiom_id(op);
     for (EffectProxy effect : op.get_effects()) {
         lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
@@ -204,7 +205,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
     if (landmark.in_goal)
         return true;
     vector<vector<int>> lvl_var;
-    vector<unordered_map<FactPair, int>> lvl_op;
+    vector<utils::HashMap<FactPair, int>> lvl_op;
     // Initialize lvl_var to numeric_limits<int>::max()
     VariablesProxy variables = task_proxy.get_variables();
     lvl_var.resize(variables.size());
@@ -796,7 +797,7 @@ void LandmarkFactory::compute_predecessor_information(
     Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
-    vector<unordered_map<FactPair, int>> &lvl_op) {
+    vector<utils::HashMap<FactPair, int>> &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
@@ -816,7 +817,7 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
         }
 
         vector<vector<int>> lvl_var;
-        vector<unordered_map<FactPair, int>> lvl_op;
+        vector<utils::HashMap<FactPair, int>> lvl_op;
         compute_predecessor_information(task_proxy, exploration, lmn, lvl_var, lvl_op);
 
         for (int op_or_axom_id : lmn->possible_achievers) {

@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+class AbstractTask;
 class State;
 
 namespace cegar {
@@ -24,21 +25,19 @@ class Node;
   this structure a directed acyclic graph (instead of a tree).
 */
 class RefinementHierarchy {
+    std::shared_ptr<AbstractTask> task;
     std::unique_ptr<Node> root;
 
 public:
-    RefinementHierarchy();
-
-    // Visual Studio 2013 needs an explicit implementation.
-    RefinementHierarchy(RefinementHierarchy &&other)
-        : root(std::move(other.root)) {
-    }
+    explicit RefinementHierarchy(const std::shared_ptr<AbstractTask> &task);
 
     Node *get_node(const State &state) const;
 
     Node *get_root() const {
         return root.get();
     }
+
+    int get_abstract_state_id(const State &state) const;
 };
 
 
@@ -60,6 +59,10 @@ class Node {
 
     // Estimated cost to nearest goal state from this node's state.
     int h;
+
+    // Set after the abstraction is built.
+    // TODO: Set ID in the constructor.
+    int state_id;
 
 public:
     Node();
@@ -103,6 +106,18 @@ public:
 
     int get_h_value() const {
         return h;
+    }
+
+    int get_state_id() const {
+        assert(!is_split());
+        assert(state_id != -1);
+        return state_id;
+    }
+
+    void set_state_id(int id) {
+        assert(!is_split());
+        assert(state_id == -1);
+        state_id = id;
     }
 };
 }

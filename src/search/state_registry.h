@@ -225,7 +225,9 @@ public:
         StateID pos;
 
         const_iterator(const StateRegistry &registry, size_t start)
-            : registry(registry), pos(start) {}
+            : registry(registry), pos(start) {
+            utils::unused_variable(this->registry);
+        }
 public:
         const_iterator &operator++() {
             ++pos.value;

@@ -3,6 +3,8 @@
 
 #include "../task_proxy.h"
 
+#include "../utils/hash.h"
+
 #include <limits>
 #include <memory>
 #include <unordered_set>
@@ -29,7 +31,7 @@ create_additive_heuristic(const std::shared_ptr<AbstractTask> &task);
   can be reached in the delete-relaxation before 'fact' is reached the first
   time, plus 'fact' itself.
 */
-extern std::unordered_set<FactProxy> get_relaxed_possible_before(
+extern utils::HashSet<FactProxy> get_relaxed_possible_before(
     const TaskProxy &task, const FactProxy &fact);
 
 extern std::vector<int> get_domain_sizes(const TaskProxy &task);
@@ -40,14 +42,10 @@ extern std::vector<int> get_domain_sizes(const TaskProxy &task);
   shouldn't be stored in containers. Once we find a way to avoid
   storing them in containers, we should remove this hashing function.
 */
-namespace std {
-template<>
-struct hash<FactProxy> {
-    size_t operator()(const FactProxy &fact) const {
-        std::hash<FactPair> hasher;
-        return hasher(fact.get_pair());
-    }
-};
+namespace utils {
+inline void feed(HashState &hash_state, const FactProxy &fact) {
+    feed(hash_state, fact.get_pair());
+}
 }
 
 #endif
