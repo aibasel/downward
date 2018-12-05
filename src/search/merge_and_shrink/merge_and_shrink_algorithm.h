@@ -43,23 +43,17 @@ class MergeAndShrinkAlgorithm {
     const bool prune_irrelevant_states;
 
     const Verbosity verbosity;
-
-    // Options related to computing partial abstractions
-    const double max_time;
-    const int num_transitions_to_abort;
+    const double main_loop_max_time;
 
     long starting_peak_memory;
 
     bool ran_out_of_time(const utils::Timer &timer) const;
-    bool too_many_transitions(const FactoredTransitionSystem &fts, int index) const;
-    bool too_many_transitions(const FactoredTransitionSystem &fts) const;
     // Return true iff fts has been detected to be unsolvable.
     bool prune_fts(FactoredTransitionSystem &fts, const utils::Timer &timer) const;
     void statistics(int maximum_intermediate_size) const;
     void main_loop(
         FactoredTransitionSystem &fts,
-        const TaskProxy &task_proxy,
-        const utils::Timer &timer);
+        const TaskProxy &task_proxy);
 
     void report_peak_memory_delta(bool final = false) const;
 public:
