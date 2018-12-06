@@ -30,6 +30,7 @@ struct Proposition {
     PropID reached_by : 30;
     bool is_goal : 1;
     bool marked : 1; // used for preferred operators of h^add and h^FF
+    int num_precondition_occurences;
     array_chain::ArrayChainIndex precondition_of;
 };
 
@@ -62,8 +63,9 @@ protected:
     array_chain::ArrayChain preconditions_chain;
     array_chain::ArrayChain precondition_of_chain;
 
-    array_chain::ArrayChainView get_preconditions(OpID op_id) const {
-        return preconditions_chain[unary_operators[op_id].preconditions];
+    array_chain::ArraySlice get_preconditions(OpID op_id) const {
+        const UnaryOperator &op = unary_operators[op_id];
+        return preconditions_chain.get_slice(op.preconditions, op.num_preconditions);
     }
 
     // HACK!

@@ -71,7 +71,8 @@ void AdditiveHeuristic::relaxed_exploration() {
             continue;
         if (prop->is_goal && --unsolved_goals == 0)
             return;
-        for (OpID op_id : precondition_of_chain[prop->precondition_of]) {
+        for (OpID op_id : precondition_of_chain.get_slice(
+                 prop->precondition_of, prop->num_precondition_occurences)) {
             UnaryOperator *unary_op = get_operator(op_id);
             increase_cost(unary_op->cost, prop_cost);
             --unary_op->unsatisfied_preconditions;

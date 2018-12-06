@@ -17,7 +17,8 @@ Proposition::Proposition()
     : cost(-1),
       reached_by(NO_OP),
       is_goal(false),
-      marked(false) {
+      marked(false),
+      num_precondition_occurences(-1) {
 }
 
 
@@ -84,6 +85,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
         auto precondition_of_vec = move(precondition_of_vectors[prop_id]);
         propositions[prop_id].precondition_of =
             precondition_of_chain.append(precondition_of_vec);
+        propositions[prop_id].num_precondition_occurences = precondition_of_vec.size();
     }
 }
 

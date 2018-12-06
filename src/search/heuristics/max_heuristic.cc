@@ -66,7 +66,8 @@ void HSPMaxHeuristic::relaxed_exploration() {
             continue;
         if (prop->is_goal && --unsolved_goals == 0)
             return;
-        for (OpID op_id : precondition_of_chain[prop->precondition_of]) {
+        for (OpID op_id : precondition_of_chain.get_slice(
+                 prop->precondition_of, prop->num_precondition_occurences)) {
             UnaryOperator *unary_op = get_operator(op_id);
             unary_op->cost = max(unary_op->cost,
                                  unary_op->base_cost + prop_cost);
