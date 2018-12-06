@@ -22,10 +22,10 @@ void strip(string &s) {
     rstrip(s);
 }
 
-bool startswith(const std::string &str, const std::string &prefix) {
-    return std::equal(
+bool startswith(const string &str, const string &prefix) {
+    return equal(
         str.begin(),
-        str.begin() + std::min( str.size(), prefix.size() ),
+        str.begin() + min(str.size(), prefix.size()),
         prefix.begin());
 }
 
