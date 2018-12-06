@@ -1,23 +1,25 @@
 #include "command_line.h"
 
-#include "doc_printer.h"
-#include "errors.h"
 #include "option_parser.h"
-#include "predefinitions.h"
+#include "plan_manager.h"
+#include "search_engine.h"
 
-#include "../search_engine.h"
-
-#include "../utils/strings.h"
+#include "options/doc_printer.h"
+#include "options/predefinitions.h"
+#include "options/registries.h"
+#include "utils/strings.h"
+//#include "search_engine.h"
 
 #include <vector>
 
+//TODO PAT Remove after issue844 has been merged
 namespace landmarks {
 class LandmarkFactory;
 }
+class Evaluator;
 
 using namespace std;
 
-namespace options {
 static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
@@ -39,9 +41,9 @@ static int parse_int_arg(const string &name, const string &value) {
 /*
   Predefine landmarks and heuristics.
 */
-
-static void predefine_evaluator(const string &arg, Registry &registry,
-                                Predefinitions &predefinitions, bool dry_run) {
+//TODO PAT Will be removed after issue844 has been merged.
+static void predefine_evaluator(const string &arg, options::Registry &registry,
+                                options::Predefinitions &predefinitions, bool dry_run) {
     pair<string, string> predefinition = utils::split(arg);
     OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
     predefinitions.predefine(predefinition.first,
@@ -49,8 +51,8 @@ static void predefine_evaluator(const string &arg, Registry &registry,
 }
 
 
-static void predefine_lmgraph(const string &arg, Registry &registry,
-                              Predefinitions &predefinitions, bool dry_run) {
+static void predefine_lmgraph(const string &arg, options::Registry &registry,
+                              options::Predefinitions &predefinitions, bool dry_run) {
     pair<string, string> predefinition = utils::split(arg);
     OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
     predefinitions.predefine(predefinition.first,
@@ -59,11 +61,11 @@ static void predefine_lmgraph(const string &arg, Registry &registry,
 
 
 static shared_ptr<SearchEngine> parse_cmd_line_aux(
-    const vector<string> &args, Registry &registry, bool dry_run) {
+    const vector<string> &args, options::Registry &registry, bool dry_run) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
-    Predefinitions predefinitions;
+    options::Predefinitions predefinitions;
 
     shared_ptr<SearchEngine> engine;
     /*
@@ -112,13 +114,13 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
                     plugin_names.push_back(help_arg);
                 }
             }
-            unique_ptr<DocPrinter> doc_printer;
+            unique_ptr<options::DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout,
-                                                                      registry);
+                doc_printer = utils::make_unique_ptr<options::Txt2TagsPrinter>(
+                    cout, registry);
             else
-                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout,
-                                                                   registry);
+                doc_printer = utils::make_unique_ptr<options::PlainPrinter>(
+                    cout, registry);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
             } else {
@@ -157,7 +159,7 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
 
 
 shared_ptr<SearchEngine> parse_cmd_line(
-    int argc, const char **argv, Registry &registry, bool dry_run, bool is_unit_cost) {
+    int argc, const char **argv, options::Registry &registry, bool dry_run, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
@@ -200,5 +202,4 @@ string usage(const string &progname) {
            "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
            "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
            "See http://www.fast-downward.org/ for details.";
-}
 }

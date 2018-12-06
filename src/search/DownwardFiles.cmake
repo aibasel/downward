@@ -50,6 +50,7 @@ fast_downward_plugin(
 
         abstract_task
         axioms
+        command_line
         evaluation_context
         evaluation_result
         evaluator
@@ -89,7 +90,6 @@ fast_downward_plugin(
     SOURCES
         options/any
         options/bounds
-        options/command_line
         options/doc_printer
         options/doc_utils
         options/errors
