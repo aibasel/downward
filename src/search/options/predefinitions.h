@@ -21,8 +21,7 @@ public:
     template<typename T>
     void predefine(const std::string &key, T object) {
         if (predefined.count(key)) {
-            std::cerr << "Multiple predefinitions for the key: "
-                      << key << std::endl;
+            std::cerr << "Multiple predefinitions " << key << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         predefined.emplace(key, std::make_pair(std::type_index(typeid(T)), object));
