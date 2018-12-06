@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-class SearchEngine;
-
 namespace options {
 /*
   The OptionParser stores a parse tree and an Options object. By
@@ -55,8 +53,7 @@ public:
     OptionParser &operator=(const OptionParser &other) = delete;
 
     /* This function initiates parsing of T (the root node of parse_tree will be
-       parsed as T). Usually T=shared_ptr<SearchEngine>, Evaluator* or
-       shared_ptr<LandmarkFactory>. */
+       parsed as T).*/
     template<typename T>
     T start_parsing();
 
