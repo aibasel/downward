@@ -11,8 +11,10 @@ extern void rstrip(std::string &s);
 
 extern void strip(std::string &s);
 
-std::pair<std::string, std::string> split(
+extern std::pair<std::string, std::string> split(
     const std::string &arg, const std::string &splitter = "=");
+
+extern bool startswith(const std::string &str, const std::string &prefix);
 
 template<typename Collection>
 std::string join(const Collection &collection, const std::string &delimiter) {

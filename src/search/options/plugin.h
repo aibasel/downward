@@ -5,6 +5,8 @@
 #include "raw_registry.h"
 #include "type_namer.h"
 
+#include "../utils/strings.h"
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -38,6 +40,9 @@ public:
                                                     const std::string &, Registry &, Predefinitions &, bool) {}
         }) {
         using TPtr = std::shared_ptr<T>;
+        for (const std::string &predefine_arg : predefine.first) {
+            assert(utils::startswith(predefine_arg, "--"));
+        }
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,
             predefine);
