@@ -34,7 +34,7 @@ struct Proposition {
     array_chain::ArrayChainIndex precondition_of;
 };
 
-struct UnaryOperator {
+struct __attribute__ ((aligned(32))) UnaryOperator {
     UnaryOperator(int num_preconditions,
                   array_chain::ArrayChainIndex preconditions,
                   PropID effect,
@@ -48,6 +48,8 @@ struct UnaryOperator {
     array_chain::ArrayChainIndex preconditions;
     int operator_no; // -1 for axioms; index into the task's operators otherwise
 };
+
+static_assert(sizeof(UnaryOperator) == 32, "UnaryOperator has wrong size");
 
 class RelaxationHeuristic : public Heuristic {
     void build_unary_operators(const OperatorProxy &op);
