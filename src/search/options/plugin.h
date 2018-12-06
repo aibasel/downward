@@ -43,9 +43,8 @@ public:
         using TPtr = std::shared_ptr<T>;
         for (const std::string &predefine_arg : predefine.first) {
             if (!utils::startswith(predefine_arg, "--")) {
-                std::cerr << "Predefinition definition " << predefine_arg
-                          << "does not start with '--'." << std::endl;
-                utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+                ABORT("Predefinition definition " + predefine_arg +
+                      " does not start with '--'.");
             }
         }
         RawRegistry::instance()->insert_plugin_type_data(
