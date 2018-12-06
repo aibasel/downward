@@ -4,8 +4,6 @@
 #include "any.h"
 #include "doc_utils.h"
 
-#include <functional>
-#include <utility>
 #include <vector>
 
 

@@ -22,6 +22,12 @@ void strip(string &s) {
     rstrip(s);
 }
 
+bool startswith(const std::string &str, const std::string &prefix) {
+    return std::equal(
+        str.begin(),
+        str.begin() + std::min( str.size(), prefix.size() ),
+        prefix.begin());
+}
 
 pair<string, string> split(const string &arg, const string &splitter) {
     int split_pos = arg.find(splitter);
