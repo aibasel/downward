@@ -17,8 +17,10 @@ class Registry;
 // See comment in constructor of Plugin in plugin.h.
 using DocFactory = std::function<void (OptionParser &)>;
 using PluginTypeNameGetter = std::function<std::string(const Registry &registry)>;
-using PredefinitionFunctional = std::function<void (const std::string &, Registry &, Predefinitions &, bool)>;
-using PredefinitionConfig = std::pair<std::vector<std::string>, PredefinitionFunctional>;
+using PredefinitionArguments = std::vector<std::string>;
+using PredefinitionFunctional = std::function<void (const std::string &, Registry &,
+                                                    Predefinitions &, bool)>;
+using PredefinitionConfig = std::pair<PredefinitionArguments, PredefinitionFunctional>;
 
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
