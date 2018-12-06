@@ -6,6 +6,7 @@
 #include "type_namer.h"
 
 #include "../utils/strings.h"
+#include "../utils/system.h"
 
 #include <functional>
 #include <memory>
@@ -41,7 +42,11 @@ public:
         }) {
         using TPtr = std::shared_ptr<T>;
         for (const std::string &predefine_arg : predefine.first) {
-            assert(utils::startswith(predefine_arg, "--"));
+            if (!utils::startswith(predefine_arg, "--")) {
+                std::cerr << "Predefinition definition " << predefine_arg
+                          << "does not start with '--'." << std::endl;
+                utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            }
         }
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,

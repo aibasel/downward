@@ -72,12 +72,12 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
         }
     }
     for (auto it : occurrences_predefine_arg) {
-            if (it.second.size() > 1) {
-                errors.push_back("Multiple definition for predefinition argument " +
-                                 it.first + " (types: " +
-                                  utils::join(it.second, ", ") + ")");
-            }
+        if (it.second.size() > 1) {
+            errors.push_back("Multiple definition for predefinition argument " +
+                             it.first + " (types: " +
+                             utils::join(it.second, ", ") + ")");
         }
+    }
 }
 
 void Registry::insert_plugin_groups(const RawRegistry &raw_registry,
