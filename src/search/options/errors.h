@@ -3,7 +3,7 @@
 
 #include "parse_tree.h"
 
-#include "../utils/system.h"
+//#include "../utils/system.h"
 
 #include <ostream>
 #include <string>
@@ -29,6 +29,13 @@ struct ArgError {
     friend std::ostream &operator<<(std::ostream &out, const ArgError &err);
 };
 
+struct OptionParserError {
+    std::string msg;
+
+    OptionParserError(const std::string &msg);
+
+    friend std::ostream &operator<<(std::ostream &out, const OptionParserError &err);
+};
 
 struct ParseError {
     std::string msg;
@@ -42,9 +49,8 @@ struct ParseError {
     friend std::ostream &operator<<(std::ostream &out, const ParseError &parse_error);
 };
 
+extern std::string get_demangling_hint(const std::string &type_name);
 extern void print_demangling_hint(const std::string &type_name);
-NO_RETURN extern void exit_with_demangling_hint(
-    utils::ExitCode returncode, const std::string &type_name);
 }
 
 #endif
