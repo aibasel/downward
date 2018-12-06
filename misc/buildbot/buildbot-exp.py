@@ -3,14 +3,14 @@
 USAGE = """\
 1) Use through buildbot:
 
-The buildbot weekly and nightky tests use this script to check for
+The buildbot weekly and nightly tests use this script to check for
 performance regressions. To update the baseline:
   * change BASELINE variable below
   * push the change
   * login to http://buildbot.fast-downward.org
   * Under Builds > Builders > recreate-baseline-worker-gcc8-lp select
     "force-recreate-baseline"
-  You can find the experiment data on the linux build slave in the
+  You can find the experiment data on the Linux build slave in the
   docker volume "buildbot-experiments".
 
 
@@ -49,7 +49,7 @@ BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
-BASELINE = cached_revision.get_global_rev(REPO, rev='8bf3979d39d4')
+BASELINE = cached_revision.get_global_rev(REPO, rev='041fa35219fd')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
