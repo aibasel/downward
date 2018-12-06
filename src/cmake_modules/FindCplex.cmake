@@ -79,6 +79,7 @@ elseif(UNIX)
         "lib/x86_linux/static_pic")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
+        "bin/x86-64_linux/"
         "lib/x86-64_sles10_4.1/static_pic"
         "lib/x86-64_linux/static_pic")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
