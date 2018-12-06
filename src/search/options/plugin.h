@@ -37,8 +37,8 @@ public:
     PluginTypePlugin(
         const std::string &type_name,
         const std::string &documentation,
-        const PredefinitionConfig &predefine = {{}, [](
-                                                    const std::string &, Registry &, Predefinitions &, bool) {}
+        const PredefinitionConfig &predefine = {
+            {}, [](const std::string &, Registry &, Predefinitions &, bool) {}
         }) {
         using TPtr = std::shared_ptr<T>;
         for (const std::string &predefine_arg : predefine.first) {

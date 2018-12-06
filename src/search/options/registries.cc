@@ -40,18 +40,18 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
     unordered_map<string, vector<string>> occurrences_predefine_arg;
-    for (const PluginTypeInfo &pti : raw_registry.get_plugin_type_data()) {
-        occurrences_names[pti.type_name].push_back(pti.type);
-        occurrences_types[pti.type].push_back(pti.type_name);
+    for (const PluginTypeInfo &plugin_type_info : raw_registry.get_plugin_type_data()) {
+        occurrences_names[plugin_type_info.type_name].push_back(plugin_type_info.type);
+        occurrences_types[plugin_type_info.type].push_back(plugin_type_info.type_name);
         bool predefine_error = false;
-        for (const string &predefine_arg : pti.predefine.first) {
-            occurrences_predefine_arg[predefine_arg].push_back(pti.type_name);
+        for (const string &predefine_arg : plugin_type_info.predefine.first) {
+            occurrences_predefine_arg[predefine_arg].push_back(plugin_type_info.type_name);
             if (occurrences_predefine_arg[predefine_arg].size() > 1)
                 predefine_error = true;
         }
-        if (occurrences_names[pti.type_name].size() == 1 &&
-            occurrences_types[pti.type].size() == 1 && !predefine_error) {
-            insert_type_info(pti);
+        if (occurrences_names[plugin_type_info.type_name].size() == 1 &&
+            occurrences_types[plugin_type_info.type].size() == 1 && !predefine_error) {
+            insert_type_info(plugin_type_info);
         }
     }
 
