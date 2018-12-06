@@ -1,3 +1,4 @@
+#include "command_line.h"
 #include "option_parser.h"
 #include "search_engine.h"
 
@@ -16,7 +17,7 @@ int main(int argc, const char **argv) {
     utils::register_event_handlers();
 
     if (argc < 2) {
-        cout << options::usage(argv[0]) << endl;
+        cout << usage(argv[0]) << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
@@ -35,11 +36,11 @@ int main(int argc, const char **argv) {
     // check for simple input errors, and then in normal mode.
     try {
         options::Registry registry(*options::RawRegistry::instance());
-        options::parse_cmd_line(argc, argv, registry, true, unit_cost);
-        engine = options::parse_cmd_line(argc, argv, registry, false, unit_cost);
+        parse_cmd_line(argc, argv, registry, true, unit_cost);
+        engine = parse_cmd_line(argc, argv, registry, false, unit_cost);
     } catch (ArgError &error) {
         cerr << error << endl;
-        options::usage(argv[0]);
+        usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (ParseError &error) {
         cerr << error << endl;
