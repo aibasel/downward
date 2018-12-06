@@ -14,6 +14,7 @@
 using options::ArgError;
 using options::Bounds;
 using options::OptionParser;
+using options::OptionParserError;
 using options::Options;
 using options::ParseError;
 
