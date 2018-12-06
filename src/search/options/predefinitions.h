@@ -27,20 +27,8 @@ public:
         predefined.emplace(key, std::make_pair(std::type_index(typeid(T)), object));
     }
 
-    template<typename T>
     bool contains(const std::string &key) const {
-        std::type_index type(typeid(T));
-        auto it = predefined.find(key);
-        if (it == predefined.end()) {
-            return false;
-        } else if (it->second.first == type) {
-            return true;
-        } else {
-            std::cerr << "Tried to look up a predefinition with a wrong type: "
-                      << key << "(type: " << typeid(T).name()
-                      << ")" << std::endl;
-            exit_with_demangling_hint(utils::ExitCode::SEARCH_CRITICAL_ERROR, typeid(T).name());
-        }
+        return predefined.find(key) != predefined.end();
     }
 
     template<typename T>
@@ -53,6 +41,11 @@ public:
                       << ")" << std::endl;
             exit_with_demangling_hint(utils::ExitCode::SEARCH_CRITICAL_ERROR, typeid(T).name());
         }
+    }
+
+    template<typename T>
+    T get(const std::string &key, const T &default_value) const {
+        return (!contains(key)) ? default_value : get<T>(key);
     }
 };
 }

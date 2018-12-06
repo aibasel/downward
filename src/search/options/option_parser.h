@@ -206,12 +206,8 @@ template<typename T>
 static std::shared_ptr<T> lookup_in_predefinitions(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
     const std::string &value = parser.get_root_value();
-    if (parser.get_predefinitions().contains<TPtr>(value)) {
-        found = true;
-        return parser.get_predefinitions().get<TPtr>(value);
-    }
-    found = false;
-    return nullptr;
+    found = parser.get_predefinitions().contains(value);
+    return parser.get_predefinitions().get<TPtr>(value, nullptr);
 }
 
 template<typename T>
