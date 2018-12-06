@@ -57,7 +57,7 @@ public:
         if (!help_mode) {
             if (get_list<T>(key).empty()) {
                 throw OptionParserError(
-                    "Error: unexpected empty list!\nList " + key + " is empty\n");
+                          "Error: unexpected empty list!\nList " + key + " is empty\n");
             }
         }
     }
