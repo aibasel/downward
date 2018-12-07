@@ -438,7 +438,7 @@ fast_downward_plugin(
     NAME RELAXATION_HEURISTIC
     HELP "The base class for relaxation heuristics"
     SOURCES
-        heuristics/array_chain
+        heuristics/array_pool
         heuristics/relaxation_heuristic
     DEPENDENCY_ONLY
 )

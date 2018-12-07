@@ -1,7 +1,7 @@
 #ifndef HEURISTICS_RELAXATION_HEURISTIC_H
 #define HEURISTICS_RELAXATION_HEURISTIC_H
 
-#include "array_chain.h"
+#include "array_pool.h"
 
 #include "../heuristic.h"
 
@@ -31,14 +31,14 @@ struct __attribute__ ((aligned(16))) Proposition {
     bool is_goal : 1;
     bool marked : 1; // used for preferred operators of h^add and h^FF
     int num_precondition_occurences;
-    array_chain::ArrayChainIndex precondition_of;
+    array_pool::ArrayPoolIndex precondition_of;
 };
 
 static_assert(sizeof(Proposition) == 16, "Proposition has wrong size");
 
 struct __attribute__ ((aligned(32))) UnaryOperator {
     UnaryOperator(int num_preconditions,
-                  array_chain::ArrayChainIndex preconditions,
+                  array_pool::ArrayPoolIndex preconditions,
                   PropID effect,
                   int operator_no, int base_cost);
     int cost; // Used for h^max cost or h^add cost;
@@ -47,7 +47,7 @@ struct __attribute__ ((aligned(32))) UnaryOperator {
     PropID effect;
     int base_cost;
     int num_preconditions;
-    array_chain::ArrayChainIndex preconditions;
+    array_pool::ArrayPoolIndex preconditions;
     int operator_no; // -1 for axioms; index into the task's operators otherwise
 };
 
@@ -64,12 +64,12 @@ protected:
     std::vector<Proposition> propositions;
     std::vector<PropID> goal_propositions;
 
-    array_chain::ArrayChain preconditions_chain;
-    array_chain::ArrayChain precondition_of_chain;
+    array_pool::ArrayPool preconditions_pool;
+    array_pool::ArrayPool precondition_of_pool;
 
-    array_chain::ArraySlice get_preconditions(OpID op_id) const {
+    array_pool::ArrayPoolSlice get_preconditions(OpID op_id) const {
         const UnaryOperator &op = unary_operators[op_id];
-        return preconditions_chain.get_slice(op.preconditions, op.num_preconditions);
+        return preconditions_pool.get_slice(op.preconditions, op.num_preconditions);
     }
 
     // HACK!

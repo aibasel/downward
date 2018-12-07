@@ -23,7 +23,7 @@ Proposition::Proposition()
 
 
 UnaryOperator::UnaryOperator(
-    int num_preconditions, array_chain::ArrayChainIndex preconditions,
+    int num_preconditions, array_pool::ArrayPoolIndex preconditions,
     PropID effect, int operator_no, int base_cost)
     : effect(effect),
       base_cost(base_cost),
@@ -84,7 +84,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     for (PropID prop_id = 0; prop_id < num_propositions; ++prop_id) {
         auto precondition_of_vec = move(precondition_of_vectors[prop_id]);
         propositions[prop_id].precondition_of =
-            precondition_of_chain.append(precondition_of_vec);
+            precondition_of_pool.append(precondition_of_vec);
         propositions[prop_id].num_precondition_occurences = precondition_of_vec.size();
     }
 }
@@ -134,8 +134,8 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op) {
         // The sort-unique can eventually go away. See issue497.
         vector<PropID> preconditions_copy(precondition_props);
         utils::sort_unique(preconditions_copy);
-        array_chain::ArrayChainIndex precond_index =
-            preconditions_chain.append(preconditions_copy);
+        array_pool::ArrayPoolIndex precond_index =
+            preconditions_pool.append(preconditions_copy);
         unary_operators.emplace_back(
             preconditions_copy.size(), precond_index, effect_prop,
             op_no, base_cost);
