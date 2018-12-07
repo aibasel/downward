@@ -1,9 +1,6 @@
 import logging
-import os.path
 
 from downward.reports.absolute import AbsoluteReport
-
-REGRESSION_MARKER = "regression-found"
 
 
 class Check(object):
@@ -44,7 +41,7 @@ class RegressionCheckReport(AbsoluteReport):
     Write a table with the regressions. If there are none, no table is generated
     and therefore no output file is written.
     """
-    def __init__(self, baseline, checks, **kwargs):
+    def __init__(self, baseline, checks, failure_handler, **kwargs):
         """
         *baseline* must be a global revision identifier.
 
@@ -53,6 +50,7 @@ class RegressionCheckReport(AbsoluteReport):
         AbsoluteReport.__init__(self, **kwargs)
         self.baseline = baseline
         self.checks = checks
+        self.failure_handler = failure_handler
 
     def _is_baseline_run(self, run):
         return run['global_revision'].startswith(self.baseline)
@@ -84,6 +82,4 @@ class RegressionCheckReport(AbsoluteReport):
             print
             print markup
             logging.error('Regression found.')
-            # Create empty file to mark regression check as failed.
-            with open(os.path.join(self.eval_dir, REGRESSION_MARKER), "w") as f:
-                pass
+            self.failure_handler()

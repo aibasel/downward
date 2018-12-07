@@ -47,7 +47,7 @@ from downward import cached_revision
 from downward.experiment import FastDownwardExperiment
 from downward.reports.absolute import AbsoluteReport
 
-from regression_test import Check, RegressionCheckReport, REGRESSION_MARKER
+from regression_test import Check, RegressionCheckReport
 
 
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -124,15 +124,14 @@ def parse_custom_args():
 def get_exp_dir(name, test):
     return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (name, test))
 
-def store_results_for_failed_regression_checks(exp, test, rev):
-    if os.path.exists(os.path.join(exp.eval_dir, REGRESSION_MARKER)):
-        tools.makedirs(REGRESSIONS_DIR)
-        tarball = os.path.join(REGRESSIONS_DIR, "{test}-{rev}.tar.gz".format(**locals()))
-        subprocess.check_call(
-            ["tar", "-czf", tarball, "-C", BASE_DIR, os.path.relpath(EXPERIMENTS_DIR, start=BASE_DIR)])
-        logging.warning(
-            "You can inspect the data with the following command: "
-            "TODO {test}-{rev}".format(**locals()))
+def store_results(test, rev):
+    tools.makedirs(REGRESSIONS_DIR)
+    tarball = os.path.join(REGRESSIONS_DIR, "{test}-{rev}.tar.gz".format(**locals()))
+    subprocess.check_call(
+        ["tar", "-czf", tarball, "-C", BASE_DIR, os.path.relpath(EXPERIMENTS_DIR, start=BASE_DIR)])
+    logging.warning(
+        "You can inspect the data with the following command: "
+        "TODO {test}-{rev}".format(**locals()))
 
 def main():
     args = parse_custom_args()
@@ -162,6 +161,9 @@ def main():
 
     # Only compare results if we are not running the baseline experiment.
     if rev != BASELINE:
+        def failure_handler():
+            store_results(args.test, global_rev)
+
         dirty_paths = [
             path for path in [exp.path, exp.eval_dir]
             if os.path.exists(path)]
@@ -177,10 +179,8 @@ def main():
             name='fetch-baseline-results')
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
         exp.add_report(
-            RegressionCheckReport(BASELINE, RELATIVE_CHECKS), name='regression-check')
-        exp.add_step(
-            'store-failed-exp-dir',
-            store_results_for_failed_regression_checks, exp, args.test, global_rev)
+            RegressionCheckReport(BASELINE, RELATIVE_CHECKS, failure_handler),
+            name='regression-check')
         exp.add_step('rm-exp-dir', shutil.rmtree, exp.path)
         exp.add_step('rm-eval-dir', shutil.rmtree, exp.eval_dir)
 
