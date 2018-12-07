@@ -21,9 +21,9 @@ RawPluginInfo::RawPluginInfo(
 void RawRegistry::insert_plugin_type_data(
     type_index type, const string &type_name, const string &documentation,
     const string &predefine, const string &alias,
-    const PredefinitionFunctional &predefine_functional) {
+    const PredefinitionFunction &predefinition_function) {
     plugin_types.emplace_back(type, type_name, documentation, predefine,
-                              alias, predefine_functional);
+                              alias, predefinition_function);
 }
 
 void RawRegistry::insert_plugin_group_data(

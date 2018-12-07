@@ -40,10 +40,9 @@ class Registry {
     */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
     /*
-       Mapping from argument to use to predefine plugins of PluginTypes (e.g.
-       --evaluator) to the functions used to do the predefinition.
+       Map from predefinition keyword to predefinition function.
     */
-    std::unordered_map<std::string, PredefinitionFunctional> predefinition_functions;
+    std::unordered_map<std::string, PredefinitionFunction> predefinition_functions;
 
     void insert_plugin_types(const RawRegistry &raw_registry,
                              std::vector<std::string> &errors);

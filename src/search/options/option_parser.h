@@ -335,7 +335,7 @@ void OptionParser::add_list_option(
 }
 
 template<typename T>
-void predefine_object(const std::string &arg, Registry &registry,
+void predefine_plugin(const std::string &arg, Registry &registry,
                       Predefinitions &predefinitions, bool dry_run) {
     std::pair<std::string, std::string> predefinition = utils::split(arg);
     OptionParser parser(predefinition.second, registry, predefinitions, dry_run);

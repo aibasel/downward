@@ -155,7 +155,7 @@ void Registry::insert_type_info(const PluginTypeInfo &info) {
     for (const string &predefine : {info.predefine, info.alias}) {
         if (!predefine.empty()) {
             assert(!is_predefinition(predefine));
-            predefinition_functions[predefine] = info.predefine_functional;
+            predefinition_functions[predefine] = info.predefinition_function;
         }
     }
     plugin_type_infos.insert(make_pair(info.type, info));

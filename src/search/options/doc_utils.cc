@@ -12,13 +12,13 @@ PluginTypeInfo::PluginTypeInfo(
     const string &documentation,
     const string &predefine,
     const string &alias,
-    const PredefinitionFunctional &predefine_functional)
+    const PredefinitionFunction &predefinition_function)
     : type(type),
       type_name(type_name),
       documentation(documentation),
       predefine(predefine),
       alias(alias),
-      predefine_functional(predefine_functional) {
+      predefinition_function(predefinition_function) {
 }
 
 bool PluginTypeInfo::operator<(const PluginTypeInfo &other) const {
