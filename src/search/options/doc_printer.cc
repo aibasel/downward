@@ -180,7 +180,7 @@ void Txt2TagsPrinter::print_category_predefinitions(
     }
     if (!alias.empty()) {
         os << "A currently supported, but deprecated alternative argument is "
-            << alias << "." << endl;
+           << alias << "." << endl;
     }
 }
 
@@ -279,7 +279,7 @@ void PlainPrinter::print_category_predefinitions(
     }
     if (!alias.empty()) {
         os << "A currently supported, but deprecated alternative argument is "
-            << alias << "." << endl;
+           << alias << "." << endl;
     }
 }
 

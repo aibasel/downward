@@ -68,7 +68,7 @@ public:
     }
 
     bool is_predefinition(const std::string &key) const;
-    void handle_predefinition(const std::string &key, const std::string &arg, 
+    void handle_predefinition(const std::string &key, const std::string &arg,
                               Predefinitions &predefinitions, bool dry_run);
 
     const PluginTypeInfo &get_type_info(const std::type_index &type) const;
