@@ -40,13 +40,11 @@ public:
         const std::string &type_name,
         const std::string &documentation,
         const std::string &predefine = "",
-        const std::vector<std::string> &aliases = {}) {
+        const std::string &alias = "") {
         using TPtr = std::shared_ptr<T>;
-        assert(!predefine.empty() || aliases.empty());
+        assert(!predefine.empty() || alias.empty());
         assert(utils::startswith(predefine, "--"));
-        assert(std::all_of(aliases.begin(), aliases.end(),
-                           [](const std::string &arg)
-                           {return utils::startswith(arg, "--");}));
+        assert(utils::startswith(alias, "--"));
 
         PredefinitionFunctional predefine_functional = (predefine.empty()) ?
             nullptr : predefine_object<T>;
@@ -54,7 +52,7 @@ public:
         //predefine_functional = predefine_object<T>;
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,
-            predefine, aliases, predefine_functional);
+            predefine, alias, predefine_functional);
     }
 
     ~PluginTypePlugin() = default;
