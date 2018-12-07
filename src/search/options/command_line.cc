@@ -18,6 +18,7 @@ class LandmarkFactory;
 using namespace std;
 
 namespace options {
+static const vector<string> ARGUMENTS = {}
 static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
