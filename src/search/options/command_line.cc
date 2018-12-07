@@ -107,12 +107,13 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             if (num_previously_generated_plans < 0)
                 throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
         } else if (utils::startswith(arg, "--") &&
-            registry.is_predefinition(arg.substr(2))) {
+                   registry.is_predefinition(arg.substr(2))) {
             if (is_last)
                 throw ArgError("missing argument after " + arg);
             ++i;
-            registry.handle_predefinition(arg.substr(2), 
-                sanitize_arg_string(args[i]), predefinitions, dry_run);
+            registry.handle_predefinition(arg.substr(2),
+                                          sanitize_arg_string(args[i]),
+                                          predefinitions, dry_run);
         } else {
             throw ArgError("unknown option " + arg);
         }

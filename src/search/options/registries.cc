@@ -265,7 +265,7 @@ bool Registry::is_predefinition(const string &key) const {
 }
 
 void Registry::handle_predefinition(
-    const string &key, const string &arg, Predefinitions &predefinitions, 
+    const string &key, const string &arg, Predefinitions &predefinitions,
     bool dry_run) {
     predefinition_functions.at(key)(arg, *this, predefinitions, dry_run);
 }

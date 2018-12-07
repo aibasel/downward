@@ -48,7 +48,7 @@ public:
 
         PredefinitionFunction predefinition_function = (predefine.empty()) ?
             nullptr : predefine_plugin<T>;
-        
+
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,
             predefine, alias, predefinition_function);
