@@ -46,13 +46,12 @@ public:
         assert(!utils::startswith(predefine, "--"));
         assert(!utils::startswith(alias, "--"));
 
-        PredefinitionFunctional predefine_functional = (predefine.empty()) ?
-            nullptr : predefine_object<T>;
-        //if (!predefine.empty())
-        //predefine_functional = predefine_object<T>;
+        PredefinitionFunction predefinition_function = (predefine.empty()) ?
+            nullptr : predefine_plugin<T>;
+        
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,
-            predefine, alias, predefine_functional);
+            predefine, alias, predefinition_function);
     }
 
     ~PluginTypePlugin() = default;

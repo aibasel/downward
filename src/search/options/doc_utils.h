@@ -17,11 +17,8 @@ class Registry;
 // See comment in constructor of Plugin in plugin.h.
 using DocFactory = std::function<void (OptionParser &)>;
 using PluginTypeNameGetter = std::function<std::string(const Registry &registry)>;
-using PredefinitionArguments = std::vector<std::string>;
-using PredefinitionFunctional = std::function<void (const std::string &, Registry &,
+using PredefinitionFunction = std::function<void (const std::string &, Registry &,
                                                     Predefinitions &, bool)>;
-using PredefinitionConfig = std::pair<PredefinitionArguments, PredefinitionFunctional>;
-
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
 
@@ -121,19 +118,14 @@ struct PluginTypeInfo {
     */
     std::string documentation;
 
-    /*
-     Command line argument to predefine Plugins of this PluginType
-    */
+    //Command line argument to predefine Plugins of this PluginType.
     std::string predefine;
 
-    /*
-     Alternative command line arguments to predefine Plugins of this PluginType
-    */
+    //Alternative command line arguments to predefine Plugins of this PluginType.
     std::string alias;
-    /*
-     Function used to predefine Plugins of this PluginType
-    */
-    PredefinitionFunctional predefine_functional;
+
+    //Function used to predefine Plugins of this PluginType
+    PredefinitionFunction predefinition_function;
 
 public:
     PluginTypeInfo(const std::type_index &type,
@@ -141,7 +133,7 @@ public:
                    const std::string &documentation,
                    const std::string &predefine,
                    const std::string &alias,
-                   const PredefinitionFunctional &predefine_functional);
+                   const PredefinitionFunction &predefinition_function);
 
     bool operator<(const PluginTypeInfo &other) const;
 };
