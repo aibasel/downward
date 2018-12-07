@@ -106,12 +106,13 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             num_previously_generated_plans = parse_int_arg(arg, args[i]);
             if (num_previously_generated_plans < 0)
                 throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
-        } else if (registry.has_predefinition_function(arg)) {
+        } else if (utils::startswith(arg, "--") &&
+            registry.is_predefinition(arg.substr(2))) {
             if (is_last)
                 throw ArgError("missing argument after " + arg);
             ++i;
-            registry.get_predefinition_function(arg)(
-                sanitize_arg_string(args[i]), registry, predefinitions, dry_run);
+            registry.handle_predefinition(arg.substr(2), 
+                sanitize_arg_string(args[i]), predefinitions, dry_run);
         } else {
             throw ArgError("unknown option " + arg);
         }
@@ -131,7 +132,7 @@ shared_ptr<SearchEngine> parse_cmd_line(
     int argc, const char **argv, Registry &registry, bool dry_run, bool is_unit_cost) {
     assert(all_of(ARGUMENTS.begin(), ARGUMENTS.end(),
                   [registry](const string &arg)
-                  {return !registry.has_predefinition_function(arg);}
+                  {return !registry.is_predefinition(arg);}
                   ));
 
     vector<string> args;

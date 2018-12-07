@@ -43,8 +43,8 @@ public:
         const std::string &alias = "") {
         using TPtr = std::shared_ptr<T>;
         assert(!predefine.empty() || alias.empty());
-        assert(utils::startswith(predefine, "--"));
-        assert(utils::startswith(alias, "--"));
+        assert(!utils::startswith(predefine, "--"));
+        assert(!utils::startswith(alias, "--"));
 
         PredefinitionFunctional predefine_functional = (predefine.empty()) ?
             nullptr : predefine_object<T>;
