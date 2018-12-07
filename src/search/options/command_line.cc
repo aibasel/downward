@@ -9,6 +9,7 @@
 
 #include "../utils/strings.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace landmarks {
@@ -18,7 +19,11 @@ class LandmarkFactory;
 using namespace std;
 
 namespace options {
-static const vector<string> ARGUMENTS = {}
+static const vector<string> ARGUMENTS = {
+    "--if-unit-cost", "--if-non-unit-cost", "--always", "--search", "--help",
+    "--internal-plan-file", "--internal-previous-portfolio-plans"
+};
+
 static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
@@ -124,6 +129,11 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
 
 shared_ptr<SearchEngine> parse_cmd_line(
     int argc, const char **argv, Registry &registry, bool dry_run, bool is_unit_cost) {
+    assert(all_of(ARGUMENTS.begin(), ARGUMENTS.end(),
+                  [registry](const string &arg)
+                  {return !registry.has_predefinition_function(arg);}
+                  ));
+
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
