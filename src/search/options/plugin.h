@@ -45,11 +45,13 @@ public:
         assert(!predefine.empty() || aliases.empty());
         assert(utils::startswith(predefine, "--"));
         assert(std::for_each(aliases.begin(), aliases.end(),
-                             [](const std::string &arg) {return utils::startswith(arg, "--");}));
+                             [](const std::string &arg)
+                             {return utils::startswith(arg, "--");}));
 
-        PredefinitionFunctional predefine_functional = nullptr;
-        if (!predefine.empty())
-            predefine_functional = predefine_object<T>;
+        PredefinitionFunctional predefine_functional = (predefine.empty()) ?
+            nullptr : predefine_object<T>;
+        //if (!predefine.empty())
+        //predefine_functional = predefine_object<T>;
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,
             predefine, aliases, predefine_functional);
