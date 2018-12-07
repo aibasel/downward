@@ -44,9 +44,9 @@ public:
         using TPtr = std::shared_ptr<T>;
         assert(!predefine.empty() || aliases.empty());
         assert(utils::startswith(predefine, "--"));
-        assert(std::for_each(aliases.begin(), aliases.end(),
-                             [](const std::string &arg)
-                             {return utils::startswith(arg, "--");}));
+        assert(std::all_of(aliases.begin(), aliases.end(),
+                           [](const std::string &arg)
+                           {return utils::startswith(arg, "--");}));
 
         PredefinitionFunctional predefine_functional = (predefine.empty()) ?
             nullptr : predefine_object<T>;
