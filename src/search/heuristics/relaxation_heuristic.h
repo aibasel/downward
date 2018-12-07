@@ -23,7 +23,7 @@ using OpID = int;
 
 const OpID NO_OP = -1;
 
-struct Proposition {
+struct __attribute__ ((aligned(16))) Proposition {
     Proposition();
     int cost; // used for h^max cost or h^add cost
     // TODO: Make sure in constructor that reached_by does not overflow.
@@ -33,6 +33,8 @@ struct Proposition {
     int num_precondition_occurences;
     array_chain::ArrayChainIndex precondition_of;
 };
+
+static_assert(sizeof(Proposition) == 16, "Proposition has wrong size");
 
 struct __attribute__ ((aligned(32))) UnaryOperator {
     UnaryOperator(int num_preconditions,
