@@ -26,7 +26,7 @@ DocPrinter::~DocPrinter() {
 void DocPrinter::print_all() {
     for (const PluginTypeInfo &info : registry.get_sorted_type_infos()) {
         print_category(info.type_name, info.documentation,
-                       info.predefine, info.aliases);
+                       info.predefine, info.alias);
     }
 }
 
@@ -36,10 +36,10 @@ void DocPrinter::print_plugin(const string &name) {
 
 void DocPrinter::print_category(
     const string &plugin_type_name, const string &synopsis,
-    const string &predefine, const vector<string> &aliases) {
+    const string &predefine, const string &alias) {
     print_category_header(plugin_type_name);
     print_category_synopsis(synopsis);
-    print_category_predefinitions(predefine, aliases);
+    print_category_predefinitions(predefine, alias);
     map<string, vector<PluginInfo>> groups;
     for (const string &key : registry.get_sorted_plugin_info_keys()) {
         const PluginInfo &info = registry.get_plugin_info(key);
@@ -173,17 +173,14 @@ void Txt2TagsPrinter::print_category_synopsis(const string &synopsis) {
 }
 
 void Txt2TagsPrinter::print_category_predefinitions(
-    const string &predefine, const vector<string> &aliases) {
+    const string &predefine, const string &alias) {
     if (!predefine.empty()) {
         os << endl << "This plugin can be predefined using the argument "
            << predefine << "." << endl;
     }
-    if (aliases.size() == 1) {
-        os << "A currently supported, but not recommended alternative "
-            "argument is " << aliases[0] << "." << endl;
-    } else if (aliases.size() == 1) {
-        os << "Currently supported, but not recommended alternatives are: "
-           << utils::join(aliases, ", ") << endl;
+    if (!alias.empty()) {
+        os << "The alternative predefinition argument " << alias << " is "
+            "still supported, but could be removed in the future." << endl;
     }
 }
 
@@ -275,17 +272,14 @@ void PlainPrinter::print_category_synopsis(const string &synopsis) {
 }
 
 void PlainPrinter::print_category_predefinitions(
-    const string &predefine, const vector<string> &aliases) {
+    const string &predefine, const string &alias) {
     if (!predefine.empty()) {
         os << endl << "This plugin can be predefined using the argument "
            << predefine << "." << endl;
     }
-    if (aliases.size() == 1) {
-        os << "A currently supported, but not recommended alternative "
-            "argument is " << aliases[0] << "." << endl;
-    } else if (aliases.size() == 1) {
-        os << "Currently supported, but not recommended alternatives are: "
-           << utils::join(aliases, ", ") << endl;
+    if (!alias.empty()) {
+        os << "The alternative predefinition argument " << alias << " is "
+            "still supported, but could be removed in the future." << endl;
     }
 }
 

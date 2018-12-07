@@ -11,13 +11,13 @@ PluginTypeInfo::PluginTypeInfo(
     const string &type_name,
     const string &documentation,
     const string &predefine,
-    const vector<string> &aliases,
+    const string &alias,
     const PredefinitionFunctional &predefine_functional)
     : type(type),
       type_name(type_name),
       documentation(documentation),
       predefine(predefine),
-      aliases(aliases),
+      alias(alias),
       predefine_functional(predefine_functional) {
 }
 

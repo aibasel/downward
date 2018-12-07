@@ -129,7 +129,7 @@ struct PluginTypeInfo {
     /*
      Alternative command line arguments to predefine Plugins of this PluginType
     */
-    std::vector<std::string> aliases;
+    std::string alias;
     /*
      Function used to predefine Plugins of this PluginType
     */
@@ -140,7 +140,7 @@ public:
                    const std::string &type_name,
                    const std::string &documentation,
                    const std::string &predefine,
-                   const std::vector<std::string> &aliases,
+                   const std::string &alias,
                    const PredefinitionFunctional &predefine_functional);
 
     bool operator<(const PluginTypeInfo &other) const;

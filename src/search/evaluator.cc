@@ -83,4 +83,4 @@ static PluginTypePlugin<Evaluator> _type_plugin(
     "with h*(s) = infinity\n"
     " * **preferred operators:** this heuristic identifies "
     "preferred operators ",
-    "--evaluator", {"--heuristic"});
+    "--evaluator", "--heuristic");

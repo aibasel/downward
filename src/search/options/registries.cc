@@ -44,17 +44,15 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
         occurrences_names[plugin_type_info.type_name].push_back(plugin_type_info.type);
         occurrences_types[plugin_type_info.type].push_back(plugin_type_info.type_name);
         bool predefine_error = false;
-        if (!plugin_type_info.predefine.empty()) {
-            occurrences_predefine[plugin_type_info.predefine].push_back(
-                plugin_type_info.type_name);
-            if (occurrences_predefine[plugin_type_info.predefine].size() > 1)
-                predefine_error = true;
+        for (const string &predefine :
+             {plugin_type_info.predefine, plugin_type_info.alias}) {
+            if (!predefine.empty()) {
+                occurrences_predefine[predefine].push_back(plugin_type_info.type_name);
+                if (occurrences_predefine[predefine].size() > 1)
+                    predefine_error = true;
+            }
         }
-        for (const string &predefine : plugin_type_info.aliases) {
-            occurrences_predefine[predefine].push_back(plugin_type_info.type_name);
-            if (occurrences_predefine[predefine].size() > 1)
-                predefine_error = true;
-        }
+
         if (occurrences_names[plugin_type_info.type_name].size() == 1 &&
             occurrences_types[plugin_type_info.type].size() == 1 &&
             !predefine_error) {
@@ -153,13 +151,11 @@ void Registry::insert_plugins(const RawRegistry &raw_registry,
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
     assert(!plugin_type_infos.count(info.type));
-    if (!info.predefine.empty()) {
-        assert(!has_predefinition_function(info.predefine));
-        predefinition_functions[info.predefine] = info.predefine_functional;
-    }
-    for (const string &predefine: info.aliases) {
-        assert(!has_predefinition_function(predefine));
-        predefinition_functions[predefine] = info.predefine_functional;
+    for (const string &predefine : {info.predefine, info.alias}) {
+        if (!predefine.empty()) {
+            assert(!has_predefinition_function(predefine));
+            predefinition_functions[predefine] = info.predefine_functional;
+        }
     }
     plugin_type_infos.insert(make_pair(info.type, info));
 }

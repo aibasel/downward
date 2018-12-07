@@ -15,7 +15,7 @@ class DocPrinter {
     virtual void print_category(const std::string &plugin_type_name,
                                 const std::string &synopsis,
                                 const std::string &predefine,
-                                const std::vector<std::string> &aliases);
+                                const std::string &alias);
     virtual void print_section(const std::string &group, const std::vector<PluginInfo> &infos);
     virtual void print_plugin(const std::string &name, const PluginInfo &info);
 
@@ -33,7 +33,7 @@ protected:
     virtual void print_category_header(const std::string &category_name) = 0;
     virtual void print_category_synopsis(const std::string &synopsis) = 0;
     virtual void print_category_predefinitions(
-        const std::string &predefine, const std::vector<std::string> &aliases) = 0;
+        const std::string &predefine, const std::string &alias) = 0;
     virtual void print_category_footer() = 0;
 
 public:
@@ -56,7 +56,7 @@ protected:
     virtual void print_category_header(const std::string &category_name) override;
     virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_predefinitions(
-        const std::string &predefine, const std::vector<std::string> &aliases) override;
+        const std::string &predefine, const std::string &alias) override;
     virtual void print_category_footer() override;
 
 public:
@@ -78,7 +78,7 @@ protected:
     virtual void print_category_header(const std::string &category_name) override;
     virtual void print_category_synopsis(const std::string &synopsis) override;
     virtual void print_category_predefinitions(
-        const std::string &predefine, const std::vector<std::string> &aliases) override;
+        const std::string &predefine, const std::string &alias) override;
     virtual void print_category_footer() override;
 
 public:
