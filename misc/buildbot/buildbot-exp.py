@@ -9,7 +9,12 @@ performance regressions. To update the baseline:
   * push the change
   * login to http://buildbot.fast-downward.org
   * Under Builds > Builders > recreate-baseline-worker-gcc8-lp select
-    "force-recreate-baseline"
+    "force-recreate-baseline". Make sure to "force" a new build instead
+    of "rebuilding" an existing build. Rebuilding will regenerate the
+    old baseline.
+  * Wait for the next nightly build or force a nightly build (do not
+    rebuild an old build).
+
   You can find the experiment data on the Linux build slave in the
   docker volume "buildbot-experiments".
 
