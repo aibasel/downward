@@ -122,15 +122,26 @@ struct PluginTypeInfo {
     std::string documentation;
 
     /*
-     Pair of, first list of names which can be used as argument to predefine
-     plugins of this PluginTypeInfo, and second, method to predefine.
+     Command line argument to predefine Plugins of this PluginType
     */
-    PredefinitionConfig predefine;
+    std::string predefine;
+
+    /*
+     Alternative command line arguments to predefine Plugins of this PluginType
+    */
+    std::vector<std::string> aliases;
+    /*
+     Function used to predefine Plugins of this PluginType
+    */
+    PredefinitionFunctional predefine_functional;
+
 public:
     PluginTypeInfo(const std::type_index &type,
                    const std::string &type_name,
                    const std::string &documentation,
-                   const PredefinitionConfig &predefine);
+                   const std::string &predefine,
+                   const std::vector<std::string> &aliases,
+                   const PredefinitionFunctional &predefine_functional);
 
     bool operator<(const PluginTypeInfo &other) const;
 };
