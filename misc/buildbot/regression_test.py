@@ -1,6 +1,9 @@
 import logging
+import os.path
 
 from downward.reports.absolute import AbsoluteReport
+
+REGRESSION_MARKER = "regression-found"
 
 
 class Check(object):
@@ -59,7 +62,7 @@ class RegressionCheckReport(AbsoluteReport):
         for (domain, problem), runs in self.problem_runs.items():
             runs_base = [run for run in runs if self._is_baseline_run(run)]
             runs_new = [run for run in runs if not self._is_baseline_run(run)]
-            assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new))
+            assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new), self.baseline)
             for base, new in zip(runs_base, runs_new):
                 algo = new['algorithm']
                 for check in self.checks:
@@ -80,4 +83,7 @@ class RegressionCheckReport(AbsoluteReport):
             print 'There has been a regression:'
             print
             print markup
-            logging.critical('Regression found.')
+            logging.error('Regression found.')
+            # Create empty file to mark regression check as failed.
+            with open(os.path.join(self.eval_dir, REGRESSION_MARKER), "w") as f:
+                pass
