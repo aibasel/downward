@@ -2,6 +2,7 @@
 
 #include "errors.h"
 #include "option_parser.h"
+#include "predefinitions.h"
 
 #include "../utils/collections.h"
 #include "../utils/strings.h"
@@ -153,7 +154,7 @@ void Registry::insert_type_info(const PluginTypeInfo &info) {
     assert(!plugin_type_infos.count(info.type));
     for (const string &predefine : {info.predefine, info.alias}) {
         if (!predefine.empty()) {
-            assert(!has_predefinition_function(predefine));
+            assert(!is_predefinition(predefine));
             predefinition_functions[predefine] = info.predefine_functional;
         }
     }
@@ -259,12 +260,13 @@ vector<string> Registry::get_sorted_plugin_info_keys() {
     return keys;
 }
 
-bool Registry::has_predefinition_function(const string &key) const {
+bool Registry::is_predefinition(const string &key) const {
     return predefinition_functions.count(key);
 }
 
-PredefinitionFunctional &Registry::get_predefinition_function(
-    const string &key) {
-    return predefinition_functions.at(key);
+void Registry::handle_predefinition(
+    const string &key, const string &arg, Predefinitions &predefinitions, 
+    bool dry_run) {
+    predefinition_functions.at(key)(arg, *this, predefinitions, dry_run);
 }
 }

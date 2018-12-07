@@ -855,5 +855,5 @@ static PluginTypePlugin<LandmarkFactory> _type_plugin(
     "instance or a landmark factory that has been defined previously. "
     "This page describes how one can specify a new landmark factory instance. "
     "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.",
-    "--landmarks");
+    "landmarks");
 }

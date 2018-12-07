@@ -23,10 +23,11 @@ void strip(string &s) {
 }
 
 bool startswith(const string &str, const string &prefix) {
-    return equal(
+    return ((str.empty() && prefix.empty()) ||
+        (!str.empty() && equal(
         str.begin(),
         str.begin() + min(str.size(), prefix.size()),
-        prefix.begin());
+        prefix.begin())));
 }
 
 pair<string, string> split(const string &arg, const string &splitter) {

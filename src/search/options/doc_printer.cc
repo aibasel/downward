@@ -175,12 +175,12 @@ void Txt2TagsPrinter::print_category_synopsis(const string &synopsis) {
 void Txt2TagsPrinter::print_category_predefinitions(
     const string &predefine, const string &alias) {
     if (!predefine.empty()) {
-        os << endl << "This plugin can be predefined using the argument "
+        os << endl << "This plugin type can be predefined using "
            << predefine << "." << endl;
     }
     if (!alias.empty()) {
-        os << "The alternative predefinition argument " << alias << " is "
-            "still supported, but could be removed in the future." << endl;
+        os << "A currently supported, but deprecated alternative argument is "
+            << alias << "." << endl;
     }
 }
 
@@ -274,12 +274,12 @@ void PlainPrinter::print_category_synopsis(const string &synopsis) {
 void PlainPrinter::print_category_predefinitions(
     const string &predefine, const string &alias) {
     if (!predefine.empty()) {
-        os << endl << "This plugin can be predefined using the argument "
+        os << endl << "This plugin type can be predefined using "
            << predefine << "." << endl;
     }
     if (!alias.empty()) {
-        os << "The alternative predefinition argument " << alias << " is "
-            "still supported, but could be removed in the future." << endl;
+        os << "A currently supported, but deprecated alternative argument is "
+            << alias << "." << endl;
     }
 }
 
