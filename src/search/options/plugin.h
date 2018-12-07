@@ -2,12 +2,14 @@
 #define OPTIONS_PLUGIN_H
 
 #include "doc_utils.h"
+#include "option_parser.h"
 #include "raw_registry.h"
 #include "type_namer.h"
 
 #include "../utils/strings.h"
 #include "../utils/system.h"
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <string>
@@ -37,19 +39,20 @@ public:
     PluginTypePlugin(
         const std::string &type_name,
         const std::string &documentation,
-        const PredefinitionConfig &predefine = {
-            {}, [](const std::string &, Registry &, Predefinitions &, bool) {}
-        }) {
+        const std::string &predefine = "",
+        const std::vector<std::string> &aliases = {}) {
         using TPtr = std::shared_ptr<T>;
-        for (const std::string &predefine_arg : predefine.first) {
-            if (!utils::startswith(predefine_arg, "--")) {
-                ABORT("Predefinition definition " + predefine_arg +
-                      " does not start with '--'.");
-            }
-        }
+        assert(!predefine.empty() || aliases.empty());
+        assert(utils::startswith(predefine, "--"));
+        assert(std::for_each(aliases.begin(), aliases.end(),
+                             [](const std::string &arg) {return utils::startswith(arg, "--");}));
+
+        PredefinitionFunctional predefine_functional = nullptr;
+        if (!predefine.empty())
+            predefine_functional = predefine_object<T>;
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,
-            predefine);
+            predefine, aliases, predefine_functional);
     }
 
     ~PluginTypePlugin() = default;

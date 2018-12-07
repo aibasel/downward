@@ -34,8 +34,9 @@ class RawRegistry {
 public:
     void insert_plugin_type_data(
         std::type_index type, const std::string &type_name,
-        const std::string &documentation,
-        const PredefinitionConfig &predefine);
+        const std::string &documentation, const std::string &predefine,
+        const std::vector<std::string> aliases,
+        const PredefinitionFunctional &predefine_functional);
 
     void insert_plugin_group_data(
         const std::string &group_id, const std::string &doc_title);
