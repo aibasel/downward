@@ -10,8 +10,8 @@ PluginTypeInfo::PluginTypeInfo(
     const type_index &type,
     const string &type_name,
     const string &documentation,
-    const std::string &predefine,
-    const std::vector<std::string> &aliases,
+    const string &predefine,
+    const vector<string> &aliases,
     const PredefinitionFunctional &predefine_functional)
     : type(type),
       type_name(type_name),
