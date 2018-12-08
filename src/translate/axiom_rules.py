@@ -164,6 +164,7 @@ def compute_axiom_layers(axioms, axiom_init):
             if v in derived_atoms:
                 v_polarity = not condition.negated
                 v_init_polarity = v in axiom_init
+                # TODO: Don't include duplicates in depends_on.
                 depends_on[u].append(v)
                 if v_polarity == v_init_polarity:
                     weight = 1
