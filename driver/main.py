@@ -33,8 +33,8 @@ def main():
         elif component == "search":
             (exitcode, continue_execution) = run_components.run_search(args)
             if not args.keep_sas_file:
-                print("Remove intermediate file {}".format(args.search_input))
-                os.remove(args.search_input)
+                print("Remove intermediate file {}".format(args.sas_file))
+                os.remove(args.sas_file)
         elif component == "validate":
             (exitcode, continue_execution) = run_components.run_validate(args)
         else:
