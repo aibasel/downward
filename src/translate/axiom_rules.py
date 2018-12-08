@@ -158,6 +158,13 @@ def compute_axiom_layers(axioms, axiom_init):
     depends_on = dict((u, []) for u in derived_atoms)
     weighted_depends_on = set()
     for axiom in axioms:
+        if (axiom.effect in axiom_init or
+            axiom.effect.negated and axiom.effect.positive() not in axiom_init):
+            # Skip axioms whose head is the negation-by-failure value.
+            # These are redundant axioms that should eventually go away
+            # or at least have some kind of special status that marks
+            # them as "not the primary axioms".
+            continue
         u = axiom.effect.positive()
         for condition in axiom.condition:
             v = condition.positive()
