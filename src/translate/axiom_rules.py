@@ -298,12 +298,15 @@ def simplify(axioms):
         remove_duplicates(axiom.condition)
 
     # Remove dominated axioms.
+    axioms_to_skip = set()
     axioms_by_literal = {}
     for axiom in axioms:
-        for literal in axiom.condition:
-            axioms_by_literal.setdefault(literal, set()).add(id(axiom))
+        if axiom.effect in axiom.condition:
+            axioms_to_skip.add(id(axiom))
+        else:
+            for literal in axiom.condition:
+                axioms_by_literal.setdefault(literal, set()).add(id(axiom))
 
-    axioms_to_skip = set()
     for axiom in axioms:
         if id(axiom) in axioms_to_skip:
             continue   # Required to keep one of multiple identical axioms.
