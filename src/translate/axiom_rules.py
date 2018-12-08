@@ -5,7 +5,7 @@ import timers
 from collections import defaultdict
 
 
-DEBUG = False
+DEBUG = True
 
 
 def handle_axioms(operators, axioms, goals):
