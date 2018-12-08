@@ -353,10 +353,10 @@ def parse_args():
         help="run all components of the planner")
     components.add_argument(
         "--translate", action="store_true",
-        help="run translator component (implies --keep-sas-file)")
+        help="run translator component")
     components.add_argument(
         "--search", action="store_true",
-        help="run search component (implies --keep-sas-file)")
+        help="run search component")
 
     limits = parser.add_argument_group(
         title="time and memory limits", description=LIMITS_HELP)
@@ -399,7 +399,8 @@ def parse_args():
             "(implies --keep-sas-file, default: %(default)s)")
     driver_other.add_argument(
         "--keep-sas-file", action="store_true",
-        help="keep translator output file")
+        help="keep translator output file (implied by --sas-file, default: "
+            "delete file if translator and search component are active)")
 
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
@@ -447,8 +448,6 @@ def parse_args():
             ("options for search component", bool(args.search_options))])
 
     _set_translator_output_options(parser, args)
-    if args.translate or args.search or args.sas_file != DEFAULT_SAS_FILE:
-        args.keep_sas_file = True
 
     _convert_limits_to_ints(parser, args)
 
@@ -471,5 +470,8 @@ def parse_args():
 
     if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
+        if (not set(args.components).issuperset(["translate", "search"])
+                or args.sas_file != DEFAULT_SAS_FILE):
+            args.keep_sas_file = True
 
     return args
