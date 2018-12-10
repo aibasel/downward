@@ -41,7 +41,7 @@ class RegressionCheckReport(AbsoluteReport):
     Write a table with the regressions. If there are none, no table is generated
     and therefore no output file is written.
     """
-    def __init__(self, baseline, checks, failure_handler, **kwargs):
+    def __init__(self, baseline, checks, result_handler, **kwargs):
         """
         *baseline* must be a global revision identifier.
 
@@ -50,7 +50,7 @@ class RegressionCheckReport(AbsoluteReport):
         AbsoluteReport.__init__(self, **kwargs)
         self.baseline = baseline
         self.checks = checks
-        self.failure_handler = failure_handler
+        self.result_handler = result_handler
 
     def _is_baseline_run(self, run):
         return run['global_revision'].startswith(self.baseline)
@@ -81,5 +81,5 @@ class RegressionCheckReport(AbsoluteReport):
             print 'There has been a regression:'
             print
             print markup
-            logging.error('Regression found.')
-            self.failure_handler()
+        success = not markup
+        self.result_handler(success)

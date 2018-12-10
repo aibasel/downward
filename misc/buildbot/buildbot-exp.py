@@ -39,6 +39,7 @@ import logging
 import os
 import shutil
 import subprocess
+import sys
 
 from lab.experiment import ARGPARSER
 from lab import tools
@@ -124,15 +125,23 @@ def parse_custom_args():
 def get_exp_dir(name, test):
     return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (name, test))
 
-def store_results(test, rev):
-    tools.makedirs(REGRESSIONS_DIR)
-    tarball = os.path.join(REGRESSIONS_DIR, "{test}-{rev}.tar.gz".format(**locals()))
-    subprocess.check_call(
-        ["tar", "-czf", tarball, "-C", BASE_DIR, os.path.relpath(EXPERIMENTS_DIR, start=BASE_DIR)])
-    logging.error(
-        "You can inspect the experiment data for the failed regression test "
-        "by logging into the computer running the Linux build workers and running: "
-        "sudo ./extract-regression-experiment.sh {test}-{rev}".format(**locals()))
+def regression_test_handler(test, rev, success):
+    if not success:
+        tools.makedirs(REGRESSIONS_DIR)
+        tarball = os.path.join(REGRESSIONS_DIR, "{test}-{rev}.tar.gz".format(**locals()))
+        subprocess.check_call(
+            ["tar", "-czf", tarball, "-C", BASE_DIR, os.path.relpath(EXPERIMENTS_DIR, start=BASE_DIR)])
+        logging.error(
+            "Regression found. To inspect the experiment data for the failed regression test, run\n"
+            "sudo ./extract-regression-experiment.sh {test}-{rev}\n"
+            "in the ~/infrastructure/hosts/linux-buildbot-worker directory "
+            "on the Linux buildbot computer.".format(**locals()))
+    exp_dir = get_exp_dir(rev, test)
+    eval_dir = exp_dir + "-eval"
+    shutil.rmtree(exp_dir)
+    shutil.rmtree(eval_dir)
+    if not success:
+        sys.exit(1)
 
 def main():
     args = parse_custom_args()
@@ -141,9 +150,8 @@ def main():
         rev = BASELINE
         name = 'baseline'
     else:
-        rev = args.revision
+        rev = cached_revision.get_global_rev(REPO, rev=args.revision)
         name = rev
-    global_rev = cached_revision.get_global_rev(REPO, rev=rev)
 
     exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), revision_cache=REVISION_CACHE)
     exp.add_suite(BENCHMARKS_DIR, SUITES[args.test])
@@ -162,8 +170,8 @@ def main():
 
     # Only compare results if we are not running the baseline experiment.
     if rev != BASELINE:
-        def failure_handler():
-            store_results(args.test, global_rev)
+        def result_handler(success):
+            regression_test_handler(args.test, rev, success)
 
         exp.add_fetcher(
             src=get_exp_dir('baseline', args.test) + '-eval',
@@ -172,10 +180,8 @@ def main():
             name='fetch-baseline-results')
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
         exp.add_report(
-            RegressionCheckReport(BASELINE, RELATIVE_CHECKS, failure_handler),
+            RegressionCheckReport(BASELINE, RELATIVE_CHECKS, result_handler),
             name='regression-check')
-        exp.add_step('rm-exp-dir', shutil.rmtree, exp.path)
-        exp.add_step('rm-eval-dir', shutil.rmtree, exp.eval_dir)
 
     exp.run_steps()
 
