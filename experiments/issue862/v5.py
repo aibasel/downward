@@ -180,7 +180,9 @@ exp = IssueExperiment(
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
+exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.TRANSLATOR_PARSER)
+exp.add_parser(exp.PLANNER_PARSER)
 exp.add_parser("translator_additional_parser.py")
 
 del exp.commands['remove-output-sas']
@@ -218,11 +220,12 @@ class SameValueFilters(object):
 
 exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
+exp.add_parse_again_step()
 exp.add_fetcher(name='fetch')
 
 same_value_flters = SameValueFilters("translator_output_sas_hash")
 exp.add_absolute_report_step(
-    attributes=["translator_*", "translator_output_sas_hash"],
+    attributes=["error", "run_dir", "translator_*", "translator_output_sas_hash"],
     filter=[same_value_flters.store_values, same_value_flters.filter_tasks_with_equal_values])
 exp.add_report(TranslatorDiffReport(
         attributes=["domain", "problem", "algorithm", "run_dir"]
