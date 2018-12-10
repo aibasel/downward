@@ -130,8 +130,9 @@ def store_results(test, rev):
     subprocess.check_call(
         ["tar", "-czf", tarball, "-C", BASE_DIR, os.path.relpath(EXPERIMENTS_DIR, start=BASE_DIR)])
     logging.warning(
-        "You can inspect the data with the following command: "
-        "TODO {test}-{rev}".format(**locals()))
+        "You can inspect the experiment data for the failed regression test "
+        "by logging into the computer running the Linux build workers and running: "
+        "sudo ./extract-regression-experiment.sh {test}-{rev}".format(**locals()))
 
 def main():
     args = parse_custom_args()
