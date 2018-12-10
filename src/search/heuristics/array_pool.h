@@ -23,7 +23,7 @@ public:
 
 class ArrayPoolSlice {
 public:
-    using Iterator = std::vector<int>::const_iterator;
+    using Iterator = std::vector<Value>::const_iterator;
     Iterator begin() {
         return first;
     }
