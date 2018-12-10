@@ -7,7 +7,6 @@
 namespace array_pool {
 const int INVALID_INDEX = -1;
 
-using _Iterator = std::vector<int>::const_iterator;
 using Value = int;
 
 class ArrayPoolIndex {
@@ -23,21 +22,24 @@ public:
 };
 
 class ArrayPoolSlice {
-    friend class ArrayPool;
-    _Iterator first;
-    _Iterator last;
-
-    ArrayPoolSlice(_Iterator first, _Iterator last)
-        : first(first),
-          last(last) {
-    }
 public:
-    _Iterator begin() {
+    using Iterator = std::vector<int>::const_iterator;
+    Iterator begin() {
         return first;
     }
 
-    _Iterator end() {
+    Iterator end() {
         return last;
+    }
+private:
+    friend class ArrayPool;
+
+    Iterator first;
+    Iterator last;
+
+    ArrayPoolSlice(Iterator first, Iterator last)
+        : first(first),
+          last(last) {
     }
 };
 
