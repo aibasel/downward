@@ -1,6 +1,7 @@
 #! /usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
 import os
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
@@ -196,12 +197,33 @@ class TranslatorDiffReport(PlanningReport):
                 lines.append(";".join([self.get_cell(r) for r in runs]))
         return "\n".join(lines)
 
+class SameValueFilters(object):
+    """Ignore runs for a task where all algorithms have the same value."""
+    def __init__(self, attribute):
+        self._attribute = attribute
+        self._tasks_to_values = defaultdict(list)
+
+    def _get_task(self, run):
+        return (run['domain'], run['problem'])
+
+    def store_values(self, run):
+        value = run.get(self._attribute)
+        self._tasks_to_values[self._get_task(run)].append(value)
+        # Don't filter this run, yet.
+        return True
+
+    def filter_tasks_with_equal_values(self, run):
+        values = self._tasks_to_values[self._get_task(run)]
+        return len(set(values)) != 1
+
 exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
+same_value_flters = SameValueFilters("translator_output_sas_hash")
 exp.add_absolute_report_step(
-    attributes=["translator_*", "translator_output_sas_hash"])
+    attributes=["translator_*", "translator_output_sas_hash"],
+    filter=[same_value_flters.store_values, same_value_flters.filter_tasks_with_equal_values])
 exp.add_report(TranslatorDiffReport(
         attributes=["domain", "problem", "algorithm", "run_dir"]
     ), outfile="different_output_sas.csv"
