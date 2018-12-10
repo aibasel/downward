@@ -33,8 +33,6 @@ SEARCHES = [
         " label_reduction=exact(before_shrinking=true, before_merging=false),"
         " max_states=50000, threshold_before_merge=1))"]),
     ("seq+lmcut", ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))"]),
-    ("blind-sss-simple", ["--search", "astar(blind(), pruning=stubborn_sets_simple())"]),
-    ("blind-sss-ec", ["--search", "astar(blind(), pruning=stubborn_sets_ec())"]),
     ("h2", ["--search", "astar(hm(m=2))"]),
     ("hmax", ["--search", "astar(hmax())"]),
 ]
