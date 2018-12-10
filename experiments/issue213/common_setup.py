@@ -208,7 +208,7 @@ class IssueExperiment(FastDownwardExperiment):
         "cost",
         "coverage",
         "error",
-        "plan_length",
+        "quality",
         "run_dir",
         ]
 
