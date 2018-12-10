@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 USAGE = """\
-1) Use through buildbot:
+1) Use via buildbot:
 
 The buildbot weekly and nightly tests use this script to check for
 performance regressions. To update the baseline:
@@ -38,8 +38,10 @@ CONFIGS, SUITES and RELATIVE_CHECKS below.
 import logging
 import os
 import shutil
+import subprocess
 
 from lab.experiment import ARGPARSER
+from lab import tools
 
 from downward import cached_revision
 from downward.experiment import FastDownwardExperiment
@@ -51,8 +53,11 @@ from regression_test import Check, RegressionCheckReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
 BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
-EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
-REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
+DEFAULT_BASE_DIR = os.path.dirname(tools.get_script_path())
+BASE_DIR = os.getenv("BUILDBOT_EXP_BASE_DIR", DEFAULT_BASE_DIR)
+EXPERIMENTS_DIR = os.path.join(BASE_DIR, 'data')
+REVISION_CACHE = os.path.join(BASE_DIR, 'revision-cache')
+REGRESSIONS_DIR = os.path.join(BASE_DIR, 'regressions')
 
 BASELINE = cached_revision.get_global_rev(REPO, rev='041fa35219fd')
 CONFIGS = {}
@@ -119,6 +124,16 @@ def parse_custom_args():
 def get_exp_dir(name, test):
     return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (name, test))
 
+def store_results(test, rev):
+    tools.makedirs(REGRESSIONS_DIR)
+    tarball = os.path.join(REGRESSIONS_DIR, "{test}-{rev}.tar.gz".format(**locals()))
+    subprocess.check_call(
+        ["tar", "-czf", tarball, "-C", BASE_DIR, os.path.relpath(EXPERIMENTS_DIR, start=BASE_DIR)])
+    logging.error(
+        "You can inspect the experiment data for the failed regression test "
+        "by logging into the computer running the Linux build workers and running: "
+        "sudo ./extract-regression-experiment.sh {test}-{rev}".format(**locals()))
+
 def main():
     args = parse_custom_args()
 
@@ -128,6 +143,7 @@ def main():
     else:
         rev = args.revision
         name = rev
+    global_rev = cached_revision.get_global_rev(REPO, rev=rev)
 
     exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), revision_cache=REVISION_CACHE)
     exp.add_suite(BENCHMARKS_DIR, SUITES[args.test])
@@ -146,14 +162,9 @@ def main():
 
     # Only compare results if we are not running the baseline experiment.
     if rev != BASELINE:
-        dirty_paths = [
-            path for path in [exp.path, exp.eval_dir]
-            if os.path.exists(path)]
-        if dirty_paths:
-            logging.critical(
-                'The last run found a regression. Please inspect what '
-                'went wrong and then delete the following directories '
-                'manually: %s' % dirty_paths)
+        def failure_handler():
+            store_results(args.test, global_rev)
+
         exp.add_fetcher(
             src=get_exp_dir('baseline', args.test) + '-eval',
             dest=exp.eval_dir,
@@ -161,8 +172,8 @@ def main():
             name='fetch-baseline-results')
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
         exp.add_report(
-            RegressionCheckReport(BASELINE, RELATIVE_CHECKS), name='regression-check')
-        # We abort if there is a regression and keep the directories.
+            RegressionCheckReport(BASELINE, RELATIVE_CHECKS, failure_handler),
+            name='regression-check')
         exp.add_step('rm-exp-dir', shutil.rmtree, exp.path)
         exp.add_step('rm-eval-dir', shutil.rmtree, exp.eval_dir)
 
