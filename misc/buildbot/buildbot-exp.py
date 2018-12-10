@@ -164,14 +164,6 @@ def main():
         def failure_handler():
             store_results(args.test, global_rev)
 
-        dirty_paths = [
-            path for path in [exp.path, exp.eval_dir]
-            if os.path.exists(path)]
-        if dirty_paths:
-            logging.critical(
-                'The last run found a regression. Please inspect what '
-                'went wrong and then delete the following directories '
-                'manually: %s' % dirty_paths)
         exp.add_fetcher(
             src=get_exp_dir('baseline', args.test) + '-eval',
             dest=exp.eval_dir,
