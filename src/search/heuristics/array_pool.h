@@ -4,6 +4,18 @@
 #include <cassert>
 #include <vector>
 
+/*
+  ArrayPool is intended as a compact representation of a large collection of
+  arrays that are allocated individually but deallocated together.
+
+  Each array may have a different size, but ArrayPool does not keep track of
+  the array sizes; its user must maintain this information themselves. See the
+  relaxation heuristics for usage examples.
+
+  If the class turns out to be more generally useful, it could be templatized
+  (currently, ValueType = int is hardcoded) and moved to the algorithms
+  directory.
+*/
 namespace array_pool {
 const int INVALID_INDEX = -1;
 
