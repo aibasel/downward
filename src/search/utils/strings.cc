@@ -23,19 +23,18 @@ void strip(string &s) {
 }
 
 bool startswith(const string &str, const string &prefix) {
-    return (str.empty() && prefix.empty()) ||
-           (!str.empty() && equal(
-                str.begin(),
-                str.begin() + min(str.size(), prefix.size()),
-                prefix.begin()));
+    return !str.compare(0, prefix.size(), prefix);
 }
 
-pair<string, string> split(const string &arg, const string &splitter) {
-    int split_pos = arg.find(splitter);
-    string lhs = arg.substr(0, split_pos);
-    strip(lhs);
-    string rhs = arg.substr(split_pos + 1);
-    strip(rhs);
+pair<string, string> split(const string &str, const string &separator,
+                           bool strip) {
+    int split_pos = str.find(separator);
+    string lhs = str.substr(0, split_pos);
+    string rhs = str.substr(split_pos + 1);
+    if (strip) {
+        utils::strip(lhs);
+        utils::strip(rhs);
+    }
     return make_pair(lhs, rhs);
 }
 }

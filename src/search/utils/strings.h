@@ -11,8 +11,12 @@ extern void rstrip(std::string &s);
 
 extern void strip(std::string &s);
 
+/*
+  Splits a given string at the first occurrence of splitter and optionally
+  strips the whitespace around those fragments.
+ */
 extern std::pair<std::string, std::string> split(
-    const std::string &arg, const std::string &splitter = "=");
+    const std::string &str, const std::string &separator, bool strip);
 
 extern bool startswith(const std::string &str, const std::string &prefix);
 
