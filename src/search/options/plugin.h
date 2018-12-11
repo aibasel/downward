@@ -39,19 +39,19 @@ public:
     PluginTypePlugin(
         const std::string &type_name,
         const std::string &documentation,
-        const std::string &predefine = "",
+        const std::string &predefinition_key = "",
         const std::string &alias = "") {
         using TPtr = std::shared_ptr<T>;
-        assert(!predefine.empty() || alias.empty());
-        assert(!utils::startswith(predefine, "--"));
+        assert(!predefinition_key.empty() || alias.empty());
+        assert(!utils::startswith(predefinition_key, "--"));
         assert(!utils::startswith(alias, "--"));
 
-        PredefinitionFunction predefinition_function = (predefine.empty()) ?
+        PredefinitionFunction predefinition_function = (predefinition_key.empty()) ?
             nullptr : predefine_plugin<T>;
 
         RawRegistry::instance()->insert_plugin_type_data(
             std::type_index(typeid(TPtr)), type_name, documentation,
-            predefine, alias, predefinition_function);
+            predefinition_key, alias, predefinition_function);
     }
 
     ~PluginTypePlugin() = default;

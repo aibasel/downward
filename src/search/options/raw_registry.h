@@ -34,7 +34,7 @@ class RawRegistry {
 public:
     void insert_plugin_type_data(
         std::type_index type, const std::string &type_name,
-        const std::string &documentation, const std::string &predefine,
+        const std::string &documentation, const std::string &predefinition_key,
         const std::string &alias,
         const PredefinitionFunction &predefinition_function);
 
