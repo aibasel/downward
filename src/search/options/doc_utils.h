@@ -118,13 +118,13 @@ struct PluginTypeInfo {
     */
     std::string documentation;
 
-    //Command line argument to predefine Plugins of this PluginType.
+    // Command line argument to predefine Plugins of this PluginType.
     std::string predefinition_key;
 
-    //Alternative command line arguments to predefine Plugins of this PluginType.
+    // Alternative command line arguments to predefine Plugins of this PluginType.
     std::string alias;
 
-    //Function used to predefine Plugins of this PluginType
+    // Function used to predefine Plugins of this PluginType
     PredefinitionFunction predefinition_function;
 
 public:

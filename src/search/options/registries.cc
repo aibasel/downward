@@ -40,16 +40,18 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
                                    vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
-    unordered_map<string, vector<string>> occurrences_predefine;
-    for (const PluginTypeInfo &plugin_type_info : raw_registry.get_plugin_type_data()) {
+    unordered_map<string, vector<string>> occurrences_predefinition;
+    for (const PluginTypeInfo &plugin_type_info :
+         raw_registry.get_plugin_type_data()) {
         occurrences_names[plugin_type_info.type_name].push_back(plugin_type_info.type);
         occurrences_types[plugin_type_info.type].push_back(plugin_type_info.type_name);
         bool predefine_error = false;
         for (const string &predefinition_key :
              {plugin_type_info.predefinition_key, plugin_type_info.alias}) {
             if (!predefinition_key.empty()) {
-                occurrences_predefine[predefinition_key].push_back(plugin_type_info.type_name);
-                if (occurrences_predefine[predefinition_key].size() > 1)
+                occurrences_predefinition[predefinition_key].push_back(
+                    plugin_type_info.type_name);
+                if (occurrences_predefinition[predefinition_key].size() > 1)
                     predefine_error = true;
             }
         }
@@ -80,10 +82,10 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
                 " (names: " + utils::join(it.second, ", ") + ")");
         }
     }
-    for (auto it : occurrences_predefine) {
+    for (auto it : occurrences_predefinition) {
         if (it.second.size() > 1) {
-            errors.push_back("Multiple definition for predefinition key " +
-                             it.first + " (types: " +
+            errors.push_back("Multiple PluginTypePlugins use the predefinition "
+                             "key " + it.first + " (types: " +
                              utils::join(it.second, ", ") + ")");
         }
     }
