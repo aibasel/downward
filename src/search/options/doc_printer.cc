@@ -175,12 +175,12 @@ void Txt2TagsPrinter::print_category_synopsis(const string &synopsis) {
 void Txt2TagsPrinter::print_category_predefinitions(
     const string &predefinition_key, const string &alias) {
     if (!predefinition_key.empty()) {
-        os << endl << "This plugin type can be predefined using "
-           << predefinition_key << "." << endl;
+        os << endl << "This plugin type can be predefined using ``--"
+           << predefinition_key << "``." << endl;
     }
     if (!alias.empty()) {
-        os << "A currently supported, but deprecated alternative argument is "
-           << alias << "." << endl;
+        os << "The old predefinition key ``--" << alias << "`` is still " 
+           << "supported but deprecated." << endl;
     }
 }
 
@@ -274,12 +274,12 @@ void PlainPrinter::print_category_synopsis(const string &synopsis) {
 void PlainPrinter::print_category_predefinitions(
     const string &predefinition_key, const string &alias) {
     if (!predefinition_key.empty()) {
-        os << endl << "This plugin type can be predefined using "
+        os << endl << "This plugin type can be predefined using --"
            << predefinition_key << "." << endl;
     }
     if (!alias.empty()) {
-        os << "A currently supported, but deprecated alternative argument is "
-           << alias << "." << endl;
+        os << "The old predefinition key ``--" << alias << "`` is still " 
+           << "supported but deprecated." << endl;
     }
 }
 
