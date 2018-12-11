@@ -82,7 +82,7 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
     }
     for (auto it : occurrences_predefine) {
         if (it.second.size() > 1) {
-            errors.push_back("Multiple definition for predefinition argument " +
+            errors.push_back("Multiple definition for predefinition key " +
                              it.first + " (types: " +
                              utils::join(it.second, ", ") + ")");
         }
