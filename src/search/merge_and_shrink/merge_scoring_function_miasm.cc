@@ -2,7 +2,7 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "merge_and_shrink_heuristic.h"
+#include "merge_and_shrink_algorithm.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
 #include "merge_scoring_function_miasm_utils.h"
@@ -62,7 +62,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         */
         assert(num_states);
         double score = static_cast<double>(alive_states_count) /
-                       static_cast<double>(num_states);
+            static_cast<double>(num_states);
         scores.push_back(score);
     }
     return scores;
@@ -88,7 +88,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
@@ -123,14 +123,14 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "shrink_strategy",
         "We recommend setting this to match the shrink strategy configuration "
         "given to {{{merge_and_shrink}}}, see note below.");
-    MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
+    add_transition_system_size_limit_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     }
 
-    MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(options);
+    handle_shrink_limit_options_defaults(options);
 
     if (parser.dry_run()) {
         return nullptr;
@@ -139,5 +139,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("sf_miasm", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("sf_miasm", _parse);
 }

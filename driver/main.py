@@ -34,7 +34,7 @@ def main():
         elif component == "validate":
             (exitcode, continue_execution) = run_components.run_validate(args)
         else:
-            assert False
+            assert False, "Error: unhandled component: {}".format(component)
         print()
         print("{component} exit code: {exitcode}".format(**locals()))
         if not continue_execution:

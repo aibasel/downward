@@ -1,24 +1,34 @@
 #! /usr/bin/env python
 
 USAGE = """\
-Update baseline:
+1) Use through buildbot:
+
+The buildbot weekly and nightly tests use this script to check for
+performance regressions. To update the baseline:
   * change BASELINE variable below
   * push the change
-  * login to computer running the buildslave as the buildslave user
-  * remove ~/experiments dir
-  * run in an updated repo (e.g. in ~/lib/downward):
-    export PYTHONPATH=~/lib/python/lab
-    export DOWNWARD_COIN_ROOT=~/lib/coin
-    export DOWNWARD_CPLEX_ROOT=~/lib/cplex/cplex
-    cd misc/buildbot
-    ./buildbot-exp.py --test nightly --rev baseline --all
-    ./buildbot-exp.py --test weekly --rev baseline --all
+  * login to http://buildbot.fast-downward.org
+  * Under Builds > Builders > recreate-baseline-worker-gcc8-lp select
+    "force-recreate-baseline". Make sure to "force" a new build instead
+    of "rebuilding" an existing build. Rebuilding will regenerate the
+    old baseline.
+  * Wait for the next nightly build or force a nightly build (do not
+    rebuild an old build).
 
-Compare the current revision to the baseline (add to master.cfg):
+  You can find the experiment data on the Linux build slave in the
+  docker volume "buildbot-experiments".
+
+
+2) Use as commandline tool:
+
+Create baseline data
+  ./buildbot-exp.py --test nightly --rev baseline --all
+  ./buildbot-exp.py --test weekly --rev baseline --all
+
+Compare the current revision to the baseline (these commands exit
+with 1 if a regression was found):
   ./buildbot-exp.py --test nightly --all
   ./buildbot-exp.py --test weekly --all
-
-These commands exit with 1 if a regression was found.
 
 You can adapt the experiment by changing the values for BASELINE,
 CONFIGS, SUITES and RELATIVE_CHECKS below.
@@ -44,13 +54,13 @@ BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
-BASELINE = cached_revision.get_global_rev(REPO, rev='92115dbcd1f2')
+BASELINE = cached_revision.get_global_rev(REPO, rev='041fa35219fd')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
-    ('lazy-greedy-ff', ['--heuristic', 'h=ff()', '--search', 'lazy_greedy([h], preferred=[h])']),
-    ('lazy-greedy-cea', ['--heuristic', 'h=cea()', '--search', 'lazy_greedy([h], preferred=[h])']),
-    ('lazy-greedy-ff-cea', ['--heuristic', 'hff=ff()', '--heuristic',  'hcea=cea()',
+    ('lazy-greedy-ff', ['--evaluator', 'h=ff()', '--search', 'lazy_greedy([h], preferred=[h])']),
+    ('lazy-greedy-cea', ['--evaluator', 'h=cea()', '--search', 'lazy_greedy([h], preferred=[h])']),
+    ('lazy-greedy-ff-cea', ['--evaluator', 'hff=ff()', '--heuristic',  'hcea=cea()',
                             '--search', 'lazy_greedy([hff, hcea], preferred=[hff, hcea])']),
     ('blind', ['--search', 'astar(blind())']),
     # TODO: Revert to optimal=true.

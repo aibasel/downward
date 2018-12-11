@@ -696,7 +696,7 @@ def main():
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
-        with open("output.sas", "w") as output_file:
+        with open(options.sas_file, "w") as output_file:
             sas_task.output(output_file)
     print("Done! %s" % timer)
 
@@ -710,11 +710,17 @@ def handle_sigxcpu(signum, stackframe):
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGXCPU, handle_sigxcpu)
-    # Reserve about 10 MB (in Python 2) of emergency memory.
-    # https://stackoverflow.com/questions/19469608/
-    emergency_memory = "x" * 10**7
     try:
+        signal.signal(signal.SIGXCPU, handle_sigxcpu)
+    except AttributeError:
+        print("Warning! SIGXCPU is not available on your platform. "
+            "This means that the planner cannot be gracefully terminated "
+            "when using a time limit, which, however, is probably "
+            "supported on your platform anyway.")
+    try:
+        # Reserve about 10 MB (in Python 2) of emergency memory.
+        # https://stackoverflow.com/questions/19469608/
+        emergency_memory = "x" * 10**7
         main()
     except MemoryError:
         emergency_memory = ""

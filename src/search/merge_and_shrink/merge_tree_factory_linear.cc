@@ -58,7 +58,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
             used_ts_indices[ts_index] = false;
         }
         const vector<int> &vars =
-            fts.get_ts(ts_index).get_incorporated_variables();
+            fts.get_transition_system(ts_index).get_incorporated_variables();
         for (int var : vars) {
             var_to_ts_index[var] = ts_index;
         }
@@ -131,7 +131,7 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
         "are described in the paper:" + utils::format_paper_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
             "Flexible Abstraction Heuristics for Optimal Sequential Planning",
-            "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
+            "https://ai.dmi.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
             "Proceedings of the Seventeenth International Conference on"
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
@@ -143,5 +143,5 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
         return make_shared<MergeTreeFactoryLinear>(opts);
 }
 
-static options::PluginShared<MergeTreeFactory> _plugin("linear", _parse);
+static options::Plugin<MergeTreeFactory> _plugin("linear", _parse);
 }

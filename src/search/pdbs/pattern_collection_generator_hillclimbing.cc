@@ -168,22 +168,21 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
 }
 
 void PatternCollectionGeneratorHillclimbing::sample_states(
-    const TaskProxy &task_proxy, const successor_generator::SuccessorGenerator &successor_generator,
-    vector<State> &samples, double average_operator_cost) {
-    int init_h = current_pdbs->get_value(
-        task_proxy.get_initial_state());
+    const sampling::RandomWalkSampler &sampler,
+    int init_h,
+    vector<State> &samples) {
+    assert(samples.empty());
 
-    try {
-        samples = sampling::sample_states_with_random_walks(
-            task_proxy, successor_generator, num_samples, init_h,
-            average_operator_cost,
-            *rng,
-            [this](const State &state) {
-                return current_pdbs->is_dead_end(state);
-            },
-            hill_climbing_timer);
-    } catch (sampling::SamplingTimeout &) {
-        throw HillClimbingTimeout();
+    samples.reserve(num_samples);
+    for (int i = 0; i < num_samples; ++i) {
+        samples.push_back(sampler.sample_state(
+                              init_h,
+                              [this](const State &state) {
+                                  return current_pdbs->is_dead_end(state);
+                              }));
+        if (hill_climbing_timer->is_expired()) {
+            throw HillClimbingTimeout();
+        }
     }
 }
 
@@ -296,8 +295,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
-    double average_operator_cost = task_properties::get_average_operator_cost(task_proxy);
-    cout << "Average operator cost: " << average_operator_cost << endl;
+    cout << "Average operator cost: "
+         << task_properties::get_average_operator_cost(task_proxy) << endl;
 
     const vector<vector<int>> relevant_neighbours =
         compute_relevant_neighbours(task_proxy);
@@ -325,14 +324,15 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
     int num_iterations = 0;
     State initial_state = task_proxy.get_initial_state();
-    successor_generator::SuccessorGenerator successor_generator(task_proxy);
 
+    sampling::RandomWalkSampler sampler(task_proxy, *rng);
     vector<State> samples;
     vector<int> samples_h_values;
 
     try {
         while (true) {
             ++num_iterations;
+            int init_h = current_pdbs->get_value(initial_state);
             cout << "current collection size is "
                  << current_pdbs->get_size() << endl;
             cout << "current initial h value: ";
@@ -340,14 +340,12 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
                 cout << "infinite => stopping hill climbing" << endl;
                 break;
             } else {
-                cout << current_pdbs->get_value(initial_state)
-                     << endl;
+                cout << init_h << endl;
             }
 
             samples.clear();
             samples_h_values.clear();
-            sample_states(
-                task_proxy, successor_generator, samples, average_operator_cost);
+            sample_states(sampler, init_h, samples);
             for (const State &sample : samples) {
                 samples_h_values.push_back(current_pdbs->get_value(sample));
             }
@@ -486,7 +484,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternCollectionGeneratorHillclimbing>(opts);
 }
 
-static Heuristic *_parse_ipdb(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
         "This pattern generation method is an adaption of the algorithm "
@@ -504,7 +502,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
             {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
             "Efficient Implementation of Pattern Database Heuristics for"
             " Classical Planning",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
             "Proceedings of the Fifth Annual Symposium on Combinatorial"
             " Search (SoCS 2012)",
             "105-111",
@@ -531,7 +529,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "the differences between the original implementation from 2007 and the "
         "new one in Fast Downward.\n\n"
         "The aim of the algorithm is to output a pattern collection for which "
-        "the Heuristic#Canonical_PDB yields the best heuristic estimates.\n\n"
+        "the Evaluator#Canonical_PDB yields the best heuristic estimates.\n\n"
         "The algorithm is basically a local search (hill climbing) which "
         "searches the \"pattern neighbourhood\" (starting initially with a "
         "pattern for each goal variable) for improving the pattern collection. "
@@ -562,7 +560,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "are relevant to the variables already included in the pattern by "
         "analyzing causal graphs. There is a mistake in the paper that leads "
         "to some relevant neighbouring patterns being ignored. See the [errata "
-        "http://ai.cs.unibas.ch/research/publications.html] for details. This "
+        "https://ai.dmi.unibas.ch/research/publications.html] for details. This "
         "mistake has been addressed in this implementation. "
         "The second approach described in the paper (statistical confidence "
         "interval) is not applicable to this implementation, as it doesn't use "
@@ -612,9 +610,9 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "max_time_dominance_pruning", opts.get<double>("max_time_dominance_pruning"));
 
     // Note: in the long run, this should return a shared pointer.
-    return new CanonicalPDBsHeuristic(heuristic_opts);
+    return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
 }
 
-static Plugin<Heuristic> _plugin_ipdb("ipdb", _parse_ipdb);
-static PluginShared<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
+static Plugin<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
+static Plugin<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
 }
