@@ -14,6 +14,7 @@ import common_setup
 from common_setup import IssueConfig, IssueExperiment
 
 
+EXPNAME = common_setup.get_experiment_name()
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue862-base", "issue862-v1", "issue862-v4", "issue862-v5"]
@@ -223,9 +224,14 @@ exp.add_step('start', exp.start_runs)
 exp.add_parse_again_step()
 exp.add_fetcher(name='fetch')
 
+ATTRIBUTES = ["error", "run_dir", "translator_*", "translator_output_sas_hash"]
+exp.add_absolute_report_step(
+    outfile="{EXPNAME}.html".format(**locals()),
+    attributes=ATTRIBUTES)
 same_value_flters = SameValueFilters("translator_output_sas_hash")
 exp.add_absolute_report_step(
-    attributes=["error", "run_dir", "translator_*", "translator_output_sas_hash"],
+    outfile="{EXPNAME}-filtered.html".format(**locals()),
+    attributes=ATTRIBUTES,
     filter=[same_value_flters.store_values, same_value_flters.filter_tasks_with_equal_values])
 exp.add_report(TranslatorDiffReport(
         attributes=["domain", "problem", "algorithm", "run_dir"]

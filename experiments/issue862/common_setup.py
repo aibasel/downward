@@ -279,7 +279,7 @@ class IssueExperiment(FastDownwardExperiment):
                     if attr in cls.PORTFOLIO_ATTRIBUTES]
         return attributes
 
-    def add_absolute_report_step(self, **kwargs):
+    def add_absolute_report_step(self, outfile=None, **kwargs):
         """Add step that makes an absolute report.
 
         Absolute reports are useful for experiments that don't compare
@@ -296,12 +296,12 @@ class IssueExperiment(FastDownwardExperiment):
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = AbsoluteReport(**kwargs)
-        outfile = os.path.join(
+        outfile = outfile or os.path.join(
             self.eval_dir,
             get_experiment_name() + "." + report.output_format)
         self.add_report(report, outfile=outfile)
         self.add_step(
-            'publish-absolute-report', subprocess.call, ['publish', outfile])
+            'publish-' + os.path.basename(outfile), subprocess.call, ['publish', outfile])
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
