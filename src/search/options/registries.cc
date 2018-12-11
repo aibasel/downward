@@ -45,11 +45,11 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
         occurrences_names[plugin_type_info.type_name].push_back(plugin_type_info.type);
         occurrences_types[plugin_type_info.type].push_back(plugin_type_info.type_name);
         bool predefine_error = false;
-        for (const string &predefine :
-             {plugin_type_info.predefine, plugin_type_info.alias}) {
-            if (!predefine.empty()) {
-                occurrences_predefine[predefine].push_back(plugin_type_info.type_name);
-                if (occurrences_predefine[predefine].size() > 1)
+        for (const string &predefinition_key :
+             {plugin_type_info.predefinition_key, plugin_type_info.alias}) {
+            if (!predefinition_key.empty()) {
+                occurrences_predefine[predefinition_key].push_back(plugin_type_info.type_name);
+                if (occurrences_predefine[predefinition_key].size() > 1)
                     predefine_error = true;
             }
         }
@@ -152,10 +152,10 @@ void Registry::insert_plugins(const RawRegistry &raw_registry,
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
     assert(!plugin_type_infos.count(info.type));
-    for (const string &predefine : {info.predefine, info.alias}) {
-        if (!predefine.empty()) {
-            assert(!is_predefinition(predefine));
-            predefinition_functions[predefine] = info.predefinition_function;
+    for (const string &predefinition_key : {info.predefinition_key, info.alias}) {
+        if (!predefinition_key.empty()) {
+            assert(!is_predefinition(predefinition_key));
+            predefinition_functions[predefinition_key] = info.predefinition_function;
         }
     }
     plugin_type_infos.insert(make_pair(info.type, info));
