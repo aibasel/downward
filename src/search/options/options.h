@@ -2,12 +2,13 @@
 #define OPTIONS_OPTIONS_H
 
 #include "any.h"
+#include "errors.h"
 #include "type_namer.h"
 
 #include "../utils/system.h"
 
-#include <iostream>
 #include <string>
+#include <typeinfo>
 #include <unordered_map>
 
 namespace options {
@@ -18,10 +19,7 @@ class Options {
     const bool help_mode;
 
 public:
-    explicit Options(bool help_mode = false)
-        : unparsed_config("<missing>"),
-          help_mode(help_mode) {
-    }
+    explicit Options(bool help_mode = false);
 
     template<typename T>
     void set(const std::string &key, T value) {
@@ -32,19 +30,17 @@ public:
     T get(const std::string &key) const {
         const auto it = storage.find(key);
         if (it == storage.end()) {
-            ABORT("Attempt to retrieve nonexisting object of name " +
-                  key + " (type: " + TypeNamer<T>::name() +
-                  ") from options.");
+            ABORT_WITH_DEMANGLING_HINT(
+                "Attempt to retrieve nonexisting object of name " + key +
+                " (type: " + typeid(T).name() + ")", typeid(T).name());
         }
         try {
             T result = any_cast<T>(it->second);
             return result;
         } catch (const BadAnyCast &) {
-            std::cerr << "Invalid conversion while retrieving config options!"
-                      << std::endl
-                      << key << " is not of type " << TypeNamer<T>::name()
-                      << std::endl << "exiting" << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            ABORT_WITH_DEMANGLING_HINT(
+                "Invalid conversion while retrieving config options!\n" +
+                key + " is not of type " + typeid(T).name(), typeid(T).name());
         }
     }
 
@@ -74,21 +70,10 @@ public:
         return get<std::vector<T>>(key);
     }
 
-    int get_enum(const std::string &key) const {
-        return get<int>(key);
-    }
-
-    bool contains(const std::string &key) const {
-        return storage.find(key) != storage.end();
-    }
-
-    const std::string &get_unparsed_config() const {
-        return unparsed_config;
-    }
-
-    void set_unparsed_config(const std::string &config) {
-        unparsed_config = config;
-    }
+    int get_enum(const std::string &key) const;
+    bool contains(const std::string &key) const;
+    const std::string &get_unparsed_config() const;
+    void set_unparsed_config(const std::string &config);
 };
 }
 

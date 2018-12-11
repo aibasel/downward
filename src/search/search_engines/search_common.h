@@ -33,7 +33,7 @@ namespace search_common {
   "pref_only" options.
 */
 extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
-    Evaluator *eval, bool pref_only);
+    const std::shared_ptr<Evaluator> &eval, bool pref_only);
 
 /*
   Create open list factory for the eager_greedy or lazy_greedy plugins.
@@ -42,11 +42,11 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
   object to construct an open list factory of the appropriate type.
 
   This is usually an alternation open list with:
-  - one sublist for each heuristic, considering all successors
-  - one sublist for each heuristic, considering only preferred successors
+  - one sublist for each evaluator, considering all successors
+  - one sublist for each evaluator, considering only preferred successors
 
   However, the preferred-only open lists are omitted if no preferred
-  operator heuristics are used, and if there would only be one sublist
+  operator evaluators are used, and if there would only be one sublist
   for the alternation open list, then that sublist is returned
   directly.
 */
@@ -75,7 +75,7 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
   ordered primarily on g + h and secondarily on h. Uses "eval" from
   the passed-in Options object as the h evaluator.
 */
-extern std::pair<std::shared_ptr<OpenListFactory>, Evaluator *>
+extern std::pair<std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const options::Options &opts);
 }
 

@@ -29,6 +29,8 @@ namespace operator_counting {
 */
 class ConstraintGenerator {
 public:
+    virtual ~ConstraintGenerator() = default;
+
     /*
       Called upon initialization for the given task. Use this to add permanent
       constraints and perform other initialization. The parameter "infinity"

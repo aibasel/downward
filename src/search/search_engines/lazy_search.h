@@ -15,8 +15,6 @@
 #include <memory>
 #include <vector>
 
-class Heuristic;
-
 namespace options {
 class Options;
 }
@@ -33,7 +31,7 @@ protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     std::vector<Evaluator *> path_dependent_evaluators;
-    std::vector<Heuristic *> preferred_operator_heuristics;
+    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
 
     GlobalState current_state;
     StateID current_predecessor_id;
@@ -60,7 +58,7 @@ public:
     explicit LazySearch(const options::Options &opts);
     virtual ~LazySearch() = default;
 
-    void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
+    void set_preferred_operator_evaluators(std::vector<std::shared_ptr<Evaluator>> &evaluators);
 
     virtual void print_statistics() const override;
 };

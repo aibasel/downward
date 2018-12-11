@@ -38,7 +38,7 @@ int PDBHeuristic::compute_heuristic(const State &state) const {
     return h;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Pattern database heuristic", "TODO");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
@@ -58,8 +58,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new PDBHeuristic(opts);
+    return make_shared<PDBHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("pdb", _parse);
+static Plugin<Evaluator> _plugin("pdb", _parse, "heuristics_pdb");
 }

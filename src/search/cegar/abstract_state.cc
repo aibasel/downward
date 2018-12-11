@@ -3,8 +3,6 @@
 #include "refinement_hierarchy.h"
 #include "utils.h"
 
-#include "../task_proxy.h"
-
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>

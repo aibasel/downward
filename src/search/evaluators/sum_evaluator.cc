@@ -10,10 +10,10 @@ using namespace std;
 
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(const Options &opts)
-    : CombiningEvaluator(opts.get_list<Evaluator *>("evals")) {
+    : CombiningEvaluator(opts.get_list<shared_ptr<Evaluator>>("evals")) {
 }
 
-SumEvaluator::SumEvaluator(const vector<Evaluator *> &evals)
+SumEvaluator::SumEvaluator(const vector<shared_ptr<Evaluator>> &evals)
     : CombiningEvaluator(evals) {
 }
 
@@ -30,20 +30,20 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static Evaluator *_parse(OptionParser &parser) {
+static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis("Sum evaluator",
                              "Calculates the sum of the sub-evaluators.");
 
-    parser.add_list_option<Evaluator *>("evals", "at least one evaluator");
+    parser.add_list_option<shared_ptr<Evaluator>>("evals", "at least one evaluator");
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<Evaluator *>("evals");
+    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new SumEvaluator(opts);
+        return make_shared<SumEvaluator>(opts);
 }
 
-static Plugin<Evaluator> _plugin("sum", _parse);
+static Plugin<Evaluator> _plugin("sum", _parse, "evaluators_basic");
 }

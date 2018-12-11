@@ -153,8 +153,8 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
             LocalProblemNode &target = problem->nodes[target_value];
             for (const ValueTransitionLabel &label : dtg_trans.labels) {
                 OperatorProxy op = label.is_axiom ?
-                                   task_proxy.get_axioms()[label.op_id] :
-                                   task_proxy.get_operators()[label.op_id];
+                    task_proxy.get_axioms()[label.op_id] :
+                    task_proxy.get_operators()[label.op_id];
                 LocalTransition trans(&node, &target, &label, op.get_cost());
                 node.outgoing_transitions.push_back(trans);
             }
@@ -365,8 +365,8 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
             // Transition possibly applicable.
             const ValueTransitionLabel &label = *first_on_path->label;
             OperatorProxy op = label.is_axiom ?
-                               task_proxy.get_axioms()[label.op_id] :
-                               task_proxy.get_operators()[label.op_id];
+                task_proxy.get_axioms()[label.op_id] :
+                task_proxy.get_operators()[label.op_id];
             if (min_action_cost != 0 || task_properties::is_applicable(op, state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
@@ -391,8 +391,9 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
     }
 }
 
-int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &g_state) {
-    const State state = convert_global_state(g_state);
+int ContextEnhancedAdditiveHeuristic::compute_heuristic(
+    const GlobalState &global_state) {
+    const State state = convert_global_state(global_state);
     initialize_heap();
     goal_problem->base_priority = -1;
     for (LocalProblem *problem : local_problems)
@@ -443,7 +444,7 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
     return false;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Context-enhanced additive heuristic", "");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported");
@@ -461,10 +462,10 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new ContextEnhancedAdditiveHeuristic(opts);
+        return make_shared<ContextEnhancedAdditiveHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("cea", _parse);
+static Plugin<Evaluator> _plugin("cea", _parse);
 }

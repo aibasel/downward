@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+import sys
+
 """
 We document Fast Downward exit codes at
 http://www.fast-downward.org/ExitCodes. Please update this documentation when
@@ -28,11 +30,33 @@ TRANSLATE_INPUT_ERROR = 31
 SEARCH_CRITICAL_ERROR = 32
 SEARCH_INPUT_ERROR = 33
 SEARCH_UNSUPPORTED = 34
+DRIVER_CRITICAL_ERROR = 35
+DRIVER_INPUT_ERROR = 36
+DRIVER_UNSUPPORTED = 37
+
+
+def print_stderr(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 
 def is_unrecoverable(exitcode):
     # Exit codes in the range from 30 to 39 represent unrecoverable failures.
     return 30 <= exitcode < 40
+
+
+def exit_with_driver_critical_error(msg):
+    print_stderr(msg)
+    sys.exit(DRIVER_CRITICAL_ERROR)
+
+
+def exit_with_driver_input_error(msg):
+    print_stderr(msg)
+    sys.exit(DRIVER_INPUT_ERROR)
+
+
+def exit_with_driver_unsupported_error(msg):
+    print_stderr(msg)
+    sys.exit(DRIVER_UNSUPPORTED)
 
 
 def generate_portfolio_exitcode(exitcodes):

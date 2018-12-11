@@ -279,7 +279,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "For details, see" + utils::format_paper_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
             "Getting the Most Out of Pattern Databases for Classical Planning",
-            "http://ai.cs.unibas.ch/papers/pommerening-et-al-ijcai2013.pdf",
+            "https://ai.dmi.unibas.ch/papers/pommerening-et-al-ijcai2013.pdf",
             "Proceedings of the Twenty-Third International Joint"
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2357-2364",
@@ -303,5 +303,5 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternCollectionGeneratorSystematic>(opts);
 }
 
-static PluginShared<PatternCollectionGenerator> _plugin("systematic", _parse);
+static Plugin<PatternCollectionGenerator> _plugin("systematic", _parse);
 }
