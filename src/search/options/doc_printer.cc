@@ -278,7 +278,7 @@ void PlainPrinter::print_category_predefinitions(
            << predefinition_key << "." << endl;
     }
     if (!alias.empty()) {
-        os << "The old predefinition key ``--" << alias << "`` is still "
+        os << "The old predefinition key --" << alias << " is still "
            << "supported but deprecated." << endl;
     }
 }
