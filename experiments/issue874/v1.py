@@ -8,6 +8,7 @@ from lab import tools
 
 from downward.reports.compare import ComparativeReport
 from downward.reports import PlanningReport
+from downward.experiment import FastDownwardExperiment
 
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
@@ -169,6 +170,12 @@ SUITE = [
     'zenotravel',
 ]
 
+ATTRIBUTES = [
+    'translator_time_done',
+    'translator_mutex_groups',
+    'translator_variables'
+]
+
 if common_setup.is_test_run():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
     ENVIRONMENT = LocalEnvironment(processes=1)
@@ -180,12 +187,9 @@ exp = IssueExperiment(
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
-exp.add_resource("translator_additional_parser",
-                 "translator_additional_parser.py",
-                 dest="translator_additional_parser.py")
+exp.add_parser('translator_additional_parser.py')
+exp.add_parser(FastDownwardExperiment.TRANSLATOR_PARSER)
 del exp.commands['remove-output-sas']
-exp.add_command("translator_additional_parser",
-                ["{translator_additional_parser}"])
 
 class TranslatorDiffReport(PlanningReport):
     def get_cell(self, run):
@@ -202,6 +206,7 @@ class TranslatorDiffReport(PlanningReport):
 exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
+exp.add_comparison_table_step(attributes=ATTRIBUTES)
 
 exp.add_report(TranslatorDiffReport(
         attributes=["domain", "problem", "algorithm", "run_dir"]
