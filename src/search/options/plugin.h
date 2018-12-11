@@ -46,7 +46,7 @@ public:
         assert(!utils::startswith(predefinition_key, "--"));
         assert(!utils::startswith(alias, "--"));
 
-        PredefinitionFunction predefinition_function = (predefinition_key.empty()) ?
+        PredefinitionFunction predefinition_function = predefinition_key.empty() ?
             nullptr : predefine_plugin<T>;
 
         RawRegistry::instance()->insert_plugin_type_data(
