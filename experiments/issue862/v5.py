@@ -226,11 +226,11 @@ exp.add_fetcher(name='fetch')
 
 ATTRIBUTES = ["error", "run_dir", "translator_*", "translator_output_sas_hash"]
 exp.add_absolute_report_step(
-    outfile="{EXPNAME}.html".format(**locals()),
+    outfile=os.path.join(exp.eval_dir, "{EXPNAME}.html".format(**locals())),
     attributes=ATTRIBUTES)
 same_value_flters = SameValueFilters("translator_output_sas_hash")
 exp.add_absolute_report_step(
-    outfile="{EXPNAME}-filtered.html".format(**locals()),
+    outfile=os.path.join(exp.eval_dir, "{EXPNAME}-filtered.html".format(**locals())),
     attributes=ATTRIBUTES,
     filter=[same_value_flters.store_values, same_value_flters.filter_tasks_with_equal_values])
 exp.add_report(TranslatorDiffReport(
