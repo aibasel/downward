@@ -12,7 +12,7 @@ extern void rstrip(std::string &s);
 extern void strip(std::string &s);
 
 /*
-  Splits a given string at the first occurrence of splitter and optionally
+  Splits a given string at the first occurrence of separator and optionally
   strips the whitespace around those fragments.
  */
 extern std::pair<std::string, std::string> split(
