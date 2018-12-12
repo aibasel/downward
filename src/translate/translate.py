@@ -566,10 +566,11 @@ def pddl_to_sas(task):
         if options.use_partial_encoding:
             mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
         else:
-            # An atom can be represented by more than one fact in the
-            # full encoding. We do not generate a mutex key in this case
-            # to avoid an exponential blowup.
-            print("Not generating mutex key for full encoding. See issue 771 for details.")
+            # With our current representation, emitting complete mutex
+            # information for the full encoding can incur an
+            # unacceptable (quadratic) blowup in the task representation
+            #size. See issue771 for details.
+            print("using full encoding: between-variable mutex information skipped.")
             mutex_key = []
 
     with timers.timing("Translating task", block=True):
@@ -607,17 +608,13 @@ def build_mutex_key(strips_to_sas, groups):
     for group in groups:
         group_key = []
         for fact in group:
-            represented_by = strips_to_sas.get(fact, [])
-            if not represented_by:
-                print("not in strips_to_sas, left out:", fact)
-            else:
-                # In the partial encoding, each atom should be
-                # represented by at most one fact. In the full encoding
-                # we would have to multiply out the options but we do
-                # not generate a mutex key in this case. See above and
-                # in issue 771.
+            represented_by = strips_to_sas.get(fact)
+            if represented_by:
+                # This function may only be used with the partial encoding.
                 assert len(represented_by) == 1
                 group_key.append(represented_by[0])
+            else:
+                print("not in strips_to_sas, left out:", fact)
         group_keys.append(group_key)
     return group_keys
 
