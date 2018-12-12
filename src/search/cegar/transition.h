@@ -2,19 +2,17 @@
 #define CEGAR_TRANSITION_H
 
 namespace cegar {
-class AbstractState;
-
 struct Transition {
     int op_id;
-    AbstractState *target;
+    int target_id;
 
-    Transition(int op_id, AbstractState *state)
+    Transition(int op_id, int target_id)
         : op_id(op_id),
-          target(state) {
+          target_id(target_id) {
     }
 
     bool operator==(const Transition &other) {
-        return op_id == other.op_id && target == other.target;
+        return op_id == other.op_id && target_id == other.target_id;
     }
 };
 }
