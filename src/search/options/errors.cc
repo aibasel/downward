@@ -47,9 +47,4 @@ string get_demangling_hint(const string &type_name) {
     return "To retrieve the demangled C++ type for gcc/clang, you can call \n"
            "c++filt -t " + type_name;
 }
-
-
-void print_demangling_hint(const string &type_name) {
-    cerr << get_demangling_hint(type_name) << endl;
-}
 }
