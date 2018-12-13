@@ -24,9 +24,9 @@ extern void strip(std::string &s);
   StringOperationError if separator is not found.
 */
 extern std::pair<std::string, std::string> split(
-    const std::string &str, const std::string &separator);
+    const std::string &s, const std::string &separator);
 
-extern bool startswith(const std::string &str, const std::string &prefix);
+extern bool startswith(const std::string &s, const std::string &prefix);
 
 template<typename Collection>
 std::string join(const Collection &collection, const std::string &delimiter) {
