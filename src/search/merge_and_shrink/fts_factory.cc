@@ -287,10 +287,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
         /*
           TODO: Our method for generating transitions is only guarantueed
           to generate sorted and unique transitions if the task has no
-          conditional effects. We could replace the instance variable by
-          a call to has_conditional_effects(task_proxy).
-          Generally, the questions is whether we rely on sorted transitions
-          anyway (in the TransitionSystem class).
+          conditional effects.
         */
         if (task_has_conditional_effects) {
             sort(transitions.begin(), transitions.end());
@@ -308,8 +305,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
         bool found_locally_equivalent_label_group = false;
         for (size_t group_id = 0; group_id < existing_transitions_by_group_id.size(); ++group_id) {
             const vector<Transition> &group_transitions = existing_transitions_by_group_id[group_id];
-            if ((transitions.empty() && group_transitions.empty())
-                || transitions == group_transitions) {
+            if (transitions == group_transitions) {
                 label_groups[group_id].push_back(label_no);
                 found_locally_equivalent_label_group = true;
                 break;

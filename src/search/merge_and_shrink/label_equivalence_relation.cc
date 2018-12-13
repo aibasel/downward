@@ -12,8 +12,9 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
     : labels(labels) {
     /*
       We need to reserve space for the potential maximum number of labels to
-      ensure that no move occurs in grouped_labels. Otherwise, iterators to
-      elements of list<int> (LabelGroup) could become invalid!
+      ensure that grouped_labels never needs to be resized. Otherwise,
+      iterators into LabelGroup (elements stored in grouped_labels) are
+      invalidated.
     */
     grouped_labels.reserve(labels.get_max_size());
     label_to_positions.resize(labels.get_max_size());
@@ -28,11 +29,7 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
       /* We copy label_to_positions to have identical vectors even on
       "unused" positions (for label numbers that do not exist any more). */
       label_to_positions(other.label_to_positions) {
-    /*
-      We need to reserve space for the potential maximum number of labels to
-      ensure that no move occurs in grouped_labels. Otherwise, iterators to
-      elements of list<int> (LabelGroup) could become invalid!
-    */
+    // For the reserve call, see the comment in the constructor above.
     grouped_labels.reserve(labels.get_max_size());
     for (size_t other_group_id = 0;
          other_group_id < other.grouped_labels.size();
