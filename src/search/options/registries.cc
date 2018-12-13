@@ -2,6 +2,7 @@
 
 #include "errors.h"
 #include "option_parser.h"
+#include "predefinitions.h"
 
 #include "../utils/collections.h"
 #include "../utils/strings.h"
@@ -39,30 +40,53 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
                                    vector<string> &errors) {
     unordered_map<string, vector<type_index>> occurrences_names;
     unordered_map<type_index, vector<string>> occurrences_types;
-    for (const PluginTypeInfo &pti : raw_registry.get_plugin_type_data()) {
-        occurrences_names[pti.type_name].push_back(pti.type);
-        occurrences_types[pti.type].push_back(pti.type_name);
-        if (occurrences_names[pti.type_name].size() == 1 &&
-            occurrences_types[pti.type].size() == 1) {
-            insert_type_info(pti);
+    unordered_map<string, vector<string>> occurrences_predefinition;
+    for (const PluginTypeInfo &plugin_type_info :
+         raw_registry.get_plugin_type_data()) {
+        occurrences_names[plugin_type_info.type_name].push_back(plugin_type_info.type);
+        occurrences_types[plugin_type_info.type].push_back(plugin_type_info.type_name);
+        bool predefine_error = false;
+        for (const string &predefinition_key :
+             {plugin_type_info.predefinition_key, plugin_type_info.alias}) {
+            if (!predefinition_key.empty()) {
+                occurrences_predefinition[predefinition_key].push_back(
+                    plugin_type_info.type_name);
+                if (occurrences_predefinition[predefinition_key].size() > 1)
+                    predefine_error = true;
+            }
+        }
+
+        if (occurrences_names[plugin_type_info.type_name].size() == 1 &&
+            occurrences_types[plugin_type_info.type].size() == 1 &&
+            !predefine_error) {
+            insert_type_info(plugin_type_info);
         }
     }
 
     for (auto it : occurrences_names) {
         if (it.second.size() > 1) {
-            errors.push_back("Multiple definitions for PluginTypePlugin " +
-                             it.first + " (types: " +
-                             utils::join(utils::map_vector<string>(
-                                             it.second,
-                                             [](const type_index &type) {return type.name();}),
-                                         ", ") + ")");
+            errors.push_back(
+                "Multiple definitions for PluginTypePlugin " + it.first +
+                " (types: " +
+                utils::join(utils::map_vector<string>(
+                                it.second,
+                                [](const type_index &type) {return type.name();}),
+                            ", ") + ")");
         }
     }
-
     for (auto it : occurrences_types) {
         if (it.second.size() > 1) {
-            errors.push_back("Multiple definitions for PluginTypePlugin of type " +
-                             string(it.first.name()) + " (names: " + utils::join(it.second, ", ") + ")");
+            errors.push_back(
+                "Multiple definitions for PluginTypePlugin of type " +
+                string(it.first.name()) +
+                " (names: " + utils::join(it.second, ", ") + ")");
+        }
+    }
+    for (auto it : occurrences_predefinition) {
+        if (it.second.size() > 1) {
+            errors.push_back("Multiple PluginTypePlugins use the predefinition "
+                             "key " + it.first + " (types: " +
+                             utils::join(it.second, ", ") + ")");
         }
     }
 }
@@ -117,18 +141,25 @@ void Registry::insert_plugins(const RawRegistry &raw_registry,
 
     for (auto it : occurrences) {
         if (it.second.size() > 1) {
-            errors.push_back("Multiple definitions for Plugin " + it.first + " (types: " +
-                             utils::join(utils::map_vector<string>(
-                                             it.second,
-                                             [](const type_index &type) {return type.name();}),
-                                         ", ") +
-                             ")");
+            errors.push_back(
+                "Multiple definitions for Plugin " + it.first + " (types: " +
+                utils::join(utils::map_vector<string>(
+                                it.second,
+                                [](const type_index &type) {return type.name();}),
+                            ", ") +
+                ")");
         }
     }
 }
 
 void Registry::insert_type_info(const PluginTypeInfo &info) {
     assert(!plugin_type_infos.count(info.type));
+    for (const string &predefinition_key : {info.predefinition_key, info.alias}) {
+        if (!predefinition_key.empty()) {
+            assert(!is_predefinition(predefinition_key));
+            predefinition_functions[predefinition_key] = info.predefinition_function;
+        }
+    }
     plugin_type_infos.insert(make_pair(info.type, info));
 }
 
@@ -229,5 +260,15 @@ vector<string> Registry::get_sorted_plugin_info_keys() {
     }
     sort(keys.begin(), keys.end());
     return keys;
+}
+
+bool Registry::is_predefinition(const string &key) const {
+    return predefinition_functions.count(key);
+}
+
+void Registry::handle_predefinition(
+    const string &key, const string &arg, Predefinitions &predefinitions,
+    bool dry_run) {
+    predefinition_functions.at(key)(arg, *this, predefinitions, dry_run);
 }
 }

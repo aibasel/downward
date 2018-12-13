@@ -14,6 +14,7 @@
 
 namespace options {
 class OptionParser;
+class Predefinitions;
 
 class Registry {
     std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
@@ -36,8 +37,12 @@ class Registry {
     /*
        plugin_infos collects the information about all plugins. This is used,
        for example, to generate the documentation.
-     */
+    */
     std::unordered_map<std::string, PluginInfo> plugin_infos;
+    /*
+       Map from predefinition keyword to predefinition function.
+    */
+    std::unordered_map<std::string, PredefinitionFunction> predefinition_functions;
 
     void insert_plugin_types(const RawRegistry &raw_registry,
                              std::vector<std::string> &errors);
@@ -61,6 +66,10 @@ public:
         std::type_index type(typeid(T));
         return any_cast<std::function<T(OptionParser &)>>(plugin_factories.at(type).at(key));
     }
+
+    bool is_predefinition(const std::string &key) const;
+    void handle_predefinition(const std::string &key, const std::string &arg,
+                              Predefinitions &predefinitions, bool dry_run);
 
     const PluginTypeInfo &get_type_info(const std::type_index &type) const;
     std::vector<PluginTypeInfo> get_sorted_type_infos() const;

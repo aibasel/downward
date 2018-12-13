@@ -5,6 +5,15 @@
 using namespace std;
 
 namespace utils {
+StringOperationError::StringOperationError(const string &msg)
+    : msg(msg) {
+}
+
+const char *StringOperationError::what() const NOEXCEPT {
+    return msg.c_str();
+}
+
+
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
                                    return !isspace(ch);
@@ -22,13 +31,17 @@ void strip(string &s) {
     rstrip(s);
 }
 
+bool startswith(const string &s, const string &prefix) {
+    return s.compare(0, prefix.size(), prefix) == 0;
+}
 
-pair<string, string> split(const string &arg, const string &splitter) {
-    int split_pos = arg.find(splitter);
-    string lhs = arg.substr(0, split_pos);
-    strip(lhs);
-    string rhs = arg.substr(split_pos + 1);
-    strip(rhs);
+pair<string, string> split(const string &s, const string &separator) {
+    int split_pos = s.find(separator);
+    if (split_pos == -1) {
+        throw StringOperationError("separator not found");
+    }
+    string lhs = s.substr(0, split_pos);
+    string rhs = s.substr(split_pos + 1);
     return make_pair(lhs, rhs);
 }
 }

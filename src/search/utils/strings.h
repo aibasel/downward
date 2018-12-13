@@ -1,18 +1,32 @@
 #ifndef UTILS_STRINGS_H
 #define UTILS_STRINGS_H
 
+#include "language.h"
+
 #include <sstream>
 #include <string>
 
 namespace utils {
+class StringOperationError : public std::exception {
+    std::string msg;
+public:
+    explicit StringOperationError(const std::string &msg);
+
+    virtual const char *what() const NOEXCEPT override;
+};
+
 extern void lstrip(std::string &s);
-
 extern void rstrip(std::string &s);
-
 extern void strip(std::string &s);
 
-std::pair<std::string, std::string> split(
-    const std::string &arg, const std::string &splitter = "=");
+/*
+  Split a given string at the first occurrence of separator or throw
+  StringOperationError if separator is not found.
+*/
+extern std::pair<std::string, std::string> split(
+    const std::string &s, const std::string &separator);
+
+extern bool startswith(const std::string &s, const std::string &prefix);
 
 template<typename Collection>
 std::string join(const Collection &collection, const std::string &delimiter) {
