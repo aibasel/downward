@@ -7,10 +7,10 @@
 using namespace std;
 
 namespace cost_saturation {
-void CostPartitioningHeuristic::add_lookup_table_if_nonzero(
-    int heuristic_id, vector<int> h_values) {
-    if (any_of(h_values.begin(), h_values.end(), [](int h) {return h != 0;})) {
-        lookup_tables.emplace_back(heuristic_id, move(h_values));
+void CostPartitioningHeuristic::add_h_values(
+    int abstraction_id, vector<int> h_values) {
+    if (any_of(h_values.begin(), h_values.end(), [](int h) {return h > 0;})) {
+        lookup_tables.emplace_back(abstraction_id, move(h_values));
     }
 }
 
@@ -18,8 +18,8 @@ int CostPartitioningHeuristic::compute_heuristic(
     const vector<int> &abstract_state_ids) const {
     int sum_h = 0;
     for (const LookupTable &lookup_table : lookup_tables) {
-        assert(utils::in_bounds(lookup_table.heuristic_index, abstract_state_ids));
-        int state_id = abstract_state_ids[lookup_table.heuristic_index];
+        assert(utils::in_bounds(lookup_table.abstraction_id, abstract_state_ids));
+        int state_id = abstract_state_ids[lookup_table.abstraction_id];
         assert(utils::in_bounds(state_id, lookup_table.h_values));
         int h = lookup_table.h_values[state_id];
         assert(h >= 0);
@@ -44,10 +44,11 @@ int CostPartitioningHeuristic::get_num_heuristic_values() const {
     return num_values;
 }
 
-void CostPartitioningHeuristic::mark_useful_heuristics(vector<bool> &useful_heuristics) const {
+void CostPartitioningHeuristic::mark_useful_abstractions(
+    vector<bool> &useful_abstractions) const {
     for (const auto &lookup_table : lookup_tables) {
-        assert(utils::in_bounds(lookup_table.heuristic_index, useful_heuristics));
-        useful_heuristics[lookup_table.heuristic_index] = true;
+        assert(utils::in_bounds(lookup_table.abstraction_id, useful_abstractions));
+        useful_abstractions[lookup_table.abstraction_id] = true;
     }
 }
 }

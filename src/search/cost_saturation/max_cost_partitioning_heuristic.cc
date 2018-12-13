@@ -62,7 +62,7 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     // Collect IDs of useful abstractions.
     vector<bool> useful_abstractions(num_abstractions, false);
     for (const auto &cp_heuristic : cp_heuristics) {
-        cp_heuristic.mark_useful_heuristics(useful_abstractions);
+        cp_heuristic.mark_useful_abstractions(useful_abstractions);
     }
     int num_useful_abstractions = count(
         useful_abstractions.begin(), useful_abstractions.end(), true);
