@@ -604,13 +604,13 @@ def pddl_to_sas(task):
 
 
 def build_mutex_key(strips_to_sas, groups):
+    assert options.use_partial_encoding
     group_keys = []
     for group in groups:
         group_key = []
         for fact in group:
             represented_by = strips_to_sas.get(fact)
             if represented_by:
-                # This function may only be used with the partial encoding.
                 assert len(represented_by) == 1
                 group_key.append(represented_by[0])
             else:
