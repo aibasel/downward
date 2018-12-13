@@ -52,7 +52,6 @@ def get_sccs_adjacency_dict(adjacency_dict):
         node_to_index[node] = index
         index_to_node.append(node)
 
-    size = len(index_to_node)
     adjacency_list = []
     for index, node in enumerate(index_to_node):
         successors = adjacency_dict[node]
