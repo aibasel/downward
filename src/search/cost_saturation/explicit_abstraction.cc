@@ -85,6 +85,7 @@ ExplicitAbstraction::ExplicitAbstraction(
 }
 
 vector<int> ExplicitAbstraction::compute_goal_distances(const vector<int> &costs) const {
+    assert(has_transition_system());
     vector<int> goal_distances(get_num_states(), INF);
     queue.clear();
     for (int goal_state : goal_states) {
@@ -98,6 +99,7 @@ vector<int> ExplicitAbstraction::compute_goal_distances(const vector<int> &costs
 vector<int> ExplicitAbstraction::compute_saturated_costs(
     const vector<int> &h_values,
     int num_operators) const {
+    assert(has_transition_system());
     vector<int> saturated_costs(num_operators, -INF);
 
     /* To prevent negative cost cycles we ensure that all operators

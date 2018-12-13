@@ -24,10 +24,10 @@ static CostPartitioningHeuristic compute_saturated_cost_partitioning(
     vector<int> remaining_costs = costs;
     for (int pos : order) {
         const Abstraction &abstraction = *abstractions[pos];
-        auto pair = abstraction.compute_goal_distances_and_saturated_costs(
+        vector<int> h_values = abstraction.compute_goal_distances(
             remaining_costs);
-        vector<int> &h_values = pair.first;
-        vector<int> &saturated_costs = pair.second;
+        vector<int> saturated_costs = abstraction.compute_saturated_costs(
+            h_values, costs.size());
         cp_heuristic.add_lookup_table_if_nonzero(pos, move(h_values));
         reduce_costs(remaining_costs, saturated_costs);
     }

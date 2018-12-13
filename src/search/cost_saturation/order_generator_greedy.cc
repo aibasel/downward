@@ -64,9 +64,9 @@ void OrderGeneratorGreedy::initialize(
 
     vector<vector<int>> saturated_costs_by_abstraction;
     for (const unique_ptr<Abstraction> &abstraction : abstractions) {
-        auto pair = abstraction->compute_goal_distances_and_saturated_costs(costs);
-        vector<int> &h_values = pair.first;
-        vector<int> &saturated_costs = pair.second;
+        vector<int> h_values = abstraction->compute_goal_distances(costs);
+        vector<int> saturated_costs = abstraction->compute_saturated_costs(
+            h_values, costs.size());
         h_values_by_abstraction.push_back(move(h_values));
         saturated_costs_by_abstraction.push_back(move(saturated_costs));
     }

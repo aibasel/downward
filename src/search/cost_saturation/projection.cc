@@ -452,6 +452,7 @@ bool Projection::operator_induces_loop(const OperatorProxy &op) const {
 vector<int> Projection::compute_saturated_costs(
     const vector<int> &h_values,
     int num_operators) const {
+    assert(has_transition_system());
     vector<int> saturated_costs(num_operators, -INF);
 
     /* To prevent negative cost cycles, we ensure that all operators
@@ -476,6 +477,7 @@ vector<int> Projection::compute_saturated_costs(
 }
 
 vector<int> Projection::compute_goal_distances(const vector<int> &costs) const {
+    assert(has_transition_system());
     return compute_distances(costs);
 }
 

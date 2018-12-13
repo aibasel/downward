@@ -40,10 +40,6 @@ class Abstraction {
     bool has_transition_system_;
 
 protected:
-    virtual std::vector<int> compute_saturated_costs(
-        const std::vector<int> &h_values,
-        int num_operators) const = 0;
-
     virtual void release_transition_system_memory() = 0;
 
     bool has_transition_system() const;
@@ -58,10 +54,9 @@ public:
 
     virtual std::vector<int> compute_goal_distances(
         const std::vector<int> &costs) const = 0;
-
-    std::pair<std::vector<int>, std::vector<int>>
-    compute_goal_distances_and_saturated_costs(
-        const std::vector<int> &costs) const;
+    virtual std::vector<int> compute_saturated_costs(
+        const std::vector<int> &h_values,
+        int num_operators) const = 0;
 
     // Operators inducing state-changing transitions.
     virtual const std::vector<int> &get_active_operators() const = 0;

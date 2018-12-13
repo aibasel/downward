@@ -39,10 +39,10 @@ Order OrderGeneratorDynamicGreedy::compute_dynamic_greedy_order_for_sample(
             assert(utils::in_bounds(abs_id, abstract_state_ids));
             int abstract_state_id = abstract_state_ids[abs_id];
             Abstraction &abstraction = *abstractions[abs_id];
-            auto pair = abstraction.compute_goal_distances_and_saturated_costs(
+            vector<int> h_values = abstraction.compute_goal_distances(
                 remaining_costs);
-            vector<int> &h_values = pair.first;
-            vector<int> &saturated_costs = pair.second;
+            vector<int> saturated_costs = abstraction.compute_saturated_costs(
+                h_values, remaining_costs.size());
             assert(utils::in_bounds(abstract_state_id, h_values));
             int h = h_values[abstract_state_id];
             current_h_values.push_back(h);
