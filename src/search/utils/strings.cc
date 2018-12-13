@@ -38,7 +38,7 @@ bool startswith(const string &s, const string &prefix) {
 pair<string, string> split(const string &s, const string &separator) {
     int split_pos = s.find(separator);
     if (split_pos == -1) {
-        throw StringOperationError("Separator not found.");
+        throw StringOperationError("separator not found");
     }
     string lhs = s.substr(0, split_pos);
     string rhs = s.substr(split_pos + 1);
