@@ -7,6 +7,7 @@
 #include "../utils/logging.h"
 
 #include <cassert>
+#include <numeric>
 
 using namespace std;
 
