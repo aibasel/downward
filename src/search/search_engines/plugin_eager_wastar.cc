@@ -27,9 +27,8 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "\"lazy\" with \"eager\"). "
         "Important: eager weighted A* search uses an alternation open list"
         "while A* search uses a tie-breaking open list. Consequently,"
-        "\n```\n--search eager_wastar([h()], w=1)```\n"
-        "is NOT equivalent to\n"
-        "```\n--search astar(h())\n```\n");
+        "\n```\n--search eager_wastar([h()], w=1)\n```\n"
+        "is NOT equivalent to\n```\n--search astar(h())\n```\n");
 
     parser.add_list_option<shared_ptr<Evaluator>>(
         "evals",
