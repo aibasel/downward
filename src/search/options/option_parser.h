@@ -337,11 +337,19 @@ void OptionParser::add_list_option(
 template<typename T>
 void predefine_plugin(const std::string &arg, Registry &registry,
                       Predefinitions &predefinitions, bool dry_run) {
-    std::pair<std::string, std::string> predefinition = utils::split(arg, "=",
-                                                                     true);
-    OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
-    predefinitions.predefine(predefinition.first,
-                             parser.start_parsing<std::shared_ptr<T>>());
+    try {
+        std::pair<std::string, std::string> predefinition = utils::split(arg, "=");
+        utils::strip(predefinition.first);
+        utils::strip(predefinition.second);
+
+        OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
+        predefinitions.predefine(predefinition.first,
+                                 parser.start_parsing<std::shared_ptr<T>>());
+    } catch (utils::StringOperationError &) {
+        std::cerr << "Predefinition error: Predefinition has to be of the form "
+                "[Name]=[Definition]." << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
 }
 }
 

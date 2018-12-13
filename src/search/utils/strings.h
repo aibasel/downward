@@ -5,6 +5,15 @@
 #include <string>
 
 namespace utils {
+
+struct StringOperationError {
+    std::string msg;
+
+    StringOperationError(const std::string &msg);
+
+    friend std::ostream &operator<<(std::ostream &out, const StringOperationError &err);
+};
+
 extern void lstrip(std::string &s);
 
 extern void rstrip(std::string &s);
@@ -12,11 +21,11 @@ extern void rstrip(std::string &s);
 extern void strip(std::string &s);
 
 /*
-  Splits a given string at the first occurrence of separator and optionally
-  strips the whitespace around those fragments.
- */
+  Split a given string at the first occurrence of separator or throw 
+  StringOperationError if separator is not found.
+*/
 extern std::pair<std::string, std::string> split(
-    const std::string &str, const std::string &separator, bool strip);
+    const std::string &str, const std::string &separator);
 
 extern bool startswith(const std::string &str, const std::string &prefix);
 
