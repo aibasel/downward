@@ -10,13 +10,7 @@ namespace merge_and_shrink {
 LabelEquivalenceRelation::LabelEquivalenceRelation(
     const Labels &labels, const vector<vector<int>> &label_groups)
     : labels(labels) {
-    /*
-      We need to reserve space for the potential maximum number of labels to
-      ensure that grouped_labels never needs to be resized. Otherwise,
-      iterators into LabelGroup (elements stored in grouped_labels) are
-      invalidated.
-    */
-    grouped_labels.reserve(labels.get_max_size());
+    grouped_labels.reserve(label_groups.size());
     label_to_positions.resize(labels.get_max_size());
     for (const vector<int> &label_group : label_groups) {
         add_label_group(label_group);
@@ -29,8 +23,7 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
       /* We copy label_to_positions to have identical vectors even on
       "unused" positions (for label numbers that do not exist any more). */
       label_to_positions(other.label_to_positions) {
-    // For the reserve call, see the comment in the constructor above.
-    grouped_labels.reserve(labels.get_max_size());
+    grouped_labels.reserve(other.grouped_labels.size());
     for (size_t other_group_id = 0;
          other_group_id < other.grouped_labels.size();
          ++other_group_id) {
