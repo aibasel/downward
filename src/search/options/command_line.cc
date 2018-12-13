@@ -9,6 +9,7 @@
 
 #include "../utils/strings.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace landmarks {
@@ -36,28 +37,6 @@ static int parse_int_arg(const string &name, const string &value) {
     }
 }
 
-/*
-  Predefine landmarks and heuristics.
-*/
-
-static void predefine_evaluator(const string &arg, Registry &registry,
-                                Predefinitions &predefinitions, bool dry_run) {
-    pair<string, string> predefinition = utils::split(arg);
-    OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
-    predefinitions.predefine(predefinition.first,
-                             parser.start_parsing<shared_ptr<Evaluator>>());
-}
-
-
-static void predefine_lmgraph(const string &arg, Registry &registry,
-                              Predefinitions &predefinitions, bool dry_run) {
-    pair<string, string> predefinition = utils::split(arg);
-    OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
-    predefinitions.predefine(predefinition.first,
-                             parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
-}
-
-
 static shared_ptr<SearchEngine> parse_cmd_line_aux(
     const vector<string> &args, Registry &registry, bool dry_run) {
     string plan_filename = "sas_plan";
@@ -74,26 +53,7 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = sanitize_arg_string(args[i]);
         bool is_last = (i == args.size() - 1);
-        if (arg == "--evaluator") {
-            if (is_last)
-                throw ArgError("missing argument after --evaluator");
-            ++i;
-            predefine_evaluator(sanitize_arg_string(args[i]), registry,
-                                predefinitions, dry_run);
-        } else if (arg == "--heuristic") {
-            // deprecated alias for --evaluator
-            if (is_last)
-                throw ArgError("missing argument after --heuristic");
-            ++i;
-            predefine_evaluator(sanitize_arg_string(args[i]), registry,
-                                predefinitions, dry_run);
-        } else if (arg == "--landmarks") {
-            if (is_last)
-                throw ArgError("missing argument after --landmarks");
-            ++i;
-            predefine_lmgraph(sanitize_arg_string(args[i]), registry,
-                              predefinitions, dry_run);
-        } else if (arg == "--search") {
+        if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
@@ -141,6 +101,14 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             num_previously_generated_plans = parse_int_arg(arg, args[i]);
             if (num_previously_generated_plans < 0)
                 throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
+        } else if (utils::startswith(arg, "--") &&
+                   registry.is_predefinition(arg.substr(2))) {
+            if (is_last)
+                throw ArgError("missing argument after " + arg);
+            ++i;
+            registry.handle_predefinition(arg.substr(2),
+                                          sanitize_arg_string(args[i]),
+                                          predefinitions, dry_run);
         } else {
             throw ArgError("unknown option " + arg);
         }
