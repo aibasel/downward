@@ -5,7 +5,6 @@
 #include <string>
 
 namespace utils {
-
 struct StringOperationError {
     std::string msg;
 
@@ -21,7 +20,7 @@ extern void rstrip(std::string &s);
 extern void strip(std::string &s);
 
 /*
-  Split a given string at the first occurrence of separator or throw 
+  Split a given string at the first occurrence of separator or throw
   StringOperationError if separator is not found.
 */
 extern std::pair<std::string, std::string> split(

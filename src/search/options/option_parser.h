@@ -347,7 +347,7 @@ void predefine_plugin(const std::string &arg, Registry &registry,
                                  parser.start_parsing<std::shared_ptr<T>>());
     } catch (utils::StringOperationError &) {
         std::cerr << "Predefinition error: Predefinition has to be of the form "
-                "[Name]=[Definition]." << std::endl;
+            "[Name]=[Definition]." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
