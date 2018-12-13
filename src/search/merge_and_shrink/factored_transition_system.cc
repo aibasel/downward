@@ -97,7 +97,7 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
         return false;
     }
     return transition_systems[index]->are_transitions_sorted_unique() &&
-            transition_systems[index]->in_synch_with_label_equivalence_relation();
+            transition_systems[index]->in_sync_with_label_equivalence_relation();
 }
 
 void FactoredTransitionSystem::assert_all_components_valid() const {

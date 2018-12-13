@@ -93,7 +93,7 @@ TransitionSystem::TransitionSystem(
       goal_states(move(goal_states)),
       init_state(init_state) {
     assert(are_transitions_sorted_unique());
-    assert(in_synch_with_label_equivalence_relation());
+    assert(in_sync_with_label_equivalence_relation());
 }
 
 TransitionSystem::TransitionSystem(const TransitionSystem &other)
@@ -177,7 +177,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         // refinements of group1.
 
         // Now create the new groups together with their transitions.
-        for (const auto &bucket : buckets) {
+        for (auto &bucket : buckets) {
             const vector<Transition> &transitions2 =
                 ts2.get_transitions_for_group_id(bucket.first);
 
@@ -200,7 +200,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
             }
 
             // Create a new group if the transitions are not empty
-            const vector<int> &new_labels = bucket.second;
+            vector<int> &new_labels = bucket.second;
             if (new_transitions.empty()) {
                 dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
             } else {
@@ -221,7 +221,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     if (!dead_labels.empty()) {
         label_groups.push_back(move(dead_labels));
         // Dead labels have empty transitions
-        transitions_by_group_id.push_back({});
+        transitions_by_group_id.emplace_back();
     }
 
     assert(transitions_by_group_id.size() == label_groups.size());
@@ -253,8 +253,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                  group_id2 < label_equivalence_relation->get_size(); ++group_id2) {
                 if (!label_equivalence_relation->is_empty_group(group_id2)) {
                     vector<Transition> &transitions2 = transitions_by_group_id[group_id2];
-                    if ((transitions1.empty() && transitions2.empty())
-                        || transitions1 == transitions2) {
+                    if (transitions1 == transitions2) {
                         label_equivalence_relation->move_group_into_group(
                             group_id2, group_id1);
                         utils::release_vector_memory(transitions2);
@@ -270,7 +269,7 @@ void TransitionSystem::apply_abstraction(
     const vector<int> &abstraction_mapping,
     Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
-    assert(in_synch_with_label_equivalence_relation());
+    assert(in_sync_with_label_equivalence_relation());
 
     int new_num_states = state_equivalence_relation.size();
     assert(new_num_states < num_states);
@@ -329,14 +328,14 @@ void TransitionSystem::apply_abstraction(
     }
 
     assert(are_transitions_sorted_unique());
-    assert(in_synch_with_label_equivalence_relation());
+    assert(in_sync_with_label_equivalence_relation());
 }
 
 void TransitionSystem::apply_label_reduction(
     const vector<pair<int, vector<int>>> &label_mapping,
     bool only_equivalent_labels) {
     assert(are_transitions_sorted_unique());
-    assert(in_synch_with_label_equivalence_relation());
+    assert(in_sync_with_label_equivalence_relation());
 
     /*
       We iterate over the given label mapping, treating every new label and
@@ -438,7 +437,7 @@ void TransitionSystem::apply_label_reduction(
     }
 
     assert(are_transitions_sorted_unique());
-    assert(in_synch_with_label_equivalence_relation());
+    assert(in_sync_with_label_equivalence_relation());
 }
 
 string TransitionSystem::tag() const {
@@ -455,7 +454,7 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
     return true;
 }
 
-bool TransitionSystem::in_synch_with_label_equivalence_relation() const {
+bool TransitionSystem::in_sync_with_label_equivalence_relation() const {
     return label_equivalence_relation->get_size() ==
             static_cast<int>(transitions_by_group_id.size());
 }

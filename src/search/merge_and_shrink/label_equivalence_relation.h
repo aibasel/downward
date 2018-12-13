@@ -79,7 +79,6 @@ class LabelEquivalenceRelation {
 
     void add_label_to_group(int group_id, int label_no);
 public:
-    // Construct a label equivalence relation from the given label groups.
     LabelEquivalenceRelation(
         const Labels &labels, const std::vector<std::vector<int>> &label_groups);
     /*
