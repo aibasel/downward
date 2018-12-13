@@ -134,7 +134,7 @@ public:
         int num_variables,
         std::vector<int> &&incorporated_variables,
         std::unique_ptr<LabelEquivalenceRelation> &&label_equivalence_relation,
-        std::vector<std::vector<Transition>> &&transitions_by_label,
+        std::vector<std::vector<Transition>> &&transitions_by_group_id,
         int num_states,
         std::vector<bool> &&goal_states,
         int init_state);
