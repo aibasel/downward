@@ -81,14 +81,14 @@ TransitionSystem::TransitionSystem(
     int num_variables,
     vector<int> &&incorporated_variables,
     unique_ptr<LabelEquivalenceRelation> &&label_equivalence_relation,
-    vector<vector<Transition>> &&transitions_by_label,
+    vector<vector<Transition>> &&transitions_by_group_id,
     int num_states,
     vector<bool> &&goal_states,
     int init_state)
     : num_variables(num_variables),
       incorporated_variables(move(incorporated_variables)),
       label_equivalence_relation(move(label_equivalence_relation)),
-      transitions_by_group_id(move(transitions_by_label)),
+      transitions_by_group_id(move(transitions_by_group_id)),
       num_states(num_states),
       goal_states(move(goal_states)),
       init_state(init_state) {
