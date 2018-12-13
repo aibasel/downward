@@ -103,6 +103,7 @@ FTSFactory::~FTSFactory() {
 
 vector<unique_ptr<Label>> FTSFactory::create_labels() {
     vector<unique_ptr<Label>> result;
+    result.reserve(task_proxy.get_operators().size() * 2 - 1);
     for (OperatorProxy op : task_proxy.get_operators()) {
         result.push_back(utils::make_unique_ptr<Label>(op.get_cost()));
     }
