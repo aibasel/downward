@@ -9,9 +9,10 @@ StringOperationError::StringOperationError(const string &msg)
     : msg(msg) {
 }
 
-ostream &operator<<(ostream &out, const StringOperationError &err) {
-    return out << "string operation error: " << err.msg;
+const char *StringOperationError::what() const NOEXCEPT {
+    return msg.c_str();
 }
+
 
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {

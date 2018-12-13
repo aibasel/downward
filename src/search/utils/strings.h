@@ -1,22 +1,22 @@
 #ifndef UTILS_STRINGS_H
 #define UTILS_STRINGS_H
 
+#include "language.h"
+
 #include <sstream>
 #include <string>
 
 namespace utils {
-struct StringOperationError {
+class StringOperationError : public std::exception {
     std::string msg;
+public:
+    explicit StringOperationError(const std::string &msg);
 
-    StringOperationError(const std::string &msg);
-
-    friend std::ostream &operator<<(std::ostream &out, const StringOperationError &err);
+    virtual const char *what() const NOEXCEPT override;
 };
 
 extern void lstrip(std::string &s);
-
 extern void rstrip(std::string &s);
-
 extern void strip(std::string &s);
 
 /*
