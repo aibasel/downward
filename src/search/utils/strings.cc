@@ -31,17 +31,17 @@ void strip(string &s) {
     rstrip(s);
 }
 
-bool startswith(const string &str, const string &prefix) {
-    return str.compare(0, prefix.size(), prefix) == 0;
+bool startswith(const string &s, const string &prefix) {
+    return s.compare(0, prefix.size(), prefix) == 0;
 }
 
-pair<string, string> split(const string &str, const string &separator) {
-    int split_pos = str.find(separator);
+pair<string, string> split(const string &s, const string &separator) {
+    int split_pos = s.find(separator);
     if (split_pos == -1) {
         throw StringOperationError("Separator not found.");
     }
-    string lhs = str.substr(0, split_pos);
-    string rhs = str.substr(split_pos + 1);
+    string lhs = s.substr(0, split_pos);
+    string rhs = s.substr(split_pos + 1);
     return make_pair(lhs, rhs);
 }
 }
