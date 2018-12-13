@@ -149,8 +149,7 @@ def main():
             subprocess.check_call(["diff", "-q"] + files)
         except subprocess.CalledProcessError:
             sys.exit(
-                "Error: Translator output for %s differs between Python versions. "
-                "See above diff or compare the files %s in %s." % (task, files, DIR))
+                "Error: Translator output for {task} differs between Python versions.".format(**locals()))
         print()
         sys.stdout.flush()
     cleanup()
