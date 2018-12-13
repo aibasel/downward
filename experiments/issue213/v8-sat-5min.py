@@ -3,6 +3,7 @@
 
 import itertools
 import os
+import subprocess
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 
@@ -12,6 +13,7 @@ import common_setup
 from common_setup import IssueConfig, IssueExperiment
 from relativescatter import RelativeScatterPlotReport
 
+EXPNAME = common_setup.get_experiment_name()
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue213-v8"]
@@ -102,8 +104,11 @@ for build1, build2 in itertools.combinations(BUILDS, 2):
              "{rev}-{config_nick}-{build2}".format(**locals()),
              "Diff ({config_nick}-{rev})".format(**locals()))
             for config_nick, _ in CONFIG_DICT.items()]
+        outfile = os.path.join(exp.eval_dir, "{EXPNAME}-{build1}-vs-{build2}.html".format(**locals()))
         exp.add_report(
             ComparativeReport(algorithm_pairs, attributes=attributes),
-            name="issue213-{build1}-vs-{build2}-{rev}".format(**locals()))
+            outfile=outfile)
+        exp.add_step(
+            'publish-report', subprocess.call, ['publish', outfile])
 
 exp.run_steps()
