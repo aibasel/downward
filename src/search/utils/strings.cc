@@ -9,7 +9,7 @@ StringOperationError::StringOperationError(const string &msg)
     : msg(msg) {
 }
 
-const char *StringOperationError::what() const NOEXCEPT {
+const char *StringOperationError::what() const noexcept {
     return msg.c_str();
 }
 
