@@ -1,8 +1,6 @@
 #ifndef UTILS_STRINGS_H
 #define UTILS_STRINGS_H
 
-#include "language.h"
-
 #include <sstream>
 #include <string>
 
@@ -12,7 +10,7 @@ class StringOperationError : public std::exception {
 public:
     explicit StringOperationError(const std::string &msg);
 
-    virtual const char *what() const NOEXCEPT override;
+    virtual const char *what() const noexcept override;
 };
 
 extern void lstrip(std::string &s);
