@@ -57,7 +57,7 @@ class FTSFactory {
 
     vector<unique_ptr<Label>> create_labels();
     void build_state_data(VariableProxy var);
-    void initialize_transition_system_data();
+    void initialize_transition_system_data(const Labels &labels);
     bool is_relevant(int var_no, int label_no) const;
     void mark_as_relevant(int var_no, int label_no);
     unordered_map<int, int> compute_preconditions(OperatorProxy op);
@@ -141,7 +141,7 @@ void FTSFactory::build_state_data(VariableProxy var) {
     }
 }
 
-void FTSFactory::initialize_transition_system_data() {
+void FTSFactory::initialize_transition_system_data(const Labels &labels) {
     VariablesProxy variables = task_proxy.get_variables();
     int num_labels = task_proxy.get_operators().size();
     transition_system_data_by_var.resize(variables.size());
@@ -149,6 +149,7 @@ void FTSFactory::initialize_transition_system_data() {
         TransitionSystemData &ts_data = transition_system_data_by_var[var.get_id()];
         ts_data.num_variables = variables.size();
         ts_data.incorporated_variables.push_back(var.get_id());
+        ts_data.transitions_by_group_id.reserve(labels.get_max_size());
         ts_data.relevant_labels.resize(num_labels, false);
         build_state_data(var);
     }
@@ -439,7 +440,7 @@ FactoredTransitionSystem FTSFactory::create(
 
     unique_ptr<Labels> labels = utils::make_unique_ptr<Labels>(create_labels());
 
-    initialize_transition_system_data();
+    initialize_transition_system_data(*labels);
     build_transitions();
     vector<unique_ptr<TransitionSystem>> transition_systems =
         create_transition_systems(*labels);

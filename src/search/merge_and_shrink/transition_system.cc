@@ -132,6 +132,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         back_inserter(incorporated_variables));
     vector<vector<int>> label_groups;
     vector<vector<Transition>> transitions_by_group_id;
+    transitions_by_group_id.reserve(labels.get_max_size());
 
     int ts1_size = ts1.get_size();
     int ts2_size = ts2.get_size();
