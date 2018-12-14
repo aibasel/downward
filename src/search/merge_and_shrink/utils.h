@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace utils {
+class CountdownTimer;
 class Timer;
 }
 
@@ -15,6 +16,7 @@ class FactoredTransitionSystem;
 class ShrinkStrategy;
 class TransitionSystem;
 
+extern void print_time(const utils::CountdownTimer &timer, std::string text);
 extern void print_time(const utils::Timer &timer, std::string text);
 
 /*
