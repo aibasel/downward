@@ -98,7 +98,7 @@ Projection::Projection(
     OperatorsProxy operators = task_proxy.get_operators();
     for (OperatorProxy op : operators) {
         build_abstract_operators(
-            op, -1, variable_to_pattern_index, variables, abstract_operators);
+            op, -1, variable_to_pattern_index, variables, abstract_backward_operators);
     }
     for (OperatorProxy op : operators) {
         build_abstract_forward_operators(
@@ -106,10 +106,10 @@ Projection::Projection(
     }
 
     // Create match tree.
-    match_tree = utils::make_unique_ptr<pdbs::MatchTree>(
+    match_tree_backward = utils::make_unique_ptr<pdbs::MatchTree>(
         task_proxy, pattern, hash_multipliers);
-    for (const pdbs::AbstractOperator &op : abstract_operators) {
-        match_tree->insert(op);
+    for (const pdbs::AbstractOperator &op : abstract_backward_operators) {
+        match_tree_backward->insert(op);
     }
 
     goal_states = compute_goal_states();
@@ -380,7 +380,7 @@ vector<int> Projection::compute_distances(const vector<int> &costs) const {
 
         // Regress abstract state.
         applicable_operators.clear();
-        match_tree->get_applicable_operators(state_index, applicable_operators);
+        match_tree_backward->get_applicable_operators(state_index, applicable_operators);
         for (const pdbs::AbstractOperator *op : applicable_operators) {
             size_t predecessor = state_index + op->get_hash_effect();
             int op_id = op->get_concrete_operator_id();
@@ -500,15 +500,15 @@ const vector<int> &Projection::get_goal_states() const {
 }
 
 void Projection::release_transition_system_memory() {
-    utils::release_vector_memory(abstract_operators);
+    utils::release_vector_memory(abstract_backward_operators);
     utils::release_vector_memory(looping_operators);
     utils::release_vector_memory(goal_states);
-    match_tree = nullptr;
+    match_tree_backward = nullptr;
 }
 
 void Projection::dump() const {
     assert(has_transition_system());
-    cout << "Abstract operators: " << abstract_operators.size()
+    cout << "Abstract operators: " << abstract_backward_operators.size()
          << ", looping operators: " << looping_operators.size()
          << ", goal states: " << goal_states.size() << "/" << num_states
          << endl;

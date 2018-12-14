@@ -65,10 +65,9 @@ class Projection : public Abstraction {
     TaskProxy task_proxy;
     pdbs::Pattern pattern;
 
-    std::vector<pdbs::AbstractOperator> abstract_operators;
-    std::unique_ptr<pdbs::MatchTree> match_tree;
-
     std::vector<AbstractForwardOperator> abstract_forward_operators;
+    std::vector<pdbs::AbstractOperator> abstract_backward_operators;
+    std::unique_ptr<pdbs::MatchTree> match_tree_backward;
 
     // Number of abstract states in the projection.
     int num_states;
@@ -158,7 +157,7 @@ class Projection : public Abstraction {
         std::vector<FactPair> &eff_pairs,
         const std::vector<FactPair> &effects_without_pre,
         const VariablesProxy &variables,
-        std::vector<pdbs::AbstractOperator> &abstract_operators) const;
+        std::vector<pdbs::AbstractOperator> &abstract_backward_operators) const;
 
     /*
       Compute all abstract operators for a given concrete operator. Initialize
@@ -170,7 +169,7 @@ class Projection : public Abstraction {
         const OperatorProxy &op, int cost,
         const std::vector<int> &variable_to_pattern_index,
         const VariablesProxy &variables,
-        std::vector<pdbs::AbstractOperator> &abstract_operators) const;
+        std::vector<pdbs::AbstractOperator> &abstract_backward_operators) const;
 
     void multiply_out_forward(
         int pos, int cost, int op_id,
@@ -179,13 +178,13 @@ class Projection : public Abstraction {
         std::vector<FactPair> &eff_pairs,
         const std::vector<FactPair> &effects_without_pre,
         const VariablesProxy &variables,
-        std::vector<AbstractForwardOperator> &abstract_operators) const;
+        std::vector<AbstractForwardOperator> &abstract_backward_operators) const;
 
     void build_abstract_forward_operators(
         const OperatorProxy &op, int cost,
         const std::vector<int> &variable_to_pattern_index,
         const VariablesProxy &variables,
-        std::vector<AbstractForwardOperator> &abstract_operators) const;
+        std::vector<AbstractForwardOperator> &abstract_backward_operators) const;
 
     /*
       Use Dijkstra's algorithm to compute all goal distances.
