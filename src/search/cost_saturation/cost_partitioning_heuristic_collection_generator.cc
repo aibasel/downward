@@ -142,7 +142,7 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
         if (max_optimization_time > 0) {
             utils::CountdownTimer timer(max_optimization_time);
             int incumbent_h_value = cp_heuristic.compute_heuristic(abstract_state_ids);
-            do_hill_climbing(
+            optimize_order_with_hill_climbing(
                 cp_function, timer, abstractions, costs, abstract_state_ids, order,
                 cp_heuristic, incumbent_h_value, verbose);
             if (verbose) {

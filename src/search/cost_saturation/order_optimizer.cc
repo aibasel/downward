@@ -52,7 +52,7 @@ static bool search_improving_successor(
 }
 
 
-void do_hill_climbing(
+void optimize_order_with_hill_climbing(
     CPFunction cp_function,
     const utils::CountdownTimer &timer,
     const Abstractions &abstractions,
