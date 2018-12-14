@@ -5,9 +5,7 @@
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
-#include "../utils/countdown_timer.h"
 #include "../utils/math.h"
-#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -16,18 +14,6 @@
 using namespace std;
 
 namespace merge_and_shrink {
-static void print_time(utils::Duration time, string text) {
-    cout << "t=" << time << " (" << text << ")" << endl;
-}
-
-void print_time(const utils::CountdownTimer &timer, string text) {
-    print_time(timer.get_elapsed_time(), text);
-}
-
-void print_time(const utils::Timer &timer, string text) {
-    print_time(timer(), text);
-}
-
 pair<int, int> compute_shrink_sizes(
     int size1,
     int size2,

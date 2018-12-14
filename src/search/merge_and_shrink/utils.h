@@ -6,18 +6,10 @@
 #include <memory>
 #include <vector>
 
-namespace utils {
-class CountdownTimer;
-class Timer;
-}
-
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class ShrinkStrategy;
 class TransitionSystem;
-
-extern void print_time(const utils::CountdownTimer &timer, std::string text);
-extern void print_time(const utils::Timer &timer, std::string text);
 
 /*
   Compute target sizes for shrinking two transition systems with sizes size1
