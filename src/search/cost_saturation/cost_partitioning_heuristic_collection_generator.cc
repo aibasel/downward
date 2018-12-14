@@ -61,9 +61,6 @@ CostPartitioningHeuristicCollectionGenerator::CostPartitioningHeuristicCollectio
       rng(rng) {
 }
 
-CostPartitioningHeuristicCollectionGenerator::~CostPartitioningHeuristicCollectionGenerator() {
-}
-
 vector<CostPartitioningHeuristic>
 CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
     const TaskProxy &task_proxy,

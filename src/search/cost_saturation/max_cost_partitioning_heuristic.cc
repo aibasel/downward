@@ -86,9 +86,6 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     }
 }
 
-MaxCostPartitioningHeuristic::~MaxCostPartitioningHeuristic() {
-}
-
 int MaxCostPartitioningHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
     return compute_heuristic(state);

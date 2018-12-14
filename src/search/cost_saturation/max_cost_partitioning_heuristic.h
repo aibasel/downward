@@ -28,7 +28,6 @@ public:
         const options::Options &opts,
         Abstractions &&abstractions,
         std::vector<CostPartitioningHeuristic> &&cp_heuristics);
-    virtual ~MaxCostPartitioningHeuristic() override;
 };
 }
 

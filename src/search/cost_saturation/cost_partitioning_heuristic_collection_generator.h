@@ -34,7 +34,6 @@ public:
         int num_samples,
         double max_optimization_time,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng);
-    ~CostPartitioningHeuristicCollectionGenerator();
 
     std::vector<CostPartitioningHeuristic> generate_cost_partitionings(
         const TaskProxy &task_proxy,
