@@ -1,37 +1,31 @@
 #ifndef CEGAR_CARTESIAN_HEURISTIC_FUNCTION_H
 #define CEGAR_CARTESIAN_HEURISTIC_FUNCTION_H
 
-#include "refinement_hierarchy.h"
-
-#include "../task_proxy.h"
-
 #include <memory>
+#include <vector>
 
-class AbstractTask;
+class State;
 
 namespace cegar {
+class RefinementHierarchy;
 /*
-  Store RefinementHierarchy and subtask for looking up heuristic values
-  efficiently.
+  Store RefinementHierarchy and heuristic values for looking up abstract state
+  IDs and corresponding heuristic values efficiently.
 */
 class CartesianHeuristicFunction {
-    const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+    // Avoid const to enable moving.
     std::unique_ptr<RefinementHierarchy> refinement_hierarchy;
+    std::vector<int> h_values;
 
 public:
     CartesianHeuristicFunction(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<RefinementHierarchy> &&hierarchy);
+        std::unique_ptr<RefinementHierarchy> &&hierarchy,
+        std::vector<int> &&h_values);
 
-    // Visual Studio 2013 needs an explicit implementation.
-    CartesianHeuristicFunction(CartesianHeuristicFunction &&other)
-        : task(std::move(other.task)),
-          task_proxy(std::move(other.task_proxy)),
-          refinement_hierarchy(std::move(other.refinement_hierarchy)) {
-    }
+    CartesianHeuristicFunction(const CartesianHeuristicFunction &) = delete;
+    CartesianHeuristicFunction(CartesianHeuristicFunction &&) = default;
 
-    int get_value(const State &parent_state) const;
+    int get_value(const State &state) const;
 };
 }
 

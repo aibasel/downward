@@ -3,6 +3,8 @@
 #include "doc_utils.h"
 #include "registries.h"
 
+#include "../utils/strings.h"
+
 #include <iostream>
 #include <map>
 
@@ -23,7 +25,8 @@ DocPrinter::~DocPrinter() {
 
 void DocPrinter::print_all() {
     for (const PluginTypeInfo &info : registry.get_sorted_type_infos()) {
-        print_category(info.type_name, info.documentation);
+        print_category(info.type_name, info.documentation,
+                       info.predefinition_key, info.alias);
     }
 }
 
@@ -31,9 +34,12 @@ void DocPrinter::print_plugin(const string &name) {
     print_plugin(name, registry.get_plugin_info(name));
 }
 
-void DocPrinter::print_category(const string &plugin_type_name, const string &synopsis) {
+void DocPrinter::print_category(
+    const string &plugin_type_name, const string &synopsis,
+    const string &predefinition_key, const string &alias) {
     print_category_header(plugin_type_name);
     print_category_synopsis(synopsis);
+    print_category_predefinitions(predefinition_key, alias);
     map<string, vector<PluginInfo>> groups;
     for (const string &key : registry.get_sorted_plugin_info_keys()) {
         const PluginInfo &info = registry.get_plugin_info(key);
@@ -166,6 +172,19 @@ void Txt2TagsPrinter::print_category_synopsis(const string &synopsis) {
     }
 }
 
+void Txt2TagsPrinter::print_category_predefinitions(
+    const string &predefinition_key, const string &alias) {
+    if (!predefinition_key.empty()) {
+        os << endl << "This plugin type can be predefined using ``--"
+           << predefinition_key << "``." << endl;
+    }
+    if (!alias.empty()) {
+        os << "The old predefinition key ``--" << alias << "`` is still "
+           << "supported but deprecated." << endl;
+    }
+}
+
+
 void Txt2TagsPrinter::print_category_footer() {
     os << endl
        << ">>>>CATEGORYEND<<<<" << endl;
@@ -249,6 +268,18 @@ void PlainPrinter::print_category_header(const string &category_name) {
 void PlainPrinter::print_category_synopsis(const string &synopsis) {
     if (print_all && !synopsis.empty()) {
         os << synopsis << endl;
+    }
+}
+
+void PlainPrinter::print_category_predefinitions(
+    const string &predefinition_key, const string &alias) {
+    if (!predefinition_key.empty()) {
+        os << endl << "This plugin type can be predefined using --"
+           << predefinition_key << "." << endl;
+    }
+    if (!alias.empty()) {
+        os << "The old predefinition key --" << alias << " is still "
+           << "supported but deprecated." << endl;
     }
 }
 

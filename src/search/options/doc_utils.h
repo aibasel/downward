@@ -11,12 +11,14 @@
 
 namespace options {
 class OptionParser;
+class Predefinitions;
 class Registry;
 
 // See comment in constructor of Plugin in plugin.h.
 using DocFactory = std::function<void (OptionParser &)>;
 using PluginTypeNameGetter = std::function<std::string(const Registry &registry)>;
-
+using PredefinitionFunction = std::function<void (const std::string &, Registry &,
+                                                  Predefinitions &, bool)>;
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
 
@@ -116,9 +118,22 @@ struct PluginTypeInfo {
     */
     std::string documentation;
 
+    // Command line argument to predefine Plugins of this PluginType.
+    std::string predefinition_key;
+
+    // Alternative command line arguments to predefine Plugins of this PluginType.
+    std::string alias;
+
+    // Function used to predefine Plugins of this PluginType
+    PredefinitionFunction predefinition_function;
+
+public:
     PluginTypeInfo(const std::type_index &type,
                    const std::string &type_name,
-                   const std::string &documentation);
+                   const std::string &documentation,
+                   const std::string &predefinition_key,
+                   const std::string &alias,
+                   const PredefinitionFunction &predefinition_function);
 
     bool operator<(const PluginTypeInfo &other) const;
 };
