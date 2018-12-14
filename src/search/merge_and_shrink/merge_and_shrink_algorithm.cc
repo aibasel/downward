@@ -38,7 +38,7 @@ using utils::ExitCode;
 
 namespace merge_and_shrink {
 static void log_progress(const utils::Timer &timer, string msg) {
-    cout << "M&S algorithm timer: " << timer << " ("<< msg << ")" << endl;
+    cout << "M&S algorithm timer: " << timer << " (" << msg << ")" << endl;
 }
 
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
@@ -177,7 +177,7 @@ bool MergeAndShrinkAlgorithm::prune_fts(
             pruned = pruned || pruned_factor;
         }
         if (!fts.is_factor_solvable(index)) {
-            unsolvable =  true;
+            unsolvable = true;
             break;
         }
     }
@@ -197,7 +197,7 @@ void MergeAndShrinkAlgorithm::main_loop(
             cout << "without a time limit." << endl;
         } else {
             cout << "with a time limit of "
-             << main_loop_max_time << "s." << endl;
+                 << main_loop_max_time << "s." << endl;
         }
     }
     int maximum_intermediate_size = 0;
@@ -212,10 +212,10 @@ void MergeAndShrinkAlgorithm::main_loop(
         merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
     merge_strategy_factory = nullptr;
 
-    auto log_main_loop_progress = [&timer](const string &msg){
-        cout << "M&S algorithm main loop timer: " << timer
-             << " ("<< msg << ")" << endl;
-    };
+    auto log_main_loop_progress = [&timer](const string &msg) {
+            cout << "M&S algorithm main loop timer: " << timer
+                 << " (" << msg << ")" << endl;
+        };
     int iteration_counter = 0;
     while (fts.get_num_active_entries() > 1) {
         // Choose next transition systems to merge

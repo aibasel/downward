@@ -26,7 +26,6 @@ namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     : Heuristic(opts),
       verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))) {
-
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
