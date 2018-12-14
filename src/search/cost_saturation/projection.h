@@ -65,6 +65,10 @@ class Projection : public Abstraction {
     TaskProxy task_proxy;
     pdbs::Pattern pattern;
 
+    using Facts = std::vector<FactPair>;
+    using OperatorCallback =
+        std::function<void (Facts &, Facts &, Facts &, int, const std::vector<size_t> &, int)>;
+
     std::vector<AbstractForwardOperator> abstract_forward_operators;
     std::vector<pdbs::AbstractOperator> abstract_backward_operators;
     std::unique_ptr<pdbs::MatchTree> match_tree_backward;
@@ -157,7 +161,7 @@ class Projection : public Abstraction {
         std::vector<FactPair> &eff_pairs,
         const std::vector<FactPair> &effects_without_pre,
         const VariablesProxy &variables,
-        std::vector<pdbs::AbstractOperator> &abstract_backward_operators) const;
+        const OperatorCallback &callback) const;
 
     /*
       Compute all abstract operators for a given concrete operator. Initialize
@@ -169,22 +173,7 @@ class Projection : public Abstraction {
         const OperatorProxy &op, int cost,
         const std::vector<int> &variable_to_pattern_index,
         const VariablesProxy &variables,
-        std::vector<pdbs::AbstractOperator> &abstract_backward_operators) const;
-
-    void multiply_out_forward(
-        int pos, int cost, int op_id,
-        std::vector<FactPair> &prev_pairs,
-        std::vector<FactPair> &pre_pairs,
-        std::vector<FactPair> &eff_pairs,
-        const std::vector<FactPair> &effects_without_pre,
-        const VariablesProxy &variables,
-        std::vector<AbstractForwardOperator> &abstract_backward_operators) const;
-
-    void build_abstract_forward_operators(
-        const OperatorProxy &op, int cost,
-        const std::vector<int> &variable_to_pattern_index,
-        const VariablesProxy &variables,
-        std::vector<AbstractForwardOperator> &abstract_backward_operators) const;
+        const OperatorCallback &callback) const;
 
     /*
       Use Dijkstra's algorithm to compute all goal distances.
