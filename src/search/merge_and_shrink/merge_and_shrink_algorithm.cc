@@ -460,7 +460,7 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
     parser.add_option<double>(
         "main_loop_max_time",
         "A limit in seconds on the runtime of the main loop of the algorithm. "
-        "If the limit is surpassed, the algorithm terminates, potentially "
+        "If the limit is exceeded, the algorithm terminates, potentially "
         "returning a factored transition system with several factors.",
         "infinity",
         Bounds("0.0", "infinity"));
