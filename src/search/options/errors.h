@@ -19,14 +19,6 @@
     )
 
 namespace options {
-struct ArgError {
-    std::string msg;
-
-    ArgError(const std::string &msg);
-
-    friend std::ostream &operator<<(std::ostream &out, const ArgError &err);
-};
-
 struct OptionParserError {
     std::string msg;
 
