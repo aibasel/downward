@@ -14,6 +14,9 @@ class Options;
 namespace cost_saturation {
 class CostPartitioningHeuristic;
 
+/*
+  Compute the maximum over multiple cost partitioning heuristics.
+*/
 class MaxCostPartitioningHeuristic : public Heuristic {
     Abstractions abstractions;
     const std::vector<CostPartitioningHeuristic> cp_heuristics;
