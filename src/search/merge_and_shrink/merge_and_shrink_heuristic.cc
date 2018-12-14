@@ -136,10 +136,7 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "Proceedings of the 11th Annual Symposium on Combinatorial Search "
             "(SoCS 2018)",
             "90-98",
-            "AAAI Press 2018") + "Note that if using a time limit on the main "
-        "loop of the merge-and-shrink algorithm, the heuristic will compute "
-        "the maximum over all heuristics induced by the remaining factors if "
-        "terminating the merge-and-shrink algorithm early."
+            "AAAI Press 2018")
         );
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
@@ -166,6 +163,13 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
         "unreachable symmetric state (which hence is pruned) would falsely be "
         "considered a dead-end and also be pruned, thus violating optimality "
         "of the search.");
+    parser.document_note(
+        "Note",
+        "When using a time limit on the main loop of the merge-and-shrink "
+        "algorithm, the heuristic will compute the maximum over all heuristics "
+        "induced by the remaining factors if terminating the merge-and-shrink "
+        "algorithm early. Exception: there is an unsolvable factor which will "
+        "be used as the exclusive heuristic since the problem is unsolvable.");
     parser.document_note(
         "Note",
         "A currently recommended good configuration uses bisimulation "
