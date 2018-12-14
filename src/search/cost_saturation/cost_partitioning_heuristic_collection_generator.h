@@ -1,5 +1,5 @@
-#ifndef COST_SATURATION_COST_PARTITIONING_COLLECTION_GENERATOR_H
-#define COST_SATURATION_COST_PARTITIONING_COLLECTION_GENERATOR_H
+#ifndef COST_SATURATION_COST_PARTITIONING_HEURISTIC_COLLECTION_GENERATOR_H
+#define COST_SATURATION_COST_PARTITIONING_HEURISTIC_COLLECTION_GENERATOR_H
 
 #include "types.h"
 
@@ -16,7 +16,7 @@ namespace cost_saturation {
 class CostPartitioningHeuristic;
 class OrderGenerator;
 
-class CostPartitioningCollectionGenerator {
+class CostPartitioningHeuristicCollectionGenerator {
     const std::shared_ptr<OrderGenerator> cp_generator;
     const int max_orders;
     const double max_time;
@@ -26,7 +26,7 @@ class CostPartitioningCollectionGenerator {
     const std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 public:
-    CostPartitioningCollectionGenerator(
+    CostPartitioningHeuristicCollectionGenerator(
         const std::shared_ptr<OrderGenerator> &cp_generator,
         int max_orders,
         double max_time,
@@ -34,7 +34,7 @@ public:
         int num_samples,
         double max_optimization_time,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng);
-    ~CostPartitioningCollectionGenerator();
+    ~CostPartitioningHeuristicCollectionGenerator();
 
     std::vector<CostPartitioningHeuristic> generate_cost_partitionings(
         const TaskProxy &task_proxy,

@@ -1,4 +1,4 @@
-#include "cost_partitioning_collection_generator.h"
+#include "cost_partitioning_heuristic_collection_generator.h"
 
 #include "cost_partitioning_heuristic.h"
 #include "diversifier.h"
@@ -44,7 +44,7 @@ static vector<vector<int>> sample_states_and_return_abstract_state_ids(
     return abstract_state_ids_by_sample;
 }
 
-CostPartitioningCollectionGenerator::CostPartitioningCollectionGenerator(
+CostPartitioningHeuristicCollectionGenerator::CostPartitioningHeuristicCollectionGenerator(
     const shared_ptr<OrderGenerator> &cp_generator,
     int max_orders,
     double max_time,
@@ -61,11 +61,11 @@ CostPartitioningCollectionGenerator::CostPartitioningCollectionGenerator(
       rng(rng) {
 }
 
-CostPartitioningCollectionGenerator::~CostPartitioningCollectionGenerator() {
+CostPartitioningHeuristicCollectionGenerator::~CostPartitioningHeuristicCollectionGenerator() {
 }
 
 vector<CostPartitioningHeuristic>
-CostPartitioningCollectionGenerator::generate_cost_partitionings(
+CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
     const TaskProxy &task_proxy,
     const Abstractions &abstractions,
     const vector<int> &costs,

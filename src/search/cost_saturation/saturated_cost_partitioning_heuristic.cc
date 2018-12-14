@@ -1,6 +1,6 @@
 #include "abstraction.h"
 #include "cost_partitioning_heuristic.h"
-#include "cost_partitioning_collection_generator.h"
+#include "cost_partitioning_heuristic_collection_generator.h"
 #include "max_cost_partitioning_heuristic.h"
 #include "utils.h"
 
@@ -67,9 +67,9 @@ void add_order_options_to_parser(OptionParser &parser) {
     utils::add_rng_options(parser);
 }
 
-static CostPartitioningCollectionGenerator get_cp_collection_generator_from_options(
+static CostPartitioningHeuristicCollectionGenerator get_cp_collection_generator_from_options(
     const options::Options &opts) {
-    return CostPartitioningCollectionGenerator(
+    return CostPartitioningHeuristicCollectionGenerator(
         opts.get<shared_ptr<OrderGenerator>>("orders"),
         opts.get<int>("max_orders"),
         opts.get<double>("max_time"),
