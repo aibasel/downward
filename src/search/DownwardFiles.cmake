@@ -379,6 +379,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME PLUGIN_EAGER_WASTAR
+    HELP "Weighted eager A* search"
+    SOURCES
+        search_engines/plugin_eager_wastar
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
     NAME PLUGIN_LAZY
     HELP "Best-first search with deferred evaluation (lazy)"
     SOURCES
@@ -439,6 +447,7 @@ fast_downward_plugin(
     NAME RELAXATION_HEURISTIC
     HELP "The base class for relaxation heuristics"
     SOURCES
+        heuristics/array_pool
         heuristics/relaxation_heuristic
     DEPENDENCY_ONLY
 )
@@ -598,13 +607,15 @@ fast_downward_plugin(
         cegar/abstract_state
         cegar/additive_cartesian_heuristic
         cegar/cartesian_heuristic_function
+        cegar/cegar
         cegar/cost_saturation
         cegar/domains
         cegar/refinement_hierarchy
         cegar/split_selector
         cegar/subtask_generators
         cegar/transition
-        cegar/transition_updater
+        cegar/transition_system
+        cegar/types
         cegar/utils
         cegar/utils_landmarks
     DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES TASK_PROPERTIES

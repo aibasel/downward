@@ -2,8 +2,8 @@
 
 #include "../option_parser.h"
 
-#include "../task_utils/task_properties.h"
 #include "../heuristics/additive_heuristic.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/memory.h"
 
 #include <algorithm>

@@ -1,7 +1,6 @@
 #ifndef OPTIONS_ANY_H
 #define OPTIONS_ANY_H
 
-#include "../utils/language.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -91,7 +90,7 @@ public:
 
 class BadAnyCast : public std::bad_cast {
 public:
-    virtual const char *what() const NOEXCEPT override {
+    virtual const char *what() const noexcept override {
         return "BadAnyCast: failed conversion using any_cast";
     }
 };
