@@ -11,7 +11,6 @@
 #include "options/errors.h"
 #include "options/option_parser.h"
 
-using options::ArgError;
 using options::Bounds;
 using options::OptionParser;
 using options::OptionParserError;

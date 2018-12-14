@@ -7,7 +7,16 @@
 namespace options {
 class Registry;
 }
+
 class SearchEngine;
+
+struct ArgError {
+    std::string msg;
+
+    ArgError(const std::string &msg);
+
+    friend std::ostream &operator<<(std::ostream &out, const ArgError &err);
+};
 
 extern std::shared_ptr<SearchEngine> parse_cmd_line(
     int argc, const char **argv, options::Registry &registry, bool dry_run,

@@ -3,14 +3,6 @@
 using namespace std;
 
 namespace options {
-ArgError::ArgError(const string &msg)
-    : msg(msg) {
-}
-
-ostream &operator<<(ostream &out, const ArgError &err) {
-    return out << "argument error: " << err.msg;
-}
-
 OptionParserError::OptionParserError(const string &msg)
     : msg(msg) {
 }
