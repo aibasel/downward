@@ -70,7 +70,7 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             unique_ptr<options::DocPrinter> doc_printer;
             if (txt2tags)
                 doc_printer = utils::make_unique_ptr<options::Txt2TagsPrinter>(
-                        cout, registry);
+                    cout, registry);
             else
                 doc_printer = utils::make_unique_ptr<options::PlainPrinter>(
                     cout, registry);
