@@ -20,12 +20,8 @@ namespace cost_saturation {
   TODO: Reduce code duplication with pdbs::PatternDatabase.
 */
 
-extern bool increment(
-    const std::vector<int> &pattern_domain_sizes, std::vector<FactPair> &facts);
-
-
 class AbstractForwardOperator {
-    // The ID of the concrete operator is needed for cost partitioning.
+    // We need the concrete operator ID for cost partitioning.
     const int concrete_operator_id;
 
     std::vector<int> unaffected_variables;
@@ -66,8 +62,8 @@ public:
 };
 
 class Projection : public Abstraction {
-    const TaskProxy task_proxy;
-    const pdbs::Pattern pattern;
+    TaskProxy task_proxy;
+    pdbs::Pattern pattern;
 
     std::vector<pdbs::AbstractOperator> abstract_operators;
     std::unique_ptr<pdbs::MatchTree> match_tree;
@@ -112,6 +108,12 @@ class Projection : public Abstraction {
     std::vector<int> compute_goal_states() const;
 
     /*
+      Given an abstract state (represented as a vector of facts), compute the
+      "next" fact. Return true iff there is a next fact.
+    */
+    bool increment_to_next_state(std::vector<FactPair> &facts) const;
+
+    /*
       Apply a function to all transitions in the projection (including
       irrelevant transitions).
     */
@@ -137,7 +139,7 @@ class Projection : public Abstraction {
                     Transition(
                         state, op.get_concrete_operator_id(), state + op.get_hash_effect()));
 
-                has_next_match = increment(pattern_domain_sizes, abstract_facts);
+                has_next_match = increment_to_next_state(abstract_facts);
             }
         }
     }

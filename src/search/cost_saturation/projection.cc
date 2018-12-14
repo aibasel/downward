@@ -15,19 +15,6 @@
 using namespace std;
 
 namespace cost_saturation {
-bool increment(const vector<int> &pattern_domain_sizes, vector<FactPair> &facts) {
-    for (size_t i = 0; i < facts.size(); ++i) {
-        ++facts[i].value;
-        if (facts[i].value > pattern_domain_sizes[facts[i].var] - 1) {
-            facts[i].value = 0;
-        } else {
-            return true;
-        }
-    }
-    return false;
-}
-
-
 AbstractForwardOperator::AbstractForwardOperator(
     const vector<FactPair> &prev_pairs,
     const vector<FactPair> &pre_pairs,
@@ -129,6 +116,18 @@ Projection::Projection(
 }
 
 Projection::~Projection() {
+}
+
+bool Projection::increment_to_next_state(vector<FactPair> &facts) const {
+    for (size_t i = 0; i < facts.size(); ++i) {
+        ++facts[i].value;
+        if (facts[i].value > pattern_domain_sizes[facts[i].var] - 1) {
+            facts[i].value = 0;
+        } else {
+            return true;
+        }
+    }
+    return false;
 }
 
 int Projection::get_abstract_state_id(const State &concrete_state) const {
