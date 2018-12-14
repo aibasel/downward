@@ -14,6 +14,8 @@ public:
     Duration get_elapsed_time() const;
     Duration get_remaining_time() const;
 };
+
+std::ostream &operator<<(std::ostream &os, const CountdownTimer &timer);
 }
 
 #endif

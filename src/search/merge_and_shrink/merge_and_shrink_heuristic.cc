@@ -196,7 +196,6 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
 
     Heuristic::add_options_to_parser(parser);
     add_merge_and_shrink_algorithm_options_to_parser(parser);
-
     options::Options opts = parser.parse();
     if (parser.help_mode()) {
         return nullptr;

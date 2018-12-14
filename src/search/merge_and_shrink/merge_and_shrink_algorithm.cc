@@ -37,6 +37,10 @@ using options::Options;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
+static void log_progress(const utils::Timer &timer, string msg) {
+    cout << "M&S algorithm timer: " << timer << " ("<< msg << ")" << endl;
+}
+
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
     merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),
     shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
@@ -178,7 +182,7 @@ bool MergeAndShrinkAlgorithm::prune_fts(
         }
     }
     if (verbosity >= Verbosity::NORMAL && pruned) {
-        print_time(timer, "after pruning all factors");
+        log_progress(timer, "after pruning all factors");
     }
     return unsolvable;
 }
@@ -208,6 +212,10 @@ void MergeAndShrinkAlgorithm::main_loop(
         merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
     merge_strategy_factory = nullptr;
 
+    auto log_main_loop_progress = [&timer](const string &msg){
+        cout << "M&S algorithm main loop timer: " << timer
+             << " ("<< msg << ")" << endl;
+    };
     int iteration_counter = 0;
     while (fts.get_num_active_entries() > 1) {
         // Choose next transition systems to merge
@@ -225,14 +233,14 @@ void MergeAndShrinkAlgorithm::main_loop(
                 fts.statistics(merge_index1);
                 fts.statistics(merge_index2);
             }
-            print_time(timer, "main loop: after computation of next merge");
+            log_main_loop_progress("after computation of next merge");
         }
 
         // Label reduction (before shrinking)
         if (label_reduction && label_reduction->reduce_before_shrinking()) {
             bool reduced = label_reduction->reduce(merge_indices, fts, verbosity);
             if (verbosity >= Verbosity::NORMAL && reduced) {
-                print_time(timer, "after label reduction");
+                log_main_loop_progress("after label reduction");
             }
         }
 
@@ -251,7 +259,7 @@ void MergeAndShrinkAlgorithm::main_loop(
             *shrink_strategy,
             verbosity);
         if (verbosity >= Verbosity::NORMAL && shrunk) {
-            print_time(timer, "main loop: after shrinking");
+            log_main_loop_progress("after shrinking");
         }
 
         if (ran_out_of_time(timer)) {
@@ -262,7 +270,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         if (label_reduction && label_reduction->reduce_before_merging()) {
             bool reduced = label_reduction->reduce(merge_indices, fts, verbosity);
             if (verbosity >= Verbosity::NORMAL && reduced) {
-                print_time(timer, "main loop: after label reduction");
+                log_main_loop_progress("after label reduction");
             }
         }
 
@@ -281,7 +289,7 @@ void MergeAndShrinkAlgorithm::main_loop(
             if (verbosity >= Verbosity::VERBOSE) {
                 fts.statistics(merged_index);
             }
-            print_time(timer, "main loop: after merging");
+            log_main_loop_progress("after merging");
         }
 
         // We do not check for num transitions here but only after pruning
@@ -302,7 +310,7 @@ void MergeAndShrinkAlgorithm::main_loop(
                 if (verbosity >= Verbosity::VERBOSE) {
                     fts.statistics(merged_index);
                 }
-                print_time(timer, "main loop: after pruning");
+                log_main_loop_progress("after pruning");
             }
         }
 
@@ -378,7 +386,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             compute_goal_distances,
             verbosity);
     if (verbosity >= Verbosity::NORMAL) {
-        print_time(timer, "after computation of atomic transition systems");
+        log_progress(timer, "after computation of atomic transition systems");
     }
     // TODO: think about if we can prune already while creating the atomic FTS.
     bool unsolvable = prune_fts(fts, timer);
