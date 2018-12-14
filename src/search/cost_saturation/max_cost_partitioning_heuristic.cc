@@ -4,8 +4,6 @@
 #include "cost_partitioning_heuristic.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-
 #include "../utils/logging.h"
 
 using namespace std;
@@ -26,7 +24,7 @@ static int compute_max_h(
 }
 
 MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
-    const Options &opts,
+    const options::Options &opts,
     Abstractions &&abstractions_,
     vector<CostPartitioningHeuristic> &&cp_heuristics_)
     : Heuristic(opts),
