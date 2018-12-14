@@ -100,11 +100,11 @@ Projection::Projection(
         build_abstract_operators(
             op, -1, variable_to_pattern_index, variables,
             [this](
-                const std::vector<FactPair> &prevail,
-                const std::vector<FactPair> &preconditions,
-                const std::vector<FactPair> &effects,
+                const vector<FactPair> &prevail,
+                const vector<FactPair> &preconditions,
+                const vector<FactPair> &effects,
                 int cost,
-                const std::vector<std::size_t> &hash_multipliers,
+                const vector<size_t> &hash_multipliers,
                 int concrete_operator_id) {
                 abstract_forward_operators.emplace_back(
                     prevail, preconditions, effects, hash_multipliers, concrete_operator_id);
