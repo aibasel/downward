@@ -620,6 +620,7 @@ fast_downward_plugin(
         cost_saturation/cost_partitioning_heuristic_collection_generator
         cost_saturation/diversifier
         cost_saturation/explicit_abstraction
+        cost_saturation/greedy_order_utils
         cost_saturation/max_cost_partitioning_heuristic
         cost_saturation/order_generator
         cost_saturation/order_generator_greedy
@@ -628,7 +629,6 @@ fast_downward_plugin(
         cost_saturation/projection
         cost_saturation/projection_generator
         cost_saturation/saturated_cost_partitioning_heuristic
-        cost_saturation/scoring_functions
         cost_saturation/types
         cost_saturation/utils
     DEPENDS CEGAR PDBS PRIORITY_QUEUES SAMPLING TASK_PROPERTIES

@@ -2,7 +2,7 @@
 #define COST_SATURATION_ORDER_GENERATOR_GREEDY_H
 
 #include "order_generator.h"
-#include "scoring_functions.h"
+#include "greedy_order_utils.h"
 
 namespace options {
 class Options;
