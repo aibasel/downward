@@ -176,11 +176,6 @@ class Projection : public Abstraction {
         const OperatorCallback &callback) const;
 
     /*
-      Use Dijkstra's algorithm to compute all goal distances.
-    */
-    std::vector<int> compute_distances(const std::vector<int> &costs) const;
-
-    /*
       Return true iff all abstract facts hold in the given state.
     */
     bool is_consistent(

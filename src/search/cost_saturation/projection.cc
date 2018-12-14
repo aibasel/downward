@@ -271,50 +271,6 @@ void Projection::build_abstract_operators(
                  effects_without_pre, variables, callback);
 }
 
-vector<int> Projection::compute_distances(const vector<int> &costs) const {
-    assert(all_of(costs.begin(), costs.end(), [](int c) {return c >= 0;}));
-    vector<int> distances(num_states, INF);
-
-    // Initialize queue.
-    assert(pq.empty());
-    for (int goal : goal_states) {
-        pq.push(0, goal);
-        distances[goal] = 0;
-    }
-
-    // Reuse vector to save allocations.
-    vector<const pdbs::AbstractOperator *> applicable_operators;
-
-    // Run Dijkstra loop.
-    while (!pq.empty()) {
-        pair<int, size_t> node = pq.pop();
-        int distance = node.first;
-        size_t state_index = node.second;
-        assert(utils::in_bounds(state_index, distances));
-        if (distance > distances[state_index]) {
-            continue;
-        }
-
-        // Regress abstract state.
-        applicable_operators.clear();
-        match_tree_backward->get_applicable_operators(state_index, applicable_operators);
-        for (const pdbs::AbstractOperator *op : applicable_operators) {
-            size_t predecessor = state_index + op->get_hash_effect();
-            int op_id = op->get_concrete_operator_id();
-            assert(utils::in_bounds(op_id, costs));
-            int alternative_cost = (costs[op_id] == INF) ?
-                INF : distances[state_index] + costs[op_id];
-            assert(utils::in_bounds(predecessor, distances));
-            if (alternative_cost < distances[predecessor]) {
-                distances[predecessor] = alternative_cost;
-                pq.push(alternative_cost, predecessor);
-            }
-        }
-    }
-    pq.clear();
-    return distances;
-}
-
 bool Projection::is_consistent(
     size_t state_index,
     const vector<FactPair> &abstract_facts) const {
@@ -394,7 +350,47 @@ vector<int> Projection::compute_saturated_costs(
 
 vector<int> Projection::compute_goal_distances(const vector<int> &costs) const {
     assert(has_transition_system());
-    return compute_distances(costs);
+    assert(all_of(costs.begin(), costs.end(), [](int c) {return c >= 0;}));
+    vector<int> distances(num_states, INF);
+
+    // Initialize queue.
+    assert(pq.empty());
+    for (int goal : goal_states) {
+        pq.push(0, goal);
+        distances[goal] = 0;
+    }
+
+    // Reuse vector to save allocations.
+    vector<const pdbs::AbstractOperator *> applicable_operators;
+
+    // Run Dijkstra loop.
+    while (!pq.empty()) {
+        pair<int, size_t> node = pq.pop();
+        int distance = node.first;
+        size_t state_index = node.second;
+        assert(utils::in_bounds(state_index, distances));
+        if (distance > distances[state_index]) {
+            continue;
+        }
+
+        // Regress abstract state.
+        applicable_operators.clear();
+        match_tree_backward->get_applicable_operators(state_index, applicable_operators);
+        for (const pdbs::AbstractOperator *op : applicable_operators) {
+            size_t predecessor = state_index + op->get_hash_effect();
+            int op_id = op->get_concrete_operator_id();
+            assert(utils::in_bounds(op_id, costs));
+            int alternative_cost = (costs[op_id] == INF) ?
+                INF : distances[state_index] + costs[op_id];
+            assert(utils::in_bounds(predecessor, distances));
+            if (alternative_cost < distances[predecessor]) {
+                distances[predecessor] = alternative_cost;
+                pq.push(alternative_cost, predecessor);
+            }
+        }
+    }
+    pq.clear();
+    return distances;
 }
 
 int Projection::get_num_states() const {
