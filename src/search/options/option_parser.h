@@ -336,7 +336,7 @@ void predefine_plugin(const std::string &arg, Registry &registry,
         predefinition = utils::split(arg, "=");
     } catch (utils::StringOperationError &) {
         throw OptionParserError("Predefinition error: Predefinition has to be "
-                "of the form [name]=[definition].");
+                                "of the form [name]=[definition].");
     }
 
     std::string key = predefinition.first;
