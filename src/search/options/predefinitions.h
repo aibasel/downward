@@ -37,8 +37,8 @@ public:
             return any_cast<T>(predefined.at(key).second);
         } catch (BadAnyCast &) {
             throw OptionParserError(
-                "Tried to look up a predefinition with a wrong type: " +
-                key + "(type: " +  typeid(T).name() + ")");
+                      "Tried to look up a predefinition with a wrong type: " +
+                      key + "(type: " + typeid(T).name() + ")");
         }
     }
 
