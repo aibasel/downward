@@ -51,8 +51,8 @@ void add_order_options_to_parser(OptionParser &parser) {
         Bounds("0", "infinity"));
     parser.add_option<bool>(
         "diversify",
-        "only keep orders that have a higher heuristic value than all previous"
-        " orders for any of the samples",
+        "only keep orders that have a higher heuristic value than all previous "
+        "orders for any of the samples",
         "true");
     parser.add_option<int>(
         "samples",
@@ -98,8 +98,8 @@ static shared_ptr<Heuristic> get_max_cp_heuristic(
     parser.add_list_option<shared_ptr<AbstractionGenerator>>(
         "abstraction_generators",
         "available generators are cartesian() and projections()",
-        "[projections(hillclimbing(max_time=60, random_seed=0)),"
-        " projections(systematic(2)), cartesian()]");
+        "[projections(hillclimbing(max_time=60, random_seed=0)), "
+        "projections(systematic(2)), cartesian()]");
     add_order_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
@@ -127,9 +127,9 @@ static shared_ptr<Heuristic> get_max_cp_heuristic(
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Saturated cost partitioning heuristic",
-        "Compute the maximum over multiple saturated cost partitioning"
-        " heuristics using different orders. Depending on the options orders"
-        " may be greedy, optimized and/or diverse.");
+        "Compute the maximum over multiple saturated cost partitioning "
+        "heuristics using different orders. Depending on the options, orders "
+        "may be greedy, optimized and/or diverse.");
     return get_max_cp_heuristic(parser, compute_saturated_cost_partitioning);
 }
 

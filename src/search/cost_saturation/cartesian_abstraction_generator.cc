@@ -163,7 +163,7 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
     parser.add_option<int>(
         "max_transitions",
         "maximum sum of state-changing transitions (excluding self-loops) over "
-        " all abstractions",
+        "all abstractions",
         "1000000",
         Bounds("0", "infinity"));
     parser.add_option<bool>(
