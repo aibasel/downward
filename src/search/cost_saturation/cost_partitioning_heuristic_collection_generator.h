@@ -17,7 +17,7 @@ class CostPartitioningHeuristic;
 class OrderGenerator;
 
 class CostPartitioningHeuristicCollectionGenerator {
-    const std::shared_ptr<OrderGenerator> cp_generator;
+    const std::shared_ptr<OrderGenerator> order_generator;
     const int max_orders;
     const double max_time;
     const bool diversify;
@@ -27,7 +27,7 @@ class CostPartitioningHeuristicCollectionGenerator {
 
 public:
     CostPartitioningHeuristicCollectionGenerator(
-        const std::shared_ptr<OrderGenerator> &cp_generator,
+        const std::shared_ptr<OrderGenerator> &order_generator,
         int max_orders,
         double max_time,
         bool diversify,

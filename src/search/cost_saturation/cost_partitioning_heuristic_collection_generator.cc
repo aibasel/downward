@@ -45,14 +45,14 @@ static vector<vector<int>> sample_states_and_return_abstract_state_ids(
 }
 
 CostPartitioningHeuristicCollectionGenerator::CostPartitioningHeuristicCollectionGenerator(
-    const shared_ptr<OrderGenerator> &cp_generator,
+    const shared_ptr<OrderGenerator> &order_generator,
     int max_orders,
     double max_time,
     bool diversify,
     int num_samples,
     double max_optimization_time,
     const shared_ptr<utils::RandomNumberGenerator> &rng)
-    : cp_generator(cp_generator),
+    : order_generator(order_generator),
       max_orders(max_orders),
       max_time(max_time),
       diversify(diversify),
@@ -82,10 +82,10 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
         };
     }
 
-    cp_generator->initialize(abstractions, costs);
+    order_generator->initialize(abstractions, costs);
 
     // Compute cost partitioning heuristic for sampling.
-    Order order = cp_generator->compute_order_for_state(
+    Order order = order_generator->compute_order_for_state(
         abstractions, costs, abstract_state_ids_for_init, false);
     CostPartitioningHeuristic cp_for_sampling = cp_function(
         abstractions, order, costs);
@@ -133,7 +133,7 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
         bool verbose = (evaluated_orders == 0);
 
         // Find order and compute cost partitioning for it.
-        Order order = cp_generator->compute_order_for_state(
+        Order order = order_generator->compute_order_for_state(
             abstractions, costs, abstract_state_ids, verbose);
         CostPartitioningHeuristic cp_heuristic = cp_function(
             abstractions, order, costs);
