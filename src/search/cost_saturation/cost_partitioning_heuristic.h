@@ -11,6 +11,11 @@ namespace cost_saturation {
   by summing the goal distances of abstract states corresponding to a given
   concrete state.
 
+  For efficiency, users of this class need to store the abstractions and map a
+  given concrete state to the corresponding abstract state IDs in all
+  abstractions themselves. This allows them to compute the mapping only once
+  instead of for each order.
+
   We call an abstraction A useful if h^A(s) > 0 for at least one state s. To
   save space, we only store h values for useful abstractions.
 */
