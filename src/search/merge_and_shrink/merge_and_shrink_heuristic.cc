@@ -126,7 +126,18 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
-            "AAAI Press 2016"));
+            "AAAI Press 2016") + "\n" +
+        "Details of the algorithms and the implementation are described in the "
+        "paper" + utils::format_paper_reference(
+            {"Silvan Sievers"},
+            "Merge-and-Shrink Heuristics for Classical Planning: Efficient "
+            "Implementation and Partial Abstractions.",
+            "https://ai.dmi.unibas.ch/papers/sievers-socs2018.pdf",
+            "Proceedings of the 11th Annual Symposium on Combinatorial Search "
+            "(SoCS 2018)",
+            "90-98",
+            "AAAI Press 2018")
+        );
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
