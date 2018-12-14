@@ -177,7 +177,7 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
         "When using a time limit on the main loop of the merge-and-shrink "
         "algorithm, the heuristic will compute the maximum over all heuristics "
         "induced by the remaining factors if terminating the merge-and-shrink "
-        "algorithm early. Exception: there is an unsolvable factor which will "
+        "algorithm early. Exception: if there is an unsolvable factor, it will"
         "be used as the exclusive heuristic since the problem is unsolvable.");
     parser.document_note(
         "Note",
