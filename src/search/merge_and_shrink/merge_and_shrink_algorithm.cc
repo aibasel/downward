@@ -18,6 +18,7 @@
 
 #include "../task_utils/task_properties.h"
 
+#include "../utils/countdown_timer.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
@@ -142,8 +143,8 @@ void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
 }
 
 bool MergeAndShrinkAlgorithm::ran_out_of_time(
-    const utils::Timer &timer) const {
-    if (timer() > main_loop_max_time) {
+    const utils::CountdownTimer &timer) const {
+    if (timer.is_expired()) {
         if (verbosity >= Verbosity::NORMAL) {
             cout << "Ran out of time, stopping computation." << endl;
             cout << endl;
@@ -185,10 +186,15 @@ bool MergeAndShrinkAlgorithm::prune_fts(
 void MergeAndShrinkAlgorithm::main_loop(
     FactoredTransitionSystem &fts,
     const TaskProxy &task_proxy) {
-    utils::Timer timer;
+    utils::CountdownTimer timer(main_loop_max_time);
     if (verbosity >= Verbosity::NORMAL) {
-        cout << "Starting main loop with a time limit of "
+        cout << "Starting main loop ";
+        if (main_loop_max_time == numeric_limits<double>::infinity()) {
+            cout << "without a time limit." << endl;
+        } else {
+            cout << "with a time limit of "
              << main_loop_max_time << "s." << endl;
+        }
     }
     int maximum_intermediate_size = 0;
     for (int i = 0; i < fts.get_size(); ++i) {
@@ -330,7 +336,7 @@ void MergeAndShrinkAlgorithm::main_loop(
     }
 
     cout << "End of merge-and-shrink algorithm, statistics:" << endl;
-    cout << "Main loop runtime: " << timer << endl;
+    cout << "Main loop runtime: " << timer.get_elapsed_time() << endl;
     cout << "Maximum intermediate abstraction size: "
          << maximum_intermediate_size << endl;
     shrink_strategy = nullptr;
