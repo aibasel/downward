@@ -36,7 +36,7 @@ public:
         const std::shared_ptr<utils::RandomNumberGenerator> &rng);
     ~CostPartitioningCollectionGenerator();
 
-    std::vector<CostPartitioningHeuristic> get_cost_partitionings(
+    std::vector<CostPartitioningHeuristic> generate_cost_partitionings(
         const TaskProxy &task_proxy,
         const Abstractions &abstractions,
         const std::vector<int> &costs,

@@ -65,7 +65,7 @@ CostPartitioningCollectionGenerator::~CostPartitioningCollectionGenerator() {
 }
 
 vector<CostPartitioningHeuristic>
-CostPartitioningCollectionGenerator::get_cost_partitionings(
+CostPartitioningCollectionGenerator::generate_cost_partitionings(
     const TaskProxy &task_proxy,
     const Abstractions &abstractions,
     const vector<int> &costs,

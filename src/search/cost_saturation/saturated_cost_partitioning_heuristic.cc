@@ -116,7 +116,7 @@ static shared_ptr<Heuristic> get_max_cp_heuristic(
     Abstractions abstractions = generate_abstractions(
         task, opts.get_list<shared_ptr<AbstractionGenerator>>("abstraction_generators"));
     vector<CostPartitioningHeuristic> cp_heuristics =
-        get_cp_collection_generator_from_options(opts).get_cost_partitionings(
+        get_cp_collection_generator_from_options(opts).generate_cost_partitionings(
             task_proxy, abstractions, costs, cp_function);
     return make_shared<MaxCostPartitioningHeuristic>(
         opts,
