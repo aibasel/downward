@@ -36,11 +36,9 @@ public:
         try {
             return any_cast<T>(predefined.at(key).second);
         } catch (BadAnyCast &) {
-            std::cerr << "Tried to look up a predefinition with a wrong type: "
-                      << key << "(type: " << typeid(T).name()
-                      << ")" << std::endl;
-            // exit_with_demangling_hint(utils::ExitCode::SEARCH_CRITICAL_ERROR, typeid(T).name());
-            throw OptionParserError("Parse Error.");
+            throw OptionParserError(
+                "Tried to look up a predefinition with a wrong type: " +
+                key + "(type: " +  typeid(T).name() + ")");
         }
     }
 
