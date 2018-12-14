@@ -36,17 +36,17 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
 
 void MergeAndShrinkHeuristic::finalize_factor(
     FactoredTransitionSystem &fts, int index) {
-    pair<unique_ptr<MergeAndShrinkRepresentation>, unique_ptr<Distances>>
-    final_entry = fts.extract_factor(index);
-    if (!final_entry.second->are_goal_distances_computed()) {
+    auto final_entry = fts.extract_factor(index);
+    unique_ptr<MergeAndShrinkRepresentation> mas_representation = move(final_entry.first);
+    unique_ptr<Distances> distances = move(final_entry.second);
+    if (!distances->are_goal_distances_computed()) {
         const bool compute_init = false;
         const bool compute_goal = true;
-        final_entry.second->compute_distances(
-            compute_init, compute_goal, verbosity);
+        distances->compute_distances(compute_init, compute_goal, verbosity);
     }
-    assert(final_entry.second->are_goal_distances_computed());
-    final_entry.first->set_distances(*final_entry.second);
-    mas_representations.push_back(move(final_entry.first));
+    assert(distances->are_goal_distances_computed());
+    mas_representation->set_distances(*distances);
+    mas_representations.push_back(move(mas_representation));
 }
 
 void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
