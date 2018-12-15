@@ -56,11 +56,8 @@ public:
     void verify_list_non_empty(const std::string &key) const {
         if (!help_mode) {
             if (get_list<T>(key).empty()) {
-                std::cerr << "Error: unexpected empty list!"
-                          << std::endl
-                          << "List " << key << " is empty"
-                          << std::endl;
-                utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+                throw OptionParserError("Error: list for key " +
+                                        key + " must not be empty\n");
             }
         }
     }
