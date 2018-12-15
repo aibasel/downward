@@ -88,7 +88,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
-    // TODO: Is the additive version consistent as well?
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
