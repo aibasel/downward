@@ -121,7 +121,7 @@ pair<int, int> Abstraction::refine(
             goals.insert(v2_id);
         }
         if (debug) {
-            cout << "goal states: " << goals.size() << endl;
+            cout << "Goal states: " << goals.size() << endl;
         }
     }
 

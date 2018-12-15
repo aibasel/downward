@@ -60,7 +60,7 @@ public:
     int get_id() const;
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
-        return os << state.domains;
+        return os << "#" << state.get_id() << state.domains;
     }
 
     /*
