@@ -11,12 +11,10 @@
 #include <typeindex>
 
 using namespace std;
-using utils::ExitCode;
 
 namespace options {
 static void print_initialization_errors_and_exit(const vector<string> &errors) {
-    cerr << "Plugin initialization errors:\n" + utils::join(errors, "\n") << endl;
-    exit_with_demangling_hint(ExitCode::SEARCH_CRITICAL_ERROR, "[TYPE]");
+    throw OptionParserError("\n" + utils::join(errors, "\n") + "\n" + get_demangling_hint("[TYPE]"));
 }
 
 

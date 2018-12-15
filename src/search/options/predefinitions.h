@@ -21,8 +21,7 @@ public:
     template<typename T>
     void predefine(const std::string &key, T object) {
         if (predefined.count(key)) {
-            std::cerr << key << " is already used in a predefinition." << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            throw OptionParserError(key + " is already used in a predefinition.");
         }
         predefined.emplace(key, std::make_pair(std::type_index(typeid(T)), object));
     }
@@ -36,10 +35,9 @@ public:
         try {
             return any_cast<T>(predefined.at(key).second);
         } catch (BadAnyCast &) {
-            std::cerr << "Tried to look up a predefinition with a wrong type: "
-                      << key << "(type: " << typeid(T).name()
-                      << ")" << std::endl;
-            exit_with_demangling_hint(utils::ExitCode::SEARCH_CRITICAL_ERROR, typeid(T).name());
+            throw OptionParserError(
+                      "Tried to look up a predefinition with a wrong type: " +
+                      key + "(type: " + typeid(T).name() + ")");
         }
     }
 
