@@ -6,11 +6,11 @@ using namespace std;
 
 namespace options {
 OptionParserError::OptionParserError(const string &msg)
-    : msg(msg) {
+    : msg("option parser error: " + msg) {
 }
 
 const char *OptionParserError::what() const noexcept {
-    return ("option parser error: " + msg).c_str();
+    return msg.c_str();
 }
 
 
