@@ -1,5 +1,7 @@
 #include "errors.h"
 
+#include <sstream>
+
 using namespace std;
 
 namespace options {
@@ -12,27 +14,20 @@ const char *OptionParserError::what() const noexcept {
 }
 
 
-ParseError::ParseError(const string &msg, ParseTree parse_tree)
-    : msg(msg),
-      parse_tree(parse_tree) {
-}
-
 ParseError::ParseError(
-    const string &msg, const ParseTree &parse_tree, const string &substring)
-    : msg(msg),
-      parse_tree(parse_tree),
-      substring(substring) {
+    const string &error, const ParseTree &parse_tree, const string &substring) {
+    stringstream out;
+    out << "parse error: " << endl
+        << error << " at: " << endl;
+    kptree::print_tree_bracketed<ParseNode>(parse_tree, out);
+    if (!substring.empty()) {
+        out << " (cannot continue parsing after \"" << substring << "\")" << endl;
+    }
+    msg = out.str();
 }
 
-ostream &operator<<(ostream &out, const ParseError &parse_error) {
-    out << "parse error: " << endl
-        << parse_error.msg << " at: " << endl;
-    kptree::print_tree_bracketed<ParseNode>(parse_error.parse_tree, out);
-    if (!parse_error.substring.empty()) {
-        out << " (cannot continue parsing after \"" << parse_error.substring
-            << "\")" << endl;
-    }
-    return out;
+const char *ParseError::what() const noexcept {
+    return msg.c_str();
 }
 
 
