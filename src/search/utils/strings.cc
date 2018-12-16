@@ -6,11 +6,7 @@ using namespace std;
 
 namespace utils {
 StringOperationError::StringOperationError(const string &msg)
-    : msg(msg) {
-}
-
-const char *StringOperationError::what() const noexcept {
-    return msg.c_str();
+    : runtime_error(msg) {
 }
 
 
