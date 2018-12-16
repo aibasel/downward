@@ -7,9 +7,10 @@ OptionParserError::OptionParserError(const string &msg)
     : msg(msg) {
 }
 
-ostream &operator<<(ostream &out, const OptionParserError &err) {
-    return out << "option parser error: " << err.msg;
+const char *OptionParserError::what() const noexcept {
+    return ("option parser error: " + msg).c_str();
 }
+
 
 ParseError::ParseError(const string &msg, ParseTree parse_tree)
     : msg(msg),
