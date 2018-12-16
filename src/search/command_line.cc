@@ -18,9 +18,10 @@ ArgError::ArgError(const string &msg)
     : msg(msg) {
 }
 
-ostream &operator<<(ostream &out, const ArgError &err) {
-    return out << "argument error: " << err.msg;
+const char *ArgError::what() const noexcept {
+    return ("argument error: " + msg).c_str();
 }
+
 
 static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
