@@ -3,7 +3,8 @@
 
 #include "parse_tree.h"
 
-#include <ostream>
+#include <exception>
+#include <ostream> // TODO: Remove.
 #include <string>
 
 
@@ -19,14 +20,14 @@
     )
 
 namespace options {
-struct OptionParserError {
+class OptionParserError : public std::exception {
     std::string msg;
+public:
+    explicit OptionParserError(const std::string &msg);
 
-    OptionParserError(const std::string &msg);
-
-    friend std::ostream &operator<<(std::ostream &out,
-                                    const OptionParserError &err);
+    virtual const char *what() const noexcept override;
 };
+
 
 struct ParseError {
     std::string msg;

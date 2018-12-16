@@ -42,8 +42,8 @@ int main(int argc, const char **argv) {
         cerr << error << endl;
         usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    } catch (OptionParserError &error) {
-        cerr << error << endl;
+    } catch (const OptionParserError &error) {
+        cerr << error.what() << endl;
         usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (ParseError &error) {
