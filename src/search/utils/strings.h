@@ -2,15 +2,13 @@
 #define UTILS_STRINGS_H
 
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 namespace utils {
-class StringOperationError : public std::exception {
-    std::string msg;
+class StringOperationError : public std::runtime_error {
 public:
     explicit StringOperationError(const std::string &msg);
-
-    virtual const char *what() const noexcept override;
 };
 
 extern void lstrip(std::string &s);

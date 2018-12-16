@@ -1,8 +1,8 @@
 #ifndef COMMAND_LINE_H
 #define COMMAND_LINE_H
 
-#include <exception>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 namespace options {
@@ -11,12 +11,9 @@ class Registry;
 
 class SearchEngine;
 
-class ArgError : public std::exception {
-    std::string msg;
+class ArgError : public std::runtime_error {
 public:
     explicit ArgError(const std::string &msg);
-
-    virtual const char *what() const noexcept override;
 };
 
 extern std::shared_ptr<SearchEngine> parse_cmd_line(

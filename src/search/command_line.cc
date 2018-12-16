@@ -15,11 +15,7 @@
 using namespace std;
 
 ArgError::ArgError(const string &msg)
-    : msg("argument error: " + msg) {
-}
-
-const char *ArgError::what() const noexcept {
-    return msg.c_str();
+    : runtime_error("argument error: " + msg) {
 }
 
 
