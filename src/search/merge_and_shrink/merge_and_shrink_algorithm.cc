@@ -158,35 +158,6 @@ bool MergeAndShrinkAlgorithm::ran_out_of_time(
     return false;
 }
 
-bool MergeAndShrinkAlgorithm::prune_fts(
-    FactoredTransitionSystem &fts, const utils::Timer &timer) const {
-    /*
-      Prune all factors according to the chosen options. Stop early if one
-      factor is unsolvable. Return true iff unsolvable.
-    */
-    bool pruned = false;
-    bool unsolvable = false;
-    for (int index = 0; index < fts.get_size(); ++index) {
-        if (prune_unreachable_states || prune_irrelevant_states) {
-            bool pruned_factor = prune_step(
-                fts,
-                index,
-                prune_unreachable_states,
-                prune_irrelevant_states,
-                verbosity);
-            pruned = pruned || pruned_factor;
-        }
-        if (!fts.is_factor_solvable(index)) {
-            unsolvable = true;
-            break;
-        }
-    }
-    if (verbosity >= Verbosity::NORMAL && pruned) {
-        log_progress(timer, "after pruning all factors");
-    }
-    return unsolvable;
-}
-
 void MergeAndShrinkAlgorithm::main_loop(
     FactoredTransitionSystem &fts,
     const TaskProxy &task_proxy) {
@@ -213,7 +184,8 @@ void MergeAndShrinkAlgorithm::main_loop(
     merge_strategy_factory = nullptr;
 
     auto log_main_loop_progress = [&timer](const string &msg) {
-            cout << "M&S algorithm main loop timer: " << timer
+            cout << "M&S algorithm main loop timer: "
+                 << timer.get_elapsed_time()
                  << " (" << msg << ")" << endl;
         };
     int iteration_counter = 0;
@@ -386,11 +358,35 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             compute_goal_distances,
             verbosity);
     if (verbosity >= Verbosity::NORMAL) {
-        log_progress(timer, "after computation of atomic transition systems");
+        log_progress(timer, "after computation of atomic factors");
     }
-    // TODO: think about if we can prune already while creating the atomic FTS.
-    bool unsolvable = prune_fts(fts, timer);
-    if (verbosity >= Verbosity::NORMAL) {
+
+    /*
+      Prune all atomic factors according to the chosen options. Stop early if
+      one factor is unsolvable.
+
+      TODO: think about if we can prune already while creating the atomic FTS.
+    */
+    bool pruned = false;
+    bool unsolvable = false;
+    for (int index = 0; index < fts.get_size(); ++index) {
+        assert(fts.is_active(index));
+        if (prune_unreachable_states || prune_irrelevant_states) {
+            bool pruned_factor = prune_step(
+                fts,
+                index,
+                prune_unreachable_states,
+                prune_irrelevant_states,
+                verbosity);
+            pruned = pruned || pruned_factor;
+        }
+        if (!fts.is_factor_solvable(index)) {
+            unsolvable = true;
+            break;
+        }
+    }
+    if (verbosity >= Verbosity::NORMAL && pruned) {
+        log_progress(timer, "after pruning atomic factors");
         cout << endl;
     }
 
