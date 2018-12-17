@@ -12,7 +12,6 @@ class Options;
 
 namespace utils {
 class CountdownTimer;
-class Timer;
 }
 
 namespace merge_and_shrink {
@@ -49,8 +48,6 @@ class MergeAndShrinkAlgorithm {
     long starting_peak_memory;
 
     bool ran_out_of_time(const utils::CountdownTimer &timer) const;
-    // Return true iff fts has been detected to be unsolvable.
-    bool prune_fts(FactoredTransitionSystem &fts, const utils::Timer &timer) const;
     void statistics(int maximum_intermediate_size) const;
     void main_loop(
         FactoredTransitionSystem &fts,

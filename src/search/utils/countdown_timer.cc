@@ -28,9 +28,4 @@ Duration CountdownTimer::get_elapsed_time() const {
 Duration CountdownTimer::get_remaining_time() const {
     return Duration(max_time - get_elapsed_time());
 }
-
-ostream &operator<<(ostream &os, const CountdownTimer &timer) {
-    os << timer.get_elapsed_time();
-    return os;
-}
 }
