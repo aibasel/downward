@@ -48,11 +48,12 @@ AbstractForwardOperator::AbstractForwardOperator(
     for (size_t pos = 0; pos < hash_multipliers.size(); ++pos) {
         int pre_val = abstract_preconditions[pos];
         if (pre_val == -1) {
-            unaffected_variables.push_back(pos);
+            first_facts_of_unaffected_variables.emplace_back(pos, 0);
         } else {
             precondition_hash += hash_multipliers[pos] * pre_val;
         }
     }
+    first_facts_of_unaffected_variables.shrink_to_fit();
 }
 
 int AbstractForwardOperator::get_concrete_operator_id() const {
@@ -127,10 +128,10 @@ Projection::~Projection() {
 }
 
 bool Projection::increment_to_next_state(vector<FactPair> &facts) const {
-    for (size_t i = 0; i < facts.size(); ++i) {
-        ++facts[i].value;
-        if (facts[i].value > pattern_domain_sizes[facts[i].var] - 1) {
-            facts[i].value = 0;
+    for (FactPair &fact : facts) {
+        ++fact.value;
+        if (fact.value > pattern_domain_sizes[fact.var] - 1) {
+            fact.value = 0;
         } else {
             return true;
         }

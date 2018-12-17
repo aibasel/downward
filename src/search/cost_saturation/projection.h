@@ -24,7 +24,8 @@ class AbstractForwardOperator {
     // We need the concrete operator ID for cost partitioning.
     const int concrete_operator_id;
 
-    std::vector<int> unaffected_variables;
+    // For each variable V that is not changed by this operator we store the fact V=0.      .
+    std::vector<FactPair> first_facts_of_unaffected_variables;
 
     int precondition_hash;
 
@@ -48,8 +49,8 @@ public:
 
     int get_concrete_operator_id() const;
 
-    const std::vector<int> &get_unaffected_variables() const {
-        return unaffected_variables;
+    const std::vector<FactPair> &get_first_facts_of_unaffected_variables() const {
+        return first_facts_of_unaffected_variables;
     }
 
     /*
@@ -126,15 +127,10 @@ class Projection : public Abstraction {
         std::vector<FactPair> abstract_facts;
 
         for (const AbstractForwardOperator &op : abstract_forward_operators) {
-            abstract_facts.clear();
-            for (int var : op.get_unaffected_variables()) {
-                abstract_facts.emplace_back(var, 0);
-            }
-
-            int precondition_hash = op.get_precondition_hash();
+            abstract_facts = op.get_first_facts_of_unaffected_variables();
             bool has_next_match = true;
             while (has_next_match) {
-                int state = precondition_hash;
+                int state = op.get_precondition_hash();
                 for (const FactPair &fact : abstract_facts) {
                     state += hash_multipliers[fact.var] * fact.value;
                 }
