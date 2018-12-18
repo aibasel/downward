@@ -1,12 +1,17 @@
 #include "strings.h"
 
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
 namespace utils {
 StringOperationError::StringOperationError(const string &msg)
-    : runtime_error(msg) {
+    : msg(msg) {
+}
+
+void StringOperationError::print() const {
+    cerr << msg << endl;
 }
 
 

@@ -15,7 +15,11 @@
 using namespace std;
 
 ArgError::ArgError(const string &msg)
-    : runtime_error("argument error: " + msg) {
+    : msg(msg) {
+}
+
+void ArgError::print() const {
+    cerr << "argument error: " << msg << endl;
 }
 
 
