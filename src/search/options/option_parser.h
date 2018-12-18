@@ -6,13 +6,13 @@
 #include "predefinitions.h"
 #include "registries.h"
 
+#include "../utils/strings.h"
+
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-class SearchEngine;
 
 namespace options {
 /*
@@ -55,8 +55,7 @@ public:
     OptionParser &operator=(const OptionParser &other) = delete;
 
     /* This function initiates parsing of T (the root node of parse_tree will be
-       parsed as T). Usually T=shared_ptr<SearchEngine>, Evaluator* or
-       shared_ptr<LandmarkFactory>. */
+       parsed as T).*/
     template<typename T>
     T start_parsing();
 
@@ -206,12 +205,8 @@ template<typename T>
 static std::shared_ptr<T> lookup_in_predefinitions(OptionParser &parser, bool &found) {
     using TPtr = std::shared_ptr<T>;
     const std::string &value = parser.get_root_value();
-    if (parser.get_predefinitions().contains<TPtr>(value)) {
-        found = true;
-        return parser.get_predefinitions().get<TPtr>(value);
-    }
-    found = false;
-    return nullptr;
+    found = parser.get_predefinitions().contains(value);
+    return parser.get_predefinitions().get<TPtr>(value, nullptr);
 }
 
 template<typename T>
@@ -331,6 +326,26 @@ void OptionParser::add_list_option(
     const std::string &help,
     const std::string &default_value) {
     add_option<std::vector<T>>(key, help, default_value);
+}
+
+template<typename T>
+void predefine_plugin(const std::string &arg, Registry &registry,
+                      Predefinitions &predefinitions, bool dry_run) {
+    std::pair<std::string, std::string> predefinition;
+    try {
+        predefinition = utils::split(arg, "=");
+    } catch (utils::StringOperationError &) {
+        throw OptionParserError("Predefinition error: Predefinition has to be "
+                                "of the form [name]=[definition].");
+    }
+
+    std::string key = predefinition.first;
+    std::string value = predefinition.second;
+    utils::strip(key);
+    utils::strip(value);
+
+    OptionParser parser(value, registry, predefinitions, dry_run);
+    predefinitions.predefine(key, parser.start_parsing<std::shared_ptr<T>>());
 }
 }
 
