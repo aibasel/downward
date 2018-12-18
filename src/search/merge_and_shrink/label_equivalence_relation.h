@@ -67,23 +67,15 @@ class LabelEquivalenceRelation {
 
     const Labels &labels;
 
-    /*
-      NOTE: it is somewhat dangerous to use lists inside vectors and storing
-      iterators to these lists, because whenever the vector needs to be
-      resized, iterators to these lists may become invalid. In the constructor,
-      we thus make sure to reserve enough memory so reallocation is never needed.
-    */
     std::vector<LabelGroup> grouped_labels;
-    // maps each label to its group's ID and its iterator within the group.
+    /* Maps each label to its group's ID (index in grouped_labels) and its
+       iterator within the group. */
     std::vector<std::pair<int, LabelIter>> label_to_positions;
 
     void add_label_to_group(int group_id, int label_no);
 public:
-    /*
-      Constructs an empty label equivalence relation. It can be filled using
-      the public add_label_group method below.
-    */
-    explicit LabelEquivalenceRelation(const Labels &labels);
+    LabelEquivalenceRelation(
+        const Labels &labels, const std::vector<std::vector<int>> &label_groups);
     /*
       NOTE: we need a custom copy constructor here because we need to fill
       label_to_positions with correct LabelIter objects that point to the
