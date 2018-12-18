@@ -39,15 +39,15 @@ int main(int argc, const char **argv) {
         parse_cmd_line(argc, argv, registry, true, unit_cost);
         engine = parse_cmd_line(argc, argv, registry, false, unit_cost);
     } catch (const ArgError &error) {
-        cerr << error.what() << endl;
+        error.print();
         usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (const OptionParserError &error) {
-        cerr << error.what() << endl;
+        error.print();
         usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (const ParseError &error) {
-        cerr << error.what() << endl;
+        error.print();
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 

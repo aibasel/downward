@@ -3,7 +3,8 @@
 
 #include "parse_tree.h"
 
-#include <stdexcept>
+#include "../utils/exceptions.h"
+
 #include <string>
 
 
@@ -18,16 +19,24 @@
     )
 
 namespace options {
-class OptionParserError : public std::runtime_error {
+class OptionParserError : public utils::Exception {
+    std::string msg;
 public:
     explicit OptionParserError(const std::string &msg);
+
+    virtual void print() const override;
 };
 
 
-class ParseError : public std::runtime_error {
+class ParseError : public utils::Exception {
+    std::string msg;
+    ParseTree parse_tree;
+    std::string substring;
 public:
     ParseError(const std::string &error, const ParseTree &parse_tree,
                const std::string &substring = "");
+
+    virtual void print() const override;
 };
 
 extern std::string get_demangling_hint(const std::string &type_name);

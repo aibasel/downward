@@ -6,25 +6,28 @@ using namespace std;
 
 namespace options {
 OptionParserError::OptionParserError(const string &msg)
-    : runtime_error("option parser error: " + msg) {
+    : msg(msg) {
 }
 
-
-static string get_parse_error_message(
-    const string &error, const ParseTree &parse_tree, const string &substring) {
-    stringstream out;
-    out << "parse error: " << endl
-        << error << " at: " << endl;
-    kptree::print_tree_bracketed<ParseNode>(parse_tree, out);
-    if (!substring.empty()) {
-        out << " (cannot continue parsing after \"" << substring << "\")" << endl;
-    }
-    return out.str();
+void OptionParserError::print() const {
+    cerr << "option parser error: " << msg << endl;
 }
+
 
 ParseError::ParseError(
-    const string &error, const ParseTree &parse_tree, const string &substring)
-    : runtime_error(get_parse_error_message(error, parse_tree, substring)) {
+    const string &msg, const ParseTree &parse_tree, const string &substring)
+    : msg(msg),
+      parse_tree(parse_tree),
+      substring(substring) {
+}
+
+void ParseError::print() const {
+    cerr << "parse error: " << endl
+         << msg << " at: " << endl;
+    kptree::print_tree_bracketed<ParseNode>(parse_tree, cerr);
+    if (!substring.empty()) {
+        cerr << " (cannot continue parsing after \"" << substring << "\")" << endl;
+    }
 }
 
 
