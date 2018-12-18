@@ -456,7 +456,7 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 
 bool TransitionSystem::in_sync_with_label_equivalence_relation() const {
     return label_equivalence_relation->get_size() ==
-            static_cast<int>(transitions_by_group_id.size());
+           static_cast<int>(transitions_by_group_id.size());
 }
 
 bool TransitionSystem::is_solvable(const Distances &distances) const {
