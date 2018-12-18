@@ -1,7 +1,5 @@
 #include "errors.h"
 
-#include <sstream>
-
 using namespace std;
 
 namespace options {
