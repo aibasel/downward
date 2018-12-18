@@ -67,7 +67,8 @@ static int lookup_value(const vector<FactPair> &facts, int var) {
     return UNDEFINED;
 }
 
-static void remove_transitions_from_or_to_state(Transitions &transitions, int state_id) {
+static void remove_transitions_with_given_target(
+    Transitions &transitions, int state_id) {
     auto new_end = remove_if(
         transitions.begin(), transitions.end(),
         [state_id](const Transition &t) {return t.target_id == state_id;});
@@ -133,7 +134,7 @@ void TransitionSystem::rewire_incoming_transitions(
     for (const Transition &transition : old_incoming) {
         int u_id = transition.target_id;
         if (!updated_states.count(u_id)) {
-            remove_transitions_from_or_to_state(outgoing[u_id], v1_id);
+            remove_transitions_with_given_target(outgoing[u_id], v1_id);
             updated_states.insert(u_id);
         }
     }
@@ -178,7 +179,7 @@ void TransitionSystem::rewire_outgoing_transitions(
     for (const Transition &transition : old_outgoing) {
         int w_id = transition.target_id;
         if (!updated_states.count(w_id)) {
-            remove_transitions_from_or_to_state(incoming[w_id], v1_id);
+            remove_transitions_with_given_target(incoming[w_id], v1_id);
             updated_states.insert(w_id);
         }
     }
