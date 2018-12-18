@@ -133,9 +133,9 @@ void TransitionSystem::rewire_incoming_transitions(
     unordered_set<int> updated_states;
     for (const Transition &transition : old_incoming) {
         int u_id = transition.target_id;
-        if (!updated_states.count(u_id)) {
+        bool is_new_state = updated_states.insert(u_id).second;
+        if (is_new_state) {
             remove_transitions_with_given_target(outgoing[u_id], v1_id);
-            updated_states.insert(u_id);
         }
     }
     num_non_loops -= old_incoming.size();
@@ -178,9 +178,9 @@ void TransitionSystem::rewire_outgoing_transitions(
     unordered_set<int> updated_states;
     for (const Transition &transition : old_outgoing) {
         int w_id = transition.target_id;
-        if (!updated_states.count(w_id)) {
+        bool is_new_state = updated_states.insert(w_id).second;
+        if (is_new_state) {
             remove_transitions_with_given_target(incoming[w_id], v1_id);
-            updated_states.insert(w_id);
         }
     }
     num_non_loops -= old_outgoing.size();
