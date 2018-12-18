@@ -1,5 +1,6 @@
 #include "evaluator.h"
 
+#include "option_parser.h"
 #include "plugin.h"
 
 #include "utils/system.h"
@@ -81,4 +82,5 @@ static PluginTypePlugin<Evaluator> _type_plugin(
     " * **safe:** h(s) = infinity is only true for states "
     "with h*(s) = infinity\n"
     " * **preferred operators:** this heuristic identifies "
-    "preferred operators ");
+    "preferred operators ",
+    "evaluator", "heuristic");

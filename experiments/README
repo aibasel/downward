@@ -47,8 +47,9 @@ DownwardExperiment:
   * issue671/v1.py runs simple configs on the entire set of suites and
     reports also translator-specific attributes
 
-* Translator-only experiment:
+* Translator-only experiments:
   * issue733/v1.py compares translator time and memory under Python 2 and 3
+  * issue869/base-translate-all.py translates all benchmarks
 
 
 Microbenchmarks

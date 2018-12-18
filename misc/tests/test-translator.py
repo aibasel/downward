@@ -3,8 +3,12 @@
 from __future__ import print_function
 
 HELP = """\
-Run the translator on supported Python versions and test that the log
-and the output file are the same for all versions.
+Check that translator is deterministic.
+
+Run the translator on two different Python versions and test that the
+log and the output file are the same. Obviously, there might be false
+negatives, i.e., different Python versions might lead to the same
+nondeterministic results.
 """
 
 import argparse
@@ -65,16 +69,23 @@ def translate_task(python, python_version, task_file):
 
 
 def _get_all_tasks_by_domain(benchmarks_dir):
+    # Ignore domains where translating the first task takes too much time or memory.
+    blacklisted_domains = [
+        "agricola-sat18-strips",
+        "organic-synthesis-sat18-strips",
+        "organic-synthesis-split-opt18-strips",
+        "organic-synthesis-split-sat18-strips"]
     tasks = defaultdict(list)
     domains = [
         name for name in os.listdir(benchmarks_dir)
         if os.path.isdir(os.path.join(benchmarks_dir, name)) and
-        not name.startswith((".", "_"))]
+        not name.startswith((".", "_")) and
+        not name in blacklisted_domains]
     for domain in domains:
         path = os.path.join(benchmarks_dir, domain)
         tasks[domain] = [
             os.path.join(benchmarks_dir, domain, f)
-            for f in sorted(os.listdir(path)) if not "domain" in f]
+            for f in sorted(os.listdir(path)) if "domain" not in f]
     return sorted(tasks.values())
 
 
@@ -139,11 +150,10 @@ def main():
         assert len(interpreter_versions) == 2, "Code only tests difference between 2 versions"
         files = [version + ".sas" for version in interpreter_versions]
         try:
-            subprocess.check_call(["diff"] + files)
+            subprocess.check_call(["diff", "-q"] + files)
         except subprocess.CalledProcessError:
             sys.exit(
-                "Error: Translator output for %s differs between Python versions. "
-                "See above diff or compare the files %s in %s." % (task, files, DIR))
+                "Error: Translator is nondeterministic for {task}.".format(**locals()))
         print()
         sys.stdout.flush()
     cleanup()
