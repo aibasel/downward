@@ -296,10 +296,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
           conditional effects.
         */
         if (task_has_conditional_effects) {
-            sort(transitions.begin(), transitions.end());
-            transitions.erase(unique(transitions.begin(),
-                                     transitions.end()),
-                              transitions.end());
+            utils::sort_unique(transitions);
         } else {
             assert(utils::is_sorted_unique(transitions));
         }
