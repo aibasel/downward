@@ -3,17 +3,25 @@
 #include "option_parser.h"
 #include "predefinitions.h"
 
-#include <algorithm>
-
 using namespace std;
 
 namespace options {
-void PluginInfo::fill_docs(Registry &registry) {
-    OptionParser parser(key, registry, Predefinitions(), true, true);
-    doc_factory(parser);
+PluginTypeInfo::PluginTypeInfo(
+    const type_index &type,
+    const string &type_name,
+    const string &documentation,
+    const string &predefinition_key,
+    const string &alias,
+    const PredefinitionFunction &predefinition_function)
+    : type(type),
+      type_name(type_name),
+      documentation(documentation),
+      predefinition_key(predefinition_key),
+      alias(alias),
+      predefinition_function(predefinition_function) {
 }
 
-string PluginInfo::get_type_name() const {
-    return type_name_factory();
+bool PluginTypeInfo::operator<(const PluginTypeInfo &other) const {
+    return make_pair(type_name, type) < make_pair(other.type_name, other.type);
 }
 }
