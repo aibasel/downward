@@ -9,10 +9,6 @@
 
 using namespace std;
 
-namespace landmarks {
-class LandmarkFactory;
-}
-
 namespace options {
 const string OptionParser::NONE = "<none>";
 

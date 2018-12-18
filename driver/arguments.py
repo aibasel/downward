@@ -89,6 +89,7 @@ Examples:
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
 COMPONENTS_PLUS_OVERALL = ["translate", "search", "validate", "overall"]
+DEFAULT_SAS_FILE = "output.sas"
 
 
 """
@@ -393,8 +394,13 @@ def parse_args():
         help="write plan(s) to FILE (default: %(default)s; anytime configurations append .1, .2, ...)")
 
     driver_other.add_argument(
-        "--sas-file", metavar="FILE", default="output.sas",
-        help="intermediate file for storing the translator output (default: %(default)s)")
+        "--sas-file", metavar="FILE",
+        help="intermediate file for storing the translator output "
+            "(implies --keep-sas-file, default: {})".format(DEFAULT_SAS_FILE))
+    driver_other.add_argument(
+        "--keep-sas-file", action="store_true",
+        help="keep translator output file (implied by --sas-file, default: "
+            "delete file if translator and search component are active)")
 
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
@@ -423,6 +429,11 @@ def parse_args():
     # --help" passes "--help" to the search code.
 
     args = parser.parse_args()
+
+    if args.sas_file:
+        args.keep_sas_file = True
+    else:
+        args.sas_file = DEFAULT_SAS_FILE
 
     if args.build and args.debug:
         print_usage_and_exit_with_driver_input_error(
@@ -464,5 +475,7 @@ def parse_args():
 
     if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
+        if "translate" not in args.components or "search" not in args.components:
+            args.keep_sas_file = True
 
     return args

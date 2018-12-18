@@ -2,6 +2,7 @@
 #define OPTIONS_OPTIONS_H
 
 #include "any.h"
+#include "errors.h"
 #include "type_namer.h"
 
 #include "../utils/system.h"
@@ -29,19 +30,17 @@ public:
     T get(const std::string &key) const {
         const auto it = storage.find(key);
         if (it == storage.end()) {
-            ABORT("Attempt to retrieve nonexisting object of name " +
-                  key + " (type: " + typeid(T).name() + ")\n" +
-                  "To retrieve the correct C++ type for gcc/clang, you can " +
-                  "call \nc++filt -t \"" + typeid(T).name() + "\"");
+            ABORT_WITH_DEMANGLING_HINT(
+                "Attempt to retrieve nonexisting object of name " + key +
+                " (type: " + typeid(T).name() + ")", typeid(T).name());
         }
         try {
             T result = any_cast<T>(it->second);
             return result;
         } catch (const BadAnyCast &) {
-            ABORT("Invalid conversion while retrieving config options!\n" +
-                  key + " is not of type " + typeid(T).name() + "\n" +
-                  "To retrieve the correct C++ type for gcc/clang, you can " +
-                  "call \nc++filt -t \"" + typeid(T).name() + "\"");
+            ABORT_WITH_DEMANGLING_HINT(
+                "Invalid conversion while retrieving config options!\n" +
+                key + " is not of type " + typeid(T).name(), typeid(T).name());
         }
     }
 
@@ -57,11 +56,8 @@ public:
     void verify_list_non_empty(const std::string &key) const {
         if (!help_mode) {
             if (get_list<T>(key).empty()) {
-                std::cerr << "Error: unexpected empty list!"
-                          << std::endl
-                          << "List " << key << " is empty"
-                          << std::endl;
-                utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+                throw OptionParserError("Error: list for key " +
+                                        key + " must not be empty\n");
             }
         }
     }

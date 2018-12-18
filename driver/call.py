@@ -36,7 +36,7 @@ def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
         def _try_or_exit(function, description):
             def fail(exception, exitcode):
-                logging.error("{} failed: {}".format(description, exception))
+                returncodes.print_stderr("{} failed: {}".format(description, exception))
                 os._exit(exitcode)
             try:
                 function()
