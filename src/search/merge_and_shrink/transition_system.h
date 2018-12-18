@@ -134,11 +134,10 @@ public:
         int num_variables,
         std::vector<int> &&incorporated_variables,
         std::unique_ptr<LabelEquivalenceRelation> &&label_equivalence_relation,
-        std::vector<std::vector<Transition>> &&transitions_by_label,
+        std::vector<std::vector<Transition>> &&transitions_by_group_id,
         int num_states,
         std::vector<bool> &&goal_states,
-        int init_state,
-        bool compute_label_equivalence_relation);
+        int init_state);
     TransitionSystem(const TransitionSystem &other);
     ~TransitionSystem();
     /*
@@ -200,6 +199,7 @@ public:
       sorted (by source, by target) and there are no duplicates.
     */
     bool are_transitions_sorted_unique() const;
+    bool in_sync_with_label_equivalence_relation() const;
 
     bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;
