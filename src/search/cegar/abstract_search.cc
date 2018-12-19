@@ -145,7 +145,7 @@ int AbstractSearch::get_h_value(int state_id) const {
 
 void AbstractSearch::set_h_value(int state_id, int h) {
     assert(utils::in_bounds(state_id, search_info));
-    return search_info[state_id].increase_h_value_to(h);
+    search_info[state_id].increase_h_value_to(h);
 }
 
 void AbstractSearch::copy_h_value_to_children(int v, int v1, int v2) {
