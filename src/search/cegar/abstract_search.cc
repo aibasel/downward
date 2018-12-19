@@ -47,6 +47,28 @@ unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) 
 }
 
 void AbstractSearch::update_goal_distances(const Solution &solution) {
+    /*
+      Originally, we only updated the goal distances of states that are part of
+      the trace (see Seipp and Helmert, JAIR 2018). The code below generalizes
+      this idea and potentially updates the goal distances of all states.
+
+      If C* is the cost of the trace and we take the current g values as
+      assigned by A* when it finds a shortest trace, then C*-g(s) is a lower
+      bound on the goal distance of abstract state s. This is the case since
+
+      g(s) >= g*(s) [1]
+
+      and
+
+          f*(s) >= C*         (optimality of A* with an admissible heuristic)
+      ==> g*(s) + h*(s) >= C* (definition of f values)
+      ==> g(s) + h*(s) >= C*  (using [1])
+      ==> h*(s) >= C* - g(s)  (arithmetic)
+
+      Together with our existing lower bound h*(s) >= h(s), i.e., the h values
+      from the last iteration, for each abstract state s we can set h(s) =
+      max(h(s), C*-g(s)).
+    */
     int solution_cost = 0;
     for (const Transition &transition : solution) {
         solution_cost += operator_costs[transition.op_id];
@@ -64,7 +86,6 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     reset(transitions.size());
     search_info[init_id].decrease_g_value_to(0);
     open_queue.push(search_info[init_id].get_h_value(), init_id);
-
     int goal_id = astar_search(transitions, true, &goal_ids);
     open_queue.clear();
     bool has_found_solution = (goal_id != UNDEFINED);
