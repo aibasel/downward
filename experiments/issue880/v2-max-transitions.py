@@ -63,7 +63,6 @@ REFINEMENT_ATTRIBUTES = [
 attributes = (
     IssueExperiment.DEFAULT_TABLE_ATTRIBUTES +
     ["search_start_memory", "init_time", "time_analysis"] +
-    REFINEMENT_ATTRIBUTES +
     ["total_" + attr for attr in REFINEMENT_ATTRIBUTES])
 #exp.add_absolute_report_step(attributes=attributes)
 exp.add_comparison_table_step(attributes=attributes)

@@ -69,7 +69,7 @@ attributes = (
 exp.add_comparison_table_step(attributes=attributes)
 
 if len(REVISIONS) == 2:
-    for attribute in ["init_time", "expansions_until_last_jump"]:
+    for attribute in ["init_time", "expansions_until_last_jump", "total_time_for_splitting_states", "total_time_for_finding_traces"]:
         for config in CONFIGS:
             exp.add_report(
                 RelativeScatterPlotReport(
