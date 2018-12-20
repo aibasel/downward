@@ -52,9 +52,10 @@ void AbstractSearch::update_goal_distances(const Solution &solution) {
       the trace (see Seipp and Helmert, JAIR 2018). The code below generalizes
       this idea and potentially updates the goal distances of all states.
 
-      If C* is the cost of the trace and we take the current g values as
-      assigned by A* when it finds a shortest trace, then C*-g(s) is a lower
-      bound on the goal distance of abstract state s. This is the case since
+      Let C* be the cost of the trace and g(s) be the g value of states s when
+      A* finds the trace. Then for all states s with g(s) < INF (i.e., s has
+      been reached by the search), C*-g(s) is a lower bound on the goal
+      distance. This is the case since
 
       g(s) >= g*(s) [1]
 
@@ -66,16 +67,18 @@ void AbstractSearch::update_goal_distances(const Solution &solution) {
       ==> h*(s) >= C* - g(s)  (arithmetic)
 
       Together with our existing lower bound h*(s) >= h(s), i.e., the h values
-      from the last iteration, for each abstract state s we can set h(s) =
-      max(h(s), C*-g(s)).
+      from the last iteration, for each abstract state s with g(s) < INF, we
+      can set h(s) = max(h(s), C*-g(s)).
     */
     int solution_cost = 0;
     for (const Transition &transition : solution) {
         solution_cost += operator_costs[transition.op_id];
     }
     for (auto &info : search_info) {
-        int new_h = max(info.get_h_value(), solution_cost - info.get_g_value());
-        info.increase_h_value_to(new_h);
+        if (info.get_g_value() < INF) {
+            int new_h = max(info.get_h_value(), solution_cost - info.get_g_value());
+            info.increase_h_value_to(new_h);
+        }
     }
 }
 
