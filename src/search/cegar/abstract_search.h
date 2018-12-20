@@ -14,8 +14,7 @@ namespace cegar {
 using Solution = std::deque<Transition>;
 
 /*
-  Find abstract solutions using A*. Compute g and h values for abstract
-  states.
+  Find abstract solutions using A*.
 */
 class AbstractSearch {
     class AbstractSearchInfo {
@@ -70,14 +69,9 @@ public:
     std::vector<AbstractSearchInfo> search_info;
 
     void reset(int num_states);
-
     void set_h_value(int state_id, int h);
-    std::vector<int> get_g_values() const;
-
     std::unique_ptr<Solution> extract_solution(int init_id, int goal_id) const;
     void update_goal_distances(const Solution &solution);
-
-    void dijkstra_search(const std::vector<Transitions> &transitions);
     int astar_search(
         const std::vector<Transitions> &transitions,
         const Goals &goals);
@@ -89,10 +83,6 @@ public:
         const std::vector<Transitions> &transitions,
         int init_id,
         const Goals &goal_ids);
-    std::vector<int> compute_distances(
-        const std::vector<Transitions> &transitions,
-        const std::unordered_set<int> &start_ids);
-
     int get_h_value(int state_id) const;
     void copy_h_value_to_children(int v, int v1, int v2);
 };
