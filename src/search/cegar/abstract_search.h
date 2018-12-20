@@ -77,10 +77,10 @@ public:
     std::unique_ptr<Solution> extract_solution(int init_id, int goal_id) const;
     void update_goal_distances(const Solution &solution);
 
+    void dijkstra_search(const std::vector<Transitions> &transitions);
     int astar_search(
         const std::vector<Transitions> &transitions,
-        bool use_h,
-        const Goals *goals = nullptr);
+        const Goals &goals);
 
 public:
     explicit AbstractSearch(const std::vector<int> &operator_costs);

@@ -89,7 +89,7 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     reset(transitions.size());
     search_info[init_id].decrease_g_value_to(0);
     open_queue.push(search_info[init_id].get_h_value(), init_id);
-    int goal_id = astar_search(transitions, true, &goal_ids);
+    int goal_id = astar_search(transitions, goal_ids);
     open_queue.clear();
     bool has_found_solution = (goal_id != UNDEFINED);
     if (has_found_solution) {
@@ -109,14 +109,41 @@ vector<int> AbstractSearch::compute_distances(
         search_info[goal_id].decrease_g_value_to(0);
         open_queue.push(0, goal_id);
     }
-    astar_search(transitions, false);
+    dijkstra_search(transitions);
     open_queue.clear();
     return get_g_values();
 }
 
+void AbstractSearch::dijkstra_search(const vector<Transitions> &transitions) {
+    while (!open_queue.empty()) {
+        pair<int, int> top_pair = open_queue.pop();
+        int old_g = top_pair.first;
+        int state_id = top_pair.second;
+
+        const int g = search_info[state_id].get_g_value();
+        assert(0 <= g && g < INF);
+        assert(g <= old_g);
+        if (g < old_g)
+            continue;
+        assert(utils::in_bounds(state_id, transitions));
+        for (const Transition &transition : transitions[state_id]) {
+            assert(utils::in_bounds(transition.op_id, operator_costs));
+            const int op_cost = operator_costs[transition.op_id];
+            assert(op_cost >= 0);
+            int succ_g = (op_cost == INF) ? INF : g + op_cost;
+            assert(succ_g >= 0);
+
+            int succ_id = transition.target_id;
+            if (succ_g < search_info[succ_id].get_g_value()) {
+                search_info[succ_id].decrease_g_value_to(succ_g);
+                open_queue.push(succ_g, succ_id);
+            }
+        }
+    }
+}
+
 int AbstractSearch::astar_search(
-    const vector<Transitions> &transitions, bool use_h, const Goals *goals) {
-    assert((use_h && goals) || (!use_h && !goals));
+    const vector<Transitions> &transitions, const Goals &goals) {
     while (!open_queue.empty()) {
         pair<int, int> top_pair = open_queue.pop();
         int old_f = top_pair.first;
@@ -124,13 +151,11 @@ int AbstractSearch::astar_search(
 
         const int g = search_info[state_id].get_g_value();
         assert(0 <= g && g < INF);
-        int new_f = g;
-        if (use_h)
-            new_f += search_info[state_id].get_h_value();
+        int new_f = g + search_info[state_id].get_h_value();
         assert(new_f <= old_f);
         if (new_f < old_f)
             continue;
-        if (goals && goals->count(state_id) == 1) {
+        if (goals.count(state_id)) {
             return state_id;
         }
         assert(utils::in_bounds(state_id, transitions));
@@ -146,13 +171,10 @@ int AbstractSearch::astar_search(
 
             if (succ_g < search_info[succ_id].get_g_value()) {
                 search_info[succ_id].decrease_g_value_to(succ_g);
-                int f = succ_g;
-                if (use_h) {
-                    int h = search_info[succ_id].get_h_value();
-                    if (h == INF)
-                        continue;
-                    f += h;
-                }
+                int h = search_info[succ_id].get_h_value();
+                if (h == INF)
+                    continue;
+                int f = succ_g + h;
                 assert(f >= 0);
                 assert(f != INF);
                 open_queue.push(f, succ_id);
