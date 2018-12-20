@@ -46,15 +46,40 @@ unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) 
     return solution;
 }
 
-void AbstractSearch::update_goal_distances(const Solution &solution, int init_id) {
-    int goal_distance = 0;
-    for (auto it = solution.rbegin(); it != solution.rend(); ++it) {
-        const Transition &transition = *it;
-        int current_state = transition.target_id;
-        set_h_value(current_state, goal_distance);
-        goal_distance += operator_costs[transition.op_id];
+void AbstractSearch::update_goal_distances(const Solution &solution) {
+    /*
+      Originally, we only updated the goal distances of states that are part of
+      the trace (see Seipp and Helmert, JAIR 2018). The code below generalizes
+      this idea and potentially updates the goal distances of all states.
+
+      Let C* be the cost of the trace and g(s) be the g value of states s when
+      A* finds the trace. Then for all states s with g(s) < INF (i.e., s has
+      been reached by the search), C*-g(s) is a lower bound on the goal
+      distance. This is the case since
+
+      g(s) >= g*(s) [1]
+
+      and
+
+          f*(s) >= C*         (optimality of A* with an admissible heuristic)
+      ==> g*(s) + h*(s) >= C* (definition of f values)
+      ==> g(s) + h*(s) >= C*  (using [1])
+      ==> h*(s) >= C* - g(s)  (arithmetic)
+
+      Together with our existing lower bound h*(s) >= h(s), i.e., the h values
+      from the last iteration, for each abstract state s with g(s) < INF, we
+      can set h(s) = max(h(s), C*-g(s)).
+    */
+    int solution_cost = 0;
+    for (const Transition &transition : solution) {
+        solution_cost += operator_costs[transition.op_id];
     }
-    set_h_value(init_id, goal_distance);
+    for (auto &info : search_info) {
+        if (info.get_g_value() < INF) {
+            int new_h = max(info.get_h_value(), solution_cost - info.get_g_value());
+            info.increase_h_value_to(new_h);
+        }
+    }
 }
 
 unique_ptr<Solution> AbstractSearch::find_solution(
@@ -69,7 +94,7 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     bool has_found_solution = (goal_id != UNDEFINED);
     if (has_found_solution) {
         unique_ptr<Solution> solution = extract_solution(init_id, goal_id);
-        update_goal_distances(*solution, init_id);
+        update_goal_distances(*solution);
         return solution;
     } else {
         search_info[init_id].increase_h_value_to(INF);
