@@ -25,15 +25,6 @@ void AbstractSearch::reset(int num_states) {
     }
 }
 
-vector<int> AbstractSearch::get_g_values() const {
-    vector<int> g_values;
-    g_values.reserve(search_info.size());
-    for (const AbstractSearchInfo &info : search_info) {
-        g_values.push_back(info.get_g_value());
-    }
-    return g_values;
-}
-
 unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) const {
     unique_ptr<Solution> solution = utils::make_unique_ptr<Solution>();
     int current_id = goal_id;
@@ -100,46 +91,6 @@ unique_ptr<Solution> AbstractSearch::find_solution(
         search_info[init_id].increase_h_value_to(INF);
     }
     return nullptr;
-}
-
-vector<int> AbstractSearch::compute_distances(
-    const vector<Transitions> &transitions, const unordered_set<int> &start_ids) {
-    reset(transitions.size());
-    for (int goal_id : start_ids) {
-        search_info[goal_id].decrease_g_value_to(0);
-        open_queue.push(0, goal_id);
-    }
-    dijkstra_search(transitions);
-    open_queue.clear();
-    return get_g_values();
-}
-
-void AbstractSearch::dijkstra_search(const vector<Transitions> &transitions) {
-    while (!open_queue.empty()) {
-        pair<int, int> top_pair = open_queue.pop();
-        int old_g = top_pair.first;
-        int state_id = top_pair.second;
-
-        const int g = search_info[state_id].get_g_value();
-        assert(0 <= g && g < INF);
-        assert(g <= old_g);
-        if (g < old_g)
-            continue;
-        assert(utils::in_bounds(state_id, transitions));
-        for (const Transition &transition : transitions[state_id]) {
-            assert(utils::in_bounds(transition.op_id, operator_costs));
-            const int op_cost = operator_costs[transition.op_id];
-            assert(op_cost >= 0);
-            int succ_g = (op_cost == INF) ? INF : g + op_cost;
-            assert(succ_g >= 0);
-
-            int succ_id = transition.target_id;
-            if (succ_g < search_info[succ_id].get_g_value()) {
-                search_info[succ_id].decrease_g_value_to(succ_g);
-                open_queue.push(succ_g, succ_id);
-            }
-        }
-    }
 }
 
 int AbstractSearch::astar_search(
