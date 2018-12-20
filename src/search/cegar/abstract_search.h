@@ -75,7 +75,7 @@ public:
     std::vector<int> get_g_values() const;
 
     std::unique_ptr<Solution> extract_solution(int init_id, int goal_id) const;
-    void update_goal_distances(const Solution &solution, int init_id);
+    void update_goal_distances(const Solution &solution);
 
     int astar_search(
         const std::vector<Transitions> &transitions,
