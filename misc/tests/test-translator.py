@@ -70,8 +70,10 @@ def translate_task(python, python_version, task_file):
 
 def _get_all_tasks_by_domain(benchmarks_dir):
     # Ignore domains where translating the first task takes too much time or memory.
+    # We also ignore city
     blacklisted_domains = [
         "agricola-sat18-strips",
+        "citycar-sat14-adl", # cf. issue875
         "organic-synthesis-sat18-strips",
         "organic-synthesis-split-opt18-strips",
         "organic-synthesis-split-sat18-strips"]
