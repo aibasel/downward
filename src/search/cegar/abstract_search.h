@@ -4,9 +4,9 @@
 #include "transition.h"
 #include "types.h"
 
-#include "../algorithms/priority_queues.h"
-
+#include <cassert>
 #include <deque>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -62,10 +62,22 @@ public:
         }
     };
 
+    class TiebreakingQueue {
+        using Bucket = std::deque<int>;
+        std::map<const std::vector<int>, Bucket> buckets;
+        int size;
+public:
+        TiebreakingQueue();
+        void clear();
+        bool empty();
+        void insert(int state_id, int g, int h);
+        std::pair<int, int> remove_min();
+    };
+
     const std::vector<int> operator_costs;
 
     // Keep data structures around to avoid reallocating them.
-    priority_queues::AdaptiveQueue<int> open_queue;
+    TiebreakingQueue open_queue;
     std::vector<AbstractSearchInfo> search_info;
 
     void reset(int num_states);
