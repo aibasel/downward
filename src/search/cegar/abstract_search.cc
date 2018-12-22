@@ -11,38 +11,23 @@
 using namespace std;
 
 namespace cegar {
-AbstractSearch::TiebreakingQueue::TiebreakingQueue()
-    : size(0) {
-}
-
 void AbstractSearch::TiebreakingQueue::clear() {
-    buckets.clear();
-    size = 0;
+    heap.c.clear();
 }
 
-bool AbstractSearch::TiebreakingQueue::empty() {
-    return size == 0;
+bool AbstractSearch::TiebreakingQueue::empty() const {
+    return heap.empty();
 }
 
-void AbstractSearch::TiebreakingQueue::insert(int state_id, int g, int h) {
-    buckets[{g + h, h}].push_back(state_id);
-    ++size;
+void AbstractSearch::TiebreakingQueue::push(const Entry &entry) {
+    heap.push(entry);
 }
 
-pair<int, int> AbstractSearch::TiebreakingQueue::remove_min() {
-    assert(size > 0);
-    auto it = buckets.begin();
-    assert(it != buckets.end());
-    assert(!it->second.empty());
-    --size;
-    int f = it->first[0];
-    int state = it->second.front();
-    it->second.pop_front();
-    if (it->second.empty())
-        buckets.erase(it);
-    return {
-               f, state
-    };
+AbstractSearch::Entry AbstractSearch::TiebreakingQueue::pop() {
+    assert(!heap.empty());
+    Entry result = heap.top();
+    heap.pop();
+    return result;
 }
 
 
@@ -114,7 +99,7 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     const Goals &goal_ids) {
     reset(transitions.size());
     search_info[init_id].decrease_g_value_to(0);
-    open_queue.insert(init_id, 0, search_info[init_id].get_h_value());
+    open_queue.push(Entry(0, search_info[init_id].get_h_value(), init_id));
     int goal_id = astar_search(transitions, goal_ids);
     open_queue.clear();
     bool has_found_solution = (goal_id != UNDEFINED);
@@ -131,9 +116,9 @@ unique_ptr<Solution> AbstractSearch::find_solution(
 int AbstractSearch::astar_search(
     const vector<Transitions> &transitions, const Goals &goals) {
     while (!open_queue.empty()) {
-        pair<int, int> top_pair = open_queue.remove_min();
-        int old_f = top_pair.first;
-        int state_id = top_pair.second;
+        Entry entry = open_queue.pop();
+        int old_f = entry.g + entry.h;
+        int state_id = entry.state;
 
         const int g = search_info[state_id].get_g_value();
         assert(0 <= g && g < INF);
@@ -160,7 +145,7 @@ int AbstractSearch::astar_search(
                 int h = search_info[succ_id].get_h_value();
                 if (h == INF)
                     continue;
-                open_queue.insert(succ_id, succ_g, h);
+                open_queue.push(Entry(succ_g, h, succ_id));
                 search_info[succ_id].set_incoming_transition(Transition(op_id, state_id));
             }
         }
