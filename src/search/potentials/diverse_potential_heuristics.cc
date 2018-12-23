@@ -156,5 +156,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return make_shared<PotentialMaxHeuristic>(opts, factory.find_functions());
 }
 
-static Plugin<Evaluator> _plugin("diverse_potentials", _parse);
+static Plugin<Evaluator> _plugin(
+    "diverse_potentials", _parse, "heuristics_potentials");
 }
