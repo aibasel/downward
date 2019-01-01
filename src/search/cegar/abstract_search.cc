@@ -25,15 +25,6 @@ void AbstractSearch::reset(int num_states) {
     }
 }
 
-vector<int> AbstractSearch::get_g_values() const {
-    vector<int> g_values;
-    g_values.reserve(search_info.size());
-    for (const AbstractSearchInfo &info : search_info) {
-        g_values.push_back(info.get_g_value());
-    }
-    return g_values;
-}
-
 unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) const {
     unique_ptr<Solution> solution = utils::make_unique_ptr<Solution>();
     int current_id = goal_id;
@@ -89,7 +80,7 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     reset(transitions.size());
     search_info[init_id].decrease_g_value_to(0);
     open_queue.push(search_info[init_id].get_h_value(), init_id);
-    int goal_id = astar_search(transitions, true, &goal_ids);
+    int goal_id = astar_search(transitions, goal_ids);
     open_queue.clear();
     bool has_found_solution = (goal_id != UNDEFINED);
     if (has_found_solution) {
@@ -102,21 +93,8 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     return nullptr;
 }
 
-vector<int> AbstractSearch::compute_distances(
-    const vector<Transitions> &transitions, const unordered_set<int> &start_ids) {
-    reset(transitions.size());
-    for (int goal_id : start_ids) {
-        search_info[goal_id].decrease_g_value_to(0);
-        open_queue.push(0, goal_id);
-    }
-    astar_search(transitions, false);
-    open_queue.clear();
-    return get_g_values();
-}
-
 int AbstractSearch::astar_search(
-    const vector<Transitions> &transitions, bool use_h, const Goals *goals) {
-    assert((use_h && goals) || (!use_h && !goals));
+    const vector<Transitions> &transitions, const Goals &goals) {
     while (!open_queue.empty()) {
         pair<int, int> top_pair = open_queue.pop();
         int old_f = top_pair.first;
@@ -124,13 +102,11 @@ int AbstractSearch::astar_search(
 
         const int g = search_info[state_id].get_g_value();
         assert(0 <= g && g < INF);
-        int new_f = g;
-        if (use_h)
-            new_f += search_info[state_id].get_h_value();
+        int new_f = g + search_info[state_id].get_h_value();
         assert(new_f <= old_f);
         if (new_f < old_f)
             continue;
-        if (goals && goals->count(state_id) == 1) {
+        if (goals.count(state_id)) {
             return state_id;
         }
         assert(utils::in_bounds(state_id, transitions));
@@ -146,13 +122,10 @@ int AbstractSearch::astar_search(
 
             if (succ_g < search_info[succ_id].get_g_value()) {
                 search_info[succ_id].decrease_g_value_to(succ_g);
-                int f = succ_g;
-                if (use_h) {
-                    int h = search_info[succ_id].get_h_value();
-                    if (h == INF)
-                        continue;
-                    f += h;
-                }
+                int h = search_info[succ_id].get_h_value();
+                if (h == INF)
+                    continue;
+                int f = succ_g + h;
                 assert(f >= 0);
                 assert(f != INF);
                 open_queue.push(f, succ_id);
