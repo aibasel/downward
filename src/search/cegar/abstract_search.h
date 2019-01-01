@@ -86,6 +86,11 @@ public:
     int get_h_value(int state_id) const;
     void copy_h_value_to_children(int v, int v1, int v2);
 };
+
+std::vector<int> compute_distances(
+    const std::vector<Transitions> &transitions,
+    const std::vector<int> &costs,
+    const std::unordered_set<int> &start_ids);
 }
 
 #endif
