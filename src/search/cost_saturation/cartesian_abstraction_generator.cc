@@ -8,7 +8,13 @@
 
 #include "../cegar/abstraction.h"
 #include "../cegar/abstract_state.h"
+#include "../cegar/cegar.h"
+#include "../cegar/cost_saturation.h"
+#include "../cegar/refinement_hierarchy.h"
+#include "../cegar/split_selector.h"
 #include "../cegar/subtask_generators.h"
+#include "../cegar/transition_system.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/rng_options.h"
 
@@ -24,41 +30,66 @@ CartesianAbstractionGenerator::CartesianAbstractionGenerator(
       max_states(opts.get<int>("max_states")),
       max_transitions(opts.get<int>("max_transitions")),
       rng(utils::parse_rng_from_options(opts)),
+      debug(opts.get<bool>("debug")),
       num_states(0),
       num_transitions(0) {
 }
 
-static unique_ptr<Abstraction> convert_abstraction(
-    cegar::Abstraction &cartesian_abstraction) {
+static vector<int> get_looping_operators(const cegar::TransitionSystem &ts) {
+    int num_operators = ts.get_num_operators();
+
+    vector<bool> operator_induces_self_loop(num_operators, false);
+    for (const auto &loops : ts.get_loops()) {
+        for (int op_id : loops) {
+            operator_induces_self_loop[op_id] = true;
+        }
+    }
+
+    vector<int> looping_operators;
+    for (int op_id = 0; op_id < num_operators; ++op_id) {
+        if (operator_induces_self_loop[op_id]) {
+            looping_operators.push_back(op_id);
+        }
+    }
+    looping_operators.shrink_to_fit();
+    return looping_operators;
+}
+
+
+static pair<bool, unique_ptr<Abstraction>> convert_abstraction(
+    cegar::Abstraction &cartesian_abstraction, const vector<int> &operator_costs) {
+    // Compute g and h values.
+    const cegar::TransitionSystem &ts =
+        cartesian_abstraction.get_transition_system();
+    int initial_state_id = cartesian_abstraction.get_initial_state()->get_id();
+    vector<int> g_values = cegar::compute_distances(
+        ts.get_outgoing_transitions(), operator_costs, {initial_state_id});
+    vector<int> h_values = cegar::compute_distances(
+        ts.get_incoming_transitions(), operator_costs, cartesian_abstraction.get_goals());
+
     // Retrieve non-looping transitions.
     vector<vector<Successor>> backward_graph(cartesian_abstraction.get_num_states());
-    for (cegar::AbstractState *state : cartesian_abstraction.get_states()) {
+    for (int state_id = 0; state_id < cartesian_abstraction.get_num_states(); ++state_id) {
         // Ignore transitions from dead-end or unreachable states.
-        if (state->get_h_value() == INF ||
-            state->get_search_info().get_g_value() == INF) {
+        if (h_values[state_id] == INF || g_values[state_id] == INF) {
             continue;
         }
-        int src = state->get_node()->get_state_id();
-        for (const cegar::Transition &transition : state->get_outgoing_transitions()) {
+        for (const cegar::Transition &transition : ts.get_outgoing_transitions()[state_id]) {
             // Ignore transitions from dead-end states (we know target is reachable).
-            if (transition.target->get_h_value() == INF) {
+            if (h_values[transition.target_id] == INF) {
                 continue;
             }
-            int target = transition.target->get_node()->get_state_id();
-            backward_graph[target].emplace_back(transition.op_id, src);
+            backward_graph[transition.target_id].emplace_back(transition.op_id, state_id);
         }
     }
     for (vector<Successor> &succesors : backward_graph) {
         succesors.shrink_to_fit();
     }
 
-    vector<int> looping_operators = cartesian_abstraction.compute_looping_operators();
-
-    vector<int> goal_states;
-    goal_states.reserve(cartesian_abstraction.get_goals().size());
-    for (const cegar::AbstractState *goal : cartesian_abstraction.get_goals()) {
-        goal_states.push_back(goal->get_node()->get_state_id());
-    }
+    vector<int> looping_operators = get_looping_operators(ts);
+    vector<int> goal_states(
+        cartesian_abstraction.get_goals().begin(),
+        cartesian_abstraction.get_goals().end());
 
     // Convert to shared_ptr since std::function requires copy-constructible arguments.
     shared_ptr<cegar::RefinementHierarchy> refinement_hierarchy =
@@ -69,11 +100,15 @@ static unique_ptr<Abstraction> convert_abstraction(
             return refinement_hierarchy->get_abstract_state_id(state);
         };
 
-    return utils::make_unique_ptr<ExplicitAbstraction>(
-        state_map,
-        move(backward_graph),
-        move(looping_operators),
-        move(goal_states));
+    bool unsolvable = h_values[initial_state_id] == INF;
+    return {
+               unsolvable,
+               utils::make_unique_ptr<ExplicitAbstraction>(
+                   state_map,
+                   move(backward_graph),
+                   move(looping_operators),
+                   move(goal_states))
+    };
 }
 
 void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
@@ -85,25 +120,27 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
         /* To make the abstraction refinement process deterministic, we don't
            set a time limit. */
         const double max_time = numeric_limits<double>::infinity();
-        // Changing this value has no effect since we don't use
-        // cegar::Abstraction to compute saturated cost functions.
-        const bool use_general_costs = true;
 
-        cegar::Abstraction cartesian_abstraction(
+        cegar::CEGAR cegar(
             subtask,
             max(1, (max_states - num_states) / remaining_subtasks),
             max(1, (max_transitions - num_transitions) / remaining_subtasks),
             max_time,
-            use_general_costs,
             cegar::PickSplit::MAX_REFINED,
-            *rng);
+            *rng,
+            debug);
 
-        num_states += cartesian_abstraction.get_num_states();
-        num_transitions += cartesian_abstraction.get_num_non_looping_transitions();
-        int init_h = cartesian_abstraction.get_h_value_of_initial_state();
-        abstractions.push_back(convert_abstraction(cartesian_abstraction));
+        unique_ptr<cegar::Abstraction> cartesian_abstraction = cegar.extract_abstraction();
 
-        if (total_size_limit_reached() || init_h == INF) {
+        num_states += cartesian_abstraction->get_num_states();
+        num_transitions += cartesian_abstraction->get_transition_system().get_num_non_loops();
+
+        vector<int> operator_costs = task_properties::get_operator_costs(TaskProxy(*subtask));
+        auto result = convert_abstraction(*cartesian_abstraction, operator_costs);
+        bool unsolvable = result.first;
+        abstractions.push_back(move(result.second));
+
+        if (total_size_limit_reached() || unsolvable) {
             break;
         }
 

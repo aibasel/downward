@@ -3,14 +3,13 @@
 using namespace std;
 
 namespace options {
-ArgError::ArgError(const string &msg)
+OptionParserError::OptionParserError(const string &msg)
     : msg(msg) {
 }
 
-ostream &operator<<(ostream &out, const ArgError &err) {
-    return out << "argument error: " << err.msg;
+ostream &operator<<(ostream &out, const OptionParserError &err) {
+    return out << "option parser error: " << err.msg;
 }
-
 
 ParseError::ParseError(const string &msg, ParseTree parse_tree)
     : msg(msg),
@@ -33,5 +32,11 @@ ostream &operator<<(ostream &out, const ParseError &parse_error) {
             << "\")" << endl;
     }
     return out;
+}
+
+
+string get_demangling_hint(const string &type_name) {
+    return "To retrieve the demangled C++ type for gcc/clang, you can call \n"
+           "c++filt -t " + type_name;
 }
 }

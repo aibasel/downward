@@ -3,8 +3,12 @@
 from __future__ import print_function
 
 HELP = """\
-Run the translator on supported Python versions and test that the log
-and the output file are the same for all versions.
+Check that translator is deterministic.
+
+Run the translator on two different Python versions and test that the
+log and the output file are the same. Obviously, there might be false
+negatives, i.e., different Python versions might lead to the same
+nondeterministic results.
 """
 
 import argparse
@@ -66,8 +70,10 @@ def translate_task(python, python_version, task_file):
 
 def _get_all_tasks_by_domain(benchmarks_dir):
     # Ignore domains where translating the first task takes too much time or memory.
+    # We also ignore city
     blacklisted_domains = [
         "agricola-sat18-strips",
+        "citycar-sat14-adl", # cf. issue875
         "organic-synthesis-sat18-strips",
         "organic-synthesis-split-opt18-strips",
         "organic-synthesis-split-sat18-strips"]
@@ -149,8 +155,7 @@ def main():
             subprocess.check_call(["diff", "-q"] + files)
         except subprocess.CalledProcessError:
             sys.exit(
-                "Error: Translator output for %s differs between Python versions. "
-                "See above diff or compare the files %s in %s." % (task, files, DIR))
+                "Error: Translator is nondeterministic for {task}.".format(**locals()))
         print()
         sys.stdout.flush()
     cleanup()

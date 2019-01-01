@@ -25,6 +25,7 @@ class CartesianAbstractionGenerator : public AbstractionGenerator {
     const int max_states;
     const int max_transitions;
     const std::shared_ptr<utils::RandomNumberGenerator> rng;
+    const bool debug;
 
     int num_states;
     int num_transitions;

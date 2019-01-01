@@ -4,7 +4,6 @@
 #include "bounds.h"
 
 #include <functional>
-#include <map>
 #include <string>
 #include <typeindex>
 #include <utility>
@@ -12,12 +11,14 @@
 
 namespace options {
 class OptionParser;
+class Predefinitions;
 class Registry;
 
 // See comment in constructor of Plugin in plugin.h.
 using DocFactory = std::function<void (OptionParser &)>;
-using PluginTypeNameGetter = std::function<std::string()>;
-
+using PluginTypeNameGetter = std::function<std::string(const Registry &registry)>;
+using PredefinitionFunction = std::function<void (const std::string &, Registry &,
+                                                  Predefinitions &, bool)>;
 using ValueExplanations = std::vector<std::pair<std::string, std::string>>;
 
 
@@ -83,10 +84,9 @@ struct LanguageSupportInfo {
 
 // Store documentation for a plugin.
 struct PluginInfo {
-    DocFactory doc_factory;
-    PluginTypeNameGetter type_name_factory;
     std::string key;
     std::string name;
+    std::string type_name;
     std::string synopsis;
     std::string group;
     std::vector<ArgumentInfo> arg_help;
@@ -94,10 +94,6 @@ struct PluginInfo {
     std::vector<LanguageSupportInfo> support_help;
     std::vector<NoteInfo> notes;
     bool hidden;
-
-    void fill_docs(Registry &registry);
-
-    std::string get_type_name() const;
 };
 
 
@@ -105,7 +101,7 @@ struct PluginInfo {
   The plugin type info class contains meta-information for a given
   type of plugins (e.g. "SearchEngine" or "MergeStrategyFactory").
 */
-class PluginTypeInfo {
+struct PluginTypeInfo {
     std::type_index type;
 
     /*
@@ -121,16 +117,23 @@ class PluginTypeInfo {
       the top of the wiki page for this plugin type.
     */
     std::string documentation;
+
+    // Command line argument to predefine Plugins of this PluginType.
+    std::string predefinition_key;
+
+    // Alternative command line arguments to predefine Plugins of this PluginType.
+    std::string alias;
+
+    // Function used to predefine Plugins of this PluginType
+    PredefinitionFunction predefinition_function;
+
 public:
     PluginTypeInfo(const std::type_index &type,
                    const std::string &type_name,
-                   const std::string &documentation);
-
-    ~PluginTypeInfo() = default;
-
-    const std::type_index &get_type() const;
-    const std::string &get_type_name() const;
-    const std::string &get_documentation() const;
+                   const std::string &documentation,
+                   const std::string &predefinition_key,
+                   const std::string &alias,
+                   const PredefinitionFunction &predefinition_function);
 
     bool operator<(const PluginTypeInfo &other) const;
 };
@@ -139,6 +142,10 @@ public:
 struct PluginGroupInfo {
     std::string group_id;
     std::string doc_title;
+
+    PluginGroupInfo(const std::string &group_id, const std::string &doc_title)
+        : group_id(group_id), doc_title(doc_title) {
+    }
 };
 }
 

@@ -59,7 +59,7 @@ static shared_ptr<Heuristic> _parse_all_states_potential(OptionParser &parser) {
 }
 
 static Plugin<Evaluator> _plugin_initial_state(
-    "initial_state_potential", _parse_initial_state_potential);
+    "initial_state_potential", _parse_initial_state_potential, "heuristics_potentials");
 static Plugin<Evaluator> _plugin_all_states(
-    "all_states_potential", _parse_all_states_potential);
+    "all_states_potential", _parse_all_states_potential, "heuristics_potentials");
 }

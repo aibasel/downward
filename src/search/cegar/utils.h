@@ -5,7 +5,6 @@
 
 #include "../utils/hash.h"
 
-#include <limits>
 #include <memory>
 #include <unordered_set>
 #include <utility>
@@ -18,11 +17,6 @@ class AdditiveHeuristic;
 }
 
 namespace cegar {
-const int UNDEFINED_VALUE = -1;
-
-// Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
-const int INF = std::numeric_limits<int>::max();
-
 extern std::unique_ptr<additive_heuristic::AdditiveHeuristic>
 create_additive_heuristic(const std::shared_ptr<AbstractTask> &task);
 
