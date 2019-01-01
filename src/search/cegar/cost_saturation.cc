@@ -32,6 +32,42 @@ namespace cegar {
 */
 static const int memory_padding_in_mb = 75;
 
+static vector<int> compute_distances(
+    const vector<Transitions> &transitions,
+    const vector<int> &costs,
+    const unordered_set<int> &start_ids) {
+    vector<int> distances(transitions.size(), INF);
+    priority_queues::AdaptiveQueue<int> open_queue;
+    for (int goal_id : start_ids) {
+        distances[goal_id] = 0;
+        open_queue.push(0, goal_id);
+    }
+    while (!open_queue.empty()) {
+        pair<int, int> top_pair = open_queue.pop();
+        int old_g = top_pair.first;
+        int state_id = top_pair.second;
+
+        const int g = distances[state_id];
+        assert(0 <= g && g < INF);
+        assert(g <= old_g);
+        if (g < old_g)
+            continue;
+        assert(utils::in_bounds(state_id, transitions));
+        for (const Transition &transition : transitions[state_id]) {
+            const int op_cost = costs[transition.op_id];
+            assert(op_cost >= 0);
+            int succ_g = (op_cost == INF) ? INF : g + op_cost;
+            assert(succ_g >= 0);
+            int succ_id = transition.target_id;
+            if (succ_g < distances[succ_id]) {
+                distances[succ_id] = succ_g;
+                open_queue.push(succ_g, succ_id);
+            }
+        }
+    }
+    return distances;
+}
+
 static vector<int> compute_saturated_costs(
     const TransitionSystem &transition_system,
     const vector<int> &g_values,
@@ -212,12 +248,14 @@ void CostSaturation::build_abstractions(
         num_non_looping_transitions += abstraction->get_transition_system().get_num_non_loops();
         assert(num_states <= max_states);
 
-        AbstractSearch abstract_search(task_properties::get_operator_costs(TaskProxy(*subtask)));
-        vector<int> init_distances = abstract_search.compute_distances(
+        vector<int> costs = task_properties::get_operator_costs(TaskProxy(*subtask));
+        vector<int> init_distances = compute_distances(
             abstraction->get_transition_system().get_outgoing_transitions(),
+            costs,
             {abstraction->get_initial_state()->get_id()});
-        vector<int> goal_distances = abstract_search.compute_distances(
+        vector<int> goal_distances = compute_distances(
             abstraction->get_transition_system().get_incoming_transitions(),
+            costs,
             abstraction->get_goals());
         vector<int> saturated_costs = compute_saturated_costs(
             abstraction->get_transition_system(),
