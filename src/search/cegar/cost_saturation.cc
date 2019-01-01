@@ -9,7 +9,6 @@
 #include "transition_system.h"
 #include "utils.h"
 
-#include "../algorithms/priority_queues.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/modified_operator_costs_task.h"
 #include "../utils/countdown_timer.h"
