@@ -6,9 +6,8 @@
 
 #include <cassert>
 #include <deque>
+#include <map>
 #include <memory>
-#include <queue>
-#include <utility>
 #include <vector>
 
 namespace cegar {
@@ -63,34 +62,16 @@ public:
         }
     };
 
-    struct Entry {
-        int g;
-        int h;
-        int state;
-
-        Entry(int g, int h, int state)
-            : g(g), h(h), state(state) {
-        }
-
-        bool operator>(const Entry &other) const {
-            return std::make_pair(g + h, h) > std::make_pair(other.g + other.h, other.h);
-        }
-    };
-
     class TiebreakingQueue {
-        class Heap
-            : public std::priority_queue<Entry, std::vector<Entry>, std::greater<Entry>> {
-            // We inherit since our friend needs access to the underlying
-            // container c which is a protected member.
-            friend class TiebreakingQueue;
-        };
-
-        Heap heap;
+        using Bucket = std::deque<int>;
+        std::map<const std::vector<int>, Bucket> buckets;
+        int size;
 public:
+        TiebreakingQueue();
         void clear();
-        bool empty() const;
-        void push(const Entry &entry);
-        Entry pop();
+        bool empty();
+        void insert(int state_id, int g, int h);
+        std::pair<int, int> remove_min();
     };
 
     const std::vector<int> operator_costs;
