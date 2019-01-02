@@ -64,6 +64,7 @@ def main():
     parser.add_pattern("search_start_memory", r"\[g=0, 1 evaluated, 0 expanded, t=.+s, (\d+) KB\]", type=int)
     parser.add_pattern("time_for_computing_cost_partitionings", r"^\[t=.+s, \d+ KB\] Time for computing cost partitionings: (.+)s$", type=float)
     parser.add_pattern("cartesian_states", r"^Cartesian states: (\d+)$", type=int)
+    parser.add_pattern("cost_partitionings", r"Cost partitionings: (\d+)$", type=int)
 
     parser.add_function(no_search)
 
