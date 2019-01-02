@@ -53,5 +53,6 @@ exp.add_fetcher(name='fetch')
 
 exp.add_absolute_report_step(attributes=ATTRIBUTES)
 exp.add_comparison_table_step(attributes=ATTRIBUTES)
+exp.add_scatter_plot_step(relative=True, attributes=["time_for_computing_cost_partitionings", "search_start_memory"])
 
 exp.run_steps()
