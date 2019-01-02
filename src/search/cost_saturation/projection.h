@@ -6,6 +6,8 @@
 #include "../task_proxy.h"
 
 #include "../algorithms/priority_queues.h"
+#include "../heuristics/array_pool.h"
+#include "../pdbs/pattern_database.h"
 #include "../pdbs/types.h"
 
 #include <vector>
@@ -16,61 +18,38 @@ class MatchTree;
 }
 
 namespace cost_saturation {
+struct AbstractForwardOperator {
+    int precondition_hash;
+    array_pool::ArrayPoolIndex unaffected_variables;
+    int num_unaffected_variables;
+    int hash_effect;
+
+    AbstractForwardOperator(
+        int precondition_hash,
+        array_pool::ArrayPoolIndex unaffected_variables,
+        int num_unaffected_variables,
+        int hash_effect)
+        : precondition_hash(precondition_hash),
+          unaffected_variables(unaffected_variables),
+          num_unaffected_variables(num_unaffected_variables),
+          hash_effect(hash_effect) {
+    }
+};
+
 /*
   TODO: Reduce code duplication with pdbs::PatternDatabase.
 */
-
-class AbstractForwardOperator {
-    // We need the concrete operator ID for cost partitioning.
-    const int concrete_operator_id;
-
-    // For each variable V that is not changed by this operator we store the fact V=0.      .
-    std::vector<FactPair> first_facts_of_unaffected_variables;
-
-    int precondition_hash;
-
-    /*
-      Effect of the operator during forward search on a given abstract state
-      number.
-    */
-    int hash_effect;
-public:
-    /*
-      AbstractForwardOperators are built from concrete operators. The
-      parameters follow the usual name convention of SAS+ operators,
-      meaning prevail, preconditions and effects are all related to
-      progression search.
-    */
-    AbstractForwardOperator(const std::vector<FactPair> &prevail,
-                            const std::vector<FactPair> &preconditions,
-                            const std::vector<FactPair> &effects,
-                            const std::vector<std::size_t> &hash_multipliers,
-                            int concrete_operator_id);
-
-    int get_concrete_operator_id() const;
-
-    const std::vector<FactPair> &get_first_facts_of_unaffected_variables() const {
-        return first_facts_of_unaffected_variables;
-    }
-
-    /*
-      Returns the effect of the abstract operator in form of a value change to
-      an abstract state index.
-    */
-    int get_hash_effect() const {return hash_effect;}
-
-    int get_precondition_hash() const {return precondition_hash;}
-};
-
 class Projection : public Abstraction {
-    TaskProxy task_proxy;
-    pdbs::Pattern pattern;
-
     using Facts = std::vector<FactPair>;
     using OperatorCallback =
         std::function<void (Facts &, Facts &, Facts &, int, const std::vector<size_t> &, int)>;
 
+    TaskProxy task_proxy;
+    pdbs::Pattern pattern;
+
+    std::unique_ptr<array_pool::ArrayPool> unaffected_variables_per_operator;
     std::vector<AbstractForwardOperator> abstract_forward_operators;
+
     std::vector<pdbs::AbstractOperator> abstract_backward_operators;
     std::unique_ptr<pdbs::MatchTree> match_tree_backward;
 
@@ -126,18 +105,26 @@ class Projection : public Abstraction {
         // Reuse vector to save allocations.
         std::vector<FactPair> abstract_facts;
 
-        for (const AbstractForwardOperator &op : abstract_forward_operators) {
-            abstract_facts = op.get_first_facts_of_unaffected_variables();
+        assert(abstract_backward_operators.size() == abstract_forward_operators.size());
+        int num_operators = abstract_backward_operators.size();
+        for (int op_id = 0; op_id < num_operators; ++op_id) {
+            const pdbs::AbstractOperator &backward_op = abstract_backward_operators[op_id];
+            const AbstractForwardOperator &forward_op = abstract_forward_operators[op_id];
+            abstract_facts.clear();
+            for (int var : unaffected_variables_per_operator->get_slice(
+                     forward_op.unaffected_variables,
+                     forward_op.num_unaffected_variables)) {
+                abstract_facts.emplace_back(var, 0);
+            }
             bool has_next_match = true;
             while (has_next_match) {
-                int state = op.get_precondition_hash();
+                int state = forward_op.precondition_hash;
                 for (const FactPair &fact : abstract_facts) {
                     state += hash_multipliers[fact.var] * fact.value;
                 }
-                callback(
-                    Transition(
-                        state, op.get_concrete_operator_id(), state + op.get_hash_effect()));
-
+                callback(Transition(state,
+                                    backward_op.get_concrete_operator_id(),
+                                    state + forward_op.hash_effect));
                 has_next_match = increment_to_next_state(abstract_facts);
             }
         }

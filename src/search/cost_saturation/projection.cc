@@ -3,7 +3,6 @@
 #include "types.h"
 
 #include "../pdbs/match_tree.h"
-#include "../pdbs/pattern_database.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
@@ -15,13 +14,10 @@
 using namespace std;
 
 namespace cost_saturation {
-AbstractForwardOperator::AbstractForwardOperator(
+static vector<int> get_abstract_preconditions(
     const vector<FactPair> &prev_pairs,
     const vector<FactPair> &pre_pairs,
-    const vector<FactPair> &eff_pairs,
-    const vector<size_t> &hash_multipliers,
-    int concrete_operator_id)
-    : concrete_operator_id(concrete_operator_id) {
+    const vector<size_t> &hash_multipliers) {
     vector<int> abstract_preconditions(hash_multipliers.size(), -1);
     for (const FactPair &fact : prev_pairs) {
         int pattern_index = fact.var;
@@ -31,39 +27,34 @@ AbstractForwardOperator::AbstractForwardOperator(
         int pattern_index = fact.var;
         abstract_preconditions[pattern_index] = fact.value;
     }
+    return abstract_preconditions;
+}
 
-    hash_effect = 0;
-    assert(pre_pairs.size() == eff_pairs.size());
-    for (size_t i = 0; i < pre_pairs.size(); ++i) {
-        int var = pre_pairs[i].var;
-        assert(var == eff_pairs[i].var);
-        int old_val = pre_pairs[i].value;
-        int new_val = eff_pairs[i].value;
+static int compute_forward_hash_effect(
+    const vector<FactPair> &preconditions,
+    const vector<FactPair> &effects,
+    const vector<size_t> &hash_multipliers) {
+    int hash_effect = 0;
+    assert(preconditions.size() == effects.size());
+    for (size_t i = 0; i < preconditions.size(); ++i) {
+        int var = preconditions[i].var;
+        assert(var == effects[i].var);
+        int old_val = preconditions[i].value;
+        int new_val = effects[i].value;
         assert(old_val != -1);
         int effect = (new_val - old_val) * hash_multipliers[var];
         hash_effect += effect;
     }
-
-    precondition_hash = 0;
-    for (size_t pos = 0; pos < hash_multipliers.size(); ++pos) {
-        int pre_val = abstract_preconditions[pos];
-        if (pre_val == -1) {
-            first_facts_of_unaffected_variables.emplace_back(pos, 0);
-        } else {
-            precondition_hash += hash_multipliers[pos] * pre_val;
-        }
-    }
-    first_facts_of_unaffected_variables.shrink_to_fit();
+    return hash_effect;
 }
 
-int AbstractForwardOperator::get_concrete_operator_id() const {
-    return concrete_operator_id;
-}
 
 Projection::Projection(
     const TaskProxy &task_proxy, const pdbs::Pattern &pattern)
     : task_proxy(task_proxy),
-      pattern(pattern) {
+      pattern(pattern),
+      unaffected_variables_per_operator(
+          utils::make_unique_ptr<array_pool::ArrayPool>()) {
     assert(utils::is_sorted_unique(pattern));
 
     active_operators = compute_active_operators();
@@ -95,6 +86,9 @@ Projection::Projection(
         pattern_domain_sizes.push_back(variables[pattern_var].get_domain_size());
     }
 
+    match_tree_backward = utils::make_unique_ptr<pdbs::MatchTree>(
+        task_proxy, pattern, hash_multipliers);
+
     // Compute abstract forward and backward operators.
     OperatorsProxy operators = task_proxy.get_operators();
     for (OperatorProxy op : operators) {
@@ -107,17 +101,36 @@ Projection::Projection(
                 int cost,
                 const vector<size_t> &hash_multipliers,
                 int concrete_operator_id) {
-                abstract_forward_operators.emplace_back(
-                    prevail, preconditions, effects, hash_multipliers, concrete_operator_id);
                 abstract_backward_operators.emplace_back(
-                    prevail, preconditions, effects, cost, hash_multipliers, concrete_operator_id);
+                    prevail, preconditions, effects, cost, hash_multipliers,
+                    concrete_operator_id);
+
+                vector<int> abstract_preconditions = get_abstract_preconditions(
+                    prevail, preconditions, hash_multipliers);
+                vector<int> unaffected_variables;
+                int precondition_hash = 0;
+                for (size_t pos = 0; pos < hash_multipliers.size(); ++pos) {
+                    int pre_val = abstract_preconditions[pos];
+                    if (pre_val == -1) {
+                        unaffected_variables.emplace_back(pos);
+                    } else {
+                        precondition_hash += hash_multipliers[pos] * pre_val;
+                    }
+                }
+                array_pool::ArrayPoolIndex index =
+                    unaffected_variables_per_operator->append(unaffected_variables);
+
+                abstract_forward_operators.emplace_back(
+                    precondition_hash, index, unaffected_variables.size(),
+                    compute_forward_hash_effect(
+                        preconditions, effects, hash_multipliers));
             });
     }
+    abstract_forward_operators.shrink_to_fit();
+    abstract_backward_operators.shrink_to_fit();
 
-    // Create match tree.
-    match_tree_backward = utils::make_unique_ptr<pdbs::MatchTree>(
-        task_proxy, pattern, hash_multipliers);
-    for (const pdbs::AbstractOperator &op : abstract_backward_operators) {
+    // Fill match tree after creating the operator vectors to have valid pointers.
+    for (pdbs::AbstractOperator &op : abstract_backward_operators) {
         match_tree_backward->insert(op);
     }
 
@@ -414,10 +427,13 @@ const vector<int> &Projection::get_goal_states() const {
 }
 
 void Projection::release_transition_system_memory() {
+    assert(has_transition_system());
+    utils::release_vector_memory(abstract_forward_operators);
     utils::release_vector_memory(abstract_backward_operators);
     utils::release_vector_memory(looping_operators);
     utils::release_vector_memory(goal_states);
     match_tree_backward = nullptr;
+    unaffected_variables_per_operator = nullptr;
 }
 
 void Projection::dump() const {
