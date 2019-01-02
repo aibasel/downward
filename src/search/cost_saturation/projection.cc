@@ -121,8 +121,8 @@ Projection::Projection(
                     unaffected_variables_per_operator->append(unaffected_variables);
 
                 abstract_forward_operators.emplace_back(
-                    precondition_hash, index, unaffected_variables.size(),
-                    compute_forward_hash_effect(
+                    concrete_operator_id, precondition_hash, index,
+                    unaffected_variables.size(), compute_forward_hash_effect(
                         preconditions, effects, hash_multipliers));
             });
     }
