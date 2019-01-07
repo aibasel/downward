@@ -184,10 +184,10 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
         value.pop_back();
     }
 
-    // Note that this silently ignores all characters after the first integer number.
     std::istringstream stream(value);
     int x;
-    if ((stream >> x).fail()) {
+    stream >> std::noskipws >> x;
+    if (stream.fail() || !stream.eof()) {
         parser.error("could not parse int argument");
     }
 
@@ -211,8 +211,9 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
     } else {
         std::istringstream stream(value);
         double x;
-        if ((stream >> x).fail()) {
-            parser.error("could not parse double argument " + value);
+        stream >> std::noskipws >> x;
+        if (stream.fail() || !stream.eof()) {
+            parser.error("could not parse double argument");
         }
         return x;
     }
