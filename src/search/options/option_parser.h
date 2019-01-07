@@ -182,15 +182,21 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
         value.pop_back();
     }
 
+    // Note that this silently ignores all characters after the first integer number.
     std::istringstream stream(value);
     int x;
     if ((stream >> x).fail()) {
         parser.error("could not parse int argument");
     }
+
     if (x >= 0 &&
         !utils::is_product_within_limit(x, factor, std::numeric_limits<int>::max())) {
         parser.error("overflow for int argument");
+    } else if (x < 0 && x * factor != std::numeric_limits<int>::min() &&
+               !utils::is_product_within_limit(abs(x), factor, std::numeric_limits<int>::max())) {
+        parser.error("underflow for int argument");
     }
+
     return x * factor;
 }
 
