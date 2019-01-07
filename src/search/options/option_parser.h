@@ -161,11 +161,13 @@ inline T TokenParser<T>::parse(OptionParser &parser) {
 template<>
 inline int TokenParser<int>::parse(OptionParser &parser) {
     std::string value = parser.get_root_value();
-    if (value == "infinity") {
+
+    if (value.empty()) {
+        parser.error("int argument must not be empty");
+    } else if (value == "infinity") {
         return std::numeric_limits<int>::max();
     }
 
-    assert(!value.empty());
     char suffix = value.back();
     int factor = 1;
     if (isalpha(suffix)) {
