@@ -311,14 +311,21 @@ class IssueExperiment(FastDownwardExperiment):
         lists the two absolute attribute values and their difference
         for all attributes in kwargs["attributes"].
 
-        All *kwargs* will be passed to the CompareConfigsReport class.
-        If the keyword argument *attributes* is not specified, a
-        default list of attributes is used. ::
+        Use *suffix* to denote a step name and filename suffix if you
+        want to add multiple different comparison table steps.
+
+        All *kwargs* except *suffix* will be passed to the
+        CompareConfigsReport class. If the keyword argument
+        *attributes* is not specified, a default list of attributes is
+        used. ::
 
             exp.add_comparison_table_step(attributes=["coverage"])
 
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
+        suffix = kwargs.pop("suffix", "")
+        if suffix:
+            suffix = "-" + suffix
 
         def make_comparison_tables():
             for rev1, rev2 in itertools.combinations(self._revisions, 2):
@@ -332,20 +339,20 @@ class IssueExperiment(FastDownwardExperiment):
                 report = ComparativeReport(compared_configs, **kwargs)
                 outfile = os.path.join(
                     self.eval_dir,
-                    "%s-%s-%s-compare.%s" % (
-                        self.name, rev1, rev2, report.output_format))
+                    "%s-%s-%s-compare%s.%s" % (
+                        self.name, rev1, rev2, suffix, report.output_format))
                 report(self.eval_dir, outfile)
 
         def publish_comparison_tables():
             for rev1, rev2 in itertools.combinations(self._revisions, 2):
                 outfile = os.path.join(
                     self.eval_dir,
-                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
+                    "%s-%s-%s-compare%s.html" % (self.name, rev1, rev2, suffix))
                 subprocess.call(["publish", outfile])
 
-        self.add_step("make-comparison-tables", make_comparison_tables)
+        self.add_step("make-comparison-tables%s" % suffix, make_comparison_tables)
         self.add_step(
-            "publish-comparison-tables", publish_comparison_tables)
+            "publish-comparison-tables%s" % suffix, publish_comparison_tables)
 
     def add_scatter_plot_step(self, relative=False, attributes=None):
         """Add step creating (relative) scatter plots for all revision pairs.
