@@ -191,14 +191,12 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
         parser.error("could not parse int argument");
     }
 
-    if (x >= 0 &&
-        !utils::is_product_within_limit(x, factor, std::numeric_limits<int>::max())) {
+    int min_int = std::numeric_limits<int>::min();
+    // Reserve highest value for "infinity".
+    int max_int = std::numeric_limits<int>::max() - 1;
+    if (!utils::is_product_within_limits(x, factor, min_int, max_int)) {
         parser.error("overflow for int argument");
-    } else if (x < 0 && x * factor != std::numeric_limits<int>::min() &&
-               !utils::is_product_within_limit(abs(x), factor, std::numeric_limits<int>::max())) {
-        parser.error("underflow for int argument");
     }
-
     return x * factor;
 }
 
