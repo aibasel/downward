@@ -228,11 +228,13 @@ ATTRIBUTES = ["error", "run_dir", "translator_*", "translator_output_sas_hash"]
 exp.add_absolute_report_step(
     outfile=os.path.join(exp.eval_dir, "{EXPNAME}.html".format(**locals())),
     attributes=ATTRIBUTES)
-same_value_flters = SameValueFilters("translator_output_sas_hash")
+
+
+same_value_filters = SameValueFilters("translator_output_sas_hash")
 exp.add_absolute_report_step(
     outfile=os.path.join(exp.eval_dir, "{EXPNAME}-filtered.html".format(**locals())),
     attributes=ATTRIBUTES,
-    filter=[same_value_flters.store_values, same_value_flters.filter_tasks_with_equal_values])
+    filter=[same_value_filters.store_values, same_value_filters.filter_tasks_with_equal_values])
 exp.add_report(TranslatorDiffReport(
         attributes=["domain", "problem", "algorithm", "run_dir"]
     ), outfile="different_output_sas.csv"
