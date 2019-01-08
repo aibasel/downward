@@ -6,6 +6,7 @@
 #include "predefinitions.h"
 #include "registries.h"
 
+#include "../utils/math.h"
 #include "../utils/strings.h"
 
 #include <memory>
@@ -159,17 +160,44 @@ inline T TokenParser<T>::parse(OptionParser &parser) {
 // int needs a specialization to allow "infinity".
 template<>
 inline int TokenParser<int>::parse(OptionParser &parser) {
-    const std::string &value = parser.get_root_value();
-    if (value == "infinity") {
+    std::string value = parser.get_root_value();
+
+    if (value.empty()) {
+        parser.error("int argument must not be empty");
+    } else if (value == "infinity") {
         return std::numeric_limits<int>::max();
-    } else {
-        std::istringstream stream(value);
-        int x;
-        if ((stream >> x).fail()) {
-            parser.error("could not parse int argument " + value);
-        }
-        return x;
     }
+
+    char suffix = value.back();
+    int factor = 1;
+    if (isalpha(suffix)) {
+        assert(islower(suffix));
+        if (suffix == 'k') {
+            factor = 1000;
+        } else if (suffix == 'm') {
+            factor = 1000000;
+        } else if (suffix == 'g') {
+            factor = 1000000000;
+        } else {
+            parser.error("invalid suffix for int argument (valid: K, M, G)");
+        }
+        value.pop_back();
+    }
+
+    std::istringstream stream(value);
+    int x;
+    stream >> std::noskipws >> x;
+    if (stream.fail() || !stream.eof()) {
+        parser.error("could not parse int argument");
+    }
+
+    int min_int = std::numeric_limits<int>::min();
+    // Reserve highest value for "infinity".
+    int max_int = std::numeric_limits<int>::max() - 1;
+    if (!utils::is_product_within_limits(x, factor, min_int, max_int)) {
+        parser.error("overflow for int argument");
+    }
+    return x * factor;
 }
 
 // double needs a specialization to allow "infinity".
@@ -181,8 +209,9 @@ inline double TokenParser<double>::parse(OptionParser &parser) {
     } else {
         std::istringstream stream(value);
         double x;
-        if ((stream >> x).fail()) {
-            parser.error("could not parse double argument " + value);
+        stream >> std::noskipws >> x;
+        if (stream.fail() || !stream.eof()) {
+            parser.error("could not parse double argument");
         }
         return x;
     }
