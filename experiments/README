@@ -46,8 +46,10 @@ DownwardExperiment:
 - Translator:
   - issue862/v5.py is a translator-only experiment, including a report
     that only shows results where the translator output changed
-  - issue862/v5-planner.py is a follow-up experiment to see the impact
-    of the translator changes on the overall planner; it is
+  - issue887/v1.py is essentially the same, but with a before/after
+    comparison rather than a "plain" multiple-configuration report.
+  - issue862/v5-planner.py is a follow-up experiment to v5.py to see
+    the impact of the translator changes on the overall planner; it is
     essentially a standard planner experiment though, not very
     translator-specific; the subset of domains to evaluate is
     specified manually
