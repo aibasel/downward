@@ -22,7 +22,7 @@ static bool is_product_within_limit_unsigned(
 static unsigned int safe_abs(int x) {
     // Don't call abs() if the call would overflow.
     if (x == numeric_limits<int>::min()) {
-        return static_cast<unsigned int>(numeric_limits<int>::max()) + 1u;
+        return static_cast<unsigned int>(-(x + 1)) + 1u;
     }
     return abs(x);
 }
