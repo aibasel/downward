@@ -183,7 +183,6 @@ void print_initial_evaluator_values(const EvaluationContext &eval_context) {
         );
 }
 
-
 static PluginTypePlugin<SearchEngine> _type_plugin(
     "SearchEngine",
     // TODO: Replace empty string by synopsis for the wiki page.
