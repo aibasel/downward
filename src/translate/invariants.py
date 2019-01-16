@@ -99,8 +99,8 @@ def ensure_inequality(system, literal1, literal2):
        literal instantiations are not equal (ignoring whether one is negated and
        the other is not)"""
     if (literal1.predicate == literal2.predicate and
-        literal1.parts):
-        parts = list(zip(literal1.parts, literal2.parts))
+        literal1.args):
+        parts = list(zip(literal1.args, literal2.args))
         system.add_negative_clause(constraints.NegativeClause(parts))
 
 
