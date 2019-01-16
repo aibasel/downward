@@ -112,11 +112,82 @@ void EagerSearch::print_statistics() const {
 }
 
 SearchStatus EagerSearch::step() {
-    pair<SearchNode, bool> n = fetch_next_node();
-    if (!n.second) {
-        return FAILED;
+    /* TODO: The bulk of the first part of the code (while loop retrieving a
+       next node, previously fetch_next_node) deals with multi-path dependence,
+       which is a bit unfortunate since that is a special case that
+       makes the common case look more complicated than it would need
+       to be. We could refactor this by implementing multi-path
+       dependence as a separate search algorithm that wraps the "usual"
+       search algorithm and adds the extra processing in the desired
+       places. I think this would lead to much cleaner code. */
+
+    SearchNode node; // TODO: this is not possible
+    // EvaluationContext eval_context; TODO: if using lazy_evaluator,
+    // we would want to reuse the evaluation
+    // context created there outside of the while loop. Similarly to
+    // SearchNode, we cannot create a default constructed EvaluationContext.
+    while (true) {
+        if (open_list->empty()) {
+            cout << "Completely explored state space -- no solution!" << endl;
+            return FAILED;
+        }
+        StateID id = open_list->remove_min();
+        // TODO is there a way we can avoid creating the state here and then
+        //      recreate it outside of this function with node.get_state()?
+        //      One way would be to store GlobalState objects inside SearchNodes
+        //      instead of StateIDs
+        GlobalState s = state_registry.lookup_state(id);
+        node = search_space.get_node(s);
+
+        if (node.is_closed())
+            continue;
+
+        if (!lazy_evaluator)
+            assert(!node.is_dead_end());
+
+        if (lazy_evaluator) {
+            /*
+              With lazy evaluators (and only with these) we can have dead nodes
+              in the open list.
+
+              For example, consider a state s that is reached twice before it is expanded.
+              The first time we insert it into the open list, we compute a finite
+              heuristic value. The second time we insert it, the cached value is reused.
+
+              During first expansion, the heuristic value is recomputed and might become
+              infinite, for example because the reevaluation uses a stronger heuristic or
+              because the heuristic is path-dependent and we have accumulated more
+              information in the meantime. Then upon second expansion we have a dead-end
+              node which we must ignore.
+            */
+            if (node.is_dead_end())
+                continue;
+
+            if (lazy_evaluator->is_estimate_cached(s)) {
+                int old_h = lazy_evaluator->get_cached_estimate(s);
+                /*
+                  We can pass calculate_preferred=false here
+                  since preferred operators are computed when the state is expanded.
+                */
+                EvaluationContext eval_context(s, node.get_g(), false, &statistics);
+                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
+                if (open_list->is_dead_end(eval_context)) {
+                    node.mark_as_dead_end();
+                    statistics.inc_dead_ends();
+                    continue;
+                }
+                if (new_h != old_h) {
+                    open_list->insert(eval_context, id);
+                    continue;
+                }
+            }
+        }
+
+        node.close();
+        assert(!node.is_dead_end());
+        update_f_value_statistics(node);
+        statistics.inc_expanded();
     }
-    SearchNode node = n.first;
 
     GlobalState s = node.get_state();
     if (check_goal_and_set_plan(s))
@@ -233,80 +304,7 @@ SearchStatus EagerSearch::step() {
 }
 
 pair<SearchNode, bool> EagerSearch::fetch_next_node() {
-    /* TODO: The bulk of this code deals with multi-path dependence,
-       which is a bit unfortunate since that is a special case that
-       makes the common case look more complicated than it would need
-       to be. We could refactor this by implementing multi-path
-       dependence as a separate search algorithm that wraps the "usual"
-       search algorithm and adds the extra processing in the desired
-       places. I think this would lead to much cleaner code. */
 
-    while (true) {
-        if (open_list->empty()) {
-            cout << "Completely explored state space -- no solution!" << endl;
-            // HACK! HACK! we do this because SearchNode has no default/copy constructor
-            const GlobalState &initial_state = state_registry.get_initial_state();
-            SearchNode dummy_node = search_space.get_node(initial_state);
-            return make_pair(dummy_node, false);
-        }
-        StateID id = open_list->remove_min();
-        // TODO is there a way we can avoid creating the state here and then
-        //      recreate it outside of this function with node.get_state()?
-        //      One way would be to store GlobalState objects inside SearchNodes
-        //      instead of StateIDs
-        GlobalState s = state_registry.lookup_state(id);
-        SearchNode node = search_space.get_node(s);
-
-        if (node.is_closed())
-            continue;
-
-        if (!lazy_evaluator)
-            assert(!node.is_dead_end());
-
-        if (lazy_evaluator) {
-            /*
-              With lazy evaluators (and only with these) we can have dead nodes
-              in the open list.
-
-              For example, consider a state s that is reached twice before it is expanded.
-              The first time we insert it into the open list, we compute a finite
-              heuristic value. The second time we insert it, the cached value is reused.
-
-              During first expansion, the heuristic value is recomputed and might become
-              infinite, for example because the reevaluation uses a stronger heuristic or
-              because the heuristic is path-dependent and we have accumulated more
-              information in the meantime. Then upon second expansion we have a dead-end
-              node which we must ignore.
-            */
-            if (node.is_dead_end())
-                continue;
-
-            if (lazy_evaluator->is_estimate_cached(s)) {
-                int old_h = lazy_evaluator->get_cached_estimate(s);
-                /*
-                  We can pass calculate_preferred=false here
-                  since preferred operators are computed when the state is expanded.
-                */
-                EvaluationContext eval_context(s, node.get_g(), false, &statistics);
-                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
-                if (open_list->is_dead_end(eval_context)) {
-                    node.mark_as_dead_end();
-                    statistics.inc_dead_ends();
-                    continue;
-                }
-                if (new_h != old_h) {
-                    open_list->insert(eval_context, id);
-                    continue;
-                }
-            }
-        }
-
-        node.close();
-        assert(!node.is_dead_end());
-        update_f_value_statistics(node);
-        statistics.inc_expanded();
-        return make_pair(node, true);
-    }
 }
 
 void EagerSearch::reward_progress() {
