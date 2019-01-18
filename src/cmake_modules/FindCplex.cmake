@@ -11,50 +11,25 @@
 #
 # The location of CPLEX can be specified using the environment variable
 # or cmake parameter DOWNWARD_CPLEX_ROOT. If different installations
-# for 32-/64-bit versions and release/debug versions of CPLEX are available,
-# they can be specified with
-#   DOWNWARD_CPLEX_ROOT32
-#   DOWNWARD_CPLEX_ROOT64
-#   DOWNWARD_CPLEX_ROOT_RELEASE32
-#   DOWNWARD_CPLEX_ROOT_RELEASE64
-#   DOWNWARD_CPLEX_ROOT_DEBUG32
-#   DOWNWARD_CPLEX_ROOT_DEBUG64
+# for release/debug versions of CPLEX are available,they can be
+# specified with
+#   DOWNWARD_CPLEX_ROOT
+#   DOWNWARD_CPLEX_ROOT_RELEASE
+#   DOWNWARD_CPLEX_ROOT_DEBUG
 # More specific paths are preferred over less specific ones when searching
 # for libraries.
 #
 # Note that the standard FIND_PACKAGE features are supported
 # (QUIET, REQUIRED, etc.).
 
-foreach(BITWIDTH 32 64)
-    foreach(BUILDMODE "RELEASE" "DEBUG")
-        set(CPLEX_HINT_PATHS_${BUILDMODE}${BITWIDTH}
-            ${DOWNWARD_CPLEX_ROOT_${BUILDMODE}${BITWIDTH}}
-            $ENV{DOWNWARD_CPLEX_ROOT_${BUILDMODE}${BITWIDTH}}
-            ${DOWNWARD_CPLEX_ROOT${BITWIDTH}}
-            $ENV{DOWNWARD_CPLEX_ROOT${BITWIDTH}}
-            ${DOWNWARD_CPLEX_ROOT}
-            $ENV{DOWNWARD_CPLEX_ROOT}
-        )
-    endforeach()
+foreach(BUILDMODE "RELEASE" "DEBUG")
+    set(CPLEX_HINT_PATHS_${BUILDMODE}
+        ${DOWNWARD_CPLEX_ROOT_${BUILDMODE}}
+        $ENV{DOWNWARD_CPLEX_ROOT_${BUILDMODE}}
+        ${DOWNWARD_CPLEX_ROOT}
+        $ENV{DOWNWARD_CPLEX_ROOT}
+    )
 endforeach()
-
-if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-    set(CPLEX_HINT_PATHS_RELEASE ${CPLEX_HINT_PATHS_RELEASE32})
-    set(CPLEX_HINT_PATHS_DEBUG ${CPLEX_HINT_PATHS_DEBUG32})
-elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    set(CPLEX_HINT_PATHS_RELEASE ${CPLEX_HINT_PATHS_RELEASE64})
-    set(CPLEX_HINT_PATHS_DEBUG ${CPLEX_HINT_PATHS_DEBUG64})
-else()
-    message(WARNING "Bitwidth could not be detected, preferring 32-bit version of CPLEX")
-    set(CPLEX_HINT_PATHS_RELEASE
-        ${CPLEX_HINT_PATHS_RELEASE32}
-        ${CPLEX_HINT_PATHS_RELEASE64}
-    )
-    set(CPLEX_HINT_PATHS_DEBUG
-        ${CPLEX_HINT_PATHS_DEBUG32}
-        ${CPLEX_HINT_PATHS_DEBUG64}
-    )
-endif()
 
 find_path(CPLEX_INCLUDE_DIRS
     NAMES
