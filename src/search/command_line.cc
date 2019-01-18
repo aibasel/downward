@@ -1,23 +1,27 @@
 #include "command_line.h"
 
-#include "doc_printer.h"
-#include "errors.h"
 #include "option_parser.h"
-#include "predefinitions.h"
+#include "plan_manager.h"
+#include "search_engine.h"
 
-#include "../search_engine.h"
+#include "options/doc_printer.h"
+#include "options/predefinitions.h"
+#include "options/registries.h"
+#include "utils/strings.h"
 
-#include "../utils/strings.h"
-
+#include <algorithm>
 #include <vector>
-
-namespace landmarks {
-class LandmarkFactory;
-}
 
 using namespace std;
 
-namespace options {
+ArgError::ArgError(const string &msg)
+    : msg(msg) {
+}
+
+ostream &operator<<(ostream &out, const ArgError &err) {
+    return out << "argument error: " << err.msg;
+}
+
 static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
@@ -36,34 +40,12 @@ static int parse_int_arg(const string &name, const string &value) {
     }
 }
 
-/*
-  Predefine landmarks and heuristics.
-*/
-
-static void predefine_evaluator(const string &arg, Registry &registry,
-                                Predefinitions &predefinitions, bool dry_run) {
-    pair<string, string> predefinition = utils::split(arg);
-    OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
-    predefinitions.predefine(predefinition.first,
-                             parser.start_parsing<shared_ptr<Evaluator>>());
-}
-
-
-static void predefine_lmgraph(const string &arg, Registry &registry,
-                              Predefinitions &predefinitions, bool dry_run) {
-    pair<string, string> predefinition = utils::split(arg);
-    OptionParser parser(predefinition.second, registry, predefinitions, dry_run);
-    predefinitions.predefine(predefinition.first,
-                             parser.start_parsing<shared_ptr<landmarks::LandmarkFactory>>());
-}
-
-
 static shared_ptr<SearchEngine> parse_cmd_line_aux(
-    const vector<string> &args, Registry &registry, bool dry_run) {
+    const vector<string> &args, options::Registry &registry, bool dry_run) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
-    Predefinitions predefinitions;
+    options::Predefinitions predefinitions;
 
     shared_ptr<SearchEngine> engine;
     /*
@@ -74,26 +56,7 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = sanitize_arg_string(args[i]);
         bool is_last = (i == args.size() - 1);
-        if (arg == "--evaluator") {
-            if (is_last)
-                throw ArgError("missing argument after --evaluator");
-            ++i;
-            predefine_evaluator(sanitize_arg_string(args[i]), registry,
-                                predefinitions, dry_run);
-        } else if (arg == "--heuristic") {
-            // deprecated alias for --evaluator
-            if (is_last)
-                throw ArgError("missing argument after --heuristic");
-            ++i;
-            predefine_evaluator(sanitize_arg_string(args[i]), registry,
-                                predefinitions, dry_run);
-        } else if (arg == "--landmarks") {
-            if (is_last)
-                throw ArgError("missing argument after --landmarks");
-            ++i;
-            predefine_lmgraph(sanitize_arg_string(args[i]), registry,
-                              predefinitions, dry_run);
-        } else if (arg == "--search") {
+        if (arg == "--search") {
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
@@ -112,13 +75,13 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
                     plugin_names.push_back(help_arg);
                 }
             }
-            unique_ptr<DocPrinter> doc_printer;
+            unique_ptr<options::DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = utils::make_unique_ptr<Txt2TagsPrinter>(cout,
-                                                                      registry);
+                doc_printer = utils::make_unique_ptr<options::Txt2TagsPrinter>(
+                    cout, registry);
             else
-                doc_printer = utils::make_unique_ptr<PlainPrinter>(cout,
-                                                                   registry);
+                doc_printer = utils::make_unique_ptr<options::PlainPrinter>(
+                    cout, registry);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
             } else {
@@ -141,6 +104,14 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             num_previously_generated_plans = parse_int_arg(arg, args[i]);
             if (num_previously_generated_plans < 0)
                 throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
+        } else if (utils::startswith(arg, "--") &&
+                   registry.is_predefinition(arg.substr(2))) {
+            if (is_last)
+                throw ArgError("missing argument after " + arg);
+            ++i;
+            registry.handle_predefinition(arg.substr(2),
+                                          sanitize_arg_string(args[i]),
+                                          predefinitions, dry_run);
         } else {
             throw ArgError("unknown option " + arg);
         }
@@ -157,7 +128,7 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
 
 
 shared_ptr<SearchEngine> parse_cmd_line(
-    int argc, const char **argv, Registry &registry, bool dry_run, bool is_unit_cost) {
+    int argc, const char **argv, options::Registry &registry, bool dry_run, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
@@ -200,5 +171,4 @@ string usage(const string &progname) {
            "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
            "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
            "See http://www.fast-downward.org/ for details.";
-}
 }
