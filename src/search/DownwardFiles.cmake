@@ -50,6 +50,7 @@ fast_downward_plugin(
 
         abstract_task
         axioms
+        command_line
         evaluation_context
         evaluation_result
         evaluator
@@ -89,7 +90,6 @@ fast_downward_plugin(
     SOURCES
         options/any
         options/bounds
-        options/command_line
         options/doc_printer
         options/doc_utils
         options/errors
@@ -379,6 +379,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME PLUGIN_EAGER_WASTAR
+    HELP "Weighted eager A* search"
+    SOURCES
+        search_engines/plugin_eager_wastar
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
     NAME PLUGIN_LAZY
     HELP "Best-first search with deferred evaluation (lazy)"
     SOURCES
@@ -599,13 +607,15 @@ fast_downward_plugin(
         cegar/abstract_state
         cegar/additive_cartesian_heuristic
         cegar/cartesian_heuristic_function
+        cegar/cegar
         cegar/cost_saturation
         cegar/domains
         cegar/refinement_hierarchy
         cegar/split_selector
         cegar/subtask_generators
         cegar/transition
-        cegar/transition_updater
+        cegar/transition_system
+        cegar/types
         cegar/utils
         cegar/utils_landmarks
     DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES TASK_PROPERTIES
@@ -722,6 +732,7 @@ fast_downward_plugin(
     HELP "Plugin containing the code for potential heuristics"
     SOURCES
         potentials/diverse_potential_heuristics
+        potentials/plugin_group
         potentials/potential_function
         potentials/potential_heuristic
         potentials/potential_max_heuristic

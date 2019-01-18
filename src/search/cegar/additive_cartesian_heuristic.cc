@@ -2,6 +2,7 @@
 
 #include "cartesian_heuristic_function.h"
 #include "cost_saturation.h"
+#include "types.h"
 #include "utils.h"
 
 #include "../option_parser.h"
@@ -31,7 +32,8 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")),
-        *rng);
+        *rng,
+        opts.get<bool>("debug"));
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }
@@ -86,7 +88,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
-    // TODO: Is the additive version consistent as well?
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
@@ -125,6 +126,10 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "use_general_costs",
         "allow negative costs in cost partitioning",
         "true");
+    parser.add_option<bool>(
+        "debug",
+        "print debugging output",
+        "false");
     Heuristic::add_options_to_parser(parser);
     utils::add_rng_options(parser);
     Options opts = parser.parse();

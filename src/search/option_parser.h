@@ -8,13 +8,12 @@
   namespace. See also option_parser_util.h, plugin.h and issue588 for a
   discussion.
 */
-#include "options/command_line.h"
 #include "options/errors.h"
 #include "options/option_parser.h"
 
-using options::ArgError;
 using options::Bounds;
 using options::OptionParser;
+using options::OptionParserError;
 using options::Options;
 using options::ParseError;
 
