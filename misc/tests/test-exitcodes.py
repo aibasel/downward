@@ -126,7 +126,7 @@ SEARCH_TESTS = [
         defaultdict(lambda: returncodes.SUCCESS)),
     # We cannot set/enforce memory limits on Windows/macOS and thus expect
     # DRIVER_UNSUPPORTED as exit code in those cases.
-    ("large", ["--search-memory-limit", "50M"], MERGE_AND_SHRINK,
+    ("large", ["--search-memory-limit", "100M"], MERGE_AND_SHRINK,
         defaultdict(lambda: returncodes.SEARCH_OUT_OF_MEMORY,
                     darwin=returncodes.DRIVER_UNSUPPORTED,
                     win32=returncodes.DRIVER_UNSUPPORTED)),
