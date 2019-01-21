@@ -38,16 +38,16 @@ int main(int argc, const char **argv) {
         options::Registry registry(*options::RawRegistry::instance());
         parse_cmd_line(argc, argv, registry, true, unit_cost);
         engine = parse_cmd_line(argc, argv, registry, false, unit_cost);
-    } catch (ArgError &error) {
-        cerr << error << endl;
+    } catch (const ArgError &error) {
+        error.print();
         usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    } catch (OptionParserError &error) {
-        cerr << error << endl;
+    } catch (const OptionParserError &error) {
+        error.print();
         usage(argv[0]);
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    } catch (ParseError &error) {
-        cerr << error << endl;
+    } catch (const ParseError &error) {
+        error.print();
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
