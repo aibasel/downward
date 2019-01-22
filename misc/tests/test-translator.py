@@ -141,6 +141,7 @@ def main():
     args = parse_args()
     os.chdir(DIR)
     cleanup()
+    subprocess.check_call(["./build.py", "translate"], cwd=REPO)
     interpreter_paths = [get_abs_interpreter_path("python{}".format(version)) for version in VERSIONS]
     interpreter_versions = [get_python_version_info(path) for path in interpreter_paths]
     for task in get_tasks(args):
