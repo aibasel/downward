@@ -60,7 +60,7 @@ EXPERIMENTS_DIR = os.path.join(BASE_DIR, 'data')
 REVISION_CACHE = os.path.join(BASE_DIR, 'revision-cache')
 REGRESSIONS_DIR = os.path.join(BASE_DIR, 'regressions')
 
-BASELINE = cached_revision.get_global_rev(REPO, rev='041fa35219fd')
+BASELINE = cached_revision.get_global_rev(REPO, rev='9e8be78bb8e5')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
