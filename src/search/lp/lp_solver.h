@@ -72,10 +72,12 @@ struct LPVariable {
     double lower_bound;
     double upper_bound;
     double objective_coefficient;
+    bool is_integer;
 
     LPVariable(double lower_bound,
                double upper_bound,
-               double objective_coefficient);
+               double objective_coefficient,
+               bool is_integer = false);
 };
 
 class LinearProgram {
@@ -112,6 +114,7 @@ public:
 #endif
 class LPSolver {
     bool is_initialized;
+    bool is_mip;
     bool is_solved;
     int num_permanent_constraints;
     bool has_temporary_constraints_;

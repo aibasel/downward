@@ -16,12 +16,13 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
     : Heuristic(opts),
       constraint_generators(
           opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),
-      lp_solver(opts.get<lp::LPSolverType>("lpsolver")) {
+      lp_solver(opts.get<lp::LPSolverType>("lpsolver")),
+      use_integer_op_counts(opts.get<bool>("use_integer_op_counts")) {
     named_vector::NamedVector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_cost = op.get_cost();
-        variables.push_back(lp::LPVariable(0, infinity, op_cost));
+        variables.push_back(lp::LPVariable(0, infinity, op_cost, use_integer_op_counts));
     }
     named_vector::NamedVector<lp::LPConstraint> constraints;
     for (const auto &generator : constraint_generators) {
@@ -102,6 +103,13 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.add_list_option<shared_ptr<ConstraintGenerator>>(
         "constraint_generators",
         "methods that generate constraints over operator counting variables");
+
+    parser.add_option<bool>(
+        "use_integer_op_counts",
+        "operator counting variables will be restricted to integer values",
+        "false"
+    );
+
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

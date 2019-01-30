@@ -95,10 +95,11 @@ ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgra
 }
 
 LPVariable::LPVariable(double lower_bound, double upper_bound,
-                       double objective_coefficient)
+                       double objective_coefficient, bool is_integer)
     : lower_bound(lower_bound),
       upper_bound(upper_bound),
-      objective_coefficient(objective_coefficient) {
+      objective_coefficient(objective_coefficient),
+      is_integer(is_integer) {
 }
 
 named_vector::NamedVector<LPVariable> &LinearProgram::get_variables() {
@@ -160,6 +161,7 @@ void LPSolver::clear_temporary_data() {
 
 void LPSolver::load_problem(const LinearProgram &lp) {
     clear_temporary_data();
+    is_mip = false;
     is_initialized = false;
     num_permanent_constraints = lp.get_constraints().size();
 
@@ -209,6 +211,12 @@ void LPSolver::load_problem(const LinearProgram &lp) {
                                objective.data(),
                                row_lb.data(),
                                row_ub.data());
+        for (int i = 0; i < static_cast<int>(lp.get_variables().size()); ++i) {
+            if (lp.get_variables()[i].is_integer) {
+                lp_solver->setInteger(i);
+                is_mip = true;
+        }
+
         /*
           We set the objective sense after loading because the SoPlex
           interfaces of all OSI versions <= 0.108.4 ignore it when it is
@@ -371,6 +379,9 @@ void LPSolver::solve() {
         } else {
             lp_solver->initialSolve();
             is_initialized = true;
+        }
+        if (is_mip) {
+            lp_solver->branchAndBound();
         }
         if (lp_solver->isAbandoned()) {
             // The documentation of OSI is not very clear here but memory seems
