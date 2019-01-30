@@ -107,8 +107,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.add_option<bool>(
         "use_integer_op_counts",
         "operator counting variables will be restricted to integer values",
-        "false"
-    );
+        "false");
 
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
