@@ -18,7 +18,7 @@ class ConstraintGenerator;
 class OperatorCountingHeuristic : public Heuristic {
     std::vector<std::shared_ptr<ConstraintGenerator>> constraint_generators;
     lp::LPSolver lp_solver;
-    bool use_integer_op_counts;
+    const bool use_integer_operator_counts;
 protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
     int compute_heuristic(const State &state);

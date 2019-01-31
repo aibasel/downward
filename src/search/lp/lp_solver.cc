@@ -137,6 +137,7 @@ LPSolver::~LPSolver() {
 
 LPSolver::LPSolver(LPSolverType solver_type)
     : is_initialized(false),
+      is_mip(false),
       is_solved(false),
       num_permanent_constraints(0),
       has_temporary_constraints_(false) {
