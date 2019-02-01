@@ -24,8 +24,9 @@ void ParseError::print() const {
          << msg << " at: " << endl;
     kptree::print_tree_bracketed<ParseNode>(parse_tree, cerr);
     if (!substring.empty()) {
-        cerr << " (cannot continue parsing after \"" << substring << "\")" << endl;
+        cerr << " (cannot continue parsing after \"" << substring << "\")";
     }
+    cerr << endl;
 }
 
 
