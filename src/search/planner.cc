@@ -1,5 +1,3 @@
-Testing the buildbot's email notification.
-
 #include "command_line.h"
 #include "option_parser.h"
 #include "search_engine.h"
