@@ -1,6 +1,7 @@
 #include "strings.h"
 
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
@@ -9,8 +10,8 @@ StringOperationError::StringOperationError(const string &msg)
     : msg(msg) {
 }
 
-const char *StringOperationError::what() const noexcept {
-    return msg.c_str();
+void StringOperationError::print() const {
+    cerr << msg << endl;
 }
 
 

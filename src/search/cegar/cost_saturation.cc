@@ -212,12 +212,14 @@ void CostSaturation::build_abstractions(
         num_non_looping_transitions += abstraction->get_transition_system().get_num_non_loops();
         assert(num_states <= max_states);
 
-        AbstractSearch abstract_search(task_properties::get_operator_costs(TaskProxy(*subtask)));
-        vector<int> init_distances = abstract_search.compute_distances(
+        vector<int> costs = task_properties::get_operator_costs(TaskProxy(*subtask));
+        vector<int> init_distances = compute_distances(
             abstraction->get_transition_system().get_outgoing_transitions(),
+            costs,
             {abstraction->get_initial_state()->get_id()});
-        vector<int> goal_distances = abstract_search.compute_distances(
+        vector<int> goal_distances = compute_distances(
             abstraction->get_transition_system().get_incoming_transitions(),
+            costs,
             abstraction->get_goals());
         vector<int> saturated_costs = compute_saturated_costs(
             abstraction->get_transition_system(),

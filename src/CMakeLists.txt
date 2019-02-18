@@ -1,6 +1,6 @@
 # Usage:
-#         mkdir -p builds/release32
-#         cd builds/release32
+#         mkdir -p builds/release
+#         cd builds/release
 #         cmake path/to/src
 #         make [-j4]
 # The call to cmake caches settings in the build directory and reads
@@ -39,10 +39,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
 
 fast_downward_default_to_release_build()
-# We have to set the desired bitwidth before we can define the project.
-fast_downward_set_bitwidth()
 project(fast-downward)
-fast_downward_check_64_bit_option()
+fast_downward_report_bitwidth()
 # Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
 # This means that cmake has to be called twice for multi-config generators like Visual Studio.
 fast_downward_set_configuration_types()
