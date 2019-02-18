@@ -465,7 +465,10 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
         "main_loop_max_time",
         "A limit in seconds on the runtime of the main loop of the algorithm. "
         "If the limit is exceeded, the algorithm terminates, potentially "
-        "returning a factored transition system with several factors.",
+        "returning a factored transition system with several factors. Also "
+        "note that the time limit is only checked between transformations "
+        "of the main loop, but not during, so it can be exceeded if a "
+        "transformation is runtime-intense.",
         "infinity",
         Bounds("0.0", "infinity"));
 }
