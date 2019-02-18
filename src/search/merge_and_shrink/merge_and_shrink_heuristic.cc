@@ -24,15 +24,33 @@ using utils::ExitCode;
 
 namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
-    : Heuristic(opts) {
-    Verbosity verbosity = static_cast<Verbosity>(opts.get_enum("verbosity"));
-
+    : Heuristic(opts),
+      verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))) {
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
+    finalize(fts);
+    cout << "Done initializing merge-and-shrink heuristic." << endl << endl;
+}
 
+void MergeAndShrinkHeuristic::finalize_factor(
+    FactoredTransitionSystem &fts, int index) {
+    auto final_entry = fts.extract_factor(index);
+    unique_ptr<MergeAndShrinkRepresentation> mas_representation = move(final_entry.first);
+    unique_ptr<Distances> distances = move(final_entry.second);
+    if (!distances->are_goal_distances_computed()) {
+        const bool compute_init = false;
+        const bool compute_goal = true;
+        distances->compute_distances(compute_init, compute_goal, verbosity);
+    }
+    assert(distances->are_goal_distances_computed());
+    mas_representation->set_distances(*distances);
+    mas_representations.push_back(move(mas_representation));
+}
+
+void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
     /*
-      TODO: This constructor has quite a bit of fiddling with aspects of
+      TODO: This method has quite a bit of fiddling with aspects of
       transition systems and the merge-and-shrink representation (checking
       whether distances have been computed; computing them) that we would
       like to have at a lower level. See also the TODO in
@@ -40,55 +58,47 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
       (and also related classes like TransitionSystem etc).
     */
 
-    int ts_index = -1;
-    if (fts.get_num_active_entries() == 1) {
-        /*
-          We regularly finished the merge-and-shrink construction, i.e., we
-          merged all transition systems and are left with one solvable
-          transition system. This assumes that merges are always appended at
-          the end.
-        */
-        int last_factor_index = fts.get_size() - 1;
-        for (int index = 0; index < last_factor_index; ++index) {
-            assert(!fts.is_active(index));
-        }
-        ts_index = last_factor_index;
-    } else {
-        // The computation stopped early because there is an unsolvable factor.
-        for (int index = 0; index < fts.get_size(); ++index) {
-            if (fts.is_active(index) && !fts.is_factor_solvable(index)) {
-                ts_index = index;
-                break;
+    int active_factors_count = fts.get_num_active_entries();
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << "Number of remaining factors: " << active_factors_count << endl;
+    }
+
+    // Check if there is an unsolvable factor. If so, use it as heuristic.
+    for (int index : fts) {
+        if (!fts.is_factor_solvable(index)) {
+            finalize_factor(fts, index);
+            if (verbosity >= Verbosity::NORMAL) {
+                cout << fts.get_transition_system(index).tag()
+                     << "use this unsolvable factor as heuristic."
+                     << endl;
             }
+            return;
         }
-        assert(ts_index != -1);
     }
 
-    auto final_entry = fts.extract_factor(ts_index);
-    cout << "Final transition system size: "
-         << fts.get_transition_system(ts_index).get_size() << endl;
-
-    mas_representation = move(final_entry.first);
-    unique_ptr<Distances> final_distances = move(final_entry.second);
-    if (!final_distances->are_goal_distances_computed()) {
-        const bool compute_init = false;
-        const bool compute_goal = true;
-        final_distances->compute_distances(
-            compute_init, compute_goal, verbosity);
+    // Iterate over all remaining factors and extract them.
+    for (int index : fts) {
+        finalize_factor(fts, index);
     }
-    assert(final_distances->are_goal_distances_computed());
-    mas_representation->set_distances(*final_distances);
-    cout << "Done initializing merge-and-shrink heuristic." << endl << endl;
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << "Use all factors in a maximum heuristic." << endl;
+    }
+
+    assert(static_cast<int>(mas_representations.size()) == active_factors_count);
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
-    int cost = mas_representation->get_value(state);
-    if (cost == PRUNED_STATE || cost == INF) {
-        // If state is unreachable or irrelevant, we encountered a dead end.
-        return DEAD_END;
+    int heuristic = 0;
+    for (const unique_ptr<MergeAndShrinkRepresentation> &mas_representation : mas_representations) {
+        int cost = mas_representation->get_value(state);
+        if (cost == PRUNED_STATE || cost == INF) {
+            // If state is unreachable or irrelevant, we encountered a dead end.
+            return DEAD_END;
+        }
+        heuristic = max(heuristic, cost);
     }
-    return cost;
+    return heuristic;
 }
 
 static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
@@ -124,7 +134,18 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
-            "AAAI Press 2016"));
+            "AAAI Press 2016") + "\n" +
+        "Details of the algorithms and the implementation are described in the "
+        "paper" + utils::format_paper_reference(
+            {"Silvan Sievers"},
+            "Merge-and-Shrink Heuristics for Classical Planning: Efficient "
+            "Implementation and Partial Abstractions",
+            "https://ai.dmi.unibas.ch/papers/sievers-socs2018.pdf",
+            "Proceedings of the 11th Annual Symposium on Combinatorial Search "
+            "(SoCS 2018)",
+            "90-98",
+            "AAAI Press 2018")
+        );
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
@@ -150,6 +171,13 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
         "unreachable symmetric state (which hence is pruned) would falsely be "
         "considered a dead-end and also be pruned, thus violating optimality "
         "of the search.");
+    parser.document_note(
+        "Note",
+        "When using a time limit on the main loop of the merge-and-shrink "
+        "algorithm, the heuristic will compute the maximum over all heuristics "
+        "induced by the remaining factors if terminating the merge-and-shrink "
+        "algorithm early. Exception: if there is an unsolvable factor, it will "
+        "be used as the exclusive heuristic since the problem is unsolvable.");
     parser.document_note(
         "Note",
         "A currently recommended good configuration uses bisimulation "
