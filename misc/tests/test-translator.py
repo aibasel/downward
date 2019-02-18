@@ -70,8 +70,13 @@ def translate_task(python, python_version, task_file):
 
 def _get_all_tasks_by_domain(benchmarks_dir):
     # Ignore domains where translating the first task takes too much time or memory.
+    # We also ignore citycar, which indeed reveals some nondeterminism in the
+    # invariant synthesis. Fixing it would require to sort the actions which
+    # seems to be detrimental on some other domains.
     blacklisted_domains = [
         "agricola-sat18-strips",
+        "citycar-opt14-adl", # cf. issue875
+        "citycar-sat14-adl", # cf. issue875
         "organic-synthesis-sat18-strips",
         "organic-synthesis-split-opt18-strips",
         "organic-synthesis-split-sat18-strips"]
@@ -136,6 +141,7 @@ def main():
     args = parse_args()
     os.chdir(DIR)
     cleanup()
+    subprocess.check_call(["./build.py", "translate"], cwd=REPO)
     interpreter_paths = [get_abs_interpreter_path("python{}".format(version)) for version in VERSIONS]
     interpreter_versions = [get_python_version_info(path) for path in interpreter_paths]
     for task in get_tasks(args):

@@ -616,7 +616,7 @@ public:
 
     State get_successor(OperatorProxy op) const {
         if (task->get_num_axioms() > 0) {
-            ABORT("State::apply currently does not support axioms.");
+            ABORT("State::get_successor currently does not support axioms.");
         }
         assert(!op.is_axiom());
         //assert(is_applicable(op, state));

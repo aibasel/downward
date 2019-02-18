@@ -25,15 +25,6 @@ void AbstractSearch::reset(int num_states) {
     }
 }
 
-vector<int> AbstractSearch::get_g_values() const {
-    vector<int> g_values;
-    g_values.reserve(search_info.size());
-    for (const AbstractSearchInfo &info : search_info) {
-        g_values.push_back(info.get_g_value());
-    }
-    return g_values;
-}
-
 unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) const {
     unique_ptr<Solution> solution = utils::make_unique_ptr<Solution>();
     int current_id = goal_id;
@@ -46,15 +37,40 @@ unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) 
     return solution;
 }
 
-void AbstractSearch::update_goal_distances(const Solution &solution, int init_id) {
-    int goal_distance = 0;
-    for (auto it = solution.rbegin(); it != solution.rend(); ++it) {
-        const Transition &transition = *it;
-        int current_state = transition.target_id;
-        set_h_value(current_state, goal_distance);
-        goal_distance += operator_costs[transition.op_id];
+void AbstractSearch::update_goal_distances(const Solution &solution) {
+    /*
+      Originally, we only updated the goal distances of states that are part of
+      the trace (see Seipp and Helmert, JAIR 2018). The code below generalizes
+      this idea and potentially updates the goal distances of all states.
+
+      Let C* be the cost of the trace and g(s) be the g value of states s when
+      A* finds the trace. Then for all states s with g(s) < INF (i.e., s has
+      been reached by the search), C*-g(s) is a lower bound on the goal
+      distance. This is the case since
+
+      g(s) >= g*(s) [1]
+
+      and
+
+          f*(s) >= C*         (optimality of A* with an admissible heuristic)
+      ==> g*(s) + h*(s) >= C* (definition of f values)
+      ==> g(s) + h*(s) >= C*  (using [1])
+      ==> h*(s) >= C* - g(s)  (arithmetic)
+
+      Together with our existing lower bound h*(s) >= h(s), i.e., the h values
+      from the last iteration, for each abstract state s with g(s) < INF, we
+      can set h(s) = max(h(s), C*-g(s)).
+    */
+    int solution_cost = 0;
+    for (const Transition &transition : solution) {
+        solution_cost += operator_costs[transition.op_id];
     }
-    set_h_value(init_id, goal_distance);
+    for (auto &info : search_info) {
+        if (info.get_g_value() < INF) {
+            int new_h = max(info.get_h_value(), solution_cost - info.get_g_value());
+            info.increase_h_value_to(new_h);
+        }
+    }
 }
 
 unique_ptr<Solution> AbstractSearch::find_solution(
@@ -64,12 +80,12 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     reset(transitions.size());
     search_info[init_id].decrease_g_value_to(0);
     open_queue.push(search_info[init_id].get_h_value(), init_id);
-    int goal_id = astar_search(transitions, true, &goal_ids);
+    int goal_id = astar_search(transitions, goal_ids);
     open_queue.clear();
     bool has_found_solution = (goal_id != UNDEFINED);
     if (has_found_solution) {
         unique_ptr<Solution> solution = extract_solution(init_id, goal_id);
-        update_goal_distances(*solution, init_id);
+        update_goal_distances(*solution);
         return solution;
     } else {
         search_info[init_id].increase_h_value_to(INF);
@@ -77,21 +93,8 @@ unique_ptr<Solution> AbstractSearch::find_solution(
     return nullptr;
 }
 
-vector<int> AbstractSearch::compute_distances(
-    const vector<Transitions> &transitions, const unordered_set<int> &start_ids) {
-    reset(transitions.size());
-    for (int goal_id : start_ids) {
-        search_info[goal_id].decrease_g_value_to(0);
-        open_queue.push(0, goal_id);
-    }
-    astar_search(transitions, false);
-    open_queue.clear();
-    return get_g_values();
-}
-
 int AbstractSearch::astar_search(
-    const vector<Transitions> &transitions, bool use_h, const Goals *goals) {
-    assert((use_h && goals) || (!use_h && !goals));
+    const vector<Transitions> &transitions, const Goals &goals) {
     while (!open_queue.empty()) {
         pair<int, int> top_pair = open_queue.pop();
         int old_f = top_pair.first;
@@ -99,13 +102,11 @@ int AbstractSearch::astar_search(
 
         const int g = search_info[state_id].get_g_value();
         assert(0 <= g && g < INF);
-        int new_f = g;
-        if (use_h)
-            new_f += search_info[state_id].get_h_value();
+        int new_f = g + search_info[state_id].get_h_value();
         assert(new_f <= old_f);
         if (new_f < old_f)
             continue;
-        if (goals && goals->count(state_id) == 1) {
+        if (goals.count(state_id)) {
             return state_id;
         }
         assert(utils::in_bounds(state_id, transitions));
@@ -121,13 +122,10 @@ int AbstractSearch::astar_search(
 
             if (succ_g < search_info[succ_id].get_g_value()) {
                 search_info[succ_id].decrease_g_value_to(succ_g);
-                int f = succ_g;
-                if (use_h) {
-                    int h = search_info[succ_id].get_h_value();
-                    if (h == INF)
-                        continue;
-                    f += h;
-                }
+                int h = search_info[succ_id].get_h_value();
+                if (h == INF)
+                    continue;
+                int f = succ_g + h;
                 assert(f >= 0);
                 assert(f != INF);
                 open_queue.push(f, succ_id);
@@ -145,7 +143,7 @@ int AbstractSearch::get_h_value(int state_id) const {
 
 void AbstractSearch::set_h_value(int state_id, int h) {
     assert(utils::in_bounds(state_id, search_info));
-    return search_info[state_id].increase_h_value_to(h);
+    search_info[state_id].increase_h_value_to(h);
 }
 
 void AbstractSearch::copy_h_value_to_children(int v, int v1, int v2) {
@@ -153,5 +151,42 @@ void AbstractSearch::copy_h_value_to_children(int v, int v1, int v2) {
     search_info.resize(search_info.size() + 1);
     set_h_value(v1, h);
     set_h_value(v2, h);
+}
+
+
+vector<int> compute_distances(
+    const vector<Transitions> &transitions,
+    const vector<int> &costs,
+    const unordered_set<int> &start_ids) {
+    vector<int> distances(transitions.size(), INF);
+    priority_queues::AdaptiveQueue<int> open_queue;
+    for (int goal_id : start_ids) {
+        distances[goal_id] = 0;
+        open_queue.push(0, goal_id);
+    }
+    while (!open_queue.empty()) {
+        pair<int, int> top_pair = open_queue.pop();
+        int old_g = top_pair.first;
+        int state_id = top_pair.second;
+
+        const int g = distances[state_id];
+        assert(0 <= g && g < INF);
+        assert(g <= old_g);
+        if (g < old_g)
+            continue;
+        assert(utils::in_bounds(state_id, transitions));
+        for (const Transition &transition : transitions[state_id]) {
+            const int op_cost = costs[transition.op_id];
+            assert(op_cost >= 0);
+            int succ_g = (op_cost == INF) ? INF : g + op_cost;
+            assert(succ_g >= 0);
+            int succ_id = transition.target_id;
+            if (succ_g < distances[succ_id]) {
+                distances[succ_id] = succ_g;
+                open_queue.push(succ_g, succ_id);
+            }
+        }
+    }
+    return distances;
 }
 }

@@ -58,7 +58,7 @@ def main():
     # shell, we do not build on Windows. If the planner is not yet built,
     # the driver script will complain about this.
     if os.name == "posix":
-        subprocess.check_call(["./build.py", "release32", "debug32"], cwd=REPO)
+        subprocess.check_call(["./build.py", "release", "debug"], cwd=REPO)
     for task in TASKS:
         for nick, config in CONFIGS.items():
             for debug in [False, True]:

@@ -110,6 +110,7 @@ fast_downward_plugin(
     SOURCES
         utils/collections
         utils/countdown_timer
+        utils/exceptions
         utils/hash
         utils/language
         utils/logging
@@ -732,6 +733,7 @@ fast_downward_plugin(
     HELP "Plugin containing the code for potential heuristics"
     SOURCES
         potentials/diverse_potential_heuristics
+        potentials/plugin_group
         potentials/potential_function
         potentials/potential_heuristic
         potentials/potential_max_heuristic

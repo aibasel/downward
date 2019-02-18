@@ -85,6 +85,12 @@ def get_tidy_invocation(f, clang_tidy_binary, checks, tmpdir, build_path,
   start.append('-p=' + build_path)
   if quiet:
       start.append('-quiet')
+  ## If we ever need to configure any checks, this is how to do it. However,
+  ## we should probably make this configurable via a commandline option. -- JS
+  ## start.append('''\
+  ##   -config={CheckOptions: \
+  ##   [{key: readability-implicit-bool-cast.AllowConditionalIntegerCasts, value: 1}, \
+  ##   {key: readability-implicit-bool-cast.AllowConditionalPointerCasts, value: 1}]}''')
   start.append(f)
   return start
 
