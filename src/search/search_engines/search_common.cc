@@ -8,7 +8,7 @@
 #include "../evaluators/weighted_evaluator.h"
 
 #include "../open_lists/alternation_open_list.h"
-#include "../open_lists/standard_scalar_open_list.h"
+#include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 
 #include <memory>
@@ -25,7 +25,7 @@ shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     Options options;
     options.set("eval", eval);
     options.set("pref_only", pref_only);
-    return make_shared<standard_scalar_open_list::StandardScalarOpenListFactory>(options);
+    return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(options);
 }
 
 static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
