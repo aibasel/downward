@@ -1,7 +1,5 @@
 #include "match_tree.h"
 
-#include "pattern_database.h"
-
 #include <cassert>
 #include <iostream>
 #include <utility>
@@ -13,7 +11,7 @@ struct MatchTree::Node {
     static const int LEAF_NODE = -1;
     Node();
     ~Node();
-    vector<const AbstractOperator *> applicable_operators;
+    vector<int> applicable_operators;
     // The variable which this node represents.
     int var_id;
     int var_domain_size;
@@ -77,18 +75,17 @@ MatchTree::~MatchTree() {
 }
 
 void MatchTree::insert_recursive(
-    const AbstractOperator &op, int pre_index, Node **edge_from_parent) {
+    int op_id, const vector<FactPair> &regression_preconditions,
+    int pre_index, Node **edge_from_parent) {
     if (*edge_from_parent == 0) {
         // We don't exist yet: create a new node.
         *edge_from_parent = new Node();
     }
 
-    const vector<FactPair> &regression_preconditions =
-        op.get_regression_preconditions();
     Node *node = *edge_from_parent;
     if (pre_index == static_cast<int>(regression_preconditions.size())) {
         // All preconditions have been checked, insert op.
-        node->applicable_operators.push_back(&op);
+        node->applicable_operators.push_back(op_id);
     } else {
         const FactPair &fact = regression_preconditions[pre_index];
         int pattern_var_id = fact.var;
@@ -125,17 +122,17 @@ void MatchTree::insert_recursive(
             edge_to_child = &node->star_successor;
         }
 
-        insert_recursive(op, pre_index, edge_to_child);
+        insert_recursive(op_id, regression_preconditions, pre_index, edge_to_child);
     }
 }
 
-void MatchTree::insert(const AbstractOperator &op) {
-    insert_recursive(op, 0, &root);
+void MatchTree::insert(int op_id, const vector<FactPair> &regression_preconditions) {
+    insert_recursive(op_id, regression_preconditions, 0, &root);
 }
 
 void MatchTree::get_applicable_operators_recursive(
     Node *node, const size_t state_index,
-    vector<const AbstractOperator *> &applicable_operators) const {
+    vector<int> &applicable_operators) const {
     /*
       Note: different from the code that builds the match tree, we do
       the test if node == 0 *before* calling traverse rather than *at
@@ -167,7 +164,7 @@ void MatchTree::get_applicable_operators_recursive(
 
 void MatchTree::get_applicable_operators(
     size_t state_index,
-    vector<const AbstractOperator *> &applicable_operators) const {
+    vector<int> &applicable_operators) const {
     if (root)
         get_applicable_operators_recursive(root, state_index,
                                            applicable_operators);
@@ -183,9 +180,8 @@ void MatchTree::dump_recursive(Node *node) const {
     cout << "node->var_id = " << node->var_id << endl;
     cout << "Number of applicable operators at this node: "
          << node->applicable_operators.size() << endl;
-    VariablesProxy variables = task_proxy.get_variables();
-    for (const AbstractOperator *op : node->applicable_operators) {
-        op->dump(pattern, variables);
+    for (int op_id : node->applicable_operators) {
+        cout << "AbstractOperator #" << op_id << endl;
     }
     if (node->is_leaf_node()) {
         cout << "leaf node." << endl;
