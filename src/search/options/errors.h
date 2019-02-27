@@ -3,9 +3,9 @@
 
 #include "parse_tree.h"
 
-#include <ostream>
-#include <string>
+#include "../utils/exceptions.h"
 
+#include <string>
 
 
 #define ABORT_WITH_DEMANGLING_HINT(msg, type_name) \
@@ -19,26 +19,24 @@
     )
 
 namespace options {
-struct OptionParserError {
+class OptionParserError : public utils::Exception {
     std::string msg;
+public:
+    explicit OptionParserError(const std::string &msg);
 
-    OptionParserError(const std::string &msg);
-
-    friend std::ostream &operator<<(std::ostream &out,
-                                    const OptionParserError &err);
+    virtual void print() const override;
 };
 
-struct ParseError {
+
+class ParseError : public utils::Exception {
     std::string msg;
     ParseTree parse_tree;
     std::string substring;
+public:
+    ParseError(const std::string &error, const ParseTree &parse_tree,
+               const std::string &substring = "");
 
-    ParseError(const std::string &msg, ParseTree parse_tree);
-    ParseError(const std::string &msg, const ParseTree &parse_tree,
-               const std::string &substring);
-
-    friend std::ostream &operator<<(std::ostream &out,
-                                    const ParseError &parse_error);
+    virtual void print() const override;
 };
 
 extern std::string get_demangling_hint(const std::string &type_name);
