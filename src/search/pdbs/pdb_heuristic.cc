@@ -17,7 +17,7 @@ shared_ptr<PatternDatabase> get_pdb_from_options(const shared_ptr<AbstractTask> 
     shared_ptr<PatternGenerator> pattern_generator =
         opts.get<shared_ptr<PatternGenerator>>("pattern");
     PatternInformation pattern_info = pattern_generator->generate(task);
-    return pattern_info.get_pdb(true);
+    return pattern_info.get_pdb();
 }
 
 PDBHeuristic::PDBHeuristic(const Options &opts)

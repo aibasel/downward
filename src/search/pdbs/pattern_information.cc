@@ -3,10 +3,7 @@
 #include "pattern_database.h"
 #include "validation.h"
 
-#include <algorithm>
 #include <cassert>
-#include <unordered_set>
-#include <utility>
 
 using namespace std;
 
@@ -31,10 +28,10 @@ bool PatternInformation::information_is_valid() const {
     return true;
 }
 
-void PatternInformation::create_pdb_if_missing(bool dump) {
+void PatternInformation::create_pdb_if_missing() {
     assert(pattern);
     if (!pdb) {
-        pdb = make_shared<PatternDatabase>(task_proxy, *pattern, dump);
+        pdb = make_shared<PatternDatabase>(task_proxy, *pattern);
     }
 }
 
@@ -48,8 +45,8 @@ shared_ptr<Pattern> PatternInformation::get_pattern() {
     return pattern;
 }
 
-shared_ptr<PatternDatabase> PatternInformation::get_pdb(bool dump) {
-    create_pdb_if_missing(dump);
+shared_ptr<PatternDatabase> PatternInformation::get_pdb() {
+    create_pdb_if_missing();
     return pdb;
 }
 }
