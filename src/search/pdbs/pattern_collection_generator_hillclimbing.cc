@@ -622,7 +622,6 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     heuristic_opts.set<double>(
         "max_time_dominance_pruning", opts.get<double>("max_time_dominance_pruning"));
 
-    // Note: in the long run, this should return a shared pointer.
     return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
 }
 
