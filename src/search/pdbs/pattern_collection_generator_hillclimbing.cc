@@ -391,14 +391,11 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
         cout << "Time limit reached. Abort hill climbing." << endl;
     }
 
-    cout << "iPDB: iterations = " << num_iterations << endl;
-    cout << "iPDB: number of patterns = "
-         << current_pdbs->get_pattern_databases()->size() << endl;
-    cout << "iPDB: size = " << current_pdbs->get_size() << endl;
-    cout << "iPDB: generated = " << generated_patterns.size() << endl;
-    cout << "iPDB: rejected = " << num_rejected << endl;
-    cout << "iPDB: maximum pdb size = " << max_pdb_size << endl;
-    cout << "iPDB: hill climbing time: "
+    cout << "Hillclimbing iterations: " << num_iterations << endl;
+    cout << "Hillclimbing generated: " << generated_patterns.size() << endl;
+    cout << "Hillclimbing rejected: " << num_rejected << endl;
+    cout << "Hillclimbing maximum pdb size: " << max_pdb_size << endl;
+    cout << "Hillclimbing time: "
          << hill_climbing_timer->get_elapsed_time() << endl;
 
     delete hill_climbing_timer;
@@ -418,17 +415,30 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     }
     current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
         task_proxy, initial_pattern_collection);
-    cout << "Done calculating initial PDB collection" << endl;
+    cout << "Done calculating initial PDB collection: " << timer << endl;
 
     State initial_state = task_proxy.get_initial_state();
     if (!current_pdbs->is_dead_end(initial_state) && max_time > 0) {
         hill_climbing(task_proxy);
     }
 
-    cout << "Pattern generation (hill climbing) time: " << timer << endl;
+    const shared_ptr<PDBCollection> &pdbs = current_pdbs->get_pattern_databases();
+    cout << "Hillclimbing pattern collection: ";
+    for (size_t i = 0; i < pdbs->size(); ++i) {
+        const Pattern &pattern = pdbs->at(i)->get_pattern();
+        cout << pattern;
+        if (i != pdbs->size() - 1) {
+            cout << ", ";
+        }
+    }
+    cout << endl;
+    cout << "Hillclimbing pattern collection number of patterns: "
+         << pdbs->size() << endl;
+    cout << "Hillclimbing pattern collection summed PDB size: "
+         << current_pdbs->get_size() << endl;
+    cout << "Hillclimbing pattern collection computation time: " << timer << endl;
     return current_pdbs->get_pattern_collection_information();
 }
-
 
 void add_hillclimbing_options(OptionParser &parser) {
     parser.add_option<int>(

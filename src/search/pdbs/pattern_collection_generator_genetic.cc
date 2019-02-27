@@ -1,5 +1,6 @@
 #include "pattern_collection_generator_genetic.h"
 
+#include "utils.h"
 #include "validation.h"
 #include "zero_one_pdbs.h"
 
@@ -8,6 +9,7 @@
 #include "../task_proxy.h"
 
 #include "../task_utils/causal_graph.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
@@ -276,9 +278,15 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     utils::Timer timer;
     task = task_;
     genetic_algorithm();
-    cout << "Pattern generation (Edelkamp) time: " << timer << endl;
-    assert(best_patterns);
+
     TaskProxy task_proxy(*task);
+    assert(best_patterns);
+    cout << "Genetic pattern collection: " << *best_patterns << endl;
+    cout << "Geneticpattern collection number of patterns: "
+         << best_patterns->size() << endl;
+    cout << "Genetic pattern collection summed PDB size: "
+         << compute_summed_pdb_size(task_proxy, *best_patterns) << endl;
+    cout << "Genetic pattern collection computation time: " << timer << endl;
     return PatternCollectionInformation(task_proxy, best_patterns);
 }
 

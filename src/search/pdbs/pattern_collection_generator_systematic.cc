@@ -1,5 +1,6 @@
 #include "pattern_collection_generator_systematic.h"
 
+#include "utils.h"
 #include "validation.h"
 
 #include "../option_parser.h"
@@ -7,7 +8,9 @@
 #include "../task_proxy.h"
 
 #include "../task_utils/causal_graph.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -260,6 +263,7 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
 
 PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     const shared_ptr<AbstractTask> &task) {
+    utils::Timer timer;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
     pattern_set.clear();
@@ -268,6 +272,12 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
+    cout << "Systematic pattern collection: " << *patterns << endl;
+    cout << "Systematic pattern collection number of patterns: "
+         << patterns->size() << endl;
+    cout << "Systematic pattern collection summed PDB size: "
+         << compute_summed_pdb_size(task_proxy, *patterns) << endl;
+    cout << "Systematic pattern collection computation time: " << timer << endl;
     return PatternCollectionInformation(task_proxy, patterns);
 }
 
