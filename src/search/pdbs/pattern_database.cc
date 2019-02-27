@@ -210,8 +210,9 @@ void PatternDatabase::create_pdb(
 
     // build the match tree
     MatchTree match_tree(task_proxy, pattern, hash_multipliers);
-    for (const AbstractOperator &op : operators) {
-        match_tree.insert(op);
+    for (size_t op_id = 0; op_id < operators.size(); ++op_id) {
+        const AbstractOperator &op = operators[op_id];
+        match_tree.insert(op_id, op.get_regression_preconditions());
     }
 
     // compute abstract goal var-val pairs
@@ -248,11 +249,12 @@ void PatternDatabase::create_pdb(
         }
 
         // regress abstract_state
-        vector<const AbstractOperator *> applicable_operators;
-        match_tree.get_applicable_operators(state_index, applicable_operators);
-        for (const AbstractOperator *op : applicable_operators) {
-            size_t predecessor = state_index + op->get_hash_effect();
-            int alternative_cost = distances[state_index] + op->get_cost();
+        vector<int> applicable_operator_ids;
+        match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
+        for (int op_id : applicable_operator_ids) {
+            const AbstractOperator &op = operators[op_id];
+            size_t predecessor = state_index + op.get_hash_effect();
+            int alternative_cost = distances[state_index] + op.get_cost();
             if (alternative_cost < distances[predecessor]) {
                 distances[predecessor] = alternative_cost;
                 pq.push(alternative_cost, predecessor);
