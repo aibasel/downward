@@ -1,6 +1,6 @@
 #include "pattern_generator_manual.h"
 
-#include "validation.h"
+#include "pattern_information.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -13,15 +13,14 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
-    : pattern(opts.get_list<int>("pattern")) {
+PatternGeneratorManual::PatternGeneratorManual(const Options &opts) {
+    pattern = make_shared<Pattern>(opts.get_list<int>("pattern"));
 }
 
-Pattern PatternGeneratorManual::generate(const shared_ptr<AbstractTask> &task) {
+PatternInformation PatternGeneratorManual::generate(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
-    validate_and_normalize_pattern(task_proxy, pattern);
-    cout << "Manual pattern: " << pattern << endl;
-    return pattern;
+    cout << "Manual pattern: " << *pattern << endl;
+    return PatternInformation(task_proxy, pattern);
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {

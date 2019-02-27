@@ -2,6 +2,7 @@
 #define PDBS_PATTERN_GENERATOR_H
 
 #include "pattern_collection_information.h"
+#include "pattern_information.h"
 #include "types.h"
 
 #include <memory>
@@ -21,7 +22,7 @@ class PatternGenerator {
 public:
     virtual ~PatternGenerator() = default;
 
-    virtual Pattern generate(const std::shared_ptr<AbstractTask> &task) = 0;
+    virtual PatternInformation generate(const std::shared_ptr<AbstractTask> &task) = 0;
 };
 }
 
