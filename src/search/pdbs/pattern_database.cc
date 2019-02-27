@@ -249,9 +249,9 @@ void PatternDatabase::create_pdb(
         }
 
         // regress abstract_state
-        vector<int> applicable_operators;
-        match_tree.get_applicable_operators(state_index, applicable_operators);
-        for (int op_id : applicable_operators) {
+        vector<int> applicable_operator_ids;
+        match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
+        for (int op_id : applicable_operator_ids) {
             const AbstractOperator &op = operators[op_id];
             size_t predecessor = state_index + op.get_hash_effect();
             int alternative_cost = distances[state_index] + op.get_cost();
