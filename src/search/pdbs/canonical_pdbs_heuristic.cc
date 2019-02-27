@@ -1,11 +1,13 @@
 #include "canonical_pdbs_heuristic.h"
 
 #include "dominance_pruning.h"
+#include "pattern_database.h"
 #include "pattern_generator.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/timer.h"
 
 #include <iostream>
@@ -20,12 +22,18 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
     utils::Timer timer;
+    cout << "Initializing canonical PDB heuristic..." << endl;
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
+    cout << "Canonical PDB heuristic: done computing patterns "
+         << timer << endl;
     shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
+    cout << "Canonical PDB heuristic: done computing PDBs "
+         << timer << endl;
     shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
         pattern_collection_info.get_max_additive_subsets();
-    cout << "PDB collection construction time: " << timer << endl;
+    cout << "Canonical PDB heuristic: done computing maximal additive subsets "
+         << timer << endl;
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
@@ -33,6 +41,31 @@ CanonicalPDBs get_canonical_pdbs_from_options(
         max_additive_subsets = prune_dominated_subsets(
             *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
     }
+
+    unordered_set<PatternDatabase *> remaining_pdbs;
+    for (const PDBCollection &collection : *max_additive_subsets) {
+        for (const shared_ptr<PatternDatabase> &pdb : collection) {
+            remaining_pdbs.insert(pdb.get());
+        }
+    }
+
+    int num_pdbs = remaining_pdbs.size();
+    int summed_pdb_size = 0;
+    int counter = 0;
+    cout << "Canonical PDB heuristic collection: ";
+    for (const PatternDatabase *pdb : remaining_pdbs) {
+        cout << pdb->get_pattern();
+        if (counter != num_pdbs - 1) {
+            cout << ", ";
+        }
+        summed_pdb_size += pdb->get_size();
+    }
+    cout << endl;
+    cout << "Canonical PDB heuristic number of patterns: "
+         << num_pdbs << endl;
+    cout << "Canonical PDB heuristic summed PDB size: "
+         << summed_pdb_size << endl;
+    cout << "Canonical PDB heuristic total computation time " << timer << endl;
     return CanonicalPDBs(max_additive_subsets);
 }
 
