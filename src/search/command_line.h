@@ -1,6 +1,8 @@
 #ifndef COMMAND_LINE_H
 #define COMMAND_LINE_H
 
+#include "utils/exceptions.h"
+
 #include <memory>
 #include <string>
 
@@ -10,12 +12,12 @@ class Registry;
 
 class SearchEngine;
 
-struct ArgError {
+class ArgError : public utils::Exception {
     std::string msg;
+public:
+    explicit ArgError(const std::string &msg);
 
-    ArgError(const std::string &msg);
-
-    friend std::ostream &operator<<(std::ostream &out, const ArgError &err);
+    virtual void print() const override;
 };
 
 extern std::shared_ptr<SearchEngine> parse_cmd_line(

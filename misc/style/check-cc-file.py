@@ -9,8 +9,7 @@ import subprocess
 import sys
 
 
-STD_REGEX = r"(^|\s+)std::"
-
+STD_REGEX = r"(^|\s|\W)std::"
 
 def parse_args():
     parser = argparse.ArgumentParser()
