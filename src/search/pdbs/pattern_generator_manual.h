@@ -10,12 +10,12 @@ class Options;
 
 namespace pdbs {
 class PatternGeneratorManual : public PatternGenerator {
-    Pattern pattern;
+    std::shared_ptr<Pattern> pattern;
 public:
     explicit PatternGeneratorManual(const options::Options &opts);
     virtual ~PatternGeneratorManual() = default;
 
-    virtual Pattern generate(const std::shared_ptr<AbstractTask> &task) override;
+    virtual PatternInformation generate(const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 
