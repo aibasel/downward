@@ -41,8 +41,8 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     cout << "Combo pattern collection: " << *patterns << endl;
     cout << "Combo pattern collection number of patterns: "
          << patterns->size() << endl;
-    cout << "Combo pattern collection summed PDB size: "
-         << compute_summed_pdb_size(task_proxy, *patterns) << endl;
+    cout << "Combo pattern collection total PDB size: "
+         << compute_total_pdb_size(task_proxy, *patterns) << endl;
     cout << "Combo pattern collection computation time: " << timer << endl;
 
     return PatternCollectionInformation(task_proxy, patterns);

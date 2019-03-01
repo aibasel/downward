@@ -275,8 +275,8 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     cout << "Systematic pattern collection: " << *patterns << endl;
     cout << "Systematic pattern collection number of patterns: "
          << patterns->size() << endl;
-    cout << "Systematic pattern collection summed PDB size: "
-         << compute_summed_pdb_size(task_proxy, *patterns) << endl;
+    cout << "Systematic pattern collection total PDB size: "
+         << compute_total_pdb_size(task_proxy, *patterns) << endl;
     cout << "Systematic pattern collection computation time: " << timer << endl;
     return PatternCollectionInformation(task_proxy, patterns);
 }
