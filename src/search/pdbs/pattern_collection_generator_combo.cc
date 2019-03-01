@@ -25,6 +25,7 @@ PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &
 PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     const shared_ptr<AbstractTask> &task) {
     utils::Timer timer;
+    cout << "Generating patterns using the combo generator..." << endl;
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 

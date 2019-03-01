@@ -276,6 +276,7 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm() {
 PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     const shared_ptr<AbstractTask> &task_) {
     utils::Timer timer;
+    cout << "Generating patterns using the genetic generator..." << endl;
     task = task_;
     genetic_algorithm();
 

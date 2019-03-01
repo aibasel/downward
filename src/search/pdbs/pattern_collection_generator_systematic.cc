@@ -264,6 +264,7 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
 PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     const shared_ptr<AbstractTask> &task) {
     utils::Timer timer;
+    cout << "Generating patterns using the systematic generator..." << endl;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
     pattern_set.clear();
