@@ -391,11 +391,11 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
         cout << "Time limit reached. Abort hill climbing." << endl;
     }
 
-    cout << "Hillclimbing iterations: " << num_iterations << endl;
-    cout << "Hillclimbing generated: " << generated_patterns.size() << endl;
-    cout << "Hillclimbing rejected: " << num_rejected << endl;
-    cout << "Hillclimbing maximum pdb size: " << max_pdb_size << endl;
-    cout << "Hillclimbing time: "
+    cout << "Hill climbing iterations: " << num_iterations << endl;
+    cout << "Hill climbing generated: " << generated_patterns.size() << endl;
+    cout << "Hill climbing rejected: " << num_rejected << endl;
+    cout << "Hill climbing maximum pdb size: " << max_pdb_size << endl;
+    cout << "Hill climbing time: "
          << hill_climbing_timer->get_elapsed_time() << endl;
 
     delete hill_climbing_timer;
@@ -432,11 +432,11 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
         }
     }
     cout << endl;
-    cout << "Hillclimbing pattern collection number of patterns: "
+    cout << "Hill climbing pattern collection number of patterns: "
          << pdbs->size() << endl;
-    cout << "Hillclimbing pattern collection summed PDB size: "
+    cout << "Hill climbing pattern collection summed PDB size: "
          << current_pdbs->get_size() << endl;
-    cout << "Hillclimbing pattern collection computation time: " << timer << endl;
+    cout << "Hill climbing pattern collection computation time: " << timer << endl;
     return current_pdbs->get_pattern_collection_information();
 }
 
