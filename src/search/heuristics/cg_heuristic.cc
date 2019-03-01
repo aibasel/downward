@@ -39,6 +39,7 @@ CGHeuristic::CGHeuristic(const Options &opts)
 }
 
 CGHeuristic::~CGHeuristic() {
+    delete cache;
     for (size_t i = 0; i < prio_queues.size(); ++i)
         delete prio_queues[i];
     for (size_t i = 0; i < transition_graphs.size(); ++i)

@@ -155,7 +155,7 @@ public:
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
     LandmarkGraph(const TaskProxy &task_proxy);
-    ~LandmarkGraph() = default;
+    ~LandmarkGraph();
 
     inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
         assert(simple_landmark_exists(a));
