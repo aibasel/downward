@@ -392,9 +392,9 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     }
 
     cout << "Hill climbing iterations: " << num_iterations << endl;
-    cout << "Hill climbing generated: " << generated_patterns.size() << endl;
-    cout << "Hill climbing rejected: " << num_rejected << endl;
-    cout << "Hill climbing maximum pdb size: " << max_pdb_size << endl;
+    cout << "Hill climbing generated patterns: " << generated_patterns.size() << endl;
+    cout << "Hill climbing rejected patterns: " << num_rejected << endl;
+    cout << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
     cout << "Hill climbing time: "
          << hill_climbing_timer->get_elapsed_time() << endl;
 

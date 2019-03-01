@@ -35,7 +35,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
     for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
-        if (used_vars.count(goal_var_id) == 0)
+        if (!used_vars.count(goal_var_id))
             patterns->emplace_back(1, goal_var_id);
     }
     cout << "Combo pattern collection: " << *patterns << endl;
