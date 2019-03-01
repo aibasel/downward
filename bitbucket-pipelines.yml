@@ -1,4 +1,4 @@
-image: ubuntu:16.04
+image: ubuntu:18.04
 pipelines:
   pull-requests:
     '**':
@@ -37,6 +37,7 @@ pipelines:
             - cd VAL
             - git checkout a5565396007eee73ac36527fbf904142b3077c74
             - make clean  # Remove old build artifacts and binaries.
+            - sed -i 's/-Werror //g' Makefile  # Ignore warnings.
             - make -j8
             - mv validate ../
             - cd ../
