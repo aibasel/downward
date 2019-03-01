@@ -13,7 +13,7 @@
 using namespace std;
 using utils::ExitCode;
 
-int main(int argc, const char **argv) {
+bool run_planner(int argc, const char **argv) {
     utils::register_event_handlers();
 
     if (argc < 2) {
@@ -61,7 +61,13 @@ int main(int argc, const char **argv) {
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << utils::g_timer << endl;
 
-    if (engine->found_solution()) {
+    return engine->found_solution();
+}
+
+int main(int argc, const char **argv) {
+    bool plan_found = run_planner(argc, argv);
+
+    if (plan_found) {
         utils::exit_with(ExitCode::SUCCESS);
     } else {
         utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
