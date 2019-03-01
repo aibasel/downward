@@ -53,15 +53,9 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     cout << "Initializing canonical PDB heuristic..." << endl;
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
-    cout << "Canonical PDB heuristic: done computing patterns "
-         << timer << endl;
     shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
-    cout << "Canonical PDB heuristic: done computing PDBs "
-         << timer << endl;
     shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
         pattern_collection_info.get_max_additive_subsets();
-    cout << "Canonical PDB heuristic: done computing maximal additive subsets "
-         << timer << endl;
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
@@ -71,7 +65,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     }
 
     dump_collection_statistics(max_additive_subsets);
-    cout << "Canonical PDB heuristic total computation time " << timer << endl;
+    cout << "Canonical PDB heuristic total computation time: " << timer << endl;
     return CanonicalPDBs(max_additive_subsets);
 }
 
