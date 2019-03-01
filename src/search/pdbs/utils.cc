@@ -11,7 +11,7 @@ int compute_pdb_size(const TaskProxy &task_proxy, const Pattern &pattern) {
     return size;
 }
 
-int compute_summed_pdb_size(
+int compute_total_pdb_size(
     const TaskProxy &task_proxy, const PatternCollection &pattern_collection) {
     int size = 0;
     for (const Pattern &pattern : pattern_collection) {

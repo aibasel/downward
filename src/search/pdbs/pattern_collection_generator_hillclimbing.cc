@@ -432,7 +432,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     cout << endl;
     cout << "Hill climbing pattern collection number of patterns: "
          << pdbs->size() << endl;
-    cout << "Hill climbing pattern collection summed PDB size: "
+    cout << "Hill climbing pattern collection total PDB size: "
          << current_pdbs->get_size() << endl;
     cout << "Hill climbing pattern collection computation time: " << timer << endl;
     return current_pdbs->get_pattern_collection_information();
