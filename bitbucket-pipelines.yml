@@ -11,7 +11,7 @@ pipelines:
             - apt-get -y install cmake g++ make mercurial python
 
             # Install dependencies for running code tests.
-            - apt-get -y install clang-5.0 clang-tidy-5.0 python3 python-pip wget
+            - apt-get -y install clang-5.0 clang-tidy-5.0 python3 python-pip valgrind wget
             - pip install -U pyflakes pytest
 
             # Print information about environment.
