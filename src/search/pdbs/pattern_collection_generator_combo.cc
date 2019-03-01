@@ -1,6 +1,7 @@
 #include "pattern_collection_generator_combo.h"
 
 #include "pattern_generator_greedy.h"
+#include "utils.h"
 #include "validation.h"
 
 #include "../option_parser.h"
@@ -30,25 +31,18 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     PatternGeneratorGreedy large_pattern_generator(max_states);
     Pattern large_pattern = large_pattern_generator.generate(task);
     patterns->push_back(large_pattern);
-    int large_pdb_size = 1;
-    for (int var : large_pattern) {
-        large_pdb_size *= task_proxy.get_variables()[var].get_domain_size();
-    }
 
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
-    int summed_pdb_size = large_pdb_size;
     for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
-        if (used_vars.count(goal_var_id) == 0) {
+        if (used_vars.count(goal_var_id) == 0)
             patterns->emplace_back(1, goal_var_id);
-            summed_pdb_size += task_proxy.get_variables()[goal_var_id].get_domain_size();
-        }
     }
     cout << "Combo pattern collection: " << *patterns << endl;
     cout << "Combo pattern collection number of patterns: "
          << patterns->size() << endl;
     cout << "Combo pattern collection summed PDB size: "
-         << summed_pdb_size << endl;
+         << compute_summed_pdb_size(task_proxy, *patterns) << endl;
     cout << "Combo pattern collection computation time: " << timer << endl;
 
     return PatternCollectionInformation(task_proxy, patterns);
