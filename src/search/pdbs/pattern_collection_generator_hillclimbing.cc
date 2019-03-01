@@ -424,12 +424,10 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
 
     const shared_ptr<PDBCollection> &pdbs = current_pdbs->get_pattern_databases();
     cout << "Hillclimbing pattern collection: ";
-    for (size_t i = 0; i < pdbs->size(); ++i) {
-        const Pattern &pattern = pdbs->at(i)->get_pattern();
-        cout << pattern;
-        if (i != pdbs->size() - 1) {
-            cout << ", ";
-        }
+    string sep = "";
+    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
+        cout << sep << pdb->get_pattern();
+        sep = ", ";
     }
     cout << endl;
     cout << "Hill climbing pattern collection number of patterns: "
