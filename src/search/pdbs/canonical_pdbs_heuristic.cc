@@ -17,7 +17,7 @@
 using namespace std;
 
 namespace pdbs {
-void dump_collection(shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets) {
+static void dump_collection(shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets) {
     vector<PatternDatabase *> remaining_pdbs_ordered;
     unordered_set<PatternDatabase *> remaining_pdbs;
     for (const PDBCollection &collection : *max_additive_subsets) {
@@ -31,12 +31,10 @@ void dump_collection(shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets) {
     int num_pdbs = remaining_pdbs_ordered.size();
     int summed_pdb_size = 0;
     cout << "Canonical PDB heuristic collection: ";
-    for (size_t i = 0; i < remaining_pdbs_ordered.size(); ++i) {
-        const PatternDatabase *pdb = remaining_pdbs_ordered[i];
-        cout << pdb->get_pattern();
-        if (i != remaining_pdbs_ordered.size() - 1) {
-            cout << ", ";
-        }
+    string sep = "";
+    for (const PatternDatabase *pdb : remaining_pdbs_ordered) {
+        cout << sep << pdb->get_pattern();
+        sep = ", ";
         summed_pdb_size += pdb->get_size();
     }
     cout << endl;
