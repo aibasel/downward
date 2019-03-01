@@ -423,7 +423,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     }
 
     const shared_ptr<PDBCollection> &pdbs = current_pdbs->get_pattern_databases();
-    cout << "Hillclimbing pattern collection: ";
+    cout << "Hill climbing pattern collection: ";
     string sep = "";
     for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
         cout << sep << pdb->get_pattern();
