@@ -55,15 +55,14 @@ public:
     virtual std::vector<int> compute_goal_distances(
         const std::vector<int> &costs) const = 0;
     virtual std::vector<int> compute_saturated_costs(
-        const std::vector<int> &h_values,
-        int num_operators) const = 0;
+        const std::vector<int> &h_values) const = 0;
 
-    // Operators inducing state-changing transitions.
-    virtual const std::vector<int> &get_active_operators() const = 0;
+    // Return true iff operator induced a state-changing transition.
+    virtual bool operator_is_active(int op_id) const = 0;
 
-    // Operators inducing self-looping transitions. May overlap with active
-    // operators.
-    virtual const std::vector<int> &get_looping_operators() const = 0;
+    // Return true iff operator induced a self-loop. Note that an operator may
+    // induce both state-changing transitions and self-loops.
+    virtual bool operator_induces_self_loop(int op_id) const = 0;
 
     virtual int get_num_states() const = 0;
     virtual const std::vector<int> &get_goal_states() const = 0;

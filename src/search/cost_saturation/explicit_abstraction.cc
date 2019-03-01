@@ -46,29 +46,28 @@ ostream &operator<<(ostream &os, const Successor &successor) {
     return os;
 }
 
-static vector<int> get_active_operators_from_graph(
-    const vector<vector<Successor>> &backward_graph) {
-    unordered_set<int> active_operators;
+static vector<bool> get_active_operators_from_graph(
+    const vector<vector<Successor>> &backward_graph, int num_ops) {
+    vector<bool> active_operators(num_ops, false);
     int num_states = backward_graph.size();
     for (int target = 0; target < num_states; ++target) {
         for (const Successor &transition : backward_graph[target]) {
             int op_id = transition.op;
-            active_operators.insert(op_id);
+            active_operators[op_id] = true;
         }
     }
-    vector<int> active_operators_sorted(active_operators.begin(), active_operators.end());
-    sort(active_operators_sorted.begin(), active_operators_sorted.end());
-    return active_operators_sorted;
+    return active_operators;
 }
 
 ExplicitAbstraction::ExplicitAbstraction(
     AbstractionFunction function,
     vector<vector<Successor>> &&backward_graph_,
-    vector<int> &&looping_operators,
+    vector<bool> &&looping_operators,
     vector<int> &&goal_states)
     : abstraction_function(function),
       backward_graph(move(backward_graph_)),
-      active_operators(get_active_operators_from_graph(backward_graph)),
+      active_operators(get_active_operators_from_graph(
+                           backward_graph, looping_operators.size())),
       looping_operators(move(looping_operators)),
       goal_states(move(goal_states)) {
 #ifndef NDEBUG
@@ -97,15 +96,17 @@ vector<int> ExplicitAbstraction::compute_goal_distances(const vector<int> &costs
 }
 
 vector<int> ExplicitAbstraction::compute_saturated_costs(
-    const vector<int> &h_values,
-    int num_operators) const {
+    const vector<int> &h_values) const {
     assert(has_transition_system());
+    int num_operators = looping_operators.size();
     vector<int> saturated_costs(num_operators, -INF);
 
     /* To prevent negative cost cycles we ensure that all operators
        inducing self-loops have non-negative costs. */
-    for (int op_id : looping_operators) {
-        saturated_costs[op_id] = 0;
+    for (int op_id = 0; op_id < num_operators; ++op_id) {
+        if (looping_operators[op_id]) {
+            saturated_costs[op_id] = 0;
+        }
     }
 
     int num_states = backward_graph.size();
@@ -141,14 +142,14 @@ int ExplicitAbstraction::get_abstract_state_id(const State &concrete_state) cons
     return abstraction_function(concrete_state);
 }
 
-const vector<int> &ExplicitAbstraction::get_active_operators() const {
+bool ExplicitAbstraction::operator_is_active(int op_id) const {
     assert(has_transition_system());
-    return active_operators;
+    return active_operators[op_id];
 }
 
-const vector<int> &ExplicitAbstraction::get_looping_operators() const {
+bool ExplicitAbstraction::operator_induces_self_loop(int op_id) const {
     assert(has_transition_system());
-    return looping_operators;
+    return looping_operators[op_id];
 }
 
 const vector<int> &ExplicitAbstraction::get_goal_states() const {
@@ -157,6 +158,7 @@ const vector<int> &ExplicitAbstraction::get_goal_states() const {
 }
 
 void ExplicitAbstraction::release_transition_system_memory() {
+    utils::release_vector_memory(active_operators);
     utils::release_vector_memory(looping_operators);
     utils::release_vector_memory(goal_states);
     utils::release_vector_memory(backward_graph);

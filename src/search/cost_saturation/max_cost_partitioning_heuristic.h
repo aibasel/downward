@@ -2,6 +2,7 @@
 #define COST_SATURATION_MAX_COST_PARTITIONING_HEURISTIC_H
 
 #include "types.h"
+#include "unsolvability_heuristic.h"
 
 #include "../heuristic.h"
 
@@ -19,7 +20,8 @@ class CostPartitioningHeuristic;
 */
 class MaxCostPartitioningHeuristic : public Heuristic {
     Abstractions abstractions;
-    const std::vector<CostPartitioningHeuristic> cp_heuristics;
+    std::vector<CostPartitioningHeuristic> cp_heuristics;
+    UnsolvabilityHeuristic unsolvability_heuristic;
 
     int compute_heuristic(const State &state) const;
 
@@ -30,7 +32,8 @@ public:
     MaxCostPartitioningHeuristic(
         const options::Options &opts,
         Abstractions &&abstractions,
-        std::vector<CostPartitioningHeuristic> &&cp_heuristics);
+        std::vector<CostPartitioningHeuristic> &&cp_heuristics,
+        UnsolvabilityHeuristic &&unsolvability_heuristic);
 };
 }
 

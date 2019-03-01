@@ -1,16 +1,18 @@
 #ifndef UTILS_STRINGS_H
 #define UTILS_STRINGS_H
 
+#include "exceptions.h"
+
 #include <sstream>
 #include <string>
 
 namespace utils {
-class StringOperationError : public std::exception {
+class StringOperationError : public utils::Exception {
     std::string msg;
 public:
     explicit StringOperationError(const std::string &msg);
 
-    virtual const char *what() const noexcept override;
+    virtual void print() const override;
 };
 
 extern void lstrip(std::string &s);

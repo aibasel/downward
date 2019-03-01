@@ -4,6 +4,7 @@
 #include "diversifier.h"
 #include "order_generator.h"
 #include "order_optimizer.h"
+#include "unsolvability_heuristic.h"
 #include "utils.h"
 
 #include "../task_proxy.h"
@@ -44,6 +45,7 @@ static vector<vector<int>> sample_states_and_return_abstract_state_ids(
     return abstract_state_ids_by_sample;
 }
 
+
 CostPartitioningHeuristicCollectionGenerator::CostPartitioningHeuristicCollectionGenerator(
     const shared_ptr<OrderGenerator> &order_generator,
     int max_orders,
@@ -66,44 +68,39 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
     const TaskProxy &task_proxy,
     const Abstractions &abstractions,
     const vector<int> &costs,
-    CPFunction cp_function) const {
+    const CPFunction &cp_function,
+    const UnsolvabilityHeuristic &unsolvability_heuristic) const {
     utils::Log log;
-    State initial_state = task_proxy.get_initial_state();
-    vector<int> abstract_state_ids_for_init = get_abstract_state_ids(
-        abstractions, initial_state);
+    utils::CountdownTimer timer(max_time);
 
-    // If any abstraction detects unsolvability in the initial state, we only
-    // need a single order (any order suffices).
-    CostPartitioningHeuristic default_order_cp = cp_function(
-        abstractions, get_default_order(abstractions.size()), costs);
-    if (default_order_cp.compute_heuristic(abstract_state_ids_for_init) == INF) {
-        return {
-                   default_order_cp
+    DeadEndDetector is_dead_end =
+        [&abstractions, &unsolvability_heuristic](const State &state) {
+            return unsolvability_heuristic.is_unsolvable(
+                get_abstract_state_ids(abstractions, state));
         };
+
+    State initial_state = task_proxy.get_initial_state();
+
+    // If the unsolvability heuristic detects unsolvability in the initial state,
+    // we don't need any orders.
+    if (is_dead_end(initial_state)) {
+        log << "Initial state is unsolvable." << endl;
+        return {};
     }
 
     order_generator->initialize(abstractions, costs);
 
-    // Compute cost partitioning heuristic for sampling.
-    Order order = order_generator->compute_order_for_state(
-        abstractions, costs, abstract_state_ids_for_init, false);
-    CostPartitioningHeuristic cp_for_sampling = cp_function(
-        abstractions, order, costs);
-    function<int (const State &state)> sampling_heuristic =
-        [&abstractions, &cp_for_sampling](const State &state) {
-            return cp_for_sampling.compute_heuristic(
-                get_abstract_state_ids(abstractions, state));
-        };
+    // Compute h^SCP(s_0) using a greedy order for s_0.
+    vector<int> abstract_state_ids_for_init = get_abstract_state_ids(
+        abstractions, initial_state);
+    Order order_for_init = order_generator->compute_order_for_state(
+        abstractions, costs, abstract_state_ids_for_init, true);
+    CostPartitioningHeuristic cp_for_init = cp_function(
+        abstractions, order_for_init, costs);
+    int init_h = cp_for_init.compute_heuristic(abstract_state_ids_for_init);
 
-    int init_h = sampling_heuristic(initial_state);
-
-    // Compute dead end detector which uses the sampling heuristic.
-    DeadEndDetector is_dead_end = [&sampling_heuristic](const State &state) {
-            return sampling_heuristic(state) == INF;
-        };
     sampling::RandomWalkSampler sampler(task_proxy, *rng);
 
-    utils::CountdownTimer timer(max_time);
     unique_ptr<Diversifier> diversifier;
     if (diversify) {
         double max_sampling_time = timer.get_remaining_time();
@@ -117,26 +114,23 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
     log << "Start computing cost partitionings" << endl;
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
            (!timer.is_expired() || cp_heuristics.empty())) {
-        // Use initial state as first sample.
-        State sample = (evaluated_orders == 0)
-            ? initial_state
-            : sampler.sample_state(init_h, is_dead_end);
-        assert(!is_dead_end(sample));
-        // If sampling took too long and we already found a cost partitioning,
-        // abort the loop.
-        if (timer.is_expired() && !cp_heuristics.empty()) {
-            break;
+        bool first_order = (evaluated_orders == 0);
+
+        vector<int> abstract_state_ids;
+        Order order;
+        CostPartitioningHeuristic cp_heuristic;
+        if (first_order) {
+            // Use initial state as first sample.
+            abstract_state_ids = abstract_state_ids_for_init;
+            order = order_for_init;
+            cp_heuristic = cp_for_init;
+        } else {
+            abstract_state_ids = get_abstract_state_ids(
+                abstractions, sampler.sample_state(init_h, is_dead_end));
+            order = order_generator->compute_order_for_state(
+                abstractions, costs, abstract_state_ids, false);
+            cp_heuristic = cp_function(abstractions, order, costs);
         }
-        vector<int> abstract_state_ids = get_abstract_state_ids(abstractions, sample);
-
-        // Only be verbose for first sample.
-        bool verbose = (evaluated_orders == 0);
-
-        // Find order and compute cost partitioning for it.
-        Order order = order_generator->compute_order_for_state(
-            abstractions, costs, abstract_state_ids, verbose);
-        CostPartitioningHeuristic cp_heuristic = cp_function(
-            abstractions, order, costs);
 
         // Optimize order.
         if (max_optimization_time > 0) {
@@ -144,8 +138,8 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
             int incumbent_h_value = cp_heuristic.compute_heuristic(abstract_state_ids);
             optimize_order_with_hill_climbing(
                 cp_function, timer, abstractions, costs, abstract_state_ids, order,
-                cp_heuristic, incumbent_h_value, verbose);
-            if (verbose) {
+                cp_heuristic, incumbent_h_value, first_order);
+            if (first_order) {
                 log << "Time for optimizing order: " << timer.get_elapsed_time()
                     << endl;
             }

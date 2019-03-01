@@ -35,24 +35,15 @@ CartesianAbstractionGenerator::CartesianAbstractionGenerator(
       num_transitions(0) {
 }
 
-static vector<int> get_looping_operators(const cegar::TransitionSystem &ts) {
+static vector<bool> get_looping_operators(const cegar::TransitionSystem &ts) {
     int num_operators = ts.get_num_operators();
-
     vector<bool> operator_induces_self_loop(num_operators, false);
     for (const auto &loops : ts.get_loops()) {
         for (int op_id : loops) {
             operator_induces_self_loop[op_id] = true;
         }
     }
-
-    vector<int> looping_operators;
-    for (int op_id = 0; op_id < num_operators; ++op_id) {
-        if (operator_induces_self_loop[op_id]) {
-            looping_operators.push_back(op_id);
-        }
-    }
-    looping_operators.shrink_to_fit();
-    return looping_operators;
+    return operator_induces_self_loop;
 }
 
 
@@ -86,7 +77,7 @@ static pair<bool, unique_ptr<Abstraction>> convert_abstraction(
         succesors.shrink_to_fit();
     }
 
-    vector<int> looping_operators = get_looping_operators(ts);
+    vector<bool> looping_operators = get_looping_operators(ts);
     vector<int> goal_states(
         cartesian_abstraction.get_goals().begin(),
         cartesian_abstraction.get_goals().end());

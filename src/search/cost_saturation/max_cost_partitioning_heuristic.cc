@@ -15,21 +15,14 @@ static int compute_max_h(
     int max_h = 0;
     for (const CostPartitioningHeuristic &cp_heuristic : cp_heuristics) {
         int sum_h = cp_heuristic.compute_heuristic(abstract_state_ids);
-        if (sum_h == INF) {
-            return INF;
-        }
         max_h = max(max_h, sum_h);
     }
     return max_h;
 }
 
-MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
-    const options::Options &opts,
-    Abstractions &&abstractions_,
-    vector<CostPartitioningHeuristic> &&cp_heuristics_)
-    : Heuristic(opts),
-      abstractions(move(abstractions_)),
-      cp_heuristics(move(cp_heuristics_)) {
+static void log_info_about_stored_lookup_tables(
+    const Abstractions &abstractions,
+    const vector<CostPartitioningHeuristic> &cp_heuristics) {
     int num_abstractions = abstractions.size();
 
     // Print statistics about the number of lookup tables.
@@ -56,18 +49,20 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     utils::Log() << "Stored values: " << num_stored_values << "/"
                  << num_total_values << " = "
                  << num_stored_values / static_cast<double>(num_total_values) << endl;
+}
+
+static void delete_useless_abstractions(
+    const vector<CostPartitioningHeuristic> &cp_heuristics,
+    const UnsolvabilityHeuristic &unsolvability_heuristic,
+    Abstractions &abstractions) {
+    int num_abstractions = abstractions.size();
 
     // Collect IDs of useful abstractions.
     vector<bool> useful_abstractions(num_abstractions, false);
+    unsolvability_heuristic.mark_useful_abstractions(useful_abstractions);
     for (const auto &cp_heuristic : cp_heuristics) {
         cp_heuristic.mark_useful_abstractions(useful_abstractions);
     }
-    int num_useful_abstractions = count(
-        useful_abstractions.begin(), useful_abstractions.end(), true);
-    utils::Log() << "Useful abstractions: " << num_useful_abstractions << "/"
-                 << num_abstractions << " = "
-                 << static_cast<double>(num_useful_abstractions) / num_abstractions
-                 << endl;
 
     // Delete useless abstractions.
     for (int i = 0; i < num_abstractions; ++i) {
@@ -75,8 +70,31 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
             abstractions[i] = nullptr;
         }
     }
+}
 
-    // Delete transition systems since they are not required during the search.
+MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
+    const options::Options &opts,
+    Abstractions &&abstractions_,
+    vector<CostPartitioningHeuristic> &&cp_heuristics_,
+    UnsolvabilityHeuristic &&unsolvability_heuristic_)
+    : Heuristic(opts),
+      abstractions(move(abstractions_)),
+      cp_heuristics(move(cp_heuristics_)),
+      unsolvability_heuristic(move(unsolvability_heuristic_)) {
+    int num_abstractions = abstractions.size();
+    log_info_about_stored_lookup_tables(abstractions, cp_heuristics);
+
+    delete_useless_abstractions(
+        cp_heuristics, unsolvability_heuristic, abstractions);
+
+    int num_useful_abstractions = num_abstractions - count(
+        abstractions.begin(), abstractions.end(), nullptr);
+    utils::Log() << "Useful abstractions: " << num_useful_abstractions << "/"
+                 << num_abstractions << " = "
+                 << static_cast<double>(num_useful_abstractions) / num_abstractions
+                 << endl;
+
+    // Delete transition systems. They are not needed during the search.
     for (auto &abstraction : abstractions) {
         if (abstraction) {
             abstraction->remove_transition_system();
@@ -91,10 +109,9 @@ int MaxCostPartitioningHeuristic::compute_heuristic(const GlobalState &global_st
 
 int MaxCostPartitioningHeuristic::compute_heuristic(const State &state) const {
     vector<int> abstract_state_ids = get_abstract_state_ids(abstractions, state);
-    int max_h = compute_max_h(cp_heuristics, abstract_state_ids);
-    if (max_h == INF) {
+    if (unsolvability_heuristic.is_unsolvable(abstract_state_ids)) {
         return DEAD_END;
     }
-    return max_h;
+    return compute_max_h(cp_heuristics, abstract_state_ids);
 }
 }

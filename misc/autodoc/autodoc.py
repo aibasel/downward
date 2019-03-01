@@ -31,7 +31,7 @@ REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--build", default="release32")
+    parser.add_argument("--build", default="release")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 

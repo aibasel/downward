@@ -8,10 +8,6 @@
 class AbstractTask;
 class State;
 
-namespace options {
-class OptionParser;
-}
-
 namespace cost_saturation {
 class AbstractionGenerator;
 

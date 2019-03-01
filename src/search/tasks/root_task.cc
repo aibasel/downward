@@ -325,7 +325,7 @@ vector<ExplicitOperator> read_actions(
     return actions;
 }
 
-RootTask::RootTask(std::istream &in) {
+RootTask::RootTask(istream &in) {
     read_and_verify_version(in);
     bool use_metric = read_metric(in);
     variables = read_variables(in);
@@ -493,7 +493,7 @@ void RootTask::convert_state_values(
     }
 }
 
-void read_root_task(std::istream &in) {
+void read_root_task(istream &in) {
     assert(!g_root_task);
     g_root_task = make_shared<RootTask>(in);
 }

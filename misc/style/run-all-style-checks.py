@@ -184,7 +184,7 @@ def check_search_code_with_clang_tidy():
         # Include all non-system headers (.*) except the ones from search/ext/.
         "-header-filter=.*,-tree.hh,-tree_util.hh",
         "-checks=-*," + ",".join(checks)]
-    print("clang-tidy (enabled checks: {})".format(", ".join(checks)))
+    print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
     try:
         output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)

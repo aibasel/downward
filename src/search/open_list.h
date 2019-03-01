@@ -2,7 +2,6 @@
 #define OPEN_LIST_H
 
 #include <set>
-#include <vector>
 
 #include "evaluation_context.h"
 #include "operator_id.h"

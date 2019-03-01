@@ -110,6 +110,7 @@ fast_downward_plugin(
     SOURCES
         utils/collections
         utils/countdown_timer
+        utils/exceptions
         utils/hash
         utils/language
         utils/logging
@@ -134,6 +135,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME BEST_FIRST_OPEN_LIST
+    HELP "Open list that selects the best element according to a single evaluation function"
+    SOURCES
+        open_lists/best_first_open_list
+)
+
+fast_downward_plugin(
     NAME EPSILON_GREEDY_OPEN_LIST
     HELP "Open list that chooses an entry randomly with probability epsilon"
     SOURCES
@@ -145,13 +153,6 @@ fast_downward_plugin(
     HELP "Pareto open list"
     SOURCES
         open_lists/pareto_open_list
-)
-
-fast_downward_plugin(
-    NAME STANDARD_SCALAR_OPEN_LIST
-    HELP "Standard scalar open list"
-    SOURCES
-        open_lists/standard_scalar_open_list
 )
 
 fast_downward_plugin(
@@ -642,6 +643,7 @@ fast_downward_plugin(
         cost_saturation/projection_generator
         cost_saturation/saturated_cost_partitioning_heuristic
         cost_saturation/types
+        cost_saturation/unsolvability_heuristic
         cost_saturation/utils
     DEPENDS CEGAR PDBS PRIORITY_QUEUES SAMPLING TASK_PROPERTIES
 )

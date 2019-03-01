@@ -43,35 +43,33 @@ class ExplicitAbstraction : public Abstraction {
     std::vector<std::vector<Successor>> backward_graph;
 
     // Operators inducing state-changing transitions.
-    std::vector<int> active_operators;
+    std::vector<bool> active_operators;
 
     // Operators inducing self-loops.
-    std::vector<int> looping_operators;
+    std::vector<bool> looping_operators;
 
     std::vector<int> goal_states;
 
     mutable priority_queues::AdaptiveQueue<int> queue;
 
 protected:
-    virtual std::vector<int> compute_saturated_costs(
-        const std::vector<int> &h_values,
-        int num_operators) const override;
-
     virtual void release_transition_system_memory() override;
 
 public:
     ExplicitAbstraction(
         AbstractionFunction function,
         std::vector<std::vector<Successor>> &&backward_graph,
-        std::vector<int> &&looping_operators,
+        std::vector<bool> &&looping_operators,
         std::vector<int> &&goal_states);
 
     virtual std::vector<int> compute_goal_distances(
         const std::vector<int> &costs) const override;
+    virtual std::vector<int> compute_saturated_costs(
+        const std::vector<int> &h_values) const override;
     virtual int get_num_states() const override;
     virtual int get_abstract_state_id(const State &concrete_state) const override;
-    virtual const std::vector<int> &get_active_operators() const override;
-    virtual const std::vector<int> &get_looping_operators() const override;
+    virtual bool operator_is_active(int op_id) const override;
+    virtual bool operator_induces_self_loop(int op_id) const override;
     virtual const std::vector<int> &get_goal_states() const override;
     virtual void dump() const override;
 };

@@ -23,14 +23,17 @@
 
 #include <algorithm>
 #include <cassert>
-#include <exception>
 #include <iostream>
 #include <limits>
 
 using namespace std;
 
 namespace pdbs {
-struct HillClimbingTimeout : public exception {};
+/* Since this exception class is only used for control flow and thus has no need
+   for an error message, we use a standalone class instead of inheriting from
+   utils::Exception. */
+class HillClimbingTimeout {
+};
 
 static vector<int> get_goal_variables(const TaskProxy &task_proxy) {
     vector<int> goal_vars;

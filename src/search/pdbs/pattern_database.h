@@ -10,9 +10,6 @@
 
 namespace pdbs {
 class AbstractOperator {
-    // We use the concrete operator ID for cost partitioning.
-    int concrete_operator_id;
-
     /*
       This class represents an abstract operator how it is needed for
       the regression search performed during the PDB-construction. As
@@ -46,11 +43,8 @@ public:
                      const std::vector<FactPair> &preconditions,
                      const std::vector<FactPair> &effects,
                      int cost,
-                     const std::vector<std::size_t> &hash_multipliers,
-                     int concrete_operator_id = -1);
+                     const std::vector<std::size_t> &hash_multipliers);
     ~AbstractOperator();
-
-    int get_concrete_operator_id() const;
 
     /*
       Returns variable value pairs which represent the preconditions of
