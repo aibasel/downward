@@ -22,7 +22,9 @@ using namespace domain_transition_graph;
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
-      cache(new CGCache(task_proxy)), cache_hits(0), cache_misses(0),
+      cache(utils::make_unique_ptr<CGCache>(task_proxy)),
+      cache_hits(0),
+      cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing causal graph heuristic..." << endl;
@@ -30,7 +32,7 @@ CGHeuristic::CGHeuristic(const Options &opts)
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
     for (size_t i = 0; i < num_vars; ++i)
-        prio_queues.push_back(new priority_queues::AdaptiveQueue<ValueNode *>);
+        prio_queues.push_back(utils::make_unique_ptr<ValueNodeQueue>());
 
     function<bool(int, int)> pruning_condition =
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
@@ -39,11 +41,6 @@ CGHeuristic::CGHeuristic(const Options &opts)
 }
 
 CGHeuristic::~CGHeuristic() {
-    delete cache;
-    for (size_t i = 0; i < prio_queues.size(); ++i)
-        delete prio_queues[i];
-    for (size_t i = 0; i < transition_graphs.size(); ++i)
-        delete transition_graphs[i];
 }
 
 bool CGHeuristic::dead_ends_are_reliable() const {
@@ -59,7 +56,7 @@ int CGHeuristic::compute_heuristic(const GlobalState &global_state) {
         const VariableProxy var = goal.get_variable();
         int var_no = var.get_id();
         int from = state[var_no].get_value(), to = goal.get_value();
-        DomainTransitionGraph *dtg = transition_graphs[var_no];
+        DomainTransitionGraph *dtg = transition_graphs[var_no].get();
         int cost_for_goal = get_transition_cost(state, dtg, from, to);
         if (cost_for_goal == numeric_limits<int>::max()) {
             return DEAD_END;
@@ -72,7 +69,7 @@ int CGHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 void CGHeuristic::setup_domain_transition_graphs() {
-    for (auto *dtg : transition_graphs) {
+    for (auto &dtg : transition_graphs) {
         for (auto &node : dtg->nodes) {
             node.distances.clear();
             node.helpful_transitions.clear();
@@ -161,7 +158,7 @@ int CGHeuristic::get_transition_cost(const State &state,
                         int current_val = source->children_state[local_var];
                         int global_var = dtg->local_to_global_child[local_var];
                         DomainTransitionGraph *precond_dtg =
-                            transition_graphs[global_var];
+                            transition_graphs[global_var].get();
                         int recursive_cost = get_transition_cost(
                             state, precond_dtg, current_val, assignment.value);
                         if (recursive_cost == numeric_limits<int>::max())
@@ -281,7 +278,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
         for (const LocalAssignment &assignment : helpful->precond) {
             int local_var = assignment.local_var;
             int global_var = dtg->local_to_global_child[local_var];
-            DomainTransitionGraph *precond_dtg = transition_graphs[global_var];
+            DomainTransitionGraph *precond_dtg = transition_graphs[global_var].get();
             mark_helpful_transitions(state, precond_dtg, assignment.value);
         }
     }
