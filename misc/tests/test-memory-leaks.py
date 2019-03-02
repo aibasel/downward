@@ -24,8 +24,8 @@ TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
 ]]
 
 CONFIGS = {}
-CONFIGS.update(configs.default_configs_optimal(core=True, ipc=False, extended=True))
-CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=False, extended=True))
+CONFIGS.update(configs.default_configs_optimal(core=True, extended=True))
+CONFIGS.update(configs.default_configs_satisficing(core=True, extended=True))
 
 
 def escape_list(l):
