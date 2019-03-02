@@ -107,7 +107,7 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
 bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     const BitsetView reached = get_reached_landmarks(global_state);
 
-    const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
+    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
     for (LandmarkNode *node : nodes) {
         node->status = lm_not_reached;

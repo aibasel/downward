@@ -132,6 +132,7 @@ using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:
+    using Nodes = std::set<LandmarkNode *>;
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
     inline int cost_of_landmarks() const {return landmarks_cost;}
@@ -143,7 +144,7 @@ public:
 
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
-    inline const std::set<LandmarkNode *> &get_nodes() const {
+    inline const Nodes &get_nodes() const {
         return nodes;
     }
 
@@ -204,7 +205,7 @@ private:
     int landmarks_cost;
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
-    std::set<LandmarkNode *> nodes;
+    Nodes nodes;
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 };

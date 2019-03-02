@@ -43,7 +43,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
     vector<bool> action_landmarks(operator_costs.size(), false);
 
-    const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
+    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
 
     double h = 0;
 
