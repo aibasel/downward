@@ -56,9 +56,8 @@ void dump_pattern_collection_statistics(
             cout << sep << pdb->get_pattern();
             sep = ", ";
         }
-        cout << "]";
+        cout << "]" << endl;
     }
-    cout << endl;
     cout << identifier << " number of patterns: " << num_patterns << endl;
     cout << identifier << " total PDB size: " << total_pdb_size << endl;
     cout << identifier << " runtime: " << runtime << endl;
