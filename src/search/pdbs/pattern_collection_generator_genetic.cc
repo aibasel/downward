@@ -282,12 +282,8 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
 
     TaskProxy task_proxy(*task);
     assert(best_patterns);
-    cout << "Genetic pattern collection: " << *best_patterns << endl;
-    cout << "Genetic pattern collection number of patterns: "
-         << best_patterns->size() << endl;
-    cout << "Genetic pattern collection total PDB size: "
-         << compute_total_pdb_size(task_proxy, *best_patterns) << endl;
-    cout << "Genetic pattern collection computation time: " << timer << endl;
+    dump_pattern_collection_statistics(
+        task_proxy, "Genetic generator", timer(), best_patterns);
     return PatternCollectionInformation(task_proxy, best_patterns);
 }
 

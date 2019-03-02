@@ -60,6 +60,6 @@ void dump_pattern_collection_statistics(
     }
     cout << identifier << " number of patterns: " << num_patterns << endl;
     cout << identifier << " total PDB size: " << total_pdb_size << endl;
-    cout << identifier << " runtime: " << runtime << endl;
+    cout << identifier << " computation time: " << runtime << endl;
 }
 }
