@@ -208,25 +208,16 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     --landmarks_count;
 }
 
-void LandmarkGraph::discard_disjunctive_landmarks() {
-    /*
-      Using disjunctive landmarks during landmark generation can be beneficial
-      even if we don't want to use disjunctive landmarks during search. This
-      method deletes all disjunctive landmarks that have been found.
-    */
-    if (number_of_disj_landmarks() == 0)
-        return;
-    cout << "Discarding " << number_of_disj_landmarks()
-         << " disjunctive landmarks" << endl;
+void LandmarkGraph::remove_node_if(const SelectNode &remove_node) {
     for (auto &node : nodes) {
-        if (node->disjunctive) {
+        if (remove_node(*node)) {
             rm_landmark_node(node.get());
         }
     }
     nodes.erase(remove_if(
                     nodes.begin(), nodes.end(),
-                    [](const unique_ptr<LandmarkNode> &node) {
-                        return node->disjunctive;
+                    [&remove_node](const unique_ptr<LandmarkNode> &node) {
+                        return remove_node(*node);
                     }), nodes.end());
 }
 
