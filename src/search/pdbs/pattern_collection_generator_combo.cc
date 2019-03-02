@@ -39,13 +39,9 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
         if (!used_vars.count(goal_var_id))
             patterns->emplace_back(1, goal_var_id);
     }
-    cout << "Combo pattern collection: " << *patterns << endl;
-    cout << "Combo pattern collection number of patterns: "
-         << patterns->size() << endl;
-    cout << "Combo pattern collection total PDB size: "
-         << compute_total_pdb_size(task_proxy, *patterns) << endl;
-    cout << "Combo pattern collection computation time: " << timer << endl;
 
+    dump_pattern_collection_statistics(
+        task_proxy, "Combo generator", timer(), patterns);
     return PatternCollectionInformation(task_proxy, patterns);
 }
 

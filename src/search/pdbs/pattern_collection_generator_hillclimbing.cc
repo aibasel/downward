@@ -3,6 +3,7 @@
 #include "canonical_pdbs_heuristic.h"
 #include "incremental_canonical_pdbs.h"
 #include "pattern_database.h"
+#include "utils.h"
 #include "validation.h"
 
 #include "../option_parser.h"
@@ -423,19 +424,12 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
         hill_climbing(task_proxy);
     }
 
-    const shared_ptr<PDBCollection> &pdbs = current_pdbs->get_pattern_databases();
-    cout << "Hill climbing pattern collection: ";
-    string sep = "";
-    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
-        cout << sep << pdb->get_pattern();
-        sep = ", ";
-    }
-    cout << endl;
-    cout << "Hill climbing pattern collection number of patterns: "
-         << pdbs->size() << endl;
-    cout << "Hill climbing pattern collection total PDB size: "
-         << current_pdbs->get_size() << endl;
-    cout << "Hill climbing pattern collection computation time: " << timer << endl;
+    dump_pattern_collection_statistics(
+        task_proxy,
+        "Hill climbing generator",
+        timer(),
+        nullptr,
+        current_pdbs->get_pattern_databases());
     return current_pdbs->get_pattern_collection_information();
 }
 
