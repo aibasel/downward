@@ -38,7 +38,7 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     vector<FactPair> facts;
     const LandmarkGraph::Nodes &nodes = graph.get_nodes();
     facts.reserve(nodes.size());
-    for (const LandmarkNode *node : nodes) {
+    for (auto &node : nodes) {
         facts.push_back(get_fact(*node));
     }
     sort(facts.begin(), facts.end());
