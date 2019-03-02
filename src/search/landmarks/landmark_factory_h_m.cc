@@ -592,7 +592,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration 
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
-    for (LandmarkNode *lmn : lm_graph->get_nodes()) {
+    for (auto &lmn : lm_graph->get_nodes()) {
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &lm_fact : lmn->facts) {

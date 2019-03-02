@@ -50,7 +50,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     /* First pass:
        compute which op achieves how many landmarks. Along the way,
        mark action landmarks and add their cost to h. */
-    for (const LandmarkNode *node : nodes) {
+    for (auto &node : nodes) {
         int lmn_status = node->get_status();
         if (lmn_status != lm_reached) {
             const set<int> &achievers = get_achievers(lmn_status, *node);
@@ -78,7 +78,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
        remove landmarks from consideration that are covered by
        an action landmark; decrease the counters accordingly
        so that no unnecessary cost is assigned to these landmarks. */
-    for (LandmarkNode *node : nodes) {
+    for (auto &node : nodes) {
         int lmn_status = node->get_status();
         if (lmn_status != lm_reached) {
             const set<int> &achievers = get_achievers(lmn_status, *node);
@@ -96,7 +96,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                     --achieved_lms_by_op[op_id];
                 }
             } else {
-                relevant_lms.push_back(node);
+                relevant_lms.push_back(node.get());
             }
         }
     }

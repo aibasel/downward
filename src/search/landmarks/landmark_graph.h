@@ -132,7 +132,7 @@ using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:
-    using Nodes = std::set<LandmarkNode *>;
+    using Nodes = std::vector<std::unique_ptr<LandmarkNode>>;
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
     inline int cost_of_landmarks() const {return landmarks_cost;}

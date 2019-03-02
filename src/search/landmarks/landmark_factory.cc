@@ -474,7 +474,7 @@ void LandmarkFactory::approximate_reasonable_orders(
     */
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
-    for (LandmarkNode *node_p : lm_graph->get_nodes()) {
+    for (auto &node_p : lm_graph->get_nodes()) {
         if (node_p->disjunctive)
             continue;
 
@@ -482,10 +482,10 @@ void LandmarkFactory::approximate_reasonable_orders(
             return;
 
         if (!obedient_orders && node_p->is_goal()) {
-            for (LandmarkNode *node2_p : lm_graph->get_nodes()) {
+            for (auto &node2_p : lm_graph->get_nodes()) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;
-                if (interferes(task_proxy, node2_p, node_p)) {
+                if (interferes(task_proxy, node2_p.get(), node_p.get())) {
                     edge_add(*node2_p, *node_p, EdgeType::reasonable);
                 }
             }
@@ -503,7 +503,7 @@ void LandmarkFactory::approximate_reasonable_orders(
                         if (parent.disjunctive)
                             continue;
                         if ((edge >= EdgeType::natural || (obedient_orders && edge == EdgeType::reasonable)) &&
-                            &parent != node_p) {  // find predecessors or parent and collect in
+                            &parent != node_p.get()) {  // find predecessors or parent and collect in
                             // "interesting nodes"
                             interesting_nodes.insert(&parent);
                             collect_ancestors(interesting_nodes, parent,
@@ -515,9 +515,9 @@ void LandmarkFactory::approximate_reasonable_orders(
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
             for (LandmarkNode *node : interesting_nodes) {
-                if (node == node_p || node->disjunctive)
+                if (node == node_p.get() || node->disjunctive)
                     continue;
-                if (interferes(task_proxy, node, node_p)) {
+                if (interferes(task_proxy, node, node_p.get())) {
                     if (!obedient_orders)
                         edge_add(*node, *node_p, EdgeType::reasonable);
                     else
@@ -611,11 +611,11 @@ void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, E
     VariablesProxy variables = task_proxy.get_variables();
     while (change) {
         change = false;
-        for (LandmarkNode *landmark_node : lm_graph->get_nodes()) {
+        for (auto &landmark_node : lm_graph->get_nodes()) {
             if (!is_causal_landmark(task_proxy, exploration, *landmark_node)) {
                 cout << "Discarding non-causal landmark: ";
-                lm_graph->dump_node(variables, landmark_node);
-                lm_graph->rm_landmark_node(landmark_node);
+                lm_graph->dump_node(variables, landmark_node.get());
+                lm_graph->rm_landmark_node(landmark_node.get());
                 ++number_of_noncausal_landmarks;
                 change = true;
                 break;
@@ -640,9 +640,9 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
     bool change = true;
     while (change) {
         change = false;
-        for (LandmarkNode *node : lm_graph->get_nodes()) {
+        for (auto &node : lm_graph->get_nodes()) {
             if (node->disjunctive) {
-                lm_graph->rm_landmark_node(node);
+                lm_graph->rm_landmark_node(node.get());
                 change = true;
                 break;
             }
@@ -662,9 +662,9 @@ void LandmarkFactory::discard_conjunctive_landmarks() {
     bool change = true;
     while (change) {
         change = false;
-        for (LandmarkNode *node : lm_graph->get_nodes()) {
+        for (auto &node : lm_graph->get_nodes()) {
             if (node->conjunctive) {
-                lm_graph->rm_landmark_node(node);
+                lm_graph->rm_landmark_node(node.get());
                 change = true;
                 break;
             }
@@ -677,7 +677,7 @@ void LandmarkFactory::discard_conjunctive_landmarks() {
 
 void LandmarkFactory::discard_all_orderings() {
     cout << "Removing all orderings." << endl;
-    for (LandmarkNode *node : lm_graph->get_nodes()) {
+    for (auto &node : lm_graph->get_nodes()) {
         node->children.clear();
         node->parents.clear();
     }
@@ -686,8 +686,8 @@ void LandmarkFactory::discard_all_orderings() {
 void LandmarkFactory::mk_acyclic_graph() {
     unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
-    for (LandmarkNode *node : lm_graph->get_nodes()) {
-        if (acyclic_node_set.find(node) == acyclic_node_set.end())
+    for (auto &node : lm_graph->get_nodes()) {
+        if (acyclic_node_set.find(node.get()) == acyclic_node_set.end())
             removed_edges += loop_acyclic_graph(*node, acyclic_node_set);
     }
     // [Malte] Commented out the following assertion because
@@ -786,7 +786,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
 
 int LandmarkFactory::calculate_lms_cost() const {
     int result = 0;
-    for (LandmarkNode *lmn : lm_graph->get_nodes())
+    for (auto &lmn : lm_graph->get_nodes())
         result += lmn->min_cost;
 
     return result;
@@ -807,7 +807,7 @@ void LandmarkFactory::compute_predecessor_information(
 
 void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
     VariablesProxy variables = task_proxy.get_variables();
-    for (LandmarkNode *lmn : lm_graph->get_nodes()) {
+    for (auto &lmn : lm_graph->get_nodes()) {
         for (const FactPair &lm_fact : lmn->facts) {
             const vector<int> &ops = lm_graph->get_operators_including_eff(lm_fact);
             lmn->possible_achievers.insert(ops.begin(), ops.end());
@@ -818,12 +818,12 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
 
         vector<vector<int>> lvl_var;
         vector<utils::HashMap<FactPair, int>> lvl_op;
-        compute_predecessor_information(task_proxy, exploration, lmn, lvl_var, lvl_op);
+        compute_predecessor_information(task_proxy, exploration, lmn.get(), lvl_var, lvl_op);
 
         for (int op_or_axom_id : lmn->possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
-            if (_possibly_reaches_lm(op, lvl_var, lmn)) {
+            if (_possibly_reaches_lm(op, lvl_var, lmn.get())) {
                 lmn->first_achievers.insert(op_or_axom_id);
             }
         }
