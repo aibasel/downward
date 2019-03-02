@@ -137,6 +137,11 @@ SEARCH_TESTS = [
 ]
 
 
+def translate(pddl_file, sas_file):
+    subprocess.check_call([
+        sys.executable, DRIVER, "--sas-file", sas_file, "--translate", pddl_file])
+
+
 def cleanup():
     subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
@@ -161,10 +166,17 @@ def run_translator_tests():
 
 
 def run_search_tests():
+    def get_sas_file_name(task_type):
+        return "{}.sas".format(task_type)
+
+    for task_type, relpath in SEARCH_TASKS.items():
+        pddl_file = os.path.join(BENCHMARKS_DIR, relpath)
+        sas_file = get_sas_file_name(task_type)
+        translate(pddl_file, sas_file)
+
     for task_type, driver_options, search_options, expected in SEARCH_TESTS:
-        relpath = SEARCH_TASKS[task_type]
-        problem = os.path.join(BENCHMARKS_DIR, relpath)
-        cmd = [sys.executable, DRIVER] + driver_options + [problem, "--search", search_options]
+        sas_file = get_sas_file_name(task_type)
+        cmd = [sys.executable, DRIVER] + driver_options + [sas_file, "--search", search_options]
         print("\nRun {cmd}:".format(**locals()))
         sys.stdout.flush()
         exitcode = subprocess.call(cmd)
@@ -172,6 +184,9 @@ def run_search_tests():
             log_failure(cmd, expected[sys.platform], exitcode)
             yield (cmd, expected[sys.platform], exitcode)
         cleanup()
+
+    for task_type in SEARCH_TASKS:
+        os.remove(get_sas_file_name(task_type))
 
 
 def main():
