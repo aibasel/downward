@@ -133,6 +133,7 @@ using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 class LandmarkGraph {
 public:
     using Nodes = std::vector<std::unique_ptr<LandmarkNode>>;
+    using SelectNode = std::function<bool (const LandmarkNode &)>;
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
     inline int cost_of_landmarks() const {return landmarks_cost;}
@@ -189,7 +190,7 @@ public:
     LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);
     LandmarkNode &landmark_add_conjunctive(const std::set<FactPair> &lm);
     void rm_landmark_node(LandmarkNode *node);
-    void discard_disjunctive_landmarks();
+    void remove_node_if(const SelectNode &remove_node);
     LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
     void set_landmark_cost(int cost) {

@@ -84,8 +84,17 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &exploration) {
     if (only_causal_landmarks)
         discard_noncausal_landmarks(task_proxy, exploration);
-    if (!disjunctive_landmarks)
-        lm_graph->discard_disjunctive_landmarks();
+    /*
+      Using disjunctive landmarks during landmark generation can be beneficial
+      even if we don't want to use disjunctive landmarks during search. So we
+      allow removing disjunctive landmarks after landmark generation.
+    */
+    if (lm_graph->number_of_disj_landmarks() > 0 && !disjunctive_landmarks) {
+        cout << "Discarding " << lm_graph->number_of_disj_landmarks()
+             << " disjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.disjunctive;});
+    }
     if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
