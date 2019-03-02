@@ -70,9 +70,8 @@ LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
 
 int LandmarkGraph::number_of_edges() const {
     int total = 0;
-    for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
-         != nodes.end(); ++it)
-        total += (*it)->children.size();
+    for (auto node : nodes)
+        total += node->children.size();
     return total;
 }
 
@@ -81,8 +80,8 @@ void LandmarkGraph::count_costs() {
     needed_cost = 0;
 
     set<LandmarkNode *>::iterator node_it;
-    for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
-        LandmarkNode &node = **node_it;
+    for (auto lm : nodes) {
+        LandmarkNode &node = *lm;
 
         switch (node.status) {
         case lm_reached:
@@ -199,7 +198,6 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     }
     nodes.erase(node);
     --landmarks_count;
-    assert(nodes.find(node) == nodes.end());
 }
 
 LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {

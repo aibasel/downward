@@ -26,9 +26,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 
     int inserted = 0;
     int num_goal_lms = 0;
-    const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
-    for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
-        LandmarkNode *node_p = *it;
+    for (auto node_p : lm_graph.get_nodes()) {
         if (node_p->in_goal) {
             ++num_goal_lms;
         }
