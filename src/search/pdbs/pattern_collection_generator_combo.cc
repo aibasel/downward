@@ -40,7 +40,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
             patterns->emplace_back(1, goal_var_id);
     }
 
-    dump_pattern_collection_statistics(
+    dump_pattern_collection_generation_statistics(
         task_proxy, "Combo generator", timer(), patterns);
     return PatternCollectionInformation(task_proxy, patterns);
 }

@@ -26,7 +26,24 @@ int compute_total_pdb_size(
     return size;
 }
 
-void dump_pattern_collection_statistics(
+void dump_pattern_generation_statistics(
+    const TaskProxy &task_proxy,
+    string identifier,
+    utils::Duration runtime,
+    const Pattern &pattern,
+    const shared_ptr<PatternDatabase> &pdb) {
+    int pdb_size;
+    if (pdb) {
+        pdb_size = pdb->get_size();
+    } else {
+        pdb_size = compute_pdb_size(task_proxy, pattern);
+    }
+    cout << identifier << " pattern: " << pattern << endl;
+    cout << identifier << " PDB size: " << pdb_size << endl;
+    cout << identifier << " computation time: " << runtime << endl;
+}
+
+void dump_pattern_collection_generation_statistics(
     const TaskProxy &task_proxy,
     string identifier,
     utils::Duration runtime,
@@ -50,6 +67,8 @@ void dump_pattern_collection_statistics(
     if (pattern_collection) {
         cout << *pattern_collection << endl;
     } else {
+        // TODO: have a more generic way of printing sequences whose elements
+        // cannot directly be printed on ostream?
         cout << "[";
         string sep = "";
         for (const auto &pdb : *pdbs) {

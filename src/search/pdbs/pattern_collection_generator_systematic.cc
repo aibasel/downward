@@ -273,7 +273,7 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
-    dump_pattern_collection_statistics(
+    dump_pattern_collection_generation_statistics(
         task_proxy, "Systematic generator", timer(), patterns);
     return PatternCollectionInformation(task_proxy, patterns);
 }
