@@ -3,6 +3,7 @@
 #include "dominance_pruning.h"
 #include "pattern_database.h"
 #include "pattern_generator.h"
+#include "utils.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -17,34 +18,6 @@
 using namespace std;
 
 namespace pdbs {
-static void dump_collection_statistics(
-    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets) {
-    vector<PatternDatabase *> remaining_pdbs_ordered;
-    unordered_set<PatternDatabase *> remaining_pdbs;
-    for (const PDBCollection &collection : *max_additive_subsets) {
-        for (const shared_ptr<PatternDatabase> &pdb : collection) {
-            if (remaining_pdbs.insert(pdb.get()).second) {
-                remaining_pdbs_ordered.push_back(pdb.get());
-            }
-        }
-    }
-
-    int num_pdbs = remaining_pdbs_ordered.size();
-    int total_pdb_size = 0;
-    cout << "Canonical PDB heuristic collection: ";
-    string sep = "";
-    for (const PatternDatabase *pdb : remaining_pdbs_ordered) {
-        cout << sep << pdb->get_pattern();
-        sep = ", ";
-        total_pdb_size += pdb->get_size();
-    }
-    cout << endl;
-    cout << "Canonical PDB heuristic number of patterns: "
-         << num_pdbs << endl;
-    cout << "Canonical PDB heuristic total PDB size: "
-         << total_pdb_size << endl;
-}
-
 CanonicalPDBs get_canonical_pdbs_from_options(
     const shared_ptr<AbstractTask> &task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
@@ -64,8 +37,21 @@ CanonicalPDBs get_canonical_pdbs_from_options(
             *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
     }
 
-    dump_collection_statistics(max_additive_subsets);
-    cout << "Canonical PDB heuristic total computation time: " << timer << endl;
+    unordered_set<PatternDatabase *> remaining_pdbs;
+    shared_ptr<PDBCollection> remaining_pdb_collection = make_shared<PDBCollection>();
+    for (const PDBCollection &collection : *max_additive_subsets) {
+        for (const shared_ptr<PatternDatabase> &pdb : collection) {
+            if (remaining_pdbs.insert(pdb.get()).second) {
+                remaining_pdb_collection->push_back(pdb);
+            }
+        }
+    }
+    dump_pattern_collection_statistics(
+        TaskProxy(*task),
+        "Canonical PDB heuristic",
+        timer(),
+        nullptr,
+        remaining_pdb_collection);
     return CanonicalPDBs(max_additive_subsets);
 }
 
