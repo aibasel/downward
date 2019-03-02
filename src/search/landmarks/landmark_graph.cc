@@ -178,8 +178,7 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
     return *new_node_p;
 }
 
-// TODO: Make private and rename.
-void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
+void LandmarkGraph::remove_landmark_node_occurences(LandmarkNode *node) {
     for (const auto &parent : node->parents) {
         LandmarkNode &parent_node = *(parent.first);
         parent_node.children.erase(node);
@@ -199,19 +198,13 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     } else {
         simple_lms_to_nodes.erase(node->facts[0]);
     }
-    auto it = find_if(
-        nodes.begin(), nodes.end(),
-        [node](const unique_ptr<LandmarkNode> &lm) {return lm.get() == node;});
-    assert(it != nodes.end());
-    std::swap(*it, nodes.back());
-    nodes.pop_back();
     --landmarks_count;
 }
 
 void LandmarkGraph::remove_node_if(const SelectNode &remove_node) {
     for (auto &node : nodes) {
         if (remove_node(*node)) {
-            rm_landmark_node(node.get());
+            remove_landmark_node_occurences(node.get());
         }
     }
     nodes.erase(remove_if(

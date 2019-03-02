@@ -189,7 +189,6 @@ public:
     LandmarkNode &landmark_add_simple(const FactPair &lm);
     LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);
     LandmarkNode &landmark_add_conjunctive(const std::set<FactPair> &lm);
-    void rm_landmark_node(LandmarkNode *node);
     void remove_node_if(const SelectNode &remove_node);
     LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
@@ -200,6 +199,7 @@ public:
     void dump(const VariablesProxy &variables) const;
 private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
+    void remove_landmark_node_occurences(LandmarkNode *node);
     int landmarks_count;
     int conj_lms;
     int reached_cost;
