@@ -28,7 +28,7 @@ def configs_optimal_core():
             "merge_tree=linear(variable_order=reverse_level)),"
             "shrink_strategy=shrink_fh(),"
             "label_reduction=exact(before_shrinking=false,"
-            "before_merging=true),max_states=50000))"],
+            "before_merging=true),max_states=50000,verbosity=silent))"],
         "astar_merge_and_shrink_dfp_bisim": [
             "--search",
             "astar(merge_and_shrink(merge_strategy=merge_stateless("
@@ -39,7 +39,7 @@ def configs_optimal_core():
             "shrink_strategy=shrink_bisimulation(greedy=false),"
             "label_reduction=exact(before_shrinking=true,"
             "before_merging=false),max_states=50000,"
-            "threshold_before_merge=1))"],
+            "threshold_before_merge=1,verbosity=silent))"],
         "astar_merge_and_shrink_dfp_greedy_bisim": [
             "--search",
             "astar(merge_and_shrink(merge_strategy=merge_stateless("
@@ -51,7 +51,7 @@ def configs_optimal_core():
             "greedy=true),"
             "label_reduction=exact(before_shrinking=true,"
             "before_merging=false),max_states=infinity,"
-            "threshold_before_merge=1))"],
+            "threshold_before_merge=1,verbosity=silent))"],
         "blind-sss-simple": [
             "--search",
             "astar(blind(), pruning=stubborn_sets_simple())"],
