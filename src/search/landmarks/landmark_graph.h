@@ -150,8 +150,7 @@ public:
     }
 
     inline int number_of_landmarks() const {
-        assert(landmarks_count == static_cast<int>(nodes.size()));
-        return landmarks_count;
+        return nodes.size();
     }
 
     // ------------------------------------------------------------------------------
@@ -174,7 +173,7 @@ public:
     }
 
     int number_of_disj_landmarks() const {
-        return landmarks_count - (simple_lms_to_nodes.size() + conj_lms);
+        return number_of_landmarks() - (simple_lms_to_nodes.size() + conj_lms);
     }
     int number_of_conj_landmarks() const {
         return conj_lms;
@@ -200,7 +199,6 @@ public:
 private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
     void remove_node_occurences(LandmarkNode *node);
-    int landmarks_count;
     int conj_lms;
     int reached_cost;
     int needed_cost;

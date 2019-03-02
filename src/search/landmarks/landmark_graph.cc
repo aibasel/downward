@@ -17,7 +17,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : landmarks_count(0), conj_lms(0) {
+    : conj_lms(0) {
     generate_operators_lookups(task_proxy);
 }
 
@@ -146,7 +146,6 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
     nodes.push_back(utils::make_unique_ptr<LandmarkNode>(facts, false));
     LandmarkNode *new_node_p = nodes.back().get();
     simple_lms_to_nodes.emplace(lm, new_node_p);
-    ++landmarks_count;
     return *new_node_p;
 }
 
@@ -161,7 +160,6 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
     for (const FactPair &lm_fact : lm) {
         disj_lms_to_nodes.emplace(lm_fact, new_node_p);
     }
-    ++landmarks_count;
     return *new_node_p;
 }
 
@@ -173,7 +171,6 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
     }
     nodes.push_back(utils::make_unique_ptr<LandmarkNode>(facts, false, true));
     LandmarkNode *new_node_p = nodes.back().get();
-    ++landmarks_count;
     ++conj_lms;
     return *new_node_p;
 }
@@ -198,7 +195,6 @@ void LandmarkGraph::remove_node_occurences(LandmarkNode *node) {
     } else {
         simple_lms_to_nodes.erase(node->facts[0]);
     }
-    --landmarks_count;
 }
 
 void LandmarkGraph::remove_node_if(const SelectNode &remove_node) {
@@ -224,7 +220,7 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
 }
 
 void LandmarkGraph::set_landmark_ids() {
-    ordered_nodes.resize(landmarks_count);
+    ordered_nodes.resize(number_of_landmarks());
     int id = 0;
     for (auto &lmn : nodes) {
         lmn->assign_id(id);
