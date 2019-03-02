@@ -122,15 +122,15 @@ bool LandmarkGraph::disj_landmark_exists(const set<FactPair> &lm) const {
 
 bool LandmarkGraph::exact_same_disj_landmark_exists(const set<FactPair> &lm) const {
     // Test whether a disj. LM exists which consists EXACTLY of those facts in lm
-    LandmarkNode *lmn = NULL;
+    LandmarkNode *lmn = nullptr;
     for (const FactPair &lm_fact : lm) {
         auto it2 = disj_lms_to_nodes.find(lm_fact);
         if (it2 == disj_lms_to_nodes.end())
             return false;
         else {
-            if (lmn != NULL && lmn != it2->second) {
+            if (lmn && lmn != it2->second) {
                 return false;
-            } else if (lmn == NULL)
+            } else if (!lmn)
                 lmn = it2->second;
         }
     }
