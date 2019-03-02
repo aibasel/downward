@@ -85,7 +85,7 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
     if (only_causal_landmarks)
         discard_noncausal_landmarks(task_proxy, exploration);
     if (!disjunctive_landmarks)
-        discard_disjunctive_landmarks();
+        lm_graph->discard_disjunctive_landmarks();
     if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
@@ -626,34 +626,6 @@ void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, E
          << " non-causal landmarks" << endl;
 }
 
-void LandmarkFactory::discard_disjunctive_landmarks() {
-    /* Using disjunctive landmarks during landmark generation can be
-    beneficial even if we don't want to use disunctive landmarks during s
-    search. This function deletes all disjunctive landmarks that have been
-    found. (Note: this is implemented inefficiently because "nodes" contains
-    pointers, not the actual nodes. We should change that.)
-    */
-    if (lm_graph->number_of_disj_landmarks() == 0)
-        return;
-    cout << "Discarding " << lm_graph->number_of_disj_landmarks()
-         << " disjunctive landmarks" << endl;
-    bool change = true;
-    while (change) {
-        change = false;
-        for (auto &node : lm_graph->get_nodes()) {
-            if (node->disjunctive) {
-                lm_graph->rm_landmark_node(node.get());
-                change = true;
-                break;
-            }
-        }
-    }
-    // [Malte] Commented out the following assertions because
-    // the old methods for this are no longer available.
-    // assert(lm_graph->number_of_disj_landmarks() == 0);
-    // assert(disj_lms_to_nodes.size() == 0);
-}
-
 void LandmarkFactory::discard_conjunctive_landmarks() {
     if (lm_graph->number_of_conj_landmarks() == 0)
         return;
@@ -670,9 +642,6 @@ void LandmarkFactory::discard_conjunctive_landmarks() {
             }
         }
     }
-    // [Malte] Commented out the following assertion because
-    // the old method for this is no longer available.
-    // assert(number_of_conj_landmarks() == 0);
 }
 
 void LandmarkFactory::discard_all_orderings() {
