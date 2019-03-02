@@ -195,7 +195,8 @@ void LandmarkGraph::remove_node_occurences(LandmarkNode *node) {
     }
 }
 
-void LandmarkGraph::remove_node_if(const SelectNode &remove_node) {
+void LandmarkGraph::remove_node_if(
+    const function<bool (const LandmarkNode &)> &remove_node) {
     nodes.erase(remove_if(
                     nodes.begin(), nodes.end(),
                     [this, &remove_node](const unique_ptr<LandmarkNode> &node) {
