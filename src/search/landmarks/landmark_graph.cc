@@ -79,7 +79,7 @@ void LandmarkGraph::count_costs() {
     reached_cost = 0;
     needed_cost = 0;
 
-    set<LandmarkNode *>::iterator node_it;
+    Nodes::iterator node_it;
     for (auto lm : nodes) {
         LandmarkNode &node = *lm;
 
