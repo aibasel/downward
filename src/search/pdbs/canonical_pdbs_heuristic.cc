@@ -46,7 +46,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
             }
         }
     }
-    dump_pattern_collection_statistics(
+    dump_pattern_collection_generation_statistics(
         TaskProxy(*task),
         "Canonical PDB heuristic",
         timer(),

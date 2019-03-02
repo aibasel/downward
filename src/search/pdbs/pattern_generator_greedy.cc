@@ -49,10 +49,8 @@ Pattern PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
     }
 
     validate_and_normalize_pattern(task_proxy, pattern);
-    cout << "Greedy pattern: " << pattern << endl;
-    cout << "Greedy pattern PDB size: "
-         << compute_pdb_size(task_proxy, pattern) << endl;
-    cout << "Greedy pattern computation time: " << timer << endl;
+    dump_pattern_generation_statistics(
+        task_proxy, "Greedy generator", timer(), pattern);
     return pattern;
 }
 

@@ -424,7 +424,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
         hill_climbing(task_proxy);
     }
 
-    dump_pattern_collection_statistics(
+    dump_pattern_collection_generation_statistics(
         task_proxy,
         "Hill climbing generator",
         timer(),
