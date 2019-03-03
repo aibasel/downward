@@ -19,20 +19,20 @@ class Node;
   Store and update abstract Domains.
 */
 class AbstractState {
-    // Abstract domains for all variables.
-    const Domains domains;
+    int state_id;
 
     // This state's node in the refinement hierarchy.
-    Node *node;
+    NodeID node_id;
 
-    // Construct instances with factory methods.
-    AbstractState(const Domains &domains, Node *node);
-
-    bool is_more_general_than(const AbstractState &other) const;
+    // Abstract domains for all variables.
+    Domains domains;
 
 public:
+    AbstractState(int state_id, NodeID node_id, const Domains &domains);
+
     AbstractState(const AbstractState &) = delete;
 
+    // TODO: Remove this method once we use unique_ptr for AbstractState.
     AbstractState(AbstractState &&other);
 
     bool domains_intersect(const AbstractState *other, int var) const;
@@ -46,22 +46,19 @@ public:
     AbstractState regress(const OperatorProxy &op) const;
 
     /*
-      Split this state into two new states by separating the "wanted" values
-      from the other values in the abstract domain and return the resulting two
-      new states.
+      Separate the "wanted" values from the other values in the abstract domain
+      and return the resulting two new Cartesian sets.
     */
-    std::pair<AbstractState *, AbstractState *> split(
-        int var, const std::vector<int> &wanted, Node *node1, Node *node2);
+    std::pair<Domains, Domains> split_domain(int var, const std::vector<int> &wanted);
 
+    bool includes(const AbstractState &other) const;
     bool includes(const State &concrete_state) const;
     bool includes(const std::vector<FactPair> &facts) const;
 
     // IDs are consecutive, so they can be used to index states in vectors.
     int get_id() const;
 
-    Node &get_node() const {
-        return *node;
-    }
+    NodeID get_node_id() const;
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
         return os << "#" << state.get_id() << state.domains;
@@ -74,7 +71,7 @@ public:
       TODO: Return unique_ptr?
     */
     static AbstractState *get_trivial_abstract_state(
-        const std::vector<int> &domain_sizes, Node *root_node);
+        const std::vector<int> &domain_sizes);
 
     // Create the Cartesian set that corresponds to the given fact conditions.
     static AbstractState get_cartesian_set(

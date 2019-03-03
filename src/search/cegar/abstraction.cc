@@ -72,8 +72,7 @@ void Abstraction::mark_all_states_as_goals() {
 }
 
 void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes) {
-    init = AbstractState::get_trivial_abstract_state(
-        domain_sizes, refinement_hierarchy->get_root());
+    init = AbstractState::get_trivial_abstract_state(domain_sizes);
     goals.insert(init->get_id());
     states.push_back(init);
 }
@@ -89,13 +88,16 @@ pair<int, int> Abstraction::refine(
     int v2_id = get_num_states();
 
     // Update refinement hierarchy.
-    pair<Node *, Node *> new_nodes = refinement_hierarchy->split(
-        state->get_node(), var, wanted, v1_id, v2_id);
+    pair<NodeID, NodeID> node_ids = refinement_hierarchy->split(
+        state->get_node_id(), var, wanted, v1_id, v2_id);
 
-    pair<AbstractState *, AbstractState *> new_states = state->split(
-        var, wanted, new_nodes.first, new_nodes.second);
-    AbstractState *v1 = new_states.first;
-    AbstractState *v2 = new_states.second;
+    pair<Domains, Domains> domains = state->split_domain(var, wanted);
+
+    AbstractState *v1 = new AbstractState(v1_id, node_ids.first, domains.first);
+    AbstractState *v2 = new AbstractState(v2_id, node_ids.second, domains.second);
+    assert(state->includes(*v1));
+    assert(state->includes(*v2));
+
     delete state;
     states[v1_id] = v1;
     assert(static_cast<int>(states.size()) == v2_id);

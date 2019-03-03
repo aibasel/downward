@@ -10,14 +10,16 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(const Domains &domains, Node *node)
-    : domains(domains),
-      node(node) {
+AbstractState::AbstractState(int state_id, NodeID node_id, const Domains &domains)
+    : state_id(state_id),
+      node_id(node_id),
+      domains(domains) {
 }
 
 AbstractState::AbstractState(AbstractState &&other)
-    : domains(move(other.domains)),
-      node(move(other.node)) {
+    : state_id(other.state_id),
+      node_id(other.node_id),
+      domains(move(other.domains)) {
 }
 
 int AbstractState::count(int var) const {
@@ -28,12 +30,12 @@ bool AbstractState::contains(int var, int value) const {
     return domains.test(var, value);
 }
 
-pair<AbstractState *, AbstractState *> AbstractState::split(
-    int var, const vector<int> &wanted, Node *node1, Node *node2) {
+pair<Domains, Domains> AbstractState::split_domain(
+    int var, const vector<int> &wanted) {
     int num_wanted = wanted.size();
     utils::unused_variable(num_wanted);
     // We can only split states in the refinement hierarchy (not artificial states).
-    assert(node);
+    assert(node_id != UNDEFINED);
     // We can only refine for variables with at least two values.
     assert(num_wanted >= 1);
     assert(domains.count(var) > num_wanted);
@@ -54,14 +56,7 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     }
     assert(v1_domains.count(var) == domains.count(var) - num_wanted);
     assert(v2_domains.count(var) == num_wanted);
-
-    AbstractState *v1 = new AbstractState(v1_domains, node1);
-    AbstractState *v2 = new AbstractState(v2_domains, node2);
-
-    assert(this->is_more_general_than(*v1));
-    assert(this->is_more_general_than(*v2));
-
-    return make_pair(v1, v2);
+    return make_pair(v1_domains, v2_domains);
 }
 
 AbstractState AbstractState::regress(const OperatorProxy &op) const {
@@ -74,7 +69,7 @@ AbstractState AbstractState::regress(const OperatorProxy &op) const {
         int var_id = precondition.get_variable().get_id();
         regressed_domains.set_single_value(var_id, precondition.get_value());
     }
-    return AbstractState(regressed_domains, nullptr);
+    return AbstractState(UNDEFINED, UNDEFINED, regressed_domains);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
@@ -97,18 +92,21 @@ bool AbstractState::includes(const vector<FactPair> &facts) const {
     return true;
 }
 
-bool AbstractState::is_more_general_than(const AbstractState &other) const {
+bool AbstractState::includes(const AbstractState &other) const {
     return domains.is_superset_of(other.domains);
 }
 
 int AbstractState::get_id() const {
-    assert(node);
-    return node->get_state_id();
+    return state_id;
+}
+
+NodeID AbstractState::get_node_id() const {
+    return node_id;
 }
 
 AbstractState *AbstractState::get_trivial_abstract_state(
-    const vector<int> &domain_sizes, Node *root_node) {
-    return new AbstractState(Domains(domain_sizes), root_node);
+    const vector<int> &domain_sizes) {
+    return new AbstractState(0, 0, Domains(domain_sizes));
 }
 
 AbstractState AbstractState::get_cartesian_set(
@@ -117,6 +115,6 @@ AbstractState AbstractState::get_cartesian_set(
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
-    return AbstractState(domains, nullptr);
+    return AbstractState(UNDEFINED, UNDEFINED, domains);
 }
 }

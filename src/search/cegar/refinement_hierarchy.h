@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <memory>
+#include <ostream>
 #include <utility>
 #include <vector>
 
@@ -28,34 +29,38 @@ class Node;
 */
 class RefinementHierarchy {
     std::shared_ptr<AbstractTask> task;
-    std::unique_ptr<Node> root;
+    std::vector<Node> nodes;
 
-    Node *get_node(const State &state) const;
+    NodeID add_node(int state_id);
+    NodeID get_node_id(const State &state) const;
 
 public:
     explicit RefinementHierarchy(const std::shared_ptr<AbstractTask> &task);
 
-    Node *get_root() const {
-        return root.get();
-    }
-
-    std::pair<Node *, Node *> split(
-        Node &node, int var, const std::vector<int> &values, int left_state_id, int right_state_id);
+    /*
+      Update the split tree for the new split. Additionally to the left
+      and right child nodes add |values|-1 helper nodes that all have
+      the right child as their right child and the next helper node as
+      their left child.
+    */
+    std::pair<NodeID, NodeID> split(
+        NodeID node_id, int var, const std::vector<int> &values,
+        int left_state_id, int right_state_id);
 
     int get_abstract_state_id(const State &state) const;
 };
 
 
 class Node {
+    friend class RefinementHierarchy;
     /*
       While right_child is always the node of a (possibly split)
       abstract state, left_child may be a helper node. We add helper
       nodes to the hierarchy to allow for efficient lookup in case more
       than one fact is split off a state.
     */
-    // TODO: Use shared_ptr for left_child and unique_ptr for right_child?
-    Node *left_child;
-    Node *right_child;
+    NodeID left_child;
+    NodeID right_child;
 
     /* Before splitting the corresponding state for var and value, both
        members hold UNDEFINED. */
@@ -67,31 +72,13 @@ class Node {
 
 public:
     explicit Node(int state_id);
-    ~Node();
-
-    Node(const Node &) = delete;
-    Node &operator=(const Node &) = delete;
-
-    /*
-      Update the split tree for the new split. Additionally to the left
-      and right child nodes add |values|-1 helper nodes that all have
-      the right child as their right child and the next helper node as
-      their left child.
-    */
-    std::pair<Node *, Node *> split(
-        int var, const std::vector<int> &values, int left_state_id, int right_state_id);
 
     bool is_split() const {
-        assert((!left_child && !right_child &&
+        assert((left_child == UNDEFINED && right_child == UNDEFINED &&
                 var == UNDEFINED && value == UNDEFINED && state_id != UNDEFINED) ||
-               (left_child && right_child &&
+               (left_child != UNDEFINED && right_child != UNDEFINED &&
                 var != UNDEFINED && value != UNDEFINED && state_id == UNDEFINED));
-        return left_child;
-    }
-
-    bool owns_right_child() const {
-        assert(is_split());
-        return !left_child->is_split() || left_child->right_child != right_child;
+        return left_child != UNDEFINED;
     }
 
     int get_var() const {
@@ -99,12 +86,14 @@ public:
         return var;
     }
 
-    Node *get_child(int value) const;
+    NodeID get_child(int value) const;
 
     int get_state_id() const {
         assert(!is_split());
         return state_id;
     }
+
+    friend std::ostream &operator<<(std::ostream &os, const Node &node);
 };
 }
 
