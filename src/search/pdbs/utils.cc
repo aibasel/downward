@@ -28,7 +28,7 @@ int compute_total_pdb_size(
 
 void dump_pattern_generation_statistics(
     const TaskProxy &task_proxy,
-    string identifier,
+    const string &identifier,
     utils::Duration runtime,
     const Pattern &pattern,
     const shared_ptr<PatternDatabase> &pdb) {
@@ -45,7 +45,7 @@ void dump_pattern_generation_statistics(
 
 void dump_pattern_collection_generation_statistics(
     const TaskProxy &task_proxy,
-    string identifier,
+    const string &identifier,
     utils::Duration runtime,
     const std::shared_ptr<PatternCollection> &pattern_collection,
     const std::shared_ptr<PDBCollection> &pdbs) {
