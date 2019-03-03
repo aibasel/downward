@@ -87,8 +87,13 @@ pair<int, int> Abstraction::refine(
     // Reuse state ID from obsolete parent to obtain consecutive IDs.
     int v1_id = v_id;
     int v2_id = get_num_states();
-    pair<AbstractState *, AbstractState *> new_states = state->split(
+
+    // Update refinement hierarchy.
+    pair<Node *, Node *> new_nodes = state->get_node().split(
         var, wanted, v1_id, v2_id);
+
+    pair<AbstractState *, AbstractState *> new_states = state->split(
+        var, wanted, new_nodes.first, new_nodes.second);
     AbstractState *v1 = new_states.first;
     AbstractState *v2 = new_states.second;
     delete state;
