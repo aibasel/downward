@@ -39,6 +39,9 @@ public:
         return root.get();
     }
 
+    std::pair<Node *, Node *> split(
+        Node &node, int var, const std::vector<int> &values, int left_state_id, int right_state_id);
+
     int get_abstract_state_id(const State &state) const;
 };
 
