@@ -52,7 +52,6 @@ public:
 
 
 class Node {
-    friend class RefinementHierarchy;
     /*
       While right_child is always the node of a (possibly split)
       abstract state, left_child may be a helper node. We add helper
@@ -70,23 +69,26 @@ class Node {
     // When splitting the corresponding state, we change this value to UNDEFINED.
     int state_id;
 
+    bool information_is_valid() const;
+
 public:
     explicit Node(int state_id);
 
-    bool is_split() const {
-        assert((left_child == UNDEFINED && right_child == UNDEFINED &&
-                var == UNDEFINED && value == UNDEFINED && state_id != UNDEFINED) ||
-               (left_child != UNDEFINED && right_child != UNDEFINED &&
-                var != UNDEFINED && value != UNDEFINED && state_id == UNDEFINED));
-        return left_child != UNDEFINED;
-    }
+    bool is_split() const;
+
+    void split(int var, int value, NodeID left_child, NodeID right_child);
 
     int get_var() const {
         assert(is_split());
         return var;
     }
 
-    NodeID get_child(int value) const;
+    NodeID get_child(int value) const {
+        assert(is_split());
+        if (value == this->value)
+            return right_child;
+        return left_child;
+    }
 
     int get_state_id() const {
         assert(!is_split());
