@@ -51,13 +51,17 @@ public:
       new states.
     */
     std::pair<AbstractState *, AbstractState *> split(
-        int var, const std::vector<int> &wanted, int v1_id, int v2_id);
+        int var, const std::vector<int> &wanted, Node *node1, Node *node2);
 
     bool includes(const State &concrete_state) const;
     bool includes(const std::vector<FactPair> &facts) const;
 
     // IDs are consecutive, so they can be used to index states in vectors.
     int get_id() const;
+
+    Node &get_node() const {
+        return *node;
+    }
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
         return os << "#" << state.get_id() << state.domains;
