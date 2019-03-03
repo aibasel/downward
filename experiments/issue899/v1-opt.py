@@ -47,5 +47,6 @@ exp.add_fetcher(name='fetch')
 
 #exp.add_absolute_report_step()
 exp.add_comparison_table_step()
+exp.add_scatter_plot_step(relative=True, attributes=["search_time", "total_time"])
 
 exp.run_steps()

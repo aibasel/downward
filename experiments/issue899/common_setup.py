@@ -373,13 +373,12 @@ class IssueExperiment(FastDownwardExperiment):
         def make_scatter_plot(config_nick, rev1, rev2, attribute):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
             print "Make scatter plot for", name
-            algo1 = "{}-{}".format(rev1, config_nick)
-            algo2 = "{}-{}".format(rev2, config_nick)
+            algo1 = get_algo_nick(rev1, config_nick)
+            algo2 = get_algo_nick(rev2, config_nick)
             report = report_class(
-                filter_config=[algo1, algo2],
+                filter_algorithm=[algo1, algo2],
                 attributes=[attribute],
-                get_category=lambda run1, run2: run1["domain"],
-                legend_location=(1.3, 0.5))
+                get_category=lambda run1, run2: run1["domain"])
             report(
                 self.eval_dir,
                 os.path.join(scatter_dir, rev1 + "-" + rev2, name))
