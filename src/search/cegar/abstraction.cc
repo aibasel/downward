@@ -89,8 +89,8 @@ pair<int, int> Abstraction::refine(
     int v2_id = get_num_states();
 
     // Update refinement hierarchy.
-    pair<Node *, Node *> new_nodes = state->get_node().split(
-        var, wanted, v1_id, v2_id);
+    pair<Node *, Node *> new_nodes = refinement_hierarchy->split(
+        state->get_node(), var, wanted, v1_id, v2_id);
 
     pair<AbstractState *, AbstractState *> new_states = state->split(
         var, wanted, new_nodes.first, new_nodes.second);

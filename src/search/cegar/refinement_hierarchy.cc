@@ -63,6 +63,11 @@ Node *RefinementHierarchy::get_node(const State &state) const {
     return current;
 }
 
+pair<Node *, Node *> RefinementHierarchy::split(
+    Node &node, int var, const vector<int> &values, int left_state_id, int right_state_id) {
+    return node.split(var, values, left_state_id, right_state_id);
+}
+
 int RefinementHierarchy::get_abstract_state_id(const State &state) const {
     TaskProxy subtask_proxy(*task);
     State subtask_state = subtask_proxy.convert_ancestor_state(state);
