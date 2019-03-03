@@ -12,14 +12,31 @@ Node::Node(int state_id)
       value(UNDEFINED),
       state_id(state_id) {
     assert(state_id != UNDEFINED);
+    assert(!is_split());
 }
 
-NodeID Node::get_child(int value) const {
-    assert(is_split());
-    if (value == this->value)
-        return right_child;
-    return left_child;
+bool Node::information_is_valid() const {
+    return (left_child == UNDEFINED && right_child == UNDEFINED &&
+            var == UNDEFINED && value == UNDEFINED && state_id != UNDEFINED) ||
+           (left_child != UNDEFINED && right_child != UNDEFINED &&
+            var != UNDEFINED && value != UNDEFINED && state_id == UNDEFINED);
 }
+
+bool Node::is_split() const {
+    assert(information_is_valid());
+    return left_child != UNDEFINED;
+}
+
+void Node::split(int var, int value, NodeID left_child, NodeID right_child) {
+    this->var = var;
+    this->value = value;
+    this->left_child = left_child;
+    this->right_child = right_child;
+    state_id = UNDEFINED;
+    assert(is_split());
+}
+
+
 
 ostream &operator<<(ostream &os, const Node &node) {
     return os << "<Node: var=" << node.var << " value=" << node.value
@@ -55,12 +72,7 @@ pair<NodeID, NodeID> RefinementHierarchy::split(
     for (int value : values) {
         NodeID new_helper_id = add_node(left_state_id);
         Node &helper = nodes[node_id];
-        helper.var = var;
-        helper.value = value;
-        helper.left_child = new_helper_id;
-        helper.right_child = right_child_id;
-        helper.state_id = UNDEFINED;
-        assert(helper.is_split());
+        helper.split(var, value, new_helper_id, right_child_id);
         helper_id = new_helper_id;
     }
     return make_pair(helper_id, right_child_id);
