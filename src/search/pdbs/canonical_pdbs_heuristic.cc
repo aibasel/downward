@@ -37,21 +37,23 @@ CanonicalPDBs get_canonical_pdbs_from_options(
             *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
     }
 
-    unordered_set<PatternDatabase *> remaining_pdbs;
-    shared_ptr<PDBCollection> remaining_pdb_collection = make_shared<PDBCollection>();
-    for (const PDBCollection &collection : *max_additive_subsets) {
-        for (const shared_ptr<PatternDatabase> &pdb : collection) {
-            if (remaining_pdbs.insert(pdb.get()).second) {
-                remaining_pdb_collection->push_back(pdb);
-            }
-        }
-    }
-    dump_pattern_collection_generation_statistics(
-        TaskProxy(*task),
-        "Canonical PDB heuristic",
-        timer(),
-        nullptr,
-        remaining_pdb_collection);
+    // TODO: discuss how we can use PCI here without having the patterns.
+//    unordered_set<PatternDatabase *> remaining_pdbs;
+//    shared_ptr<PDBCollection> remaining_pdb_collection = make_shared<PDBCollection>();
+//    for (const PDBCollection &collection : *max_additive_subsets) {
+//        for (const shared_ptr<PatternDatabase> &pdb : collection) {
+//            if (remaining_pdbs.insert(pdb.get()).second) {
+//                remaining_pdb_collection->push_back(pdb);
+//            }
+//        }
+//    }
+//    dump_pattern_collection_generation_statistics(
+//        TaskProxy(*task),
+//        "Canonical PDB heuristic",
+//        timer(),
+//        nullptr,
+//        remaining_pdb_collection);
+    cout << "Canonical PDB heuristic computation time: " << timer << endl;
     return CanonicalPDBs(max_additive_subsets);
 }
 

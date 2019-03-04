@@ -282,9 +282,10 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
 
     TaskProxy task_proxy(*task);
     assert(best_patterns);
+    PatternCollectionInformation pci(task_proxy, best_patterns);
     dump_pattern_collection_generation_statistics(
-        task_proxy, "Genetic generator", timer(), best_patterns);
-    return PatternCollectionInformation(task_proxy, best_patterns);
+        task_proxy, "Genetic generator", timer(), pci);
+    return pci;
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {

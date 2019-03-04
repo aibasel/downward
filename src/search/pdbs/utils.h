@@ -11,6 +11,8 @@
 class TaskProxy;
 
 namespace pdbs {
+class PatternCollectionInformation;
+
 extern int compute_pdb_size(const TaskProxy &task_proxy, const Pattern &pattern);
 extern int compute_total_pdb_size(
     const TaskProxy &task_proxy, const PatternCollection &pattern_collection);
@@ -26,9 +28,8 @@ extern void dump_pattern_generation_statistics(
     const Pattern &pattern,
     const std::shared_ptr<PatternDatabase> &pdb = nullptr);
 /*
-  Dump the following information for a given pattern collection or PDB
-  collection, one of which has to be given as input:
-  - the collection itself
+  Dump the following information for a given pattern collection information:
+  - the pattern collection itself
   - the number of elements in the collection
   - the total PDB size of the collection
   - the runtime in seconds it took to compute the collection
@@ -38,8 +39,7 @@ extern void dump_pattern_collection_generation_statistics(
     const TaskProxy &task_proxy,
     const std::string &identifier,
     utils::Duration runtime,
-    const std::shared_ptr<PatternCollection> &pattern_collection = nullptr,
-    const std::shared_ptr<PDBCollection> &pdbs = nullptr);
+    PatternCollectionInformation &pci);
 }
 
 #endif
