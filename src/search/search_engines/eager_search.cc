@@ -112,16 +112,11 @@ void EagerSearch::print_statistics() const {
 }
 
 SearchStatus EagerSearch::step() {
-    /* TODO: The bulk of the first part of the code (while loop retrieving a
-       next node, previously fetch_next_node) deals with multi-path dependence,
-       which is a bit unfortunate since that is a special case that
-       makes the common case look more complicated than it would need
-       to be. We could refactor this by implementing multi-path
-       dependence as a separate search algorithm that wraps the "usual"
-       search algorithm and adds the extra processing in the desired
-       places. I think this would lead to much cleaner code. */
-
-    SearchNode node; // TODO: this is not possible
+    /*
+      We use a unique_ptr here to be able to reassign search nodes in the
+      loop below and to re-use the final search node once the loop finished.
+    */
+    unique_ptr<SearchNode> node = nullptr;
     // EvaluationContext eval_context; TODO: if using lazy_evaluator,
     // we would want to reuse the evaluation
     // context created there outside of the while loop. Similarly to
@@ -137,13 +132,13 @@ SearchStatus EagerSearch::step() {
         //      One way would be to store GlobalState objects inside SearchNodes
         //      instead of StateIDs
         GlobalState s = state_registry.lookup_state(id);
-        node = search_space.get_node(s);
+        node = search_space.get_node_pointer(s);
 
-        if (node.is_closed())
+        if (node->is_closed())
             continue;
 
         if (!lazy_evaluator)
-            assert(!node.is_dead_end());
+            assert(!node->is_dead_end());
 
         if (lazy_evaluator) {
             /*
@@ -160,7 +155,7 @@ SearchStatus EagerSearch::step() {
               information in the meantime. Then upon second expansion we have a dead-end
               node which we must ignore.
             */
-            if (node.is_dead_end())
+            if (node->is_dead_end())
                 continue;
 
             if (lazy_evaluator->is_estimate_cached(s)) {
@@ -169,10 +164,10 @@ SearchStatus EagerSearch::step() {
                   We can pass calculate_preferred=false here
                   since preferred operators are computed when the state is expanded.
                 */
-                EvaluationContext eval_context(s, node.get_g(), false, &statistics);
+                EvaluationContext eval_context(s, node->get_g(), false, &statistics);
                 int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
-                    node.mark_as_dead_end();
+                    node->mark_as_dead_end();
                     statistics.inc_dead_ends();
                     continue;
                 }
@@ -183,13 +178,14 @@ SearchStatus EagerSearch::step() {
             }
         }
 
-        node.close();
-        assert(!node.is_dead_end());
-        update_f_value_statistics(node);
+        node->close();
+        assert(!node->is_dead_end());
+        update_f_value_statistics(*node);
         statistics.inc_expanded();
+        break;
     }
 
-    GlobalState s = node.get_state();
+    GlobalState s = node->get_state();
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
@@ -203,7 +199,7 @@ SearchStatus EagerSearch::step() {
     pruning_method->prune_operators(s, applicable_ops);
 
     // This evaluates the expanded state (again) to get preferred ops
-    EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
+    EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
         collect_preferred_operators(eval_context,
@@ -213,7 +209,7 @@ SearchStatus EagerSearch::step() {
 
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        if ((node.get_real_g() + op.get_cost()) >= bound)
+        if ((node->get_real_g() + op.get_cost()) >= bound)
             continue;
 
         GlobalState succ_state = state_registry.get_successor_state(s, op);
@@ -237,7 +233,7 @@ SearchStatus EagerSearch::step() {
             // Careful: succ_node.get_g() is not available here yet,
             // hence the stupid computation of succ_g.
             // TODO: Make this less fragile.
-            int succ_g = node.get_g() + get_adjusted_cost(op);
+            int succ_g = node->get_g() + get_adjusted_cost(op);
 
             EvaluationContext succ_eval_context(
                 succ_state, succ_g, is_preferred, &statistics);
@@ -248,14 +244,14 @@ SearchStatus EagerSearch::step() {
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open(node, op, get_adjusted_cost(op));
+            succ_node.open(*node, op, get_adjusted_cost(op));
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
                 print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }
-        } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(op)) {
+        } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
                 if (succ_node.is_closed()) {
@@ -268,7 +264,7 @@ SearchStatus EagerSearch::step() {
                     */
                     statistics.inc_reopened();
                 }
-                succ_node.reopen(node, op, get_adjusted_cost(op));
+                succ_node.reopen(*node, op, get_adjusted_cost(op));
 
                 EvaluationContext succ_eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
@@ -295,16 +291,12 @@ SearchStatus EagerSearch::step() {
                 // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back.
-                succ_node.update_parent(node, op, get_adjusted_cost(op));
+                succ_node.update_parent(*node, op, get_adjusted_cost(op));
             }
         }
     }
 
     return IN_PROGRESS;
-}
-
-pair<SearchNode, bool> EagerSearch::fetch_next_node() {
-
 }
 
 void EagerSearch::reward_progress() {
