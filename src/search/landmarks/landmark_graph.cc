@@ -19,6 +19,12 @@ LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
     generate_operators_lookups(task_proxy);
 }
 
+LandmarkGraph::~LandmarkGraph() {
+    for (LandmarkNode *node : nodes) {
+        delete node;
+    }
+}
+
 void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
     /* Build datastructures for efficient landmark computation. Map propositions
     to the operators that achieve them or have them as preconditions */
