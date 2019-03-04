@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include "pattern_collection_information.h"
 #include "pattern_database.h"
 
 #include "../utils/logging.h"
@@ -47,9 +48,13 @@ void dump_pattern_collection_generation_statistics(
     const TaskProxy &task_proxy,
     const string &identifier,
     utils::Duration runtime,
-    const std::shared_ptr<PatternCollection> &pattern_collection,
-    const std::shared_ptr<PDBCollection> &pdbs) {
-    assert(pattern_collection || pdbs);
+    PatternCollectionInformation &pci) {
+
+    shared_ptr<PatternCollection> pattern_collection = pci.get_patterns();
+    shared_ptr<PDBCollection> pdbs = nullptr;
+    if (pci.are_pdbs_computed()) {
+        pdbs = pci.get_pdbs();
+    }
 
     int num_patterns;
     int total_pdb_size = 0;

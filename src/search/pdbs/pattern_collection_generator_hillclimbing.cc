@@ -424,13 +424,13 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
         hill_climbing(task_proxy);
     }
 
+    PatternCollectionInformation pci = current_pdbs->get_pattern_collection_information();
     dump_pattern_collection_generation_statistics(
         task_proxy,
         "Hill climbing generator",
         timer(),
-        nullptr,
-        current_pdbs->get_pattern_databases());
-    return current_pdbs->get_pattern_collection_information();
+        pci);
+    return pci;
 }
 
 void add_hillclimbing_options(OptionParser &parser) {

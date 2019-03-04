@@ -273,9 +273,10 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
+    PatternCollectionInformation pci(task_proxy, patterns);
     dump_pattern_collection_generation_statistics(
-        task_proxy, "Systematic generator", timer(), patterns);
-    return PatternCollectionInformation(task_proxy, patterns);
+        task_proxy, "Systematic generator", timer(), pci);
+    return pci;
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {

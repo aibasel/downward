@@ -40,9 +40,10 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
             patterns->emplace_back(1, goal_var_id);
     }
 
+    PatternCollectionInformation pci(task_proxy, patterns);
     dump_pattern_collection_generation_statistics(
-        task_proxy, "Combo generator", timer(), patterns);
-    return PatternCollectionInformation(task_proxy, patterns);
+        task_proxy, "Combo generator", timer(), pci);
+    return pci;
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
