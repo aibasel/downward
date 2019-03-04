@@ -71,8 +71,7 @@ pair<NodeID, NodeID> RefinementHierarchy::split(
     NodeID right_child_id = add_node(right_state_id);
     for (int value : values) {
         NodeID new_helper_id = add_node(left_state_id);
-        Node &helper = nodes[node_id];
-        helper.split(var, value, new_helper_id, right_child_id);
+        nodes[helper_id].split(var, value, new_helper_id, right_child_id);
         helper_id = new_helper_id;
     }
     return make_pair(helper_id, right_child_id);
