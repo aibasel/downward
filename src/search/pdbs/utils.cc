@@ -49,7 +49,6 @@ void dump_pattern_collection_generation_statistics(
     const string &identifier,
     utils::Duration runtime,
     PatternCollectionInformation &pci) {
-
     // TODO: If we keep using PCI in its current format where it always has
     // a pattern collection, this code can be simplifiedi by directly passing
     // in a pattern collection and computing all of the other information
