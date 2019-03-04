@@ -146,9 +146,12 @@ ALIASES["seq-opt-bjolp"] = [
 ALIASES["seq-opt-lmcut"] = [
     "--search", "astar(lmcut())"]
 
-# Note: The IPC 2018 version of Scorpion used h^2 mutexes to prune operators
-# between the translation and the search phase.
-ALIASES["scorpion"] = [
+# Note: the scorpion-no-h2 version differs from the IPC 2018 version of
+# Scorpion (scorpion-ipc-2018) in two ways:
+#  * scorpion-ipc-2018 uses h^2 mutexes to prune irrelevant operators
+#    between the translation and the search phase.
+#  * scorpion-ipc-2018 supports conditional effects.
+ALIASES["scorpion-no-h2"] = [
     "--search",
     """astar(saturated_cost_partitioning([
         projections(systematic(2)), projections(hillclimbing(max_time=100)), cartesian()],
