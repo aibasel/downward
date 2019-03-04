@@ -50,6 +50,10 @@ void dump_pattern_collection_generation_statistics(
     utils::Duration runtime,
     PatternCollectionInformation &pci) {
 
+    // TODO: If we keep using PCI in its current format where it always has
+    // a pattern collection, this code can be simplifiedi by directly passing
+    // in a pattern collection and computing all of the other information
+    // based on that.
     shared_ptr<PatternCollection> pattern_collection = pci.get_patterns();
     shared_ptr<PDBCollection> pdbs = nullptr;
     if (pci.are_pdbs_computed()) {
@@ -75,7 +79,7 @@ void dump_pattern_collection_generation_statistics(
         // TODO: have a more generic way of printing sequences whose elements
         // cannot directly be printed on ostream?
         cout << "[";
-        string sep = "";
+        string sep;
         for (const auto &pdb : *pdbs) {
             cout << sep << pdb->get_pattern();
             sep = ", ";
