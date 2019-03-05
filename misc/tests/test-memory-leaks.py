@@ -41,6 +41,7 @@ def run_plan_script(task, config):
         "--show-leak-kinds=all",
         "--errors-for-leak-kinds=all",
         "--track-origins=yes",
+        "--gen-suppressions=all",
         DOWNWARD_BIN] + config + ["--internal-plan-file", PLAN_FILE]
     print("\nRun: {}".format(escape_list(cmd)))
     sys.stdout.flush()
