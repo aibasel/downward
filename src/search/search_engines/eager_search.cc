@@ -114,13 +114,9 @@ void EagerSearch::print_statistics() const {
 SearchStatus EagerSearch::step() {
     /*
       We use a unique_ptr here to be able to reassign search nodes in the
-      loop below and to re-use the final search node once the loop finished.
+      loop below, since search nodes cannot be default-constructed nor assigned.
     */
     unique_ptr<SearchNode> node = nullptr;
-    // EvaluationContext eval_context; TODO: if using lazy_evaluator,
-    // we would want to reuse the evaluation
-    // context created there outside of the while loop. Similarly to
-    // SearchNode, we cannot create a default constructed EvaluationContext.
     while (true) {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
@@ -136,6 +132,8 @@ SearchStatus EagerSearch::step() {
 
         if (node->is_closed())
             continue;
+
+        EvaluationContext eval_context(s, node->get_g(), false, &statistics);
 
         if (!lazy_evaluator)
             assert(!node->is_dead_end());
@@ -164,7 +162,6 @@ SearchStatus EagerSearch::step() {
                   We can pass calculate_preferred=false here
                   since preferred operators are computed when the state is expanded.
                 */
-                EvaluationContext eval_context(s, node->get_g(), false, &statistics);
                 int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
                     node->mark_as_dead_end();
@@ -180,7 +177,7 @@ SearchStatus EagerSearch::step() {
 
         node->close();
         assert(!node->is_dead_end());
-        update_f_value_statistics(*node);
+        update_f_value_statistics(eval_context);
         statistics.inc_expanded();
         break;
     }
@@ -318,13 +315,8 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
 
 /* TODO: HACK! This is very inefficient for simply looking up an h value.
    Also, if h values are not saved it would recompute h for each and every state. */
-void EagerSearch::update_f_value_statistics(const SearchNode &node) {
+void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
-        /*
-          TODO: This code doesn't fit the idea of supporting
-          an arbitrary f evaluator.
-        */
-        EvaluationContext eval_context(node.get_state(), node.get_g(), false, &statistics);
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
         statistics.report_f_value_progress(f_value);
     }
