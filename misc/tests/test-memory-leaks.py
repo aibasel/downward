@@ -5,6 +5,7 @@ from __future__ import print_function
 import errno
 import os
 import pipes
+import re
 import subprocess
 import sys
 
@@ -14,9 +15,12 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 FAST_DOWNWARD = os.path.join(REPO, "fast-downward.py")
-DOWNWARD_BIN = os.path.join(REPO, "builds", "release", "bin", "downward")
+BUILD_DIR = os.path.join(REPO, "builds", "release")
+DOWNWARD_BIN = os.path.join(BUILD_DIR, "bin", "downward")
 SAS_FILE = os.path.join(REPO, "test.sas")
 PLAN_FILE = os.path.join(REPO, "test.plan")
+VALGRIND_GCC5_SUPPRESSION_FILE = os.path.join(
+    REPO, "misc", "tests", "valgrind", "gcc5.supp")
 VALGRIND_ERROR_EXITCODE = 99
 
 TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
@@ -32,7 +36,14 @@ def escape_list(l):
     return " ".join(pipes.quote(x) for x in l)
 
 
-def run_plan_script(task, config):
+def get_compiler_and_version():
+    output = subprocess.check_output(["cmake", "-LA", "-N", "../../src/"], cwd=BUILD_DIR)
+    compiler = re.search("^DOWNWARD_CXX_COMPILER_ID:STRING=(.+)$", output, re.M).group(1)
+    version = re.search("^DOWNWARD_CXX_COMPILER_VERSION:STRING=(.+)$", output, re.M).group(1)
+    return compiler, version
+
+
+def run_plan_script(task, config, suppression_files):
     assert "--alias" not in config, config
     cmd = [
         "valgrind",
@@ -40,8 +51,10 @@ def run_plan_script(task, config):
         "--error-exitcode={}".format(VALGRIND_ERROR_EXITCODE),
         "--show-leak-kinds=all",
         "--errors-for-leak-kinds=all",
-        "--track-origins=yes",
-        DOWNWARD_BIN] + config + ["--internal-plan-file", PLAN_FILE]
+        "--track-origins=yes"]
+    for suppression_file in suppression_files:
+        cmd.append("--suppressions={}".format(suppression_file))
+    cmd.extend([DOWNWARD_BIN] + config + ["--internal-plan-file", PLAN_FILE])
     print("\nRun: {}".format(escape_list(cmd)))
     sys.stdout.flush()
     try:
@@ -52,7 +65,14 @@ def run_plan_script(task, config):
                 "Could not find valgrind. Please install it "
                 "with \"sudo apt install valgrind\".")
     except subprocess.CalledProcessError as err:
-        if err.returncode == VALGRIND_ERROR_EXITCODE:
+        # Valgrind exits with
+        #   - the exit code of the binary if it does not find leaks
+        #   - VALGRIND_ERROR_EXITCODE if it finds leaks
+        #   - 1 in case of usage errors
+        # Fortunately, we only use exit code 1 for portfolios.
+        if err.returncode == 1:
+            sys.exit("\nError: failed to run valgrind")
+        elif err.returncode == VALGRIND_ERROR_EXITCODE:
             sys.exit(
                 "\nError: {config} leaks memory for {task}".format(**locals()))
 
@@ -69,10 +89,17 @@ def cleanup():
 
 def main():
     subprocess.check_call(["./build.py"], cwd=REPO)
+    compiler, compiler_version = get_compiler_and_version()
+    print("Compiler:", compiler, compiler_version)
+    suppression_files = []
+    if compiler == "GNU" and compiler_version.split(".")[0] == "5":
+        print("Using leak suppression file for GCC 5 "
+              "(see http://issues.fast-downward.org/issue703).")
+        suppression_files.append(VALGRIND_GCC5_SUPPRESSION_FILE)
     for task in TASKS:
         translate(task)
         for config in CONFIGS.values():
-            run_plan_script(task, config)
+            run_plan_script(task, config, suppression_files)
     cleanup()
     print("No memory leaks found.")
 
