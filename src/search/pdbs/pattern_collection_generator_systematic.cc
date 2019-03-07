@@ -275,7 +275,7 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     }
     PatternCollectionInformation pci(task_proxy, patterns);
     dump_pattern_collection_generation_statistics(
-        task_proxy, "Systematic generator", timer(), pci);
+        "Systematic generator", timer(), pci);
     return pci;
 }
 

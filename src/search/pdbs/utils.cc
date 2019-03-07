@@ -40,16 +40,16 @@ void dump_pattern_generation_statistics(
 }
 
 void dump_pattern_collection_generation_statistics(
-    const TaskProxy &task_proxy,
     const string &identifier,
     utils::Duration runtime,
-    PatternCollectionInformation &pci) {
-    const shared_ptr<PatternCollection> &pattern_collection = pci.get_patterns();
-    cout << identifier << " collection: " << *pattern_collection << endl;
-    cout << identifier << " number of patterns: " << pattern_collection->size()
+    const PatternCollectionInformation &pci) {
+    const TaskProxy &task_proxy = pci.get_task_proxy();
+    const PatternCollection &pattern_collection = *pci.get_patterns();
+    cout << identifier << " collection: " << pattern_collection << endl;
+    cout << identifier << " number of patterns: " << pattern_collection.size()
          << endl;
     cout << identifier << " total PDB size: "
-         << compute_total_pdb_size(task_proxy, *pattern_collection) << endl;
+         << compute_total_pdb_size(task_proxy, pattern_collection) << endl;
     cout << identifier << " computation time: " << runtime << endl;
 }
 }

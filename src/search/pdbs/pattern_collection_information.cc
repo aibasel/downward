@@ -108,7 +108,7 @@ void PatternCollectionInformation::set_max_additive_subsets(
     assert(information_is_valid());
 }
 
-shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() {
+shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() const {
     assert(patterns);
     return patterns;
 }
