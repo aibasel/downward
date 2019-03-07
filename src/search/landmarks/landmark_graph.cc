@@ -141,8 +141,9 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
     assert(!landmark_exists(lm));
     vector<FactPair> facts;
     facts.push_back(lm);
-    nodes.push_back(utils::make_unique_ptr<LandmarkNode>(facts, false));
-    LandmarkNode *new_node_p = nodes.back().get();
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false);
+    LandmarkNode *new_node_p = new_node.get();
+    nodes.push_back(move(new_node));
     simple_lms_to_nodes.emplace(lm, new_node_p);
     return *new_node_p;
 }
@@ -153,8 +154,9 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
         facts.push_back(lm_fact);
         assert(!landmark_exists(lm_fact));
     }
-    nodes.push_back(utils::make_unique_ptr<LandmarkNode>(facts, true));
-    LandmarkNode *new_node_p = nodes.back().get();
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, true);
+    LandmarkNode *new_node_p = new_node.get();
+    nodes.push_back(move(new_node));
     for (const FactPair &lm_fact : lm) {
         disj_lms_to_nodes.emplace(lm_fact, new_node_p);
     }
@@ -167,8 +169,9 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
         facts.push_back(lm_fact);
         assert(!landmark_exists(lm_fact));
     }
-    nodes.push_back(utils::make_unique_ptr<LandmarkNode>(facts, false, true));
-    LandmarkNode *new_node_p = nodes.back().get();
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false, true);
+    LandmarkNode *new_node_p = new_node.get();
+    nodes.push_back(move(new_node));
     ++conj_lms;
     return *new_node_p;
 }
