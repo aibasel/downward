@@ -82,33 +82,12 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 }
 
 void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &exploration) {
-    if (only_causal_landmarks) {
-        int num_all_landmarks = lm_graph->number_of_landmarks();
-        lm_graph->remove_node_if(
-            [this, &task_proxy, &exploration](const LandmarkNode &node) {
-                return !is_causal_landmark(task_proxy, exploration, node);
-            });
-        int num_causal_landmarks = lm_graph->number_of_landmarks();
-        cout << "Discarded " << num_all_landmarks - num_causal_landmarks
-             << " non-causal landmarks" << endl;
-    }
-    /*
-      Using disjunctive landmarks during landmark generation can be beneficial
-      even if we don't want to use disjunctive landmarks during search. So we
-      allow removing disjunctive landmarks after landmark generation.
-    */
-    if (!disjunctive_landmarks && lm_graph->number_of_disj_landmarks() > 0) {
-        cout << "Discarding " << lm_graph->number_of_disj_landmarks()
-             << " disjunctive landmarks" << endl;
-        lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.disjunctive;});
-    }
-    if (!conjunctive_landmarks && lm_graph->number_of_conj_landmarks() > 0) {
-        cout << "Discarding " << lm_graph->number_of_conj_landmarks()
-             << " conjunctive landmarks" << endl;
-        lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.conjunctive;});
-    }
+    if (only_causal_landmarks)
+        discard_noncausal_landmarks(task_proxy, exploration);
+    if (!disjunctive_landmarks)
+        discard_disjunctive_landmarks();
+    if (!conjunctive_landmarks)
+        discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
 
     if (no_orders)
@@ -624,6 +603,40 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     }
     assert(from.children.find(&to) != from.children.end());
     assert(to.parents.find(&from) != to.parents.end());
+}
+
+void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration) {
+    int num_all_landmarks = lm_graph->number_of_landmarks();
+    lm_graph->remove_node_if(
+        [this, &task_proxy, &exploration](const LandmarkNode &node) {
+            return !is_causal_landmark(task_proxy, exploration, node);
+        });
+    int num_causal_landmarks = lm_graph->number_of_landmarks();
+    cout << "Discarded " << num_all_landmarks - num_causal_landmarks
+         << " non-causal landmarks" << endl;
+}
+
+void LandmarkFactory::discard_disjunctive_landmarks() {
+    /*
+      Using disjunctive landmarks during landmark generation can be beneficial
+      even if we don't want to use disjunctive landmarks during search. So we
+      allow removing disjunctive landmarks after landmark generation.
+    */
+    if (lm_graph->number_of_disj_landmarks() > 0) {
+        cout << "Discarding " << lm_graph->number_of_disj_landmarks()
+             << " disjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.disjunctive;});
+    }
+}
+
+void LandmarkFactory::discard_conjunctive_landmarks() {
+    if (lm_graph->number_of_conj_landmarks() > 0) {
+        cout << "Discarding " << lm_graph->number_of_conj_landmarks()
+             << " conjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.conjunctive;});
+    }
 }
 
 void LandmarkFactory::discard_all_orderings() {
