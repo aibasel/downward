@@ -29,14 +29,16 @@ extern void dump_pattern_generation_statistics(
     const Pattern &pattern);
 
 /*
-  Dump the given pattern collection, the number of patterns, the total size
-  of the corresponding PDBs, and the runtime used for computing the collection.
-  All output is prepended with the given string identifier.
+  Dump the given pattern collection (unless dump_collection = false), the
+  number of patterns, the total size of the corresponding PDBs, and the
+  runtime used for computing the collection. All output is prepended with
+  the given string identifier.
 */
 extern void dump_pattern_collection_generation_statistics(
     const std::string &identifier,
     utils::Duration runtime,
-    const PatternCollectionInformation &pci);
+    const PatternCollectionInformation &pci,
+    bool dump_collection = true);
 }
 
 #endif
