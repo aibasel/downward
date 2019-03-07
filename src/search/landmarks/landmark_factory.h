@@ -45,6 +45,9 @@ protected:
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task, Exploration &exploration) = 0;
     void generate(const TaskProxy &task_proxy, Exploration &exploration);
+    void discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration);
+    void discard_disjunctive_landmarks();
+    void discard_conjunctive_landmarks();
     void discard_all_orderings();
     inline bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                       bool level_out,
