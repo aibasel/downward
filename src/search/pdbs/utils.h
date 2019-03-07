@@ -34,10 +34,9 @@ extern void dump_pattern_generation_statistics(
   All output is prepended with the given string identifier.
 */
 extern void dump_pattern_collection_generation_statistics(
-    const TaskProxy &task_proxy,
     const std::string &identifier,
     utils::Duration runtime,
-    PatternCollectionInformation &pci);
+    const PatternCollectionInformation &pci);
 }
 
 #endif
