@@ -33,14 +33,6 @@ public:
         const std::shared_ptr<PatternCollection> &patterns);
     ~PatternCollectionInformation() = default;
 
-    bool are_pdbs_computed() const {
-        return pdbs != nullptr;
-    }
-
-    bool are_max_additive_subsets_computed() const {
-        return max_additive_subsets != nullptr;
-    }
-
     void set_pdbs(const std::shared_ptr<PDBCollection> &pdbs);
     void set_max_additive_subsets(
         const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets);
