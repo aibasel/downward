@@ -174,7 +174,7 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
     return *new_node_p;
 }
 
-void LandmarkGraph::remove_node_occurences(LandmarkNode *node) {
+void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
     for (const auto &parent : node->parents) {
         LandmarkNode &parent_node = *(parent.first);
         parent_node.children.erase(node);
@@ -200,7 +200,7 @@ void LandmarkGraph::remove_node_if(
     const function<bool (const LandmarkNode &)> &remove_node) {
     for (auto &node : nodes) {
         if (remove_node(*node)) {
-            remove_node_occurences(node.get());
+            remove_node_occurrences(node.get());
         }
     }
     nodes.erase(remove_if(nodes.begin(), nodes.end(),
