@@ -66,8 +66,7 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
 }
 
 LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
-    assert(ordered_nodes[i]->get_id() == i);
-    return ordered_nodes[i];
+    return nodes[i].get();
 }
 
 int LandmarkGraph::number_of_edges() const {
@@ -219,11 +218,9 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
 }
 
 void LandmarkGraph::set_landmark_ids() {
-    ordered_nodes.resize(number_of_landmarks());
     int id = 0;
     for (auto &lmn : nodes) {
         lmn->assign_id(id);
-        ordered_nodes[id] = lmn.get();
         ++id;
     }
 }
