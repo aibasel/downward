@@ -189,7 +189,9 @@ void LandmarkGraph::remove_node_occurences(LandmarkNode *node) {
         for (const FactPair &lm_fact : node->facts) {
             disj_lms_to_nodes.erase(lm_fact);
         }
-    } else if (!node->conjunctive) {
+    } else if (node->conjunctive) {
+        --conj_lms;
+    } else {
         simple_lms_to_nodes.erase(node->facts[0]);
     }
 }
@@ -202,8 +204,6 @@ void LandmarkGraph::remove_node_if(
                         bool remove = remove_node(*node);
                         if (remove) {
                             remove_node_occurences(node.get());
-                            if (node->conjunctive)
-                                --conj_lms;
                         }
                         return remove;
                     }), nodes.end());
