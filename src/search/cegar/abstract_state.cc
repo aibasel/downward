@@ -10,10 +10,10 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(int state_id, NodeID node_id, const Domains &domains)
+AbstractState::AbstractState(int state_id, NodeID node_id, Domains &&domains)
     : state_id(state_id),
       node_id(node_id),
-      domains(domains) {
+      domains(move(domains)) {
 }
 
 AbstractState::AbstractState(AbstractState &&other)
@@ -69,7 +69,7 @@ AbstractState AbstractState::regress(const OperatorProxy &op) const {
         int var_id = precondition.get_variable().get_id();
         regressed_domains.set_single_value(var_id, precondition.get_value());
     }
-    return AbstractState(UNDEFINED, UNDEFINED, regressed_domains);
+    return AbstractState(UNDEFINED, UNDEFINED, move(regressed_domains));
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
@@ -115,6 +115,6 @@ AbstractState AbstractState::get_cartesian_set(
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
-    return AbstractState(UNDEFINED, UNDEFINED, domains);
+    return AbstractState(UNDEFINED, UNDEFINED, move(domains));
 }
 }
