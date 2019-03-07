@@ -198,15 +198,15 @@ void LandmarkGraph::remove_node_occurences(LandmarkNode *node) {
 
 void LandmarkGraph::remove_node_if(
     const function<bool (const LandmarkNode &)> &remove_node) {
-    nodes.erase(remove_if(
-                    nodes.begin(), nodes.end(),
-                    [this, &remove_node](const unique_ptr<LandmarkNode> &node) {
-                        bool remove = remove_node(*node);
-                        if (remove) {
-                            remove_node_occurences(node.get());
-                        }
-                        return remove;
-                    }), nodes.end());
+    for (auto &node : nodes) {
+        if (remove_node(*node)) {
+            remove_node_occurences(node.get());
+        }
+    }
+    nodes.erase(remove_if(nodes.begin(), nodes.end(),
+                          [&remove_node](const unique_ptr<LandmarkNode> &node) {
+                              return remove_node(*node);
+                          }), nodes.end());
 }
 
 LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
