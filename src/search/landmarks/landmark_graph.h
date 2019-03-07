@@ -197,7 +197,7 @@ public:
     void dump(const VariablesProxy &variables) const;
 private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
-    void remove_node_occurences(LandmarkNode *node);
+    void remove_node_occurrences(LandmarkNode *node);
     int conj_lms;
     int reached_cost;
     int needed_cost;
