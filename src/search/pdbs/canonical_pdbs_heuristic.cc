@@ -37,22 +37,15 @@ CanonicalPDBs get_canonical_pdbs_from_options(
             *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
     }
 
-    // TODO: discuss how we can use PCI here without having the patterns.
-//    unordered_set<PatternDatabase *> remaining_pdbs;
-//    shared_ptr<PDBCollection> remaining_pdb_collection = make_shared<PDBCollection>();
-//    for (const PDBCollection &collection : *max_additive_subsets) {
-//        for (const shared_ptr<PatternDatabase> &pdb : collection) {
-//            if (remaining_pdbs.insert(pdb.get()).second) {
-//                remaining_pdb_collection->push_back(pdb);
-//            }
-//        }
-//    }
-//    dump_pattern_collection_generation_statistics(
-//        TaskProxy(*task),
-//        "Canonical PDB heuristic",
-//        timer(),
-//        nullptr,
-//        remaining_pdb_collection);
+    /*
+      Once we have better data structures for storing and passing pattern
+      collections, we should also print the final pattern collection here
+      like in dump_pattern_collection_generation_statistics. To this end,
+      the dominance pruning code would need to not only return the max
+      additive subsets, but the list of patterns/PDBs together with the max
+      subsets, possibly as a list of list of indices into the pattern/PDB
+      collection.
+    */
     cout << "Canonical PDB heuristic computation time: " << timer << endl;
     return CanonicalPDBs(max_additive_subsets);
 }
