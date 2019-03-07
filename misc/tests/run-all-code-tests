@@ -8,6 +8,7 @@ set -x
 
 ./test-exitcodes.py
 ./test-standard-configs.py
+./test-memory-leaks.py
 ./test-translator.py ../../misc/tests/benchmarks all
 
 command -v py.test >/dev/null 2>&1 || {

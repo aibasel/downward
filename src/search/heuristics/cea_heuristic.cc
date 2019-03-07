@@ -133,7 +133,7 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
     int var_no) const {
     LocalProblem *problem = new LocalProblem;
 
-    DomainTransitionGraph *dtg = transition_graphs[var_no];
+    DomainTransitionGraph *dtg = transition_graphs[var_no].get();
 
     problem->context_variables = &dtg->local_to_global_child;
 
@@ -436,8 +436,6 @@ ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
 
     for (LocalProblem *problem : local_problems)
         delete problem;
-    for (DomainTransitionGraph *dtg : transition_graphs)
-        delete dtg;
 }
 
 bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
