@@ -28,7 +28,7 @@ class AbstractState {
     Domains domains;
 
 public:
-    AbstractState(int state_id, NodeID node_id, const Domains &domains);
+    AbstractState(int state_id, NodeID node_id, Domains &&domains);
 
     AbstractState(const AbstractState &) = delete;
 

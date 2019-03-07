@@ -93,8 +93,8 @@ pair<int, int> Abstraction::refine(
 
     pair<Domains, Domains> domains = state->split_domain(var, wanted);
 
-    AbstractState *v1 = new AbstractState(v1_id, node_ids.first, domains.first);
-    AbstractState *v2 = new AbstractState(v2_id, node_ids.second, domains.second);
+    AbstractState *v1 = new AbstractState(v1_id, node_ids.first, move(domains.first));
+    AbstractState *v2 = new AbstractState(v2_id, node_ids.second, move(domains.second));
     assert(state->includes(*v1));
     assert(state->includes(*v2));
 
