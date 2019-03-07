@@ -42,10 +42,13 @@ void dump_pattern_generation_statistics(
 void dump_pattern_collection_generation_statistics(
     const string &identifier,
     utils::Duration runtime,
-    const PatternCollectionInformation &pci) {
+    const PatternCollectionInformation &pci,
+    bool dump_collection) {
     const TaskProxy &task_proxy = pci.get_task_proxy();
     const PatternCollection &pattern_collection = *pci.get_patterns();
-    cout << identifier << " collection: " << pattern_collection << endl;
+    if (dump_collection) {
+        cout << identifier << " collection: " << pattern_collection << endl;
+    }
     cout << identifier << " number of patterns: " << pattern_collection.size()
          << endl;
     cout << identifier << " total PDB size: "
