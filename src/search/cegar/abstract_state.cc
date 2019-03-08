@@ -3,6 +3,8 @@
 #include "refinement_hierarchy.h"
 #include "utils.h"
 
+#include "../utils/memory.h"
+
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
@@ -71,9 +73,8 @@ CartesianSet AbstractState::regress(const OperatorProxy &op) const {
     return regression;
 }
 
-bool AbstractState::domain_subsets_intersect(
-    const AbstractState *other, int var) const {
-    return cartesian_set.intersects(other->cartesian_set, var);
+bool AbstractState::domain_subsets_intersect(const AbstractState &other, int var) const {
+    return cartesian_set.intersects(other.cartesian_set, var);
 }
 
 bool AbstractState::includes(const State &concrete_state) const {
@@ -104,8 +105,8 @@ NodeID AbstractState::get_node_id() const {
     return node_id;
 }
 
-AbstractState *AbstractState::get_trivial_abstract_state(
+unique_ptr<AbstractState> AbstractState::get_trivial_abstract_state(
     const vector<int> &domain_sizes) {
-    return new AbstractState(0, 0, CartesianSet(domain_sizes));
+    return utils::make_unique_ptr<AbstractState>(0, 0, CartesianSet(domain_sizes));
 }
 }
