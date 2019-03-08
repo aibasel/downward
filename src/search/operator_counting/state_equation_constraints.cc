@@ -127,8 +127,8 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "Proceedings of the Thirteenth International Conference on"
             " Principles and Practice of Constraint Programming (CP 2007)",
             "651-665",
-            "Springer",
-            2007) + utils::format_paper_reference(
+            "Springer-Verlag",
+            "2007") + utils::format_paper_reference(
             {"Blai Bonet"},
             "An admissible heuristic for SAS+ planning obtained from the"
             " state equation",
@@ -137,7 +137,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2268-2274",
             "AAAI Press",
-            2013) + utils::format_paper_reference(
+            "2013") + utils::format_paper_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
              "Blai Bonet"},
             "LP-based Heuristics for Cost-optimal Planning",
@@ -146,7 +146,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             " on Automated Planning and Scheduling (ICAPS 2014)",
             "226-234",
             "AAAI Press",
-            2014));
+            "2014"));
 
     if (parser.dry_run())
         return nullptr;

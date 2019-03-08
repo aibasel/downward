@@ -166,7 +166,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             " on Automated Planning and Scheduling (ICAPS 2014)",
             "375-379",
             "AAAI Press",
-            2014));
+            "2014"));
     parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
     parser.add_option<bool>(
         "pref_only",

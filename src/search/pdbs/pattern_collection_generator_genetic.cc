@@ -299,7 +299,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
             " Intelligence (!MoChArt 2006)",
             "35-50",
             "AAAI Press",
-            2007));
+            "2007"));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");

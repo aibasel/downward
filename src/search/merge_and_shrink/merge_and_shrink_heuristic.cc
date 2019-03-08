@@ -113,7 +113,7 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             " Intelligence (AAAI 2014)",
             "2358-2366",
             "AAAI Press",
-            2014) + "\n" +
+            "2014") + "\n" +
         "For a more exhaustive description of merge-and-shrink, see the journal "
         "paper" + utils::format_paper_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann", "Raz Nissim"},
@@ -123,7 +123,7 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "Journal of the ACM 61 (3)",
             "16:1-63",
             "ACM",
-            2014) + "\n" +
+            "2014") + "\n" +
         "Please note that the journal paper describes the \"old\" theory of "
         "label reduction, which has been superseded by the above conference "
         "paper and is no longer implemented in Fast Downward.\n\n"
@@ -137,7 +137,7 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
             "AAAI Press",
-            2016) + "\n" +
+            "2016") + "\n" +
         "Details of the algorithms and the implementation are described in the "
         "paper" + utils::format_paper_reference(
             {"Silvan Sievers"},
@@ -148,7 +148,7 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "(SoCS 2018)",
             "90-98",
             "AAAI Press",
-            2018)
+            "2018")
         );
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
