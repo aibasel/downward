@@ -175,7 +175,8 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
             "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
-            "AAAI Press 2016") +
+            "AAAI Press",
+            "2016") +
         "In a nutshell, it computes the maximal SCCs of the causal graph, "
         "obtaining a partitioning of the task's variables. Every such "
         "partition is then merged individually, using the specified fallback "
