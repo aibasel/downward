@@ -147,13 +147,13 @@ void TransitionSystem::rewire_incoming_transitions(
         int post = get_postcondition_value(op_id, var);
         if (post == UNDEFINED) {
             // op has no precondition and no effect on var.
-            bool u_and_v1_intersect = u->domains_intersect(v1, var);
+            bool u_and_v1_intersect = u->domain_subsets_intersect(v1, var);
             if (u_and_v1_intersect) {
                 add_transition(u_id, op_id, v1_id);
             }
             /* If u and v1 don't intersect, we must add the other transition
                and can avoid an intersection test. */
-            if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
+            if (!u_and_v1_intersect || u->domain_subsets_intersect(v2, var)) {
                 add_transition(u_id, op_id, v2_id);
             }
         } else if (v1->contains(var, post)) {
@@ -194,13 +194,13 @@ void TransitionSystem::rewire_outgoing_transitions(
         if (post == UNDEFINED) {
             assert(pre == UNDEFINED);
             // op has no precondition and no effect on var.
-            bool v1_and_w_intersect = v1->domains_intersect(w, var);
+            bool v1_and_w_intersect = v1->domain_subsets_intersect(w, var);
             if (v1_and_w_intersect) {
                 add_transition(v1_id, op_id, w_id);
             }
             /* If v1 and w don't intersect, we must add the other transition
                and can avoid an intersection test. */
-            if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
+            if (!v1_and_w_intersect || v2->domain_subsets_intersect(w, var)) {
                 add_transition(v2_id, op_id, w_id);
             }
         } else if (pre == UNDEFINED) {
