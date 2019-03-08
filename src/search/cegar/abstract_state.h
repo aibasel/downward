@@ -35,7 +35,7 @@ public:
     // TODO: Remove this method once we use unique_ptr for AbstractState.
     AbstractState(AbstractState &&other);
 
-    bool domain_subsets_intersect(const AbstractState *other, int var) const;
+    bool domain_subsets_intersect(const AbstractState &other, int var) const;
 
     // Return the size of var's abstract domain for this state.
     int count(int var) const;
@@ -65,13 +65,8 @@ public:
         return os << "#" << state.get_id() << state.cartesian_set;
     }
 
-    /*
-      Create the initial unrefined abstract state on the heap. Must be deleted
-      by the caller.
-
-      TODO: Return unique_ptr?
-    */
-    static AbstractState *get_trivial_abstract_state(
+    // Create the initial, unrefined abstract state on the heap.
+    static std::unique_ptr<AbstractState> get_trivial_abstract_state(
         const std::vector<int> &domain_sizes);
 };
 }

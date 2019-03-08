@@ -30,8 +30,6 @@ Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, bool debug)
 }
 
 Abstraction::~Abstraction() {
-    for (AbstractState *state : states)
-        delete state;
 }
 
 const AbstractStates &Abstraction::get_states() const {
@@ -52,7 +50,7 @@ const Goals &Abstraction::get_goals() const {
 
 AbstractState *Abstraction::get_state(int state_id) const {
     assert(utils::in_bounds(state_id, states));
-    return states[state_id];
+    return states[state_id].get();
 }
 
 const TransitionSystem &Abstraction::get_transition_system() const {
@@ -66,15 +64,17 @@ unique_ptr<RefinementHierarchy> Abstraction::extract_refinement_hierarchy() {
 
 void Abstraction::mark_all_states_as_goals() {
     goals.clear();
-    for (const AbstractState *state : states) {
+    for (auto &state : states) {
         goals.insert(state->get_id());
     }
 }
 
 void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes) {
-    init = AbstractState::get_trivial_abstract_state(domain_sizes);
-    goals.insert(init->get_id());
-    states.push_back(init);
+    unique_ptr<AbstractState> init_state =
+        AbstractState::get_trivial_abstract_state(domain_sizes);
+    init = init_state.get();
+    goals.insert(init_state->get_id());
+    states.push_back(move(init_state));
 }
 
 pair<int, int> Abstraction::refine(
@@ -94,17 +94,12 @@ pair<int, int> Abstraction::refine(
     pair<CartesianSet, CartesianSet> cartesian_sets =
         state->split_domain(var, wanted);
 
-    AbstractState *v1 = new AbstractState(
+    unique_ptr<AbstractState> v1 = utils::make_unique_ptr<AbstractState>(
         v1_id, node_ids.first, move(cartesian_sets.first));
-    AbstractState *v2 = new AbstractState(
+    unique_ptr<AbstractState> v2 = utils::make_unique_ptr<AbstractState>(
         v2_id, node_ids.second, move(cartesian_sets.second));
     assert(state->includes(*v1));
     assert(state->includes(*v2));
-
-    delete state;
-    states[v1_id] = v1;
-    assert(static_cast<int>(states.size()) == v2_id);
-    states.push_back(v2);
 
     /*
       Due to the way we split the state into v1 and v2, v2 is never the new
@@ -113,10 +108,10 @@ pair<int, int> Abstraction::refine(
     if (state == init) {
         if (v1->includes(concrete_initial_state)) {
             assert(!v2->includes(concrete_initial_state));
-            init = v1;
+            init = v1.get();
         } else {
             assert(v2->includes(concrete_initial_state));
-            init = v2;
+            init = v2.get();
         }
         if (debug) {
             cout << "New init state #" << init->get_id() << ": " << *init << endl;
@@ -135,7 +130,12 @@ pair<int, int> Abstraction::refine(
         }
     }
 
-    transition_system->rewire(states, v_id, v1, v2, var);
+    transition_system->rewire(states, v_id, *v1, *v2, var);
+
+    states[v1_id] = move(v1);
+    assert(static_cast<int>(states.size()) == v2_id);
+    states.push_back(move(v2));
+
     return {
                v1_id, v2_id
     };

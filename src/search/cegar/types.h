@@ -2,6 +2,7 @@
 #define CEGAR_TYPES_H
 
 #include <limits>
+#include <memory>
 #include <unordered_set>
 #include <vector>
 
@@ -9,7 +10,7 @@ namespace cegar {
 class AbstractState;
 struct Transition;
 
-using AbstractStates = std::vector<AbstractState *>;
+using AbstractStates = std::vector<std::unique_ptr<AbstractState>>;
 using Goals = std::unordered_set<int>;
 using NodeID = int;
 using Loops = std::vector<int>;
