@@ -10,28 +10,23 @@ using namespace std;
 namespace pdbs {
 PatternInformation::PatternInformation(
     const TaskProxy &task_proxy,
-    const std::shared_ptr<Pattern> &pattern)
+    Pattern pattern)
     : task_proxy(task_proxy),
-      pattern(pattern),
+      pattern(move(pattern)),
       pdb(nullptr) {
-    assert(pattern);
-    validate_and_normalize_pattern(task_proxy, *pattern);
+    validate_and_normalize_pattern(task_proxy, this->pattern);
 }
 
 bool PatternInformation::information_is_valid() const {
-    if (!pattern) {
-        return false;
-    }
-    if (pdb && pdb->get_pattern() != *pattern) {
+    if (pdb && pdb->get_pattern() != pattern) {
         return false;
     }
     return true;
 }
 
 void PatternInformation::create_pdb_if_missing() {
-    assert(pattern);
     if (!pdb) {
-        pdb = make_shared<PatternDatabase>(task_proxy, *pattern);
+        pdb = make_shared<PatternDatabase>(task_proxy, pattern);
     }
 }
 
@@ -40,8 +35,7 @@ void PatternInformation::set_pdb(const shared_ptr<PatternDatabase> &pdb_) {
     assert(information_is_valid());
 }
 
-shared_ptr<Pattern> PatternInformation::get_pattern() {
-    assert(pattern);
+const Pattern &PatternInformation::get_pattern() const {
     return pattern;
 }
 
