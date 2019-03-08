@@ -42,8 +42,8 @@ public:
 
     bool contains(int var, int value) const;
 
-    // Return the abstract state in which applying "op" leads to this state.
-    AbstractState regress(const OperatorProxy &op) const;
+    // Return the Cartesian set in which applying "op" can lead to this state.
+    CartesianSet regress(const OperatorProxy &op) const;
 
     /*
       Separate the "wanted" values from the other values in the abstract domain
@@ -73,10 +73,6 @@ public:
     */
     static AbstractState *get_trivial_abstract_state(
         const std::vector<int> &domain_sizes);
-
-    // Create the Cartesian set that corresponds to the given fact conditions.
-    static AbstractState get_cartesian_set(
-        const std::vector<int> &domain_sizes, const ConditionsProxy &conditions);
 };
 }
 
