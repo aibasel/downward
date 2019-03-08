@@ -77,6 +77,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "Proceedings of the Twenty-Third International Joint"
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2357-2364",
+            "AAAI Press",
             "2013"));
 
     parser.add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
