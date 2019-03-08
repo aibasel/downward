@@ -35,8 +35,6 @@ pair<CartesianSet, CartesianSet> AbstractState::split_domain(
     int var, const vector<int> &wanted) {
     int num_wanted = wanted.size();
     utils::unused_variable(num_wanted);
-    // We can only split states in the refinement hierarchy (not artificial states).
-    assert(node_id != UNDEFINED);
     // We can only refine for variables with at least two values.
     assert(num_wanted >= 1);
     assert(cartesian_set.count(var) > num_wanted);
@@ -60,7 +58,7 @@ pair<CartesianSet, CartesianSet> AbstractState::split_domain(
     return make_pair(v1_cartesian_set, v2_cartesian_set);
 }
 
-AbstractState AbstractState::regress(const OperatorProxy &op) const {
+CartesianSet AbstractState::regress(const OperatorProxy &op) const {
     CartesianSet regression = cartesian_set;
     for (EffectProxy effect : op.get_effects()) {
         int var_id = effect.get_fact().get_variable().get_id();
@@ -70,7 +68,7 @@ AbstractState AbstractState::regress(const OperatorProxy &op) const {
         int var_id = precondition.get_variable().get_id();
         regression.set_single_value(var_id, precondition.get_value());
     }
-    return AbstractState(UNDEFINED, UNDEFINED, move(regression));
+    return regression;
 }
 
 bool AbstractState::domain_subsets_intersect(
@@ -109,15 +107,5 @@ NodeID AbstractState::get_node_id() const {
 AbstractState *AbstractState::get_trivial_abstract_state(
     const vector<int> &domain_sizes) {
     return new AbstractState(0, 0, CartesianSet(domain_sizes));
-}
-
-AbstractState AbstractState::get_cartesian_set(
-    const vector<int> &domain_sizes, const ConditionsProxy &conditions) {
-    CartesianSet cartesian_set(domain_sizes);
-    for (FactProxy condition : conditions) {
-        cartesian_set.set_single_value(
-            condition.get_variable().get_id(), condition.get_value());
-    }
-    return AbstractState(UNDEFINED, UNDEFINED, move(cartesian_set));
 }
 }
