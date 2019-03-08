@@ -16,6 +16,9 @@ namespace pdbs {
   Ownership of the information is shared between the creators of this class
   (usually PatternCollectionGenerators), the class itself, and its users
   (consumers of pattern collections like heuristics).
+
+  TODO: this should probably re-use PatternInformation and it could also act
+  as an interface for ownership transfer rather than sharing it.
 */
 class PatternCollectionInformation {
     TaskProxy task_proxy;
