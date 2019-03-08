@@ -35,7 +35,7 @@ public:
     // TODO: Remove this method once we use unique_ptr for AbstractState.
     AbstractState(AbstractState &&other);
 
-    bool domains_intersect(const AbstractState *other, int var) const;
+    bool domain_subsets_intersect(const AbstractState *other, int var) const;
 
     // Return the size of var's abstract domain for this state.
     int count(int var) const;
@@ -49,7 +49,8 @@ public:
       Separate the "wanted" values from the other values in the abstract domain
       and return the resulting two new Cartesian sets.
     */
-    std::pair<CartesianSet, CartesianSet> split_domain(int var, const std::vector<int> &wanted);
+    std::pair<CartesianSet, CartesianSet> split_domain(
+        int var, const std::vector<int> &wanted);
 
     bool includes(const AbstractState &other) const;
     bool includes(const State &concrete_state) const;

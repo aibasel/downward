@@ -10,7 +10,7 @@ namespace cegar {
 using Bitset = dynamic_bitset::DynamicBitset<unsigned short>;
 
 /*
-  Represent a Cartesian set: for each variable store a subset of values.
+  For each variable store a subset of its domain.
 
   The underlying data structure is a vector of bitsets.
 */
