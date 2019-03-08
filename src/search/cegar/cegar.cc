@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
+#include "cartesian_set.h"
 #include "transition_system.h"
 #include "utils.h"
 
