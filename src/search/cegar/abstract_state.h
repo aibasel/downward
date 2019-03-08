@@ -1,7 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include "domains.h"
+#include "cartesian_set.h"
 #include "types.h"
 
 #include <vector>
@@ -16,26 +16,26 @@ namespace cegar {
 class Node;
 
 /*
-  Store and update abstract Domains.
+  Store the Cartesian set and the ID of the node in the refinement hierarchy
+  for an abstract state.
 */
 class AbstractState {
-    // Abstract domains for all variables.
-    const Domains domains;
+    int state_id;
 
     // This state's node in the refinement hierarchy.
-    Node *node;
+    NodeID node_id;
 
-    // Construct instances with factory methods.
-    AbstractState(const Domains &domains, Node *node);
-
-    bool is_more_general_than(const AbstractState &other) const;
+    CartesianSet cartesian_set;
 
 public:
+    AbstractState(int state_id, NodeID node_id, CartesianSet &&cartesian_set);
+
     AbstractState(const AbstractState &) = delete;
 
+    // TODO: Remove this method once we use unique_ptr for AbstractState.
     AbstractState(AbstractState &&other);
 
-    bool domains_intersect(const AbstractState *other, int var) const;
+    bool domain_subsets_intersect(const AbstractState *other, int var) const;
 
     // Return the size of var's abstract domain for this state.
     int count(int var) const;
@@ -46,21 +46,23 @@ public:
     AbstractState regress(const OperatorProxy &op) const;
 
     /*
-      Split this state into two new states by separating the "wanted" values
-      from the other values in the abstract domain and return the resulting two
-      new states.
+      Separate the "wanted" values from the other values in the abstract domain
+      and return the resulting two new Cartesian sets.
     */
-    std::pair<AbstractState *, AbstractState *> split(
-        int var, const std::vector<int> &wanted, int v1_id, int v2_id);
+    std::pair<CartesianSet, CartesianSet> split_domain(
+        int var, const std::vector<int> &wanted);
 
+    bool includes(const AbstractState &other) const;
     bool includes(const State &concrete_state) const;
     bool includes(const std::vector<FactPair> &facts) const;
 
     // IDs are consecutive, so they can be used to index states in vectors.
     int get_id() const;
 
+    NodeID get_node_id() const;
+
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
-        return os << "#" << state.get_id() << state.domains;
+        return os << "#" << state.get_id() << state.cartesian_set;
     }
 
     /*
@@ -70,7 +72,7 @@ public:
       TODO: Return unique_ptr?
     */
     static AbstractState *get_trivial_abstract_state(
-        const std::vector<int> &domain_sizes, Node *root_node);
+        const std::vector<int> &domain_sizes);
 
     // Create the Cartesian set that corresponds to the given fact conditions.
     static AbstractState get_cartesian_set(

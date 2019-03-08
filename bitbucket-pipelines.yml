@@ -1,4 +1,4 @@
-image: ubuntu:16.04
+image: ubuntu:18.04
 pipelines:
   pull-requests:
     '**':
@@ -11,7 +11,7 @@ pipelines:
             - apt-get -y install cmake g++ make mercurial python
 
             # Install dependencies for running code tests.
-            - apt-get -y install clang-5.0 clang-tidy-5.0 python3 python-pip wget
+            - apt-get -y install clang-5.0 clang-tidy-5.0 python3 python-pip valgrind wget
             - pip install -U pyflakes pytest
 
             # Print information about environment.
@@ -37,6 +37,7 @@ pipelines:
             - cd VAL
             - git checkout a5565396007eee73ac36527fbf904142b3077c74
             - make clean  # Remove old build artifacts and binaries.
+            - sed -i 's/-Werror //g' Makefile  # Ignore warnings.
             - make -j8
             - mv validate ../
             - cd ../
