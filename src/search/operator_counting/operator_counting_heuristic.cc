@@ -78,7 +78,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "Proceedings of the Twenty-Fourth International Conference"
             " on Automated Planning and Scheduling (ICAPS 2014)",
             "226-234",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            2014));
 
     parser.document_language_support("action costs", "supported");
     parser.document_language_support(

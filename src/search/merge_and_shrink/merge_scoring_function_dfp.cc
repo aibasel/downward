@@ -116,7 +116,8 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            2014));
 
     if (parser.dry_run())
         return nullptr;

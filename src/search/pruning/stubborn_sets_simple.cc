@@ -91,7 +91,8 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "Proceedings of the 20th European Conference on Artificial Intelligence "
             "(ECAI 2012)",
             "891-892",
-            "IOS Press 2012")
+            "IOS Press",
+            2012)
         + utils::format_paper_reference(
             {"Martin Wehrle", "Malte Helmert"},
             "Efficient Stubborn Sets: Generalized Algorithms and Selection Strategies",
@@ -99,7 +100,8 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "Proceedings of the 24th International Conference on Automated Planning "
             " and Scheduling (ICAPS 2014)",
             "323-331",
-            "AAAI Press, 2014"));
+            "AAAI Press",
+            2014));
 
     stubborn_sets::add_pruning_options(parser);
 

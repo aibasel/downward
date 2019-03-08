@@ -214,7 +214,8 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
-            "AAAI Press 2016") +
+            "AAAI Press",
+            2016) +
         "Furthermore, using the atomic_ts_order option, this scoring function, "
         "if used alone in a score based filtering merge selector, can be used "
         "to emulate the corresponding (precomputed) linear merge strategies "

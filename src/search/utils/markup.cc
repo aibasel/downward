@@ -28,14 +28,15 @@ static string format_authors(const vector<string> &authors) {
 
 string format_paper_reference(
     const vector<string> &authors, const string &title, const string &url,
-    const string &conference, const string &pages, const string &publisher) {
+    const string &venue, const string &pages, const string &publisher, int year) {
     stringstream ss;
     ss << "\n\n"
        << " * " << format_authors(authors) << ".<<BR>>\n"
        << " [" << t2t_escape(title) << " " << url << "].<<BR>>\n"
-       << " In //" << t2t_escape(conference) << "//,"
+       << " In //" << t2t_escape(venue) << "//,"
        << " pp. " << t2t_escape(pages) << ". "
-       << t2t_escape(publisher) << ".\n\n\n";
+       << t2t_escape(publisher) << " "
+       << year << ".\n\n\n";
     return ss.str();
 }
 }

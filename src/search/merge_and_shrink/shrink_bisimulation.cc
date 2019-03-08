@@ -386,7 +386,8 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             "Proceedings of the Twenty-Second International Joint Conference"
             " on Artificial Intelligence (IJCAI 2011)",
             "1983-1990",
-            "2011"));
+            "AAAI Press",
+            2011));
     parser.document_note(
         "shrink_bisimulation(greedy=true)",
         "Combine this with the merge-and-shrink options max_states=infinity "

@@ -298,7 +298,8 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
             "Proceedings of the 4th Workshop on Model Checking and Artificial"
             " Intelligence (!MoChArt 2006)",
             "35-50",
-            "2007"));
+            "AAAI Press",
+            2007));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");

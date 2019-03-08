@@ -63,7 +63,8 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "Proceedings of the Twenty-Fourth International Conference"
             " on Automated Planning and Scheduling (ICAPS 2014)",
             "226-234",
-            "AAAI Press 2014") + utils::format_paper_reference(
+            "AAAI Press",
+            2014) + utils::format_paper_reference(
             {"Blai Bonet"},
             "An admissible heuristic for SAS+ planning obtained from the"
             " state equation",
@@ -71,7 +72,8 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "Proceedings of the Twenty-Third International Joint"
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2268-2274",
-            "2013"));
+            "AAAI Press",
+            2013));
 
     if (parser.dry_run())
         return nullptr;
