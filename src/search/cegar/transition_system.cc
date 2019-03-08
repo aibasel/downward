@@ -151,8 +151,8 @@ void TransitionSystem::rewire_incoming_transitions(
             if (u_and_v1_intersect) {
                 add_transition(u_id, op_id, v1_id);
             }
-            /* If the domains of u and v1 don't intersect, we must add
-               the other transition and can avoid an intersection test. */
+            /* If u and v1 don't intersect, we must add the other transition
+               and can avoid an intersection test. */
             if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
                 add_transition(u_id, op_id, v2_id);
             }
@@ -198,8 +198,8 @@ void TransitionSystem::rewire_outgoing_transitions(
             if (v1_and_w_intersect) {
                 add_transition(v1_id, op_id, w_id);
             }
-            /* If the domains of v1 and w don't intersect, we must add
-               the other transition and can avoid an intersection test. */
+            /* If v1 and w don't intersect, we must add the other transition
+               and can avoid an intersection test. */
             if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
                 add_transition(v2_id, op_id, w_id);
             }

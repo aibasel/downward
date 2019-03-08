@@ -35,7 +35,7 @@ public:
     bool is_superset_of(const CartesianSet &other) const;
 
     friend std::ostream &operator<<(
-        std::ostream &os, const CartesianSet &domains);
+        std::ostream &os, const CartesianSet &cartesian_set);
 };
 }
 

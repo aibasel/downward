@@ -52,12 +52,12 @@ bool CartesianSet::is_superset_of(const CartesianSet &other) const {
     return true;
 }
 
-ostream &operator<<(ostream &os, const CartesianSet &domains) {
-    int num_vars = domains.domain_subsets.size();
+ostream &operator<<(ostream &os, const CartesianSet &cartesian_set) {
+    int num_vars = cartesian_set.domain_subsets.size();
     string var_sep;
     os << "<";
     for (int var = 0; var < num_vars; ++var) {
-        const Bitset &domain = domains.domain_subsets[var];
+        const Bitset &domain = cartesian_set.domain_subsets[var];
         vector<int> values;
         for (size_t value = 0; value < domain.size(); ++value) {
             if (domain[value])

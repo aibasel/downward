@@ -10,24 +10,24 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(int state_id, NodeID node_id, CartesianSet &&domains)
+AbstractState::AbstractState(int state_id, NodeID node_id, CartesianSet &&cartesian_set)
     : state_id(state_id),
       node_id(node_id),
-      domains(move(domains)) {
+      cartesian_set(move(cartesian_set)) {
 }
 
 AbstractState::AbstractState(AbstractState &&other)
     : state_id(other.state_id),
       node_id(other.node_id),
-      domains(move(other.domains)) {
+      cartesian_set(move(other.cartesian_set)) {
 }
 
 int AbstractState::count(int var) const {
-    return domains.count(var);
+    return cartesian_set.count(var);
 }
 
 bool AbstractState::contains(int var, int value) const {
-    return domains.test(var, value);
+    return cartesian_set.test(var, value);
 }
 
 pair<CartesianSet, CartesianSet> AbstractState::split_domain(
@@ -38,47 +38,47 @@ pair<CartesianSet, CartesianSet> AbstractState::split_domain(
     assert(node_id != UNDEFINED);
     // We can only refine for variables with at least two values.
     assert(num_wanted >= 1);
-    assert(domains.count(var) > num_wanted);
+    assert(cartesian_set.count(var) > num_wanted);
 
-    CartesianSet v1_domains(domains);
-    CartesianSet v2_domains(domains);
+    CartesianSet v1_cartesian_set(cartesian_set);
+    CartesianSet v2_cartesian_set(cartesian_set);
 
-    v2_domains.remove_all(var);
+    v2_cartesian_set.remove_all(var);
     for (int value : wanted) {
         // The wanted value has to be in the set of possible values.
-        assert(domains.test(var, value));
+        assert(cartesian_set.test(var, value));
 
         // In v1 var can have all of the previous values except the wanted ones.
-        v1_domains.remove(var, value);
+        v1_cartesian_set.remove(var, value);
 
         // In v2 var can only have the wanted values.
-        v2_domains.add(var, value);
+        v2_cartesian_set.add(var, value);
     }
-    assert(v1_domains.count(var) == domains.count(var) - num_wanted);
-    assert(v2_domains.count(var) == num_wanted);
-    return make_pair(v1_domains, v2_domains);
+    assert(v1_cartesian_set.count(var) == cartesian_set.count(var) - num_wanted);
+    assert(v2_cartesian_set.count(var) == num_wanted);
+    return make_pair(v1_cartesian_set, v2_cartesian_set);
 }
 
 AbstractState AbstractState::regress(const OperatorProxy &op) const {
-    CartesianSet regressed_domains = domains;
+    CartesianSet regression = cartesian_set;
     for (EffectProxy effect : op.get_effects()) {
         int var_id = effect.get_fact().get_variable().get_id();
-        regressed_domains.add_all(var_id);
+        regression.add_all(var_id);
     }
     for (FactProxy precondition : op.get_preconditions()) {
         int var_id = precondition.get_variable().get_id();
-        regressed_domains.set_single_value(var_id, precondition.get_value());
+        regression.set_single_value(var_id, precondition.get_value());
     }
-    return AbstractState(UNDEFINED, UNDEFINED, move(regressed_domains));
+    return AbstractState(UNDEFINED, UNDEFINED, move(regression));
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
-    return domains.intersects(other->domains, var);
+    return cartesian_set.intersects(other->cartesian_set, var);
 }
 
 bool AbstractState::includes(const State &concrete_state) const {
     for (FactProxy fact : concrete_state) {
-        if (!domains.test(fact.get_variable().get_id(), fact.get_value()))
+        if (!cartesian_set.test(fact.get_variable().get_id(), fact.get_value()))
             return false;
     }
     return true;
@@ -86,14 +86,14 @@ bool AbstractState::includes(const State &concrete_state) const {
 
 bool AbstractState::includes(const vector<FactPair> &facts) const {
     for (const FactPair &fact : facts) {
-        if (!domains.test(fact.var, fact.value))
+        if (!cartesian_set.test(fact.var, fact.value))
             return false;
     }
     return true;
 }
 
 bool AbstractState::includes(const AbstractState &other) const {
-    return domains.is_superset_of(other.domains);
+    return cartesian_set.is_superset_of(other.cartesian_set);
 }
 
 int AbstractState::get_id() const {
@@ -111,10 +111,10 @@ AbstractState *AbstractState::get_trivial_abstract_state(
 
 AbstractState AbstractState::get_cartesian_set(
     const vector<int> &domain_sizes, const ConditionsProxy &conditions) {
-    CartesianSet domains(domain_sizes);
+    CartesianSet cartesian_set(domain_sizes);
     for (FactProxy condition : conditions) {
-        domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
+        cartesian_set.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
-    return AbstractState(UNDEFINED, UNDEFINED, move(domains));
+    return AbstractState(UNDEFINED, UNDEFINED, move(cartesian_set));
 }
 }
