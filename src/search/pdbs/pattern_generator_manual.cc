@@ -13,14 +13,15 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorManual::PatternGeneratorManual(const Options &opts) {
-    pattern = make_shared<Pattern>(opts.get_list<int>("pattern"));
+PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
+    : pattern(opts.get_list<int>("pattern")) {
 }
 
-PatternInformation PatternGeneratorManual::generate(const shared_ptr<AbstractTask> &task) {
-    TaskProxy task_proxy(*task);
-    cout << "Manual pattern: " << *pattern << endl;
-    return PatternInformation(task_proxy, pattern);
+PatternInformation PatternGeneratorManual::generate(
+    const shared_ptr<AbstractTask> &task) {
+    PatternInformation pattern_info(TaskProxy(*task), move(pattern));
+    cout << "Manual pattern: " << pattern_info.get_pattern() << endl;
+    return pattern_info;
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {

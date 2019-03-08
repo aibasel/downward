@@ -2,7 +2,6 @@
 
 #include "pattern_information.h"
 #include "utils.h"
-#include "validation.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -30,7 +29,7 @@ PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTas
     utils::Timer timer;
     cout << "Generating a pattern using the greedy generator..." << endl;
     TaskProxy task_proxy(*task);
-    shared_ptr<Pattern> pattern;
+    Pattern pattern;
     variable_order_finder::VariableOrderFinder order(task_proxy, variable_order_finder::GOAL_CG_LEVEL);
     VariablesProxy variables = task_proxy.get_variables();
 
@@ -45,14 +44,14 @@ PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTas
         if (!utils::is_product_within_limit(size, next_var_size, max_states))
             break;
 
-        pattern->push_back(next_var_id);
+        pattern.push_back(next_var_id);
         size *= next_var_size;
     }
 
-    validate_and_normalize_pattern(task_proxy, *pattern);
+    PatternInformation pattern_info(task_proxy, move(pattern));
     dump_pattern_generation_statistics(
-        task_proxy, "Greedy generator", timer(), *pattern);
-    return PatternInformation(task_proxy, pattern);
+        "Greedy generator", timer(), pattern_info);
+    return pattern_info;
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {

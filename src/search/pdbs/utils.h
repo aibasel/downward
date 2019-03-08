@@ -12,6 +12,7 @@ class TaskProxy;
 
 namespace pdbs {
 class PatternCollectionInformation;
+class PatternInformation;
 
 extern int compute_pdb_size(const TaskProxy &task_proxy, const Pattern &pattern);
 extern int compute_total_pdb_size(
@@ -23,10 +24,9 @@ extern int compute_total_pdb_size(
   prepended with the given string identifier.
 */
 extern void dump_pattern_generation_statistics(
-    const TaskProxy &task_proxy,
     const std::string &identifier,
     utils::Duration runtime,
-    const Pattern &pattern);
+    const PatternInformation &pattern_info);
 
 /*
   Dump the given pattern collection (unless dump_collection = false), the

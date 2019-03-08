@@ -18,20 +18,22 @@ namespace pdbs {
 */
 class PatternInformation {
     TaskProxy task_proxy;
-    std::shared_ptr<Pattern> pattern;
+    Pattern pattern;
     std::shared_ptr<PatternDatabase> pdb;
 
     void create_pdb_if_missing();
 
     bool information_is_valid() const;
 public:
-    PatternInformation(
-        const TaskProxy &task_proxy,
-        const std::shared_ptr<Pattern> &pattern);
+    PatternInformation(const TaskProxy &task_proxy, Pattern pattern);
 
     void set_pdb(const std::shared_ptr<PatternDatabase> &pdb);
 
-    std::shared_ptr<Pattern> get_pattern();
+    TaskProxy get_task_proxy() const {
+        return task_proxy;
+    }
+
+    const Pattern &get_pattern() const;
     std::shared_ptr<PatternDatabase> get_pdb();
 };
 }
