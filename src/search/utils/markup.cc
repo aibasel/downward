@@ -35,9 +35,10 @@ string format_paper_reference(
        << " * " << format_authors(authors) << ".<<BR>>\n"
        << " [" << t2t_escape(title) << " " << url << "].<<BR>>\n"
        << " In //" << t2t_escape(venue) << "//,"
-       << " pp. " << t2t_escape(pages) << ". "
-       << t2t_escape(publisher) << " "
-       << t2t_escape(year) << ".\n\n\n";
+       << " pp. " << t2t_escape(pages) << ". ";
+    if (!publisher.empty())
+        ss << t2t_escape(publisher) << ", ";
+    ss << t2t_escape(year) << ".\n\n\n";
     return ss.str();
 }
 }
