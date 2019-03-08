@@ -92,7 +92,8 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
             "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
-            "AAAI Press 2016"));
+            "AAAI Press",
+            "2016"));
     parser.document_note(
         "Note",
         "To obtain the configurations called dyn-MIASM described in the paper, "

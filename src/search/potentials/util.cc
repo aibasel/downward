@@ -40,7 +40,8 @@ string get_admissible_potentials_reference() {
         "Proceedings of the 25th International Conference on"
         " Automated Planning and Scheduling (ICAPS 2015)",
         "193-201",
-        "AAAI Press 2015");
+        "AAAI Press",
+        "2015");
 }
 
 void prepare_parser_for_admissible_potentials(OptionParser &parser) {

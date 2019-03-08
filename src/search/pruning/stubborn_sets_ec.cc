@@ -342,7 +342,8 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "Proceedings of the 23rd International Conference on Automated Planning "
             "and Scheduling (ICAPS 2013)",
             "251-259",
-            "AAAI Press 2013"));
+            "AAAI Press",
+            "2013"));
 
     stubborn_sets::add_pruning_options(parser);
 

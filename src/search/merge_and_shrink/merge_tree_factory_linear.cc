@@ -135,6 +135,7 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
             "Proceedings of the Seventeenth International Conference on"
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
+            "AAAI Press",
             "2007"));
     options::Options opts = parser.parse();
     if (parser.dry_run())
