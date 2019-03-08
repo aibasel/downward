@@ -3,6 +3,7 @@
 #include "canonical_pdbs_heuristic.h"
 #include "incremental_canonical_pdbs.h"
 #include "pattern_database.h"
+#include "utils.h"
 #include "validation.h"
 
 #include "../option_parser.h"
@@ -391,14 +392,11 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
         cout << "Time limit reached. Abort hill climbing." << endl;
     }
 
-    cout << "iPDB: iterations = " << num_iterations << endl;
-    cout << "iPDB: number of patterns = "
-         << current_pdbs->get_pattern_databases()->size() << endl;
-    cout << "iPDB: size = " << current_pdbs->get_size() << endl;
-    cout << "iPDB: generated = " << generated_patterns.size() << endl;
-    cout << "iPDB: rejected = " << num_rejected << endl;
-    cout << "iPDB: maximum pdb size = " << max_pdb_size << endl;
-    cout << "iPDB: hill climbing time: "
+    cout << "Hill climbing iterations: " << num_iterations << endl;
+    cout << "Hill climbing generated patterns: " << generated_patterns.size() << endl;
+    cout << "Hill climbing rejected patterns: " << num_rejected << endl;
+    cout << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
+    cout << "Hill climbing time: "
          << hill_climbing_timer->get_elapsed_time() << endl;
 
     delete hill_climbing_timer;
@@ -409,6 +407,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     utils::Timer timer;
+    cout << "Generating patterns using the hill climbing generator..." << endl;
 
     // Generate initial collection: a pattern for each goal variable.
     PatternCollection initial_pattern_collection;
@@ -418,17 +417,18 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     }
     current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
         task_proxy, initial_pattern_collection);
-    cout << "Done calculating initial PDB collection" << endl;
+    cout << "Done calculating initial pattern collection: " << timer << endl;
 
     State initial_state = task_proxy.get_initial_state();
     if (!current_pdbs->is_dead_end(initial_state) && max_time > 0) {
         hill_climbing(task_proxy);
     }
 
-    cout << "Pattern generation (hill climbing) time: " << timer << endl;
-    return current_pdbs->get_pattern_collection_information();
+    PatternCollectionInformation pci = current_pdbs->get_pattern_collection_information();
+    dump_pattern_collection_generation_statistics(
+        "Hill climbing generator", timer(), pci);
+    return pci;
 }
-
 
 void add_hillclimbing_options(OptionParser &parser) {
     parser.add_option<int>(
@@ -612,7 +612,6 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     heuristic_opts.set<double>(
         "max_time_dominance_pruning", opts.get<double>("max_time_dominance_pruning"));
 
-    // Note: in the long run, this should return a shared pointer.
     return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
 }
 
