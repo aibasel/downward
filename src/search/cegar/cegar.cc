@@ -19,21 +19,32 @@
 using namespace std;
 
 namespace cegar {
+// Create the Cartesian set that corresponds to the given preconditions or goals.
+static CartesianSet get_cartesian_set(
+    const vector<int> &domain_sizes, const ConditionsProxy &conditions) {
+    CartesianSet cartesian_set(domain_sizes);
+    for (FactProxy condition : conditions) {
+        cartesian_set.set_single_value(
+            condition.get_variable().get_id(), condition.get_value());
+    }
+    return cartesian_set;
+}
+
 struct Flaw {
     // Last concrete and abstract state reached while tracing solution.
-    const State concrete_state;
+    State concrete_state;
     // TODO: After conversion to smart pointers, store as unique_ptr?
     AbstractState *current_abstract_state;
     // Hypothetical Cartesian set we would have liked to reach.
-    const AbstractState desired_abstract_state;
+    CartesianSet desired_cartesian_set;
 
     Flaw(
         State &&concrete_state,
         AbstractState *current_abstract_state,
-        AbstractState &&desired_abstract_state)
+        CartesianSet &&desired_cartesian_set)
         : concrete_state(move(concrete_state)),
           current_abstract_state(current_abstract_state),
-          desired_abstract_state(move(desired_abstract_state)) {
+          desired_cartesian_set(move(desired_cartesian_set)) {
         assert(this->current_abstract_state->includes(this->concrete_state));
     }
 
@@ -48,13 +59,13 @@ struct Flaw {
         */
         for (FactProxy wanted_fact_proxy : concrete_state) {
             FactPair fact = wanted_fact_proxy.get_pair();
-            if (!desired_abstract_state.contains(fact.var, fact.value)) {
+            if (!desired_cartesian_set.test(fact.var, fact.value)) {
                 VariableProxy var = wanted_fact_proxy.get_variable();
                 int var_id = var.get_id();
                 vector<int> wanted;
                 for (int value = 0; value < var.get_domain_size(); ++value) {
                     if (current_abstract_state->contains(var_id, value) &&
-                        desired_abstract_state.contains(var_id, value)) {
+                        desired_cartesian_set.test(var_id, value)) {
                         wanted.push_back(value);
                     }
                 }
@@ -242,8 +253,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             return utils::make_unique_ptr<Flaw>(
                 move(concrete_state),
                 abstract_state,
-                AbstractState::get_cartesian_set(
-                    domain_sizes, op.get_preconditions()));
+                get_cartesian_set(domain_sizes, op.get_preconditions()));
         }
     }
     assert(abstraction->get_goals().count(abstract_state->get_id()));
@@ -256,8 +266,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         return utils::make_unique_ptr<Flaw>(
             move(concrete_state),
             abstract_state,
-            AbstractState::get_cartesian_set(
-                domain_sizes, task_proxy.get_goals()));
+            get_cartesian_set(domain_sizes, task_proxy.get_goals()));
     }
 }
 
