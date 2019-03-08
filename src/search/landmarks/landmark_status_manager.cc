@@ -26,9 +26,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 
     int inserted = 0;
     int num_goal_lms = 0;
-    const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
-    for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
-        LandmarkNode *node_p = *it;
+    for (auto &node_p : lm_graph.get_nodes()) {
         if (node_p->in_goal) {
             ++num_goal_lms;
         }
@@ -109,9 +107,9 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
 bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     const BitsetView reached = get_reached_landmarks(global_state);
 
-    const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
+    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
-    for (LandmarkNode *node : nodes) {
+    for (auto &node : nodes) {
         node->status = lm_not_reached;
         if (reached.test(node->get_id())) {
             node->status = lm_reached;
@@ -121,7 +119,7 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     bool dead_end_found = false;
 
     // mark reached and find needed again landmarks
-    for (LandmarkNode *node : nodes) {
+    for (auto &node : nodes) {
         if (node->status == lm_reached) {
             if (!node->is_true_in_state(global_state)) {
                 if (node->is_goal()) {

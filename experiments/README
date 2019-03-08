@@ -5,7 +5,7 @@ Experiments using Downward Lab
 
 All experiments use their own common_setup.py module that simplifies the
 creation of experiments. We recommend using common_setup.py (and related
-*.py files) from issue839 for new experiments since it is the most
+*.py files) from issue899 for new experiments since it is the most
 recent version.
 
 Below we list some experiments that show how certain tasks can be

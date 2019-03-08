@@ -6,7 +6,7 @@
 #include "../algorithms/ordered_set.h"
 #include "../evaluators/g_evaluator.h"
 #include "../evaluators/pref_evaluator.h"
-#include "../open_lists/standard_scalar_open_list.h"
+#include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 #include "../task_utils/successor_generator.h"
 #include "../utils/system.h"
@@ -40,7 +40,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         Options options;
         options.set("eval", g_evaluator);
         options.set("pref_only", false);
-        return make_shared<standard_scalar_open_list::StandardScalarOpenListFactory>(options);
+        return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(options);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
