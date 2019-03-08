@@ -11,6 +11,7 @@ struct Transition;
 
 using AbstractStates = std::vector<AbstractState *>;
 using Goals = std::unordered_set<int>;
+using NodeID = int;
 using Loops = std::vector<int>;
 using Transitions = std::vector<Transition>;
 

@@ -9,8 +9,6 @@
 #include <vector>
 
 namespace pdbs {
-class AbstractOperator;
-
 /*
   Successor Generator for abstract operators.
 
@@ -26,12 +24,12 @@ class MatchTree {
     Pattern pattern;
     std::vector<size_t> hash_multipliers;
     Node *root;
-    void insert_recursive(const AbstractOperator &op,
+    void insert_recursive(int op_id,
+                          const std::vector<FactPair> &regression_preconditions,
                           int pre_index,
                           Node **edge_from_parent);
-    void get_applicable_operators_recursive(
-        Node *node, size_t state_index,
-        std::vector<const AbstractOperator *> &applicable_operators) const;
+    void get_applicable_operator_ids_recursive(
+        Node *node, size_t state_index, std::vector<int> &operator_ids) const;
     void dump_recursive(Node *node) const;
 public:
     // Initialize an empty match tree.
@@ -41,15 +39,15 @@ public:
     ~MatchTree();
     /* Insert an abstract operator into the match tree, creating or
        enlarging it. */
-    void insert(const AbstractOperator &op);
+    void insert(int op_id, const std::vector<FactPair> &regression_preconditions);
 
     /*
-      Extracts all applicable abstract operators for the abstract state given
-      by state_index (the index is converted back to variable/values pairs).
+      Extracts all IDs of applicable abstract operators for the abstract state
+      given by state_index (the index is converted back to variable/values
+      pairs).
     */
-    void get_applicable_operators(
-        size_t state_index,
-        std::vector<const AbstractOperator *> &applicable_operators) const;
+    void get_applicable_operator_ids(
+        size_t state_index, std::vector<int> &operator_ids) const;
     void dump() const;
 };
 }
