@@ -710,15 +710,16 @@ fast_downward_plugin(
         pdbs/max_additive_pdb_sets
         pdbs/max_cliques
         pdbs/pattern_collection_information
-        pdbs/pattern_database
         pdbs/pattern_collection_generator_combo
         pdbs/pattern_collection_generator_genetic
         pdbs/pattern_collection_generator_hillclimbing
         pdbs/pattern_collection_generator_manual
         pdbs/pattern_collection_generator_systematic
+        pdbs/pattern_database
         pdbs/pattern_generator_greedy
         pdbs/pattern_generator_manual
         pdbs/pattern_generator
+        pdbs/pattern_information
         pdbs/pdb_heuristic
         pdbs/plugin_group
         pdbs/types
