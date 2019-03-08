@@ -29,7 +29,7 @@ class Abstraction {
     // All (as of yet unsplit) abstract states.
     AbstractStates states;
     // Abstract initial state.
-    AbstractState *init;
+    const AbstractState *init;
     // Abstract goal states. Only landmark tasks can have multiple goal states.
     Goals goals;
 
@@ -45,13 +45,10 @@ public:
     Abstraction(const std::shared_ptr<AbstractTask> &task, bool debug);
     ~Abstraction();
 
-    Abstraction(const Abstraction &) = delete;
-
     int get_num_states() const;
-    const AbstractStates &get_states() const;
-    AbstractState *get_initial_state() const;
+    const AbstractState &get_initial_state() const;
     const Goals &get_goals() const;
-    AbstractState *get_state(int state_id) const;
+    const AbstractState &get_state(int state_id) const;
     const TransitionSystem &get_transition_system() const;
     std::unique_ptr<RefinementHierarchy> extract_refinement_hierarchy();
 
@@ -60,7 +57,7 @@ public:
 
     // Split state into two child states.
     std::pair<int, int> refine(
-        AbstractState *state, int var, const std::vector<int> &wanted);
+        const AbstractState &state, int var, const std::vector<int> &wanted);
 
     void print_statistics() const;
 };
