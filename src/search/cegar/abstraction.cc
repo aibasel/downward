@@ -32,12 +32,8 @@ Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, bool debug)
 Abstraction::~Abstraction() {
 }
 
-const AbstractStates &Abstraction::get_states() const {
-    return states;
-}
-
-AbstractState *Abstraction::get_initial_state() const {
-    return init;
+const AbstractState &Abstraction::get_initial_state() const {
+    return *init;
 }
 
 int Abstraction::get_num_states() const {
@@ -48,9 +44,8 @@ const Goals &Abstraction::get_goals() const {
     return goals;
 }
 
-AbstractState *Abstraction::get_state(int state_id) const {
-    assert(utils::in_bounds(state_id, states));
-    return states[state_id].get();
+const AbstractState &Abstraction::get_state(int state_id) const {
+    return *states[state_id];
 }
 
 const TransitionSystem &Abstraction::get_transition_system() const {
@@ -78,34 +73,34 @@ void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes
 }
 
 pair<int, int> Abstraction::refine(
-    AbstractState *state, int var, const vector<int> &wanted) {
+    const AbstractState &state, int var, const vector<int> &wanted) {
     if (debug)
-        cout << "Refine " << *state << " for " << var << "=" << wanted << endl;
+        cout << "Refine " << state << " for " << var << "=" << wanted << endl;
 
-    int v_id = state->get_id();
+    int v_id = state.get_id();
     // Reuse state ID from obsolete parent to obtain consecutive IDs.
     int v1_id = v_id;
     int v2_id = get_num_states();
 
     // Update refinement hierarchy.
     pair<NodeID, NodeID> node_ids = refinement_hierarchy->split(
-        state->get_node_id(), var, wanted, v1_id, v2_id);
+        state.get_node_id(), var, wanted, v1_id, v2_id);
 
     pair<CartesianSet, CartesianSet> cartesian_sets =
-        state->split_domain(var, wanted);
+        state.split_domain(var, wanted);
 
     unique_ptr<AbstractState> v1 = utils::make_unique_ptr<AbstractState>(
         v1_id, node_ids.first, move(cartesian_sets.first));
     unique_ptr<AbstractState> v2 = utils::make_unique_ptr<AbstractState>(
         v2_id, node_ids.second, move(cartesian_sets.second));
-    assert(state->includes(*v1));
-    assert(state->includes(*v2));
+    assert(state.includes(*v1));
+    assert(state.includes(*v2));
 
     /*
       Due to the way we split the state into v1 and v2, v2 is never the new
       initial state and v1 is never a goal state.
     */
-    if (state == init) {
+    if (state.get_id() == init->get_id()) {
         if (v1->includes(concrete_initial_state)) {
             assert(!v2->includes(concrete_initial_state));
             init = v1.get();
