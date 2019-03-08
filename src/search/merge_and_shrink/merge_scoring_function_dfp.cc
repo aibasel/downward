@@ -117,7 +117,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
             " Intelligence (AAAI 2014)",
             "2358-2366",
             "AAAI Press",
-            2014));
+            "2014"));
 
     if (parser.dry_run())
         return nullptr;

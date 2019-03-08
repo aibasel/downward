@@ -30,7 +30,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
             " Intelligence (AAAI 2014)",
             "2358-2366",
             "AAAI Press",
-            2014) +
+            "2014") +
         "Using this command line option is deprecated, please use the "
         "equivalent configurations\n"
         "{{{\nmerge_strategy=merge_stateless(merge_selector=score_based_filtering("
@@ -103,7 +103,7 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
             "AAAI Press",
-            2007) +
+            "2007") +
         "Using this command line option is deprecated, please use the "
         "equivalent configuration\n"
         "{{{\nmerge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))\n}}}");

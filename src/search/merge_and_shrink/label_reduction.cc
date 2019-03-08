@@ -310,7 +310,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
             " Intelligence (AAAI 2014)",
             "2358-2366",
             "AAAI Press",
-            2014));
+            "2014"));
     parser.add_option<bool>("before_shrinking",
                             "apply label reduction before shrinking");
     parser.add_option<bool>("before_merging",

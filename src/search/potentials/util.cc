@@ -41,7 +41,7 @@ string get_admissible_potentials_reference() {
         " Automated Planning and Scheduling (ICAPS 2015)",
         "193-201",
         "AAAI Press",
-        2015);
+        "2015");
 }
 
 void prepare_parser_for_admissible_potentials(OptionParser &parser) {

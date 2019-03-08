@@ -167,7 +167,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             " on Artificial Intelligence (AAAI 2014)",
             "2395-2401",
             "AAAI Press",
-            2014));
+            "2014"));
     parser.add_list_option<shared_ptr<Evaluator>>(
         "evaluators",
         "Evaluators used to determine the bucket for each entry.");

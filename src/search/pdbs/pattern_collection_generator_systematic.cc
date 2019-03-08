@@ -284,7 +284,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2357-2364",
             "AAAI Press",
-            2013));
+            "2013"));
 
     parser.add_option<int>(
         "pattern_max_size",
