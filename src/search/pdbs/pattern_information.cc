@@ -18,10 +18,7 @@ PatternInformation::PatternInformation(
 }
 
 bool PatternInformation::information_is_valid() const {
-    if (pdb && pdb->get_pattern() != pattern) {
-        return false;
-    }
-    return true;
+    return !pdb || pdb->get_pattern() == pattern;
 }
 
 void PatternInformation::create_pdb_if_missing() {
