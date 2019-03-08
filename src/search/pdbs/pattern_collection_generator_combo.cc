@@ -30,7 +30,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
     PatternGeneratorGreedy large_pattern_generator(max_states);
-    Pattern large_pattern = large_pattern_generator.generate(task);
+    const Pattern &large_pattern = large_pattern_generator.generate(task).get_pattern();
     patterns->push_back(large_pattern);
 
     set<int> used_vars(large_pattern.begin(), large_pattern.end());

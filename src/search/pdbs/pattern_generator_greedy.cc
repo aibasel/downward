@@ -1,7 +1,7 @@
 #include "pattern_generator_greedy.h"
 
+#include "pattern_information.h"
 #include "utils.h"
-#include "validation.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -25,7 +25,7 @@ PatternGeneratorGreedy::PatternGeneratorGreedy(int max_states)
     : max_states(max_states) {
 }
 
-Pattern PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
+PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
     utils::Timer timer;
     cout << "Generating a pattern using the greedy generator..." << endl;
     TaskProxy task_proxy(*task);
@@ -48,10 +48,10 @@ Pattern PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
         size *= next_var_size;
     }
 
-    validate_and_normalize_pattern(task_proxy, pattern);
+    PatternInformation pattern_info(task_proxy, move(pattern));
     dump_pattern_generation_statistics(
-        task_proxy, "Greedy generator", timer(), pattern);
-    return pattern;
+        "Greedy generator", timer(), pattern_info);
+    return pattern_info;
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
