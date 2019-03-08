@@ -25,10 +25,10 @@ class AbstractState {
     // This state's node in the refinement hierarchy.
     NodeID node_id;
 
-    CartesianSet domains;
+    CartesianSet cartesian_set;
 
 public:
-    AbstractState(int state_id, NodeID node_id, CartesianSet &&domains);
+    AbstractState(int state_id, NodeID node_id, CartesianSet &&cartesian_set);
 
     AbstractState(const AbstractState &) = delete;
 
@@ -61,7 +61,7 @@ public:
     NodeID get_node_id() const;
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
-        return os << "#" << state.get_id() << state.domains;
+        return os << "#" << state.get_id() << state.cartesian_set;
     }
 
     /*
