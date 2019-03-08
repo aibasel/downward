@@ -62,7 +62,7 @@ public:
         return os << "#" << state.get_id() << state.cartesian_set;
     }
 
-    // Create the initial, unrefined abstract state on the heap.
+    // Create the initial, unrefined abstract state.
     static std::unique_ptr<AbstractState> get_trivial_abstract_state(
         const std::vector<int> &domain_sizes);
 };
