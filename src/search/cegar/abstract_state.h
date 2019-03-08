@@ -1,7 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include "domains.h"
+#include "cartesian_set.h"
 #include "types.h"
 
 #include <vector>
@@ -16,7 +16,8 @@ namespace cegar {
 class Node;
 
 /*
-  Store and update abstract Domains.
+  Store the Cartesian set and the ID of the node in the refinement hierarchy
+  for an abstract state.
 */
 class AbstractState {
     int state_id;
@@ -24,11 +25,10 @@ class AbstractState {
     // This state's node in the refinement hierarchy.
     NodeID node_id;
 
-    // Abstract domains for all variables.
-    Domains domains;
+    CartesianSet domains;
 
 public:
-    AbstractState(int state_id, NodeID node_id, Domains &&domains);
+    AbstractState(int state_id, NodeID node_id, CartesianSet &&domains);
 
     AbstractState(const AbstractState &) = delete;
 
@@ -49,7 +49,7 @@ public:
       Separate the "wanted" values from the other values in the abstract domain
       and return the resulting two new Cartesian sets.
     */
-    std::pair<Domains, Domains> split_domain(int var, const std::vector<int> &wanted);
+    std::pair<CartesianSet, CartesianSet> split_domain(int var, const std::vector<int> &wanted);
 
     bool includes(const AbstractState &other) const;
     bool includes(const State &concrete_state) const;

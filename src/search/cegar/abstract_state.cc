@@ -10,7 +10,7 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(int state_id, NodeID node_id, Domains &&domains)
+AbstractState::AbstractState(int state_id, NodeID node_id, CartesianSet &&domains)
     : state_id(state_id),
       node_id(node_id),
       domains(move(domains)) {
@@ -30,7 +30,7 @@ bool AbstractState::contains(int var, int value) const {
     return domains.test(var, value);
 }
 
-pair<Domains, Domains> AbstractState::split_domain(
+pair<CartesianSet, CartesianSet> AbstractState::split_domain(
     int var, const vector<int> &wanted) {
     int num_wanted = wanted.size();
     utils::unused_variable(num_wanted);
@@ -40,8 +40,8 @@ pair<Domains, Domains> AbstractState::split_domain(
     assert(num_wanted >= 1);
     assert(domains.count(var) > num_wanted);
 
-    Domains v1_domains(domains);
-    Domains v2_domains(domains);
+    CartesianSet v1_domains(domains);
+    CartesianSet v2_domains(domains);
 
     v2_domains.remove_all(var);
     for (int value : wanted) {
@@ -60,7 +60,7 @@ pair<Domains, Domains> AbstractState::split_domain(
 }
 
 AbstractState AbstractState::regress(const OperatorProxy &op) const {
-    Domains regressed_domains = domains;
+    CartesianSet regressed_domains = domains;
     for (EffectProxy effect : op.get_effects()) {
         int var_id = effect.get_fact().get_variable().get_id();
         regressed_domains.add_all(var_id);
@@ -106,12 +106,12 @@ NodeID AbstractState::get_node_id() const {
 
 AbstractState *AbstractState::get_trivial_abstract_state(
     const vector<int> &domain_sizes) {
-    return new AbstractState(0, 0, Domains(domain_sizes));
+    return new AbstractState(0, 0, CartesianSet(domain_sizes));
 }
 
 AbstractState AbstractState::get_cartesian_set(
     const vector<int> &domain_sizes, const ConditionsProxy &conditions) {
-    Domains domains(domain_sizes);
+    CartesianSet domains(domain_sizes);
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }

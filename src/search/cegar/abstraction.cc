@@ -91,7 +91,7 @@ pair<int, int> Abstraction::refine(
     pair<NodeID, NodeID> node_ids = refinement_hierarchy->split(
         state->get_node_id(), var, wanted, v1_id, v2_id);
 
-    pair<Domains, Domains> domains = state->split_domain(var, wanted);
+    pair<CartesianSet, CartesianSet> domains = state->split_domain(var, wanted);
 
     AbstractState *v1 = new AbstractState(v1_id, node_ids.first, move(domains.first));
     AbstractState *v2 = new AbstractState(v2_id, node_ids.second, move(domains.second));
