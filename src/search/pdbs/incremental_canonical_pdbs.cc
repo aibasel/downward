@@ -3,11 +3,6 @@
 #include "canonical_pdbs.h"
 #include "pattern_database.h"
 
-#include "../utils/timer.h"
-
-#include <iostream>
-#include <limits>
-
 using namespace std;
 
 namespace pdbs {
@@ -19,13 +14,11 @@ IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
       pattern_databases(make_shared<PDBCollection>()),
       max_additive_subsets(nullptr),
       size(0) {
-    utils::Timer timer;
     pattern_databases->reserve(patterns->size());
     for (const Pattern &pattern : *patterns)
         add_pdb_for_pattern(pattern);
     are_additive = compute_additive_vars(task_proxy);
     recompute_max_additive_subsets();
-    cout << "PDB collection construction time: " << timer << endl;
 }
 
 void IncrementalCanonicalPDBs::add_pdb_for_pattern(const Pattern &pattern) {

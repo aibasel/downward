@@ -135,6 +135,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME BEST_FIRST_OPEN_LIST
+    HELP "Open list that selects the best element according to a single evaluation function"
+    SOURCES
+        open_lists/best_first_open_list
+)
+
+fast_downward_plugin(
     NAME EPSILON_GREEDY_OPEN_LIST
     HELP "Open list that chooses an entry randomly with probability epsilon"
     SOURCES
@@ -146,13 +153,6 @@ fast_downward_plugin(
     HELP "Pareto open list"
     SOURCES
         open_lists/pareto_open_list
-)
-
-fast_downward_plugin(
-    NAME STANDARD_SCALAR_OPEN_LIST
-    HELP "Standard scalar open list"
-    SOURCES
-        open_lists/standard_scalar_open_list
 )
 
 fast_downward_plugin(
@@ -342,7 +342,7 @@ fast_downward_plugin(
     HELP "Basic classes used for all search engines"
     SOURCES
         search_engines/search_common
-    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR STANDARD_SCALAR_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
+    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR BEST_FIRST_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
@@ -608,9 +608,9 @@ fast_downward_plugin(
         cegar/abstract_state
         cegar/additive_cartesian_heuristic
         cegar/cartesian_heuristic_function
+        cegar/cartesian_set
         cegar/cegar
         cegar/cost_saturation
-        cegar/domains
         cegar/refinement_hierarchy
         cegar/split_selector
         cegar/subtask_generators
@@ -723,6 +723,7 @@ fast_downward_plugin(
         pdbs/pdb_heuristic
         pdbs/plugin_group
         pdbs/types
+        pdbs/utils
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic

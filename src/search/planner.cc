@@ -61,9 +61,9 @@ int main(int argc, const char **argv) {
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << utils::g_timer << endl;
 
-    if (engine->found_solution()) {
-        utils::exit_with(ExitCode::SUCCESS);
-    } else {
-        utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
-    }
+    ExitCode exitcode = engine->found_solution()
+        ? ExitCode::SUCCESS
+        : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
+    utils::report_exit_code_reentrant(exitcode);
+    return static_cast<int>(exitcode);
 }

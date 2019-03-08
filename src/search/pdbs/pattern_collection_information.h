@@ -37,7 +37,11 @@ public:
     void set_max_additive_subsets(
         const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets);
 
-    std::shared_ptr<PatternCollection> get_patterns();
+    TaskProxy get_task_proxy() const {
+        return task_proxy;
+    }
+
+    std::shared_ptr<PatternCollection> get_patterns() const;
     std::shared_ptr<PDBCollection> get_pdbs();
     std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets();
 };
