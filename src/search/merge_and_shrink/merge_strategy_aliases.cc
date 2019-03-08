@@ -29,7 +29,8 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
-            "AAAI Press 2014") +
+            "AAAI Press",
+            2014) +
         "Using this command line option is deprecated, please use the "
         "equivalent configurations\n"
         "{{{\nmerge_strategy=merge_stateless(merge_selector=score_based_filtering("
@@ -101,7 +102,8 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
             "Proceedings of the Seventeenth International Conference on"
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
-            "2007") +
+            "AAAI Press",
+            2007) +
         "Using this command line option is deprecated, please use the "
         "equivalent configuration\n"
         "{{{\nmerge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))\n}}}");

@@ -500,7 +500,8 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
             "Proceedings of the 22nd AAAI Conference on Artificial"
             " Intelligence (AAAI 2007)",
             "1007-1012",
-            "AAAI Press 2007") +
+            "AAAI Press",
+            2007) +
         "For implementation notes, see:" + utils::format_paper_reference(
             {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
             "Efficient Implementation of Pattern Database Heuristics for"
@@ -509,7 +510,8 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
             "Proceedings of the Fifth Annual Symposium on Combinatorial"
             " Search (SoCS 2012)",
             "105-111",
-            "AAAI Press 2012"));
+            "AAAI Press",
+            2012));
     parser.document_note(
         "Note",
         "The pattern collection created by the algorithm will always contain "

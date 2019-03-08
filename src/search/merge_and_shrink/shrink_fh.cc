@@ -199,7 +199,8 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             "Proceedings of the Seventeenth International Conference on"
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
-            "2007"));
+            "AAAI Press",
+            2007));
     parser.document_note(
         "shrink_fh()",
         "Combine this with the merge-and-shrink option max_states=N (where N "
