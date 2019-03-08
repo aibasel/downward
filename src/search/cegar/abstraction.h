@@ -28,8 +28,8 @@ class Abstraction {
 
     // All (as of yet unsplit) abstract states.
     AbstractStates states;
-    // Abstract initial state.
-    const AbstractState *init;
+    // State ID of abstract initial state.
+    int init_id;
     // Abstract goal states. Only landmark tasks can have multiple goal states.
     Goals goals;
 

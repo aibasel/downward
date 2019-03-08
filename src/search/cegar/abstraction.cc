@@ -23,7 +23,6 @@ Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, bool debug)
     : transition_system(utils::make_unique_ptr<TransitionSystem>(TaskProxy(*task).get_operators())),
       concrete_initial_state(TaskProxy(*task).get_initial_state()),
       goal_facts(task_properties::get_fact_pairs(TaskProxy(*task).get_goals())),
-      init(nullptr),
       refinement_hierarchy(utils::make_unique_ptr<RefinementHierarchy>(task)),
       debug(debug) {
     initialize_trivial_abstraction(get_domain_sizes(TaskProxy(*task)));
@@ -33,7 +32,7 @@ Abstraction::~Abstraction() {
 }
 
 const AbstractState &Abstraction::get_initial_state() const {
-    return *init;
+    return *states[init_id];
 }
 
 int Abstraction::get_num_states() const {
@@ -67,7 +66,7 @@ void Abstraction::mark_all_states_as_goals() {
 void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes) {
     unique_ptr<AbstractState> init_state =
         AbstractState::get_trivial_abstract_state(domain_sizes);
-    init = init_state.get();
+    init_id = init_state->get_id();
     goals.insert(init_state->get_id());
     states.push_back(move(init_state));
 }
@@ -100,16 +99,17 @@ pair<int, int> Abstraction::refine(
       Due to the way we split the state into v1 and v2, v2 is never the new
       initial state and v1 is never a goal state.
     */
-    if (state.get_id() == init->get_id()) {
+    if (state.get_id() == init_id) {
         if (v1->includes(concrete_initial_state)) {
             assert(!v2->includes(concrete_initial_state));
-            init = v1.get();
+            init_id = v1_id;
         } else {
             assert(v2->includes(concrete_initial_state));
-            init = v2.get();
+            init_id = v2_id;
         }
         if (debug) {
-            cout << "New init state #" << init->get_id() << ": " << *init << endl;
+            cout << "New init state #" << init_id << ": " << get_state(init_id)
+                 << endl;
         }
     }
     if (goals.count(v_id)) {
