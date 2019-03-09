@@ -140,6 +140,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "https://ai.dmi.unibas.ch/papers/seipp-helmert-jair2018.pdf",
             "Journal of Artificial Intelligence Research",
             "535-577",
+            "",
             "2018") +
         "and show how to compute saturated cost partitioning heuristics for "
         "multiple (diverse) orders in" +
@@ -151,7 +152,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "Proceedings of the 31st AAAI Conference on Artificial Intelligence "
             "(AAAI 2017)",
             "3651-3657",
-            "AAAI Press") +
+            "AAAI Press",
+            "2017") +
         "Greedy orders for saturated cost partitioning are introduced in" +
         utils::format_paper_reference(
             {"Jendrik Seipp"},
@@ -161,7 +163,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "Proceedings of the 10th Annual Symposium on Combinatorial Search "
             "(SoCS 2017)",
             "149-153",
-            "AAAI Press"));
+            "AAAI Press",
+            "2017"));
     parser.document_note(
         "Difference to cegar()",
         "The cegar() plugin computes a single saturated cost partitioning over "

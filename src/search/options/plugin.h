@@ -19,7 +19,6 @@
 #include <vector>
 
 namespace options {
-class Predefinitions;
 class Registry;
 
 /*

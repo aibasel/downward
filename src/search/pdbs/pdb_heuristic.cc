@@ -1,10 +1,10 @@
 #include "pdb_heuristic.h"
 
+#include "pattern_database.h"
 #include "pattern_generator.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_proxy.h"
 
 #include <limits>
 #include <memory>
@@ -12,13 +12,12 @@
 using namespace std;
 
 namespace pdbs {
-PatternDatabase get_pdb_from_options(const shared_ptr<AbstractTask> &task,
-                                     const Options &opts) {
+shared_ptr<PatternDatabase> get_pdb_from_options(const shared_ptr<AbstractTask> &task,
+                                                 const Options &opts) {
     shared_ptr<PatternGenerator> pattern_generator =
         opts.get<shared_ptr<PatternGenerator>>("pattern");
-    Pattern pattern = pattern_generator->generate(task);
-    TaskProxy task_proxy(*task);
-    return PatternDatabase(task_proxy, pattern, true);
+    PatternInformation pattern_info = pattern_generator->generate(task);
+    return pattern_info.get_pdb();
 }
 
 PDBHeuristic::PDBHeuristic(const Options &opts)
@@ -32,7 +31,7 @@ int PDBHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) const {
-    int h = pdb.get_value(state);
+    int h = pdb->get_value(state);
     if (h == numeric_limits<int>::max())
         return DEAD_END;
     return h;

@@ -52,7 +52,7 @@ static pair<bool, unique_ptr<Abstraction>> convert_abstraction(
     // Compute g and h values.
     const cegar::TransitionSystem &ts =
         cartesian_abstraction.get_transition_system();
-    int initial_state_id = cartesian_abstraction.get_initial_state()->get_id();
+    int initial_state_id = cartesian_abstraction.get_initial_state().get_id();
     vector<int> g_values = cegar::compute_distances(
         ts.get_outgoing_transitions(), operator_costs, {initial_state_id});
     vector<int> h_values = cegar::compute_distances(

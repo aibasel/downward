@@ -581,7 +581,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
-    for (LandmarkNode *node : lm_graph->get_nodes()) {
+    for (auto &node : lm_graph->get_nodes()) {
         for (const auto &node2_pair : node->forward_orders) {
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);

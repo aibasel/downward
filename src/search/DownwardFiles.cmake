@@ -342,7 +342,7 @@ fast_downward_plugin(
     HELP "Basic classes used for all search engines"
     SOURCES
         search_engines/search_common
-    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR STANDARD_SCALAR_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
+    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR BEST_FIRST_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
@@ -608,9 +608,9 @@ fast_downward_plugin(
         cegar/abstract_state
         cegar/additive_cartesian_heuristic
         cegar/cartesian_heuristic_function
+        cegar/cartesian_set
         cegar/cegar
         cegar/cost_saturation
-        cegar/domains
         cegar/refinement_hierarchy
         cegar/split_selector
         cegar/subtask_generators
@@ -736,18 +736,20 @@ fast_downward_plugin(
         pdbs/max_additive_pdb_sets
         pdbs/max_cliques
         pdbs/pattern_collection_information
-        pdbs/pattern_database
         pdbs/pattern_collection_generator_combo
         pdbs/pattern_collection_generator_genetic
         pdbs/pattern_collection_generator_hillclimbing
         pdbs/pattern_collection_generator_manual
         pdbs/pattern_collection_generator_systematic
+        pdbs/pattern_database
         pdbs/pattern_generator_greedy
         pdbs/pattern_generator_manual
         pdbs/pattern_generator
+        pdbs/pattern_information
         pdbs/pdb_heuristic
         pdbs/plugin_group
         pdbs/types
+        pdbs/utils
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
