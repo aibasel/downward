@@ -34,19 +34,18 @@ static CartesianSet get_cartesian_set(
 struct Flaw {
     // Last concrete and abstract state reached while tracing solution.
     State concrete_state;
-    // TODO: After conversion to smart pointers, store as unique_ptr?
-    AbstractState *current_abstract_state;
+    const AbstractState &current_abstract_state;
     // Hypothetical Cartesian set we would have liked to reach.
     CartesianSet desired_cartesian_set;
 
     Flaw(
         State &&concrete_state,
-        AbstractState *current_abstract_state,
+        const AbstractState &current_abstract_state,
         CartesianSet &&desired_cartesian_set)
         : concrete_state(move(concrete_state)),
           current_abstract_state(current_abstract_state),
           desired_cartesian_set(move(desired_cartesian_set)) {
-        assert(this->current_abstract_state->includes(this->concrete_state));
+        assert(current_abstract_state.includes(this->concrete_state));
     }
 
     vector<Split> get_possible_splits() const {
@@ -65,7 +64,7 @@ struct Flaw {
                 int var_id = var.get_id();
                 vector<int> wanted;
                 for (int value = 0; value < var.get_domain_size(); ++value) {
-                    if (current_abstract_state->contains(var_id, value) &&
+                    if (current_abstract_state.contains(var_id, value) &&
                         desired_cartesian_set.test(var_id, value)) {
                         wanted.push_back(value);
                     }
@@ -118,7 +117,7 @@ unique_ptr<Abstraction> CEGAR::extract_abstraction() {
 
 void CEGAR::separate_facts_unreachable_before_goal() {
     assert(abstraction->get_goals().size() == 1);
-    assert(abstraction->get_states().size() == 1);
+    assert(abstraction->get_num_states() == 1);
     assert(task_proxy.get_goals().size() == 1);
     FactProxy goal = task_proxy.get_goals()[0];
     utils::HashSet<FactProxy> reachable_facts = get_relaxed_possible_before(
@@ -179,7 +178,7 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         find_trace_timer.resume();
         unique_ptr<Solution> solution = abstract_search.find_solution(
             abstraction->get_transition_system().get_outgoing_transitions(),
-            abstraction->get_initial_state()->get_id(),
+            abstraction->get_initial_state().get_id(),
             abstraction->get_goals());
         find_trace_timer.stop();
         if (!solution) {
@@ -196,10 +195,10 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         }
 
         refine_timer.resume();
-        AbstractState *abstract_state = flaw->current_abstract_state;
-        int state_id = abstract_state->get_id();
+        const AbstractState &abstract_state = flaw->current_abstract_state;
+        int state_id = abstract_state.get_id();
         vector<Split> splits = flaw->get_possible_splits();
-        const Split &split = split_selector.pick_split(*abstract_state, splits, rng);
+        const Split &split = split_selector.pick_split(abstract_state, splits, rng);
         auto new_state_ids = abstraction->refine(abstract_state, split.var_id, split.values);
         // Since h-values only increase we can assign the h-value to the children.
         abstract_search.copy_h_value_to_children(
@@ -221,7 +220,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
     if (debug)
         cout << "Check solution:" << endl;
 
-    AbstractState *abstract_state = abstraction->get_initial_state();
+    const AbstractState *abstract_state = &abstraction->get_initial_state();
     State concrete_state = task_proxy.get_initial_state();
     assert(abstract_state->includes(concrete_state));
 
@@ -232,7 +231,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         if (!utils::extra_memory_padding_is_reserved())
             break;
         OperatorProxy op = task_proxy.get_operators()[step.op_id];
-        AbstractState *next_abstract_state = abstraction->get_state(step.target_id);
+        const AbstractState *next_abstract_state = &abstraction->get_state(step.target_id);
         if (task_properties::is_applicable(op, concrete_state)) {
             if (debug)
                 cout << "  Move to " << *next_abstract_state << " with "
@@ -243,7 +242,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
                     cout << "  Paths deviate." << endl;
                 return utils::make_unique_ptr<Flaw>(
                     move(concrete_state),
-                    abstract_state,
+                    *abstract_state,
                     next_abstract_state->regress(op));
             }
             abstract_state = next_abstract_state;
@@ -253,7 +252,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             return utils::make_unique_ptr<Flaw>(
                 move(concrete_state),
-                abstract_state,
+                *abstract_state,
                 get_cartesian_set(domain_sizes, op.get_preconditions()));
         }
     }
@@ -266,14 +265,14 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             cout << "  Goal test failed." << endl;
         return utils::make_unique_ptr<Flaw>(
             move(concrete_state),
-            abstract_state,
+            *abstract_state,
             get_cartesian_set(domain_sizes, task_proxy.get_goals()));
     }
 }
 
 void CEGAR::print_statistics() {
     abstraction->print_statistics();
-    int init_id = abstraction->get_initial_state()->get_id();
+    int init_id = abstraction->get_initial_state().get_id();
     cout << "Initial h value: " << abstract_search.get_h_value(init_id) << endl;
     cout << endl;
 }
