@@ -45,6 +45,8 @@ public:
     Abstraction(const std::shared_ptr<AbstractTask> &task, bool debug);
     ~Abstraction();
 
+    Abstraction(const Abstraction &) = delete;
+
     int get_num_states() const;
     const AbstractState &get_initial_state() const;
     const Goals &get_goals() const;
