@@ -85,7 +85,18 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "Automated Planning and Scheduling (ICAPS 2014)",
             "289-297",
             "AAAI Press",
-            "2014"));
+            "2014") +
+        "For more details on Cartesian CEGAR and saturated cost partitioning, "
+        "see the journal paper" +
+        utils::format_paper_reference(
+            {"Jendrik Seipp", "Malte Helmert"},
+            "Counterexample-Guided Cartesian Abstraction Refinement for "
+            "Classical Planning",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-jair2018.pdf",
+            "Journal of Artificial Intelligence Research",
+            "535-577",
+            "",
+            "2018"));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
