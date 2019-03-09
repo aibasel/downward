@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstraction_generator.h"
+#include "cost_partitioning_heuristic.h"
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
@@ -35,6 +36,31 @@ Order get_default_order(int num_abstractions) {
     return indices;
 }
 
+int compute_max_h_with_statistics(
+    const CPHeuristics &cp_heuristics,
+    const vector<int> &abstract_state_ids,
+    vector<int> &num_best_order) {
+    int max_h = 0;
+    int best_id = -1;
+    int current_id = 0;
+    for (const CostPartitioningHeuristic &cp_heuristic : cp_heuristics) {
+        int sum_h = cp_heuristic.compute_heuristic(abstract_state_ids);
+        if (sum_h > max_h) {
+            max_h = sum_h;
+            best_id = current_id;
+        }
+        ++current_id;
+    }
+    assert(max_h >= 0 && max_h != INF);
+
+    num_best_order.resize(cp_heuristics.size(), 0);
+    if (best_id != -1) {
+        ++num_best_order[best_id];
+    }
+
+    return max_h;
+}
+
 vector<int> get_abstract_state_ids(
     const Abstractions &abstractions, const State &state) {
     vector<int> abstract_state_ids;
@@ -43,6 +69,22 @@ vector<int> get_abstract_state_ids(
         if (abstraction) {
             // Only add local state IDs for useful abstractions.
             abstract_state_ids.push_back(abstraction->get_abstract_state_id(state));
+        } else {
+            // Add dummy value if abstraction will never be used.
+            abstract_state_ids.push_back(-1);
+        }
+    }
+    return abstract_state_ids;
+}
+
+vector<int> get_abstract_state_ids(
+    const AbstractionFunctions &abstraction_functions, const State &state) {
+    vector<int> abstract_state_ids;
+    abstract_state_ids.reserve(abstraction_functions.size());
+    for (auto &abstraction_function : abstraction_functions) {
+        if (abstraction_function) {
+            // Only add local state IDs for useful abstractions.
+            abstract_state_ids.push_back(abstraction_function->get_abstract_state_id(state));
         } else {
             // Add dummy value if abstraction will never be used.
             abstract_state_ids.push_back(-1);

@@ -74,9 +74,24 @@ struct AbstractBackwardOperator {
     }
 };
 
-/*
-  TODO: Reduce code duplication with pdbs::PatternDatabase.
-*/
+
+class ProjectionFunction : public AbstractionFunction {
+    pdbs::Pattern pattern;
+    // Multipliers for each pattern variable for perfect hash function.
+    std::vector<std::size_t> hash_multipliers;
+
+public:
+    ProjectionFunction(
+        const pdbs::Pattern &pattern, const std::vector<std::size_t> &hash_multipliers)
+        : pattern(pattern),
+          hash_multipliers(move(hash_multipliers)) {
+        assert(pattern.size() == hash_multipliers.size());
+    }
+
+    virtual int get_abstract_state_id(const State &concrete_state) const override;
+};
+
+
 class Projection : public Abstraction {
     using Facts = std::vector<FactPair>;
     using OperatorCallback =
@@ -115,7 +130,7 @@ class Projection : public Abstraction {
       irrelevant transitions).
     */
     template<class Callback>
-    void for_each_transition(const Callback &callback) const {
+    void for_each_transition_impl(const Callback &callback) const {
         // Reuse vector to save allocations.
         std::vector<FactPair> abstract_facts;
 
@@ -181,9 +196,6 @@ class Projection : public Abstraction {
         std::size_t state_index,
         const std::vector<FactPair> &abstract_facts) const;
 
-protected:
-    virtual void release_transition_system_memory() override;
-
 public:
     Projection(
         const TaskProxy &task_proxy,
@@ -191,7 +203,6 @@ public:
         const pdbs::Pattern &pattern);
     virtual ~Projection() override;
 
-    virtual int get_abstract_state_id(const State &concrete_state) const override;
     virtual std::vector<int> compute_goal_distances(
         const std::vector<int> &costs) const override;
     virtual std::vector<int> compute_saturated_costs(
@@ -199,6 +210,7 @@ public:
     virtual int get_num_states() const override;
     virtual bool operator_is_active(int op_id) const override;
     virtual bool operator_induces_self_loop(int op_id) const override;
+    virtual void for_each_transition(const TransitionCallback &callback) const override;
     virtual const std::vector<int> &get_goal_states() const override;
 
     virtual void dump() const override;

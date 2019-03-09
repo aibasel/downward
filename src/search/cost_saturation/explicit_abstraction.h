@@ -5,16 +5,11 @@
 
 #include "../algorithms/priority_queues.h"
 
-#include <functional>
-#include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 
-class State;
-
 namespace cost_saturation {
-using AbstractionFunction = std::function<int (const State &)>;
-
 struct Successor {
     int op;
     int state;
@@ -37,8 +32,6 @@ std::ostream &operator<<(std::ostream &os, const Successor &successor);
 
 
 class ExplicitAbstraction : public Abstraction {
-    const AbstractionFunction abstraction_function;
-
     // State-changing transitions.
     std::vector<std::vector<Successor>> backward_graph;
 
@@ -52,12 +45,9 @@ class ExplicitAbstraction : public Abstraction {
 
     mutable priority_queues::AdaptiveQueue<int> queue;
 
-protected:
-    virtual void release_transition_system_memory() override;
-
 public:
     ExplicitAbstraction(
-        AbstractionFunction function,
+        std::unique_ptr<AbstractionFunction> abstraction_function,
         std::vector<std::vector<Successor>> &&backward_graph,
         std::vector<bool> &&looping_operators,
         std::vector<int> &&goal_states);
@@ -67,9 +57,9 @@ public:
     virtual std::vector<int> compute_saturated_costs(
         const std::vector<int> &h_values) const override;
     virtual int get_num_states() const override;
-    virtual int get_abstract_state_id(const State &concrete_state) const override;
     virtual bool operator_is_active(int op_id) const override;
     virtual bool operator_induces_self_loop(int op_id) const override;
+    virtual void for_each_transition(const TransitionCallback &callback) const override;
     virtual const std::vector<int> &get_goal_states() const override;
     virtual void dump() const override;
 };

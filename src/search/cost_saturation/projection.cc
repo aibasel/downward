@@ -142,11 +142,21 @@ bool TaskInfo::operator_is_active(const pdbs::Pattern &pattern, int op_id) const
 }
 
 
+int ProjectionFunction::get_abstract_state_id(const State &concrete_state) const {
+    size_t index = 0;
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        index += hash_multipliers[i] * concrete_state[pattern[i]].get_value();
+    }
+    return index;
+}
+
+
 Projection::Projection(
     const TaskProxy &task_proxy,
     const shared_ptr<TaskInfo> &task_info,
     const pdbs::Pattern &pattern)
-    : task_info(task_info),
+    : Abstraction(nullptr),
+      task_info(task_info),
       pattern(pattern) {
     assert(utils::is_sorted_unique(pattern));
 
@@ -164,6 +174,9 @@ Projection::Projection(
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
     }
+
+    abstraction_function = utils::make_unique_ptr<ProjectionFunction>(
+        pattern, hash_multipliers);
 
     VariablesProxy variables = task_proxy.get_variables();
     vector<int> variable_to_pattern_index(variables.size(), -1);
@@ -235,14 +248,6 @@ bool Projection::increment_to_next_state(vector<FactPair> &facts) const {
         }
     }
     return false;
-}
-
-int Projection::get_abstract_state_id(const State &concrete_state) const {
-    size_t index = 0;
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        index += hash_multipliers[i] * concrete_state[pattern[i]].get_value();
-    }
-    return index;
 }
 
 vector<int> Projection::compute_goal_states(
@@ -368,7 +373,6 @@ bool Projection::is_consistent(
 
 vector<int> Projection::compute_saturated_costs(
     const vector<int> &h_values) const {
-    assert(has_transition_system());
     int num_operators = task_info->get_num_operators();
     vector<int> saturated_costs(num_operators, -INF);
 
@@ -380,7 +384,7 @@ vector<int> Projection::compute_saturated_costs(
         }
     }
 
-    for_each_transition(
+    for_each_transition_impl(
         [&saturated_costs, &h_values](const Transition &t) {
             assert(utils::in_bounds(t.src, h_values));
             assert(utils::in_bounds(t.target, h_values));
@@ -396,7 +400,6 @@ vector<int> Projection::compute_saturated_costs(
 }
 
 vector<int> Projection::compute_goal_distances(const vector<int> &costs) const {
-    assert(has_transition_system());
     assert(all_of(costs.begin(), costs.end(), [](int c) {return c >= 0;}));
     vector<int> distances(num_states, INF);
 
@@ -453,21 +456,15 @@ bool Projection::operator_induces_self_loop(int op_id) const {
     return task_info->operator_induces_self_loop(pattern, op_id);
 }
 
+void Projection::for_each_transition(const TransitionCallback &callback) const {
+    return for_each_transition_impl(callback);
+}
+
 const vector<int> &Projection::get_goal_states() const {
-    assert(has_transition_system());
     return goal_states;
 }
 
-void Projection::release_transition_system_memory() {
-    assert(has_transition_system());
-    utils::release_vector_memory(abstract_forward_operators);
-    utils::release_vector_memory(abstract_backward_operators);
-    utils::release_vector_memory(goal_states);
-    match_tree_backward = nullptr;
-}
-
 void Projection::dump() const {
-    assert(has_transition_system());
     cout << "Abstract operators: " << abstract_backward_operators.size()
          << ", goal states: " << goal_states.size() << "/" << num_states
          << endl;
