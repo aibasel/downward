@@ -216,7 +216,7 @@ void CostSaturation::build_abstractions(
         vector<int> init_distances = compute_distances(
             abstraction->get_transition_system().get_outgoing_transitions(),
             costs,
-            {abstraction->get_initial_state()->get_id()});
+            {abstraction->get_initial_state().get_id()});
         vector<int> goal_distances = compute_distances(
             abstraction->get_transition_system().get_incoming_transitions(),
             costs,

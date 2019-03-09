@@ -3,6 +3,8 @@
 #include "refinement_hierarchy.h"
 #include "utils.h"
 
+#include "../utils/memory.h"
+
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
@@ -17,12 +19,6 @@ AbstractState::AbstractState(
       cartesian_set(move(cartesian_set)) {
 }
 
-AbstractState::AbstractState(AbstractState &&other)
-    : state_id(other.state_id),
-      node_id(other.node_id),
-      cartesian_set(move(other.cartesian_set)) {
-}
-
 int AbstractState::count(int var) const {
     return cartesian_set.count(var);
 }
@@ -32,7 +28,7 @@ bool AbstractState::contains(int var, int value) const {
 }
 
 pair<CartesianSet, CartesianSet> AbstractState::split_domain(
-    int var, const vector<int> &wanted) {
+    int var, const vector<int> &wanted) const {
     int num_wanted = wanted.size();
     utils::unused_variable(num_wanted);
     // We can only refine for variables with at least two values.
@@ -71,9 +67,8 @@ CartesianSet AbstractState::regress(const OperatorProxy &op) const {
     return regression;
 }
 
-bool AbstractState::domain_subsets_intersect(
-    const AbstractState *other, int var) const {
-    return cartesian_set.intersects(other->cartesian_set, var);
+bool AbstractState::domain_subsets_intersect(const AbstractState &other, int var) const {
+    return cartesian_set.intersects(other.cartesian_set, var);
 }
 
 bool AbstractState::includes(const State &concrete_state) const {
@@ -104,8 +99,8 @@ NodeID AbstractState::get_node_id() const {
     return node_id;
 }
 
-AbstractState *AbstractState::get_trivial_abstract_state(
+unique_ptr<AbstractState> AbstractState::get_trivial_abstract_state(
     const vector<int> &domain_sizes) {
-    return new AbstractState(0, 0, CartesianSet(domain_sizes));
+    return utils::make_unique_ptr<AbstractState>(0, 0, CartesianSet(domain_sizes));
 }
 }
