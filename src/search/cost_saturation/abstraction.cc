@@ -14,7 +14,7 @@ int Abstraction::get_abstract_state_id(const State &concrete_state) const {
     return abstraction_function->get_abstract_state_id(concrete_state);
 }
 
-std::unique_ptr<AbstractionFunction> Abstraction::extract_abstraction_function() {
+unique_ptr<AbstractionFunction> Abstraction::extract_abstraction_function() {
     return move(abstraction_function);
 }
 }
