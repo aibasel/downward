@@ -4,6 +4,8 @@
 #include "pattern_cliques.h"
 #include "validation.h"
 
+#include "../task_proxy.h"
+
 #include "../utils/logging.h"
 #include "../utils/timer.h"
 
@@ -19,8 +21,7 @@ PatternCollectionInformation::PatternCollectionInformation(
     const TaskProxy &task_proxy,
     const shared_ptr<PatternCollection> &patterns,
     utils::LogProxy &log)
-    : task_proxy(task_proxy),
-      patterns(patterns),
+    : patterns(patterns),
       pdbs(nullptr),
       pattern_cliques(nullptr),
       log(log) {
@@ -55,7 +56,8 @@ bool PatternCollectionInformation::information_is_valid() const {
     return true;
 }
 
-void PatternCollectionInformation::create_pdbs_if_missing() {
+void PatternCollectionInformation::create_pdbs_if_missing(
+    const TaskProxy &task_proxy) {
     assert(patterns);
     if (!pdbs) {
         utils::Timer timer;
@@ -106,8 +108,9 @@ shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() const
     return patterns;
 }
 
-shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs() {
-    create_pdbs_if_missing();
+shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs(
+    const TaskProxy &task_proxy) {
+    create_pdbs_if_missing(task_proxy);
     return pdbs;
 }
 

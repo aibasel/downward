@@ -30,9 +30,9 @@ void PhOConstraints::initialize_constraints(
       create pattern_generator locally and no longer need to explicitly reset
       it.
     */
-    pdbs = pattern_collection_info.get_pdbs();
     pattern_generator = nullptr;
     TaskProxy task_proxy(*task);
+    pdbs = pattern_collection_info.get_pdbs(task_proxy);
     named_vector::NamedVector<lp::LPConstraint> &constraints = lp.get_constraints();
     constraint_offset = constraints.size();
     for (const shared_ptr<pdbs::PatternDatabase> &pdb : *pdbs) {

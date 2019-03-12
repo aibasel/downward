@@ -32,9 +32,10 @@ CanonicalPDBs get_canonical_pdbs_from_options(
       computed before) so that their computation is not taken into account
       for dominance pruning time.
     */
-    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
+    TaskProxy task_proxy(*task);
+    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs(*task);
     shared_ptr<vector<PatternClique>> pattern_cliques =
-        pattern_collection_info.get_pattern_cliques();
+        pattern_collection_info.get_pattern_cliques(*task);
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {

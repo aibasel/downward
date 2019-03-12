@@ -48,6 +48,7 @@ extern PatternCollectionInformation get_pattern_collection_info(
   prepended with the given string identifier.
 */
 extern void dump_pattern_generation_statistics(
+    const TaskProxy &task_proxy,
     const std::string &identifier,
     utils::Duration runtime,
     const PatternInformation &pattern_info,
@@ -59,6 +60,7 @@ extern void dump_pattern_generation_statistics(
   prepended with the given string identifier.
 */
 extern void dump_pattern_collection_generation_statistics(
+    const TaskProxy &task_proxy,
     const std::string &identifier,
     utils::Duration runtime,
     const PatternCollectionInformation &pci,

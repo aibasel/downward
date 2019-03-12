@@ -102,6 +102,7 @@ PatternCollectionInformation get_pattern_collection_info(
 }
 
 void dump_pattern_generation_statistics(
+    const TaskProxy &task_proxy,
     const string &identifier,
     utils::Duration runtime,
     const PatternInformation &pattern_info,
@@ -111,12 +112,13 @@ void dump_pattern_generation_statistics(
         log << identifier << " pattern: " << pattern << endl;
         log << identifier << " number of variables: " << pattern.size() << endl;
         log << identifier << " PDB size: "
-            << compute_pdb_size(pattern_info.get_task_proxy(), pattern) << endl;
+            << compute_pdb_size(task_proxy, pattern) << endl;
         log << identifier << " computation time: " << runtime << endl;
     }
 }
 
 void dump_pattern_collection_generation_statistics(
+    const TaskProxy &task_proxy,
     const string &identifier,
     utils::Duration runtime,
     const PatternCollectionInformation &pci,
@@ -127,7 +129,7 @@ void dump_pattern_collection_generation_statistics(
             << endl;
         log << identifier << " total PDB size: "
             << compute_total_pdb_size(
-            pci.get_task_proxy(), pattern_collection) << endl;
+            task_proxy, pattern_collection) << endl;
         log << identifier << " computation time: " << runtime << endl;
     }
 }
