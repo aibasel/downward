@@ -258,13 +258,13 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "AAAI Press",
             "2008") +
         "and" +
-        utils::format_paper_reference(
+        utils::format_journal_article_reference(
             {"Silvia Richter", "Matthias Westphal"},
             "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
             "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
-            "Journal of Artificial Intelligence Research 39",
+            "Journal of Artificial Intelligence Research",
+            "39",
             "127-177",
-            "AAAI Press",
             "2010") +
         "For the admissible variant see the papers" +
         utils::format_paper_reference(
