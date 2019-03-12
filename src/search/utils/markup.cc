@@ -30,7 +30,7 @@ string format_conference_reference(
     const vector<string> &authors, const string &title, const string &url,
     const string &conference, const string &pages, const string &publisher,
     const string &year) {
-    stringstream ss;
+    ostringstream ss;
     ss << "\n\n"
        << " * " << format_authors(authors) << ".<<BR>>\n"
        << " [" << t2t_escape(title) << " " << url << "].<<BR>>\n"
@@ -46,7 +46,7 @@ string format_journal_reference(
     const vector<string> &authors, const string &title, const string &url,
     const string &journal, const string &volume, const string &pages,
     const string &year) {
-    stringstream ss;
+    ostringstream ss;
     ss << "\n\n"
        << " * " << format_authors(authors) << ".<<BR>>\n"
        << " [" << t2t_escape(title) << " " << url << "].<<BR>>\n"
