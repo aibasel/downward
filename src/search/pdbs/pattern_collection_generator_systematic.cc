@@ -267,8 +267,8 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     cout << "Generating patterns using the systematic generator..." << endl;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
-    pattern_set.clear();
     if (only_interesting_patterns) {
+        assert(pattern_set.empty());
         build_patterns(task_proxy);
     } else {
         build_patterns_naive(task_proxy);
