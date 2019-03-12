@@ -2,6 +2,7 @@
 
 #include "dominance_pruning.h"
 #include "pattern_generator.h"
+#include "utils.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -23,28 +24,23 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     cout << "Initializing canonical PDB heuristic..." << endl;
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
-    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
-    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
-        pattern_collection_info.get_max_additive_subsets();
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
         int num_variables = TaskProxy(*task).get_variables().size();
-        max_additive_subsets = prune_dominated_subsets(
-            *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
+        pattern_collection_info = prune_dominated_subsets(
+            pattern_collection_info, num_variables, max_time_dominance_pruning);
     }
 
-    /*
-      Once we have better data structures for storing and passing pattern
-      collections, we should also print the final pattern collection here
-      like in dump_pattern_collection_generation_statistics. To this end,
-      the dominance pruning code would need to not only return the max
-      additive subsets, but the list of patterns/PDBs together with the max
-      subsets, possibly as a list of list of indices into the pattern/PDB
-      collection.
-    */
-    cout << "Canonical PDB heuristic computation time: " << timer << endl;
-    return CanonicalPDBs(max_additive_subsets);
+    /* Compute pdbs and max additive subsets here so that they count towards
+       the total computation time of the heuristic. */
+    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
+    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
+        pattern_collection_info.get_max_additive_subsets();
+    // Do not dump pattern collections for size reasons.
+    dump_pattern_collection_generation_statistics(
+        "Canonical PDB heuristic", timer(), pattern_collection_info, false);
+    return CanonicalPDBs(pdbs, max_additive_subsets);
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)

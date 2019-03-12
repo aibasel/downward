@@ -23,7 +23,7 @@ extern bool are_patterns_additive(const Pattern &pattern1,
   Computes maximal additive subsets of patterns.
 */
 extern std::shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
-    const PDBCollection &pdbs, const VariableAdditivity &are_additive);
+    const PatternCollection &patterns, const VariableAdditivity &are_additive);
 
 /*
   We compute additive pattern sets S with the property that we could
@@ -71,6 +71,7 @@ extern std::shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
   "new" cliques including P.
   */
 extern MaxAdditivePDBSubsets compute_max_additive_subsets_with_pattern(
+    const PatternCollection &patterns,
     const MaxAdditivePDBSubsets &known_additive_subsets,
     const Pattern &new_pattern,
     const VariableAdditivity &are_additive);

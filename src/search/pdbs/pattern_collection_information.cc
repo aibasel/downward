@@ -41,29 +41,16 @@ bool PatternCollectionInformation::information_is_valid() const {
         }
     }
     if (max_additive_subsets) {
-        unordered_set<PatternDatabase *> pdbs_in_union;
-        for (const PDBCollection &additive_subset : *max_additive_subsets) {
-            for (const shared_ptr<PatternDatabase> &pdb : additive_subset) {
-                pdbs_in_union.insert(pdb.get());
-            }
-        }
         utils::HashSet<Pattern> patterns_in_union;
-        for (PatternDatabase *pdb : pdbs_in_union) {
-            patterns_in_union.insert(pdb->get_pattern());
+        for (const vector<int> &additive_subset : *max_additive_subsets) {
+            for (int pattern_index : additive_subset) {
+                patterns_in_union.insert((*patterns)[pattern_index]);
+            }
         }
         utils::HashSet<Pattern> patterns_in_list(patterns->begin(),
                                                  patterns->end());
         if (patterns_in_list != patterns_in_union) {
             return false;
-        }
-        if (pdbs) {
-            unordered_set<PatternDatabase *> pdbs_in_list;
-            for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
-                pdbs_in_list.insert(pdb.get());
-            }
-            if (pdbs_in_list != pdbs_in_union) {
-                return false;
-            }
         }
     }
     return true;
@@ -86,12 +73,10 @@ void PatternCollectionInformation::create_pdbs_if_missing() {
 
 void PatternCollectionInformation::create_max_additive_subsets_if_missing() {
     if (!max_additive_subsets) {
-        create_pdbs_if_missing();
         utils::Timer timer;
         cout << "Computing max additive subsets for pattern collection..." << endl;
-        assert(pdbs);
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
-        max_additive_subsets = compute_max_additive_subsets(*pdbs, are_additive);
+        max_additive_subsets = compute_max_additive_subsets(*patterns, are_additive);
         cout << "Done computing max additive subsets for pattern collection: "
              << timer << endl;
     }
