@@ -29,6 +29,7 @@ int compute_total_pdb_size(
 }
 
 void dump_pattern_generation_statistics(
+    const TaskProxy &task_proxy,
     const string &identifier,
     utils::Duration runtime,
     const PatternInformation &pattern_info) {
@@ -36,11 +37,12 @@ void dump_pattern_generation_statistics(
     cout << identifier << " pattern: " << pattern << endl;
     cout << identifier << " number of variables: " << pattern.size() << endl;
     cout << identifier << " PDB size: "
-         << compute_pdb_size(pattern_info.get_task_proxy(), pattern) << endl;
+         << compute_pdb_size(task_proxy, pattern) << endl;
     cout << identifier << " computation time: " << runtime << endl;
 }
 
 void dump_pattern_collection_generation_statistics(
+    const TaskProxy &task_proxy,
     const string &identifier,
     utils::Duration runtime,
     const PatternCollectionInformation &pci,
@@ -52,7 +54,7 @@ void dump_pattern_collection_generation_statistics(
     cout << identifier << " number of patterns: " << pattern_collection.size()
          << endl;
     cout << identifier << " total PDB size: "
-         << compute_total_pdb_size(pci.get_task_proxy(), pattern_collection)
+         << compute_total_pdb_size(task_proxy, pattern_collection)
          << endl;
     cout << identifier << " computation time: " << runtime << endl;
 }

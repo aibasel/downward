@@ -4,6 +4,8 @@
 #include "max_additive_pdb_sets.h"
 #include "validation.h"
 
+#include "../task_proxy.h"
+
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -15,10 +17,8 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionInformation::PatternCollectionInformation(
-    const TaskProxy &task_proxy,
-    const shared_ptr<PatternCollection> &patterns)
-    : task_proxy(task_proxy),
-      patterns(patterns),
+    const TaskProxy &task_proxy, const shared_ptr<PatternCollection> &patterns)
+    : patterns(patterns),
       pdbs(nullptr),
       max_additive_subsets(nullptr) {
     assert(patterns);
@@ -69,7 +69,8 @@ bool PatternCollectionInformation::information_is_valid() const {
     return true;
 }
 
-void PatternCollectionInformation::create_pdbs_if_missing() {
+void PatternCollectionInformation::create_pdbs_if_missing(
+    const TaskProxy &task_proxy) {
     assert(patterns);
     if (!pdbs) {
         utils::Timer timer;
@@ -84,9 +85,10 @@ void PatternCollectionInformation::create_pdbs_if_missing() {
     }
 }
 
-void PatternCollectionInformation::create_max_additive_subsets_if_missing() {
+void PatternCollectionInformation::create_max_additive_subsets_if_missing(
+    const TaskProxy &task_proxy) {
     if (!max_additive_subsets) {
-        create_pdbs_if_missing();
+        create_pdbs_if_missing(task_proxy);
         utils::Timer timer;
         cout << "Computing max additive subsets for pattern collection..." << endl;
         assert(pdbs);
@@ -113,13 +115,15 @@ shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() const
     return patterns;
 }
 
-shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs() {
-    create_pdbs_if_missing();
+shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs(
+    const TaskProxy &task_proxy) {
+    create_pdbs_if_missing(task_proxy);
     return pdbs;
 }
 
-shared_ptr<MaxAdditivePDBSubsets> PatternCollectionInformation::get_max_additive_subsets() {
-    create_max_additive_subsets_if_missing();
+shared_ptr<MaxAdditivePDBSubsets> PatternCollectionInformation::get_max_additive_subsets(
+    const TaskProxy &task_proxy) {
+    create_max_additive_subsets_if_missing(task_proxy);
     return max_additive_subsets;
 }
 }

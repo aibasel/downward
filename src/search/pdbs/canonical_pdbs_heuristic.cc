@@ -23,13 +23,14 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     cout << "Initializing canonical PDB heuristic..." << endl;
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
-    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
+    TaskProxy task_proxy(*task);
+    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs(task_proxy);
     shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
-        pattern_collection_info.get_max_additive_subsets();
+        pattern_collection_info.get_max_additive_subsets(task_proxy);
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
-        int num_variables = TaskProxy(*task).get_variables().size();
+        int num_variables = task_proxy.get_variables().size();
         max_additive_subsets = prune_dominated_subsets(
             *pdbs, *max_additive_subsets, num_variables, max_time_dominance_pruning);
     }

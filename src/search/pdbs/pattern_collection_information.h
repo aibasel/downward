@@ -3,9 +3,9 @@
 
 #include "types.h"
 
-#include "../task_proxy.h"
-
 #include <memory>
+
+class TaskProxy;
 
 namespace pdbs {
 /*
@@ -21,13 +21,12 @@ namespace pdbs {
   as an interface for ownership transfer rather than sharing it.
 */
 class PatternCollectionInformation {
-    TaskProxy task_proxy;
     std::shared_ptr<PatternCollection> patterns;
     std::shared_ptr<PDBCollection> pdbs;
     std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
 
-    void create_pdbs_if_missing();
-    void create_max_additive_subsets_if_missing();
+    void create_pdbs_if_missing(const TaskProxy &task_proxy);
+    void create_max_additive_subsets_if_missing(const TaskProxy &task_proxy);
 
     bool information_is_valid() const;
 public:
@@ -40,13 +39,9 @@ public:
     void set_max_additive_subsets(
         const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets);
 
-    TaskProxy get_task_proxy() const {
-        return task_proxy;
-    }
-
     std::shared_ptr<PatternCollection> get_patterns() const;
-    std::shared_ptr<PDBCollection> get_pdbs();
-    std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets();
+    std::shared_ptr<PDBCollection> get_pdbs(const TaskProxy &task_proxy);
+    std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets(const TaskProxy &task_proxy);
 };
 }
 

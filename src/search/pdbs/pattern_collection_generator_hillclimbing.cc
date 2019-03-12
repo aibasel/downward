@@ -426,7 +426,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
 
     PatternCollectionInformation pci = current_pdbs->get_pattern_collection_information();
     dump_pattern_collection_generation_statistics(
-        "Hill climbing generator", timer(), pci);
+        task_proxy, "Hill climbing generator", timer(), pci);
     return pci;
 }
 

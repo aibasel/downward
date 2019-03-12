@@ -20,11 +20,10 @@ namespace pdbs {
   ownership transfer, from the generator to the user.
 */
 class PatternInformation {
-    TaskProxy task_proxy;
     Pattern pattern;
     std::shared_ptr<PatternDatabase> pdb;
 
-    void create_pdb_if_missing();
+    void create_pdb_if_missing(const TaskProxy &task_proxy);
 
     bool information_is_valid() const;
 public:
@@ -32,12 +31,8 @@ public:
 
     void set_pdb(const std::shared_ptr<PatternDatabase> &pdb);
 
-    TaskProxy get_task_proxy() const {
-        return task_proxy;
-    }
-
     const Pattern &get_pattern() const;
-    std::shared_ptr<PatternDatabase> get_pdb();
+    std::shared_ptr<PatternDatabase> get_pdb(const TaskProxy &task_proxy);
 };
 }
 
