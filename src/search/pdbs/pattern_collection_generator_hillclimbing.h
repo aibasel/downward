@@ -98,6 +98,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
         const PatternDatabase &pdb,
         const State &sample,
         int h_collection,
+        const PDBCollection &pdbs,
         const MaxAdditivePDBSubsets &max_additive_subsets);
 
     /*

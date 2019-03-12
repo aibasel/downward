@@ -243,7 +243,8 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
             assert(utils::in_bounds(sample_id, samples_h_values));
             int h_collection = samples_h_values[sample_id];
             if (is_heuristic_improved(
-                    *pdb, sample, h_collection, max_additive_subsets)) {
+                    *pdb, sample, h_collection,
+                    *current_pdbs->get_pattern_databases(), max_additive_subsets)) {
                 ++count;
             }
         }
@@ -262,7 +263,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
 
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     const PatternDatabase &pdb, const State &sample, int h_collection,
-    const MaxAdditivePDBSubsets &max_additive_subsets) {
+    const PDBCollection &pdbs, const MaxAdditivePDBSubsets &max_additive_subsets) {
     // h_pattern: h-value of the new pattern
     int h_pattern = pdb.get_value(sample);
 
@@ -274,12 +275,12 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     if (h_collection == numeric_limits<int>::max())
         return false;
 
-    for (const auto &subset : max_additive_subsets) {
+    for (const vector<int> &subset : max_additive_subsets) {
         int h_subset = 0;
-        for (const shared_ptr<PatternDatabase> &additive_pdb : subset) {
+        for (int pdb_index : subset) {
             /* Experiments showed that it is faster to recompute the
                h values than to cache them in an unordered_map. */
-            int h = additive_pdb->get_value(sample);
+            int h = pdbs[pdb_index]->get_value(sample);
             if (h == numeric_limits<int>::max())
                 return false;
             h_subset += h;
