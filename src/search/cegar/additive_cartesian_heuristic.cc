@@ -67,7 +67,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "Additive CEGAR heuristic",
         "See the paper introducing Counterexample-guided Abstraction "
         "Refinement (CEGAR) for classical planning:" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Counterexample-guided Cartesian Abstraction Refinement",
             "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
@@ -77,7 +77,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "AAAI Press",
             "2013") +
         "and the paper showing how to make the abstractions additive:" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Diverse and Additive Cartesian Abstraction Heuristics",
             "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
@@ -88,7 +88,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "2014") +
         "For more details on Cartesian CEGAR and saturated cost partitioning, "
         "see the journal paper" +
-        utils::format_journal_article_reference(
+        utils::format_journal_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Counterexample-Guided Cartesian Abstraction Refinement for "
             "Classical Planning",

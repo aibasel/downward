@@ -192,7 +192,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "f-preserving shrink strategy",
         "This shrink strategy implements the algorithm described in"
-        " the paper:" + utils::format_paper_reference(
+        " the paper:" + utils::format_conference_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
             "Flexible Abstraction Heuristics for Optimal Sequential Planning",
             "https://ai.dmi.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
