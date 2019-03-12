@@ -378,7 +378,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Bismulation based shrink strategy",
         "This shrink strategy implements the algorithm described in"
-        " the paper:" + utils::format_paper_reference(
+        " the paper:" + utils::format_conference_reference(
             {"Raz Nissim", "Joerg Hoffmann", "Malte Helmert"},
             "Computing Perfect Heuristics in Polynomial Time: On Bisimulation"
             " and Merge-and-Shrink Abstractions in Optimal Planning.",

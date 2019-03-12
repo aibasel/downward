@@ -248,7 +248,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Landmark-count heuristic",
         "For the inadmissible variant see the papers" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
             "Landmarks Revisited",
             "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
@@ -258,7 +258,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "AAAI Press",
             "2008") +
         "and" +
-        utils::format_journal_article_reference(
+        utils::format_journal_reference(
             {"Silvia Richter", "Matthias Westphal"},
             "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
             "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
@@ -267,7 +267,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "127-177",
             "2010") +
         "For the admissible variant see the papers" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Erez Karpas", "Carmel Domshlak"},
             "Cost-Optimal Planning with Landmarks",
             "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
@@ -277,7 +277,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "AAAI Press",
             "2009") +
         "and" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Emil Keyder and Silvia Richter and Malte Helmert"},
             "Sound and Complete Landmarks for And/Or Graphs",
             "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
