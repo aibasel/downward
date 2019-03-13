@@ -109,7 +109,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "This scoring function computes the 'DFP' score as descrdibed in the "
         "paper \"Directed model checking with distance-preserving abstractions\" "
         "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-        "the following paper:" + utils::format_paper_reference(
+        "the following paper:" + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
