@@ -11,6 +11,8 @@ namespace pdbs {
 class CanonicalPDBs {
     std::shared_ptr<PDBCollection> pdbs;
     std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
+    // Used to avoid allocating memory in each call to get_value.
+    mutable std::vector<int> h_values;
 
 public:
     CanonicalPDBs(
