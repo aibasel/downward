@@ -11,8 +11,8 @@ using namespace std;
 
 namespace pdbs {
 CanonicalPDBs::CanonicalPDBs(
-    shared_ptr<PDBCollection> pdbs,
-    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets)
+    const shared_ptr<PDBCollection> &pdbs,
+    const shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets)
     : pdbs(pdbs), max_additive_subsets(max_additive_subsets) {
     assert(pdbs);
     assert(max_additive_subsets);
