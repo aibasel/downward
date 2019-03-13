@@ -94,7 +94,7 @@ void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
 
 string DomainAbstractedTaskFactory::get_combined_fact_name(
     int var, const ValueGroup &values) const {
-    stringstream name;
+    ostringstream name;
     string sep;
     for (int value : values) {
         name << sep << fact_names[var][value];
