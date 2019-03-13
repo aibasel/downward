@@ -1,6 +1,5 @@
 #include "dominance_pruning.h"
 
-#include "pattern_collection_information.h"
 #include "pattern_database.h"
 
 #include "../utils/countdown_timer.h"
@@ -8,7 +7,7 @@
 
 #include <cassert>
 #include <unordered_map>
-#include <unordered_set>
+#include <set>
 #include <vector>
 
 using namespace std;
@@ -20,12 +19,10 @@ class Pruner {
 
       "patterns" is the vector of patterns used.
       Each pattern is a vector of variable IDs.
-      This is logically const (only changed in the constructor).
 
       "collections" is the vector of pattern collections.
       Each collection is a vector<int>, where each int is an index
       into "patterns".
-      This is logically const (only changed in the constructor).
 
       The algorithm works by setting a "current pattern collection"
       against which other patterns and collections can be tested for
@@ -48,9 +45,9 @@ class Pruner {
       current collection is set.
     */
 
-    const int num_variables;
     const PatternCollection &patterns;
     const MaxAdditivePDBSubsets &collections;
+    const int num_variables;
 
     vector<int> pattern_index;
     vector<bool> dominated_patterns;
@@ -111,11 +108,13 @@ class Pruner {
     }
 
 public:
-    Pruner(PatternCollectionInformation &pci,
-           int num_variables) :
-        num_variables(num_variables),
-        patterns(*pci.get_patterns()),
-        collections(*pci.get_max_additive_subsets()) {
+    Pruner(
+        const PatternCollection &patterns,
+        const MaxAdditivePDBSubsets &max_additive_subsets,
+        int num_variables)
+        : patterns(patterns),
+          collections(max_additive_subsets),
+          num_variables(num_variables) {
     }
 
     vector<bool> get_pruned_collections(const utils::CountdownTimer &timer) {
@@ -151,53 +150,48 @@ public:
     }
 };
 
-PatternCollectionInformation prune_dominated_subsets(
-    PatternCollectionInformation &pci,
+void prune_dominated_subsets(
+    PatternCollection &patterns,
+    PDBCollection &pdbs,
+    MaxAdditivePDBSubsets &max_additive_subsets,
     int num_variables,
     double max_time) {
     cout << "Running dominance pruning..." << endl;
     utils::CountdownTimer timer(max_time);
 
+    int num_patterns = patterns.size();
+    int num_subsets = max_additive_subsets.size();
+
     vector<bool> pruned = Pruner(
-        pci,
+        patterns,
+        max_additive_subsets,
         num_variables).get_pruned_collections(timer);
 
-    const MaxAdditivePDBSubsets &max_additive_subsets =
-        *pci.get_max_additive_subsets();
-    shared_ptr<MaxAdditivePDBSubsets> remaining_max_additive_subsets =
-        make_shared<MaxAdditivePDBSubsets>();
-    unordered_set<int> remaining_pattern_indices;
+    MaxAdditivePDBSubsets remaining_max_additive_subsets;
+    set<int> remaining_pattern_indices;
     for (size_t i = 0; i < max_additive_subsets.size(); ++i) {
         if (!pruned[i]) {
-            const vector<int> &subset = max_additive_subsets[i];
-            remaining_max_additive_subsets->push_back(subset);
+            vector<int> &subset = max_additive_subsets[i];
             for (int pattern_index : subset) {
                 remaining_pattern_indices.insert(pattern_index);
             }
+            remaining_max_additive_subsets.push_back(move(subset));
         }
     }
 
-    /*
-      TODO: we shouldn't call get_pdbs() here because they may not be computed
-      and need not to be computed here. We currently do this because the only
-      user of this class is the CPDB heuristic for which we know it computes
-      PDBs anyways. Doing so allows us here to remove pruned patterns *and
-      PDBs*.
-    */
-    const PatternCollection &patterns = *pci.get_patterns();
-    const PDBCollection &pdbs = *pci.get_pdbs();
-    shared_ptr<PatternCollection> remaining_patterns =
-        make_shared<PatternCollection>();
-    shared_ptr<PDBCollection> remaining_pdbs =
-        make_shared<PDBCollection>();
-    vector<int> old_to_new_pattern_index(patterns.size(), -1);
+    int num_remaining_patterns = remaining_pattern_indices.size();
+    PatternCollection remaining_patterns;
+    PDBCollection remaining_pdbs;
+    remaining_patterns.reserve(num_remaining_patterns);
+    remaining_pdbs.reserve(num_remaining_patterns);
+    vector<int> old_to_new_pattern_index(num_patterns, -1);
     for (int old_pattern_index : remaining_pattern_indices) {
-        int new_pattern_index = remaining_patterns->size();
+        int new_pattern_index = remaining_patterns.size();
         old_to_new_pattern_index[old_pattern_index] = new_pattern_index;
-        remaining_patterns->push_back(patterns[old_pattern_index]);
-        remaining_pdbs->push_back(pdbs[old_pattern_index]);
+        remaining_patterns.push_back(move(patterns[old_pattern_index]));
+        remaining_pdbs.push_back(move(pdbs[old_pattern_index]));
     }
-    for (vector<int> &subset : *remaining_max_additive_subsets) {
+    for (vector<int> &subset : remaining_max_additive_subsets) {
         for (size_t i = 0; i < subset.size(); ++i) {
             int old_pattern_index = subset[i];
             int new_pattern_index = old_to_new_pattern_index[old_pattern_index];
@@ -206,21 +200,18 @@ PatternCollectionInformation prune_dominated_subsets(
         }
     }
 
-    int num_collections = max_additive_subsets.size();
-    int num_pruned_collections = num_collections - remaining_max_additive_subsets->size();
-    cout << "Pruned " << num_pruned_collections << " of " << num_collections
+    int num_pruned_collections = num_subsets - remaining_max_additive_subsets.size();
+    cout << "Pruned " << num_pruned_collections << " of " << num_subsets
          << " maximal additive subsets" << endl;
 
-    int num_patterns = patterns.size();
-    int num_pruned_patterns = num_patterns - remaining_patterns->size();
+    int num_pruned_patterns = num_patterns - num_remaining_patterns;
     cout << "Pruned " << num_pruned_patterns << " of " << num_patterns
          << " PDBs" << endl;
 
-    cout << "Dominance pruning took " << timer.get_elapsed_time() << endl;
+    patterns.swap(remaining_patterns);
+    pdbs.swap(remaining_pdbs);
+    max_additive_subsets.swap(remaining_max_additive_subsets);
 
-    PatternCollectionInformation result(pci.get_task_proxy(), remaining_patterns);
-    result.set_pdbs(remaining_pdbs);
-    result.set_max_additive_subsets(remaining_max_additive_subsets);
-    return result;
+    cout << "Dominance pruning took " << timer.get_elapsed_time() << endl;
 }
 }
