@@ -5,6 +5,7 @@ import itertools
 import os
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
+from lab.reports import Attribute, geometric_mean
 
 from downward.reports.compare import ComparativeReport
 
@@ -42,13 +43,20 @@ exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.TRANSLATOR_PARSER)
 exp.add_parser(exp.SINGLE_SEARCH_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
+exp.add_parser('parser.py')
 
 exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
+exp.add_parse_again_step()
+
+attributes=exp.DEFAULT_TABLE_ATTRIBUTES
+attributes.append(
+    Attribute('computation_time', absolute=False, min_wins=True, functions=[geometric_mean]),
+)
 
 #exp.add_absolute_report_step()
-exp.add_comparison_table_step()
+exp.add_comparison_table_step(attributes=attributes)
 exp.add_scatter_plot_step(relative=True, attributes=["search_time", "total_time"])
 
 exp.run_steps()
