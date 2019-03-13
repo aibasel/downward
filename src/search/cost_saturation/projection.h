@@ -100,6 +100,8 @@ class Projection : public Abstraction {
     std::shared_ptr<TaskInfo> task_info;
     pdbs::Pattern pattern;
 
+    std::vector<bool> looping_operators;
+
     std::vector<AbstractForwardOperator> abstract_forward_operators;
 
     std::vector<AbstractBackwardOperator> abstract_backward_operators;

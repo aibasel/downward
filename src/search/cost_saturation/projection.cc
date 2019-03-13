@@ -88,6 +88,15 @@ static vector<int> get_changed_variables(const OperatorProxy &op) {
     return changed_variables;
 }
 
+static vector<bool> compute_looping_operators(
+    const TaskInfo &task_info, const pdbs::Pattern &pattern) {
+    vector<bool> loops(task_info.get_num_operators());
+    for (int op_id = 0; op_id < task_info.get_num_operators(); ++op_id) {
+        loops[op_id] = task_info.operator_induces_self_loop(pattern, op_id);
+    }
+    return loops;
+}
+
 
 TaskInfo::TaskInfo(const TaskProxy &task_proxy) {
     num_variables = task_proxy.get_variables().size();
@@ -157,7 +166,8 @@ Projection::Projection(
     const pdbs::Pattern &pattern)
     : Abstraction(nullptr),
       task_info(task_info),
-      pattern(pattern) {
+      pattern(pattern),
+      looping_operators(compute_looping_operators(*task_info, pattern)) {
     assert(utils::is_sorted_unique(pattern));
 
     hash_multipliers.reserve(pattern.size());
@@ -453,7 +463,7 @@ bool Projection::operator_is_active(int op_id) const {
 }
 
 bool Projection::operator_induces_self_loop(int op_id) const {
-    return task_info->operator_induces_self_loop(pattern, op_id);
+    return looping_operators[op_id];
 }
 
 void Projection::for_each_transition(const TransitionCallback &callback) const {
