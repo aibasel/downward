@@ -24,19 +24,39 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     cout << "Initializing canonical PDB heuristic..." << endl;
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
+    shared_ptr<PatternCollection> patterns =
+        pattern_collection_info.get_patterns();
+    /*
+      We compute PDBs and max additive subsets here (if they have not been
+      computed before) so that their computation is not taken into account
+      for dominance pruning time.
+    */
+    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
+    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
+        pattern_collection_info.get_max_additive_subsets();
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
         int num_variables = TaskProxy(*task).get_variables().size();
-        pattern_collection_info = prune_dominated_subsets(
-            pattern_collection_info, num_variables, max_time_dominance_pruning);
+        /*
+          In principle, we could pass PatternCollectionInformation here.
+          However, PatternCollectionInformation is not intended to be changed.
+          Dominance pruning could also be computed without having access to
+          the PDBs, but since we want to delete patterns, we also want to
+          update the list of corresponding PDBs so they are synchronized.
+
+          In the long term, we plan to have patterns and their PDBs live
+          together, in which case we would only need to pass their container
+          and the max additive subsets.
+        */
+        prune_dominated_subsets(
+            *patterns,
+            *pdbs,
+            *max_additive_subsets,
+            num_variables,
+            max_time_dominance_pruning);
     }
 
-    /* Compute pdbs and max additive subsets here so that they count towards
-       the total computation time of the heuristic. */
-    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
-    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
-        pattern_collection_info.get_max_additive_subsets();
     // Do not dump pattern collections for size reasons.
     dump_pattern_collection_generation_statistics(
         "Canonical PDB heuristic", timer(), pattern_collection_info, false);
