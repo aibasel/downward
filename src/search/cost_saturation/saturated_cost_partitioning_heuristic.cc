@@ -133,18 +133,18 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "heuristics using different orders. Depending on the options, orders "
         "may be greedy, optimized and/or diverse. We describe saturated cost "
         "partitioning in the paper" +
-        utils::format_paper_reference(
+        utils::format_journal_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Counterexample-Guided Cartesian Abstraction Refinement for "
             "Classical Planning",
             "https://ai.dmi.unibas.ch/papers/seipp-helmert-jair2018.pdf",
             "Journal of Artificial Intelligence Research",
+            "62",
             "535-577",
-            "",
             "2018") +
         "and show how to compute saturated cost partitioning heuristics for "
         "multiple (diverse) orders in" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Jendrik Seipp", "Thomas Keller", "Malte Helmert"},
             "Narrowing the Gap Between Saturated and Optimal Cost Partitioning "
             "for Classical Planning",
@@ -155,7 +155,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "AAAI Press",
             "2017") +
         "Greedy orders for saturated cost partitioning are introduced in" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Jendrik Seipp"},
             "Better Orders for Saturated Cost Partitioning in Optimal "
             "Classical Planning",
