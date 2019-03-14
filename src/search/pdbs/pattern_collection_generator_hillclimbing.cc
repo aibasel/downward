@@ -275,15 +275,18 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     if (h_collection == numeric_limits<int>::max())
         return false;
 
+    vector<int> h_values;
+    h_values.reserve(pdbs.size());
+    for (const shared_ptr<PatternDatabase> &pdb : pdbs) {
+        int h = pdb->get_value(sample);
+        if (h == numeric_limits<int>::max())
+            return false;
+        h_values.push_back(h);
+    }
     for (const vector<int> &subset : max_additive_subsets) {
         int h_subset = 0;
         for (int pdb_index : subset) {
-            /* Experiments showed that it is faster to recompute the
-               h values than to cache them in an unordered_map. */
-            int h = pdbs[pdb_index]->get_value(sample);
-            if (h == numeric_limits<int>::max())
-                return false;
-            h_subset += h;
+            h_subset += h_values[pdb_index];
         }
         if (h_pattern + h_subset > h_collection) {
             /*

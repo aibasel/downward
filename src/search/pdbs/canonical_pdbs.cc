@@ -25,11 +25,11 @@ int CanonicalPDBs::get_value(const State &state) const {
     int max_h = 0;
     h_values.clear();
     for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
-        int h_value = pdb->get_value(state);
-        if (h_value == numeric_limits<int>::max()) {
+        int h = pdb->get_value(state);
+        if (h == numeric_limits<int>::max()) {
             return numeric_limits<int>::max();
         }
-        h_values.push_back(h_value);
+        h_values.push_back(h);
     }
     for (const vector<int> &subset : *max_additive_subsets) {
         int subset_h = 0;
