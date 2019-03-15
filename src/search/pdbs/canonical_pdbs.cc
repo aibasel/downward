@@ -16,14 +16,14 @@ CanonicalPDBs::CanonicalPDBs(
     : pdbs(pdbs), max_additive_subsets(max_additive_subsets) {
     assert(pdbs);
     assert(max_additive_subsets);
-    h_values.reserve(pdbs->size());
 }
 
 int CanonicalPDBs::get_value(const State &state) const {
     // If we have an empty collection, then max_additive_subsets = { \emptyset }.
     assert(!max_additive_subsets->empty());
     int max_h = 0;
-    h_values.clear();
+    vector<int> h_values;
+    h_values.reserve(pdbs->size());
     for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
         int h = pdb->get_value(state);
         if (h == numeric_limits<int>::max()) {
