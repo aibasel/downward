@@ -41,16 +41,12 @@ bool PatternCollectionInformation::information_is_valid() const {
         }
     }
     if (max_additive_subsets) {
-        utils::HashSet<Pattern> patterns_in_union;
         for (const vector<int> &additive_subset : *max_additive_subsets) {
             for (int pattern_index : additive_subset) {
-                patterns_in_union.insert((*patterns)[pattern_index]);
+                if (!utils::in_bounds(pattern_index, *patterns)) {
+                    return false;
+                }
             }
-        }
-        utils::HashSet<Pattern> patterns_in_list(patterns->begin(),
-                                                 patterns->end());
-        if (patterns_in_list != patterns_in_union) {
-            return false;
         }
     }
     return true;
