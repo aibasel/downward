@@ -32,10 +32,9 @@ macro(fast_downward_set_compiler_flags)
         # Enable exceptions.
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 
-        # Use warning level 4 (/W4) and treat warnings as errors (/WX)
-        # -Wall currently detects too many warnings outside of our code to be useful.
+        # Use warning level 4 (/W4).
+        # /Wall currently detects too many warnings outside of our code to be useful.
         string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 
         # Disable warnings that currently trigger in the code until we fix them.
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4800") # forcing value to bool
