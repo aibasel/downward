@@ -39,10 +39,8 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     if (max_time_dominance_pruning > 0.0) {
         int num_variables = TaskProxy(*task).get_variables().size();
         /*
-          In principle, we could pass PatternCollectionInformation here.
-          However, PatternCollectionInformation is not intended to be changed.
-          Dominance pruning could also be computed without having access to
-          the PDBs, but since we want to delete patterns, we also want to
+          NOTE: Dominance pruning could also be computed without having access
+          to the PDBs, but since we want to delete patterns, we also want to
           update the list of corresponding PDBs so they are synchronized.
 
           In the long term, we plan to have patterns and their PDBs live
