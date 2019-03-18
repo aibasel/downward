@@ -7,7 +7,6 @@
 
 #include <cassert>
 #include <unordered_map>
-#include <set>
 #include <vector>
 
 using namespace std;
@@ -168,28 +167,36 @@ void prune_dominated_subsets(
         num_variables).get_pruned_collections(timer);
 
     MaxAdditivePDBSubsets remaining_max_additive_subsets;
-    set<int> remaining_pattern_indices;
+    vector<bool> is_remaining_pattern(num_patterns, false);
     for (size_t i = 0; i < max_additive_subsets.size(); ++i) {
         if (!pruned[i]) {
             vector<int> &subset = max_additive_subsets[i];
             for (int pattern_index : subset) {
-                remaining_pattern_indices.insert(pattern_index);
+                is_remaining_pattern[pattern_index] = true;
             }
             remaining_max_additive_subsets.push_back(move(subset));
         }
     }
 
-    int num_remaining_patterns = remaining_pattern_indices.size();
+    int num_remaining_patterns = 0;
+    for (int old_pattern_index = 0; old_pattern_index < num_patterns; ++old_pattern_index) {
+        if (is_remaining_pattern[old_pattern_index]) {
+            ++num_remaining_patterns;
+        }
+    }
+
     PatternCollection remaining_patterns;
     PDBCollection remaining_pdbs;
     remaining_patterns.reserve(num_remaining_patterns);
     remaining_pdbs.reserve(num_remaining_patterns);
     vector<int> old_to_new_pattern_index(num_patterns, -1);
-    for (int old_pattern_index : remaining_pattern_indices) {
-        int new_pattern_index = remaining_patterns.size();
-        old_to_new_pattern_index[old_pattern_index] = new_pattern_index;
-        remaining_patterns.push_back(move(patterns[old_pattern_index]));
-        remaining_pdbs.push_back(move(pdbs[old_pattern_index]));
+    for (int old_pattern_index = 0; old_pattern_index < num_patterns; ++old_pattern_index) {
+        if (is_remaining_pattern[old_pattern_index]) {
+            int new_pattern_index = remaining_patterns.size();
+            old_to_new_pattern_index[old_pattern_index] = new_pattern_index;
+            remaining_patterns.push_back(move(patterns[old_pattern_index]));
+            remaining_pdbs.push_back(move(pdbs[old_pattern_index]));
+        }
     }
     for (vector<int> &subset : remaining_max_additive_subsets) {
         for (size_t i = 0; i < subset.size(); ++i) {
