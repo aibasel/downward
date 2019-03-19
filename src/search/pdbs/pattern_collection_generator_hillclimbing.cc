@@ -236,7 +236,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
           see above) earlier.
         */
         int count = 0;
-        std::vector<PatternClique> pattern_cliques =
+        vector<PatternClique> pattern_cliques =
             current_pdbs->get_pattern_cliques(pdb->get_pattern());
         for (int sample_id = 0; sample_id < num_samples; ++sample_id) {
             const State &sample = samples[sample_id];
@@ -263,7 +263,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
 
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     const PatternDatabase &pdb, const State &sample, int h_collection,
-    const PDBCollection &pdbs, const std::vector<PatternClique> &pattern_cliques) {
+    const PDBCollection &pdbs, const vector<PatternClique> &pattern_cliques) {
     // h_pattern: h-value of the new pattern
     int h_pattern = pdb.get_value(sample);
 

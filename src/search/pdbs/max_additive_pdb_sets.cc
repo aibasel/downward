@@ -38,7 +38,7 @@ VariableAdditivity compute_additive_vars(const TaskProxy &task_proxy) {
     return are_additive;
 }
 
-shared_ptr<std::vector<PatternClique>> compute_pattern_cliques(
+shared_ptr<vector<PatternClique>> compute_pattern_cliques(
     const PatternCollection &patterns, const VariableAdditivity &are_additive) {
     // Initialize compatibility graph.
     vector<vector<int>> cgraph;
@@ -55,17 +55,17 @@ shared_ptr<std::vector<PatternClique>> compute_pattern_cliques(
         }
     }
 
-    shared_ptr<std::vector<PatternClique>> max_cliques = make_shared<std::vector<PatternClique>>();
+    shared_ptr<vector<PatternClique>> max_cliques = make_shared<vector<PatternClique>>();
     max_cliques::compute_max_cliques(cgraph, *max_cliques);
     return max_cliques;
 }
 
-std::vector<PatternClique> compute_pattern_cliques_with_pattern(
+vector<PatternClique> compute_pattern_cliques_with_pattern(
     const PatternCollection &patterns,
-    const std::vector<PatternClique> &known_pattern_cliques,
+    const vector<PatternClique> &known_pattern_cliques,
     const Pattern &new_pattern,
     const VariableAdditivity &are_additive) {
-    std::vector<PatternClique> cliques_additive_with_pattern;
+    vector<PatternClique> cliques_additive_with_pattern;
     for (const PatternClique &known_clique : known_pattern_cliques) {
         // Take all patterns which are additive to new_pattern.
         PatternClique new_clique;
