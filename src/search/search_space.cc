@@ -125,10 +125,6 @@ SearchNode SearchSpace::get_node(const GlobalState &state) {
     return SearchNode(state_registry, state.get_id(), search_node_infos[state]);
 }
 
-unique_ptr<SearchNode> SearchSpace::get_node_pointer(const GlobalState &state) {
-    return utils::make_unique_ptr<SearchNode>(state_registry, state.get_id(), search_node_infos[state]);
-}
-
 void SearchSpace::trace_path(const GlobalState &goal_state,
                              vector<OperatorID> &path) const {
     GlobalState current_state = goal_state;

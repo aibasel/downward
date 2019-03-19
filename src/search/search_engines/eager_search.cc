@@ -9,6 +9,8 @@
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
 
+#include "../ext/optional.hpp"
+
 #include <cassert>
 #include <cstdlib>
 #include <memory>
@@ -116,7 +118,7 @@ SearchStatus EagerSearch::step() {
       We use a unique_ptr here to be able to reassign search nodes in the
       loop below, since search nodes cannot be default-constructed nor assigned.
     */
-    unique_ptr<SearchNode> node = nullptr;
+    tl::optional<SearchNode> node;
     while (true) {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
@@ -128,7 +130,7 @@ SearchStatus EagerSearch::step() {
         //      One way would be to store GlobalState objects inside SearchNodes
         //      instead of StateIDs
         GlobalState s = state_registry.lookup_state(id);
-        node = search_space.get_node_pointer(s);
+        node.emplace(search_space.get_node(s));
 
         if (node->is_closed())
             continue;
