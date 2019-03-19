@@ -20,7 +20,7 @@ PatternCollectionInformation::PatternCollectionInformation(
     : task_proxy(task_proxy),
       patterns(patterns),
       pdbs(nullptr),
-      max_additive_subsets(nullptr) {
+      pattern_cliques(nullptr) {
     assert(patterns);
     validate_and_normalize_patterns(task_proxy, *patterns);
 }
@@ -40,10 +40,10 @@ bool PatternCollectionInformation::information_is_valid() const {
             }
         }
     }
-    if (max_additive_subsets) {
-        for (const vector<int> &additive_subset : *max_additive_subsets) {
-            for (int pattern_index : additive_subset) {
-                if (!utils::in_bounds(pattern_index, *patterns)) {
+    if (pattern_cliques) {
+        for (const PatternClique &clique : *pattern_cliques) {
+            for (PatternID pattern_id : clique) {
+                if (!utils::in_bounds(pattern_id, *patterns)) {
                     return false;
                 }
             }
@@ -67,13 +67,13 @@ void PatternCollectionInformation::create_pdbs_if_missing() {
     }
 }
 
-void PatternCollectionInformation::create_max_additive_subsets_if_missing() {
-    if (!max_additive_subsets) {
+void PatternCollectionInformation::create_pattern_cliques_if_missing() {
+    if (!pattern_cliques) {
         utils::Timer timer;
-        cout << "Computing max additive subsets for pattern collection..." << endl;
+        cout << "Computing pattern cliques for pattern collection..." << endl;
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
-        max_additive_subsets = compute_max_additive_subsets(*patterns, are_additive);
-        cout << "Done computing max additive subsets for pattern collection: "
+        pattern_cliques = compute_pattern_cliques(*patterns, are_additive);
+        cout << "Done computing pattern cliques for pattern collection: "
              << timer << endl;
     }
 }
@@ -83,9 +83,9 @@ void PatternCollectionInformation::set_pdbs(const shared_ptr<PDBCollection> &pdb
     assert(information_is_valid());
 }
 
-void PatternCollectionInformation::set_max_additive_subsets(
-    const shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets_) {
-    max_additive_subsets = max_additive_subsets_;
+void PatternCollectionInformation::set_pattern_cliques(
+    const shared_ptr<vector<PatternClique>> &pattern_cliques_) {
+    pattern_cliques = pattern_cliques_;
     assert(information_is_valid());
 }
 
@@ -99,8 +99,8 @@ shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs() {
     return pdbs;
 }
 
-shared_ptr<MaxAdditivePDBSubsets> PatternCollectionInformation::get_max_additive_subsets() {
-    create_max_additive_subsets_if_missing();
-    return max_additive_subsets;
+shared_ptr<vector<PatternClique>> PatternCollectionInformation::get_pattern_cliques() {
+    create_pattern_cliques_if_missing();
+    return pattern_cliques;
 }
 }

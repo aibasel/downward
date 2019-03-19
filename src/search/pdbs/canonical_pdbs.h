@@ -10,12 +10,12 @@ class State;
 namespace pdbs {
 class CanonicalPDBs {
     std::shared_ptr<PDBCollection> pdbs;
-    std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
+    std::shared_ptr<std::vector<PatternClique>> pattern_cliques;
 
 public:
     CanonicalPDBs(
         const std::shared_ptr<PDBCollection> &pdbs,
-        const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets);
+        const std::shared_ptr<std::vector<PatternClique>> &pattern_cliques);
     ~CanonicalPDBs() = default;
 
     int get_value(const State &state) const;

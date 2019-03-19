@@ -38,7 +38,7 @@ VariableAdditivity compute_additive_vars(const TaskProxy &task_proxy) {
     return are_additive;
 }
 
-shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
+shared_ptr<std::vector<PatternClique>> compute_pattern_cliques(
     const PatternCollection &patterns, const VariableAdditivity &are_additive) {
     // Initialize compatibility graph.
     vector<vector<int>> cgraph;
@@ -55,36 +55,36 @@ shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
         }
     }
 
-    shared_ptr<MaxAdditivePDBSubsets> max_cliques = make_shared<MaxAdditivePDBSubsets>();
+    shared_ptr<std::vector<PatternClique>> max_cliques = make_shared<std::vector<PatternClique>>();
     max_cliques::compute_max_cliques(cgraph, *max_cliques);
     return max_cliques;
 }
 
-MaxAdditivePDBSubsets compute_max_additive_subsets_with_pattern(
+std::vector<PatternClique> compute_pattern_cliques_with_pattern(
     const PatternCollection &patterns,
-    const MaxAdditivePDBSubsets &known_additive_subsets,
+    const std::vector<PatternClique> &known_pattern_cliques,
     const Pattern &new_pattern,
     const VariableAdditivity &are_additive) {
-    MaxAdditivePDBSubsets subsets_additive_with_pattern;
-    for (const vector<int> &known_subset : known_additive_subsets) {
+    std::vector<PatternClique> cliques_additive_with_pattern;
+    for (const PatternClique &known_clique : known_pattern_cliques) {
         // Take all patterns which are additive to new_pattern.
-        vector<int> new_subset;
-        new_subset.reserve(known_subset.size());
-        for (int pattern_index : known_subset) {
+        PatternClique new_clique;
+        new_clique.reserve(known_clique.size());
+        for (PatternID pattern_id : known_clique) {
             if (are_patterns_additive(
-                    new_pattern, patterns[pattern_index], are_additive)) {
-                new_subset.push_back(pattern_index);
+                    new_pattern, patterns[pattern_id], are_additive)) {
+                new_clique.push_back(pattern_id);
             }
         }
-        if (!new_subset.empty()) {
-            subsets_additive_with_pattern.push_back(new_subset);
+        if (!new_clique.empty()) {
+            cliques_additive_with_pattern.push_back(new_clique);
         }
     }
-    if (subsets_additive_with_pattern.empty()) {
+    if (cliques_additive_with_pattern.empty()) {
         // If nothing was additive with the new variable, then
-        // the only additive subset is the empty set.
-        subsets_additive_with_pattern.emplace_back();
+        // the only clique is the empty set.
+        cliques_additive_with_pattern.emplace_back();
     }
-    return subsets_additive_with_pattern;
+    return cliques_additive_with_pattern;
 }
 }

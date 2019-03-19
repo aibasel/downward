@@ -27,13 +27,13 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     shared_ptr<PatternCollection> patterns =
         pattern_collection_info.get_patterns();
     /*
-      We compute PDBs and max additive subsets here (if they have not been
+      We compute PDBs and pattern cliques here (if they have not been
       computed before) so that their computation is not taken into account
       for dominance pruning time.
     */
     shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
-    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
-        pattern_collection_info.get_max_additive_subsets();
+    shared_ptr<std::vector<PatternClique>> pattern_cliques =
+        pattern_collection_info.get_pattern_cliques();
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
@@ -45,12 +45,12 @@ CanonicalPDBs get_canonical_pdbs_from_options(
 
           In the long term, we plan to have patterns and their PDBs live
           together, in which case we would only need to pass their container
-          and the max additive subsets.
+          and the pattern cliques.
         */
-        prune_dominated_subsets(
+        prune_dominated_cliques(
             *patterns,
             *pdbs,
-            *max_additive_subsets,
+            *pattern_cliques,
             num_variables,
             max_time_dominance_pruning);
     }
@@ -58,7 +58,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     // Do not dump pattern collections for size reasons.
     dump_pattern_collection_generation_statistics(
         "Canonical PDB heuristic", timer(), pattern_collection_info, false);
-    return CanonicalPDBs(pdbs, max_additive_subsets);
+    return CanonicalPDBs(pdbs, pattern_cliques);
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)

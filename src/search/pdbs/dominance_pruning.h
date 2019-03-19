@@ -5,14 +5,14 @@
 
 namespace pdbs {
 /*
-  Collection superset dominates collection subset iff for every pattern
+  Clique superset dominates clique subset iff for every pattern
   p_subset in subset there is a pattern p_superset in superset where
   p_superset is a superset of p_subset.
 */
-extern void prune_dominated_subsets(
+extern void prune_dominated_cliques(
     PatternCollection &patterns,
     PDBCollection &pdbs,
-    MaxAdditivePDBSubsets &max_additive_subsets,
+    std::vector<PatternClique> &pattern_cliques,
     int num_variables,
     double max_time);
 }
