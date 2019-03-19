@@ -43,7 +43,7 @@ class Pruner {
     */
 
     const PatternCollection &patterns;
-    const std::vector<PatternClique> &pattern_cliques;
+    const vector<PatternClique> &pattern_cliques;
     const int num_variables;
 
     vector<int> variable_to_pattern_id;
@@ -107,7 +107,7 @@ class Pruner {
 public:
     Pruner(
         const PatternCollection &patterns,
-        const std::vector<PatternClique> &pattern_cliques,
+        const vector<PatternClique> &pattern_cliques,
         int num_variables)
         : patterns(patterns),
           pattern_cliques(pattern_cliques),
@@ -150,7 +150,7 @@ public:
 void prune_dominated_cliques(
     PatternCollection &patterns,
     PDBCollection &pdbs,
-    std::vector<PatternClique> &pattern_cliques,
+    vector<PatternClique> &pattern_cliques,
     int num_variables,
     double max_time) {
     cout << "Running dominance pruning..." << endl;
@@ -164,7 +164,7 @@ void prune_dominated_cliques(
         pattern_cliques,
         num_variables).get_pruned_cliques(timer);
 
-    std::vector<PatternClique> remaining_pattern_cliques;
+    vector<PatternClique> remaining_pattern_cliques;
     vector<bool> is_remaining_pattern(num_patterns, false);
     for (size_t i = 0; i < pattern_cliques.size(); ++i) {
         if (!pruned[i]) {

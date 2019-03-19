@@ -38,7 +38,7 @@ void IncrementalCanonicalPDBs::recompute_pattern_cliques() {
                                               are_additive);
 }
 
-std::vector<PatternClique> IncrementalCanonicalPDBs::get_pattern_cliques(
+vector<PatternClique> IncrementalCanonicalPDBs::get_pattern_cliques(
     const Pattern &new_pattern) {
     return pdbs::compute_pattern_cliques_with_pattern(
         *patterns, *pattern_cliques, new_pattern, are_additive);

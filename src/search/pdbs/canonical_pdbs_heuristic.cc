@@ -32,7 +32,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
       for dominance pruning time.
     */
     shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
-    shared_ptr<std::vector<PatternClique>> pattern_cliques =
+    shared_ptr<vector<PatternClique>> pattern_cliques =
         pattern_collection_info.get_pattern_cliques();
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
