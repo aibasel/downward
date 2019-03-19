@@ -47,7 +47,7 @@ static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_funct
     vector<unique_ptr<PotentialFunction>> functions;
     PotentialOptimizer optimizer(opts);
     shared_ptr<utils::RandomNumberGenerator> rng(utils::parse_rng_from_options(opts));
-    for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
+    for (size_t i = 0; i < opts.get<int>("num_heuristics"); ++i) {
         optimize_for_samples(optimizer, opts.get<int>("num_samples"), *rng);
         functions.push_back(optimizer.get_potential_function());
     }
