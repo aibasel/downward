@@ -11,8 +11,8 @@ using PatternCollection = std::vector<Pattern>;
 using PDBCollection = std::vector<std::shared_ptr<PatternDatabase>>;
 using PatternID = int;
 /* NOTE: pattern cliques are often called maximal additive pattern subsets
-   in the literature. A pattern clique is a maximal additive subset of patterns
-   (represented by their IDs) from a pattern collection. */
+   in the literature. A pattern clique is an additive set of patterns,
+   represented by their IDs (indices) in a pattern collection. */
 using PatternClique = std::vector<PatternID>;
 }
 
