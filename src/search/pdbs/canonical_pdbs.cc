@@ -12,15 +12,15 @@ using namespace std;
 namespace pdbs {
 CanonicalPDBs::CanonicalPDBs(
     const shared_ptr<PDBCollection> &pdbs,
-    const shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets)
-    : pdbs(pdbs), max_additive_subsets(max_additive_subsets) {
+    const shared_ptr<std::vector<PatternClique>> &pattern_cliques)
+    : pdbs(pdbs), pattern_cliques(pattern_cliques) {
     assert(pdbs);
-    assert(max_additive_subsets);
+    assert(pattern_cliques);
 }
 
 int CanonicalPDBs::get_value(const State &state) const {
-    // If we have an empty collection, then max_additive_subsets = { \emptyset }.
-    assert(!max_additive_subsets->empty());
+    // If we have an empty collection, then pattern_cliques = { \emptyset }.
+    assert(!pattern_cliques->empty());
     int max_h = 0;
     vector<int> h_values;
     h_values.reserve(pdbs->size());
@@ -31,12 +31,12 @@ int CanonicalPDBs::get_value(const State &state) const {
         }
         h_values.push_back(h);
     }
-    for (const vector<int> &subset : *max_additive_subsets) {
-        int subset_h = 0;
-        for (int pdb_index : subset) {
-            subset_h += h_values[pdb_index];
+    for (const PatternClique &clique : *pattern_cliques) {
+        int clique_h = 0;
+        for (PatternID pdb_index : clique) {
+            clique_h += h_values[pdb_index];
         }
-        max_h = max(max_h, subset_h);
+        max_h = max(max_h, clique_h);
     }
     return max_h;
 }
