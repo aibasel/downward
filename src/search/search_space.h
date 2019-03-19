@@ -60,7 +60,6 @@ public:
     explicit SearchSpace(StateRegistry &state_registry);
 
     SearchNode get_node(const GlobalState &state);
-    std::unique_ptr<SearchNode> get_node_pointer(const GlobalState &state);
     void trace_path(const GlobalState &goal_state,
                     std::vector<OperatorID> &path) const;
 
