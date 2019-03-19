@@ -115,7 +115,7 @@ public:
     }
 
     vector<bool> get_pruned_cliques(const utils::CountdownTimer &timer) {
-        int num_cliques= pattern_cliques.size();
+        int num_cliques = pattern_cliques.size();
         vector<bool> pruned(num_cliques, false);
         /*
           Already pruned cliques are not used to prune other
