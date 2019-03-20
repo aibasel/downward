@@ -114,10 +114,6 @@ void EagerSearch::print_statistics() const {
 }
 
 SearchStatus EagerSearch::step() {
-    /*
-      We use a unique_ptr here to be able to reassign search nodes in the
-      loop below, since search nodes cannot be default-constructed nor assigned.
-    */
     tl::optional<SearchNode> node;
     while (true) {
         if (open_list->empty()) {
@@ -135,10 +131,11 @@ SearchStatus EagerSearch::step() {
         if (node->is_closed())
             continue;
 
+        /*
+          We can pass calculate_preferred=false here since preferred
+          operators are computed when the state is expanded.
+        */
         EvaluationContext eval_context(s, node->get_g(), false, &statistics);
-
-        if (!lazy_evaluator)
-            assert(!node->is_dead_end());
 
         if (lazy_evaluator) {
             /*
@@ -160,10 +157,6 @@ SearchStatus EagerSearch::step() {
 
             if (lazy_evaluator->is_estimate_cached(s)) {
                 int old_h = lazy_evaluator->get_cached_estimate(s);
-                /*
-                  We can pass calculate_preferred=false here
-                  since preferred operators are computed when the state is expanded.
-                */
                 int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
                     node->mark_as_dead_end();
