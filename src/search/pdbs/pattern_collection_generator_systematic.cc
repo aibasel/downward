@@ -267,8 +267,8 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     cout << "Generating patterns using the systematic generator..." << endl;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
-    pattern_set.clear();
     if (only_interesting_patterns) {
+        assert(pattern_set.empty());
         build_patterns(task_proxy);
     } else {
         build_patterns_naive(task_proxy);
@@ -277,7 +277,7 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     /* Do not dump the collection since it can be very large for
        pattern_max_size >= 3. */
     dump_pattern_collection_generation_statistics(
-        "Systematic generator", timer(), pci, false);
+        task_proxy, "Systematic generator", timer(), pci, false);
     return pci;
 }
 

@@ -50,7 +50,7 @@ PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTas
 
     PatternInformation pattern_info(task_proxy, move(pattern));
     dump_pattern_generation_statistics(
-        "Greedy generator", timer(), pattern_info);
+        task_proxy, "Greedy generator", timer(), pattern_info);
     return pattern_info;
 }
 

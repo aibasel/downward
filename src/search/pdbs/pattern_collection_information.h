@@ -3,9 +3,9 @@
 
 #include "types.h"
 
-#include "../task_proxy.h"
-
 #include <memory>
+
+class TaskProxy;
 
 namespace pdbs {
 /*
@@ -21,13 +21,12 @@ namespace pdbs {
   as an interface for ownership transfer rather than sharing it.
 */
 class PatternCollectionInformation {
-    TaskProxy task_proxy;
     std::shared_ptr<PatternCollection> patterns;
     std::shared_ptr<PDBCollection> pdbs;
     std::shared_ptr<std::vector<PatternClique>> pattern_cliques;
 
-    void create_pdbs_if_missing();
-    void create_pattern_cliques_if_missing();
+    void create_pdbs_if_missing(const TaskProxy &task_proxy);
+    void create_pattern_cliques_if_missing(const TaskProxy &task_proxy);
 
     bool information_is_valid() const;
 public:
@@ -40,13 +39,10 @@ public:
     void set_pattern_cliques(
         const std::shared_ptr<std::vector<PatternClique>> &pattern_cliques);
 
-    TaskProxy get_task_proxy() const {
-        return task_proxy;
-    }
-
     std::shared_ptr<PatternCollection> get_patterns() const;
-    std::shared_ptr<PDBCollection> get_pdbs();
-    std::shared_ptr<std::vector<PatternClique>> get_pattern_cliques();
+    std::shared_ptr<PDBCollection> get_pdbs(const TaskProxy &task_proxy);
+    std::shared_ptr<std::vector<PatternClique>> get_pattern_cliques(
+        const TaskProxy &task_proxy);
 };
 }
 

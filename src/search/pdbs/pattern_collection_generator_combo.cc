@@ -42,7 +42,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
 
     PatternCollectionInformation pci(task_proxy, patterns);
     dump_pattern_collection_generation_statistics(
-        "Combo generator", timer(), pci);
+        task_proxy, "Combo generator", timer(), pci);
     return pci;
 }
 

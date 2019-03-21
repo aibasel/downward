@@ -284,7 +284,7 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     assert(best_patterns);
     PatternCollectionInformation pci(task_proxy, best_patterns);
     dump_pattern_collection_generation_statistics(
-        "Genetic generator", timer(), pci);
+        task_proxy, "Genetic generator", timer(), pci);
     return pci;
 }
 

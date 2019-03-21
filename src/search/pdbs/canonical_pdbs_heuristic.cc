@@ -31,13 +31,14 @@ CanonicalPDBs get_canonical_pdbs_from_options(
       computed before) so that their computation is not taken into account
       for dominance pruning time.
     */
-    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();
+    TaskProxy task_proxy(*task);
+    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs(task_proxy);
     shared_ptr<vector<PatternClique>> pattern_cliques =
-        pattern_collection_info.get_pattern_cliques();
+        pattern_collection_info.get_pattern_cliques(task_proxy);
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
-        int num_variables = TaskProxy(*task).get_variables().size();
+        int num_variables = task_proxy.get_variables().size();
         /*
           NOTE: Dominance pruning could also be computed without having access
           to the PDBs, but since we want to delete patterns, we also want to
@@ -57,7 +58,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
 
     // Do not dump pattern collections for size reasons.
     dump_pattern_collection_generation_statistics(
-        "Canonical PDB heuristic", timer(), pattern_collection_info, false);
+        task_proxy, "Canonical PDB heuristic", timer(), pattern_collection_info, false);
     return CanonicalPDBs(pdbs, pattern_cliques);
 }
 

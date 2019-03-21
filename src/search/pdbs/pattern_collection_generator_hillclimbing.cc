@@ -277,8 +277,8 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
 
     vector<int> h_values;
     h_values.reserve(pdbs.size());
-    for (const shared_ptr<PatternDatabase> &p : pdbs) {
-        int h = p->get_value(sample);
+    for (const shared_ptr<PatternDatabase> &pdb : pdbs) {
+        int h = pdb->get_value(sample);
         if (h == numeric_limits<int>::max())
             return false;
         h_values.push_back(h);
@@ -430,7 +430,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
 
     PatternCollectionInformation pci = current_pdbs->get_pattern_collection_information();
     dump_pattern_collection_generation_statistics(
-        "Hill climbing generator", timer(), pci);
+        task_proxy, "Hill climbing generator", timer(), pci);
     return pci;
 }
 
