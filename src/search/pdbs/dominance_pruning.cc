@@ -166,20 +166,17 @@ void prune_dominated_cliques(
 
     vector<PatternClique> remaining_pattern_cliques;
     vector<bool> is_remaining_pattern(num_patterns, false);
+    int num_remaining_patterns = 0;
     for (size_t i = 0; i < pattern_cliques.size(); ++i) {
         if (!pruned[i]) {
             PatternClique &clique = pattern_cliques[i];
             for (PatternID pattern_id : clique) {
-                is_remaining_pattern[pattern_id] = true;
+                if (!is_remaining_pattern[pattern_id]) {
+                    is_remaining_pattern[pattern_id] = true;
+                    ++num_remaining_patterns;
+                }
             }
             remaining_pattern_cliques.push_back(move(clique));
-        }
-    }
-
-    int num_remaining_patterns = 0;
-    for (PatternID old_pattern_id = 0; old_pattern_id < num_patterns; ++old_pattern_id) {
-        if (is_remaining_pattern[old_pattern_id]) {
-            ++num_remaining_patterns;
         }
     }
 
