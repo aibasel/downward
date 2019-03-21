@@ -1,7 +1,7 @@
 #ifndef PDBS_INCREMENTAL_CANONICAL_PDBS_H
 #define PDBS_INCREMENTAL_CANONICAL_PDBS_H
 
-#include "max_additive_pdb_sets.h"
+#include "pattern_cliques.h"
 #include "pattern_collection_information.h"
 #include "types.h"
 
