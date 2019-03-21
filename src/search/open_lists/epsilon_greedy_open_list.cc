@@ -156,7 +156,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "Epsilon-greedy open list",
         "Chooses an entry uniformly randomly with probability "
         "'epsilon', otherwise it returns the minimum entry. "
-        "The algorithm is based on" + utils::format_paper_reference(
+        "The algorithm is based on" + utils::format_conference_reference(
             {"Richard Valenzano", "Nathan R. Sturtevant",
              "Jonathan Schaeffer", "Fan Xie"},
             "A Comparison of Knowledge-Based GBFS Enhancements and"

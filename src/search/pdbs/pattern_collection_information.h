@@ -23,10 +23,10 @@ namespace pdbs {
 class PatternCollectionInformation {
     std::shared_ptr<PatternCollection> patterns;
     std::shared_ptr<PDBCollection> pdbs;
-    std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
+    std::shared_ptr<std::vector<PatternClique>> pattern_cliques;
 
     void create_pdbs_if_missing(const TaskProxy &task_proxy);
-    void create_max_additive_subsets_if_missing(const TaskProxy &task_proxy);
+    void create_pattern_cliques_if_missing(const TaskProxy &task_proxy);
 
     bool information_is_valid() const;
 public:
@@ -36,12 +36,13 @@ public:
     ~PatternCollectionInformation() = default;
 
     void set_pdbs(const std::shared_ptr<PDBCollection> &pdbs);
-    void set_max_additive_subsets(
-        const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets);
+    void set_pattern_cliques(
+        const std::shared_ptr<std::vector<PatternClique>> &pattern_cliques);
 
     std::shared_ptr<PatternCollection> get_patterns() const;
     std::shared_ptr<PDBCollection> get_pdbs(const TaskProxy &task_proxy);
-    std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets(const TaskProxy &task_proxy);
+    std::shared_ptr<std::vector<PatternClique>> get_pattern_cliques(
+        const TaskProxy &task_proxy);
 };
 }
 

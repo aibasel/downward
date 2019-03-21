@@ -297,7 +297,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "to optimize the pattern collections with an objective function that "
         "estimates the mean heuristic value of the the pattern collections. "
         "Pattern collections with higher mean heuristic estimates are more "
-        "likely selected for the next generation." + utils::format_paper_reference(
+        "likely selected for the next generation." + utils::format_conference_reference(
             {"Stefan Edelkamp"},
             "Automated Creation of Pattern Database Search Heuristics",
             "http://www.springerlink.com/content/20613345434608x1/",

@@ -286,7 +286,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "Systematically generated patterns",
         "Generates all (interesting) patterns with up to pattern_max_size "
         "variables. "
-        "For details, see" + utils::format_paper_reference(
+        "For details, see" + utils::format_conference_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
             "Getting the Most Out of Pattern Databases for Classical Planning",
             "https://ai.dmi.unibas.ch/papers/pommerening-et-al-ijcai2013.pdf",

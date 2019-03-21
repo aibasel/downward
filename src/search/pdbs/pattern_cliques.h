@@ -1,5 +1,5 @@
-#ifndef PDBS_MAX_ADDITIVE_PDB_SETS_H
-#define PDBS_MAX_ADDITIVE_PDB_SETS_H
+#ifndef PDBS_PATTERN_CLIQUES_H
+#define PDBS_PATTERN_CLIQUES_H
 
 #include "types.h"
 
@@ -20,31 +20,31 @@ extern bool are_patterns_additive(const Pattern &pattern1,
                                   const VariableAdditivity &are_additive);
 
 /*
-  Computes maximal additive subsets of patterns.
+  Computes pattern cliques of the given patterns.
 */
-extern std::shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
-    const PDBCollection &pdbs, const VariableAdditivity &are_additive);
+extern std::shared_ptr<std::vector<PatternClique>> compute_pattern_cliques(
+    const PatternCollection &patterns, const VariableAdditivity &are_additive);
 
 /*
-  We compute additive pattern sets S with the property that we could
-  add the new pattern P to S and still have an additive pattern set.
+  We compute pattern cliques S with the property that we could
+  add the new pattern P to S and still have a pattern clique.
 
-  Ideally, we would like to return all *maximal* sets S with this
+  Ideally, we would like to return all *maximal* cliques S with this
   property (w.r.t. set inclusion), but we don't currently
-  guarantee this. (What we guarantee is that all maximal such sets
+  guarantee this. (What we guarantee is that all maximal such cliques
   are *included* in the result, but the result could contain
-  duplicates or sets that are subsets of other sets in the
+  duplicates or cliques that are subcliques of other cliques in the
   result.)
 
   We currently implement this as follows:
 
-  * Consider all maximal additive subsets of the current collection.
-  * For each additive subset S, take the subset S' that contains
+  * Consider all pattern cliques of the current collection.
+  * For each clique S, take the subclique S' that contains
     those patterns that are additive with the new pattern P.
-  * Include the subset S' in the result.
+  * Include the subclique S' in the result.
 
   As an optimization, we actually only include S' in the result if
-  it is non-empty. However, this is wrong if *all* subsets we get
+  it is non-empty. However, this is wrong if *all* subcliques we get
   are empty, so we correct for this case at the end.
 
   This may include dominated elements and duplicates in the result.
@@ -58,8 +58,8 @@ extern std::shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
   * Return the maximal cliques of G_N.
 
   One nice thing about this alternative algorithm is that we could
-  also use it to incrementally compute the new set of maximal additive
-  pattern sets after adding the new pattern P:
+  also use it to incrementally compute the new set of pattern cliques
+  after adding the new pattern P:
 
   G_N_cliques = max_cliques(G_N)   // as above
   new_max_cliques = (old_max_cliques \setminus G_N_cliques) \union
@@ -70,8 +70,9 @@ extern std::shared_ptr<MaxAdditivePDBSubsets> compute_max_additive_subsets(
   (old_max_cliques \setminus G_N_cliques) and all
   "new" cliques including P.
   */
-extern MaxAdditivePDBSubsets compute_max_additive_subsets_with_pattern(
-    const MaxAdditivePDBSubsets &known_additive_subsets,
+extern std::vector<PatternClique> compute_pattern_cliques_with_pattern(
+    const PatternCollection &patterns,
+    const std::vector<PatternClique> &known_pattern_cliques,
     const Pattern &new_pattern,
     const VariableAdditivity &are_additive);
 }

@@ -119,7 +119,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "change of the fact, i.e., the total number of times the fact is added "
         "minus the total number of times is removed. The bounds of each "
         "constraint depend on the current state and the goal state and are "
-        "updated in each state. For details, see" + utils::format_paper_reference(
+        "updated in each state. For details, see" + utils::format_conference_reference(
             {"Menkes van den Briel", "J. Benton", "Subbarao Kambhampati",
              "Thomas Vossen"},
             "An LP-based heuristic for optimal planning",
@@ -128,7 +128,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             " Principles and Practice of Constraint Programming (CP 2007)",
             "651-665",
             "Springer-Verlag",
-            "2007") + utils::format_paper_reference(
+            "2007") + utils::format_conference_reference(
             {"Blai Bonet"},
             "An admissible heuristic for SAS+ planning obtained from the"
             " state equation",
@@ -137,7 +137,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2268-2274",
             "AAAI Press",
-            "2013") + utils::format_paper_reference(
+            "2013") + utils::format_conference_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
              "Blai Bonet"},
             "LP-based Heuristics for Cost-optimal Planning",

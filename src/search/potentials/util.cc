@@ -33,7 +33,7 @@ vector<State> sample_without_dead_end_detection(
 }
 
 string get_admissible_potentials_reference() {
-    return "The algorithm is based on" + utils::format_paper_reference(
+    return "The algorithm is based on" + utils::format_conference_reference(
         {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
         "New Optimization Functions for Potential Heuristics",
         "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2015.pdf",

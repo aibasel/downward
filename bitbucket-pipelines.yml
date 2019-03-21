@@ -44,5 +44,6 @@ pipelines:
             - rm -rf VAL
 
             - export PATH="$(pwd):$PATH"  # Add uncrustify and VAL to PATH.
+            - export CXXFLAGS="-Werror"  # Treat compilation warnings as errors.
 
             - ./misc/run-all-tests

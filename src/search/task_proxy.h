@@ -580,6 +580,7 @@ public:
 
     State &operator=(State &&other) {
         if (this != &other) {
+            task = other.task;
             values = std::move(other.values);
             other.task = nullptr;
         }

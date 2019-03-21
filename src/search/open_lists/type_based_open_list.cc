@@ -158,7 +158,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "When retrieving an entry, a bucket is chosen uniformly at "
         "random and one of the contained entries is selected "
         "uniformly randomly. "
-        "The algorithm is based on" + utils::format_paper_reference(
+        "The algorithm is based on" + utils::format_conference_reference(
             {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
             "Type-Based Exploration with Multiple Search Queues for"
             " Satisficing Planning",
