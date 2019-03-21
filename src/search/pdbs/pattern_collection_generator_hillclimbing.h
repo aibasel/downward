@@ -90,7 +90,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
 
     /*
       Returns true iff the h-value of the new pattern (from pdb) plus the
-      h-value of all maximal additive subsets from the current pattern
+      h-value of all pattern cliques from the current pattern
       collection heuristic if the new pattern was added to it is greater than
       the h-value of the current pattern collection.
     */
@@ -98,7 +98,8 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
         const PatternDatabase &pdb,
         const State &sample,
         int h_collection,
-        const MaxAdditivePDBSubsets &max_additive_subsets);
+        const PDBCollection &pdbs,
+        const std::vector<PatternClique> &pattern_cliques);
 
     /*
       This is the core algorithm of this class. The initial PDB collection
