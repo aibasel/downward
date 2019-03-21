@@ -19,6 +19,11 @@ REVISIONS = ["issue860-base", "issue860-v2"]
 BUILDS = ["release"]
 CONFIG_NICKS = [
     ("astar-blind", ["--search", "astar(blind)"]),
+    ("astar-lmcut", ["--search", "astar(lmcut)"]), # inconsistent heuristic to test re-opening
+    ("bjolp", ["--evaluator",
+    "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
+    "--search",
+    "astar(lmc,lazy_evaluator=lmc)"]), # test lazy evaluator
 ]
 CONFIGS = [
     IssueConfig(
@@ -56,7 +61,6 @@ exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
-exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 
 exp.run_steps()
