@@ -1,5 +1,5 @@
-#ifndef PDBS_MAX_ADDITIVE_PDB_SETS_H
-#define PDBS_MAX_ADDITIVE_PDB_SETS_H
+#ifndef PDBS_PATTERN_CLIQUES_H
+#define PDBS_PATTERN_CLIQUES_H
 
 #include "types.h"
 
