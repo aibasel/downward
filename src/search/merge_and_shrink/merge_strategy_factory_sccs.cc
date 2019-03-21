@@ -168,7 +168,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Merge strategy SSCs",
         "This merge strategy implements the algorithm described in the paper "
-        + utils::format_paper_reference(
+        + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
