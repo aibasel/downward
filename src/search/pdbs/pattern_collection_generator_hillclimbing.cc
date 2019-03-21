@@ -495,7 +495,7 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
         "This pattern generation method is an adaption of the algorithm "
-        "described in the following paper:" + utils::format_paper_reference(
+        "described in the following paper:" + utils::format_conference_reference(
             {"Patrik Haslum", "Adi Botea", "Malte Helmert", "Blai Bonet",
              "Sven Koenig"},
             "Domain-Independent Construction of Pattern Database Heuristics for"
@@ -506,7 +506,7 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
             "1007-1012",
             "AAAI Press",
             "2007") +
-        "For implementation notes, see:" + utils::format_paper_reference(
+        "For implementation notes, see:" + utils::format_conference_reference(
             {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
             "Efficient Implementation of Pattern Database Heuristics for"
             " Classical Planning",
