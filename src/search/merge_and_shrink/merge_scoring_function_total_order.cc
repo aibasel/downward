@@ -207,14 +207,15 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "correponds to its position in the order. This scoring function is "
         "mainly intended as tie-breaking, and has been introduced in the "
         "following paper:"
-        + utils::format_paper_reference(
+        + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
-            "AAAI Press 2016") +
+            "AAAI Press",
+            "2016") +
         "Furthermore, using the atomic_ts_order option, this scoring function, "
         "if used alone in a score based filtering merge selector, can be used "
         "to emulate the corresponding (precomputed) linear merge strategies "

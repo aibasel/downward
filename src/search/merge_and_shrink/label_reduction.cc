@@ -302,14 +302,15 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         "Exact generalized label reduction",
         "This class implements the exact generalized label reduction "
         "described in the following paper:" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            "2014"));
     parser.add_option<bool>("before_shrinking",
                             "apply label reduction before shrinking");
     parser.add_option<bool>("before_merging",

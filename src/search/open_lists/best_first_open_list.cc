@@ -1,4 +1,4 @@
-#include "standard_scalar_open_list.h"
+#include "best_first_open_list.h"
 
 #include "../evaluator.h"
 #include "../open_list.h"
@@ -15,7 +15,7 @@ using namespace std;
 
 namespace standard_scalar_open_list {
 template<class Entry>
-class StandardScalarOpenList : public OpenList<Entry> {
+class BestFirstOpenList : public OpenList<Entry> {
     typedef deque<Entry> Bucket;
 
     map<int, Bucket> buckets;
@@ -28,9 +28,9 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit StandardScalarOpenList(const Options &opts);
-    StandardScalarOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
-    virtual ~StandardScalarOpenList() override = default;
+    explicit BestFirstOpenList(const Options &opts);
+    BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
+    virtual ~BestFirstOpenList() override = default;
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -44,14 +44,14 @@ public:
 
 
 template<class Entry>
-StandardScalarOpenList<Entry>::StandardScalarOpenList(const Options &opts)
+BestFirstOpenList<Entry>::BestFirstOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0),
       evaluator(opts.get<shared_ptr<Evaluator>>("eval")) {
 }
 
 template<class Entry>
-StandardScalarOpenList<Entry>::StandardScalarOpenList(
+BestFirstOpenList<Entry>::BestFirstOpenList(
     const shared_ptr<Evaluator> &evaluator, bool preferred_only)
     : OpenList<Entry>(preferred_only),
       size(0),
@@ -59,7 +59,7 @@ StandardScalarOpenList<Entry>::StandardScalarOpenList(
 }
 
 template<class Entry>
-void StandardScalarOpenList<Entry>::do_insertion(
+void BestFirstOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     int key = eval_context.get_evaluator_value(evaluator.get());
     buckets[key].push_back(entry);
@@ -67,7 +67,7 @@ void StandardScalarOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry StandardScalarOpenList<Entry>::remove_min() {
+Entry BestFirstOpenList<Entry>::remove_min() {
     assert(size > 0);
     auto it = buckets.begin();
     assert(it != buckets.end());
@@ -82,53 +82,60 @@ Entry StandardScalarOpenList<Entry>::remove_min() {
 }
 
 template<class Entry>
-bool StandardScalarOpenList<Entry>::empty() const {
+bool BestFirstOpenList<Entry>::empty() const {
     return size == 0;
 }
 
 template<class Entry>
-void StandardScalarOpenList<Entry>::clear() {
+void BestFirstOpenList<Entry>::clear() {
     buckets.clear();
     size = 0;
 }
 
 template<class Entry>
-void StandardScalarOpenList<Entry>::get_path_dependent_evaluators(
+void BestFirstOpenList<Entry>::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 
 template<class Entry>
-bool StandardScalarOpenList<Entry>::is_dead_end(
+bool BestFirstOpenList<Entry>::is_dead_end(
     EvaluationContext &eval_context) const {
     return eval_context.is_evaluator_value_infinite(evaluator.get());
 }
 
 template<class Entry>
-bool StandardScalarOpenList<Entry>::is_reliable_dead_end(
+bool BestFirstOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-StandardScalarOpenListFactory::StandardScalarOpenListFactory(
+BestFirstOpenListFactory::BestFirstOpenListFactory(
     const Options &options)
     : options(options) {
 }
 
 unique_ptr<StateOpenList>
-StandardScalarOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<StandardScalarOpenList<StateOpenListEntry>>(options);
+BestFirstOpenListFactory::create_state_open_list() {
+    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
-StandardScalarOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<StandardScalarOpenList<EdgeOpenListEntry>>(options);
+BestFirstOpenListFactory::create_edge_open_list() {
+    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Standard open list",
-        "Standard open list that uses a single evaluator");
+        "Best-first open list",
+        "Open list that uses a single evaluator and FIFO tiebreaking.");
+    parser.document_note(
+        "Implementation Notes",
+        "Elements with the same evaluator value are stored in double-ended "
+        "queues, called \"buckets\". The open list stores a map from evaluator "
+        "values to buckets. Pushing and popping from a bucket runs in constant "
+        "time. Therefore, inserting and removing an entry from the open list "
+        "takes time O(log(n)), where n is the number of buckets.");
     parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
     parser.add_option<bool>(
         "pref_only",
@@ -138,7 +145,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return make_shared<StandardScalarOpenListFactory>(opts);
+        return make_shared<BestFirstOpenListFactory>(opts);
 }
 
 static Plugin<OpenListFactory> _plugin("single", _parse);

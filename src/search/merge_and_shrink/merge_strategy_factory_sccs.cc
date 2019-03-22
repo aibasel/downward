@@ -168,14 +168,15 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Merge strategy SSCs",
         "This merge strategy implements the algorithm described in the paper "
-        + utils::format_paper_reference(
+        + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
-            "AAAI Press 2016") +
+            "AAAI Press",
+            "2016") +
         "In a nutshell, it computes the maximal SCCs of the causal graph, "
         "obtaining a partitioning of the task's variables. Every such "
         "partition is then merged individually, using the specified fallback "

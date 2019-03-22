@@ -156,7 +156,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "Epsilon-greedy open list",
         "Chooses an entry uniformly randomly with probability "
         "'epsilon', otherwise it returns the minimum entry. "
-        "The algorithm is based on" + utils::format_paper_reference(
+        "The algorithm is based on" + utils::format_conference_reference(
             {"Richard Valenzano", "Nathan R. Sturtevant",
              "Jonathan Schaeffer", "Fan Xie"},
             "A Comparison of Knowledge-Based GBFS Enhancements and"
@@ -165,7 +165,8 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             "Proceedings of the Twenty-Fourth International Conference"
             " on Automated Planning and Scheduling (ICAPS 2014)",
             "375-379",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            "2014"));
     parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
     parser.add_option<bool>(
         "pref_only",

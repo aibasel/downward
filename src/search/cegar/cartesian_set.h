@@ -1,5 +1,5 @@
-#ifndef CEGAR_DOMAINS_H
-#define CEGAR_DOMAINS_H
+#ifndef CEGAR_CARTESIAN_SET_H
+#define CEGAR_CARTESIAN_SET_H
 
 #include "../algorithms/dynamic_bitset.h"
 
@@ -10,15 +10,15 @@ namespace cegar {
 using Bitset = dynamic_bitset::DynamicBitset<unsigned short>;
 
 /*
-  Represent a Cartesian set: for each variable store a subset of values.
+  For each variable store a subset of its domain.
 
   The underlying data structure is a vector of bitsets.
 */
-class Domains {
+class CartesianSet {
     std::vector<Bitset> domain_subsets;
 
 public:
-    explicit Domains(const std::vector<int> &domain_sizes);
+    explicit CartesianSet(const std::vector<int> &domain_sizes);
 
     void add(int var, int value);
     void set_single_value(int var, int value);
@@ -31,11 +31,11 @@ public:
     }
 
     int count(int var) const;
-    bool intersects(const Domains &other, int var) const;
-    bool is_superset_of(const Domains &other) const;
+    bool intersects(const CartesianSet &other, int var) const;
+    bool is_superset_of(const CartesianSet &other) const;
 
     friend std::ostream &operator<<(
-        std::ostream &os, const Domains &domains);
+        std::ostream &os, const CartesianSet &cartesian_set);
 };
 }
 

@@ -124,11 +124,11 @@ void TransitionSystem::add_loop(int state_id, int op_id) {
 
 void TransitionSystem::rewire_incoming_transitions(
     const Transitions &old_incoming, const AbstractStates &states,
-    AbstractState *v1, AbstractState *v2, int var) {
+    const AbstractState &v1, const AbstractState &v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        u->v we need to add transitions u->v1, u->v2, or both. */
-    int v1_id = v1->get_id();
-    int v2_id = v2->get_id();
+    int v1_id = v1.get_id();
+    int v2_id = v2.get_id();
 
     unordered_set<int> updated_states;
     for (const Transition &transition : old_incoming) {
@@ -143,25 +143,25 @@ void TransitionSystem::rewire_incoming_transitions(
     for (const Transition &transition : old_incoming) {
         int op_id = transition.op_id;
         int u_id = transition.target_id;
-        AbstractState *u = states[u_id];
+        const AbstractState &u = *states[u_id];
         int post = get_postcondition_value(op_id, var);
         if (post == UNDEFINED) {
             // op has no precondition and no effect on var.
-            bool u_and_v1_intersect = u->domains_intersect(v1, var);
+            bool u_and_v1_intersect = u.domain_subsets_intersect(v1, var);
             if (u_and_v1_intersect) {
                 add_transition(u_id, op_id, v1_id);
             }
-            /* If the domains of u and v1 don't intersect, we must add
-               the other transition and can avoid an intersection test. */
-            if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
+            /* If u and v1 don't intersect, we must add the other transition
+               and can avoid an intersection test. */
+            if (!u_and_v1_intersect || u.domain_subsets_intersect(v2, var)) {
                 add_transition(u_id, op_id, v2_id);
             }
-        } else if (v1->contains(var, post)) {
+        } else if (v1.contains(var, post)) {
             // op can only end in v1.
             add_transition(u_id, op_id, v1_id);
         } else {
             // op can only end in v2.
-            assert(v2->contains(var, post));
+            assert(v2.contains(var, post));
             add_transition(u_id, op_id, v2_id);
         }
     }
@@ -169,11 +169,11 @@ void TransitionSystem::rewire_incoming_transitions(
 
 void TransitionSystem::rewire_outgoing_transitions(
     const Transitions &old_outgoing, const AbstractStates &states,
-    AbstractState *v1, AbstractState *v2, int var) {
+    const AbstractState &v1, const AbstractState &v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        v->w we need to add transitions v1->w, v2->w, or both. */
-    int v1_id = v1->get_id();
-    int v2_id = v2->get_id();
+    int v1_id = v1.get_id();
+    int v2_id = v2.get_id();
 
     unordered_set<int> updated_states;
     for (const Transition &transition : old_outgoing) {
@@ -188,43 +188,43 @@ void TransitionSystem::rewire_outgoing_transitions(
     for (const Transition &transition : old_outgoing) {
         int op_id = transition.op_id;
         int w_id = transition.target_id;
-        AbstractState *w = states[w_id];
+        const AbstractState &w = *states[w_id];
         int pre = get_precondition_value(op_id, var);
         int post = get_postcondition_value(op_id, var);
         if (post == UNDEFINED) {
             assert(pre == UNDEFINED);
             // op has no precondition and no effect on var.
-            bool v1_and_w_intersect = v1->domains_intersect(w, var);
+            bool v1_and_w_intersect = v1.domain_subsets_intersect(w, var);
             if (v1_and_w_intersect) {
                 add_transition(v1_id, op_id, w_id);
             }
-            /* If the domains of v1 and w don't intersect, we must add
-               the other transition and can avoid an intersection test. */
-            if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
+            /* If v1 and w don't intersect, we must add the other transition
+               and can avoid an intersection test. */
+            if (!v1_and_w_intersect || v2.domain_subsets_intersect(w, var)) {
                 add_transition(v2_id, op_id, w_id);
             }
         } else if (pre == UNDEFINED) {
             // op has no precondition, but an effect on var.
             add_transition(v1_id, op_id, w_id);
             add_transition(v2_id, op_id, w_id);
-        } else if (v1->contains(var, pre)) {
+        } else if (v1.contains(var, pre)) {
             // op can only start in v1.
             add_transition(v1_id, op_id, w_id);
         } else {
             // op can only start in v2.
-            assert(v2->contains(var, pre));
+            assert(v2.contains(var, pre));
             add_transition(v2_id, op_id, w_id);
         }
     }
 }
 
 void TransitionSystem::rewire_loops(
-    const Loops &old_loops, AbstractState *v1, AbstractState *v2, int var) {
+    const Loops &old_loops, const AbstractState &v1, const AbstractState &v2, int var) {
     /* State v has been split into v1 and v2. Now for all self-loops
        v->v we need to add one or two of the transitions v1->v1, v1->v2,
        v2->v1 and v2->v2. */
-    int v1_id = v1->get_id();
-    int v2_id = v2->get_id();
+    int v1_id = v1.get_id();
+    int v2_id = v2.get_id();
     for (int op_id : old_loops) {
         int pre = get_precondition_value(op_id, var);
         int post = get_postcondition_value(op_id, var);
@@ -234,37 +234,37 @@ void TransitionSystem::rewire_loops(
                 // op has no effect on var --> it must end in v1 and v2.
                 add_loop(v1_id, op_id);
                 add_loop(v2_id, op_id);
-            } else if (v2->contains(var, post)) {
+            } else if (v2.contains(var, post)) {
                 // op must end in v2.
                 add_transition(v1_id, op_id, v2_id);
                 add_loop(v2_id, op_id);
             } else {
                 // op must end in v1.
-                assert(v1->contains(var, post));
+                assert(v1.contains(var, post));
                 add_loop(v1_id, op_id);
                 add_transition(v2_id, op_id, v1_id);
             }
-        } else if (v1->contains(var, pre)) {
+        } else if (v1.contains(var, pre)) {
             // op must start in v1.
             assert(post != UNDEFINED);
-            if (v1->contains(var, post)) {
+            if (v1.contains(var, post)) {
                 // op must end in v1.
                 add_loop(v1_id, op_id);
             } else {
                 // op must end in v2.
-                assert(v2->contains(var, post));
+                assert(v2.contains(var, post));
                 add_transition(v1_id, op_id, v2_id);
             }
         } else {
             // op must start in v2.
-            assert(v2->contains(var, pre));
+            assert(v2.contains(var, pre));
             assert(post != UNDEFINED);
-            if (v1->contains(var, post)) {
+            if (v1.contains(var, post)) {
                 // op must end in v1.
                 add_transition(v2_id, op_id, v1_id);
             } else {
                 // op must end in v2.
-                assert(v2->contains(var, post));
+                assert(v2.contains(var, post));
                 add_loop(v2_id, op_id);
             }
         }
@@ -273,14 +273,15 @@ void TransitionSystem::rewire_loops(
 }
 
 void TransitionSystem::rewire(
-    const AbstractStates &states, int v_id, AbstractState *v1, AbstractState *v2, int var) {
+    const AbstractStates &states, int v_id,
+    const AbstractState &v1, const AbstractState &v2, int var) {
     // Retrieve old transitions and make space for new transitions.
     Transitions old_incoming = move(incoming[v_id]);
     Transitions old_outgoing = move(outgoing[v_id]);
     Loops old_loops = move(loops[v_id]);
     enlarge_vectors_by_one();
-    int v1_id = v1->get_id();
-    int v2_id = v2->get_id();
+    int v1_id = v1.get_id();
+    int v2_id = v2.get_id();
     utils::unused_variable(v1_id);
     utils::unused_variable(v2_id);
     assert(incoming[v1_id].empty() && outgoing[v1_id].empty() && loops[v1_id].empty());
