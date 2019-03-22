@@ -105,21 +105,23 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
         "This heuristic implements the algorithm described in the following "
-        "paper:" + utils::format_paper_reference(
+        "paper:" + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
-            "AAAI Press 2014") + "\n" +
+            "AAAI Press",
+            "2014") + "\n" +
         "For a more exhaustive description of merge-and-shrink, see the journal "
-        "paper" + utils::format_paper_reference(
+        "paper" + utils::format_journal_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann", "Raz Nissim"},
             "Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds"
             " in Factored State Spaces",
             "https://ai.dmi.unibas.ch/papers/helmert-et-al-jacm2014.pdf",
-            "Journal of the ACM 61 (3)",
+            "Journal of the ACM",
+            "61 (3)",
             "16:1-63",
             "2014") + "\n" +
         "Please note that the journal paper describes the \"old\" theory of "
@@ -127,16 +129,17 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
         "paper and is no longer implemented in Fast Downward.\n\n"
         "The following paper describes how to improve the DFP merge strategy "
         "with tie-breaking, and presents two new merge strategies (dyn-MIASM "
-        "and SCC-DFP):" + utils::format_paper_reference(
+        "and SCC-DFP):" + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
-            "AAAI Press 2016") + "\n" +
+            "AAAI Press",
+            "2016") + "\n" +
         "Details of the algorithms and the implementation are described in the "
-        "paper" + utils::format_paper_reference(
+        "paper" + utils::format_conference_reference(
             {"Silvan Sievers"},
             "Merge-and-Shrink Heuristics for Classical Planning: Efficient "
             "Implementation and Partial Abstractions",
@@ -144,7 +147,8 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "Proceedings of the 11th Annual Symposium on Combinatorial Search "
             "(SoCS 2018)",
             "90-98",
-            "AAAI Press 2018")
+            "AAAI Press",
+            "2018")
         );
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");

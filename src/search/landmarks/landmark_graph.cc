@@ -4,6 +4,8 @@
 
 #include "../task_proxy.h"
 
+#include "../utils/memory.h"
+
 #include <cassert>
 #include <list>
 #include <map>
@@ -15,7 +17,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : landmarks_count(0), conj_lms(0) {
+    : conj_lms(0) {
     generate_operators_lookups(task_proxy);
 }
 
@@ -64,15 +66,13 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
 }
 
 LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
-    assert(ordered_nodes[i]->get_id() == i);
-    return ordered_nodes[i];
+    return nodes[i].get();
 }
 
 int LandmarkGraph::number_of_edges() const {
     int total = 0;
-    for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
-         != nodes.end(); ++it)
-        total += (*it)->children.size();
+    for (auto &node : nodes)
+        total += node->children.size();
     return total;
 }
 
@@ -80,9 +80,8 @@ void LandmarkGraph::count_costs() {
     reached_cost = 0;
     needed_cost = 0;
 
-    set<LandmarkNode *>::iterator node_it;
-    for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
-        LandmarkNode &node = **node_it;
+    for (auto &lm : nodes) {
+        LandmarkNode &node = *lm;
 
         switch (node.status) {
         case lm_reached:
@@ -123,15 +122,15 @@ bool LandmarkGraph::disj_landmark_exists(const set<FactPair> &lm) const {
 
 bool LandmarkGraph::exact_same_disj_landmark_exists(const set<FactPair> &lm) const {
     // Test whether a disj. LM exists which consists EXACTLY of those facts in lm
-    LandmarkNode *lmn = NULL;
+    LandmarkNode *lmn = nullptr;
     for (const FactPair &lm_fact : lm) {
         auto it2 = disj_lms_to_nodes.find(lm_fact);
         if (it2 == disj_lms_to_nodes.end())
             return false;
         else {
-            if (lmn != NULL && lmn != it2->second) {
+            if (lmn && lmn != it2->second) {
                 return false;
-            } else if (lmn == NULL)
+            } else if (!lmn)
                 lmn = it2->second;
         }
     }
@@ -142,10 +141,10 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
     assert(!landmark_exists(lm));
     vector<FactPair> facts;
     facts.push_back(lm);
-    LandmarkNode *new_node_p = new LandmarkNode(facts, false);
-    nodes.insert(new_node_p);
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false);
+    LandmarkNode *new_node_p = new_node.get();
+    nodes.push_back(move(new_node));
     simple_lms_to_nodes.emplace(lm, new_node_p);
-    ++landmarks_count;
     return *new_node_p;
 }
 
@@ -155,12 +154,12 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
         facts.push_back(lm_fact);
         assert(!landmark_exists(lm_fact));
     }
-    LandmarkNode *new_node_p = new LandmarkNode(facts, true);
-    nodes.insert(new_node_p);
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, true);
+    LandmarkNode *new_node_p = new_node.get();
+    nodes.push_back(move(new_node));
     for (const FactPair &lm_fact : lm) {
         disj_lms_to_nodes.emplace(lm_fact, new_node_p);
     }
-    ++landmarks_count;
     return *new_node_p;
 }
 
@@ -170,14 +169,14 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
         facts.push_back(lm_fact);
         assert(!landmark_exists(lm_fact));
     }
-    LandmarkNode *new_node_p = new LandmarkNode(facts, false, true);
-    nodes.insert(new_node_p);
-    ++landmarks_count;
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false, true);
+    LandmarkNode *new_node_p = new_node.get();
+    nodes.push_back(move(new_node));
     ++conj_lms;
     return *new_node_p;
 }
 
-void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
+void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
     for (const auto &parent : node->parents) {
         LandmarkNode &parent_node = *(parent.first);
         parent_node.children.erase(node);
@@ -197,9 +196,19 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     } else {
         simple_lms_to_nodes.erase(node->facts[0]);
     }
-    nodes.erase(node);
-    --landmarks_count;
-    assert(nodes.find(node) == nodes.end());
+}
+
+void LandmarkGraph::remove_node_if(
+    const function<bool (const LandmarkNode &)> &remove_node) {
+    for (auto &node : nodes) {
+        if (remove_node(*node)) {
+            remove_node_occurrences(node.get());
+        }
+    }
+    nodes.erase(remove_if(nodes.begin(), nodes.end(),
+                          [&remove_node](const unique_ptr<LandmarkNode> &node) {
+                              return remove_node(*node);
+                          }), nodes.end());
 }
 
 LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
@@ -212,11 +221,9 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
 }
 
 void LandmarkGraph::set_landmark_ids() {
-    ordered_nodes.resize(landmarks_count);
     int id = 0;
-    for (LandmarkNode *lmn : nodes) {
+    for (auto &lmn : nodes) {
         lmn->assign_id(id);
-        ordered_nodes[id] = lmn;
         ++id;
     }
 }
@@ -246,7 +253,10 @@ void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNod
 
 void LandmarkGraph::dump(const VariablesProxy &variables) const {
     cout << "Landmark graph: " << endl;
-    set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
+    set<LandmarkNode *, LandmarkNodeComparer> nodes2;
+    for (auto &node: nodes) {
+        nodes2.insert(node.get());
+    }
 
     for (const LandmarkNode *node_p : nodes2) {
         dump_node(variables, node_p);

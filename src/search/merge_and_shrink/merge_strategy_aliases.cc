@@ -22,14 +22,15 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
         "This merge strategy implements the algorithm originally described in the "
         "paper \"Directed model checking with distance-preserving abstractions\" "
         "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-        "the following paper:" + utils::format_paper_reference(
+        "the following paper:" + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
-            "AAAI Press 2014") +
+            "AAAI Press",
+            "2014") +
         "Using this command line option is deprecated, please use the "
         "equivalent configurations\n"
         "{{{\nmerge_strategy=merge_stateless(merge_selector=score_based_filtering("
@@ -94,13 +95,14 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
     parser.document_synopsis(
         "Linear merge strategies",
         "These merge strategies implement several linear merge orders, which "
-        "are described in the paper:" + utils::format_paper_reference(
+        "are described in the paper:" + utils::format_conference_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
             "Flexible Abstraction Heuristics for Optimal Sequential Planning",
             "https://ai.dmi.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
             "Proceedings of the Seventeenth International Conference on"
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
+            "AAAI Press",
             "2007") +
         "Using this command line option is deprecated, please use the "
         "equivalent configuration\n"

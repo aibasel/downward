@@ -84,22 +84,24 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "on several design choices, there are different variants thereof. "
         "The variant 'StubbornSetsSimple' resolves the design choices in a "
         "straight-forward way. For details, see the following papers: "
-        + utils::format_paper_reference(
+        + utils::format_conference_reference(
             {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
             "A Stubborn Set Algorithm for Optimal Planning",
             "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
             "Proceedings of the 20th European Conference on Artificial Intelligence "
             "(ECAI 2012)",
             "891-892",
-            "IOS Press 2012")
-        + utils::format_paper_reference(
+            "IOS Press",
+            "2012")
+        + utils::format_conference_reference(
             {"Martin Wehrle", "Malte Helmert"},
             "Efficient Stubborn Sets: Generalized Algorithms and Selection Strategies",
             "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7922/8042",
             "Proceedings of the 24th International Conference on Automated Planning "
             " and Scheduling (ICAPS 2014)",
             "323-331",
-            "AAAI Press, 2014"));
+            "AAAI Press",
+            "2014"));
 
     stubborn_sets::add_pruning_options(parser);
 

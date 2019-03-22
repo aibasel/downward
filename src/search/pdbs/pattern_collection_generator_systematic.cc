@@ -1,5 +1,6 @@
 #include "pattern_collection_generator_systematic.h"
 
+#include "utils.h"
 #include "validation.h"
 
 #include "../option_parser.h"
@@ -7,7 +8,9 @@
 #include "../task_proxy.h"
 
 #include "../task_utils/causal_graph.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -260,6 +263,8 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
 
 PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     const shared_ptr<AbstractTask> &task) {
+    utils::Timer timer;
+    cout << "Generating patterns using the systematic generator..." << endl;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
     pattern_set.clear();
@@ -268,7 +273,12 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
-    return PatternCollectionInformation(task_proxy, patterns);
+    PatternCollectionInformation pci(task_proxy, patterns);
+    /* Do not dump the collection since it can be very large for
+       pattern_max_size >= 3. */
+    dump_pattern_collection_generation_statistics(
+        "Systematic generator", timer(), pci, false);
+    return pci;
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
@@ -276,13 +286,14 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "Systematically generated patterns",
         "Generates all (interesting) patterns with up to pattern_max_size "
         "variables. "
-        "For details, see" + utils::format_paper_reference(
+        "For details, see" + utils::format_conference_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
             "Getting the Most Out of Pattern Databases for Classical Planning",
             "https://ai.dmi.unibas.ch/papers/pommerening-et-al-ijcai2013.pdf",
             "Proceedings of the Twenty-Third International Joint"
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2357-2364",
+            "AAAI Press",
             "2013"));
 
     parser.add_option<int>(

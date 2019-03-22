@@ -1,6 +1,6 @@
 #include "pattern_generator_manual.h"
 
-#include "validation.h"
+#include "pattern_information.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -17,11 +17,11 @@ PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
     : pattern(opts.get_list<int>("pattern")) {
 }
 
-Pattern PatternGeneratorManual::generate(const shared_ptr<AbstractTask> &task) {
-    TaskProxy task_proxy(*task);
-    validate_and_normalize_pattern(task_proxy, pattern);
-    cout << "Manual pattern: " << pattern << endl;
-    return pattern;
+PatternInformation PatternGeneratorManual::generate(
+    const shared_ptr<AbstractTask> &task) {
+    PatternInformation pattern_info(TaskProxy(*task), move(pattern));
+    cout << "Manual pattern: " << pattern_info.get_pattern() << endl;
+    return pattern_info;
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {

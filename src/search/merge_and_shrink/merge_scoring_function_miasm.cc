@@ -85,14 +85,15 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "the specified size limits. A stateless merge strategy using this "
         "scoring function is called dyn-MIASM (nowadays also called sbMIASM "
         "for score-based MIASM) and is described in the following paper:"
-        + utils::format_paper_reference(
+        + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
-            "AAAI Press 2016"));
+            "AAAI Press",
+            "2016"));
     parser.document_note(
         "Note",
         "To obtain the configurations called dyn-MIASM described in the paper, "

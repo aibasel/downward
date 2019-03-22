@@ -33,14 +33,15 @@ vector<State> sample_without_dead_end_detection(
 }
 
 string get_admissible_potentials_reference() {
-    return "The algorithm is based on" + utils::format_paper_reference(
+    return "The algorithm is based on" + utils::format_conference_reference(
         {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
         "New Optimization Functions for Potential Heuristics",
         "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
         "Proceedings of the 25th International Conference on"
         " Automated Planning and Scheduling (ICAPS 2015)",
         "193-201",
-        "AAAI Press 2015");
+        "AAAI Press",
+        "2015");
 }
 
 void prepare_parser_for_admissible_potentials(OptionParser &parser) {
