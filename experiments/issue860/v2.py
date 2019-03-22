@@ -18,8 +18,8 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue860-base", "issue860-v2"]
 BUILDS = ["release"]
 CONFIG_NICKS = [
-    ("astar-blind", ["--search", "astar(blind)"]),
-    ("astar-lmcut", ["--search", "astar(lmcut)"]), # inconsistent heuristic to test re-opening
+    ("astar-blind", ["--search", "astar(blind())"]),
+    ("astar-lmcut", ["--search", "astar(lmcut())"]), # inconsistent heuristic to test re-opening
     ("bjolp", ["--evaluator",
     "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
     "--search",
