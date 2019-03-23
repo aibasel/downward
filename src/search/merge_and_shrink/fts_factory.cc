@@ -76,9 +76,9 @@ class FTSFactory {
     void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
     vector<unique_ptr<TransitionSystem>> create_transition_systems(const Labels &labels);
-    vector<unique_ptr<MergeAndShrinkRepresentation>> create_mas_representations();
+    vector<unique_ptr<MergeAndShrinkRepresentation>> create_mas_representations() const;
     vector<unique_ptr<Distances>> create_distances(
-        const vector<unique_ptr<TransitionSystem>> &transition_systems);
+        const vector<unique_ptr<TransitionSystem>> &transition_systems) const;
 public:
     explicit FTSFactory(const TaskProxy &task_proxy);
     ~FTSFactory();
@@ -392,7 +392,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
     return result;
 }
 
-vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_representations() {
+vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_representations() const {
     // Create the actual MergeAndShrinkRepresentation objects.
     int num_variables = task_proxy.get_variables().size();
 
@@ -410,7 +410,7 @@ vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_represen
 }
 
 vector<unique_ptr<Distances>> FTSFactory::create_distances(
-    const vector<unique_ptr<TransitionSystem>> &transition_systems) {
+    const vector<unique_ptr<TransitionSystem>> &transition_systems) const {
     // Create the actual Distances objects.
     int num_variables = task_proxy.get_variables().size();
 
