@@ -19,12 +19,15 @@ using namespace domain_transition_graph;
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
-      cache(opts.get<bool>("use_cache") ? utils::make_unique_ptr<CGCache>(task_proxy) : nullptr),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing causal graph heuristic..." << endl;
+
+    int max_cache_size = opts.get<int>("max_cache_size");
+    if (max_cache_size > 0)
+        cache = utils::make_unique_ptr<CGCache>(task_proxy, max_cache_size);
 
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
@@ -295,10 +298,11 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_property("safe", "no");
     parser.document_property("preferred operators", "yes");
 
-    parser.add_option<bool>(
-        "use_cache",
-        "use cache to speed up calculations",
-        "true");
+    parser.add_option<int>(
+        "max_cache_size",
+        "maximum number of cached entries per variable (set to 0 to disable cache)",
+        "1000000",
+        Bounds("0", "infinity"));
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
