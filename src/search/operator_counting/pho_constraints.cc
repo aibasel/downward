@@ -70,13 +70,14 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "Posthoc optimization constraints",
         "The generator will compute a PDB for each pattern and add the"
         " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
-        " see" + utils::format_paper_reference(
+        " see" + utils::format_conference_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
             "Getting the Most Out of Pattern Databases for Classical Planning",
             "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
             "Proceedings of the Twenty-Third International Joint"
             " Conference on Artificial Intelligence (IJCAI 2013)",
             "2357-2364",
+            "AAAI Press",
             "2013"));
 
     parser.add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(

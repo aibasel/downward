@@ -7,10 +7,16 @@
 using namespace std;
 
 namespace merge_and_shrink {
-LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
+LabelEquivalenceRelation::LabelEquivalenceRelation(
+    const Labels &labels, const vector<vector<int>> &label_groups)
     : labels(labels) {
+    /* In the worst case, each label forms a singleton group, and thus with
+       label reduction, we could have labels.get_max_size() many groups. */
     grouped_labels.reserve(labels.get_max_size());
     label_to_positions.resize(labels.get_max_size());
+    for (const vector<int> &label_group : label_groups) {
+        add_label_group(label_group);
+    }
 }
 
 LabelEquivalenceRelation::LabelEquivalenceRelation(
@@ -19,11 +25,7 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
       /* We copy label_to_positions to have identical vectors even on
       "unused" positions (for label numbers that do not exist any more). */
       label_to_positions(other.label_to_positions) {
-    /*
-      We need to reserve space for the potential maximum number of labels to
-      ensure that no move occurs in grouped_labels. Otherwise, iterators to
-      elements of list<int> of LabelGroup could become invalid!
-    */
+    // For the reserve call, see the comment in the constructor above.
     grouped_labels.reserve(labels.get_max_size());
     for (size_t other_group_id = 0;
          other_group_id < other.grouped_labels.size();

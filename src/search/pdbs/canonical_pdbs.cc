@@ -11,26 +11,32 @@ using namespace std;
 
 namespace pdbs {
 CanonicalPDBs::CanonicalPDBs(
-    const shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets_)
-    : max_additive_subsets(max_additive_subsets_) {
-    assert(max_additive_subsets);
+    const shared_ptr<PDBCollection> &pdbs,
+    const shared_ptr<vector<PatternClique>> &pattern_cliques)
+    : pdbs(pdbs), pattern_cliques(pattern_cliques) {
+    assert(pdbs);
+    assert(pattern_cliques);
 }
 
 int CanonicalPDBs::get_value(const State &state) const {
-    // If we have an empty collection, then max_additive_subsets = { \emptyset }.
-    assert(!max_additive_subsets->empty());
+    // If we have an empty collection, then pattern_cliques = { \emptyset }.
+    assert(!pattern_cliques->empty());
     int max_h = 0;
-    for (const auto &subset : *max_additive_subsets) {
-        int subset_h = 0;
-        for (const shared_ptr<PatternDatabase> &pdb : subset) {
-            /* Experiments showed that it is faster to recompute the
-               h values than to cache them in an unordered_map. */
-            int h = pdb->get_value(state);
-            if (h == numeric_limits<int>::max())
-                return numeric_limits<int>::max();
-            subset_h += h;
+    vector<int> h_values;
+    h_values.reserve(pdbs->size());
+    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
+        int h = pdb->get_value(state);
+        if (h == numeric_limits<int>::max()) {
+            return numeric_limits<int>::max();
         }
-        max_h = max(max_h, subset_h);
+        h_values.push_back(h);
+    }
+    for (const PatternClique &clique : *pattern_cliques) {
+        int clique_h = 0;
+        for (PatternID pdb_index : clique) {
+            clique_h += h_values[pdb_index];
+        }
+        max_h = max(max_h, clique_h);
     }
     return max_h;
 }

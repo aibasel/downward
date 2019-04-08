@@ -60,13 +60,7 @@ def parse_function(alist, type_name):
 
 def parse_condition(alist, type_dict, predicate_dict):
     condition = parse_condition_aux(alist, False, type_dict, predicate_dict)
-    # TODO: The next line doesn't appear to do anything good,
-    # since uniquify_variables doesn't modify the condition in place.
-    # Conditions in actions or axioms are uniquified elsewhere, but
-    # it looks like goal conditions are never uniquified at all
-    # (which would be a bug).
-    condition.uniquify_variables({})
-    return condition
+    return condition.uniquify_variables({}).simplified()
 
 
 def parse_condition_aux(alist, negated, type_dict, predicate_dict):
@@ -270,7 +264,6 @@ def parse_action(alist, type_dict, predicate_dict):
         else:
             precondition = parse_condition(
                 precondition_list, type_dict, predicate_dict)
-            precondition = precondition.simplified()
         effect_tag = next(iterator)
     else:
         precondition = pddl.Conjunction([])

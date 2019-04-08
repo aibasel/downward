@@ -5,6 +5,7 @@
 
 #include "../algorithms/priority_queues.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -20,8 +21,9 @@ namespace cg_heuristic {
 class CGCache;
 
 class CGHeuristic : public Heuristic {
-    std::vector<priority_queues::AdaptiveQueue<domain_transition_graph::ValueNode *> *> prio_queues;
-    std::vector<domain_transition_graph::DomainTransitionGraph *> transition_graphs;
+    using ValueNodeQueue = priority_queues::AdaptiveQueue<domain_transition_graph::ValueNode *>;
+    std::vector<std::unique_ptr<ValueNodeQueue>> prio_queues;
+    std::vector<std::unique_ptr<domain_transition_graph::DomainTransitionGraph>> transition_graphs;
 
     std::unique_ptr<CGCache> cache;
     int cache_hits;

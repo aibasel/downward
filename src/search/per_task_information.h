@@ -4,13 +4,13 @@
 #include "task_proxy.h"
 
 #include "algorithms/subscriber.h"
+#include "utils/hash.h"
 #include "utils/memory.h"
 
 #include <functional>
-#include <unordered_map>
 
 /*
-  A PerTaskInformation<T> acts like an unordered_map<TaskID, T>
+  A PerTaskInformation<T> acts like a HashMap<TaskID, T>
   with two main differences:
   (1) If an entry is accessed that does not exist yet, it is created using a
       factory function that is passed to the PerTaskInformation in its
@@ -31,7 +31,7 @@ class PerTaskInformation : public subscriber::Subscriber<AbstractTask> {
     */
     using EntryConstructor = std::function<std::unique_ptr<Entry>(const TaskProxy &)>;
     EntryConstructor entry_constructor;
-    std::unordered_map<TaskID, std::unique_ptr<Entry>> entries;
+    utils::HashMap<TaskID, std::unique_ptr<Entry>> entries;
 public:
     /*
       If no entry_constructor is passed to the PerTaskInformation explicitly,

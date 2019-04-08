@@ -130,8 +130,7 @@ def check_search_code_with_clang_tidy():
         "directory": os.path.join(build_dir, "search"),
         "command": "g++ -I{search_dir}/ext -std=c++11 -c {src_file}".format(**locals()),
         "file": src_file}
-        # TODO: option_parser.h and token_parser.h are too tangled to be checked by clang-tidy.
-        for src_file in src_files if not src_file.endswith(("option_parser.h", "token_parser.h"))
+        for src_file in src_files
     ]
     with open(os.path.join(build_dir, "compile_commands.json"), "w") as f:
         json.dump(compile_commands, f, indent=2)
@@ -141,6 +140,12 @@ def check_search_code_with_clang_tidy():
     # categories instead of deleting them to see which additional checks
     # we could activate.
     checks = [
+        # Enable with CheckTriviallyCopyableMove=0 when we require
+        # clang-tidy >= 6.0 (see issue856).
+        #"misc-move-const-arg",
+        "misc-move-constructor-init",
+        "misc-use-after-move",
+
         "performance-for-range-copy",
         "performance-implicit-cast-in-loop",
         "performance-inefficient-vector-operation",
@@ -179,7 +184,7 @@ def check_search_code_with_clang_tidy():
         # Include all non-system headers (.*) except the ones from search/ext/.
         "-header-filter=.*,-tree.hh,-tree_util.hh",
         "-checks=-*," + ",".join(checks)]
-    print("clang-tidy (enabled checks: {})".format(", ".join(checks)))
+    print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
     try:
         output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)

@@ -1,8 +1,12 @@
 #include "cost_saturation.h"
 
+#include "abstract_state.h"
 #include "abstraction.h"
 #include "cartesian_heuristic_function.h"
+#include "cegar.h"
+#include "refinement_hierarchy.h"
 #include "subtask_generators.h"
+#include "transition_system.h"
 #include "utils.h"
 
 #include "../task_utils/task_properties.h"
@@ -28,14 +32,64 @@ namespace cegar {
 */
 static const int memory_padding_in_mb = 75;
 
+static vector<int> compute_saturated_costs(
+    const TransitionSystem &transition_system,
+    const vector<int> &g_values,
+    const vector<int> &h_values,
+    bool use_general_costs) {
+    const int min_cost = use_general_costs ? -INF : 0;
+    vector<int> saturated_costs(transition_system.get_num_operators(), min_cost);
+    assert(g_values.size() == h_values.size());
+    int num_states = h_values.size();
+    for (int state_id = 0; state_id < num_states; ++state_id) {
+        int g = g_values[state_id];
+        int h = h_values[state_id];
+
+        /*
+          No need to maintain goal distances of unreachable (g == INF)
+          and dead end states (h == INF).
+
+          Note that the "succ_h == INF" test below is sufficient for
+          ignoring dead end states. The "h == INF" test is a speed
+          optimization.
+        */
+        if (g == INF || h == INF)
+            continue;
+
+        for (const Transition &transition:
+             transition_system.get_outgoing_transitions()[state_id]) {
+            int op_id = transition.op_id;
+            int succ_id = transition.target_id;
+            int succ_h = h_values[succ_id];
+
+            if (succ_h == INF)
+                continue;
+
+            int needed = h - succ_h;
+            saturated_costs[op_id] = max(saturated_costs[op_id], needed);
+        }
+
+        if (use_general_costs) {
+            /* To prevent negative cost cycles, all operators inducing
+               self-loops must have non-negative costs. */
+            for (int op_id : transition_system.get_loops()[state_id]) {
+                saturated_costs[op_id] = max(saturated_costs[op_id], 0);
+            }
+        }
+    }
+    return saturated_costs;
+}
+
+
 CostSaturation::CostSaturation(
-    vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
+    const vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
     int max_states,
     int max_non_looping_transitions,
     double max_time,
     bool use_general_costs,
     PickSplit pick_split,
-    utils::RandomNumberGenerator &rng)
+    utils::RandomNumberGenerator &rng,
+    bool debug)
     : subtask_generators(subtask_generators),
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
@@ -43,6 +97,7 @@ CostSaturation::CostSaturation(
       use_general_costs(use_general_costs),
       pick_split(pick_split),
       rng(rng),
+      debug(debug),
       num_abstractions(0),
       num_states(0),
       num_non_looping_transitions(0) {
@@ -141,24 +196,42 @@ void CostSaturation::build_abstractions(
         subtask = get_remaining_costs_task(subtask);
 
         assert(num_states < max_states);
-        Abstraction abstraction(
+        CEGAR cegar(
             subtask,
             max(1, (max_states - num_states) / rem_subtasks),
             max(1, (max_non_looping_transitions - num_non_looping_transitions) /
                 rem_subtasks),
             timer.get_remaining_time() / rem_subtasks,
-            use_general_costs,
             pick_split,
-            rng);
+            rng,
+            debug);
 
+        unique_ptr<Abstraction> abstraction = cegar.extract_abstraction();
         ++num_abstractions;
-        num_states += abstraction.get_num_states();
-        num_non_looping_transitions += abstraction.get_num_non_looping_transitions();
+        num_states += abstraction->get_num_states();
+        num_non_looping_transitions += abstraction->get_transition_system().get_num_non_loops();
         assert(num_states <= max_states);
-        reduce_remaining_costs(abstraction.get_saturated_costs());
+
+        vector<int> costs = task_properties::get_operator_costs(TaskProxy(*subtask));
+        vector<int> init_distances = compute_distances(
+            abstraction->get_transition_system().get_outgoing_transitions(),
+            costs,
+            {abstraction->get_initial_state().get_id()});
+        vector<int> goal_distances = compute_distances(
+            abstraction->get_transition_system().get_incoming_transitions(),
+            costs,
+            abstraction->get_goals());
+        vector<int> saturated_costs = compute_saturated_costs(
+            abstraction->get_transition_system(),
+            init_distances,
+            goal_distances,
+            use_general_costs);
+
         heuristic_functions.emplace_back(
-            subtask,
-            abstraction.extract_refinement_hierarchy());
+            abstraction->extract_refinement_hierarchy(),
+            move(goal_distances));
+
+        reduce_remaining_costs(saturated_costs);
 
         if (should_abort())
             break;
@@ -172,8 +245,6 @@ void CostSaturation::print_statistics(utils::Duration init_time) const {
     cout << "Time for initializing additive Cartesian heuristic: "
          << init_time << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
-    cout << "Cartesian heuristic functions stored: "
-         << heuristic_functions.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
     cout << "Total number of non-looping transitions: "
          << num_non_looping_transitions << endl;

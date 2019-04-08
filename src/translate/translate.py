@@ -563,7 +563,15 @@ def pddl_to_sas(task):
         implied_facts = {}
 
     with timers.timing("Building mutex information", block=True):
-        mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+        if options.use_partial_encoding:
+            mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+        else:
+            # With our current representation, emitting complete mutex
+            # information for the full encoding can incur an
+            # unacceptable (quadratic) blowup in the task representation
+            #size. See issue771 for details.
+            print("using full encoding: between-variable mutex information skipped.")
+            mutex_key = []
 
     with timers.timing("Translating task", block=True):
         sas_task = translate_task(
@@ -596,13 +604,15 @@ def pddl_to_sas(task):
 
 
 def build_mutex_key(strips_to_sas, groups):
+    assert options.use_partial_encoding
     group_keys = []
     for group in groups:
         group_key = []
         for fact in group:
-            if strips_to_sas.get(fact):
-                for var, val in strips_to_sas[fact]:
-                    group_key.append((var, val))
+            represented_by = strips_to_sas.get(fact)
+            if represented_by:
+                assert len(represented_by) == 1
+                group_key.append(represented_by[0])
             else:
                 print("not in strips_to_sas, left out:", fact)
         group_keys.append(group_key)
@@ -696,7 +706,7 @@ def main():
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
-        with open("output.sas", "w") as output_file:
+        with open(options.sas_file, "w") as output_file:
             sas_task.output(output_file)
     print("Done! %s" % timer)
 
