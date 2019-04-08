@@ -5,9 +5,11 @@ from __future__ import print_function
 """Make subprocess calls with time and memory limits."""
 
 from . import limits
+from . import returncodes
 from . import util
 
 import logging
+import os
 import subprocess
 import sys
 
@@ -32,8 +34,21 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
 
 def _get_preexec_function(time_limit, memory_limit):
     def set_limits():
-        limits.set_time_limit(time_limit)
-        limits.set_memory_limit(memory_limit)
+        def _try_or_exit(function, description):
+            def fail(exception, exitcode):
+                returncodes.print_stderr("{} failed: {}".format(description, exception))
+                os._exit(exitcode)
+            try:
+                function()
+            except NotImplementedError as err:
+                fail(err, returncodes.DRIVER_UNSUPPORTED)
+            except OSError as err:
+                fail(err, returncodes.DRIVER_CRITICAL_ERROR)
+            except ValueError as err:
+                fail(err, returncodes.DRIVER_INPUT_ERROR)
+
+        _try_or_exit(lambda: limits.set_time_limit(time_limit), "Setting time limit")
+        _try_or_exit(lambda: limits.set_memory_limit(memory_limit), "Setting memory limit")
 
     if time_limit is None and memory_limit is None:
         return None

@@ -335,14 +335,15 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "on several design choices, there are different variants thereof. "
         "The variant 'StubbornSetsEC' resolves the design choices such that "
         "the resulting pruning method is guaranteed to strictly dominate the "
-        "Expansion Core pruning method. For details, see" + utils::format_paper_reference(
+        "Expansion Core pruning method. For details, see" + utils::format_conference_reference(
             {"Martin Wehrle", "Malte Helmert", "Yusra Alkhazraji", "Robert Mattmueller"},
             "The Relative Pruning Power of Strong Stubborn Sets and Expansion Core",
             "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS13/paper/view/6053/6185",
             "Proceedings of the 23rd International Conference on Automated Planning "
             "and Scheduling (ICAPS 2013)",
             "251-259",
-            "AAAI Press 2013"));
+            "AAAI Press",
+            "2013"));
 
     stubborn_sets::add_pruning_options(parser);
 

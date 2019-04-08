@@ -27,7 +27,7 @@ class TypeBasedOpenList : public OpenList<Entry> {
     using Key = vector<int>;
     using Bucket = vector<Entry>;
     vector<pair<Key, Bucket>> keys_and_buckets;
-    unordered_map<Key, int> key_to_bucket_index;
+    utils::HashMap<Key, int> key_to_bucket_index;
 
 protected:
     virtual void do_insertion(
@@ -158,7 +158,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "When retrieving an entry, a bucket is chosen uniformly at "
         "random and one of the contained entries is selected "
         "uniformly randomly. "
-        "The algorithm is based on" + utils::format_paper_reference(
+        "The algorithm is based on" + utils::format_conference_reference(
             {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
             "Type-Based Exploration with Multiple Search Queues for"
             " Satisficing Planning",
@@ -166,7 +166,8 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             "Proceedings of the Twenty-Eigth AAAI Conference Conference"
             " on Artificial Intelligence (AAAI 2014)",
             "2395-2401",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            "2014"));
     parser.add_list_option<shared_ptr<Evaluator>>(
         "evaluators",
         "Evaluators used to determine the bucket for each entry.");

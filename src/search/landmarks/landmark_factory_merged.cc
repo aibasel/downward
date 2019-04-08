@@ -41,19 +41,18 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &l
 }
 
 void LandmarkFactoryMerged::generate_landmarks(
-    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    const shared_ptr<AbstractTask> &task, Exploration &) {
     cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
 
     for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
-        lm_graphs.push_back(lm_factory->compute_lm_graph(task, exploration));
+        lm_graphs.push_back(lm_factory->compute_lm_graph(task));
     }
 
     cout << "Adding simple landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
-        set<LandmarkNode *>::const_iterator it;
-        for (it = nodes.begin(); it != nodes.end(); ++it) {
-            const LandmarkNode &node = **it;
+        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
+        for (auto &lm : nodes) {
+            const LandmarkNode &node = *lm;
             const FactPair &lm_fact = node.facts[0];
             if (!node.conjunctive && !node.disjunctive && !lm_graph->landmark_exists(lm_fact)) {
                 LandmarkNode &new_node = lm_graph->landmark_add_simple(lm_fact);
@@ -64,10 +63,9 @@ void LandmarkFactoryMerged::generate_landmarks(
 
     cout << "Adding disjunctive landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
-        set<LandmarkNode *>::const_iterator it;
-        for (it = nodes.begin(); it != nodes.end(); ++it) {
-            const LandmarkNode &node = **it;
+        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
+        for (auto &lm : nodes) {
+            const LandmarkNode &node = *lm;
             if (node.disjunctive) {
                 set<FactPair> lm_facts;
                 bool exists = false;
@@ -91,8 +89,8 @@ void LandmarkFactoryMerged::generate_landmarks(
 
     cout << "Adding orderings" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
-        for (const LandmarkNode *from_orig : nodes) {
+        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
+        for (auto &from_orig : nodes) {
             LandmarkNode *from = get_matching_landmark(*from_orig);
             if (from) {
                 for (const auto &to : from_orig->children) {

@@ -36,7 +36,7 @@ shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     return engine;
 }
 
-shared_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
+shared_ptr<SearchEngine> IteratedSearch::create_current_phase() {
     int num_phases = engine_configs.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
@@ -57,7 +57,7 @@ shared_ptr<SearchEngine> IteratedSearch::create_phase(int phase) {
 }
 
 SearchStatus IteratedSearch::step() {
-    shared_ptr<SearchEngine> current_search = create_phase(phase);
+    shared_ptr<SearchEngine> current_search = create_current_phase();
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }

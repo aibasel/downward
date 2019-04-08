@@ -5,7 +5,6 @@ from __future__ import division, print_function
 from . import returncodes
 from . import util
 
-import math
 try:
     import resource
 except ImportError:
@@ -32,43 +31,24 @@ def can_set_memory_limit():
     return resource is not None and sys.platform != "darwin"
 
 
-def _set_limit(kind, soft, hard=None):
-    if hard is None:
-        hard = soft
-    try:
-        resource.setrlimit(kind, (soft, hard))
-    except (OSError, ValueError) as err:
-        returncodes.exit_with_driver_critical_error(
-            "Limit for {} could not be set to ({},{}) ({}). "
-            "Previous limit: {}".format(
-                kind, soft, hard, err, resource.getrlimit(kind)))
-
-
-def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
-    soft_limit = min(int(math.ceil(internal_limit)), external_hard_limit)
-    hard_limit = min(soft_limit + 1, external_hard_limit)
-    print("time limit %.2f -> (%d, %d)" %
-        (internal_limit, soft_limit, hard_limit))
-    sys.stdout.flush()
-    assert soft_limit <= hard_limit
-    return soft_limit, hard_limit
-
-
 def set_time_limit(time_limit):
     if time_limit is None:
         return
     if not can_set_time_limit():
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
-    # Don't try to raise the hard limit.
-    _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
-    if external_hard_limit == resource.RLIM_INFINITY:
-        external_hard_limit = float("inf")
-    assert time_limit <= external_hard_limit, (time_limit, external_hard_limit)
-    # Soft limit reached --> SIGXCPU.
-    # Hard limit reached --> SIGKILL.
-    soft_limit, hard_limit = _get_soft_and_hard_time_limits(
-        time_limit, external_hard_limit)
-    _set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
+        raise NotImplementedError(CANNOT_LIMIT_TIME_MSG)
+    # Reaching the soft time limit leads to a (catchable) SIGXCPU signal,
+    # which we catch to gracefully exit. Reaching the hard limit leads to
+    # a SIGKILL, which is unpreventable. We set a hard limit one second
+    # higher than the soft limit to make sure we abort also in cases where
+    # the graceful shutdown doesn't work, or doesn't work reasonably
+    # quickly.
+    try:
+        resource.setrlimit(resource.RLIMIT_CPU, (time_limit, time_limit + 1))
+    except ValueError:
+        # If the previous call failed, we try again without the extra second.
+        # In particular, this is necessary if there already exists an external
+        # hard limit equal to time_limit.
+        resource.setrlimit(resource.RLIMIT_CPU, (time_limit, time_limit))
 
 
 def set_memory_limit(memory):
@@ -76,65 +56,34 @@ def set_memory_limit(memory):
     if memory is None:
         return
     if not can_set_memory_limit():
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
-    _set_limit(resource.RLIMIT_AS, memory)
+        raise NotImplementedError(CANNOT_LIMIT_MEMORY_MSG)
+    resource.setrlimit(resource.RLIMIT_AS, (memory, memory))
 
 
 def convert_to_mb(num_bytes):
     return num_bytes / (1024 * 1024)
 
 
-def _get_external_limit(kind):
-    if resource is None:
-        return None
-    # Limits are either positive values or -1 (RLIM_INFINITY).
-    soft, hard = resource.getrlimit(kind)
-    if soft != resource.RLIM_INFINITY:
-        return soft
-    elif hard != resource.RLIM_INFINITY:
-        return hard
-    else:
-        return None
-
-def _get_external_time_limit():
-    """Return external soft CPU limit in seconds or None if not set."""
-    return _get_external_limit(resource.RLIMIT_CPU)
-
-def _get_external_memory_limit():
-    """Return external soft memory limit in bytes or None if not set."""
-    return _get_external_limit(resource.RLIMIT_AS)
-
-
 def get_memory_limit(component_limit, overall_limit):
     """
-    Return the lowest of the following memory limits:
-    component, overall, external soft, external hard.
+    Return the minimum of the component and overall limits or None if neither is set.
     """
-    if component_limit is None and overall_limit is None:
-        return None
-    elif can_set_memory_limit():
-        limits = [component_limit, overall_limit, _get_external_memory_limit()]
-        limits = [limit for limit in limits if limit is not None]
-        return min(limits) if limits else None
-    else:
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_MEMORY_MSG)
+    limits = [limit for limit in [component_limit, overall_limit] if limit is not None]
+    return min(limits) if limits else None
+
 
 def get_time_limit(component_limit, overall_limit):
     """
-    Return the minimum time limit imposed by any internal and external limit.
+    Return the minimum time limit imposed by the component and overall limits.
     """
-    if component_limit is None and overall_limit is None:
-        return None
-    elif can_set_time_limit():
-        elapsed_time = util.get_elapsed_time()
-        external_limit = _get_external_time_limit()
-        limits = []
-        if component_limit is not None:
-            limits.append(component_limit)
-        if overall_limit is not None:
-            limits.append(max(0, overall_limit - elapsed_time))
-        if external_limit is not None:
-            limits.append(max(0, external_limit - elapsed_time))
-        return min(limits) if limits else None
-    else:
-        returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
+    limit = component_limit
+    if overall_limit is not None:
+        try:
+            elapsed_time = util.get_elapsed_time()
+        except NotImplementedError:
+            returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
+        else:
+            remaining_time = max(0, overall_limit - elapsed_time)
+            if limit is None or remaining_time < limit:
+                limit = remaining_time
+    return limit

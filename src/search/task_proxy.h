@@ -580,6 +580,7 @@ public:
 
     State &operator=(State &&other) {
         if (this != &other) {
+            task = other.task;
             values = std::move(other.values);
             other.task = nullptr;
         }
@@ -593,11 +594,6 @@ public:
 
     bool operator!=(const State &other) const {
         return !(*this == other);
-    }
-
-    std::size_t hash() const {
-        std::hash<std::vector<int>> hasher;
-        return hasher(values);
     }
 
     std::size_t size() const {
@@ -621,7 +617,7 @@ public:
 
     State get_successor(OperatorProxy op) const {
         if (task->get_num_axioms() > 0) {
-            ABORT("State::apply currently does not support axioms.");
+            ABORT("State::get_successor currently does not support axioms.");
         }
         assert(!op.is_axiom());
         //assert(is_applicable(op, state));
@@ -637,13 +633,10 @@ public:
 };
 
 
-namespace std {
-template<>
-struct hash<State> {
-    size_t operator()(const State &state) const {
-        return state.hash();
-    }
-};
+namespace utils {
+inline void feed(HashState &hash_state, const State &state) {
+    feed(hash_state, state.get_values());
+}
 }
 
 

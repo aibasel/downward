@@ -18,7 +18,7 @@ using namespace std;
 namespace merge_and_shrink {
 vector<int> MergeScoringFunctionDFP::compute_label_ranks(
     const FactoredTransitionSystem &fts, int index) const {
-    const TransitionSystem &ts = fts.get_ts(index);
+    const TransitionSystem &ts = fts.get_transition_system(index);
     const Distances &distances = fts.get_distances(index);
     assert(distances.are_goal_distances_computed());
     int num_labels = fts.get_labels().get_size();
@@ -109,14 +109,15 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "This scoring function computes the 'DFP' score as descrdibed in the "
         "paper \"Directed model checking with distance-preserving abstractions\" "
         "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-        "the following paper:" + utils::format_paper_reference(
+        "the following paper:" + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            "2014"));
 
     if (parser.dry_run())
         return nullptr;

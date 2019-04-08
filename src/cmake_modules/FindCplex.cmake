@@ -11,50 +11,25 @@
 #
 # The location of CPLEX can be specified using the environment variable
 # or cmake parameter DOWNWARD_CPLEX_ROOT. If different installations
-# for 32-/64-bit versions and release/debug versions of CPLEX are available,
-# they can be specified with
-#   DOWNWARD_CPLEX_ROOT32
-#   DOWNWARD_CPLEX_ROOT64
-#   DOWNWARD_CPLEX_ROOT_RELEASE32
-#   DOWNWARD_CPLEX_ROOT_RELEASE64
-#   DOWNWARD_CPLEX_ROOT_DEBUG32
-#   DOWNWARD_CPLEX_ROOT_DEBUG64
+# for release/debug versions of CPLEX are available,they can be
+# specified with
+#   DOWNWARD_CPLEX_ROOT
+#   DOWNWARD_CPLEX_ROOT_RELEASE
+#   DOWNWARD_CPLEX_ROOT_DEBUG
 # More specific paths are preferred over less specific ones when searching
 # for libraries.
 #
 # Note that the standard FIND_PACKAGE features are supported
 # (QUIET, REQUIRED, etc.).
 
-foreach(BITWIDTH 32 64)
-    foreach(BUILDMODE "RELEASE" "DEBUG")
-        set(CPLEX_HINT_PATHS_${BUILDMODE}${BITWIDTH}
-            ${DOWNWARD_CPLEX_ROOT_${BUILDMODE}${BITWIDTH}}
-            $ENV{DOWNWARD_CPLEX_ROOT_${BUILDMODE}${BITWIDTH}}
-            ${DOWNWARD_CPLEX_ROOT${BITWIDTH}}
-            $ENV{DOWNWARD_CPLEX_ROOT${BITWIDTH}}
-            ${DOWNWARD_CPLEX_ROOT}
-            $ENV{DOWNWARD_CPLEX_ROOT}
-        )
-    endforeach()
+foreach(BUILDMODE "RELEASE" "DEBUG")
+    set(CPLEX_HINT_PATHS_${BUILDMODE}
+        ${DOWNWARD_CPLEX_ROOT_${BUILDMODE}}
+        $ENV{DOWNWARD_CPLEX_ROOT_${BUILDMODE}}
+        ${DOWNWARD_CPLEX_ROOT}
+        $ENV{DOWNWARD_CPLEX_ROOT}
+    )
 endforeach()
-
-if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-    set(CPLEX_HINT_PATHS_RELEASE ${CPLEX_HINT_PATHS_RELEASE32})
-    set(CPLEX_HINT_PATHS_DEBUG ${CPLEX_HINT_PATHS_DEBUG32})
-elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    set(CPLEX_HINT_PATHS_RELEASE ${CPLEX_HINT_PATHS_RELEASE64})
-    set(CPLEX_HINT_PATHS_DEBUG ${CPLEX_HINT_PATHS_DEBUG64})
-else()
-    message(WARNING "Bitwidth could not be detected, preferring 32-bit version of CPLEX")
-    set(CPLEX_HINT_PATHS_RELEASE
-        ${CPLEX_HINT_PATHS_RELEASE32}
-        ${CPLEX_HINT_PATHS_RELEASE64}
-    )
-    set(CPLEX_HINT_PATHS_DEBUG
-        ${CPLEX_HINT_PATHS_DEBUG32}
-        ${CPLEX_HINT_PATHS_DEBUG64}
-    )
-endif()
 
 find_path(CPLEX_INCLUDE_DIRS
     NAMES
@@ -79,6 +54,7 @@ elseif(UNIX)
         "lib/x86_linux/static_pic")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
+        "bin/x86-64_linux/"
         "lib/x86-64_sles10_4.1/static_pic"
         "lib/x86-64_linux/static_pic")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
@@ -90,16 +66,25 @@ elseif(MSVC)
         set(CPLEX_COMPILER_HINT "vs2012")
     elseif(MSVC12)
         set(CPLEX_COMPILER_HINT "vs2013")
+    elseif(MSVC13)
+        set(CPLEX_COMPILER_HINT "vs2015")
+    elseif(MSVC14)
+        set(CPLEX_COMPILER_HINT "vs2017")
     endif()
 
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mda")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
+      "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mda"
+      "lib/x64_windows_${CPLEX_COMPILER_HINT}/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64
+      "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mdd"
+      "lib/x64_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
+
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
         set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x86_win32")
     elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x86_win64")
+        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x64_win64")
     endif()
 endif()
 
@@ -125,6 +110,8 @@ find_library(CPLEX_LIBRARY_RELEASE
     NAMES
     cplex
     cplex1262
+    cplex1271
+    cplex1280
     HINTS
     ${CPLEX_HINT_PATHS_RELEASE}
     PATH_SUFFIXES
@@ -135,17 +122,37 @@ find_library(CPLEX_LIBRARY_DEBUG
     NAMES
     cplex
     cplex1262
+    cplex1271
+    cplex1280
     HINTS
     ${CPLEX_HINT_PATHS_DEBUG}
     PATH_SUFFIXES
     ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG}
 )
 
+# Parse CPLEX version.
+file(STRINGS ${CPLEX_INCLUDE_DIRS}/cpxconst.h CPLEX_VERSION_STR
+     REGEX "#define[ ]+CPX_VERSION[ ]+[0-9]+")
+string(REGEX MATCH "[0-9]+" CPLEX_VERSION_STR ${CPLEX_VERSION_STR})
+if(CPLEX_VERSION_STR)
+  math(EXPR CPLEX_VERSION_MAJOR "${CPLEX_VERSION_STR} / 1000000")
+  math(EXPR CPLEX_VERSION_MINOR "${CPLEX_VERSION_STR} / 10000 % 100")
+  math(EXPR CPLEX_VERSION_SUBMINOR "${CPLEX_VERSION_STR} / 100 % 100")
+  set(CPLEX_VERSION
+      "${CPLEX_VERSION_MAJOR}.${CPLEX_VERSION_MINOR}.${CPLEX_VERSION_SUBMINOR}")
+endif()
+
 if(CPLEX_LIBRARY_RELEASE OR CPLEX_LIBRARY_DEBUG)
     find_package(Threads REQUIRED)
+
+    set(CPLEX_LIBRARIES_COMMON ${CMAKE_THREAD_LIBS_INIT})
+    if(NOT (${CPLEX_VERSION} VERSION_LESS "12.8"))
+        set(CPLEX_LIBRARIES_COMMON ${CPLEX_LIBRARIES_COMMON} ${CMAKE_DL_LIBS})
+    endif()
+
     set(CPLEX_LIBRARIES
-        optimized ${CPLEX_LIBRARY_RELEASE} ${CMAKE_THREAD_LIBS_INIT}
-        debug ${CPLEX_LIBRARY_DEBUG} ${CMAKE_THREAD_LIBS_INIT}
+        optimized ${CPLEX_LIBRARY_RELEASE} ${CPLEX_LIBRARIES_COMMON}
+        debug ${CPLEX_LIBRARY_DEBUG} ${CPLEX_LIBRARIES_COMMON}
     )
 endif()
 
@@ -171,9 +178,11 @@ find_package_handle_standard_args(
 )
 
 mark_as_advanced(
-    CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES CPLEX_LIBRARY_PATH_SUFFIX
+    CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES CPLEX_LIBRARIES_COMMON CPLEX_LIBRARY_PATH_SUFFIX
     CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32
     CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64
     CPLEX_LIBRARY_PATH_SUFFIX_RELEASE CPLEX_LIBRARY_PATH_SUFFIX_DEBUG
     CPLEX_LIBRARY_RELEASE CPLEX_LIBRARY_DEBUG CPLEX_RUNTIME_LIBRARY_PATH
+    CPX_VERSION CPLEX_VERSION_MAJOR CPLEX_VERSION_MINOR CPLEX_VERSION_STR
+    CPLEX_VERSION_SUBMINOR
 )

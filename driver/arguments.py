@@ -89,6 +89,7 @@ Examples:
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
 COMPONENTS_PLUS_OVERALL = ["translate", "search", "validate", "overall"]
+DEFAULT_SAS_FILE = "output.sas"
 
 
 """
@@ -180,7 +181,7 @@ def _check_mutex_args(parser, args, required=False):
     if required and not any(is_specified for _, is_specified in args):
         print_usage_and_exit_with_driver_input_error(
             parser, "exactly one of {%s} has to be specified" %
-                ", ".join(name for name, _ in args))
+            ", ".join(name for name, _ in args))
 
 
 def _looks_like_search_input(filename):
@@ -231,7 +232,6 @@ def _set_components_and_inputs(parser, args):
         args.components.append("validate")
 
     args.translate_inputs = []
-    args.search_input = "output.sas"
 
     assert args.components
     first = args.components[0]
@@ -264,10 +264,20 @@ def _set_components_and_inputs(parser, args):
         assert False, first
 
 
+def _set_translator_output_options(parser, args):
+    if any("--sas-file" in opt for opt in args.translate_options):
+        print_usage_and_exit_with_driver_input_error(
+            parser, "Cannot pass the \"--sas-file\" option to translate.py from the "
+                    "fast-downward.py script. Pass it directly to fast-downward.py instead.")
+
+    args.search_input = args.sas_file
+    args.translate_options += ["--sas-file", args.search_input]
+
+
 def _get_time_limit_in_seconds(limit, parser):
     match = re.match(r"^(\d+)(s|m|h)?$", limit, flags=re.I)
     if not match:
-        print_usage_and_exit_with_driver_input_error("malformed time limit parameter: {}".format(limit))
+        print_usage_and_exit_with_driver_input_error(parser, "malformed time limit parameter: {}".format(limit))
     time = int(match.group(1))
     suffix = match.group(2)
     if suffix is not None:
@@ -282,7 +292,7 @@ def _get_time_limit_in_seconds(limit, parser):
 def _get_memory_limit_in_bytes(limit, parser):
     match = re.match(r"^(\d+)(k|m|g)?$", limit, flags=re.I)
     if not match:
-        print_usage_and_exit_with_driver_input_error("malformed memory limit parameter: {}".format(limit))
+        print_usage_and_exit_with_driver_input_error(parser, "malformed memory limit parameter: {}".format(limit))
     memory = int(match.group(1))
     suffix = match.group(2)
     if suffix is not None:
@@ -361,16 +371,16 @@ def parse_args():
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
     driver_other.add_argument(
         "--build",
-        help="BUILD can be a predefined build name like release32 "
-            "(default), debug32, release64 and debug64, a custom build "
-            "name, or the path to a directory holding the planner "
-            "binaries. The driver first looks for the planner binaries "
-            "under 'BUILD'. If this path does not exist, it tries the "
-            "directory '<repo>/builds/BUILD/bin', where the build "
-            "script creates them by default.")
+        help="BUILD can be a predefined build name like release "
+            "(default) and debug, a custom build name, or the path to "
+            "a directory holding the planner binaries. The driver "
+            "first looks for the planner binaries under 'BUILD'. If "
+            "this path does not exist, it tries the directory "
+            "'<repo>/builds/BUILD/bin', where the build script creates "
+            "them by default.")
     driver_other.add_argument(
         "--debug", action="store_true",
-        help="alias for --build=debug32 --validate")
+        help="alias for --build=debug --validate")
     driver_other.add_argument(
         "--validate", action="store_true",
         help='validate plans (implied by --debug); needs "validate" (VAL) on PATH')
@@ -382,6 +392,16 @@ def parse_args():
     driver_other.add_argument(
         "--plan-file", metavar="FILE", default="sas_plan",
         help="write plan(s) to FILE (default: %(default)s; anytime configurations append .1, .2, ...)")
+
+    driver_other.add_argument(
+        "--sas-file", metavar="FILE",
+        help="intermediate file for storing the translator output "
+            "(implies --keep-sas-file, default: {})".format(DEFAULT_SAS_FILE))
+    driver_other.add_argument(
+        "--keep-sas-file", action="store_true",
+        help="keep translator output file (implied by --sas-file, default: "
+            "delete file if translator and search component are active)")
+
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
         help="run a portfolio specified in FILE")
@@ -394,7 +414,7 @@ def parse_args():
 
     driver_other.add_argument(
         "--cleanup", action="store_true",
-        help="clean up temporary files (output.sas, sas_plan, sas_plan.*) and exit")
+        help="clean up temporary files (translator output and plan files) and exit")
 
 
     parser.add_argument(
@@ -410,15 +430,20 @@ def parse_args():
 
     args = parser.parse_args()
 
+    if args.sas_file:
+        args.keep_sas_file = True
+    else:
+        args.sas_file = DEFAULT_SAS_FILE
+
     if args.build and args.debug:
         print_usage_and_exit_with_driver_input_error(
-            parser, "The option --debug is an alias for --build=debug32 "
-                 "--validate. Do no specify both --debug and --build.")
+            parser, "The option --debug is an alias for --build=debug "
+                     "--validate. Do no specify both --debug and --build.")
     if not args.build:
         if args.debug:
-            args.build = "debug32"
+            args.build = "debug"
         else:
-            args.build = "release32"
+            args.build = "release"
 
     _split_planner_args(parser, args)
 
@@ -426,6 +451,8 @@ def parse_args():
             ("--alias", args.alias is not None),
             ("--portfolio", args.portfolio is not None),
             ("options for search component", bool(args.search_options))])
+
+    _set_translator_output_options(parser, args)
 
     _convert_limits_to_ints(parser, args)
 
@@ -448,5 +475,7 @@ def parse_args():
 
     if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
+        if "translate" not in args.components or "search" not in args.components:
+            args.keep_sas_file = True
 
     return args
