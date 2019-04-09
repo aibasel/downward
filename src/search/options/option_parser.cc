@@ -2,7 +2,7 @@
 
 #include "errors.h"
 
-#include "../ext/tree_util.hh"
+#include <../ext/tree_util.hh>
 
 #include <iostream>
 
