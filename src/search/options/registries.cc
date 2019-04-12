@@ -192,7 +192,7 @@ const PluginGroupInfo &Registry::get_group_info(const string &group) const {
 }
 
 void Registry::insert_plugin(
-    const string &key, const Any &factory,
+    const string &key, const boost::any &factory,
     const string &group,
     const PluginTypeNameGetter &type_name_factory,
     const type_index &type) {
