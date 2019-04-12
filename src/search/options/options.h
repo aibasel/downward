@@ -1,11 +1,12 @@
 #ifndef OPTIONS_OPTIONS_H
 #define OPTIONS_OPTIONS_H
 
-#include "any.h"
 #include "errors.h"
 #include "type_namer.h"
 
 #include "../utils/system.h"
+
+#include <../ext/any.hpp>
 
 #include <string>
 #include <typeinfo>
@@ -14,7 +15,7 @@
 namespace options {
 // Wrapper for unordered_map<string, Any>.
 class Options {
-    std::unordered_map<std::string, Any> storage;
+    std::unordered_map<std::string, boost::any> storage;
     std::string unparsed_config;
     const bool help_mode;
 
@@ -35,9 +36,9 @@ public:
                 " (type: " + typeid(T).name() + ")", typeid(T).name());
         }
         try {
-            T result = any_cast<T>(it->second);
+            T result = boost::any_cast<T>(it->second);
             return result;
-        } catch (const BadAnyCast &) {
+        } catch (const boost::bad_any_cast &) {
             ABORT_WITH_DEMANGLING_HINT(
                 "Invalid conversion while retrieving config options!\n" +
                 key + " is not of type " + typeid(T).name(), typeid(T).name());
