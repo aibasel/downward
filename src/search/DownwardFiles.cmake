@@ -88,6 +88,7 @@ fast_downward_plugin(
     NAME OPTIONS
     HELP "Option parsing and plugin definition"
     SOURCES
+        options/any
         options/bounds
         options/doc_printer
         options/doc_utils

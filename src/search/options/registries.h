@@ -1,10 +1,9 @@
 #ifndef OPTIONS_REGISTRIES_H
 #define OPTIONS_REGISTRIES_H
 
+#include "any.h"
 #include "doc_utils.h"
 #include "raw_registry.h"
-
-#include <../ext/any.hpp>
 
 #include <functional>
 #include <string>
@@ -18,7 +17,7 @@ class OptionParser;
 class Predefinitions;
 
 class Registry {
-    std::unordered_map<std::type_index, std::unordered_map<std::string, boost::any>> plugin_factories;
+    std::unordered_map<std::type_index, std::unordered_map<std::string, Any>> plugin_factories;
     /*
       plugin_type_infos collects information about all plugin types
       in use and gives access to the underlying information. This is used,
@@ -52,7 +51,7 @@ class Registry {
     void insert_plugins(const RawRegistry &raw_registry,
                         std::vector<std::string> &errors);
 
-    void insert_plugin(const std::string &key, const boost::any &factory,
+    void insert_plugin(const std::string &key, const Any &factory,
                        const std::string &group,
                        const PluginTypeNameGetter &type_name_factory,
                        const std::type_index &type);
@@ -65,8 +64,7 @@ public:
     template<typename T>
     std::function<T(OptionParser &)> get_factory(const std::string &key) const {
         std::type_index type(typeid(T));
-        return boost::any_cast<
-            std::function<T(OptionParser &)>>(plugin_factories.at(type).at(key));
+        return any_cast<std::function<T(OptionParser &)>>(plugin_factories.at(type).at(key));
     }
 
     bool is_predefinition(const std::string &key) const;
