@@ -12,7 +12,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <memory>
-#include <optional.hpp>
+#include <optional.hh>
 #include <set>
 
 using namespace std;
