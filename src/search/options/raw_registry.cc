@@ -5,7 +5,7 @@ using namespace std;
 namespace options {
 RawPluginInfo::RawPluginInfo(
     const string &key,
-    const boost::any &factory,
+    const Any &factory,
     const string &group,
     const PluginTypeNameGetter &type_name_factory,
     const DocFactory &doc_factory,
@@ -33,7 +33,7 @@ void RawRegistry::insert_plugin_group_data(
 
 void RawRegistry::insert_plugin_data(
     const string &key,
-    const boost::any &factory,
+    const Any &factory,
     const string &group,
     PluginTypeNameGetter &type_name_factory,
     DocFactory &doc_factory,
