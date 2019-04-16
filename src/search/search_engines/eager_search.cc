@@ -9,11 +9,10 @@
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
 
-#include <../ext/optional.hpp>
-
 #include <cassert>
 #include <cstdlib>
 #include <memory>
+#include <optional.hpp>
 #include <set>
 
 using namespace std;
