@@ -179,6 +179,10 @@ void MergeAndShrinkAlgorithm::main_loop(
         }
     }
 
+
+    if (label_reduction) {
+        label_reduction->initialize(task_proxy);
+    }
     unique_ptr<MergeStrategy> merge_strategy =
         merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
     merge_strategy_factory = nullptr;
@@ -331,10 +335,6 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     starting_peak_memory = utils::get_peak_memory_in_kb();
-
-    if (label_reduction) {
-        label_reduction->initialize(task_proxy);
-    }
 
     utils::Timer timer;
     cout << "Running merge-and-shrink algorithm..." << endl;
