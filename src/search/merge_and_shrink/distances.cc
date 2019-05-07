@@ -217,6 +217,7 @@ void Distances::compute_distances(
             cout << "empty transition system, no distances to compute" << endl;
         }
         init_distances_computed = true;
+        goal_distances_computed = true;
         return;
     }
 
