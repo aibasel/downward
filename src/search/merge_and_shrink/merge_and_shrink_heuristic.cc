@@ -35,6 +35,21 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
 
 void MergeAndShrinkHeuristic::finalize_factor(
     FactoredTransitionSystem &fts, int index) {
+    const TransitionSystem &ts = fts.get_transition_system(index);
+    bool all_goal_states = true;
+    for (int state = 0; state < ts.get_size(); ++state) {
+        if (!ts.is_goal_state(state)) {
+            all_goal_states = false;
+            break;
+        }
+    }
+    if (all_goal_states) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << "Factor consists of goal states only, skipping." << endl;
+        }
+        return;
+    }
+
     auto final_entry = fts.extract_factor(index);
     unique_ptr<MergeAndShrinkRepresentation> mas_representation = move(final_entry.first);
     unique_ptr<Distances> distances = move(final_entry.second);
