@@ -45,7 +45,8 @@ void MergeAndShrinkHeuristic::finalize_factor(
     }
     if (all_goal_states) {
         if (verbosity >= Verbosity::VERBOSE) {
-            cout << "Factor consists of goal states only, skipping." << endl;
+            cout << fts.get_transition_system(index).tag()
+                 << "consists of goal states only, skipping." << endl;
         }
         return;
     }
@@ -98,10 +99,9 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
         finalize_factor(fts, index);
     }
     if (verbosity >= Verbosity::NORMAL) {
-        cout << "Use all factors in a maximum heuristic." << endl;
+        cout << "Use all factors with non-goal states in a maximum heuristic."
+             << endl;
     }
-
-    assert(static_cast<int>(mas_representations.size()) == active_factors_count);
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
