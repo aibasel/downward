@@ -17,7 +17,6 @@ class CountdownTimer;
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class LabelReduction;
-class MergeAndShrinkRepresentation;
 class MergeStrategyFactory;
 class ShrinkStrategy;
 enum class Verbosity;
