@@ -5,7 +5,7 @@ from lab.parser import Parser
 parser = Parser()
 parser.add_pattern('ms_construction_time', 'Merge-and-shrink algorithm runtime: (.+)s', required=False, type=float)
 parser.add_pattern('ms_atomic_construction_time', 'M&S algorithm timer: (.+)s \(after computation of atomic factors\)', required=False, type=float)
-parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink computation: (\d+) KB', required=False, type=int)
+parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink algorithm: (\d+) KB', required=False, type=int)
 
 def check_ms_constructed(content, props):
     ms_construction_time = props.get('ms_construction_time')
@@ -28,7 +28,7 @@ parser.add_function(check_atomic_fts_constructed)
 def check_planner_exit_reason(content, props):
     ms_abstraction_constructed = props.get('ms_abstraction_constructed')
     error = props.get('error')
-    if error != 'success' and error != 'timeout' and error != 'out-of-memory':
+    if error != 'success' and error != 'search-out-of-time' and error != 'search-out-of-memory':
         print 'error: %s' % error
         return
 
@@ -39,14 +39,15 @@ def check_planner_exit_reason(content, props):
     search_out_of_time = False
     search_out_of_memory = False
     if ms_abstraction_constructed == False:
-        if error == 'timeout':
+        if error == 'search-out-of-time':
             ms_out_of_time = True
-        elif error == 'out-of-memory':
+        elif error == 'search-out-of-memory':
             ms_out_of_memory = True
     elif ms_abstraction_constructed == True:
-        if error == 'timeout':
+        if error == 'search-out-of-time':
             search_out_of_time = True
-        elif error == 'out-of-memory':
+        elif error == 'search-out-of-memory':
+            search_out_of_memory = True
             search_out_of_memory = True
     props['ms_out_of_time'] = ms_out_of_time
     props['ms_out_of_memory'] = ms_out_of_memory
