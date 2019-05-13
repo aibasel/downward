@@ -179,7 +179,6 @@ void MergeAndShrinkAlgorithm::main_loop(
         }
     }
 
-
     if (label_reduction) {
         label_reduction->initialize(task_proxy);
     }
