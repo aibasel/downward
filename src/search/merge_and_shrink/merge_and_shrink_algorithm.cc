@@ -380,18 +380,19 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             pruned = pruned || pruned_factor;
         }
         if (!fts.is_factor_solvable(index)) {
+            cout << "Atomic FTS is unsolvable, stopping computation." << endl;
             unsolvable = true;
             break;
         }
     }
-    if (verbosity >= Verbosity::NORMAL && pruned) {
-        log_progress(timer, "after pruning atomic factors");
+    if (verbosity >= Verbosity::NORMAL) {
+        if (pruned) {
+            log_progress(timer, "after pruning atomic factors");
+        }
         cout << endl;
     }
 
-    if (unsolvable) {
-        cout << "Atomic FTS is unsolvable, stopping computation." << endl;
-    } else if (main_loop_max_time > 0) {
+    if (!unsolvable && main_loop_max_time > 0) {
         main_loop(fts, task_proxy);
     }
     const bool final = true;
