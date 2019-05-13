@@ -61,7 +61,7 @@ int MergeAndShrinkRepresentationLeaf::get_value(const State &state) const {
 }
 
 void MergeAndShrinkRepresentationLeaf::dump() const {
-    cout << "lookup table: ";
+    cout << "lookup table (leaf): ";
     for (const auto &value : lookup_table) {
         cout << value << ", ";
     }
@@ -123,17 +123,16 @@ int MergeAndShrinkRepresentationMerge::get_value(
 }
 
 void MergeAndShrinkRepresentationMerge::dump() const {
-    cout << "lookup table: ";
+    cout << "lookup table (merge):" << endl;
     for (const auto &row : lookup_table) {
         for (const auto &value : row) {
             cout << value << ", ";
         }
         cout << endl;
     }
-    cout << endl;
-    cout << "dump left child:" << endl;
+    cout << "left child:" << endl;
     left_child->dump();
-    cout << "dump right child:" << endl;
+    cout << "right child:" << endl;
     right_child->dump();
 }
 }
