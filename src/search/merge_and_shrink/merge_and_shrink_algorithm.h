@@ -46,17 +46,16 @@ class MergeAndShrinkAlgorithm {
 
     long starting_peak_memory;
 
+    void report_peak_memory_delta(bool final = false) const;
+    void dump_options() const;
+    void warn_on_unusual_options() const;
     bool ran_out_of_time(const utils::CountdownTimer &timer) const;
     void statistics(int maximum_intermediate_size) const;
     void main_loop(
         FactoredTransitionSystem &fts,
         const TaskProxy &task_proxy);
-
-    void report_peak_memory_delta(bool final = false) const;
 public:
     explicit MergeAndShrinkAlgorithm(const options::Options &opts);
-    void dump_options() const;
-    void warn_on_unusual_options() const;
     FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
 };
 
