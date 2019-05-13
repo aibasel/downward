@@ -35,22 +35,6 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
 
 void MergeAndShrinkHeuristic::finalize_factor(
     FactoredTransitionSystem &fts, int index) {
-    const TransitionSystem &ts = fts.get_transition_system(index);
-    bool all_goal_states = true;
-    for (int state = 0; state < ts.get_size(); ++state) {
-        if (!ts.is_goal_state(state)) {
-            all_goal_states = false;
-            break;
-        }
-    }
-    if (all_goal_states) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << fts.get_transition_system(index).tag()
-                 << "consists of goal states only, skipping." << endl;
-        }
-        return;
-    }
-
     auto final_entry = fts.extract_factor(index);
     unique_ptr<MergeAndShrinkRepresentation> mas_representation = move(final_entry.first);
     unique_ptr<Distances> distances = move(final_entry.second);
@@ -93,14 +77,30 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
         }
     }
 
-    // Iterate over all remaining factors and extract them.
-    mas_representations.reserve(active_factors_count);
+    /* Iterate over remaining factors and extract and keep those that do not
+       consist exclusively of goal states. */
+    int num_kept_factors = 0;
     for (int index : fts) {
-        finalize_factor(fts, index);
+        const TransitionSystem &ts = fts.get_transition_system(index);
+        bool all_goal_states = true;
+        for (int state = 0; state < ts.get_size(); ++state) {
+            if (!ts.is_goal_state(state)) {
+                all_goal_states = false;
+                break;
+            }
+        }
+        if (all_goal_states) {
+            if (verbosity >= Verbosity::VERBOSE) {
+                cout << fts.get_transition_system(index).tag()
+                     << "consists of goal states only, skipping." << endl;
+            }
+        } else {
+            finalize_factor(fts, index);
+            ++num_kept_factors;
+        }
     }
     if (verbosity >= Verbosity::NORMAL) {
-        cout << "Use all factors with non-goal states in a maximum heuristic."
-             << endl;
+        cout << "Number of kept factors: " << num_kept_factors << endl;
     }
 }
 
