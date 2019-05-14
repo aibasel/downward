@@ -12,6 +12,7 @@
 
 #include "../task_utils/task_properties.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -77,28 +78,42 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
         }
     }
 
-    /* Iterate over remaining factors and extract and keep those that do not
-       consist exclusively of goal states. */
+    /* Iterate over remaining factors and extract and keep those that contain
+       at least one goal variable. */
     int num_kept_factors = 0;
     for (int index : fts) {
         const TransitionSystem &ts = fts.get_transition_system(index);
-        bool all_goal_states = true;
-        for (int state = 0; state < ts.get_size(); ++state) {
-            if (!ts.is_goal_state(state)) {
-                all_goal_states = false;
+        bool contains_only_nongoals = true;
+        GoalsProxy goal_facts = task_proxy.get_goals();
+        set<int> goal_vars;
+        for (FactProxy goal : goal_facts) {
+            goal_vars.insert(goal.get_variable().get_id());
+        }
+        for (int var_id : ts.get_incorporated_variables()) {
+            if (goal_vars.count(var_id)) {
+                contains_only_nongoals = false;
                 break;
             }
         }
-        if (all_goal_states) {
+        if (verbosity >= Verbosity::VERBOSE) {
+            cout << fts.get_transition_system(index).tag();
+        }
+        if (contains_only_nongoals) {
             if (verbosity >= Verbosity::VERBOSE) {
-                cout << fts.get_transition_system(index).tag()
-                     << "consists of goal states only, skipping." << endl;
+                cout << "contains only nongoal variables" << endl;
+            }
+            for (int state = 0; state < ts.get_size(); ++state) {
+                assert(fts.get_distances(index).get_goal_distance(state) == 0);
             }
         } else {
+            if (verbosity >= Verbosity::VERBOSE) {
+                cout << "contains goal variable(s)" << endl;
+            }
             finalize_factor(fts, index);
             ++num_kept_factors;
         }
     }
+    assert(num_kept_factors);
     if (verbosity >= Verbosity::NORMAL) {
         cout << "Number of kept factors: " << num_kept_factors << endl;
     }
