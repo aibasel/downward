@@ -30,12 +30,17 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
-    finalize(fts);
+    extract_factors(fts);
     cout << "Done initializing merge-and-shrink heuristic." << endl << endl;
 }
 
-void MergeAndShrinkHeuristic::finalize_factor(
+void MergeAndShrinkHeuristic::extract_factor(
     FactoredTransitionSystem &fts, int index) {
+    /*
+      Extract the factor at the given index from the given factored transition
+      system, compute goal distances if necessary and store the M&S
+      representation, which serves as the heuristic.
+    */
     auto final_entry = fts.extract_factor(index);
     unique_ptr<MergeAndShrinkRepresentation> mas_representation = move(final_entry.first);
     unique_ptr<Distances> distances = move(final_entry.second);
@@ -49,37 +54,27 @@ void MergeAndShrinkHeuristic::finalize_factor(
     mas_representations.push_back(move(mas_representation));
 }
 
-void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
-    /*
-      TODO: This method has quite a bit of fiddling with aspects of
-      transition systems and the merge-and-shrink representation (checking
-      whether distances have been computed; computing them) that we would
-      like to have at a lower level. See also the TODO in
-      factored_transition_system.h on improving the interface of that class
-      (and also related classes like TransitionSystem etc).
-    */
-
-    int active_factors_count = fts.get_num_active_entries();
-    if (verbosity >= Verbosity::NORMAL) {
-        cout << "Number of remaining factors: " << active_factors_count << endl;
-    }
-
-    // Check if there is an unsolvable factor. If so, use it as heuristic.
+bool MergeAndShrinkHeuristic::extract_unsolvable_factor(FactoredTransitionSystem &fts) {
+    /* Check if there is an unsolvable factor. If so, extract and store it and
+       return true. Otherwise, return false. */
     for (int index : fts) {
         if (!fts.is_factor_solvable(index)) {
             mas_representations.reserve(1);
-            finalize_factor(fts, index);
+            extract_factor(fts, index);
             if (verbosity >= Verbosity::NORMAL) {
                 cout << fts.get_transition_system(index).tag()
                      << "use this unsolvable factor as heuristic."
                      << endl;
             }
-            return;
+            return true;
         }
     }
+    return false;
+}
 
-    /* Iterate over remaining factors and extract and keep those that contain
-       at least one goal variable. */
+int MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSystem &fts) {
+    /* Iterate over remaining factors and extract and store the nontrivial
+       ones, i.e., those that do not correspond to a zero-heuristic. */
     int num_kept_factors = 0;
     for (int index : fts) {
         const TransitionSystem &ts = fts.get_transition_system(index);
@@ -109,9 +104,34 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
             if (verbosity >= Verbosity::VERBOSE) {
                 cout << "contains goal variable(s)" << endl;
             }
-            finalize_factor(fts, index);
+            extract_factor(fts, index);
             ++num_kept_factors;
         }
+    }
+    return num_kept_factors;
+}
+
+void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
+    /*
+      TODO: This method has quite a bit of fiddling with aspects of
+      transition systems and the merge-and-shrink representation (checking
+      whether distances have been computed; computing them) that we would
+      like to have at a lower level. See also the TODO in
+      factored_transition_system.h on improving the interface of that class
+      (and also related classes like TransitionSystem etc).
+    */
+
+    int active_factors_count = fts.get_num_active_entries();
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << "Number of remaining factors: " << active_factors_count << endl;
+    }
+
+    bool unsolvable = extract_unsolvable_factor(fts);
+    int num_kept_factors;
+    if (unsolvable) {
+        num_kept_factors = 1;
+    } else {
+        num_kept_factors = extract_nontrivial_factors(fts);
     }
     assert(num_kept_factors);
     if (verbosity >= Verbosity::NORMAL) {
