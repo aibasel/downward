@@ -224,6 +224,21 @@ bool FactoredTransitionSystem::is_factor_solvable(int index) const {
     return transition_systems[index]->is_solvable(*distances[index]);
 }
 
+bool FactoredTransitionSystem::is_factor_trivial(int index) const {
+    assert(is_component_valid(index));
+    const TransitionSystem &ts = *transition_systems[index];
+    bool all_goal_states = true;
+    for (int state = 0; state < ts.get_size(); ++state) {
+        if (!ts.is_goal_state(state)) {
+            all_goal_states = false;
+            break;
+        }
+    }
+    const MergeAndShrinkRepresentation &mas_repr = *mas_representations[index];
+    bool is_pruned = mas_repr.is_pruned();
+    return all_goal_states && !is_pruned;
+}
+
 bool FactoredTransitionSystem::is_active(int index) const {
     assert_index_valid(index);
     return transition_systems[index] != nullptr;

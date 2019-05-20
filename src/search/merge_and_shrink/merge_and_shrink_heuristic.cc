@@ -77,33 +77,12 @@ int MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSystem
        ones, i.e., those that do not correspond to a zero-heuristic. */
     int num_kept_factors = 0;
     for (int index : fts) {
-        const TransitionSystem &ts = fts.get_transition_system(index);
-        bool contains_only_nongoals = true;
-        GoalsProxy goal_facts = task_proxy.get_goals();
-        set<int> goal_vars;
-        for (FactProxy goal : goal_facts) {
-            goal_vars.insert(goal.get_variable().get_id());
-        }
-        for (int var_id : ts.get_incorporated_variables()) {
-            if (goal_vars.count(var_id)) {
-                contains_only_nongoals = false;
-                break;
-            }
-        }
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << fts.get_transition_system(index).tag();
-        }
-        if (contains_only_nongoals) {
+        if (fts.is_factor_trivial(index)) {
             if (verbosity >= Verbosity::VERBOSE) {
-                cout << "contains only nongoal variables" << endl;
-            }
-            for (int state = 0; state < ts.get_size(); ++state) {
-                assert(fts.get_distances(index).get_goal_distance(state) == 0);
+                cout << fts.get_transition_system(index).tag()
+                     << "is trivial." << endl;
             }
         } else {
-            if (verbosity >= Verbosity::VERBOSE) {
-                cout << "contains goal variable(s)" << endl;
-            }
             extract_factor(fts, index);
             ++num_kept_factors;
         }
