@@ -154,6 +154,7 @@ public:
       pruned.
     */
     bool is_factor_solvable(int index) const;
+    bool is_factor_trivial(int index) const;
 
     int get_num_active_entries() const {
         return num_active_entries;

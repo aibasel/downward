@@ -60,6 +60,15 @@ int MergeAndShrinkRepresentationLeaf::get_value(const State &state) const {
     return lookup_table[value];
 }
 
+bool MergeAndShrinkRepresentationLeaf::is_pruned() const {
+    for (int entry : lookup_table) {
+        if (entry == PRUNED_STATE) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void MergeAndShrinkRepresentationLeaf::dump() const {
     cout << "lookup table (leaf): ";
     for (const auto &value : lookup_table) {
@@ -120,6 +129,12 @@ int MergeAndShrinkRepresentationMerge::get_value(
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
         return PRUNED_STATE;
     return lookup_table[state1][state2];
+}
+
+bool MergeAndShrinkRepresentationMerge::is_pruned() const {
+    bool pruned1 = left_child->is_pruned();
+    bool pruned2 = right_child->is_pruned();
+    return pruned1 || pruned2;
 }
 
 void MergeAndShrinkRepresentationMerge::dump() const {
