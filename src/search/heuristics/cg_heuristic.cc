@@ -16,18 +16,18 @@
 using namespace std;
 using namespace domain_transition_graph;
 
-// TODO: Turn this into an option and check its impact.
-#define USE_CACHE true
-
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
-      cache(utils::make_unique_ptr<CGCache>(task_proxy)),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     cout << "Initializing causal graph heuristic..." << endl;
+
+    int max_cache_size = opts.get<int>("max_cache_size");
+    if (max_cache_size > 0)
+        cache = utils::make_unique_ptr<CGCache>(task_proxy, max_cache_size);
 
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
@@ -89,7 +89,7 @@ int CGHeuristic::get_transition_cost(const State &state,
     int var_no = dtg->var;
 
     // Check cache.
-    bool use_the_cache = USE_CACHE && cache->is_cached(var_no);
+    bool use_the_cache = cache && cache->is_cached(var_no);
     if (use_the_cache) {
         int cached_val = cache->lookup(var_no, state, start_val, goal_val);
         if (cached_val != CGCache::NOT_COMPUTED) {
@@ -254,7 +254,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     ValueTransitionLabel *helpful;
     int cost;
     // Check cache.
-    if (USE_CACHE && cache->is_cached(var_no)) {
+    if (cache && cache->is_cached(var_no)) {
         helpful = cache->lookup_helpful_transition(var_no, state, from, to);
         cost = cache->lookup(var_no, state, from, to);
         assert(helpful);
@@ -297,6 +297,12 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_property("consistent", "no");
     parser.document_property("safe", "no");
     parser.document_property("preferred operators", "yes");
+
+    parser.add_option<int>(
+        "max_cache_size",
+        "maximum number of cached entries per variable (set to 0 to disable cache)",
+        "1000000",
+        Bounds("0", "infinity"));
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
