@@ -236,14 +236,15 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
           see above) earlier.
         */
         int count = 0;
-        MaxAdditivePDBSubsets max_additive_subsets =
-            current_pdbs->get_max_additive_subsets(pdb->get_pattern());
+        vector<PatternClique> pattern_cliques =
+            current_pdbs->get_pattern_cliques(pdb->get_pattern());
         for (int sample_id = 0; sample_id < num_samples; ++sample_id) {
             const State &sample = samples[sample_id];
             assert(utils::in_bounds(sample_id, samples_h_values));
             int h_collection = samples_h_values[sample_id];
             if (is_heuristic_improved(
-                    *pdb, sample, h_collection, max_additive_subsets)) {
+                    *pdb, sample, h_collection,
+                    *current_pdbs->get_pattern_databases(), pattern_cliques)) {
                 ++count;
             }
         }
@@ -262,7 +263,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
 
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     const PatternDatabase &pdb, const State &sample, int h_collection,
-    const MaxAdditivePDBSubsets &max_additive_subsets) {
+    const PDBCollection &pdbs, const vector<PatternClique> &pattern_cliques) {
     // h_pattern: h-value of the new pattern
     int h_pattern = pdb.get_value(sample);
 
@@ -274,19 +275,22 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     if (h_collection == numeric_limits<int>::max())
         return false;
 
-    for (const auto &subset : max_additive_subsets) {
-        int h_subset = 0;
-        for (const shared_ptr<PatternDatabase> &additive_pdb : subset) {
-            /* Experiments showed that it is faster to recompute the
-               h values than to cache them in an unordered_map. */
-            int h = additive_pdb->get_value(sample);
-            if (h == numeric_limits<int>::max())
-                return false;
-            h_subset += h;
+    vector<int> h_values;
+    h_values.reserve(pdbs.size());
+    for (const shared_ptr<PatternDatabase> &p : pdbs) {
+        int h = p->get_value(sample);
+        if (h == numeric_limits<int>::max())
+            return false;
+        h_values.push_back(h);
+    }
+    for (const PatternClique &clilque : pattern_cliques) {
+        int h_clique = 0;
+        for (PatternID pattern_id : clilque) {
+            h_clique += h_values[pattern_id];
         }
-        if (h_pattern + h_subset > h_collection) {
+        if (h_pattern + h_clique > h_collection) {
             /*
-              return true if a max additive subset is found for
+              return true if a pattern clique is found for
               which the condition is met
             */
             return true;

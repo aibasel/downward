@@ -66,6 +66,7 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
     // Check if there is an unsolvable factor. If so, use it as heuristic.
     for (int index : fts) {
         if (!fts.is_factor_solvable(index)) {
+            mas_representations.reserve(1);
             finalize_factor(fts, index);
             if (verbosity >= Verbosity::NORMAL) {
                 cout << fts.get_transition_system(index).tag()
@@ -77,6 +78,7 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
     }
 
     // Iterate over all remaining factors and extract them.
+    mas_representations.reserve(active_factors_count);
     for (int index : fts) {
         finalize_factor(fts, index);
     }
