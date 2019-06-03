@@ -96,7 +96,7 @@ vector<int> ExplicitAbstraction::compute_goal_distances(const vector<int> &costs
 
 vector<int> ExplicitAbstraction::compute_saturated_costs(
     const vector<int> &h_values) const {
-    int num_operators = looping_operators.size();
+    int num_operators = get_num_operators();
     vector<int> saturated_costs(num_operators, -INF);
 
     /* To prevent negative cost cycles we ensure that all operators
@@ -129,6 +129,10 @@ vector<int> ExplicitAbstraction::compute_saturated_costs(
         }
     }
     return saturated_costs;
+}
+
+int ExplicitAbstraction::get_num_operators() const {
+    return looping_operators.size();
 }
 
 int ExplicitAbstraction::get_num_states() const {

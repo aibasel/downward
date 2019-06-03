@@ -90,7 +90,7 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
 
     order_generator->initialize(abstractions, costs);
 
-    // Compute h^SCP(s_0) using a greedy order for s_0.
+    // Compute h(s_0) using a greedy order for s_0.
     vector<int> abstract_state_ids_for_init = get_abstract_state_ids(
         abstractions, initial_state);
     Order order_for_init = order_generator->compute_order_for_state(
@@ -109,9 +109,9 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
                 task_proxy, abstractions, sampler, num_samples, init_h, is_dead_end, max_sampling_time));
     }
 
+    log << "Start computing cost partitionings" << endl;
     vector<CostPartitioningHeuristic> cp_heuristics;
     int evaluated_orders = 0;
-    log << "Start computing cost partitionings" << endl;
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
            (!timer.is_expired() || cp_heuristics.empty())) {
         bool first_order = (evaluated_orders == 0);
@@ -133,14 +133,16 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
         }
 
         // Optimize order.
-        if (max_optimization_time > 0) {
-            utils::CountdownTimer timer(max_optimization_time);
+        double optimization_time = min(
+            static_cast<double>(timer.get_remaining_time()), max_optimization_time);
+        if (optimization_time > 0) {
+            utils::CountdownTimer opt_timer(optimization_time);
             int incumbent_h_value = cp_heuristic.compute_heuristic(abstract_state_ids);
             optimize_order_with_hill_climbing(
-                cp_function, timer, abstractions, costs, abstract_state_ids, order,
+                cp_function, opt_timer, abstractions, costs, abstract_state_ids, order,
                 cp_heuristic, incumbent_h_value, first_order);
             if (first_order) {
-                log << "Time for optimizing order: " << timer.get_elapsed_time()
+                log << "Time for optimizing order: " << opt_timer.get_elapsed_time()
                     << endl;
             }
         }
@@ -149,7 +151,7 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
         // added orders.
         if (!diversifier || diversifier->is_diverse(cp_heuristic)) {
             cp_heuristics.push_back(move(cp_heuristic));
-            if (diversify) {
+            if (diversifier) {
                 log << "Sum over max h values for " << num_samples
                     << " samples after " << timer.get_elapsed_time()
                     << " of diversification: "
@@ -160,6 +162,8 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
 
         ++evaluated_orders;
     }
+
+    log << "Evaluated orders: " << evaluated_orders << endl;
     log << "Cost partitionings: " << cp_heuristics.size() << endl;
     log << "Time for computing cost partitionings: " << timer.get_elapsed_time()
         << endl;

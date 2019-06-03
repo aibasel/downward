@@ -3,19 +3,9 @@
 
 #include "order_generator.h"
 
-namespace options {
-class Options;
-}
-
-namespace utils {
-class RandomNumberGenerator;
-}
-
 namespace cost_saturation {
 class OrderGeneratorRandom : public OrderGenerator {
-    const std::shared_ptr<utils::RandomNumberGenerator> rng;
     std::vector<int> random_order;
-
 public:
     explicit OrderGeneratorRandom(const options::Options &opts);
 

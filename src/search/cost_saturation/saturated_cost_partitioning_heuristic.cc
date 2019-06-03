@@ -115,7 +115,7 @@ static shared_ptr<Heuristic> get_max_cp_heuristic(
     vector<int> costs = task_properties::get_operator_costs(task_proxy);
     Abstractions abstractions = generate_abstractions(
         task, opts.get_list<shared_ptr<AbstractionGenerator>>("abstraction_generators"));
-    UnsolvabilityHeuristic unsolvability_heuristic(abstractions, costs.size());
+    UnsolvabilityHeuristic unsolvability_heuristic(abstractions);
     vector<CostPartitioningHeuristic> cp_heuristics =
         get_cp_heuristic_collection_generator_from_options(opts).generate_cost_partitionings(
             task_proxy, abstractions, costs, cp_function, unsolvability_heuristic);

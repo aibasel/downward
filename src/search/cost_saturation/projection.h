@@ -76,17 +76,20 @@ struct AbstractBackwardOperator {
 
 
 class ProjectionFunction : public AbstractionFunction {
-    pdbs::Pattern pattern;
-    // Multipliers for each pattern variable for perfect hash function.
-    std::vector<std::size_t> hash_multipliers;
+    struct VariableAndMultiplier {
+        int pattern_var;
+        int hash_multiplier;
+
+        VariableAndMultiplier(int pattern_var, int hash_multiplier)
+            : pattern_var(pattern_var),
+              hash_multiplier(hash_multiplier) {
+        }
+    };
+    std::vector<VariableAndMultiplier> variables_and_multipliers;
 
 public:
     ProjectionFunction(
-        const pdbs::Pattern &pattern, const std::vector<std::size_t> &hash_multipliers)
-        : pattern(pattern),
-          hash_multipliers(move(hash_multipliers)) {
-        assert(pattern.size() == hash_multipliers.size());
-    }
+        const pdbs::Pattern &pattern, const std::vector<std::size_t> &hash_multipliers);
 
     virtual int get_abstract_state_id(const State &concrete_state) const override;
 };
@@ -136,8 +139,8 @@ class Projection : public Abstraction {
         // Reuse vector to save allocations.
         std::vector<FactPair> abstract_facts;
 
-        int num_operators = abstract_forward_operators.size();
-        for (int op_id = 0; op_id < num_operators; ++op_id) {
+        int num_abstract_operators = abstract_forward_operators.size();
+        for (int op_id = 0; op_id < num_abstract_operators; ++op_id) {
             const AbstractForwardOperator &op = abstract_forward_operators[op_id];
             int concrete_op_id = abstract_backward_operators[op_id].concrete_operator_id;
             abstract_facts.clear();
@@ -209,10 +212,11 @@ public:
         const std::vector<int> &costs) const override;
     virtual std::vector<int> compute_saturated_costs(
         const std::vector<int> &h_values) const override;
-    virtual int get_num_states() const override;
+    virtual int get_num_operators() const override;
     virtual bool operator_is_active(int op_id) const override;
     virtual bool operator_induces_self_loop(int op_id) const override;
     virtual void for_each_transition(const TransitionCallback &callback) const override;
+    virtual int get_num_states() const override;
     virtual const std::vector<int> &get_goal_states() const override;
 
     virtual void dump() const override;

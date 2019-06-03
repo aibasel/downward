@@ -24,6 +24,7 @@ class CartesianAbstractionGenerator : public AbstractionGenerator {
     const std::vector<std::shared_ptr<cegar::SubtaskGenerator>> subtask_generators;
     const int max_states;
     const int max_transitions;
+    const bool prune_unreachable_transitions;
     const std::shared_ptr<utils::RandomNumberGenerator> rng;
     const bool debug;
 

@@ -5,10 +5,21 @@
 
 #include <vector>
 
+namespace options {
+class OptionParser;
+class Options;
+}
+
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace cost_saturation {
 class OrderGenerator {
+protected:
+    const std::shared_ptr<utils::RandomNumberGenerator> rng;
 public:
-    OrderGenerator() = default;
+    explicit OrderGenerator(const options::Options &opts);
     virtual ~OrderGenerator() = default;
 
     virtual void initialize(
@@ -21,6 +32,8 @@ public:
         const std::vector<int> &abstract_state_ids,
         bool verbose) = 0;
 };
+
+extern void add_common_order_generator_options(options::OptionParser &parser);
 }
 
 #endif

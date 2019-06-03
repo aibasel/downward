@@ -10,10 +10,10 @@
 using namespace std;
 
 namespace cost_saturation {
-static vector<bool> get_unsolvable_states(const Abstraction &abstraction, int num_ops) {
+static vector<bool> get_unsolvable_states(const Abstraction &abstraction) {
     // Note: we could use a simple queue instead of a priority queue for this.
     vector<bool> unsolvable_states(abstraction.get_num_states(), false);
-    vector<int> unit_costs(num_ops, 1);
+    vector<int> unit_costs(abstraction.get_num_operators(), 1);
     vector<int> goal_distances = abstraction.compute_goal_distances(unit_costs);
     for (size_t i = 0; i < goal_distances.size(); ++i) {
         if (goal_distances[i] == INF) {
@@ -23,10 +23,9 @@ static vector<bool> get_unsolvable_states(const Abstraction &abstraction, int nu
     return unsolvable_states;
 }
 
-UnsolvabilityHeuristic::UnsolvabilityHeuristic(
-    const Abstractions &abstractions, int num_operators) {
+UnsolvabilityHeuristic::UnsolvabilityHeuristic(const Abstractions &abstractions) {
     for (size_t i = 0; i < abstractions.size(); ++i) {
-        vector<bool> unsolvable = get_unsolvable_states(*abstractions[i], num_operators);
+        vector<bool> unsolvable = get_unsolvable_states(*abstractions[i]);
         if (any_of(unsolvable.begin(), unsolvable.end(), [](bool b) {return b;})) {
             unsolvable_states.emplace_back(i, move(unsolvable));
         }

@@ -18,7 +18,7 @@ class UnsolvabilityHeuristic {
     std::vector<UnsolvabilityInfo> unsolvable_states;
 
 public:
-    UnsolvabilityHeuristic(const Abstractions &abstractions, int num_operators);
+    explicit UnsolvabilityHeuristic(const Abstractions &abstractions);
 
     bool is_unsolvable(const std::vector<int> &abstract_state_ids) const;
     void mark_useful_abstractions(std::vector<bool> &useful_abstractions) const;

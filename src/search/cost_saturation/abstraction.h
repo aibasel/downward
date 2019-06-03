@@ -63,10 +63,12 @@ public:
     virtual std::vector<int> compute_saturated_costs(
         const std::vector<int> &h_values) const = 0;
 
-    // Return true iff operator induced a state-changing transition.
+    virtual int get_num_operators() const = 0;
+
+    // Return true iff operator induces a state-changing transition.
     virtual bool operator_is_active(int op_id) const = 0;
 
-    // Return true iff operator induced a self-loop. Note that an operator may
+    // Return true iff operator induces a self-loop. Note that an operator may
     // induce both state-changing transitions and self-loops.
     virtual bool operator_induces_self_loop(int op_id) const = 0;
 

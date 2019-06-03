@@ -65,16 +65,15 @@ void reduce_costs(vector<int> &remaining_costs, const vector<int> &saturated_cos
     assert(remaining_costs.size() == saturated_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
         int &remaining = remaining_costs[i];
-        const int &saturated = saturated_costs[i];
+        int saturated = saturated_costs[i];
+        assert(remaining >= 0);
         assert(saturated <= remaining);
-        /* Since we ignore transitions from states s with h(s)=INF, all
-           saturated costs (h(s)-h(s')) are finite or -INF. */
-        assert(saturated != INF);
         if (remaining == INF) {
-            // INF - x = INF for finite values x.
+            // Left addition: x - y = x for all values y if x is infinite.
         } else if (saturated == -INF) {
             remaining = INF;
         } else {
+            assert(saturated != INF);
             remaining -= saturated;
         }
         assert(remaining >= 0);
