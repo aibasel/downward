@@ -138,7 +138,7 @@ bool MergeAndShrinkRepresentationMerge::is_pruned() const {
 }
 
 void MergeAndShrinkRepresentationMerge::dump() const {
-    cout << "lookup table (merge):" << endl;
+    cout << "lookup table (merge): " << endl;
     for (const auto &row : lookup_table) {
         for (const auto &value : row) {
             cout << value << ", ";
