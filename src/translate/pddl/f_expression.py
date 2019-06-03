@@ -54,7 +54,7 @@ class PrimitiveNumericExpression(FunctionalExpression):
             if isinstance(fact, FunctionAssignment):
                 if fact.fluent == pne:
                     return fact.expression
-        assert False, "Could not find instantiation for PNE!"
+        assert False, "Could not find instantiation for PNE: %r" % (str(pne),)
 
 class FunctionAssignment(object):
     def __init__(self, fluent, expression):
