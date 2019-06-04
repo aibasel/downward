@@ -153,7 +153,7 @@ ALIASES["seq-opt-lmcut"] = [
 #  * scorpion-ipc-2018 supports conditional effects.
 ALIASES["scorpion-no-h2"] = [
     "--search",
-    """astar(saturated_cost_partitioning([
+    """astar(scp([
         projections(systematic(2)), projections(hillclimbing(max_time=100)), cartesian()],
         max_time=200, max_optimization_time=2, diversify=true, orders=greedy_orders()),
         pruning=stubborn_sets_simple(min_required_pruning_ratio=0.2))"""]
