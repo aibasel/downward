@@ -8,7 +8,6 @@ import subprocess
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.reports import Attribute
 
-from downward.reports.compare import ComparativeReport
 
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
@@ -93,5 +92,9 @@ attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [log_size]
 
 exp.add_absolute_report_step(attributes=attributes)
 #exp.add_comparison_table_step()
+
+sort_spec = [('log_size', 'desc')]
+attributes = ['run_dir', 'log_size', 'unexplained_errors', 'error']
+exp.add_sorted_report_step(attributes=attributes, sort_spec=sort_spec)
 
 exp.run_steps()
