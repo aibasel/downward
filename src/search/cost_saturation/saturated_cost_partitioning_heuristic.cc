@@ -45,8 +45,8 @@ void add_order_options_to_parser(OptionParser &parser) {
         Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_time",
-        "maximum time for finding orders",
-        "200.0",
+        "maximum time in seconds for finding orders",
+        "200",
         Bounds("0", "infinity"));
     parser.add_option<bool>(
         "diversify",
@@ -60,9 +60,9 @@ void add_order_options_to_parser(OptionParser &parser) {
         Bounds("1", "infinity"));
     parser.add_option<double>(
         "max_optimization_time",
-        "maximum time for optimizing each order with hill climbing",
-        "2.0",
-        Bounds("0.0", "infinity"));
+        "maximum time in seconds for optimizing each order with hill climbing",
+        "2",
+        Bounds("0", "infinity"));
     utils::add_rng_options(parser);
 }
 
@@ -96,10 +96,11 @@ static shared_ptr<Heuristic> get_max_cp_heuristic(
     parser.document_property("preferred operators", "no");
 
     parser.add_list_option<shared_ptr<AbstractionGenerator>>(
-        "abstraction_generators",
-        "available generators are cartesian() and projections()",
-        "[projections(hillclimbing(max_time=60, random_seed=0)), "
-        "projections(systematic(2)), cartesian()]");
+        "abstractions",
+        "abstraction generators",
+        "[projections(hillclimbing(max_time=60)), "
+        "projections(systematic(2)), "
+        "cartesian()]");
     add_order_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
@@ -178,5 +179,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     return get_max_cp_heuristic(parser, compute_saturated_cost_partitioning);
 }
 
-static Plugin<Evaluator> _plugin("saturated_cost_partitioning", _parse);
+static Plugin<Evaluator> _plugin("scp", _parse);
 }

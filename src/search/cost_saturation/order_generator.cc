@@ -18,5 +18,5 @@ void add_common_order_generator_options(OptionParser &parser) {
 
 static PluginTypePlugin<OrderGenerator> _type_plugin(
     "OrderGenerator",
-    "Generate heuristic orders.");
+    "Order abstractions for saturated cost partitioning.");
 }

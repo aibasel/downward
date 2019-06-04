@@ -33,6 +33,9 @@ Order OrderGeneratorRandom::compute_order_for_state(
 
 
 static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
+    parser.document_synopsis(
+        "Random orders",
+        "Shuffle abstractions randomly.");
     add_common_order_generator_options(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

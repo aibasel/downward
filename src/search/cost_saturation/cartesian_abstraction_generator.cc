@@ -192,16 +192,16 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
     parser.add_list_option<shared_ptr<cegar::SubtaskGenerator>>(
         "subtasks",
         "subtask generators",
-        "[landmarks(order=random, random_seed=0), goals(order=random, random_seed=0)]");
+        "[landmarks(order=random), goals(order=random)]");
     parser.add_option<int>(
         "max_states",
-        "maximum sum of abstract states over all abstractions",
+        "maximum number of Cartesian states over all abstractions",
         "infinity",
         Bounds("0", "infinity"));
     parser.add_option<int>(
         "max_transitions",
-        "maximum sum of state-changing transitions (excluding self-loops) over "
-        "all abstractions",
+        "maximum number of state-changing transitions (excluding self-loops) "
+        "over all abstractions",
         "1000000",
         Bounds("0", "infinity"));
     parser.add_option<bool>(
