@@ -33,7 +33,8 @@ extern Log g_log;
 enum class Verbosity {
     SILENT,
     NORMAL,
-    VERBOSE
+    VERBOSE,
+    DEBUG
 };
 
 extern void add_verbosity_options_to_parser(options::OptionParser &parser);
