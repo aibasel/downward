@@ -14,6 +14,10 @@ namespace options {
 class Options;
 }
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace eager_search {
 class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
@@ -26,6 +30,7 @@ class EagerSearch : public SearchEngine {
     std::shared_ptr<Evaluator> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
+    utils::Verbosity verbosity;
 
     void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(EvaluationContext &eval_context);
