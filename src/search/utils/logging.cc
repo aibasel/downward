@@ -28,7 +28,7 @@ void add_verbosity_options_to_parser(options::OptionParser &parser) {
         "verbosity",
         verbosity_levels,
         "Option to specify the level of verbosity.",
-        "verbose",
+        "normal",
         verbosity_level_docs);
 }
 
