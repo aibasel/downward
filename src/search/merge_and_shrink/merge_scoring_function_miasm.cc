@@ -11,6 +11,7 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -45,7 +46,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
         const bool compute_init_distances = true;
         const bool compute_goal_distances = true;
-        const Verbosity verbosity = Verbosity::SILENT;
+        const utils::Verbosity verbosity = utils::Verbosity::SILENT;
         distances->compute_distances(compute_init_distances, compute_goal_distances, verbosity);
         int num_states = product->get_size();
         int alive_states_count = 0;
