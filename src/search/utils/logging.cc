@@ -3,6 +3,8 @@
 #include "system.h"
 #include "timer.h"
 
+#include "../option_parser.h"
+
 #include <iomanip>
 #include <iostream>
 #include <vector>
@@ -10,6 +12,26 @@
 using namespace std;
 
 namespace utils {
+void add_verbosity_options_to_parser(options::OptionParser &parser) {
+    vector<string> verbosity_levels;
+    vector<string> verbosity_level_docs;
+    verbosity_levels.push_back("silent");
+    verbosity_level_docs.push_back(
+        "silent: only the most basic output");
+    verbosity_levels.push_back("normal");
+    verbosity_level_docs.push_back(
+        "normal: relevant information to monitor progress");
+    verbosity_levels.push_back("verbose");
+    verbosity_level_docs.push_back(
+        "verbose: full output");
+    parser.add_enum_option(
+        "verbosity",
+        verbosity_levels,
+        "Option to specify the level of verbosity.",
+        "verbose",
+        verbosity_level_docs);
+}
+
 class MemoryTracer {
     // The following constants affect the formatting of output.
     static const int INDENT_AMOUNT = 2;

@@ -21,12 +21,6 @@ extern const int PRUNED_STATE;
 */
 using StateEquivalenceClass = std::forward_list<int>;
 using StateEquivalenceRelation = std::vector<StateEquivalenceClass>;
-
-enum class Verbosity {
-    SILENT,
-    NORMAL,
-    VERBOSE
-};
 }
 
 #endif
