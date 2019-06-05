@@ -104,6 +104,9 @@ void MergeAndShrinkAlgorithm::dump_options() const {
     case utils::Verbosity::VERBOSE:
         cout << "verbose";
         break;
+    case utils::Verbosity::DEBUG:
+        cout << "debug";
+        break;
     }
     cout << endl;
 }
