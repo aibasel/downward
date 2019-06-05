@@ -171,6 +171,8 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
     char suffix = value.back();
     int factor = 1;
     if (isalpha(suffix)) {
+        /* Option values from the command line are already lower case, but
+           default values specified in the code might be upper case. */
         suffix = static_cast<char>(std::tolower(suffix));
         if (suffix == 'k') {
             factor = 1000;
