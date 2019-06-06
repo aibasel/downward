@@ -234,8 +234,7 @@ bool FactoredTransitionSystem::is_factor_trivial(int index) const {
             break;
         }
     }
-    const MergeAndShrinkRepresentation &mas_repr = *mas_representations[index];
-    bool is_pruned = mas_repr.is_pruned();
+    bool is_pruned = mas_representations[index]->is_pruned();
     return all_goal_states && !is_pruned;
 }
 
