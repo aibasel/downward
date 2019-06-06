@@ -231,14 +231,12 @@ bool FactoredTransitionSystem::is_factor_trivial(int index) const {
         return false;
     } else {
         const TransitionSystem &ts = *transition_systems[index];
-        bool all_goal_states = true;
         for (int state = 0; state < ts.get_size(); ++state) {
             if (!ts.is_goal_state(state)) {
-                all_goal_states = false;
-                break;
+                return false;
             }
         }
-        return all_goal_states;
+        return true;
     }
 }
 
