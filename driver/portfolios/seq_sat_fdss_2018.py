@@ -55,7 +55,7 @@ CONFIGS = [
         "--landmarks",
         "lmg=lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,conjunctive_landmarks=true,no_orders=true)",
         "--evaluator",
-        "hcg=cg(adapt_costs(plusone))",
+        "hcg=cg(transform=adapt_costs(plusone))",
         "--evaluator",
         "hlm=lmcount(lmg,admissible=true,transform=adapt_costs(plusone))",
         "--evaluator",
@@ -92,7 +92,7 @@ CONFIGS = [
         "--landmarks",
         "lmg=lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,conjunctive_landmarks=true,no_orders=false)",
         "--evaluator",
-        "hcea=cea(adapt_costs(plusone))",
+        "hcea=cea(transform=adapt_costs(plusone))",
         "--evaluator",
         "hlm=lmcount(lmg,admissible=true,transform=adapt_costs(plusone))",
         "--evaluator",
@@ -108,9 +108,9 @@ CONFIGS = [
         "lazy_wastar([hcea,hlm],w=3,preferred=[hcea,hlm],cost_type=one,bound=BOUND)"]),
     (8, [
         "--evaluator",
-        "hcg=cg(adapt_costs(one))",
+        "hcg=cg(transform=adapt_costs(one))",
         "--evaluator",
-        "hff=ff(adapt_costs(one))",
+        "hff=ff(transform=adapt_costs(one))",
         "--search",
         "lazy(alt([single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hcg,10)])),single(sum([g(),weight(hcg,10)]),pref_only=true)],boost=100),preferred=[hcg],reopen_closed=false,cost_type=one,bound=BOUND)"]),
     (54, [
@@ -198,7 +198,7 @@ CONFIGS = [
         "lazy(alt([single(sum([weight(g(),2),weight(hblind,3)])),single(sum([weight(g(),2),weight(hblind,3)]),pref_only=true),single(sum([weight(g(),2),weight(hff,3)])),single(sum([weight(g(),2),weight(hff,3)]),pref_only=true),single(sum([weight(g(),2),weight(hcg,3)])),single(sum([weight(g(),2),weight(hcg,3)]),pref_only=true),single(sum([weight(g(),2),weight(hgoalcount,3)])),single(sum([weight(g(),2),weight(hgoalcount,3)]),pref_only=true)],boost=3662),preferred=[hff],reopen_closed=true,bound=BOUND)"]),
     (21, [
         "--evaluator",
-        "hcg=cg(adapt_costs(plusone))",
+        "hcg=cg(transform=adapt_costs(plusone))",
         "--search",
         "lazy(alt([single(sum([g(),weight(hcg,10)])),single(sum([g(),weight(hcg,10)]),pref_only=true)],boost=0),preferred=[hcg],reopen_closed=false,cost_type=plusone,bound=BOUND)"]),
     (21, [
@@ -248,7 +248,7 @@ CONFIGS = [
         "lazy(alt([type_based([g()]),single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true)],boost=5000),preferred=[hlm],reopen_closed=false,bound=BOUND)"]),
     (29, [
         "--evaluator",
-        "hff=ff(adapt_costs(one))",
+        "hff=ff(transform=adapt_costs(one))",
         "--search",
         "lazy(alt([single(sum([weight(g(),2),weight(hff,3)])),single(sum([weight(g(),2),weight(hff,3)]),pref_only=true)],boost=5000),preferred=[hff],reopen_closed=true,cost_type=one,bound=BOUND)"]),
     (27, [
@@ -280,7 +280,7 @@ CONFIGS = [
         "--landmarks",
         "lmg=lm_hm(only_causal_landmarks=false,disjunctive_landmarks=true,conjunctive_landmarks=false,no_orders=true,m=1)",
         "--evaluator",
-        "hcg=cg(adapt_costs(one))",
+        "hcg=cg(transform=adapt_costs(one))",
         "--evaluator",
         "hlm=lmcount(lmg,admissible=true)",
         "--search",
