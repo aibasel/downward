@@ -72,13 +72,8 @@ void Distances::compute_init_distances_unit_cost() {
     }
 
     deque<int> queue;
-    // TODO: This is an oddly inefficient initialization! Fix it.
-    for (int state = 0; state < get_num_states(); ++state) {
-        if (state == transition_system.get_init_state()) {
-            init_distances[state] = 0;
-            queue.push_back(state);
-        }
-    }
+    queue.push_back(transition_system.get_init_state());
+    init_distances[transition_system.get_init_state()] = 0;
     breadth_first_search(forward_graph, queue, init_distances);
 }
 
@@ -141,13 +136,8 @@ void Distances::compute_init_distances_general_cost() {
     // TODO: Reuse the same queue for multiple computations to save speed?
     //       Also see compute_goal_distances_general_cost.
     priority_queues::AdaptiveQueue<int> queue;
-    // TODO: This is an oddly inefficient initialization! Fix it.
-    for (int state = 0; state < get_num_states(); ++state) {
-        if (state == transition_system.get_init_state()) {
-            init_distances[state] = 0;
-            queue.push(0, state);
-        }
-    }
+    init_distances[transition_system.get_init_state()] = 0;
+    queue.push(0, transition_system.get_init_state());
     dijkstra_search(forward_graph, queue, init_distances);
 }
 
@@ -217,6 +207,7 @@ void Distances::compute_distances(
             cout << "empty transition system, no distances to compute" << endl;
         }
         init_distances_computed = true;
+        goal_distances_computed = true;
         return;
     }
 

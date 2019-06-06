@@ -179,6 +179,9 @@ void MergeAndShrinkAlgorithm::main_loop(
         }
     }
 
+    if (label_reduction) {
+        label_reduction->initialize(task_proxy);
+    }
     unique_ptr<MergeStrategy> merge_strategy =
         merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
     merge_strategy_factory = nullptr;
@@ -332,10 +335,6 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     }
     starting_peak_memory = utils::get_peak_memory_in_kb();
 
-    if (label_reduction) {
-        label_reduction->initialize(task_proxy);
-    }
-
     utils::Timer timer;
     cout << "Running merge-and-shrink algorithm..." << endl;
     task_properties::verify_no_axioms(task_proxy);
@@ -381,18 +380,19 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             pruned = pruned || pruned_factor;
         }
         if (!fts.is_factor_solvable(index)) {
+            cout << "Atomic FTS is unsolvable, stopping computation." << endl;
             unsolvable = true;
             break;
         }
     }
-    if (verbosity >= Verbosity::NORMAL && pruned) {
-        log_progress(timer, "after pruning atomic factors");
+    if (verbosity >= Verbosity::NORMAL) {
+        if (pruned) {
+            log_progress(timer, "after pruning atomic factors");
+        }
         cout << endl;
     }
 
-    if (unsolvable) {
-        cout << "Atomic FTS is unsolvable, stopping computation." << endl;
-    } else if (main_loop_max_time > 0) {
+    if (!unsolvable && main_loop_max_time > 0) {
         main_loop(fts, task_proxy);
     }
     const bool final = true;
