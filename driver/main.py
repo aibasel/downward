@@ -39,8 +39,8 @@ def main():
             (exitcode, continue_execution) = run_components.run_validate(args)
         else:
             assert False, "Error: unhandled component: {}".format(component)
-        print()
         print("{component} exit code: {exitcode}".format(**locals()))
+        print()
         if not continue_execution:
             print("Driver aborting after {}".format(component))
             break

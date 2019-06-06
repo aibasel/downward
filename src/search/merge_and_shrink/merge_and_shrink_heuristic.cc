@@ -190,15 +190,12 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
         "A currently recommended good configuration uses bisimulation "
         "based shrinking, the merge strategy SCC-DFP, and the appropriate "
         "label reduction setting (max_states has been altered to be between "
-        "10000 and 200000 in the literature):\n"
+        "10k and 200k in the literature):\n"
         "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
         "merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
         "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
         "total_order])),label_reduction=exact(before_shrinking=true,"
-        "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}\n"
-        "Note that for versions of Fast Downward prior to 2016-08-19, the "
-        "syntax differs. See the recommendation in the file "
-        "merge_and_shrink_heuristic.cc for an example configuration.");
+        "before_merging=false),max_states=50k,threshold_before_merge=1)\n}}}\n");
 
     Heuristic::add_options_to_parser(parser);
     add_merge_and_shrink_algorithm_options_to_parser(parser);
