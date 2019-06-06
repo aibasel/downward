@@ -132,9 +132,7 @@ int MergeAndShrinkRepresentationMerge::get_value(
 }
 
 bool MergeAndShrinkRepresentationMerge::is_pruned() const {
-    bool pruned1 = left_child->is_pruned();
-    bool pruned2 = right_child->is_pruned();
-    return pruned1 || pruned2;
+    return left_child->is_pruned() || right_child->is_pruned();
 }
 
 void MergeAndShrinkRepresentationMerge::dump() const {
