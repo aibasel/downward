@@ -1,5 +1,6 @@
 #include "search_statistics.h"
 
+#include "utils/logging.h"
 #include "utils/timer.h"
 #include "utils/system.h"
 
@@ -8,7 +9,8 @@
 using namespace std;
 
 
-SearchStatistics::SearchStatistics() {
+SearchStatistics::SearchStatistics(utils::Verbosity verbosity)
+    : verbosity(verbosity) {
     expanded_states = 0;
     reopened_states = 0;
     evaluated_states = 0;
@@ -25,12 +27,10 @@ SearchStatistics::SearchStatistics() {
     lastjump_f_value = -1;
 }
 
-void SearchStatistics::report_f_value_progress(int f, bool dump) {
+void SearchStatistics::report_f_value_progress(int f) {
     if (f > lastjump_f_value) {
         lastjump_f_value = f;
-        if (dump) {
-            print_f_line();
-        }
+        print_f_line();
         lastjump_expanded_states = expanded_states;
         lastjump_reopened_states = reopened_states;
         lastjump_evaluated_states = evaluated_states;
@@ -39,10 +39,20 @@ void SearchStatistics::report_f_value_progress(int f, bool dump) {
 }
 
 void SearchStatistics::print_f_line() const {
-    cout << "f = " << lastjump_f_value
-         << " [";
-    print_basic_statistics();
-    cout << "]" << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "f = " << lastjump_f_value
+             << " [";
+        print_basic_statistics();
+        cout << "]" << endl;
+    }
+}
+
+void SearchStatistics::print_checkpoint_line(int g) const {
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "[g=" << g << ", ";
+        print_basic_statistics();
+        cout << "]" << endl;
+    }
 }
 
 void SearchStatistics::print_basic_statistics() const {

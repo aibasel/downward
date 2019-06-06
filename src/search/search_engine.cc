@@ -10,6 +10,7 @@
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
+#include "utils/logging.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -48,9 +49,11 @@ SearchEngine::SearchEngine(const Options &opts)
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy)),
       search_space(state_registry),
+      statistics(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
-      max_time(opts.get<double>("max_time")) {
+      max_time(opts.get<double>("max_time")),
+      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -60,11 +63,6 @@ SearchEngine::SearchEngine(const Options &opts)
 }
 
 SearchEngine::~SearchEngine() {
-}
-
-void SearchEngine::print_statistics() const {
-    cout << "Bytes per state: "
-         << state_registry.get_state_size_in_bytes() << endl;
 }
 
 bool SearchEngine::found_solution() const {
@@ -151,6 +149,7 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
+    utils::add_verbosity_option_to_parser(parser);
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
