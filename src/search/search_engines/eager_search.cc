@@ -323,7 +323,7 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void EagerSearch::add_options_to_parser(OptionParser &parser) {
+void add_options_to_parser(OptionParser &parser) {
     SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
     utils::add_verbosity_option_to_parser(parser);
