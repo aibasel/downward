@@ -28,8 +28,7 @@ EagerSearch::EagerSearch(const Options &opts)
       f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
-      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
-      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
+      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -90,7 +89,7 @@ void EagerSearch::initialize() {
         cout << "Initial state is a dead end." << endl;
     } else {
         if (search_progress.check_progress(eval_context))
-            print_checkpoint_line(0);
+            statistics.print_checkpoint_line(0);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial();
@@ -101,14 +100,6 @@ void EagerSearch::initialize() {
     print_initial_evaluator_values(eval_context);
 
     pruning_method->initialize(task);
-}
-
-void EagerSearch::print_checkpoint_line(int g) const {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "[g=" << g << ", ";
-        statistics.print_basic_statistics();
-        cout << "]" << endl;
-    }
 }
 
 void EagerSearch::print_statistics() const {
@@ -244,7 +235,7 @@ SearchStatus EagerSearch::step() {
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
-                print_checkpoint_line(succ_node.get_g());
+                statistics.print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }
         } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
@@ -308,8 +299,7 @@ void EagerSearch::dump_search_space() const {
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
-        bool dump = verbosity >= utils::Verbosity::NORMAL;
-        statistics.report_f_value_progress(f_value, dump);
+        statistics.report_f_value_progress(f_value);
     }
 }
 
@@ -318,14 +308,12 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
 void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
-        bool dump = verbosity >= utils::Verbosity::NORMAL;
-        statistics.report_f_value_progress(f_value, dump);
+        statistics.report_f_value_progress(f_value);
     }
 }
 
 void add_options_to_parser(OptionParser &parser) {
     SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
-    utils::add_verbosity_option_to_parser(parser);
 }
 }
