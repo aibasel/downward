@@ -70,45 +70,30 @@ void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
 }
 
 void MergeAndShrinkAlgorithm::dump_options() const {
-    if (merge_strategy_factory) { // deleted after merge strategy extraction
-        merge_strategy_factory->dump_options();
+    if (verbosity >= utils::Verbosity::DEBUG) {
+        if (merge_strategy_factory) { // deleted after merge strategy extraction
+            merge_strategy_factory->dump_options();
+            cout << endl;
+        }
+
+        cout << "Options related to size limits and shrinking: " << endl;
+        cout << "Transition system size limit: " << max_states << endl
+             << "Transition system size limit right before merge: "
+             << max_states_before_merge << endl;
+        cout << "Threshold to trigger shrinking right before merge: "
+             << shrink_threshold_before_merge << endl;
+        cout << endl;
+
+        shrink_strategy->dump_options();
+        cout << endl;
+
+        if (label_reduction) {
+            label_reduction->dump_options();
+        } else {
+            cout << "Label reduction disabled" << endl;
+        }
         cout << endl;
     }
-
-    cout << "Options related to size limits and shrinking: " << endl;
-    cout << "Transition system size limit: " << max_states << endl
-         << "Transition system size limit right before merge: "
-         << max_states_before_merge << endl;
-    cout << "Threshold to trigger shrinking right before merge: "
-         << shrink_threshold_before_merge << endl;
-    cout << endl;
-
-    shrink_strategy->dump_options();
-    cout << endl;
-
-    if (label_reduction) {
-        label_reduction->dump_options();
-    } else {
-        cout << "Label reduction disabled" << endl;
-    }
-    cout << endl;
-
-    cout << "Verbosity: ";
-    switch (verbosity) {
-    case utils::Verbosity::SILENT:
-        cout << "silent";
-        break;
-    case utils::Verbosity::NORMAL:
-        cout << "normal";
-        break;
-    case utils::Verbosity::VERBOSE:
-        cout << "verbose";
-        break;
-    case utils::Verbosity::DEBUG:
-        cout << "debug";
-        break;
-    }
-    cout << endl;
 }
 
 void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
