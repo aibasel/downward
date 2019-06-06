@@ -146,18 +146,6 @@ ALIASES["seq-opt-bjolp"] = [
 ALIASES["seq-opt-lmcut"] = [
     "--search", "astar(lmcut())"]
 
-# Note: the scorpion-no-h2 version differs from the IPC 2018 version of
-# Scorpion (scorpion-ipc-2018) in two ways:
-#  * scorpion-ipc-2018 uses h^2 mutexes to prune irrelevant operators
-#    between the translation and the search phase.
-#  * scorpion-ipc-2018 supports conditional effects.
-ALIASES["scorpion-no-h2"] = [
-    "--search",
-    """astar(scp([
-        projections(systematic(2)), projections(hillclimbing(max_time=100)), cartesian()],
-        max_time=200, max_optimization_time=2, diversify=true, orders=greedy_orders()),
-        pruning=stubborn_sets_simple(min_required_pruning_ratio=0.2))"""]
-
 
 PORTFOLIOS = {}
 for portfolio in os.listdir(PORTFOLIO_DIR):
