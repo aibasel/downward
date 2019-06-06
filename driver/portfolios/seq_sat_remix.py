@@ -8,11 +8,7 @@ Fast Downward Remix.
 In Ninth International Planning Competition (IPC 2018), Deterministic Part, pp. 74-76. 2018.
 https://ai.dmi.unibas.ch/papers/seipp-ipc2018a.pdf
 
-Results on the training set:
-
-Coverage: 2058
-Runtime: 1800s
-Score: 2003.89
+Sum of time limits: 1800s
 """
 
 OPTIMAL = False

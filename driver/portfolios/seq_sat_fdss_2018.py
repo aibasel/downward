@@ -8,12 +8,8 @@ Fast Downward Stone Soup 2018.
 In Ninth International Planning Competition (IPC 2018), Deterministic Part, pp. 80-82. 2018.
 https://ai.dmi.unibas.ch/papers/seipp-roeger-ipc2018.pdf
 
-Results on the training set:
-
-Coverage: 2057
 Granularity: 30s
-Runtime: 1583s
-Score: 1999.93
+Sum of time limits: 1583s
 """
 
 OPTIMAL = False
