@@ -114,7 +114,7 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     }
     assert(num_kept_factors);
     if (verbosity >= Verbosity::NORMAL) {
-        cout << "Number of kept factors: " << num_kept_factors << endl;
+        cout << "Number of factors kept: " << num_kept_factors << endl;
     }
 }
 
