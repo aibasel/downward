@@ -11,6 +11,7 @@ class Evaluator;
 class PruningMethod;
 
 namespace options {
+class OptionParser;
 class Options;
 }
 
@@ -30,7 +31,7 @@ class EagerSearch : public SearchEngine {
     std::shared_ptr<Evaluator> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
-    utils::Verbosity verbosity;
+    const utils::Verbosity verbosity;
 
     void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(EvaluationContext &eval_context);
@@ -48,6 +49,7 @@ public:
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
+    static void add_options_to_parser(options::OptionParser &parser);
 };
 }
 

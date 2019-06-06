@@ -12,7 +12,7 @@
 using namespace std;
 
 namespace utils {
-void add_verbosity_options_to_parser(options::OptionParser &parser) {
+void add_verbosity_option_to_parser(options::OptionParser &parser) {
     vector<string> verbosity_levels;
     vector<string> verbosity_level_docs;
     verbosity_levels.push_back("silent");
@@ -30,7 +30,7 @@ void add_verbosity_options_to_parser(options::OptionParser &parser) {
     parser.add_enum_option(
         "verbosity",
         verbosity_levels,
-        "Option to specify the level of verbosity.",
+        "Option to specify the verbosity level.",
         "normal",
         verbosity_level_docs);
 }

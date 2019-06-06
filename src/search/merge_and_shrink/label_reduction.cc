@@ -12,8 +12,8 @@
 
 #include "../algorithms/equivalence_relation.h"
 #include "../utils/collections.h"
-#include "../utils/markup.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/system.h"

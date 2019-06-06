@@ -93,7 +93,7 @@ void MergeAndShrinkAlgorithm::dump_options() const {
     }
     cout << endl;
 
-    cout << "utils::Verbosity: ";
+    cout << "Verbosity: ";
     switch (verbosity) {
     case utils::Verbosity::SILENT:
         cout << "silent";
@@ -449,7 +449,7 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
       normal: basic output during construction, starting and final statistics
       verbose: full output during construction, starting and final statistics
     */
-    utils::add_verbosity_options_to_parser(parser);
+    utils::add_verbosity_option_to_parser(parser);
 
     parser.add_option<double>(
         "main_loop_max_time",

@@ -65,7 +65,7 @@ public:
       order in which successors are generated or the tie-breaking
       performed by the open list.)
     */
-    void report_f_value_progress(int f);
+    void report_f_value_progress(int f, bool dump);
 
     // output
     void print_basic_statistics() const;

@@ -4,8 +4,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/logging.h"
-
 using namespace std;
 
 namespace plugin_eager {
@@ -24,9 +22,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "preferred",
         "use preferred operators of these evaluators", "[]");
 
-    SearchEngine::add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-    utils::add_verbosity_options_to_parser(parser);
+    eager_search::EagerSearch::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     shared_ptr<eager_search::EagerSearch> engine;
