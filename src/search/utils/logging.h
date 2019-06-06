@@ -30,7 +30,7 @@ struct Log {
 
 extern Log g_log;
 
-// See add_verbosity_option_to_parser below for documentation.
+// See add_verbosity_option_to_parser for documentation.
 enum class Verbosity {
     SILENT,
     NORMAL,
