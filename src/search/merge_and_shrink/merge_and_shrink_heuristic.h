@@ -14,7 +14,7 @@ class FactoredTransitionSystem;
 class MergeAndShrinkRepresentation;
 
 class MergeAndShrinkHeuristic : public Heuristic {
-    utils::Verbosity verbosity;
+    const utils::Verbosity verbosity;
 
     // The final merge-and-shrink representations, storing goal distances.
     std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;

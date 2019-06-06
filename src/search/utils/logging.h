@@ -30,6 +30,7 @@ struct Log {
 
 extern Log g_log;
 
+// See add_verbosity_option_to_parser below for documentation.
 enum class Verbosity {
     SILENT,
     NORMAL,
@@ -37,7 +38,7 @@ enum class Verbosity {
     DEBUG
 };
 
-extern void add_verbosity_options_to_parser(options::OptionParser &parser);
+extern void add_verbosity_option_to_parser(options::OptionParser &parser);
 
 class TraceBlock {
     std::string block_name;

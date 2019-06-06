@@ -4,7 +4,6 @@
 #include "transition_system.h"
 
 #include "../algorithms/priority_queues.h"
-
 #include "../utils/logging.h"
 
 #include <cassert>

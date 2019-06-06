@@ -18,7 +18,6 @@
 #include <set>
 
 using namespace std;
-using namespace utils;
 
 namespace eager_search {
 EagerSearch::EagerSearch(const Options &opts)
@@ -30,10 +29,10 @@ EagerSearch::EagerSearch(const Options &opts)
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
-      verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))) {
+      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
-        exit_with(ExitCode::SEARCH_INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -105,7 +104,7 @@ void EagerSearch::initialize() {
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
-    if (verbosity >= Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "[g=" << g << ", ";
         statistics.print_basic_statistics();
         cout << "]" << endl;
@@ -307,18 +306,26 @@ void EagerSearch::dump_search_space() const {
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
-    if (f_evaluator && verbosity >= Verbosity::NORMAL) {
+    if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
-        statistics.report_f_value_progress(f_value);
+        bool dump = verbosity >= utils::Verbosity::NORMAL;
+        statistics.report_f_value_progress(f_value, dump);
     }
 }
 
 /* TODO: HACK! This is very inefficient for simply looking up an h value.
    Also, if h values are not saved it would recompute h for each and every state. */
 void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
-    if (f_evaluator && verbosity >= Verbosity::NORMAL) {
+    if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
-        statistics.report_f_value_progress(f_value);
+        bool dump = verbosity >= utils::Verbosity::NORMAL;
+        statistics.report_f_value_progress(f_value, dump);
     }
+}
+
+void EagerSearch::add_options_to_parser(OptionParser &parser) {
+    SearchEngine::add_pruning_option(parser);
+    SearchEngine::add_options_to_parser(parser);
+    utils::add_verbosity_option_to_parser(parser);
 }
 }

@@ -25,10 +25,12 @@ SearchStatistics::SearchStatistics() {
     lastjump_f_value = -1;
 }
 
-void SearchStatistics::report_f_value_progress(int f) {
+void SearchStatistics::report_f_value_progress(int f, bool dump) {
     if (f > lastjump_f_value) {
         lastjump_f_value = f;
-        print_f_line();
+        if (dump) {
+            print_f_line();
+        }
         lastjump_expanded_states = expanded_states;
         lastjump_reopened_states = reopened_states;
         lastjump_evaluated_states = evaluated_states;
