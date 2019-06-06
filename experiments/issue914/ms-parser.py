@@ -5,9 +5,9 @@ from lab.parser import Parser
 parser = Parser()
 parser.add_pattern('ms_construction_time', 'Merge-and-shrink algorithm runtime: (.+)s', required=False, type=float)
 parser.add_pattern('ms_atomic_construction_time', 'M&S algorithm timer: (.+)s \(after computation of atomic factors\)', required=False, type=float)
-parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink computation: (\d+) KB', required=False, type=int)
-parser.add_pattern('ms_num_remaining_factors', 'Number of remaining factors: (\d+) KB', required=False, type=int)
-parser.add_pattern('ms_num_kept_factors', 'Number of kept factors: (\d+) KB', required=False, type=int)
+parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink algorithm: (\d+) KB', required=False, type=int)
+parser.add_pattern('ms_num_remaining_factors', 'Number of remaining factors: (\d+)', required=False, type=int)
+parser.add_pattern('ms_num_factors_kept', 'Number of factors kept: (\d+)', required=False, type=int)
 
 def check_ms_constructed(content, props):
     ms_construction_time = props.get('ms_construction_time')
