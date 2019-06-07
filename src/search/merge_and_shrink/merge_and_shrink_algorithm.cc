@@ -19,6 +19,7 @@
 #include "../task_utils/task_properties.h"
 
 #include "../utils/countdown_timer.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
@@ -50,7 +51,7 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
     shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
     prune_unreachable_states(opts.get<bool>("prune_unreachable_states")),
     prune_irrelevant_states(opts.get<bool>("prune_irrelevant_states")),
-    verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))),
+    verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
     main_loop_max_time(opts.get<double>("main_loop_max_time")),
     starting_peak_memory(0) {
     assert(max_states_before_merge > 0);
@@ -69,42 +70,30 @@ void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
 }
 
 void MergeAndShrinkAlgorithm::dump_options() const {
-    if (merge_strategy_factory) { // deleted after merge strategy extraction
-        merge_strategy_factory->dump_options();
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        if (merge_strategy_factory) { // deleted after merge strategy extraction
+            merge_strategy_factory->dump_options();
+            cout << endl;
+        }
+
+        cout << "Options related to size limits and shrinking: " << endl;
+        cout << "Transition system size limit: " << max_states << endl
+             << "Transition system size limit right before merge: "
+             << max_states_before_merge << endl;
+        cout << "Threshold to trigger shrinking right before merge: "
+             << shrink_threshold_before_merge << endl;
+        cout << endl;
+
+        shrink_strategy->dump_options();
+        cout << endl;
+
+        if (label_reduction) {
+            label_reduction->dump_options();
+        } else {
+            cout << "Label reduction disabled" << endl;
+        }
         cout << endl;
     }
-
-    cout << "Options related to size limits and shrinking: " << endl;
-    cout << "Transition system size limit: " << max_states << endl
-         << "Transition system size limit right before merge: "
-         << max_states_before_merge << endl;
-    cout << "Threshold to trigger shrinking right before merge: "
-         << shrink_threshold_before_merge << endl;
-    cout << endl;
-
-    shrink_strategy->dump_options();
-    cout << endl;
-
-    if (label_reduction) {
-        label_reduction->dump_options();
-    } else {
-        cout << "Label reduction disabled" << endl;
-    }
-    cout << endl;
-
-    cout << "Verbosity: ";
-    switch (verbosity) {
-    case Verbosity::SILENT:
-        cout << "silent";
-        break;
-    case Verbosity::NORMAL:
-        cout << "normal";
-        break;
-    case Verbosity::VERBOSE:
-        cout << "verbose";
-        break;
-    }
-    cout << endl;
 }
 
 void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
@@ -149,7 +138,7 @@ void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
 bool MergeAndShrinkAlgorithm::ran_out_of_time(
     const utils::CountdownTimer &timer) const {
     if (timer.is_expired()) {
-        if (verbosity >= Verbosity::NORMAL) {
+        if (verbosity >= utils::Verbosity::NORMAL) {
             cout << "Ran out of time, stopping computation." << endl;
             cout << endl;
         }
@@ -162,7 +151,7 @@ void MergeAndShrinkAlgorithm::main_loop(
     FactoredTransitionSystem &fts,
     const TaskProxy &task_proxy) {
     utils::CountdownTimer timer(main_loop_max_time);
-    if (verbosity >= Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "Starting main loop ";
         if (main_loop_max_time == numeric_limits<double>::infinity()) {
             cout << "without a time limit." << endl;
@@ -201,10 +190,10 @@ void MergeAndShrinkAlgorithm::main_loop(
         int merge_index1 = merge_indices.first;
         int merge_index2 = merge_indices.second;
         assert(merge_index1 != merge_index2);
-        if (verbosity >= Verbosity::NORMAL) {
+        if (verbosity >= utils::Verbosity::NORMAL) {
             cout << "Next pair of indices: ("
                  << merge_index1 << ", " << merge_index2 << ")" << endl;
-            if (verbosity >= Verbosity::VERBOSE) {
+            if (verbosity >= utils::Verbosity::VERBOSE) {
                 fts.statistics(merge_index1);
                 fts.statistics(merge_index2);
             }
@@ -214,7 +203,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         // Label reduction (before shrinking)
         if (label_reduction && label_reduction->reduce_before_shrinking()) {
             bool reduced = label_reduction->reduce(merge_indices, fts, verbosity);
-            if (verbosity >= Verbosity::NORMAL && reduced) {
+            if (verbosity >= utils::Verbosity::NORMAL && reduced) {
                 log_main_loop_progress("after label reduction");
             }
         }
@@ -233,7 +222,7 @@ void MergeAndShrinkAlgorithm::main_loop(
             shrink_threshold_before_merge,
             *shrink_strategy,
             verbosity);
-        if (verbosity >= Verbosity::NORMAL && shrunk) {
+        if (verbosity >= utils::Verbosity::NORMAL && shrunk) {
             log_main_loop_progress("after shrinking");
         }
 
@@ -244,7 +233,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         // Label reduction (before merging)
         if (label_reduction && label_reduction->reduce_before_merging()) {
             bool reduced = label_reduction->reduce(merge_indices, fts, verbosity);
-            if (verbosity >= Verbosity::NORMAL && reduced) {
+            if (verbosity >= utils::Verbosity::NORMAL && reduced) {
                 log_main_loop_progress("after label reduction");
             }
         }
@@ -260,8 +249,8 @@ void MergeAndShrinkAlgorithm::main_loop(
             maximum_intermediate_size = abs_size;
         }
 
-        if (verbosity >= Verbosity::NORMAL) {
-            if (verbosity >= Verbosity::VERBOSE) {
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            if (verbosity >= utils::Verbosity::VERBOSE) {
                 fts.statistics(merged_index);
             }
             log_main_loop_progress("after merging");
@@ -281,8 +270,8 @@ void MergeAndShrinkAlgorithm::main_loop(
                 prune_unreachable_states,
                 prune_irrelevant_states,
                 verbosity);
-            if (verbosity >= Verbosity::NORMAL && pruned) {
-                if (verbosity >= Verbosity::VERBOSE) {
+            if (verbosity >= utils::Verbosity::NORMAL && pruned) {
+                if (verbosity >= utils::Verbosity::VERBOSE) {
                     fts.statistics(merged_index);
                 }
                 log_main_loop_progress("after pruning");
@@ -296,7 +285,7 @@ void MergeAndShrinkAlgorithm::main_loop(
           not to be pruned/not to be evaluated as infinity.
         */
         if (!fts.is_factor_solvable(merged_index)) {
-            if (verbosity >= Verbosity::NORMAL) {
+            if (verbosity >= utils::Verbosity::NORMAL) {
                 cout << "Abstract problem is unsolvable, stopping "
                     "computation. " << endl << endl;
             }
@@ -308,10 +297,10 @@ void MergeAndShrinkAlgorithm::main_loop(
         }
 
         // End-of-iteration output.
-        if (verbosity >= Verbosity::VERBOSE) {
+        if (verbosity >= utils::Verbosity::VERBOSE) {
             report_peak_memory_delta();
         }
-        if (verbosity >= Verbosity::NORMAL) {
+        if (verbosity >= utils::Verbosity::NORMAL) {
             cout << endl;
         }
 
@@ -356,7 +345,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             compute_init_distances,
             compute_goal_distances,
             verbosity);
-    if (verbosity >= Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         log_progress(timer, "after computation of atomic factors");
     }
 
@@ -385,7 +374,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             break;
         }
     }
-    if (verbosity >= Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         if (pruned) {
             log_progress(timer, "after pruning atomic factors");
         }
@@ -440,26 +429,12 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
 
     add_transition_system_size_limit_options_to_parser(parser);
 
-    vector<string> verbosity_levels;
-    vector<string> verbosity_level_docs;
-    verbosity_levels.push_back("silent");
-    verbosity_level_docs.push_back(
-        "silent: no output during construction, only starting and final "
-        "statistics");
-    verbosity_levels.push_back("normal");
-    verbosity_level_docs.push_back(
-        "normal: basic output during construction, starting and final "
-        "statistics");
-    verbosity_levels.push_back("verbose");
-    verbosity_level_docs.push_back(
-        "verbose: full output during construction, starting and final "
-        "statistics");
-    parser.add_enum_option(
-        "verbosity",
-        verbosity_levels,
-        "Option to specify the level of verbosity.",
-        "verbose",
-        verbosity_level_docs);
+    /*
+      silent: no output during construction, only starting and final statistics
+      normal: basic output during construction, starting and final statistics
+      verbose: full output during construction, starting and final statistics
+    */
+    utils::add_verbosity_option_to_parser(parser);
 
     parser.add_option<double>(
         "main_loop_max_time",
