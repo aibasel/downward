@@ -13,17 +13,14 @@ if [[ ! "$MAJOR" =~ ^[1-9][0-9]\.[0-9][0-9]$ ]]; then
     exit 1
 fi
 
-if [[ -z "$DOCKERHUB_USERNAME" ]]; then
-    echo "Please set your dockerhub in the environment variable DOCKERHUB_USERNAME"
-    exit 1
-fi
-
 # Verify that Dockerfile exists
 DOCKERFILE="$DOWNWARD_CONTAINER_REPO/$MAJOR/Dockerfile.$MAJOR"
 if [ ! -f "$DOCKERFILE" ]; then
     echo "Could not find Dockerfile at '$DOCKERFILE'. Please run ./prepare-release.sh $MAJOR.0 first."
     exit 1
 fi
+
+set -x
 
 # Take the generated Dockerfile, put it into a temporary empty directory,
 # and build it. The directory can be removed afterwards as the docker
@@ -36,9 +33,7 @@ docker tag aibasel/downward:$MAJOR aibasel/downward:latest
 popd
 rm -rf $TEMPDIR
 
-cd $REPODIR
-hg push
-docker login --username=$DOCKERHUB_USERNAME
+docker login
 docker push aibasel/downward:$MAJOR
 docker push aibasel/downward:latest
 
