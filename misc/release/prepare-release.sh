@@ -48,9 +48,9 @@ function fill_template {
 }
 
 function set_and_commit_version {
-    VERSION=$1
-    fill_template _version.tpl VERSION "$VERSION" > $REPODIR/driver/version.py
-    hg commit -m "Update version number to $VERSION"
+    LOCALVERSION=$1
+    fill_template _version.tpl VERSION "$LOCALVERSION" > $REPODIR/driver/version.py
+    hg commit -m "Update version number to $LOCALVERSION"
 }
 
 function create_recipe_and_link_latest {
