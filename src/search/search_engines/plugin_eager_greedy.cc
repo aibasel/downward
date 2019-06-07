@@ -55,9 +55,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "boost",
         "boost value for preferred operator open lists", "0");
 
-    SearchEngine::add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
-
+    eager_search::add_options_to_parser(parser);
     Options opts = parser.parse();
     opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
 

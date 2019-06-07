@@ -12,6 +12,7 @@
 
 #include "../task_utils/task_properties.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -25,7 +26,7 @@ using utils::ExitCode;
 namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))) {
+      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
@@ -59,7 +60,7 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
     */
 
     int active_factors_count = fts.get_num_active_entries();
-    if (verbosity >= Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "Number of remaining factors: " << active_factors_count << endl;
     }
 
@@ -68,7 +69,7 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
         if (!fts.is_factor_solvable(index)) {
             mas_representations.reserve(1);
             finalize_factor(fts, index);
-            if (verbosity >= Verbosity::NORMAL) {
+            if (verbosity >= utils::Verbosity::NORMAL) {
                 cout << fts.get_transition_system(index).tag()
                      << "use this unsolvable factor as heuristic."
                      << endl;
@@ -82,7 +83,7 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
     for (int index : fts) {
         finalize_factor(fts, index);
     }
-    if (verbosity >= Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "Use all factors in a maximum heuristic." << endl;
     }
 

@@ -6,6 +6,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
@@ -85,7 +89,7 @@ public:
         std::vector<std::unique_ptr<Distances>> &&distances,
         bool compute_init_distances,
         bool compute_goal_distances,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
@@ -119,7 +123,7 @@ public:
     bool apply_abstraction(
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Merge the two factors at index1 and index2.
@@ -127,7 +131,7 @@ public:
     int merge(
         int index1,
         int index2,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Extract the factor at the given index, rendering the FTS invalid.
