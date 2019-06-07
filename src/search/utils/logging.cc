@@ -17,16 +17,16 @@ void add_verbosity_option_to_parser(options::OptionParser &parser) {
     vector<string> verbosity_level_docs;
     verbosity_levels.push_back("silent");
     verbosity_level_docs.push_back(
-        "silent: only the most basic output");
+        "only the most basic output");
     verbosity_levels.push_back("normal");
     verbosity_level_docs.push_back(
-        "normal: relevant information to monitor progress");
+        "relevant information to monitor progress");
     verbosity_levels.push_back("verbose");
     verbosity_level_docs.push_back(
-        "verbose: full output");
+        "full output");
     verbosity_levels.push_back("debug");
     verbosity_level_docs.push_back(
-        "debug: like full with additional debug output");
+        "like full with additional debug output");
     parser.add_enum_option(
         "verbosity",
         verbosity_levels,
