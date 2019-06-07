@@ -100,9 +100,9 @@ fill_template "_Vagrantfile.tpl" "TAG" "$TAG" > $MAJOR/Vagrantfile.$MAJOR
 git add $MAJOR
 
 mkdir -p latest
-ln -fs $MAJOR/Dockerfile.$MAJOR latest/Dockerfile
-ln -fs $MAJOR/Singularity.$MAJOR latest/Singularity
-ln -fs $MAJOR/Vagrantfile.$MAJOR latest/Vagrantfile
+ln -fs ../$MAJOR/Dockerfile.$MAJOR latest/Dockerfile
+ln -fs ../$MAJOR/Singularity.$MAJOR latest/Singularity
+ln -fs ../$MAJOR/Vagrantfile.$MAJOR latest/Vagrantfile
 git add latest
 
 git commit -m "Add recipe files for release $VERSION."
