@@ -11,4 +11,4 @@ From: aibasel/downward:$TAG
 
 %labels
 Name        Fast Downward
-Description Singularity image for the Fast Downward classical planner
+Description Singularity image for the Fast Downward planning system
