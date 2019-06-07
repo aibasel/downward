@@ -343,7 +343,7 @@ def parse_args():
         help="show this help message and exit")
     help_options.add_argument(
         "-v", "--version", action="store_true",
-        help="show the version and exit")
+        help="print version number and exit")
     help_options.add_argument(
         "--show-aliases", action="store_true",
         help="show the known aliases (see --alias) and exit")
