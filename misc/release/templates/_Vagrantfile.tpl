@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
     cd /home/vagrant
 
     if ! [ -e downward ] ; then
-        hg clone http://hg.fast-downward.org -r ${REVISION} downward
+        hg clone http://hg.fast-downward.org -r TAG downward
     fi
 
     ./downward/build.py

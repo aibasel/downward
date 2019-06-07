@@ -1,11 +1,11 @@
 # This file has been automatically generated.
 
 Bootstrap: docker
-From: aibasel/downward:$TAG
+From: aibasel/downward:MAJOR
 
 %setup
     # Just for diagnosis purposes
-    hostname -f > $$SINGULARITY_ROOTFS/etc/build_host
+    hostname -f > $SINGULARITY_ROOTFS/etc/build_host
 
 %post
 

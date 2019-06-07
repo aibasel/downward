@@ -22,7 +22,7 @@ WORKDIR /workspace/downward/
 ENV CXX g++
 
 # Download the tarball and extract everything into the workdir
-RUN hg clone http://hg.fast-downward.org . -r ${REVISION}
+RUN hg clone http://hg.fast-downward.org . -r TAG
 
 # Invoke the build script with default options
 RUN ./build.py
