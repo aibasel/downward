@@ -18,33 +18,33 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue744-v1"]
 CONFIG_DICT = {
-    "eager_greedy_ff": [
+    "eager-greedy-ff-silent": [
         "--evaluator",
         "h=ff()",
         "--search",
-        "eager_greedy([h], preferred=[h])"],
-    "eager_greedy_cea": [
+        "eager_greedy([h], preferred=[h], verbosity=silent)"],
+    "eager-greedy-cea-silent": [
         "--evaluator",
         "h=cea()",
         "--search",
-        "eager_greedy([h], preferred=[h])"],
-    "lazy_greedy_add": [
+        "eager_greedy([h], preferred=[h], verbosity=silent)"],
+    "lazy-greedy-add-silent": [
         "--evaluator",
         "h=add()",
         "--search",
-        "lazy_greedy([h], preferred=[h])"],
-    "lazy_greedy_cg": [
+        "lazy_greedy([h], preferred=[h], verbosity=silent)"],
+    "lazy-greedy-cg-silent": [
         "--evaluator",
         "h=cg()",
         "--search",
-        "lazy_greedy([h], preferred=[h])"],
-    "lama-first": [
+        "lazy_greedy([h], preferred=[h], verbosity=silent)"],
+    "lama-first-silent": [
         "--evaluator",
         "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
         "--evaluator", "hff=ff(transform=adapt_costs(one))",
         "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
-                                   cost_type=one,reopen_closed=false)"""],
-    "lama-first-typed": [
+                                   cost_type=one,reopen_closed=false, verbosity=silent)"""],
+    "lama-first-typed-silent": [
         "--evaluator",
         "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
         "--evaluator", "hff=ff(transform=adapt_costs(one))",
@@ -52,7 +52,43 @@ CONFIG_DICT = {
             "lazy(alt([single(hff), single(hff, pref_only=true),"
             "single(hlm), single(hlm, pref_only=true), type_based([hff, g()])], boost=1000),"
             "preferred=[hff,hlm], cost_type=one, reopen_closed=false, randomize_successors=true,"
-            "preferred_successors_first=false)"],
+            "preferred_successors_first=false, verbosity=silent)"],
+
+    "eager-greedy-ff-normal": [
+        "--evaluator",
+        "h=ff()",
+        "--search",
+        "eager_greedy([h], preferred=[h], verbosity=normal)"],
+    "eager-greedy-cea-normal": [
+        "--evaluator",
+        "h=cea()",
+        "--search",
+        "eager_greedy([h], preferred=[h], verbosity=normal)"],
+    "lazy-greedy-add-normal": [
+        "--evaluator",
+        "h=add()",
+        "--search",
+        "lazy_greedy([h], preferred=[h], verbosity=normal)"],
+    "lazy-greedy-cg-normal": [
+        "--evaluator",
+        "h=cg()",
+        "--search",
+        "lazy_greedy([h], preferred=[h], verbosity=normal)"],
+    "lama-first-normal": [
+        "--evaluator",
+        "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
+        "--evaluator", "hff=ff(transform=adapt_costs(one))",
+        "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
+                                   cost_type=one,reopen_closed=false, verbosity=normal)"""],
+    "lama-first-typed-normal": [
+        "--evaluator",
+        "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
+        "--evaluator", "hff=ff(transform=adapt_costs(one))",
+        "--search",
+            "lazy(alt([single(hff), single(hff, pref_only=true),"
+            "single(hlm), single(hlm, pref_only=true), type_based([hff, g()])], boost=1000),"
+            "preferred=[hff,hlm], cost_type=one, reopen_closed=false, randomize_successors=true,"
+            "preferred_successors_first=false, verbosity=normal)"],
 }
 CONFIGS = [
     IssueConfig(config_nick, config,
@@ -95,6 +131,21 @@ exp.add_absolute_report_step(attributes=attributes)
 
 sort_spec = [('log_size', 'desc')]
 attributes = ['run_dir', 'log_size']
-exp.add_sorted_report_step(attributes=attributes, sort_spec=sort_spec)
+exp.add_sorted_report_step(attributes=attributes, sort_spec=sort_spec,filter_algorithm=[
+    "{}-eager-greedy-ff-silent".format(REVISIONS[0]),
+    "{}-eager-greedy-cea-silent".format(REVISIONS[0]),
+    "{}-lazy-greedy-add-silent".format(REVISIONS[0]),
+    "{}-lazy-greedy-cg-silent".format(REVISIONS[0]),
+    "{}-lama-first-silent".format(REVISIONS[0]),
+    "{}-lama-first-typed-silent".format(REVISIONS[0]),
+],name="silent")
+exp.add_sorted_report_step(attributes=attributes, sort_spec=sort_spec,filter_algorithm=[
+    "{}-eager-greedy-ff-normal".format(REVISIONS[0]),
+    "{}-eager-greedy-cea-normal".format(REVISIONS[0]),
+    "{}-lazy-greedy-add-normal".format(REVISIONS[0]),
+    "{}-lazy-greedy-cg-normal".format(REVISIONS[0]),
+    "{}-lama-first-normal".format(REVISIONS[0]),
+    "{}-lama-first-typed-normal".format(REVISIONS[0]),
+],name="normal")
 
 exp.run_steps()
