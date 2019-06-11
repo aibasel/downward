@@ -9,7 +9,7 @@ fi
 
 MAJOR=$1
 if [[ ! "$MAJOR" =~ ^[1-9][0-9]\.[0-9][0-9]$ ]]; then
-    echo "Unrecognized version number '$VERSION'. Expected the format YY.MM (e.g. 19.06)."
+    echo "Unrecognized version number '$MAJOR'. Expected the format YY.MM (e.g. 19.06)."
     exit 1
 fi
 
