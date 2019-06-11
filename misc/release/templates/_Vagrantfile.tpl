@@ -19,9 +19,9 @@ Vagrant.configure("2") do |config|
 
     if ! [ -e downward ] ; then
         hg clone http://hg.fast-downward.org -r TAG downward
+        ./downward/build.py
+        chown -R vagrant.vagrant downward
     fi
-
-    ./downward/build.py
 
   SHELL
 end
