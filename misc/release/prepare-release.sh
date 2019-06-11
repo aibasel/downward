@@ -91,7 +91,7 @@ else
 fi
 
 # Tag release.
-hg tag $TAG -m "Create release $TAG."
+hg tag $TAG -m "Create tag $TAG."
 
 # Back on the default branch, update version number.
 if [[ $MINOR = 0 ]]; then

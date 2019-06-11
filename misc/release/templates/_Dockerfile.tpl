@@ -17,13 +17,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 WORKDIR /workspace/downward/
 
-# Set up some environment variables
+# Set up some environment variables.
 ENV CXX g++
 
-# Download the tarball and extract everything into the workdir
+# Clone the desired tag into the current directory.
 RUN hg clone http://hg.fast-downward.org . -r TAG
 
-# Invoke the build script with default options
+# Invoke the build script with default options.
 RUN ./build.py
 RUN strip --strip-all builds/release/bin/downward
 
@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 WORKDIR /workspace/downward/
 
-# Copy the relevant files from the previous docker build into this build
+# Copy the relevant files from the previous docker build into this build.
 COPY --from=builder /workspace/downward/fast-downward.py .
 COPY --from=builder /workspace/downward/builds/release/bin/ ./builds/release/bin/
 COPY --from=builder /workspace/downward/driver ./driver
