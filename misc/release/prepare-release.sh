@@ -84,7 +84,11 @@ else
 fi
 
 # Update version number.
-set_and_commit_version "$VERSION"
+if [[ $MINOR = 0 ]]; then
+    set_and_commit_version "$MAJOR"
+else
+    set_and_commit_version "$VERSION"
+fi
 
 # Tag release.
 hg tag $TAG -m "Create release $TAG."
