@@ -7,7 +7,6 @@
 # A first image to build the planner
 ###############################################################################
 FROM ubuntu:18.04 AS builder
-MAINTAINER Guillem Francès <guillem.frances at unibas>
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     cmake     \
