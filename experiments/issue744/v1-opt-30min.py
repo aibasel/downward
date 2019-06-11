@@ -87,6 +87,7 @@ exp.add_parser('custom-parser.py')
 exp.add_step("build", exp.build)
 exp.add_step("start", exp.start_runs)
 exp.add_fetcher(name="fetch")
+exp.add_parse_again_step()
 
 log_size = Attribute('log_size')
 attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [log_size]

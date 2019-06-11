@@ -8,7 +8,6 @@ def compute_log_size(content, props):
 def main():
     parser = Parser()
     parser.add_function(compute_log_size)
-    print "Running custom parser"
     parser.parse()
 
 main()
