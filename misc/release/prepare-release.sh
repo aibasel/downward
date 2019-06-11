@@ -24,6 +24,12 @@ MINOR=${VERSION##$MAJOR.}
 BRANCH="release-$MAJOR"
 TAG="release-$VERSION"
 
+if [[ $MINOR = 0 ]]; then
+    PRETTY_VERSION="$MAJOR"
+else
+    PRETTY_VERSION="$VERSION"
+fi
+
 # Set directories
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 REPODIR="$(dirname $(dirname $SCRIPTDIR))"
@@ -84,11 +90,7 @@ else
 fi
 
 # Update version number.
-if [[ $MINOR = 0 ]]; then
-    set_and_commit_version "$MAJOR"
-else
-    set_and_commit_version "$VERSION"
-fi
+set_and_commit_version "$PRETTY_VERSION"
 
 # Tag release.
 hg tag $TAG -m "Create tag $TAG."
@@ -103,7 +105,7 @@ fi
 hg archive -r $TAG -X .hg_archival.txt -X .hgignore \
     -X .hgtags -X .uncrustify.cfg -X bitbucket-pipelines.yml \
     -X experiments/ -X misc/ --type tgz \
-    fast-downward-$VERSION.tar.gz
+    fast-downward-$PRETTY_VERSION.tar.gz
 
 # Generate the different recipe files for Docker, Singularity and Vagrant.
 pushd $DOWNWARD_CONTAINER_REPO
@@ -128,7 +130,7 @@ popd
 cat << EOF
 Successfully prepared tag $TAG.
 Please take the following steps to verify the release:
-  * Check that fast-downward-$VERSION.tar.gz contains the correct files
+  * Check that fast-downward-$PRETTY_VERSION.tar.gz contains the correct files
   * Check that the branches and tags were created as intended
   * Check that $DOWNWARD_CONTAINER_REPO has a commit with the correct
     container recipe files.
@@ -139,6 +141,5 @@ to publish the build:
 cd $REPODIR
 hg push
 misc/release/push-docker.sh $MAJOR
-cd $DOWNWARD_CONTAINER_REPO
-git push
+git -C $DOWNWARD_CONTAINER_REPO push
 EOF
