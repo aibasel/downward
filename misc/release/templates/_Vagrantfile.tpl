@@ -7,13 +7,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.box = "ubuntu/bionic64"
 
-  # Provider-specific configuration
-  config.vm.provider "virtualbox" do |vb|
-    vb.memory = "2048"
-  end
-
   config.vm.provision "shell", inline: <<-SHELL
-    apt-get update && apt-get install --no-install-recommends -y \
+    apt update && apt install --no-install-recommends -y \
         cmake     \
         g++       \
         make      \
@@ -29,6 +24,4 @@ Vagrant.configure("2") do |config|
     ./downward/build.py
 
   SHELL
-
-  config.ssh.forward_x11 = true
 end
