@@ -29,7 +29,7 @@ from downward.reports import PlanningReport
 class SortedReport(PlanningReport):
     def __init__(self, sort_spec, **kwargs):
         PlanningReport.__init__(self, **kwargs)
-        self._sort_spec = sort_spec 
+        self._sort_spec = sort_spec
 
     def get_markup(self):
         """
@@ -63,7 +63,7 @@ class RowSortModule(DynamicDataModule):
                 continue
             entry = [row_name] + table.get_row(row_name)
             entries.append(tuple(entry))
-        
+
         for attribute, desc in reversed(self._sort_spec):
             index = col_names.index(attribute)
             reverse = desc == 'desc'
