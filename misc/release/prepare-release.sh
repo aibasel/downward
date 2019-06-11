@@ -77,7 +77,7 @@ if [[ $(hg branches | grep "^$BRANCH ") ]]; then
         exit 1
     fi
     if [[ "$(hg branch)" != "$BRANCH" ]]; then
-        echo "The branch '$BRANCH' already exists and we are not creating an additional release on it. I don't know how to proceed."
+        echo "It looks like we want to do a bugfix release, but we are not on the branch '$BRANCH'. Update to the branch head first."
         exit 1
     fi
 else
