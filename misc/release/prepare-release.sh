@@ -20,6 +20,7 @@ fi
 YEAR=${VERSION:0:2}
 MONTH=${VERSION:3:2}
 MAJOR="$YEAR.$MONTH"
+MINOR=${VERSION##$MAJOR.}
 BRANCH="release-$MAJOR"
 TAG="release-$VERSION"
 
@@ -65,11 +66,19 @@ set -x
 
 # Create the branch if it doesn't exist already.
 if [[ $(hg branches | grep "^$BRANCH ") ]]; then
+    if [[ $MINOR = 0 ]]; then
+        echo "The version number '$VERSION' implies that this is the first release in branch '$BRANCH' but the branch already exists."
+        exit 1
+    fi
     if [[ "$(hg branch)" != "$BRANCH" ]]; then
-      echo "The branch '$BRANCH' already exists and we are not creating an additional release on it. I don't know how to proceed."
-      exit 1
+        echo "The branch '$BRANCH' already exists and we are not creating an additional release on it. I don't know how to proceed."
+        exit 1
     fi
 else
+    if [[ $MINOR != 0 ]]; then
+        echo "The version number '$VERSION' implies a bugfix release but there is no branch '$BRANCH' yet."
+        exit 1
+    fi
     hg branch "$BRANCH"
     hg commit -m "Create branch $BRANCH."
 fi
@@ -81,8 +90,10 @@ set_and_commit_version "$VERSION"
 hg tag $TAG -m "Create release $TAG."
 
 # Back on the default branch, update version number.
-hg update default
-set_and_commit_version "${VERSION}+"
+if [[ $MINOR = 0 ]]; then
+    hg update default
+    set_and_commit_version "${MAJOR}+"
+fi
 
 # Create tarball.
 hg archive -r $TAG -X .hg_archival.txt -X .hgignore \
