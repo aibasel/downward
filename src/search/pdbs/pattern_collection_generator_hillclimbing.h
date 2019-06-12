@@ -18,6 +18,7 @@ class Options;
 namespace utils {
 class CountdownTimer;
 class RandomNumberGenerator;
+enum class Verbosity;
 }
 
 namespace sampling {
@@ -42,6 +43,8 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     std::unique_ptr<IncrementalCanonicalPDBs> current_pdbs;
+
+    const utils::Verbosity verbosity;
 
     // for stats only
     int num_rejected;

@@ -119,6 +119,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
       rng(utils::parse_rng_from_options(opts)),
+      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
       num_rejected(0),
       hill_climbing_timer(0) {
 }
@@ -252,7 +253,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
             improvement = count;
             best_pdb_index = i;
         }
-        if (count > 0) {
+        if (verbosity >= utils::Verbosity::VERBOSE && count > 0) {
             cout << "pattern: " << candidate_pdbs[i]->get_pattern()
                  << " - improvement: " << count << endl;
         }
@@ -328,7 +329,9 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
       guaranteed to be "normalized" in the sense that there are no duplicates
       and patterns are sorted.
     */
-    cout << "Done calculating initial candidate PDBs" << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Done calculating initial candidate PDBs" << endl;
+    }
 
     int num_iterations = 0;
     State initial_state = task_proxy.get_initial_state();
@@ -341,14 +344,20 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
         while (true) {
             ++num_iterations;
             int init_h = current_pdbs->get_value(initial_state);
-            cout << "current collection size is "
-                 << current_pdbs->get_size() << endl;
-            cout << "current initial h value: ";
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                cout << "current collection size is "
+                     << current_pdbs->get_size() << endl;
+                cout << "current initial h value: ";
+            }
             if (current_pdbs->is_dead_end(initial_state)) {
-                cout << "infinite => stopping hill climbing" << endl;
+                if (verbosity >= utils::Verbosity::NORMAL) {
+                    cout << "infinite => stopping hill climbing" << endl;
+                }
                 break;
             } else {
-                cout << init_h << endl;
+                if (verbosity >= utils::Verbosity::NORMAL) {
+                    cout << init_h << endl;
+                }
             }
 
             samples.clear();
@@ -364,8 +373,10 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             int best_pdb_index = improvement_and_index.second;
 
             if (improvement < min_improvement) {
-                cout << "Improvement below threshold. Stop hill climbing."
-                     << endl;
+                if (verbosity >= utils::Verbosity::NORMAL) {
+                    cout << "Improvement below threshold. Stop hill climbing."
+                         << endl;
+                }
                 break;
             }
 
@@ -374,9 +385,11 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             const shared_ptr<PatternDatabase> &best_pdb =
                 candidate_pdbs[best_pdb_index];
             const Pattern &best_pattern = best_pdb->get_pattern();
-            cout << "found a better pattern with improvement " << improvement
-                 << endl;
-            cout << "pattern: " << best_pattern << endl;
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                cout << "found a better pattern with improvement " << improvement
+                     << endl;
+                cout << "pattern: " << best_pattern << endl;
+            }
             current_pdbs->add_pdb(best_pdb);
 
             // Generate candidate patterns and PDBs for next iteration.
@@ -388,9 +401,11 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             // Remove the added PDB from candidate_pdbs.
             candidate_pdbs[best_pdb_index] = nullptr;
 
-            cout << "Hill climbing time so far: "
-                 << hill_climbing_timer->get_elapsed_time()
-                 << endl;
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                cout << "Hill climbing time so far: "
+                     << hill_climbing_timer->get_elapsed_time()
+                     << endl;
+            }
         }
     } catch (HillClimbingTimeout &) {
         cout << "Time limit reached. Abort hill climbing." << endl;
@@ -421,7 +436,9 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     }
     current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
         task_proxy, initial_pattern_collection);
-    cout << "Done calculating initial pattern collection: " << timer << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Done calculating initial pattern collection: " << timer << endl;
+    }
 
     State initial_state = task_proxy.get_initial_state();
     if (!current_pdbs->is_dead_end(initial_state) && max_time > 0) {
@@ -595,6 +612,13 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     add_canonical_pdbs_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
+
+    /*
+     silent: no output during construction, only starting and final statistics
+     normal: basic output during construction, starting and final statistics
+     verbose: full output during construction, starting and final statistics
+   */
+    utils::add_verbosity_option_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.help_mode())
