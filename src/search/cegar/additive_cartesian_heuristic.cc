@@ -33,7 +33,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")),
         *rng,
-        opts.get<bool>("debug"));
+        static_cast<utils::Verbosity>(opts.get_enum("verbosity")));
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }
@@ -145,6 +145,14 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "false");
     Heuristic::add_options_to_parser(parser);
     utils::add_rng_options(parser);
+
+    /*
+      silent: no output during construction, only starting and final statistics
+      normal: basic output during construction, starting and final statistics
+      verbose: full output during construction, starting and final statistics
+    */
+    utils::add_verbosity_option_to_parser(parser);
+
     Options opts = parser.parse();
 
     if (parser.dry_run())

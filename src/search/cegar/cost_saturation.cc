@@ -89,7 +89,7 @@ CostSaturation::CostSaturation(
     bool use_general_costs,
     PickSplit pick_split,
     utils::RandomNumberGenerator &rng,
-    bool debug)
+    utils::Verbosity verbosity)
     : subtask_generators(subtask_generators),
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
@@ -97,7 +97,7 @@ CostSaturation::CostSaturation(
       use_general_costs(use_general_costs),
       pick_split(pick_split),
       rng(rng),
-      debug(debug),
+      verbosity(verbosity),
       num_abstractions(0),
       num_states(0),
       num_non_looping_transitions(0) {
@@ -130,6 +130,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
 
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (const shared_ptr<SubtaskGenerator> &subtask_generator : subtask_generators) {
+        // TODO: pass verbosity to following call in order to avoid output of h^m landmark factory
         SharedTasks subtasks = subtask_generator->get_subtasks(task);
         build_abstractions(subtasks, timer, should_abort);
         if (should_abort())
@@ -204,7 +205,7 @@ void CostSaturation::build_abstractions(
             timer.get_remaining_time() / rem_subtasks,
             pick_split,
             rng,
-            debug);
+            verbosity);
 
         unique_ptr<Abstraction> abstraction = cegar.extract_abstraction();
         ++num_abstractions;

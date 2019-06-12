@@ -85,26 +85,33 @@ CEGAR::CEGAR(
     double max_time,
     PickSplit pick,
     utils::RandomNumberGenerator &rng,
-    bool debug)
+    utils::Verbosity verbosity)
     : task_proxy(*task),
       domain_sizes(get_domain_sizes(task_proxy)),
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
       split_selector(task, pick),
-      abstraction(utils::make_unique_ptr<Abstraction>(task, debug)),
+      abstraction(utils::make_unique_ptr<Abstraction>(task, verbosity >= utils::Verbosity::DEBUG)),
       abstract_search(task_properties::get_operator_costs(task_proxy)),
       timer(max_time),
-      debug(debug) {
+      verbosity(verbosity) {
     assert(max_states >= 1);
-    utils::g_log << "Start building abstraction." << endl;
-    cout << "Maximum number of states: " << max_states << endl;
-    cout << "Maximum number of transitions: "
-         << max_non_looping_transitions << endl;
-    refinement_loop(rng);
-    utils::g_log << "Done building abstraction." << endl;
-    cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        utils::g_log << "Start building abstraction." << endl;
+        cout << "Maximum number of states: " << max_states << endl;
+        cout << "Maximum number of transitions: "
+             << max_non_looping_transitions << endl;
+    }
 
-    print_statistics();
+    refinement_loop(rng);
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        utils::g_log << "Done building abstraction." << endl;
+    }
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
+
+        print_statistics();
+    }
 }
 
 CEGAR::~CEGAR() {
@@ -190,7 +197,9 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         unique_ptr<Flaw> flaw = find_flaw(*solution);
         find_flaw_timer.stop();
         if (!flaw) {
-            cout << "Found concrete solution during refinement." << endl;
+            if (verbosity >= utils::Verbosity::VERBOSE) {
+                cout << "Found concrete solution during refinement." << endl;
+            }
             break;
         }
 
@@ -211,20 +220,22 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
                          << max_non_looping_transitions << " transitions" << endl;
         }
     }
-    cout << "Time for finding abstract traces: " << find_trace_timer << endl;
-    cout << "Time for finding flaws: " << find_flaw_timer << endl;
-    cout << "Time for splitting states: " << refine_timer << endl;
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        cout << "Time for finding abstract traces: " << find_trace_timer << endl;
+        cout << "Time for finding flaws: " << find_flaw_timer << endl;
+        cout << "Time for splitting states: " << refine_timer << endl;
+    }
 }
 
 unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
-    if (debug)
+    if (verbosity >= utils::Verbosity::DEBUG)
         cout << "Check solution:" << endl;
 
     const AbstractState *abstract_state = &abstraction->get_initial_state();
     State concrete_state = task_proxy.get_initial_state();
     assert(abstract_state->includes(concrete_state));
 
-    if (debug)
+    if (verbosity >= utils::Verbosity::DEBUG)
         cout << "  Initial abstract state: " << *abstract_state << endl;
 
     for (const Transition &step : solution) {
@@ -233,12 +244,12 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         OperatorProxy op = task_proxy.get_operators()[step.op_id];
         const AbstractState *next_abstract_state = &abstraction->get_state(step.target_id);
         if (task_properties::is_applicable(op, concrete_state)) {
-            if (debug)
+            if (verbosity >= utils::Verbosity::DEBUG)
                 cout << "  Move to " << *next_abstract_state << " with "
                      << op.get_name() << endl;
             State next_concrete_state = concrete_state.get_successor(op);
             if (!next_abstract_state->includes(next_concrete_state)) {
-                if (debug)
+                if (verbosity >= utils::Verbosity::DEBUG)
                     cout << "  Paths deviate." << endl;
                 return utils::make_unique_ptr<Flaw>(
                     move(concrete_state),
@@ -248,7 +259,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             abstract_state = next_abstract_state;
             concrete_state = move(next_concrete_state);
         } else {
-            if (debug)
+            if (verbosity >= utils::Verbosity::DEBUG)
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             return utils::make_unique_ptr<Flaw>(
                 move(concrete_state),
@@ -261,7 +272,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         // We found a concrete solution.
         return nullptr;
     } else {
-        if (debug)
+        if (verbosity >= utils::Verbosity::DEBUG)
             cout << "  Goal test failed." << endl;
         return utils::make_unique_ptr<Flaw>(
             move(concrete_state),

@@ -12,6 +12,7 @@
 
 namespace utils {
 class RandomNumberGenerator;
+enum class Verbosity;
 }
 
 namespace cegar {
@@ -39,7 +40,7 @@ class CEGAR {
     // Limit the time for building the abstraction.
     utils::CountdownTimer timer;
 
-    const bool debug;
+    const utils::Verbosity verbosity;
 
     bool may_keep_refining() const;
 
@@ -70,7 +71,7 @@ public:
         double max_time,
         PickSplit pick,
         utils::RandomNumberGenerator &rng,
-        bool debug);
+        utils::Verbosity verbosity);
     ~CEGAR();
 
     CEGAR(const CEGAR &) = delete;
