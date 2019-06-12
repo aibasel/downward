@@ -9,6 +9,7 @@
 
 namespace utils {
 class RandomNumberGenerator;
+enum class Verbosity;
 }
 
 namespace potentials {
@@ -26,6 +27,8 @@ class DiversePotentialHeuristics {
     const int num_samples;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     std::vector<std::unique_ptr<PotentialFunction>> diverse_functions;
+
+    const utils::Verbosity verbosity;
 
     /* Filter dead end samples and duplicates. Store potential heuristics
        for remaining samples. */

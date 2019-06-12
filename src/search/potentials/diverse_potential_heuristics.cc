@@ -7,6 +7,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
@@ -20,7 +21,8 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
       num_samples(opts.get<int>("num_samples")),
-      rng(utils::parse_rng_from_options(opts)) {
+      rng(utils::parse_rng_from_options(opts)),
+      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
 }
 
 SamplesToFunctionsMap
@@ -85,16 +87,20 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     size_t last_num_samples = samples_to_functions.size();
     remove_covered_samples(*function, samples_to_functions);
     if (samples_to_functions.size() == last_num_samples) {
-        cout << "No sample removed -> Use arbitrary precomputed function."
-             << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "No sample removed -> Use arbitrary precomputed function."
+                 << endl;
+        }
         function = move(samples_to_functions.begin()->second);
         // The move operation invalidated the entry, remove it.
         samples_to_functions.erase(samples_to_functions.begin());
         remove_covered_samples(*function, samples_to_functions);
     }
-    cout << "Removed " << last_num_samples - samples_to_functions.size()
-         << " samples. " << samples_to_functions.size() << " remaining."
-         << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Removed " << last_num_samples - samples_to_functions.size()
+             << " samples. " << samples_to_functions.size() << " remaining."
+             << endl;
+    }
     return function;
 }
 
@@ -103,7 +109,9 @@ void DiversePotentialHeuristics::cover_samples(
     utils::Timer covering_timer;
     while (!samples_to_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
-        cout << "Find heuristic #" << diverse_functions.size() + 1 << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "Find heuristic #" << diverse_functions.size() + 1 << endl;
+        }
         diverse_functions.push_back(
             find_function_and_remove_covered_samples(samples_to_functions));
     }
@@ -148,6 +156,13 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         Bounds("0", "infinity"));
     prepare_parser_for_admissible_potentials(parser);
     utils::add_rng_options(parser);
+
+    /*
+      silent: no output during construction, only starting and final statistics
+      normal: basic output during construction, starting and final statistics
+      verbose: full output during construction, starting and final statistics
+    */
+    utils::add_verbosity_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
