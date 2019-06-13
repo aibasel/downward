@@ -3,12 +3,12 @@
 
 #include "evaluation_result.h"
 #include "evaluator_cache.h"
+#include "global_state.h"
 #include "operator_id.h"
 
 #include <unordered_map>
 
 class Evaluator;
-class GlobalState;
 class SearchStatistics;
 
 /*
@@ -42,6 +42,7 @@ class SearchStatistics;
 
 class EvaluationContext {
     EvaluatorCache cache;
+    GlobalState state;
     int g_value;
     bool preferred;
     SearchStatistics *statistics;
@@ -57,8 +58,9 @@ public:
       TODO: Can we reuse caches? Can we move them instead of copying them?
     */
     EvaluationContext(
-        const EvaluatorCache &cache, int g_value, bool is_preferred,
-        SearchStatistics *statistics, bool calculate_preferred = false);
+        const EvaluatorCache &cache, const GlobalState &state,
+        int g_value, bool is_preferred, SearchStatistics *statistics,
+        bool calculate_preferred = false);
     /*
       Create new heuristic cache for caching heuristic values. Used for example
       by eager search.
@@ -81,8 +83,6 @@ public:
     EvaluationContext(
         const GlobalState &state,
         SearchStatistics *statistics = nullptr, bool calculate_preferred = false);
-
-    ~EvaluationContext() = default;
 
     const EvaluationResult &get_result(Evaluator *eval);
     const EvaluatorCache &get_cache() const;
