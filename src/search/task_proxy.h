@@ -563,33 +563,20 @@ bool does_fire(const EffectProxy &effect, const GlobalState &state);
 
 class State {
     const AbstractTask *task;
-    std::vector<int> values;
+    std::shared_ptr<std::vector<int>> values;
 public:
     using ItemType = FactProxy;
     State(const AbstractTask &task, std::vector<int> &&values)
-        : task(&task), values(std::move(values)) {
+        : task(&task), values(std::make_shared<std::vector<int>>(std::move(values))) {
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
     State(const State &) = default;
-
-    State(State &&other)
-        : task(other.task), values(std::move(other.values)) {
-        other.task = nullptr;
-    }
-
-    State &operator=(State &&other) {
-        if (this != &other) {
-            task = other.task;
-            values = std::move(other.values);
-            other.task = nullptr;
-        }
-        return *this;
-    }
+    State &operator=(const State &) = default;
 
     bool operator==(const State &other) const {
         assert(task == other.task);
-        return values == other.values;
+        return *values == *other.values;
     }
 
     bool operator!=(const State &other) const {
@@ -597,12 +584,12 @@ public:
     }
 
     std::size_t size() const {
-        return values.size();
+        return values->size();
     }
 
     FactProxy operator[](std::size_t var_id) const {
         assert(var_id < size());
-        return FactProxy(*task, var_id, values[var_id]);
+        return FactProxy(*task, var_id, (*values)[var_id]);
     }
 
     FactProxy operator[](VariableProxy var) const {
@@ -612,7 +599,7 @@ public:
     inline TaskProxy get_task() const;
 
     const std::vector<int> &get_values() const {
-        return values;
+        return *values;
     }
 
     State get_successor(OperatorProxy op) const {
@@ -621,7 +608,7 @@ public:
         }
         assert(!op.is_axiom());
         //assert(is_applicable(op, state));
-        std::vector<int> new_values = values;
+        std::vector<int> new_values = *values;
         for (EffectProxy effect : op.get_effects()) {
             if (does_fire(effect, *this)) {
                 FactProxy effect_fact = effect.get_fact();
