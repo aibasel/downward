@@ -8,7 +8,6 @@
 
 #include <vector>
 
-class GlobalState;
 class OperatorProxy;
 class TaskProxy;
 
@@ -17,6 +16,7 @@ class SearchNode {
     const StateRegistry &state_registry;
     StateID state_id;
     SearchNodeInfo &info;
+    mutable std::unique_ptr<GlobalState> state;
 public:
     SearchNode(const StateRegistry &state_registry,
                StateID state_id,
@@ -25,7 +25,7 @@ public:
     StateID get_state_id() const {
         return state_id;
     }
-    GlobalState get_state() const;
+    const GlobalState &get_state() const;
 
     bool is_new() const;
     bool is_open() const;

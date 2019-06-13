@@ -19,8 +19,11 @@ SearchNode::SearchNode(const StateRegistry &state_registry,
     assert(state_id != StateID::no_state);
 }
 
-GlobalState SearchNode::get_state() const {
-    return state_registry.lookup_state(state_id);
+const GlobalState &SearchNode::get_state() const {
+    if (!state) {
+        state = utils::make_unique_ptr<GlobalState>(state_registry.lookup_state(state_id));
+    }
+    return *state;
 }
 
 bool SearchNode::is_open() const {

@@ -116,16 +116,12 @@ SearchStatus EagerSearch::step() {
             return FAILED;
         }
         StateID id = open_list->remove_min();
-        // TODO is there a way we can avoid creating the state here and then
-        //      recreate it outside of this function with node.get_state()?
-        //      One way would be to store GlobalState objects inside SearchNodes
-        //      instead of StateIDs
-        GlobalState s = state_registry.lookup_state(id);
         node.emplace(search_space.get_node(id));
 
         if (node->is_closed())
             continue;
 
+        GlobalState s = node->get_state();
         /*
           We can pass calculate_preferred=false here since preferred
           operators are computed when the state is expanded.
