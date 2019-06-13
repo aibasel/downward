@@ -123,8 +123,7 @@ SearchSpace::SearchSpace(StateRegistry &state_registry)
     : state_registry(state_registry) {
 }
 
-SearchNode SearchSpace::get_node(const GlobalState &state) {
-    StateID id = state.get_id();
+SearchNode SearchSpace::get_node(StateID id) {
     StateHandle handle(&state_registry, id);
     return SearchNode(state_registry, id, search_node_infos[handle]);
 }
