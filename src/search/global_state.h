@@ -2,6 +2,7 @@
 #define GLOBAL_STATE_H
 
 #include "state_id.h"
+#include "state_handle.h"
 
 #include "algorithms/int_packer.h"
 
@@ -43,6 +44,10 @@ public:
 
     StateID get_id() const {
         return id;
+    }
+
+    StateHandle get_handle() const {
+        return StateHandle(registry, id);
     }
 
     int operator[](int var) const;

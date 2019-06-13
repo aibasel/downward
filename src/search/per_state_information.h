@@ -1,8 +1,7 @@
 #ifndef PER_STATE_INFORMATION_H
 #define PER_STATE_INFORMATION_H
 
-#include "global_state.h"
-#include "state_id.h"
+#include "state_handle.h"
 #include "state_registry.h"
 
 #include "algorithms/segmented_vector.h"
@@ -15,8 +14,8 @@
 /*
   PerStateInformation is used to associate information with states.
   PerStateInformation<Entry> logically behaves somewhat like an unordered map
-  from states to objects of class Entry. However, lookup of unknown states is
-  supported and leads to insertion of a default value (similar to the
+  from state handles to objects of class Entry. However, lookup of unknown
+  states is supported and leads to insertion of a default value (similar to the
   defaultdict class in Python).
 
   For example, search algorithms can use it to associate g values or create
@@ -111,10 +110,12 @@ public:
         }
     }
 
-    Entry &operator[](const GlobalState &state) {
-        const StateRegistry *registry = &state.get_registry();
+    Entry &operator[](StateHandle handle) {
+        const StateRegistry *registry = handle.get_registry();
+        assert(registry);
         segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
-        int state_id = state.get_id().value;
+        int state_id = handle.get_id().value;
+        assert(handle.get_id() != StateID::no_state);
         size_t virtual_size = registry->size();
         assert(utils::in_bounds(state_id, *registry));
         if (entries->size() < virtual_size) {
@@ -123,13 +124,15 @@ public:
         return (*entries)[state_id];
     }
 
-    const Entry &operator[](const GlobalState &state) const {
-        const StateRegistry *registry = &state.get_registry();
+    const Entry &operator[](StateHandle handle) const {
+        const StateRegistry *registry = handle.get_registry();
+        assert(registry);
         const segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
         if (!entries) {
             return default_value;
         }
-        int state_id = state.get_id().value;
+        int state_id = handle.get_id().value;
+        assert(handle.get_id() != StateID::no_state);
         assert(utils::in_bounds(state_id, *registry));
         int num_entries = entries->size();
         if (state_id >= num_entries) {

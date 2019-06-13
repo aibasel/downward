@@ -224,7 +224,7 @@ void LandmarkCountHeuristic::notify_state_transition(
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the reached landmark
            set has actually changed and only then mark the h value as dirty. */
-        heuristic_cache[state].dirty = true;
+        heuristic_cache[state.get_handle()].dirty = true;
     }
 }
 

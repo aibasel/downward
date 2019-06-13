@@ -124,21 +124,24 @@ SearchSpace::SearchSpace(StateRegistry &state_registry)
 }
 
 SearchNode SearchSpace::get_node(const GlobalState &state) {
-    return SearchNode(state_registry, state.get_id(), search_node_infos[state]);
+    StateID id = state.get_id();
+    StateHandle handle(&state_registry, id);
+    return SearchNode(state_registry, id, search_node_infos[handle]);
 }
 
 void SearchSpace::trace_path(const GlobalState &goal_state,
                              vector<OperatorID> &path) const {
-    GlobalState current_state = goal_state;
+    StateHandle current_state_handle = goal_state.get_handle();
+    assert(current_state_handle.get_registry() == &state_registry);
     assert(path.empty());
     for (;;) {
-        const SearchNodeInfo &info = search_node_infos[current_state];
+        const SearchNodeInfo &info = search_node_infos[current_state_handle];
         if (info.creating_operator == OperatorID::no_operator) {
             assert(info.parent_state_id == StateID::no_state);
             break;
         }
         path.push_back(info.creating_operator);
-        current_state = state_registry.lookup_state(info.parent_state_id);
+        current_state_handle = StateHandle(&state_registry, info.parent_state_id);
     }
     reverse(path.begin(), path.end());
 }
@@ -149,7 +152,7 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
         /* The body duplicates SearchNode::dump() but we cannot create
            a search node without discarding the const qualifier. */
         GlobalState state = state_registry.lookup_state(id);
-        const SearchNodeInfo &node_info = search_node_infos[state];
+        const SearchNodeInfo &node_info = search_node_infos[state.get_handle()];
         utils::g_log << id << ": ";
         state.dump_fdr();
         if (node_info.creating_operator != OperatorID::no_operator &&

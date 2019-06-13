@@ -71,6 +71,7 @@ fast_downward_plugin(
         plugin
         pruning_method
         search_engine
+        state_handle
         search_node_info
         search_progress
         search_space
