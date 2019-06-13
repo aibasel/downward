@@ -78,7 +78,12 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
 
     const GlobalState &initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
-        evaluator->notify_initial_state(initial_state);
+        /*
+          TODO/HACK: The state should only be unpacked once. This
+          transitional change will go away in a later commit before
+          merging the issue.
+        */
+        evaluator->notify_initial_state(initial_state.unpack());
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
                          preferred_operator_evaluators.end(), evaluator) !=
@@ -94,7 +99,12 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 void EnforcedHillClimbingSearch::reach_state(
     const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
     for (Evaluator *evaluator : path_dependent_evaluators) {
-        evaluator->notify_state_transition(parent, op_id, state);
+        /*
+          TODO/HACK: The state should only be unpacked once. This
+          transitional change will go away in a later commit before
+          merging the issue.
+        */
+        evaluator->notify_state_transition(parent.unpack(), op_id, state.unpack());
     }
 }
 

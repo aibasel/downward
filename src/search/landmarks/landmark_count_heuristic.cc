@@ -91,7 +91,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 }
 
-int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state) {
+int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     double epsilon = 0.01;
 
     // Need explicit test to see if state is a goal state. The landmark
@@ -100,7 +100,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
-    bool dead_end = lm_status_manager->update_lm_status(global_state);
+    bool dead_end = lm_status_manager->update_lm_status(ancestor_state);
 
     if (dead_end) {
         return DEAD_END;
@@ -126,15 +126,19 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
 }
 
 int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
+    return compute_heuristic(global_state.unpack());
+}
+
+int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
+    State state = convert_ancestor_state(ancestor_state);
 
     if (task_properties::is_goal_state(task_proxy, state))
         return 0;
 
-    int h = get_heuristic_value(global_state);
+    int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
+        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(ancestor_state);
         LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
         generate_helpful_actions(state, reached_lms);
     }
@@ -213,13 +217,12 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
     return lm.is_goal() && !lm.is_true_in_state(state);
 }
 
-void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_state) {
+void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
     lm_status_manager->set_landmarks_for_initial_state(initial_state);
 }
 
 void LandmarkCountHeuristic::notify_state_transition(
-    const GlobalState &parent_state, OperatorID op_id,
-    const GlobalState &state) {
+    const State &parent_state, OperatorID op_id, const State &state) {
     lm_status_manager->update_reached_lms(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the reached landmark

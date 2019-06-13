@@ -7,6 +7,7 @@
 
 class EvaluationContext;
 class GlobalState;
+class State;
 
 class Evaluator {
     const std::string description;
@@ -44,13 +45,13 @@ public:
         std::set<Evaluator *> &evals) = 0;
 
 
-    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
+    virtual void notify_initial_state(const State & /*initial_state*/) {
     }
 
     virtual void notify_state_transition(
-        const GlobalState & /*parent_state*/,
+        const State & /*parent_state*/,
         OperatorID /*op_id*/,
-        const GlobalState & /*state*/) {
+        const State & /*state*/) {
     }
 
     /*

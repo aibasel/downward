@@ -74,7 +74,12 @@ void EagerSearch::initialize() {
 
     const GlobalState &initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
-        evaluator->notify_initial_state(initial_state);
+        /*
+          TODO/HACK: The state should only be unpacked once. This
+          transitional change will go away in a later commit before
+          merging the issue.
+        */
+        evaluator->notify_initial_state(initial_state.unpack());
     }
 
     /*
@@ -202,7 +207,12 @@ SearchStatus EagerSearch::step() {
         SearchNode succ_node = search_space.get_node(succ_state.get_id());
 
         for (Evaluator *evaluator : path_dependent_evaluators) {
-            evaluator->notify_state_transition(s, op_id, succ_state);
+            /*
+              TODO/HACK: The state should only be unpacked once. This
+              transitional change will go away in a later commit before
+              merging the issue.
+            */
+            evaluator->notify_state_transition(s.unpack(), op_id, succ_state.unpack());
         }
 
         // Previously encountered dead end. Don't re-evaluate.

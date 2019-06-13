@@ -58,7 +58,12 @@ void LazySearch::initialize() {
     path_dependent_evaluators.assign(evals.begin(), evals.end());
     const GlobalState &initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
-        evaluator->notify_initial_state(initial_state);
+        /*
+          TODO/HACK: The state should only be unpacked once. This
+          transitional change will go away in a later commit before
+          merging the issue.
+        */
+        evaluator->notify_initial_state(initial_state.unpack());
     }
 }
 
@@ -165,8 +170,13 @@ SearchStatus LazySearch::step() {
             assert(current_predecessor_id != StateID::no_state);
             GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
             for (Evaluator *evaluator : path_dependent_evaluators)
+                /*
+                  TODO/HACK: The state should only be unpacked once. This
+                  transitional change will go away in a later commit before
+                  merging the issue.
+                */
                 evaluator->notify_state_transition(
-                    parent_state, current_operator_id, current_state);
+                    parent_state.unpack(), current_operator_id, current_state.unpack());
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {

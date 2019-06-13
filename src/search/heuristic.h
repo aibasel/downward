@@ -74,6 +74,7 @@ protected:
     /* TODO: Make private and use State instead of GlobalState once all
        heuristics use the TaskProxy class. */
     State convert_global_state(const GlobalState &global_state) const;
+    State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
     explicit Heuristic(const options::Options &opts);

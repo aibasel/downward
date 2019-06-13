@@ -16,12 +16,12 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
       lm_graph(graph) {
 }
 
-BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
+BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {
     return reached_lms[state.get_handle()];
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
-    const GlobalState &initial_state) {
+    const State &initial_state) {
     BitsetView reached = get_reached_landmarks(initial_state);
     // This is necessary since the default is "true for all" (see comment above).
     reached.reset();
@@ -39,7 +39,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
         if (node_p->conjunctive) {
             bool lm_true = true;
             for (const FactPair &fact : node_p->facts) {
-                if (initial_state[fact.var] != fact.value) {
+                if (initial_state[fact.var].get_value() != fact.value) {
                     lm_true = false;
                     break;
                 }
@@ -50,7 +50,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
             }
         } else {
             for (const FactPair &fact : node_p->facts) {
-                if (initial_state[fact.var] == fact.value) {
+                if (initial_state[fact.var].get_value() == fact.value) {
                     reached.set(node_p->get_id());
                     ++inserted;
                     break;
@@ -63,16 +63,16 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 }
 
 
-bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
+bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_state,
                                                OperatorID,
-                                               const GlobalState &global_state) {
-    if (global_state.get_id() == parent_global_state.get_id()) {
+                                               const State &ancestor_state) {
+    if (ancestor_state.get_handle() == parent_ancestor_state.get_handle()) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }
 
-    const BitsetView parent_reached = get_reached_landmarks(parent_global_state);
-    BitsetView reached = get_reached_landmarks(global_state);
+    const BitsetView parent_reached = get_reached_landmarks(parent_ancestor_state);
+    BitsetView reached = get_reached_landmarks(ancestor_state);
 
     int num_landmarks = lm_graph.number_of_landmarks();
     assert(reached.size() == num_landmarks);
@@ -95,7 +95,7 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
             LandmarkNode *node = lm_graph.get_lm_for_index(id);
-            if (node->is_true_in_state(global_state)) {
+            if (node->is_true_in_state(ancestor_state)) {
                 if (landmark_is_leaf(*node, reached)) {
                     reached.set(id);
                 }
@@ -106,8 +106,8 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
     return true;
 }
 
-bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    const BitsetView reached = get_reached_landmarks(global_state);
+bool LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
+    const BitsetView reached = get_reached_landmarks(ancestor_state);
 
     const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
@@ -123,7 +123,7 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     // mark reached and find needed again landmarks
     for (auto &node : nodes) {
         if (node->status == lm_reached) {
-            if (!node->is_true_in_state(global_state)) {
+            if (!node->is_true_in_state(ancestor_state)) {
                 if (node->is_goal()) {
                     node->status = lm_needed_again;
                 } else {
