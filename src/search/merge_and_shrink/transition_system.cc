@@ -5,6 +5,7 @@
 #include "labels.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -115,8 +116,8 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     const Labels &labels,
     const TransitionSystem &ts1,
     const TransitionSystem &ts2,
-    Verbosity verbosity) {
-    if (verbosity >= Verbosity::VERBOSE) {
+    utils::Verbosity verbosity) {
+    if (verbosity >= utils::Verbosity::VERBOSE) {
         cout << "Merging " << ts1.get_description() << " and "
              << ts2.get_description() << endl;
     }
@@ -267,13 +268,13 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 void TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
     assert(in_sync_with_label_equivalence_relation());
 
     int new_num_states = state_equivalence_relation.size();
     assert(new_num_states < num_states);
-    if (verbosity >= Verbosity::VERBOSE) {
+    if (verbosity >= utils::Verbosity::VERBOSE) {
         cout << tag() << "applying abstraction (" << get_size()
              << " to " << new_num_states << " states)" << endl;
     }
@@ -323,7 +324,7 @@ void TransitionSystem::apply_abstraction(
 
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
-    if (verbosity >= Verbosity::VERBOSE && init_state == PRUNED_STATE) {
+    if (verbosity >= utils::Verbosity::VERBOSE && init_state == PRUNED_STATE) {
         cout << tag() << "initial state pruned; task unsolvable" << endl;
     }
 

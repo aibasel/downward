@@ -9,7 +9,13 @@
   methods.
 */
 
+namespace utils {
+enum class Verbosity;
+}
+
 class SearchStatistics {
+    const utils::Verbosity verbosity;
+
     // General statistics
     int expanded_states;  // no states for which successors were generated
     int evaluated_states; // no states for which h fn was computed
@@ -29,7 +35,7 @@ class SearchStatistics {
 
     void print_f_line() const;
 public:
-    SearchStatistics();
+    explicit SearchStatistics(utils::Verbosity verbosity);
     ~SearchStatistics() = default;
 
     // Methods that update statistics.
@@ -66,6 +72,7 @@ public:
       performed by the open list.)
     */
     void report_f_value_progress(int f);
+    void print_checkpoint_line(int g) const;
 
     // output
     void print_basic_statistics() const;

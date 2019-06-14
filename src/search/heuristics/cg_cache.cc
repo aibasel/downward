@@ -16,7 +16,8 @@ using namespace std;
 namespace cg_heuristic {
 const int CGCache::NOT_COMPUTED;
 
-CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
+CGCache::CGCache(const TaskProxy &task_proxy, int max_cache_size)
+    : task_proxy(task_proxy) {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = task_proxy.get_variables().size();
@@ -55,12 +56,10 @@ CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
 
     for (int var = 0; var < var_count; ++var) {
         int required_cache_size = compute_required_cache_size(
-            var, depends_on[var]);
+            var, depends_on[var], max_cache_size);
         if (required_cache_size != -1) {
-            //  cout << "Cache for var " << var << ": "
-            //       << required_cache_size << " entries" << endl;
             cache[var].resize(required_cache_size, NOT_COMPUTED);
-            helpful_transition_cache[var].resize(required_cache_size, 0);
+            helpful_transition_cache[var].resize(required_cache_size, nullptr);
         }
     }
 
@@ -71,7 +70,7 @@ CGCache::~CGCache() {
 }
 
 int CGCache::compute_required_cache_size(
-    int var_id, const vector<int> &depends_on) const {
+    int var_id, const vector<int> &depends_on, int max_cache_size) const {
     /*
       Compute the size of the cache required for variable with ID "var_id",
       which depends on the variables in "depends_on". Requires that the caches
@@ -80,12 +79,10 @@ int CGCache::compute_required_cache_size(
       too large.
     */
 
-    const int MAX_CACHE_SIZE = 1000000;
-
     VariablesProxy variables = task_proxy.get_variables();
     int var_domain = variables[var_id].get_domain_size();
     if (!utils::is_product_within_limit(var_domain, var_domain - 1,
-                                        MAX_CACHE_SIZE))
+                                        max_cache_size))
         return -1;
 
     int required_size = var_domain * (var_domain - 1);
@@ -104,7 +101,7 @@ int CGCache::compute_required_cache_size(
             return -1;
 
         if (!utils::is_product_within_limit(required_size, depend_var_domain,
-                                            MAX_CACHE_SIZE))
+                                            max_cache_size))
             return -1;
 
         required_size *= depend_var_domain;

@@ -26,6 +26,10 @@ namespace successor_generator {
 class SuccessorGenerator;
 }
 
+namespace utils {
+enum class Verbosity;
+}
+
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
@@ -48,6 +52,7 @@ protected:
     OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
+    const utils::Verbosity verbosity;
 
     virtual void initialize() {}
     virtual SearchStatus step() = 0;
@@ -58,7 +63,7 @@ protected:
 public:
     SearchEngine(const options::Options &opts);
     virtual ~SearchEngine();
-    virtual void print_statistics() const;
+    virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
     bool found_solution() const;
     SearchStatus get_status() const;

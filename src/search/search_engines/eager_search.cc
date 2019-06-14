@@ -9,6 +9,8 @@
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <cstdlib>
 #include <memory>
@@ -87,7 +89,7 @@ void EagerSearch::initialize() {
         cout << "Initial state is a dead end." << endl;
     } else {
         if (search_progress.check_progress(eval_context))
-            print_checkpoint_line(0);
+            statistics.print_checkpoint_line(0);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial();
@@ -98,12 +100,6 @@ void EagerSearch::initialize() {
     print_initial_evaluator_values(eval_context);
 
     pruning_method->initialize(task);
-}
-
-void EagerSearch::print_checkpoint_line(int g) const {
-    cout << "[g=" << g << ", ";
-    statistics.print_basic_statistics();
-    cout << "]" << endl;
 }
 
 void EagerSearch::print_statistics() const {
@@ -239,7 +235,7 @@ SearchStatus EagerSearch::step() {
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
-                print_checkpoint_line(succ_node.get_g());
+                statistics.print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }
         } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
@@ -314,5 +310,10 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
         statistics.report_f_value_progress(f_value);
     }
+}
+
+void add_options_to_parser(OptionParser &parser) {
+    SearchEngine::add_pruning_option(parser);
+    SearchEngine::add_options_to_parser(parser);
 }
 }

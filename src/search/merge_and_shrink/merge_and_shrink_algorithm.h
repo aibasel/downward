@@ -12,6 +12,7 @@ class Options;
 
 namespace utils {
 class CountdownTimer;
+enum class Verbosity;
 }
 
 namespace merge_and_shrink {
@@ -19,7 +20,6 @@ class FactoredTransitionSystem;
 class LabelReduction;
 class MergeStrategyFactory;
 class ShrinkStrategy;
-enum class Verbosity;
 
 class MergeAndShrinkAlgorithm {
     // TODO: when the option parser supports it, the following should become
@@ -41,7 +41,7 @@ class MergeAndShrinkAlgorithm {
     const bool prune_unreachable_states;
     const bool prune_irrelevant_states;
 
-    const Verbosity verbosity;
+    const utils::Verbosity verbosity;
     const double main_loop_max_time;
 
     long starting_peak_memory;

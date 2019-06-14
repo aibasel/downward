@@ -9,6 +9,7 @@
 #include "../utils/math.h"
 #include "../utils/strings.h"
 
+#include <cctype>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -170,7 +171,9 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
     char suffix = value.back();
     int factor = 1;
     if (isalpha(suffix)) {
-        assert(islower(suffix));
+        /* Option values from the command line are already lower case, but
+           default values specified in the code might be upper case. */
+        suffix = static_cast<char>(std::tolower(suffix));
         if (suffix == 'k') {
             factor = 1000;
         } else if (suffix == 'm') {
