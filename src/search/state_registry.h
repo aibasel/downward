@@ -161,7 +161,6 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
-    std::unique_ptr<GlobalState> cached_initial_state;
     std::unique_ptr<State> cached_initial_unpacked_state;
 
     StateID insert_id_or_pop_state();
@@ -180,25 +179,6 @@ public:
     int get_state_value(const PackedStateBin *buffer, int var) const {
         return state_packer.get(buffer, var);
     }
-
-    /*
-      Returns the state that was registered at the given ID. The ID must refer
-      to a state in this registry. Do not mix IDs from from different registries.
-    */
-    GlobalState lookup_state(StateID id) const;
-
-    /*
-      Returns a reference to the initial state and registers it if this was not
-      done before. The result is cached internally so subsequent calls are cheap.
-    */
-    const GlobalState &get_initial_state();
-
-    /*
-      Returns the state that results from applying op to predecessor and
-      registers it if this was not done before. This is an expensive operation
-      as it includes duplicate checking.
-    */
-    GlobalState get_successor_state(const GlobalState &predecessor, const OperatorProxy &op);
 
     /*
       Returns the state that was registered at the given ID. The ID must refer

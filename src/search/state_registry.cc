@@ -36,47 +36,6 @@ StateID StateRegistry::insert_id_or_pop_state() {
     return StateID(result.first);
 }
 
-GlobalState StateRegistry::lookup_state(StateID id) const {
-    return GlobalState(state_data_pool[id.value], *this, id);
-}
-
-const GlobalState &StateRegistry::get_initial_state() {
-    if (cached_initial_state == 0) {
-        PackedStateBin *buffer = new PackedStateBin[get_bins_per_state()];
-        // Avoid garbage values in half-full bins.
-        fill_n(buffer, get_bins_per_state(), 0);
-
-        State initial_state = task_proxy.get_initial_state();
-        for (size_t i = 0; i < initial_state.size(); ++i) {
-            state_packer.set(buffer, i, initial_state[i].get_value());
-        }
-        state_data_pool.push_back(buffer);
-        // buffer is copied by push_back
-        delete[] buffer;
-        StateID id = insert_id_or_pop_state();
-        cached_initial_state = utils::make_unique_ptr<GlobalState>(lookup_state(id));
-    }
-    return *cached_initial_state;
-}
-
-//TODO it would be nice to move the actual state creation (and operator application)
-//     out of the StateRegistry. This could for example be done by global functions
-//     operating on state buffers (PackedStateBin *).
-GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, const OperatorProxy &op) {
-    assert(!op.is_axiom());
-    state_data_pool.push_back(predecessor.get_packed_buffer());
-    PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
-    for (EffectProxy effect : op.get_effects()) {
-        if (does_fire(effect, predecessor)) {
-            FactPair effect_pair = effect.get_fact().get_pair();
-            state_packer.set(buffer, effect_pair.var, effect_pair.value);
-        }
-    }
-    axiom_evaluator.evaluate(buffer, state_packer);
-    StateID id = insert_id_or_pop_state();
-    return lookup_state(id);
-}
-
 State StateRegistry::lookup_unpacked_state(StateID id) const {
     const PackedStateBin *buffer = state_data_pool[id.value];
     vector<int> values(num_variables);
