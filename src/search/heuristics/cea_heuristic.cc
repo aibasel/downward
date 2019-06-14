@@ -2,7 +2,6 @@
 
 #include "domain_transition_graph.h"
 
-#include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -393,8 +392,8 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
 }
 
 int ContextEnhancedAdditiveHeuristic::compute_heuristic(
-    const GlobalState &global_state) {
-    const State state = convert_global_state(global_state);
+    const State &ancestor_state) {
+    const State state = convert_ancestor_state(ancestor_state);
     initialize_heap();
     goal_problem->base_priority = -1;
     for (LocalProblem *problem : local_problems)

@@ -30,10 +30,6 @@ void Heuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
-State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    return convert_ancestor_state(global_state.unpack());
-}
-
 State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
@@ -52,7 +48,11 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     assert(preferred_operators.empty());
 
-    const GlobalState &state = eval_context.get_state();
+    /*
+      TODO/HACK: transitional change: we will unpack the state once in the
+                 search, not once for every heuristic.
+    */
+    State state = eval_context.get_state().unpack();
     StateHandle state_handle = state.get_handle();
     bool calculate_preferred = eval_context.get_calculate_preferred();
 
@@ -85,12 +85,11 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     }
 
 #ifndef NDEBUG
-    TaskProxy global_task_proxy = TaskProxy(*tasks::g_root_task);
-    State unpacked_state = state.unpack();
+    TaskProxy global_task_proxy = state.get_task();
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)
-            assert(task_properties::is_applicable(global_operators[op_id], unpacked_state));
+            assert(task_properties::is_applicable(global_operators[op_id], state));
     }
 #endif
 

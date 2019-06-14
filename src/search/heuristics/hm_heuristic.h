@@ -58,7 +58,7 @@ class HMHeuristic : public Heuristic {
     void dump_table() const;
 
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const State &ancestor_state) override;
 
 public:
     explicit HMHeuristic(const options::Options &opts);

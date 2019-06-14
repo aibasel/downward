@@ -4,7 +4,6 @@
 #include "landmark_factory.h"
 #include "landmark_status_manager.h"
 
-#include "../global_state.h"
 #include "../option_parser.h"
 #include "../per_state_bitset.h"
 #include "../plugin.h"
@@ -123,10 +122,6 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
 
     assert(h >= 0);
     return h;
-}
-
-int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
-    return compute_heuristic(global_state.unpack());
 }
 
 int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {

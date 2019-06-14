@@ -61,8 +61,7 @@ protected:
 
     enum {DEAD_END = -1, NO_VALUE = -2};
 
-    // TODO: Call with State directly once all heuristics support it.
-    virtual int compute_heuristic(const GlobalState &state) = 0;
+    virtual int compute_heuristic(const State &ancestor_state) = 0;
 
     /*
       Usage note: Marking the same operator as preferred multiple times
@@ -71,9 +70,6 @@ protected:
     */
     void set_preferred(const OperatorProxy &op);
 
-    /* TODO: Make private and use State instead of GlobalState once all
-       heuristics use the TaskProxy class. */
-    State convert_global_state(const GlobalState &global_state) const;
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:

@@ -44,12 +44,8 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
       heuristic_functions(generate_heuristic_functions(opts)) {
 }
 
-int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
-    return compute_heuristic(state);
-}
-
-int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
+int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
+    State state = convert_ancestor_state(ancestor_state);
     int sum_h = 0;
     for (const CartesianHeuristicFunction &function : heuristic_functions) {
         int value = function.get_value(state);

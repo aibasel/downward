@@ -40,8 +40,7 @@ class LandmarkCountHeuristic : public Heuristic {
 
     LandmarkSet convert_to_landmark_set(const BitsetView &landmark_bitset);
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state) override;
-    int compute_heuristic(const State &ancestor_state);
+    virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
 

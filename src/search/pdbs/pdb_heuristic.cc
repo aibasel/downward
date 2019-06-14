@@ -25,12 +25,8 @@ PDBHeuristic::PDBHeuristic(const Options &opts)
       pdb(get_pdb_from_options(task, opts)) {
 }
 
-int PDBHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
-    return compute_heuristic(state);
-}
-
-int PDBHeuristic::compute_heuristic(const State &state) const {
+int PDBHeuristic::compute_heuristic(const State &ancestor_state) {
+    State state = convert_ancestor_state(ancestor_state);
     int h = pdb->get_value(state);
     if (h == numeric_limits<int>::max())
         return DEAD_END;
