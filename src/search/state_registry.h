@@ -174,10 +174,6 @@ public:
         return num_variables;
     }
 
-    int get_state_value(const PackedStateBin *buffer, int var) const {
-        return state_packer.get(buffer, var);
-    }
-
     /*
       Returns the state that was registered at the given ID. The ID must refer
       to a state in this registry. Do not mix IDs from from different registries.
