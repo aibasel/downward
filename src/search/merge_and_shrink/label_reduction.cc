@@ -12,6 +12,7 @@
 
 #include "../algorithms/equivalence_relation.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -62,7 +63,7 @@ void LabelReduction::compute_label_mapping(
     const equivalence_relation::EquivalenceRelation *relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
-    Verbosity verbosity) const {
+    utils::Verbosity verbosity) const {
     const Labels &labels = fts.get_labels();
     int next_new_label_no = labels.get_size();
     int num_labels = 0;
@@ -95,7 +96,7 @@ void LabelReduction::compute_label_mapping(
         }
     }
     int number_reduced_labels = num_labels - num_labels_after_reduction;
-    if (verbosity >= Verbosity::VERBOSE && number_reduced_labels > 0) {
+    if (verbosity >= utils::Verbosity::VERBOSE && number_reduced_labels > 0) {
         cout << "Label reduction: "
              << num_labels << " labels, "
              << num_labels_after_reduction << " after reduction"
@@ -142,7 +143,7 @@ equivalence_relation::EquivalenceRelation
 bool LabelReduction::reduce(
     const pair<int, int> &next_merge,
     FactoredTransitionSystem &fts,
-    Verbosity verbosity) const {
+    utils::Verbosity verbosity) const {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = fts.get_size();

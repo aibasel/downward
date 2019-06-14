@@ -11,6 +11,7 @@
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -90,7 +91,7 @@ public:
     FactoredTransitionSystem create(
         bool compute_init_distances,
         bool compute_goal_distances,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 };
 
 
@@ -429,8 +430,8 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 FactoredTransitionSystem FTSFactory::create(
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    Verbosity verbosity) {
-    if (verbosity >= Verbosity::NORMAL) {
+    utils::Verbosity verbosity) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "Building atomic transition systems... " << endl;
     }
 
@@ -459,7 +460,7 @@ FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     return FTSFactory(task_proxy).create(
         compute_init_distances,
         compute_goal_distances,
