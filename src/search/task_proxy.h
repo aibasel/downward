@@ -600,21 +600,7 @@ public:
         return *values;
     }
 
-    State get_successor(OperatorProxy op) const {
-        if (task->get_num_axioms() > 0) {
-            ABORT("State::get_successor currently does not support axioms.");
-        }
-        assert(!op.is_axiom());
-        //assert(is_applicable(op, state));
-        std::vector<int> new_values = *values;
-        for (EffectProxy effect : op.get_effects()) {
-            if (does_fire(effect, *this)) {
-                FactProxy effect_fact = effect.get_fact();
-                new_values[effect_fact.get_variable().get_id()] = effect_fact.get_value();
-            }
-        }
-        return State(*task, std::move(new_values), StateHandle::unregistered_state);
-    }
+    State get_successor(const OperatorProxy &op) const;
 };
 
 
