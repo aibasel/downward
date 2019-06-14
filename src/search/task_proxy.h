@@ -572,6 +572,9 @@ public:
         : task(&task), values(std::make_shared<std::vector<int>>(std::move(values))), handle(handle) {
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
+    State(const State &unregistered_state, StateHandle handle)
+        : task(unregistered_state.task), values(unregistered_state.values), handle(handle) {
+    }
     ~State() = default;
     State(const State &) = default;
     State &operator=(const State &) = default;

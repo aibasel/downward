@@ -78,12 +78,28 @@ GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, c
 }
 
 State StateRegistry::lookup_unpacked_state(StateID id) const {
-    return lookup_state(id).unpack();
+    const PackedStateBin *buffer = state_data_pool[id.value];
+    vector<int> values(num_variables);
+    for (int var = 0; var < num_variables; ++var) {
+        values[var] = state_packer.get(buffer, var);
+    }
+    return task_proxy.create_state(move(values), StateHandle(this, id));
 }
 
 const State &StateRegistry::get_initial_unpacked_state() {
     if (cached_initial_unpacked_state == 0) {
-        cached_initial_unpacked_state = utils::make_unique_ptr<State>(get_initial_state().unpack());
+        int num_bins = get_bins_per_state();
+        PackedStateBin *buffer = new PackedStateBin[num_bins];
+        // Avoid garbage values in half-full bins.
+        fill_n(buffer, num_bins, 0);
+
+        State initial_state = task_proxy.get_initial_state();
+        for (size_t i = 0; i < initial_state.size(); ++i) {
+            state_packer.set(buffer, i, initial_state[i].get_value());
+        }
+        state_data_pool.push_back(buffer);
+        StateID id = insert_id_or_pop_state();
+        cached_initial_unpacked_state = utils::make_unique_ptr<State>(move(initial_state), StateHandle(this, id));
     }
     return *cached_initial_unpacked_state;
 }
