@@ -163,10 +163,12 @@ SearchStatus LazySearch::step() {
     if (node.is_new() || reopen) {
         if (current_operator_id != OperatorID::no_operator) {
             assert(current_predecessor_id != StateID::no_state);
-            State parent_state = state_registry.lookup_state(current_predecessor_id);
-            for (Evaluator *evaluator : path_dependent_evaluators)
-                evaluator->notify_state_transition(
-                    parent_state, current_operator_id, current_state);
+            if (!path_dependent_evaluators.empty()) {
+                State parent_state = state_registry.lookup_state(current_predecessor_id);
+                for (Evaluator *evaluator : path_dependent_evaluators)
+                    evaluator->notify_state_transition(
+                        parent_state, current_operator_id, current_state);
+            }
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
