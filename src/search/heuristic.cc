@@ -48,11 +48,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     assert(preferred_operators.empty());
 
-    /*
-      TODO/HACK: transitional change: we will unpack the state once in the
-                 search, not once for every heuristic.
-    */
-    State state = eval_context.get_state().unpack();
+    State state = eval_context.get_state();
     StateHandle state_handle = state.get_handle();
     bool calculate_preferred = eval_context.get_calculate_preferred();
 
@@ -104,11 +100,11 @@ bool Heuristic::does_cache_estimates() const {
     return cache_evaluator_values;
 }
 
-bool Heuristic::is_estimate_cached(const GlobalState &state) const {
+bool Heuristic::is_estimate_cached(const State &state) const {
     return heuristic_cache[state.get_handle()].h != NO_VALUE;
 }
 
-int Heuristic::get_cached_estimate(const GlobalState &state) const {
+int Heuristic::get_cached_estimate(const State &state) const {
     assert(is_estimate_cached(state));
     return heuristic_cache[state.get_handle()].h;
 }

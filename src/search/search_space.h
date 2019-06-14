@@ -1,7 +1,6 @@
 #ifndef SEARCH_SPACE_H
 #define SEARCH_SPACE_H
 
-#include "global_state.h"
 #include "operator_cost.h"
 #include "per_state_information.h"
 #include "search_node_info.h"
@@ -9,6 +8,7 @@
 #include <vector>
 
 class OperatorProxy;
+class State;
 class TaskProxy;
 
 
@@ -16,7 +16,7 @@ class SearchNode {
     const StateRegistry &state_registry;
     StateID state_id;
     SearchNodeInfo &info;
-    mutable std::unique_ptr<GlobalState> state;
+    mutable std::unique_ptr<State> state;
 public:
     SearchNode(const StateRegistry &state_registry,
                StateID state_id,
@@ -25,7 +25,7 @@ public:
     StateID get_state_id() const {
         return state_id;
     }
-    const GlobalState &get_state() const;
+    const State &get_state() const;
 
     bool is_new() const;
     bool is_open() const;
@@ -60,7 +60,7 @@ public:
     explicit SearchSpace(StateRegistry &state_registry);
 
     SearchNode get_node(StateID id);
-    void trace_path(const GlobalState &goal_state,
+    void trace_path(const State &goal_state,
                     std::vector<OperatorID> &path) const;
 
     void dump(const TaskProxy &task_proxy) const;

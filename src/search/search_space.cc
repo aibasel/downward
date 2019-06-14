@@ -1,9 +1,9 @@
 #include "search_space.h"
 
-#include "global_state.h"
 #include "search_node_info.h"
 #include "task_proxy.h"
 
+#include "task_utils/task_properties.h"
 #include "utils/logging.h"
 
 #include <cassert>
@@ -19,9 +19,9 @@ SearchNode::SearchNode(const StateRegistry &state_registry,
     assert(state_id != StateID::no_state);
 }
 
-const GlobalState &SearchNode::get_state() const {
+const State &SearchNode::get_state() const {
     if (!state) {
-        state = utils::make_unique_ptr<GlobalState>(state_registry.lookup_state(state_id));
+        state = utils::make_unique_ptr<State>(state_registry.lookup_unpacked_state(state_id));
     }
     return *state;
 }
@@ -111,7 +111,7 @@ void SearchNode::mark_as_dead_end() {
 
 void SearchNode::dump(const TaskProxy &task_proxy) const {
     utils::g_log << state_id << ": ";
-    get_state().dump_fdr();
+    task_properties::dump_fdr(get_state());
     if (info.creating_operator != OperatorID::no_operator) {
         OperatorsProxy operators = task_proxy.get_operators();
         OperatorProxy op = operators[info.creating_operator.get_index()];
@@ -131,7 +131,7 @@ SearchNode SearchSpace::get_node(StateID id) {
     return SearchNode(state_registry, id, search_node_infos[handle]);
 }
 
-void SearchSpace::trace_path(const GlobalState &goal_state,
+void SearchSpace::trace_path(const State &goal_state,
                              vector<OperatorID> &path) const {
     StateHandle current_state_handle = goal_state.get_handle();
     assert(current_state_handle.get_registry() == &state_registry);
@@ -153,10 +153,10 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
     for (StateID id : state_registry) {
         /* The body duplicates SearchNode::dump() but we cannot create
            a search node without discarding the const qualifier. */
-        GlobalState state = state_registry.lookup_state(id);
+        State state = state_registry.lookup_unpacked_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state.get_handle()];
         utils::g_log << id << ": ";
-        state.dump_fdr();
+        task_properties::dump_fdr(state);
         if (node_info.creating_operator != OperatorID::no_operator &&
             node_info.parent_state_id != StateID::no_state) {
             OperatorProxy op = operators[node_info.creating_operator.get_index()];

@@ -72,14 +72,9 @@ void EagerSearch::initialize() {
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
 
-    const GlobalState &initial_state = state_registry.get_initial_state();
+    State initial_state = state_registry.get_initial_unpacked_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
-        /*
-          TODO/HACK: The state should only be unpacked once. This
-          transitional change will go away in a later commit before
-          merging the issue.
-        */
-        evaluator->notify_initial_state(initial_state.unpack());
+        evaluator->notify_initial_state(initial_state);
     }
 
     /*
@@ -126,7 +121,7 @@ SearchStatus EagerSearch::step() {
         if (node->is_closed())
             continue;
 
-        GlobalState s = node->get_state();
+        State s = node->get_state();
         /*
           We can pass calculate_preferred=false here since preferred
           operators are computed when the state is expanded.
@@ -173,7 +168,7 @@ SearchStatus EagerSearch::step() {
         break;
     }
 
-    GlobalState s = node->get_state();
+    State s = node->get_state();
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
@@ -200,19 +195,14 @@ SearchStatus EagerSearch::step() {
         if ((node->get_real_g() + op.get_cost()) >= bound)
             continue;
 
-        GlobalState succ_state = state_registry.get_successor_state(s, op);
+        State succ_state = state_registry.get_successor_unpacked_state(s, op);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
         SearchNode succ_node = search_space.get_node(succ_state.get_id());
 
         for (Evaluator *evaluator : path_dependent_evaluators) {
-            /*
-              TODO/HACK: The state should only be unpacked once. This
-              transitional change will go away in a later commit before
-              merging the issue.
-            */
-            evaluator->notify_state_transition(s.unpack(), op_id, succ_state.unpack());
+            evaluator->notify_state_transition(s, op_id, succ_state);
         }
 
         // Previously encountered dead end. Don't re-evaluate.

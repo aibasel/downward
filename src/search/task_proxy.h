@@ -603,6 +603,10 @@ public:
 
     inline TaskProxy get_task() const;
 
+    StateID get_id() const {
+        return handle.get_id();
+    }
+
     StateHandle get_handle() const {
         return handle;
     }

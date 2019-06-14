@@ -67,7 +67,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       evaluator(opts.get<shared_ptr<Evaluator>>("h")),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       preferred_usage(opts.get<PreferredUsage>("preferred_usage")),
-      current_eval_context(state_registry.get_initial_state(), &statistics),
+      current_eval_context(state_registry.get_initial_unpacked_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
@@ -76,14 +76,9 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     }
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
-    const GlobalState &initial_state = state_registry.get_initial_state();
+    State initial_state = state_registry.get_initial_unpacked_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
-        /*
-          TODO/HACK: The state should only be unpacked once. This
-          transitional change will go away in a later commit before
-          merging the issue.
-        */
-        evaluator->notify_initial_state(initial_state.unpack());
+        evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
                          preferred_operator_evaluators.end(), evaluator) !=
@@ -97,14 +92,9 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 
 void EnforcedHillClimbingSearch::reach_state(
-    const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
+    const State &parent, OperatorID op_id, const State &state) {
     for (Evaluator *evaluator : path_dependent_evaluators) {
-        /*
-          TODO/HACK: The state should only be unpacked once. This
-          transitional change will go away in a later commit before
-          merging the issue.
-        */
-        evaluator->notify_state_transition(parent.unpack(), op_id, state.unpack());
+        evaluator->notify_state_transition(parent, op_id, state);
     }
 }
 
@@ -143,7 +133,7 @@ void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     bool preferred) {
     OperatorProxy op = task_proxy.get_operators()[op_id];
     int succ_g = parent_g + get_adjusted_cost(op);
-    const GlobalState &state = eval_context.get_state();
+    const State &state = eval_context.get_state();
     EdgeOpenListEntry entry = make_pair(state.get_id(), op_id);
     EvaluationContext new_eval_context(
         eval_context.get_cache(), state, succ_g, preferred, &statistics);
@@ -215,8 +205,8 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
 
-        GlobalState parent_state = state_registry.lookup_state(parent_state_id);
-        GlobalState state = state_registry.get_successor_state(parent_state, last_op);
+        State parent_state = state_registry.lookup_unpacked_state(parent_state_id);
+        State state = state_registry.get_successor_unpacked_state(parent_state, last_op);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state.get_id());
