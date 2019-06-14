@@ -16,13 +16,7 @@ StateRegistry::StateRegistry(const TaskProxy &task_proxy)
       state_data_pool(get_bins_per_state()),
       registered_states(
           StateIDSemanticHash(state_data_pool, get_bins_per_state()),
-          StateIDSemanticEqual(state_data_pool, get_bins_per_state())),
-      cached_initial_state(0) {
-}
-
-
-StateRegistry::~StateRegistry() {
-    delete cached_initial_state;
+          StateIDSemanticEqual(state_data_pool, get_bins_per_state())) {
 }
 
 StateID StateRegistry::insert_id_or_pop_state() {
@@ -60,7 +54,7 @@ const GlobalState &StateRegistry::get_initial_state() {
         // buffer is copied by push_back
         delete[] buffer;
         StateID id = insert_id_or_pop_state();
-        cached_initial_state = new GlobalState(lookup_state(id));
+        cached_initial_state = utils::make_unique_ptr<GlobalState>(lookup_state(id));
     }
     return *cached_initial_state;
 }
@@ -81,6 +75,36 @@ GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, c
     axiom_evaluator.evaluate(buffer, state_packer);
     StateID id = insert_id_or_pop_state();
     return lookup_state(id);
+}
+
+State StateRegistry::lookup_unpacked_state(StateID id) const {
+    return lookup_state(id).unpack();
+}
+
+const State &StateRegistry::get_initial_unpacked_state() {
+    if (cached_initial_unpacked_state == 0) {
+        cached_initial_unpacked_state = utils::make_unique_ptr<State>(get_initial_state().unpack());
+    }
+    return *cached_initial_unpacked_state;
+}
+
+//TODO it would be nice to move the actual state creation (and operator application)
+//     out of the StateRegistry. This could for example be done by global functions
+//     operating on state buffers (PackedStateBin *).
+State StateRegistry::get_successor_unpacked_state(const State &predecessor, const OperatorProxy &op) {
+    assert(!op.is_axiom());
+    StateID predecessor_id = predecessor.get_handle().get_id();
+    state_data_pool.push_back(state_data_pool[predecessor_id.value]);
+    PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
+    for (EffectProxy effect : op.get_effects()) {
+        if (does_fire(effect, predecessor)) {
+            FactPair effect_pair = effect.get_fact().get_pair();
+            state_packer.set(buffer, effect_pair.var, effect_pair.value);
+        }
+    }
+    axiom_evaluator.evaluate(buffer, state_packer);
+    StateID id = insert_id_or_pop_state();
+    return lookup_unpacked_state(id);
 }
 
 int StateRegistry::get_bins_per_state() const {
