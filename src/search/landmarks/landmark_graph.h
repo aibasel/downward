@@ -1,7 +1,6 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
-#include "../global_state.h"
 #include "../task_proxy.h"
 
 #include "../utils/hash.h"
@@ -68,24 +67,6 @@ public:
 
     bool is_goal() const {
         return in_goal;
-    }
-
-    bool is_true_in_state(const GlobalState &global_state) const {
-        if (disjunctive) {
-            for (const FactPair &fact : facts) {
-                if (global_state[fact.var] == fact.value) {
-                    return true;
-                }
-            }
-            return false;
-        } else { // conjunctive or simple
-            for (const FactPair &fact : facts) {
-                if (global_state[fact.var] != fact.value) {
-                    return false;
-                }
-            }
-            return true;
-        }
     }
 
     bool is_true_in_state(const State &state) const {

@@ -2,7 +2,6 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
-#include "global_state.h"
 #include "operator_id.h"
 #include "state_handle.h"
 #include "task_id.h"
@@ -60,40 +59,27 @@ class CausalGraph;
 
   In addition to the lightweight proxy classes, the task interface
   consists of the State class, which is used to hold state information
-  for TaskProxy tasks. The State class provides methods similar to the
-  proxy classes, but since State objects own the state data they should
-  be passed by reference.
+  for TaskProxy tasks. The State class contains unpacked state data and shares
+  the ownership with its copies, so it is cheap to copy but expensive to create.
 
   For now, only the heuristics work with the TaskProxy classes and
   hence potentially on a transformed view of the original task. The
-  search algorithms keep working on the original unmodified task using
-  the GlobalState, GlobalOperator etc. classes. We therefore need to do
-  two conversions between the search and the heuristics: converting
-  GlobalStates to State objects for the heuristic computation and
-  converting OperatorProxy objects used by the heuristic to
-  GlobalOperators for reporting preferred operators. These conversions
-  are done by the Heuristic base class. Until all heuristics use the
-  new task interface, heuristics can use
-  Heuristic::convert_global_state() to convert GlobalStates to States.
-  Afterwards, the heuristics are passed a State object directly. To
-  mark operators as preferred, heuristics can use
-  Heuristic::set_preferred() which currently works for both
-  OperatorProxy and GlobalOperator objects.
+  search algorithms keep working on the unmodified root task. We therefore need
+  to do two conversions between the search and the heuristics: converting
+  states of the root task to states of the task used in the heuristic
+  computation and converting operators of the task used by the heuristic to
+  operators of the task used by the search for reporting preferred operators.
+  These conversions are done by the Heuristic base class with
+  Heuristic::convert_ancestor_state() and Heuristic::set_preferred().
 
-      int FantasyHeuristic::compute_heuristic(const GlobalState &global_state) {
-          State state = convert_global_state(global_state);
+      int FantasyHeuristic::compute_heuristic(const State &ancestor_state) {
+          State state = convert_ancestor_state(ancestor_state);
           set_preferred(task->get_operators()[42]);
           int sum = 0;
           for (FactProxy fact : state)
               sum += fact.get_value();
           return sum;
       }
-
-  There is one additional conversion: heuristics may need to convert
-  states between different tasks. For this they can use
-  TaskProxy::convert_ancestor_state() which takes a state of the
-  ancestor task and returns the corresponding state of the descendent
-  task.
 
   For helper functions that work on task related objects, please see the
   task_properties.h module.
@@ -559,7 +545,6 @@ public:
 
 
 bool does_fire(const EffectProxy &effect, const State &state);
-bool does_fire(const EffectProxy &effect, const GlobalState &state);
 
 
 class State {
@@ -724,15 +709,6 @@ inline TaskProxy State::get_task() const {
 inline bool does_fire(const EffectProxy &effect, const State &state) {
     for (FactProxy condition : effect.get_conditions()) {
         if (state[condition.get_variable()] != condition)
-            return false;
-    }
-    return true;
-}
-
-inline bool does_fire(const EffectProxy &effect, const GlobalState &state) {
-    for (FactProxy condition : effect.get_conditions()) {
-        FactPair condition_pair = condition.get_pair();
-        if (state[condition_pair.var] != condition_pair.value)
             return false;
     }
     return true;

@@ -3,7 +3,6 @@
 
 #include "abstract_task.h"
 #include "axioms.h"
-#include "global_state.h"
 #include "state_id.h"
 
 #include "algorithms/int_hash_set.h"
@@ -107,7 +106,6 @@
     The heuristic object uses an attribute of type PerStateBitset to store for each
     state and each landmark whether it was reached in this state.
 */
-
 class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     struct StateIDSemanticHash {
         const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;

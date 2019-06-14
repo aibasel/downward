@@ -1,9 +1,10 @@
 #ifndef AXIOMS_H
 #define AXIOMS_H
 
-#include "global_state.h"
 #include "per_task_information.h"
 #include "task_proxy.h"
+
+#include "algorithms/int_packer.h"
 
 #include <memory>
 #include <vector>
@@ -11,6 +12,8 @@
 namespace int_packer {
 class IntPacker;
 }
+
+using PackedStateBin = int_packer::IntPacker::Bin;
 
 class AxiomEvaluator {
     struct AxiomRule;
