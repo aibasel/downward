@@ -46,7 +46,7 @@ State StateRegistry::lookup_state(StateID id) const {
 }
 
 const State &StateRegistry::get_initial_state() {
-    if (cached_initial_unpacked_state == 0) {
+    if (cached_initial_unpacked_state == nullptr) {
         int num_bins = get_bins_per_state();
         PackedStateBin *buffer = new PackedStateBin[num_bins];
         // Avoid garbage values in half-full bins.
