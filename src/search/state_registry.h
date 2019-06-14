@@ -184,20 +184,20 @@ public:
       Returns the state that was registered at the given ID. The ID must refer
       to a state in this registry. Do not mix IDs from from different registries.
     */
-    State lookup_unpacked_state(StateID id) const;
+    State lookup_state(StateID id) const;
 
     /*
       Returns a reference to the initial state and registers it if this was not
       done before. The result is cached internally so subsequent calls are cheap.
     */
-    const State &get_initial_unpacked_state();
+    const State &get_initial_state();
 
     /*
       Returns the state that results from applying op to predecessor and
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    State get_successor_unpacked_state(const State &predecessor, const OperatorProxy &op);
+    State get_successor_state(const State &predecessor, const OperatorProxy &op);
 
     /*
       Returns the number of states registered so far.

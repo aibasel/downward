@@ -72,7 +72,7 @@ void EagerSearch::initialize() {
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
 
-    State initial_state = state_registry.get_initial_unpacked_state();
+    State initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
@@ -195,7 +195,7 @@ SearchStatus EagerSearch::step() {
         if ((node->get_real_g() + op.get_cost()) >= bound)
             continue;
 
-        State succ_state = state_registry.get_successor_unpacked_state(s, op);
+        State succ_state = state_registry.get_successor_state(s, op);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 

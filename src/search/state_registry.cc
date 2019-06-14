@@ -36,7 +36,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
     return StateID(result.first);
 }
 
-State StateRegistry::lookup_unpacked_state(StateID id) const {
+State StateRegistry::lookup_state(StateID id) const {
     const PackedStateBin *buffer = state_data_pool[id.value];
     vector<int> values(num_variables);
     for (int var = 0; var < num_variables; ++var) {
@@ -45,7 +45,7 @@ State StateRegistry::lookup_unpacked_state(StateID id) const {
     return task_proxy.create_state(move(values), StateHandle(this, id));
 }
 
-const State &StateRegistry::get_initial_unpacked_state() {
+const State &StateRegistry::get_initial_state() {
     if (cached_initial_unpacked_state == 0) {
         int num_bins = get_bins_per_state();
         PackedStateBin *buffer = new PackedStateBin[num_bins];
@@ -66,7 +66,7 @@ const State &StateRegistry::get_initial_unpacked_state() {
 //TODO it would be nice to move the actual state creation (and operator application)
 //     out of the StateRegistry. This could for example be done by global functions
 //     operating on state buffers (PackedStateBin *).
-State StateRegistry::get_successor_unpacked_state(const State &predecessor, const OperatorProxy &op) {
+State StateRegistry::get_successor_state(const State &predecessor, const OperatorProxy &op) {
     assert(!op.is_axiom());
     StateID predecessor_id = predecessor.get_handle().get_id();
     state_data_pool.push_back(state_data_pool[predecessor_id.value]);
@@ -79,7 +79,7 @@ State StateRegistry::get_successor_unpacked_state(const State &predecessor, cons
     }
     axiom_evaluator.evaluate(buffer, state_packer);
     StateID id = insert_id_or_pop_state();
-    return lookup_unpacked_state(id);
+    return lookup_state(id);
 }
 
 int StateRegistry::get_bins_per_state() const {

@@ -67,7 +67,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       evaluator(opts.get<shared_ptr<Evaluator>>("h")),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       preferred_usage(opts.get<PreferredUsage>("preferred_usage")),
-      current_eval_context(state_registry.get_initial_unpacked_state(), &statistics),
+      current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
@@ -76,7 +76,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     }
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
-    State initial_state = state_registry.get_initial_unpacked_state();
+    State initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
@@ -205,8 +205,8 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
 
-        State parent_state = state_registry.lookup_unpacked_state(parent_state_id);
-        State state = state_registry.get_successor_unpacked_state(parent_state, last_op);
+        State parent_state = state_registry.lookup_state(parent_state_id);
+        State state = state_registry.get_successor_state(parent_state, last_op);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state.get_id());

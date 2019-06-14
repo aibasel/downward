@@ -21,7 +21,7 @@ SearchNode::SearchNode(const StateRegistry &state_registry,
 
 const State &SearchNode::get_state() const {
     if (!state) {
-        state = utils::make_unique_ptr<State>(state_registry.lookup_unpacked_state(state_id));
+        state = utils::make_unique_ptr<State>(state_registry.lookup_state(state_id));
     }
     return *state;
 }
@@ -153,7 +153,7 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
     for (StateID id : state_registry) {
         /* The body duplicates SearchNode::dump() but we cannot create
            a search node without discarding the const qualifier. */
-        State state = state_registry.lookup_unpacked_state(id);
+        State state = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state.get_handle()];
         utils::g_log << id << ": ";
         task_properties::dump_fdr(state);

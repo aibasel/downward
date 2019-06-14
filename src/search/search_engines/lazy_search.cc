@@ -25,7 +25,7 @@ LazySearch::LazySearch(const Options &opts)
       randomize_successors(opts.get<bool>("randomize_successors")),
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
       rng(utils::parse_rng_from_options(opts)),
-      current_state(state_registry.get_initial_unpacked_state()),
+      current_state(state_registry.get_initial_state()),
       current_predecessor_id(StateID::no_state),
       current_operator_id(OperatorID::no_operator),
       current_g(0),
@@ -56,7 +56,7 @@ void LazySearch::initialize() {
     }
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
-    State initial_state = state_registry.get_initial_unpacked_state();
+    State initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
@@ -125,10 +125,10 @@ SearchStatus LazySearch::fetch_next_state() {
 
     current_predecessor_id = next.first;
     current_operator_id = next.second;
-    State current_predecessor = state_registry.lookup_unpacked_state(current_predecessor_id);
+    State current_predecessor = state_registry.lookup_state(current_predecessor_id);
     OperatorProxy current_operator = task_proxy.get_operators()[current_operator_id];
     assert(task_properties::is_applicable(current_operator, current_predecessor));
-    current_state = state_registry.get_successor_unpacked_state(current_predecessor, current_operator);
+    current_state = state_registry.get_successor_state(current_predecessor, current_operator);
 
     SearchNode pred_node = search_space.get_node(current_predecessor_id);
     current_g = pred_node.get_g() + get_adjusted_cost(current_operator);
@@ -163,7 +163,7 @@ SearchStatus LazySearch::step() {
     if (node.is_new() || reopen) {
         if (current_operator_id != OperatorID::no_operator) {
             assert(current_predecessor_id != StateID::no_state);
-            State parent_state = state_registry.lookup_unpacked_state(current_predecessor_id);
+            State parent_state = state_registry.lookup_state(current_predecessor_id);
             for (Evaluator *evaluator : path_dependent_evaluators)
                 evaluator->notify_state_transition(
                     parent_state, current_operator_id, current_state);
