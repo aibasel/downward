@@ -72,10 +72,8 @@ bool MergeAndShrinkHeuristic::extract_unsolvable_factor(FactoredTransitionSystem
     return false;
 }
 
-int MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSystem &fts) {
-    /* Iterate over remaining factors and extract and store the nontrivial
-       ones, i.e., those that do not correspond to a zero-heuristic. */
-    int num_kept_factors = 0;
+void MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSystem &fts) {
+    // Iterate over remaining factors and extract and store the nontrivial ones.
     for (int index : fts) {
         if (fts.is_factor_trivial(index)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -84,10 +82,8 @@ int MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSystem
             }
         } else {
             extract_factor(fts, index);
-            ++num_kept_factors;
         }
     }
-    return num_kept_factors;
 }
 
 void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
@@ -99,26 +95,30 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
       factored_transition_system.h on improving the interface of that class
       (and also related classes like TransitionSystem etc).
     */
+    assert(mas_representations.empty());
 
-    int active_factors_count = fts.get_num_active_entries();
+    int num_active_factors= fts.get_num_active_entries();
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Number of remaining factors: " << active_factors_count << endl;
+        cout << "Number of remaining factors: " << num_active_factors << endl;
     }
 
-    bool unsolvable = extract_unsolvable_factor(fts);
-    int num_kept_factors;
-    if (unsolvable) {
-        num_kept_factors = 1;
-    } else {
-        num_kept_factors = extract_nontrivial_factors(fts);
+    if (!extract_unsolvable_factor(fts)) {
+        extract_nontrivial_factors(fts);
     }
-    assert(num_kept_factors);
+
+    int num_factors_kept = mas_representations.size();
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Number of factors kept: " << num_kept_factors << endl;
+        cout << "Number of factors kept: " << num_factors_kept << endl;
     }
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
+    if (mas_representations.empty()) {
+        /* If all factors are trivial (and therefore not kept), the resulting
+           heuristic is the zero heuristic. */
+        return 0;
+    }
+
     State state = convert_global_state(global_state);
     int heuristic = 0;
     for (const unique_ptr<MergeAndShrinkRepresentation> &mas_representation : mas_representations) {
