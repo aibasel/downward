@@ -227,8 +227,8 @@ bool FactoredTransitionSystem::is_factor_solvable(int index) const {
 
 bool FactoredTransitionSystem::is_factor_trivial(int index) const {
     assert(is_component_valid(index));
-    bool is_pruned = mas_representations[index]->is_pruned();
-    if (is_pruned) {
+    bool is_total = mas_representations[index]->is_total();
+    if (!is_total) {
         return false;
     } else {
         const TransitionSystem &ts = *transition_systems[index];

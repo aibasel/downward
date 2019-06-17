@@ -158,6 +158,10 @@ public:
       pruned.
     */
     bool is_factor_solvable(int index) const;
+    /*
+      A factor is trivial iff all of its states are goal states and the
+      corresponding merge-and-shrink representation is a total function.
+    */
     bool is_factor_trivial(int index) const;
 
     int get_num_active_entries() const {
