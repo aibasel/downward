@@ -161,6 +161,21 @@ public:
     /*
       A factor is trivial iff all of its states are goal states and the
       corresponding merge-and-shrink representation is a total function.
+
+      Notes:
+      1) We require the merge-and-shrink representation to be a total function
+      because otherwise, we would treat a factor as trivial even if it encodes
+      information of dead ends. However, we do not consider the special case
+      where pruning only pruned (unreachable) goal states, in which case the
+      factor could arguably be considered trivial because such states are never
+      encountered during search.
+
+      2) As an alternative for requiring all states to be goal states, we
+      considered requiring all represented variables to be non-goal variables.
+      However, this would have the drawback to depend on information of the
+      planning task and to be a syntactic rather than a semantic criterion,
+      which counters the M&S spirit. It would also not treat a factor as
+      trivial if it has only goal states due to shrinking, for example.
     */
     bool is_factor_trivial(int index) const;
 
