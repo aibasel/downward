@@ -20,7 +20,7 @@ CONFIGS = [
     IssueConfig("blind", ["--search", "astar(blind())"]),
 ]
 
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE + [
+ADL_DOMAINS = [
     "assembly",
     "miconic-fulladl",
     "openstacks",
@@ -31,6 +31,7 @@ SUITE = common_setup.DEFAULT_OPTIMAL_SUITE + [
     "psr-middle",
     "trucks",
 ]
+SUITE = common_setup.DEFAULT_OPTIMAL_SUITE + ADL_DOMAINS
 ENVIRONMENT = BaselSlurmEnvironment(
     partition="infai_2",
     email="jendrik.seipp@unibas.ch",
@@ -57,6 +58,7 @@ exp.add_fetcher(name='fetch')
 
 #exp.add_absolute_report_step()
 exp.add_comparison_table_step()
-exp.add_scatter_plot_step(relative=True, attributes=["total_time"])
+exp.add_scatter_plot_step(relative=True, attributes=["total_time"], suffix="-strips", filter_domain=common_setup.DEFAULT_OPTIMAL_SUITE)
+exp.add_scatter_plot_step(relative=True, attributes=["total_time"], suffix="-adl", filter_domain=ADL_DOMAINS)
 
 exp.run_steps()

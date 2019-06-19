@@ -347,7 +347,7 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(
             "publish-comparison-tables", publish_comparison_tables)
 
-    def add_scatter_plot_step(self, relative=False, attributes=None):
+    def add_scatter_plot_step(self, relative=False, attributes=None, suffix="", **kwargs):
         """Add step creating (relative) scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
@@ -378,10 +378,11 @@ class IssueExperiment(FastDownwardExperiment):
             report = report_class(
                 filter_algorithm=[algo1, algo2],
                 attributes=[attribute],
-                get_category=lambda run1, run2: run1["domain"])
+                get_category=lambda run1, run2: run1["domain"],
+                **kwargs)
             report(
                 self.eval_dir,
-                os.path.join(scatter_dir, rev1 + "-" + rev2, name))
+                os.path.join(scatter_dir, rev1 + "-" + rev2, name + suffix))
 
         def make_scatter_plots():
             for config in self._configs:
@@ -390,4 +391,4 @@ class IssueExperiment(FastDownwardExperiment):
                             config.nick, attributes):
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
 
-        self.add_step(step_name, make_scatter_plots)
+        self.add_step(step_name + suffix, make_scatter_plots)
