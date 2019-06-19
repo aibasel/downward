@@ -48,17 +48,18 @@ State StateRegistry::lookup_state(StateID id) const {
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_unpacked_state == nullptr) {
         int num_bins = get_bins_per_state();
-        PackedStateBin *buffer = new PackedStateBin[num_bins];
+        unique_ptr<PackedStateBin[]> buffer(new PackedStateBin[num_bins]);
         // Avoid garbage values in half-full bins.
-        fill_n(buffer, num_bins, 0);
+        fill_n(buffer.get(), num_bins, 0);
 
         State initial_state = task_proxy.get_initial_state();
         for (size_t i = 0; i < initial_state.size(); ++i) {
-            state_packer.set(buffer, i, initial_state[i].get_value());
+            state_packer.set(buffer.get(), i, initial_state[i].get_value());
         }
-        state_data_pool.push_back(buffer);
+        state_data_pool.push_back(buffer.get());
         StateID id = insert_id_or_pop_state();
-        cached_initial_unpacked_state = utils::make_unique_ptr<State>(move(initial_state), StateHandle(this, id));
+        cached_initial_unpacked_state =
+            utils::make_unique_ptr<State>(move(initial_state), StateHandle(this, id));
     }
     return *cached_initial_unpacked_state;
 }
