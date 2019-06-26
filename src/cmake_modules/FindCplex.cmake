@@ -112,6 +112,7 @@ find_library(CPLEX_LIBRARY_RELEASE
     cplex1262
     cplex1271
     cplex1280
+    cplex1290
     HINTS
     ${CPLEX_HINT_PATHS_RELEASE}
     PATH_SUFFIXES
@@ -124,6 +125,7 @@ find_library(CPLEX_LIBRARY_DEBUG
     cplex1262
     cplex1271
     cplex1280
+    cplex1290
     HINTS
     ${CPLEX_HINT_PATHS_DEBUG}
     PATH_SUFFIXES
