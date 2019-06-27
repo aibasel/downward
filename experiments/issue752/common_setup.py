@@ -129,10 +129,7 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return (
-        "cluster" in node or
-        node.startswith("gkigrid") or
-        node in ["habakuk", "turtur"])
+    return node.endswith(".scicore.unibas.ch") or node.endswith(".cluster.bc2.ch")
 
 
 def is_test_run():
@@ -162,7 +159,7 @@ class IssueConfig(object):
 class IssueExperiment(FastDownwardExperiment):
     """Subclass of FastDownwardExperiment with some convenience features."""
 
-    DEFAULT_TEST_SUITE = ["gripper:prob01.pddl"]
+    DEFAULT_TEST_SUITE = ["depot:p01.pddl", "gripper:prob01.pddl"]
 
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
