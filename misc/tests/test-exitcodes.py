@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from collections import defaultdict
 import os
 import subprocess
 import sys
@@ -21,9 +22,18 @@ TRANSLATE_TASKS = {
 }
 
 TRANSLATE_TESTS = [
-    ("small", [], [], returncodes.SUCCESS),
-    ("large", ["--translate-time-limit", "1s"], [], returncodes.TRANSLATE_OUT_OF_TIME),
-    ("large", ["--translate-memory-limit", "50M"], [], returncodes.TRANSLATE_OUT_OF_MEMORY),
+    ("small", [], [], defaultdict(lambda: returncodes.SUCCESS)),
+    # We cannot set time limits on Windows and thus expect DRIVER_UNSUPPORTED
+    # as exit code in this case.
+    ("large", ["--translate-time-limit", "1s"], [], defaultdict(
+        lambda: returncodes.TRANSLATE_OUT_OF_TIME,
+        win32=returncodes.DRIVER_UNSUPPORTED)),
+    # We cannot set/enforce memory limits on Windows/macOS and thus expect
+    # DRIVER_UNSUPPORTED as exit code in those cases.
+    ("large", ["--translate-memory-limit", "100M"], [], defaultdict(
+        lambda: returncodes.TRANSLATE_OUT_OF_MEMORY,
+        darwin=returncodes.DRIVER_UNSUPPORTED,
+        win32=returncodes.DRIVER_UNSUPPORTED)),
 ]
 
 SEARCH_TASKS = {
@@ -42,81 +52,141 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'label_reduction=exact('
         'before_shrinking=true,'
         'before_merging=false),'
-    'max_states=50000,threshold_before_merge=1'
-'))')
+    'max_states=50000,threshold_before_merge=1,verbosity=silent))')
 
 SEARCH_TESTS = [
-    ("strips", [], "astar(add())", returncodes.SUCCESS),
-    ("strips", [], "astar(hm())", returncodes.SUCCESS),
-    ("strips", [], "ehc(hm())", returncodes.SUCCESS),
-    ("strips", [], "astar(ipdb())", returncodes.SUCCESS),
-    ("strips", [], "astar(lmcut())", returncodes.SUCCESS),
-    ("strips", [], "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
-    ("strips", [], "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SUCCESS),
-    ("strips", [], "astar(lmcount(lm_hm(), admissible=false))", returncodes.SUCCESS),
-    ("strips", [], "astar(lmcount(lm_hm(), admissible=true))", returncodes.SUCCESS),
-    ("strips", [], MERGE_AND_SHRINK, returncodes.SUCCESS),
-    ("axioms", [], "astar(add())", returncodes.SUCCESS),
-    ("axioms", [], "astar(hm())", returncodes.SEARCH_UNSOLVED_INCOMPLETE),
-    ("axioms", [], "ehc(hm())", returncodes.SEARCH_UNSOLVED_INCOMPLETE),
-    ("axioms", [], "astar(ipdb())", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", [], "astar(lmcut())", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
-    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", [], "astar(lmcount(lm_zg(), admissible=false))", returncodes.SUCCESS),
-    ("axioms", [], "astar(lmcount(lm_zg(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
+    ("strips", [], "astar(add())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(hm())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "ehc(hm())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(ipdb())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcut())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_rhw(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_rhw(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_hm(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], "astar(lmcount(lm_hm(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("strips", [], MERGE_AND_SHRINK, defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(add())", defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(hm())",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVED_INCOMPLETE)),
+    ("axioms", [], "ehc(hm())",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVED_INCOMPLETE)),
+    ("axioms", [], "astar(ipdb())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcut())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(lmcount(lm_rhw(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_zg(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(lmcount(lm_zg(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
     # h^m landmark factory explicitly forbids axioms.
-    ("axioms", [], "astar(lmcount(lm_hm(), admissible=false))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", [], "astar(lmcount(lm_hm(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.SUCCESS),
-    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("axioms", [], MERGE_AND_SHRINK, returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", [], "astar(add())", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(hm())", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(ipdb())", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", [], "astar(lmcut())", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=true))", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=true))", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=false))", returncodes.SUCCESS),
-    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=true))", returncodes.SEARCH_UNSUPPORTED),
-    ("cond-eff", [], MERGE_AND_SHRINK, returncodes.SUCCESS),
-    ("large", ["--search-memory-limit", "50M"], MERGE_AND_SHRINK, returncodes.SEARCH_OUT_OF_MEMORY),
-    ("large", ["--search-time-limit", "1s"], MERGE_AND_SHRINK, returncodes.SEARCH_OUT_OF_TIME),
+    ("axioms", [], "astar(lmcount(lm_hm(), admissible=false))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_hm(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("axioms", [], "astar(lmcount(lm_exhaust(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("axioms", [], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(add())",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(hm())",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(ipdb())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(lmcut())",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_rhw(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_zg(), admissible=true))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_hm(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=false))",
+        defaultdict(lambda: returncodes.SUCCESS)),
+    ("cond-eff", [], "astar(lmcount(lm_exhaust(), admissible=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
+    ("cond-eff", [], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SUCCESS)),
+    # We cannot set/enforce memory limits on Windows/macOS and thus expect
+    # DRIVER_UNSUPPORTED as exit code in those cases.
+    ("large", ["--search-memory-limit", "100M"], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SEARCH_OUT_OF_MEMORY,
+                    darwin=returncodes.DRIVER_UNSUPPORTED,
+                    win32=returncodes.DRIVER_UNSUPPORTED)),
+    # We cannot set time limits on Windows and thus expect DRIVER_UNSUPPORTED
+    # as exit code in this case.
+    ("large", ["--search-time-limit", "1s"], MERGE_AND_SHRINK,
+        defaultdict(lambda: returncodes.SEARCH_OUT_OF_TIME,
+                    win32=returncodes.DRIVER_UNSUPPORTED)),
 ]
+
+
+def translate(pddl_file, sas_file):
+    subprocess.check_call([
+        sys.executable, DRIVER, "--sas-file", sas_file, "--translate", pddl_file])
 
 
 def cleanup():
     subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
 
+def log_failure(cmd, expected, exitcode):
+    assert exitcode != expected
+    print("{cmd} failed: expected {expected}, got {exitcode}".format(**locals()), file=sys.stderr)
+
+
 def run_translator_tests():
     for task_type, driver_options, translate_options, expected in TRANSLATE_TESTS:
         relpath = TRANSLATE_TASKS[task_type]
         problem = os.path.join(BENCHMARKS_DIR, relpath)
-        print("\nRun translator on {task_type} task:".format(**locals()))
-        sys.stdout.flush()
         cmd = [sys.executable, DRIVER] + driver_options + ["--translate"] + translate_options + [problem]
+        print("\nRun {cmd}:".format(**locals()))
+        sys.stdout.flush()
         exitcode = subprocess.call(cmd)
-        if exitcode != expected:
-            yield (cmd, expected, exitcode)
+        if exitcode != expected[sys.platform]:
+            log_failure(cmd, expected[sys.platform], exitcode)
+            yield (cmd, expected[sys.platform], exitcode)
         cleanup()
 
 
 def run_search_tests():
+    def get_sas_file_name(task_type):
+        return "{}.sas".format(task_type)
+
+    for task_type, relpath in SEARCH_TASKS.items():
+        pddl_file = os.path.join(BENCHMARKS_DIR, relpath)
+        sas_file = get_sas_file_name(task_type)
+        translate(pddl_file, sas_file)
+
     for task_type, driver_options, search_options, expected in SEARCH_TESTS:
-        relpath = SEARCH_TASKS[task_type]
-        problem = os.path.join(BENCHMARKS_DIR, relpath)
-        print("\nRun {search_options} on {task_type} task:".format(**locals()))
+        sas_file = get_sas_file_name(task_type)
+        cmd = [sys.executable, DRIVER] + driver_options + [sas_file, "--search", search_options]
+        print("\nRun {cmd}:".format(**locals()))
         sys.stdout.flush()
-        cmd = [sys.executable, DRIVER] + driver_options + [problem, "--search", search_options]
         exitcode = subprocess.call(cmd)
-        if not exitcode == expected:
-            yield (cmd, expected, exitcode)
+        if not exitcode == expected[sys.platform]:
+            log_failure(cmd, expected[sys.platform], exitcode)
+            yield (cmd, expected[sys.platform], exitcode)
         cleanup()
+
+    for task_type in SEARCH_TASKS:
+        os.remove(get_sas_file_name(task_type))
 
 
 def main():
@@ -131,12 +201,12 @@ def main():
     failures += run_translator_tests()
     failures += run_search_tests()
     if failures:
-        print("\nFailures:")
+        print("\nFailures:", file=sys.stderr)
         for cmd, expected, exitcode in failures:
-            print("{cmd} failed: expected {expected}, got {exitcode}".format(**locals()))
+            log_failure(cmd, expected, exitcode)
         sys.exit(1)
-
-    print("\nNo errors detected.")
+    else:
+        print("\nNo errors detected.")
 
 
 main()

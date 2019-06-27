@@ -24,10 +24,11 @@ namespace tasks {
 */
 class CostAdaptedTask : public DelegatingTask {
     const OperatorCost cost_type;
-    const bool is_unit_cost;
-    bool compute_is_unit_cost() const;
+    const bool parent_is_unit_cost;
 public:
-    explicit CostAdaptedTask(const options::Options &opts);
+    CostAdaptedTask(
+        const std::shared_ptr<AbstractTask> &parent,
+        OperatorCost cost_type);
     virtual ~CostAdaptedTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;

@@ -2,6 +2,7 @@
 #define MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 
 #include <memory>
+#include <string>
 #include <vector>
 
 class TaskProxy;

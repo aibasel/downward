@@ -1,6 +1,6 @@
 # Usage:
-#         mkdir -p builds/release32
-#         cd builds/release32
+#         mkdir -p builds/release
+#         cd builds/release
 #         cmake path/to/src
 #         make [-j4]
 # The call to cmake caches settings in the build directory and reads
@@ -39,10 +39,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
 
 fast_downward_default_to_release_build()
-# We have to set the desired bitwidth before we can define the project.
-fast_downward_set_bitwidth()
 project(fast-downward)
-fast_downward_check_64_bit_option()
+fast_downward_report_bitwidth()
 # Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
 # This means that cmake has to be called twice for multi-config generators like Visual Studio.
 fast_downward_set_configuration_types()
@@ -52,6 +50,11 @@ set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
+# Write compiler ID and version to the cache to allow retrieving this information
+# with "cmake -LA" (see test-memory-leaks.py).
+set(DOWNWARD_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID} CACHE STRING "")
+set(DOWNWARD_CXX_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION} CACHE STRING "")
+mark_as_advanced(DOWNWARD_CXX_COMPILER_ID DOWNWARD_CXX_COMPILER_VERSION)
 
 # Add planner components as subprojects.
 

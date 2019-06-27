@@ -17,7 +17,7 @@ struct LocalProblemNode;
 struct LocalTransition;
 
 class ContextEnhancedAdditiveHeuristic : public Heuristic {
-    std::vector<domain_transition_graph::DomainTransitionGraph *> transition_graphs;
+    std::vector<std::unique_ptr<domain_transition_graph::DomainTransitionGraph>> transition_graphs;
     std::vector<LocalProblem *> local_problems;
     std::vector<std::vector<LocalProblem *>> local_problem_index;
     LocalProblem *goal_problem;
@@ -48,7 +48,7 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     // Clears "reached_by" of visited nodes as a side effect to avoid
     // recursing to the same node again.
 protected:
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     explicit ContextEnhancedAdditiveHeuristic(const options::Options &opts);
     ~ContextEnhancedAdditiveHeuristic();

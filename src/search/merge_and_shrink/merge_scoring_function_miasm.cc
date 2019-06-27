@@ -2,7 +2,7 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "merge_and_shrink_heuristic.h"
+#include "merge_and_shrink_algorithm.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
 #include "merge_scoring_function_miasm_utils.h"
@@ -11,6 +11,7 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -45,7 +46,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
         const bool compute_init_distances = true;
         const bool compute_goal_distances = true;
-        const Verbosity verbosity = Verbosity::SILENT;
+        const utils::Verbosity verbosity = utils::Verbosity::SILENT;
         distances->compute_distances(compute_init_distances, compute_goal_distances, verbosity);
         int num_states = product->get_size();
         int alive_states_count = 0;
@@ -62,7 +63,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
         */
         assert(num_states);
         double score = static_cast<double>(alive_states_count) /
-                       static_cast<double>(num_states);
+            static_cast<double>(num_states);
         scores.push_back(score);
     }
     return scores;
@@ -85,14 +86,15 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "the specified size limits. A stateless merge strategy using this "
         "scoring function is called dyn-MIASM (nowadays also called sbMIASM "
         "for score-based MIASM) and is described in the following paper:"
-        + utils::format_paper_reference(
+        + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
-            "AAAI Press 2016"));
+            "AAAI Press",
+            "2016"));
     parser.document_note(
         "Note",
         "To obtain the configurations called dyn-MIASM described in the paper, "
@@ -123,14 +125,14 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "shrink_strategy",
         "We recommend setting this to match the shrink strategy configuration "
         "given to {{{merge_and_shrink}}}, see note below.");
-    MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
+    add_transition_system_size_limit_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     }
 
-    MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(options);
+    handle_shrink_limit_options_defaults(options);
 
     if (parser.dry_run()) {
         return nullptr;
@@ -139,5 +141,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("sf_miasm", _parse);
+static options::Plugin<MergeScoringFunction> _plugin("sf_miasm", _parse);
 }

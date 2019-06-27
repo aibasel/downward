@@ -6,6 +6,10 @@
 class EvaluationContext;
 class Evaluator;
 
+namespace utils {
+enum class Verbosity;
+}
+
 /*
   This class helps track search progress.
 
@@ -16,12 +20,13 @@ class Evaluator;
 
 
 class SearchProgress {
+    const utils::Verbosity verbosity;
     std::unordered_map<const Evaluator *, int> min_values;
 
     bool process_evaluator_value(const Evaluator *evaluator, int value);
 
 public:
-    SearchProgress() = default;
+    explicit SearchProgress(utils::Verbosity verbosity);
     ~SearchProgress() = default;
 
     /*

@@ -6,8 +6,13 @@
 #include <vector>
 
 namespace ff_heuristic {
-using Proposition = relaxation_heuristic::Proposition;
-using UnaryOperator = relaxation_heuristic::UnaryOperator;
+using relaxation_heuristic::PropID;
+using relaxation_heuristic::OpID;
+
+using relaxation_heuristic::NO_OP;
+
+using relaxation_heuristic::Proposition;
+using relaxation_heuristic::UnaryOperator;
 
 /*
   TODO: In a better world, this should not derive from
@@ -20,15 +25,14 @@ using UnaryOperator = relaxation_heuristic::UnaryOperator;
 class FFHeuristic : public additive_heuristic::AdditiveHeuristic {
     // Relaxed plans are represented as a set of operators implemented
     // as a bit vector.
-    typedef std::vector<bool> RelaxedPlan;
+    using RelaxedPlan = std::vector<bool>;
     RelaxedPlan relaxed_plan;
     void mark_preferred_operators_and_relaxed_plan(
-        const State &state, Proposition *goal);
+        const State &state, PropID goal_id);
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
-    FFHeuristic(const options::Options &options);
-    ~FFHeuristic();
+    explicit FFHeuristic(const options::Options &opts);
 };
 }
 

@@ -12,6 +12,12 @@
 
 namespace utils {
 template<class T>
+extern void sort_unique(std::vector<T> &vec) {
+    std::sort(vec.begin(), vec.end());
+    vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+}
+
+template<class T>
 extern bool is_sorted_unique(const std::vector<T> &values) {
     for (size_t i = 1; i < values.size(); ++i) {
         if (values[i - 1] >= values[i])

@@ -2,9 +2,9 @@
 
 #include "cartesian_heuristic_function.h"
 #include "cost_saturation.h"
+#include "types.h"
 #include "utils.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -20,7 +20,7 @@ using namespace std;
 namespace cegar {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     const options::Options &opts) {
-    g_log << "Initializing additive Cartesian heuristic..." << endl;
+    utils::g_log << "Initializing additive Cartesian heuristic..." << endl;
     vector<shared_ptr<SubtaskGenerator>> subtask_generators =
         opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks");
     shared_ptr<utils::RandomNumberGenerator> rng =
@@ -32,7 +32,8 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")),
-        *rng);
+        *rng,
+        opts.get<bool>("debug"));
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }
@@ -61,33 +62,45 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     return sum_h;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Additive CEGAR heuristic",
         "See the paper introducing Counterexample-guided Abstraction "
         "Refinement (CEGAR) for classical planning:" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Counterexample-guided Cartesian Abstraction Refinement",
-            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
             "Proceedings of the 23rd International Conference on Automated "
             "Planning and Scheduling (ICAPS 2013)",
             "347-351",
-            "AAAI Press 2013") +
+            "AAAI Press",
+            "2013") +
         "and the paper showing how to make the abstractions additive:" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Diverse and Additive Cartesian Abstraction Heuristics",
-            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
             "Proceedings of the 24th International Conference on "
             "Automated Planning and Scheduling (ICAPS 2014)",
             "289-297",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            "2014") +
+        "For more details on Cartesian CEGAR and saturated cost partitioning, "
+        "see the journal paper" +
+        utils::format_journal_reference(
+            {"Jendrik Seipp", "Malte Helmert"},
+            "Counterexample-Guided Cartesian Abstraction Refinement for "
+            "Classical Planning",
+            "https://ai.dmi.unibas.ch/papers/seipp-helmert-jair2018.pdf",
+            "Journal of Artificial Intelligence Research",
+            "62",
+            "535-577",
+            "2018"));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
-    // TODO: Is the additive version consistent as well?
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
@@ -105,7 +118,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "max_transitions",
         "maximum sum of real transitions (excluding self-loops) over "
         " all abstractions",
-        "1000000",
+        "1M",
         Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_time",
@@ -126,6 +139,10 @@ static Heuristic *_parse(OptionParser &parser) {
         "use_general_costs",
         "allow negative costs in cost partitioning",
         "true");
+    parser.add_option<bool>(
+        "debug",
+        "print debugging output",
+        "false");
     Heuristic::add_options_to_parser(parser);
     utils::add_rng_options(parser);
     Options opts = parser.parse();
@@ -133,8 +150,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new AdditiveCartesianHeuristic(opts);
+    return make_shared<AdditiveCartesianHeuristic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("cegar", _parse);
+static Plugin<Evaluator> _plugin("cegar", _parse);
 }

@@ -12,6 +12,7 @@
 
 #include "../algorithms/equivalence_relation.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -62,7 +63,7 @@ void LabelReduction::compute_label_mapping(
     const equivalence_relation::EquivalenceRelation *relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
-    Verbosity verbosity) const {
+    utils::Verbosity verbosity) const {
     const Labels &labels = fts.get_labels();
     int next_new_label_no = labels.get_size();
     int num_labels = 0;
@@ -95,7 +96,7 @@ void LabelReduction::compute_label_mapping(
         }
     }
     int number_reduced_labels = num_labels - num_labels_after_reduction;
-    if (verbosity >= Verbosity::VERBOSE && number_reduced_labels > 0) {
+    if (verbosity >= utils::Verbosity::VERBOSE && number_reduced_labels > 0) {
         cout << "Label reduction: "
              << num_labels << " labels, "
              << num_labels_after_reduction << " after reduction"
@@ -129,7 +130,7 @@ equivalence_relation::EquivalenceRelation
 
     for (int index : fts) {
         if (index != ts_index) {
-            const TransitionSystem &ts = fts.get_ts(index);
+            const TransitionSystem &ts = fts.get_transition_system(index);
             for (const GroupAndTransitions &gat : ts) {
                 const LabelGroup &label_group = gat.label_group;
                 relation->refine(label_group.begin(), label_group.end());
@@ -142,7 +143,7 @@ equivalence_relation::EquivalenceRelation
 bool LabelReduction::reduce(
     const pair<int, int> &next_merge,
     FactoredTransitionSystem &fts,
-    Verbosity verbosity) const {
+    utils::Verbosity verbosity) const {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = fts.get_size();
@@ -261,7 +262,6 @@ bool LabelReduction::reduce(
 }
 
 void LabelReduction::dump_options() const {
-    assert(initialized());
     cout << "Label reduction options:" << endl;
     cout << "Before merging: "
          << (lr_before_merging ? "enabled" : "disabled") << endl;
@@ -303,14 +303,15 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         "Exact generalized label reduction",
         "This class implements the exact generalized label reduction "
         "described in the following paper:" +
-        utils::format_paper_reference(
+        utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
             " Intelligence (AAAI 2014)",
             "2358-2366",
-            "AAAI Press 2014"));
+            "AAAI Press",
+            "2014"));
     parser.add_option<bool>("before_shrinking",
                             "apply label reduction before shrinking");
     parser.add_option<bool>("before_merging",
@@ -389,5 +390,5 @@ static PluginTypePlugin<LabelReduction> _type_plugin(
     "LabelReduction",
     "This page describes the current single 'option' for label reduction.");
 
-static PluginShared<LabelReduction> _plugin("exact", _parse);
+static Plugin<LabelReduction> _plugin("exact", _parse);
 }

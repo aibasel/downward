@@ -7,24 +7,31 @@
 using namespace std;
 
 namespace merge_and_shrink {
-LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
+LabelEquivalenceRelation::LabelEquivalenceRelation(
+    const Labels &labels, const vector<vector<int>> &label_groups)
     : labels(labels) {
+    /* In the worst case, each label forms a singleton group, and thus with
+       label reduction, we could have labels.get_max_size() many groups. */
     grouped_labels.reserve(labels.get_max_size());
     label_to_positions.resize(labels.get_max_size());
+    for (const vector<int> &label_group : label_groups) {
+        add_label_group(label_group);
+    }
 }
 
 LabelEquivalenceRelation::LabelEquivalenceRelation(
     const LabelEquivalenceRelation &other)
-    : labels(other.labels),
-      /* We copy label_to_positions to have identical vectors even on
-      "unused" positions (for label numbers that do not exist any more). */
-      label_to_positions(other.label_to_positions) {
-    /*
-      We need to reserve space for the potential maximum number of labels to
-      ensure that no move occurs in grouped_labels. Otherwise, iterators to
-      elements of list<int> of LabelGroup could become invalid!
-    */
+    : labels(other.labels) {
+    // For the reserve call, see the comment in the constructor above.
     grouped_labels.reserve(labels.get_max_size());
+    /*
+      Note that we do not copy label_to_positions because copying iterators
+      from potentially uninitialized iterators causes problems in debug mode.
+      This also means that label_to_positions contains uninitialized values
+      at all positions corresponding to already reduced labels (inactive
+      labels).
+    */
+    label_to_positions.resize(other.label_to_positions.size());
     for (size_t other_group_id = 0;
          other_group_id < other.grouped_labels.size();
          ++other_group_id) {

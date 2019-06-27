@@ -8,31 +8,29 @@
 #include <vector>
 
 class Evaluator;
-class Heuristic;
 class PruningMethod;
 
 namespace options {
+class OptionParser;
 class Options;
 }
 
 namespace eager_search {
 class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
-    const bool use_multi_path_dependence;
 
     std::unique_ptr<StateOpenList> open_list;
-    Evaluator *f_evaluator;
+    std::shared_ptr<Evaluator> f_evaluator;
 
     std::vector<Evaluator *> path_dependent_evaluators;
-    std::vector<Heuristic *> preferred_operator_heuristics;
+    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
+    std::shared_ptr<Evaluator> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
 
-    std::pair<SearchNode, bool> fetch_next_node();
     void start_f_value_statistics(EvaluationContext &eval_context);
-    void update_f_value_statistics(const SearchNode &node);
+    void update_f_value_statistics(EvaluationContext &eval_context);
     void reward_progress();
-    void print_checkpoint_line(int g) const;
 
 protected:
     virtual void initialize() override;
@@ -46,6 +44,8 @@ public:
 
     void dump_search_space() const;
 };
+
+extern void add_options_to_parser(options::OptionParser &parser);
 }
 
 #endif
