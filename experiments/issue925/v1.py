@@ -14,7 +14,7 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 # These revisions are all tag experimental branches off the same revision.
 # we only need different tags so lab creates separate build directories in the build cache.
 # We then manually recompile the code in the build cache with the correct settings.
-REVISIONS = ["issue925-cplex12.8-static", "issue925-cplex12.8-dynamic", "issue925-cplex12.9-dynamic"]
+REVISIONS = ["issue925-cplex12.8-static", "issue925-cplex12.8-dynamic", "issue925-cplex12.9-static", "issue925-cplex12.9-dynamic"]
 CONFIGS = [
     IssueConfig("opcount-seq-lmcut", ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))"]),
     IssueConfig("diverse-potentials", ["--search", "astar(diverse_potentials())"]),
