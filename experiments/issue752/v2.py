@@ -46,6 +46,13 @@ exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
-exp.add_comparison_table_step()
+exp.add_absolute_report_step()
+
+for nick in ["opcount-seq-lmcut", "diverse-potentials", "optimal-lmcount"]:
+    exp.add_report(RelativeScatterPlotReport(
+        attributes=["total_time"],
+        filter_algorithm=["issue752-v2-%s-%s" % (nick, solver) for solver in ["soplex", "cplex"]],
+        get_category=lambda r1, r2: r1["domain"]),
+        outfile="issue752-v2-scatter-total-time-%s.png" % nick)
 
 exp.run_steps()
