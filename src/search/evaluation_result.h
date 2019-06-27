@@ -9,7 +9,7 @@
 class EvaluationResult {
     static const int UNINITIALIZED = -2;
 
-    int h_value;
+    int evaluator_value;
     std::vector<OperatorID> preferred_operators;
     bool count_evaluation;
 public:
@@ -40,11 +40,11 @@ public:
 
     bool is_uninitialized() const;
     bool is_infinite() const;
-    int get_h_value() const;
+    int get_evaluator_value() const;
     bool get_count_evaluation() const;
     const std::vector<OperatorID> &get_preferred_operators() const;
 
-    void set_h_value(int value);
+    void set_evaluator_value(int value);
     void set_preferred_operators(std::vector<OperatorID> &&preferred_operators);
     void set_count_evaluation(bool count_eval);
 };

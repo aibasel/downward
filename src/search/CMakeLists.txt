@@ -13,6 +13,7 @@ endif()
 
 project(downward)
 fast_downward_set_compiler_flags()
+fast_downward_set_linker_flags()
 
 # Collect source files needed for the active plugins.
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
@@ -23,8 +24,6 @@ add_executable(downward ${PLANNER_SOURCES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 
 ## == Libraries ==
-
-fast_downward_set_linker_flags(downward)
 
 # On Linux, find the rt library for clock_gettime().
 if(UNIX AND NOT APPLE)

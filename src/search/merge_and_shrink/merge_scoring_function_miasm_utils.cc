@@ -6,6 +6,7 @@
 #include "transition_system.h"
 #include "utils.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -25,7 +26,7 @@ unique_ptr<TransitionSystem> copy_and_shrink_ts(
     const Distances &distances,
     const ShrinkStrategy &shrink_strategy,
     int new_size,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     /*
       TODO: think about factoring out common logic of this function and the
       function shrink_factor in utils.cc
@@ -61,8 +62,8 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
     int max_states,
     int max_states_before_merge,
     int shrink_threshold_before_merge) {
-    const TransitionSystem &original_ts1 = fts.get_ts(index1);
-    const TransitionSystem &original_ts2 = fts.get_ts(index2);
+    const TransitionSystem &original_ts1 = fts.get_transition_system(index1);
+    const TransitionSystem &original_ts2 = fts.get_transition_system(index2);
 
     /*
       Determine size limits and if shrinking is necessary or possible as done
@@ -82,7 +83,7 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
       only triggered due to the threshold being passed but no perfect
       shrinking is possible, the method returns a null pointer.)
     */
-    Verbosity verbosity = Verbosity::SILENT;
+    utils::Verbosity verbosity = utils::Verbosity::SILENT;
     unique_ptr<TransitionSystem> ts1 = nullptr;
     if (must_shrink_ts1) {
         ts1 = copy_and_shrink_ts(

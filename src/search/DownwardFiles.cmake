@@ -50,12 +50,12 @@ fast_downward_plugin(
 
         abstract_task
         axioms
+        command_line
         evaluation_context
         evaluation_result
         evaluator
-        globals
+        evaluator_cache
         global_state
-        heuristic_cache
         heuristic
         open_list
         open_list_factory
@@ -63,7 +63,10 @@ fast_downward_plugin(
         operator_id
         option_parser
         option_parser_util
+        per_state_array
+        per_state_bitset
         per_state_information
+        per_task_information
         plan_manager
         plugin
         pruning_method
@@ -74,9 +77,10 @@ fast_downward_plugin(
         search_statistics
         state_id
         state_registry
+        task_id
         task_proxy
 
-    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUCCESSOR_GENERATOR TASK_PROPERTIES
+    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUBSCRIBER SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
 )
 
@@ -87,15 +91,15 @@ fast_downward_plugin(
         options/any
         options/bounds
         options/doc_printer
-        options/doc_store
+        options/doc_utils
         options/errors
         options/option_parser
         options/options
         options/parse_tree
         options/predefinitions
         options/plugin
+        options/raw_registry
         options/registries
-        options/token_parser
         options/type_namer
     CORE_PLUGIN
 )
@@ -106,6 +110,7 @@ fast_downward_plugin(
     SOURCES
         utils/collections
         utils/countdown_timer
+        utils/exceptions
         utils/hash
         utils/language
         utils/logging
@@ -114,6 +119,7 @@ fast_downward_plugin(
         utils/memory
         utils/rng
         utils/rng_options
+        utils/strings
         utils/system
         utils/system_unix
         utils/system_windows
@@ -129,6 +135,13 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME BEST_FIRST_OPEN_LIST
+    HELP "Open list that selects the best element according to a single evaluation function"
+    SOURCES
+        open_lists/best_first_open_list
+)
+
+fast_downward_plugin(
     NAME EPSILON_GREEDY_OPEN_LIST
     HELP "Open list that chooses an entry randomly with probability epsilon"
     SOURCES
@@ -140,13 +153,6 @@ fast_downward_plugin(
     HELP "Pareto open list"
     SOURCES
         open_lists/pareto_open_list
-)
-
-fast_downward_plugin(
-    NAME STANDARD_SCALAR_OPEN_LIST
-    HELP "Standard scalar open list"
-    SOURCES
-        open_lists/standard_scalar_open_list
 )
 
 fast_downward_plugin(
@@ -228,10 +234,26 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME SUBSCRIBER
+    HELP "Allows object to subscribe to the destructor of other objects"
+    SOURCES
+        algorithms/subscriber
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME EVALUATORS_PLUGIN_GROUP
+    HELP "Plugin group for basic evaluators"
+    SOURCES
+        evaluators/plugin_group
+)
+
+fast_downward_plugin(
     NAME CONST_EVALUATOR
     HELP "The constant evaluator"
     SOURCES
         evaluators/const_evaluator
+    DEPENDS EVALUATORS_PLUGIN_GROUP
 )
 
 fast_downward_plugin(
@@ -239,6 +261,7 @@ fast_downward_plugin(
     HELP "The g-evaluator"
     SOURCES
         evaluators/g_evaluator
+    DEPENDS EVALUATORS_PLUGIN_GROUP
 )
 
 fast_downward_plugin(
@@ -246,6 +269,7 @@ fast_downward_plugin(
     HELP "The combining evaluator"
     SOURCES
         evaluators/combining_evaluator
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -253,7 +277,7 @@ fast_downward_plugin(
     HELP "The max evaluator"
     SOURCES
         evaluators/max_evaluator
-    DEPENDS COMBINING_EVALUATOR
+    DEPENDS COMBINING_EVALUATOR EVALUATORS_PLUGIN_GROUP
 )
 
 fast_downward_plugin(
@@ -261,6 +285,7 @@ fast_downward_plugin(
     HELP "The pref evaluator"
     SOURCES
         evaluators/pref_evaluator
+    DEPENDS EVALUATORS_PLUGIN_GROUP
 )
 
 fast_downward_plugin(
@@ -268,6 +293,7 @@ fast_downward_plugin(
     HELP "The weighted evaluator"
     SOURCES
         evaluators/weighted_evaluator
+    DEPENDS EVALUATORS_PLUGIN_GROUP
 )
 
 fast_downward_plugin(
@@ -275,7 +301,7 @@ fast_downward_plugin(
     HELP "The sum evaluator"
     SOURCES
         evaluators/sum_evaluator
-    DEPENDS COMBINING_EVALUATOR
+    DEPENDS COMBINING_EVALUATOR EVALUATORS_PLUGIN_GROUP
 )
 
 fast_downward_plugin(
@@ -316,7 +342,7 @@ fast_downward_plugin(
     HELP "Basic classes used for all search engines"
     SOURCES
         search_engines/search_common
-    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR STANDARD_SCALAR_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
+    DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR BEST_FIRST_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
@@ -350,6 +376,14 @@ fast_downward_plugin(
     HELP "Eager greedy best-first search"
     SOURCES
         search_engines/plugin_eager_greedy
+    DEPENDS EAGER_SEARCH SEARCH_COMMON
+)
+
+fast_downward_plugin(
+    NAME PLUGIN_EAGER_WASTAR
+    HELP "Weighted eager A* search"
+    SOURCES
+        search_engines/plugin_eager_wastar
     DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
@@ -414,6 +448,7 @@ fast_downward_plugin(
     NAME RELAXATION_HEURISTIC
     HELP "The base class for relaxation heuristics"
     SOURCES
+        heuristics/array_pool
         heuristics/relaxation_heuristic
     DEPENDENCY_ONLY
 )
@@ -573,13 +608,15 @@ fast_downward_plugin(
         cegar/abstract_state
         cegar/additive_cartesian_heuristic
         cegar/cartesian_heuristic_function
+        cegar/cartesian_set
+        cegar/cegar
         cegar/cost_saturation
-        cegar/domains
         cegar/refinement_hierarchy
         cegar/split_selector
         cegar/subtask_generators
         cegar/transition
-        cegar/transition_updater
+        cegar/transition_system
+        cegar/types
         cegar/utils
         cegar/utils_landmarks
     DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES TASK_PROPERTIES
@@ -595,6 +632,7 @@ fast_downward_plugin(
         merge_and_shrink/label_equivalence_relation
         merge_and_shrink/label_reduction
         merge_and_shrink/labels
+        merge_and_shrink/merge_and_shrink_algorithm
         merge_and_shrink/merge_and_shrink_heuristic
         merge_and_shrink/merge_and_shrink_representation
         merge_and_shrink/merge_scoring_function
@@ -634,8 +672,6 @@ fast_downward_plugin(
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
         landmarks/exploration
-        landmarks/ff_synergy
-        landmarks/lama_synergy
         landmarks/landmark_cost_assignment
         landmarks/landmark_count_heuristic
         landmarks/landmark_factory
@@ -671,20 +707,23 @@ fast_downward_plugin(
         pdbs/dominance_pruning
         pdbs/incremental_canonical_pdbs
         pdbs/match_tree
-        pdbs/max_additive_pdb_sets
         pdbs/max_cliques
+        pdbs/pattern_cliques
         pdbs/pattern_collection_information
-        pdbs/pattern_database
         pdbs/pattern_collection_generator_combo
         pdbs/pattern_collection_generator_genetic
         pdbs/pattern_collection_generator_hillclimbing
         pdbs/pattern_collection_generator_manual
         pdbs/pattern_collection_generator_systematic
+        pdbs/pattern_database
         pdbs/pattern_generator_greedy
         pdbs/pattern_generator_manual
         pdbs/pattern_generator
+        pdbs/pattern_information
         pdbs/pdb_heuristic
+        pdbs/plugin_group
         pdbs/types
+        pdbs/utils
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
@@ -696,6 +735,7 @@ fast_downward_plugin(
     HELP "Plugin containing the code for potential heuristics"
     SOURCES
         potentials/diverse_potential_heuristics
+        potentials/plugin_group
         potentials/potential_function
         potentials/potential_heuristic
         potentials/potential_max_heuristic

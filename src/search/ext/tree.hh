@@ -212,6 +212,7 @@ class tree {
 				sibling_iterator(const sibling_iterator&);
 				sibling_iterator(const iterator_base&);
 
+				sibling_iterator& operator=(const sibling_iterator&) = default;
 				bool    operator==(const sibling_iterator&) const;
 				bool    operator!=(const sibling_iterator&) const;
 				sibling_iterator&  operator++();

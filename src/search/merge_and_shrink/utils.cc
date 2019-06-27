@@ -5,6 +5,7 @@
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
+#include "../utils/logging.h"
 #include "../utils/math.h"
 
 #include <algorithm>
@@ -66,15 +67,15 @@ bool shrink_factor(
     int new_size,
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     /*
       TODO: think about factoring out common logic of this function and the
       function copy_and_shrink_ts in merge_scoring_function_miasm_utils.cc.
     */
-    const TransitionSystem &ts = fts.get_ts(index);
+    const TransitionSystem &ts = fts.get_transition_system(index);
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
-        if (verbosity >= Verbosity::VERBOSE) {
+        if (verbosity >= utils::Verbosity::VERBOSE) {
             cout << ts.tag() << "current size: " << num_states;
             if (new_size < num_states)
                 cout << " (new size limit: " << new_size;
@@ -101,14 +102,14 @@ bool shrink_before_merge_step(
     int max_states_before_merge,
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     /*
       Compute the size limit for both transition systems as imposed by
       max_states and max_states_before_merge.
     */
     pair<int, int> new_sizes = compute_shrink_sizes(
-        fts.get_ts(index1).get_size(),
-        fts.get_ts(index2).get_size(),
+        fts.get_transition_system(index1).get_size(),
+        fts.get_transition_system(index2).get_size(),
         max_states_before_merge,
         max_states);
 
@@ -126,7 +127,7 @@ bool shrink_before_merge_step(
         shrink_threshold_before_merge,
         shrink_strategy,
         verbosity);
-    if (verbosity >= Verbosity::VERBOSE && shrunk1) {
+    if (verbosity >= utils::Verbosity::VERBOSE && shrunk1) {
         fts.statistics(index1);
     }
     bool shrunk2 = shrink_factor(
@@ -136,7 +137,7 @@ bool shrink_before_merge_step(
         shrink_threshold_before_merge,
         shrink_strategy,
         verbosity);
-    if (verbosity >= Verbosity::VERBOSE && shrunk2) {
+    if (verbosity >= utils::Verbosity::VERBOSE && shrunk2) {
         fts.statistics(index2);
     }
     return shrunk1 || shrunk2;
@@ -147,9 +148,9 @@ bool prune_step(
     int index,
     bool prune_unreachable_states,
     bool prune_irrelevant_states,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     assert(prune_unreachable_states || prune_irrelevant_states);
-    const TransitionSystem &ts = fts.get_ts(index);
+    const TransitionSystem &ts = fts.get_transition_system(index);
     const Distances &distances = fts.get_distances(index);
     int num_states = ts.get_size();
     StateEquivalenceRelation state_equivalence_relation;
@@ -183,7 +184,7 @@ bool prune_step(
             state_equivalence_relation.push_back(state_equivalence_class);
         }
     }
-    if (verbosity >= Verbosity::VERBOSE &&
+    if (verbosity >= utils::Verbosity::VERBOSE &&
         (unreachable_count || irrelevant_count)) {
         cout << ts.tag()
              << "unreachable: " << unreachable_count << " states, "

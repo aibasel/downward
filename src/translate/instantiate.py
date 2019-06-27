@@ -33,7 +33,13 @@ def get_objects_by_type(typed_objects, types):
 def instantiate(task, model):
     relaxed_reachable = False
     fluent_facts = get_fluent_facts(task, model)
-    init_facts = set(task.init)
+    init_facts = set()
+    init_assignments = {}
+    for element in task.init:
+        if isinstance(element, pddl.Assign):
+            init_assignments[element.fluent] = element.expression
+        else:
+            init_facts.add(element)
 
     type_to_objects = get_objects_by_type(task.objects, task.types)
 
@@ -53,9 +59,10 @@ def instantiate(task, model):
             reachable_action_parameters[action].append(inst_parameters)
             variable_mapping = dict([(par.name, arg)
                                      for par, arg in zip(parameters, atom.args)])
-            inst_action = action.instantiate(variable_mapping, init_facts,
-                                             fluent_facts, type_to_objects,
-                                             task.use_min_cost_metric)
+            inst_action = action.instantiate(
+                variable_mapping, init_facts, init_assignments,
+                fluent_facts, type_to_objects,
+                task.use_min_cost_metric)
             if inst_action:
                 instantiated_actions.append(inst_action)
         elif isinstance(atom.predicate, pddl.Axiom):

@@ -12,8 +12,6 @@
 
 #include <vector>
 
-class Heuristic;
-
 namespace options {
 class OptionParser;
 class Options;
@@ -22,6 +20,14 @@ class Options;
 namespace ordered_set {
 template<typename T>
 class OrderedSet;
+}
+
+namespace successor_generator {
+class SuccessorGenerator;
+}
+
+namespace utils {
+enum class Verbosity;
 }
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
@@ -38,12 +44,15 @@ protected:
 
     PlanManager plan_manager;
     StateRegistry state_registry;
+    const successor_generator::SuccessorGenerator &successor_generator;
     SearchSpace search_space;
     SearchProgress search_progress;
     SearchStatistics statistics;
     int bound;
     OperatorCost cost_type;
+    bool is_unit_cost;
     double max_time;
+    const utils::Verbosity verbosity;
 
     virtual void initialize() {}
     virtual SearchStatus step() = 0;
@@ -54,7 +63,7 @@ protected:
 public:
     SearchEngine(const options::Options &opts);
     virtual ~SearchEngine();
-    virtual void print_statistics() const;
+    virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
     bool found_solution() const;
     SearchStatus get_status() const;
@@ -73,12 +82,12 @@ public:
 };
 
 /*
-  Print heuristic values of all heuristics evaluated in the evaluation context.
+  Print evaluator values of all evaluators evaluated in the evaluation context.
 */
-extern void print_initial_h_values(const EvaluationContext &eval_context);
+extern void print_initial_evaluator_values(const EvaluationContext &eval_context);
 
-extern ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
-    EvaluationContext &eval_context,
-    const std::vector<Heuristic *> &preferred_operator_heuristics);
+extern void collect_preferred_operators(
+    EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
+    ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
 #endif

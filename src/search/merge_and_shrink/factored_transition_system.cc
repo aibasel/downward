@@ -7,6 +7,7 @@
 #include "utils.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -42,7 +43,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     vector<unique_ptr<Distances>> &&distances,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    Verbosity verbosity)
+    utils::Verbosity verbosity)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
@@ -96,7 +97,8 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
     if (compute_goal_distances && !distances[index]->are_goal_distances_computed()) {
         return false;
     }
-    return transition_systems[index]->are_transitions_sorted_unique();
+    return transition_systems[index]->are_transitions_sorted_unique() &&
+           transition_systems[index]->in_sync_with_label_equivalence_relation();
 }
 
 void FactoredTransitionSystem::assert_all_components_valid() const {
@@ -127,15 +129,11 @@ void FactoredTransitionSystem::apply_label_mapping(
 bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     assert(is_component_valid(index));
 
     int new_num_states = state_equivalence_relation.size();
     if (new_num_states == transition_systems[index]->get_size()) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << transition_systems[index]->tag()
-                 << "not applying abstraction (same number of states)" << endl;
-        }
         return false;
     }
 
@@ -163,7 +161,7 @@ bool FactoredTransitionSystem::apply_abstraction(
 int FactoredTransitionSystem::merge(
     int index1,
     int index2,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     assert(is_component_valid(index1));
     assert(is_component_valid(index2));
     transition_systems.push_back(
