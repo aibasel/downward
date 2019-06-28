@@ -11,9 +11,6 @@ from relativescatter import RelativeScatterPlotReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-# These revisions are all tag experimental branches off the same revision.
-# we only need different tags so lab creates separate build directories in the build cache.
-# We then manually recompile the code in the build cache with the correct settings.
 REVISIONS = ["issue752-v2"]
 CONFIGS = [
     IssueConfig("opcount-seq-lmcut-soplex", ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver=soplex))"]),
@@ -51,7 +48,7 @@ exp.add_absolute_report_step()
 for nick in ["opcount-seq-lmcut", "diverse-potentials", "optimal-lmcount"]:
     exp.add_report(RelativeScatterPlotReport(
         attributes=["total_time"],
-        filter_algorithm=["issue752-v2-%s-%s" % (nick, solver) for solver in ["soplex", "cplex"]],
+        filter_algorithm=["issue752-v2-%s-%s" % (nick, solver) for solver in ["cplex", "soplex"]],
         get_category=lambda r1, r2: r1["domain"]),
         outfile="issue752-v2-scatter-total-time-%s.png" % nick)
 
