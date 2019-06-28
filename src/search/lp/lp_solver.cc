@@ -117,12 +117,6 @@ void LPSolver::load_problem(LPObjectiveSense sense,
         row_ub.push_back(constraint.get_upper_bound());
     }
 
-    if (sense == LPObjectiveSense::MINIMIZE) {
-        lp_solver->setObjSense(1);
-    } else {
-        lp_solver->setObjSense(-1);
-    }
-
     for (const LPConstraint &constraint : constraints) {
         const vector<int> &vars = constraint.get_variables();
         const vector<double> &coeffs = constraint.get_coefficients();
@@ -158,6 +152,12 @@ void LPSolver::load_problem(LPObjectiveSense sense,
                                objective.data(),
                                row_lb.data(),
                                row_ub.data());
+
+        if (sense == LPObjectiveSense::MINIMIZE) {
+            lp_solver->setObjSense(1);
+        } else {
+            lp_solver->setObjSense(-1);
+        }
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
