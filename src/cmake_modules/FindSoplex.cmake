@@ -4,14 +4,13 @@
 #  SOPLEX_FOUND                 - TRUE if SOPLEX was found.
 #  SOPLEX_INCLUDE_DIRS          - Full paths to all include dirs.
 #  SOPLEX_LIBRARIES             - Full paths to all libraries.
-#  SOPLEX_RUNTIME_LIBRARY       - Full path to the dll file on windows
 #
 # Usage:
 #  find_package(soplex)
 #
 # The location of SoPlex can be specified using the environment variable
 # or cmake parameter DOWNWARD_SOPLEX_ROOT. If different installations
-# for release/debug versions of SOPLEX are available,they can be
+# for release/debug versions of SOPLEX are available, they can be
 # specified with
 #   DOWNWARD_SOPLEX_ROOT
 #   DOWNWARD_SOPLEX_ROOT_RELEASE
