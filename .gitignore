@@ -1,4 +1,10 @@
 __pycache__/
+*.pyc
+*.o
+CMakeFiles/*
+CMakeCache.txt
+Makefile
+cmake_install.cmake
 /output.sas
 /sas_plan
 /sas_plan.*
