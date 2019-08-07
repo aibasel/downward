@@ -32,7 +32,7 @@ class OptionParser;
 
 namespace lp {
 enum class LPSolverType {
-    CLP, CPLEX, GUROBI
+    CLP, CPLEX, GUROBI, SOPLEX
 };
 
 enum class LPObjectiveSense {
