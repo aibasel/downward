@@ -13,9 +13,9 @@ after the corresponding tracker issues.
 
 - LP solver: added support for the solver [SoPlex](https://soplex.zib.de/)
   <http://issues.fast-downward.org/issue752>
-  The performance difference between CPLEX and SoPlex depends on the
-  domain and configuration with each solver outperforming the other in
-  some cases. See the issue for a more detailed discussion of performance.
+  The relative performance of CPLEX and SoPlex depends on the domain and
+  configuration with each solver outperforming the other in some cases.
+  See the issue for a more detailed discussion of performance.
 
 
 ## Fast Downward 19.06
