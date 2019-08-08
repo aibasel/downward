@@ -8,6 +8,7 @@ from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
 from relativescatter import RelativeScatterPlotReport
+from itertools import combinations
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
@@ -44,5 +45,13 @@ exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
 exp.add_comparison_table_step()
+
+for r1, r2 in combinations(REVISIONS, 2):
+    for nick in ["opcount-seq-lmcut", "diverse-potentials", "optimal-lmcount"]:
+        exp.add_report(RelativeScatterPlotReport(
+            attributes=["total_time"],
+            filter_algorithm=["%s-%s" % (r, nick) for r in [r1, r2]],
+            get_category=lambda run1, run2: run1["domain"]),
+            outfile="issue925-v1-total-time-%s-%s-%s.png" % (r1, r2, nick))
 
 exp.run_steps()
