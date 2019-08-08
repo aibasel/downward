@@ -9,6 +9,15 @@ For more details, check the repository history
 (<http://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Changes since the last release
+
+- LP solver: added support for the solver [SoPlex](https://soplex.zib.de/)
+  <http://issues.fast-downward.org/issue752>
+  The relative performance of CPLEX and SoPlex depends on the domain and
+  configuration with each solver outperforming the other in some cases.
+  See the issue for a more detailed discussion of performance.
+
+
 ## Fast Downward 19.06
 
 Released on June 11, 2019.
