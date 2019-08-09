@@ -16,7 +16,8 @@ after the corresponding tracker issues.
   <http://issues.fast-downward.org/issue925>
   The way we recommend building OSI now links dynamically against the
   solvers and uses zlib. If your existing OSI installation stops
-  working, try installing zlib (sudo apt install zlib1g-dev).
+  working, try installing zlib (sudo apt install zlib1g-dev) or
+  re-install OSI (http://www.fast-downward.org/LPBuildInstructions).
 
 - LP solver: added support for version 12.9 of CPLEX.
   <http://issues.fast-downward.org/issue925>
