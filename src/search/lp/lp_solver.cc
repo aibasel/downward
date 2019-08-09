@@ -153,9 +153,9 @@ void LPSolver::load_problem(LPObjectiveSense sense,
                                row_lb.data(),
                                row_ub.data());
         /*
-          We set the objective sense after loading because the OSI
-          interface for SoPlex ignores it when it is set earlier.
-          See issue752 for details.
+          We set the objective sense after loading because the SoPlex
+          interfaces of all OSI versions <= 0.108.4 ignore it when it is
+          set earlier. See issue752 for details.
         */
         if (sense == LPObjectiveSense::MINIMIZE) {
             lp_solver->setObjSense(1);
