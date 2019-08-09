@@ -106,6 +106,9 @@ else()
     )
 endif()
 
+# CMake uses the first discovered library, searching in the order they
+# are mentioned here. We prefer dynamic libraries over static ones
+# (see issue925) and otherwise prefer the latest available version.
 find_library(CPLEX_LIBRARY_RELEASE
     NAMES
     cplex1290
@@ -119,6 +122,7 @@ find_library(CPLEX_LIBRARY_RELEASE
     ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE}
 )
 
+# See above.
 find_library(CPLEX_LIBRARY_DEBUG
     NAMES
     cplex1290
