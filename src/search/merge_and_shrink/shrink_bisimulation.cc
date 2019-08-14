@@ -106,7 +106,7 @@ int ShrinkBisimulation::initialize_groups(
 
        Each other group holds all states with one particular h value.
 
-       Note that some goal state *must* exist because irrelevant und
+       Note that some goal state *must* exist because irrelevant and
        unreachable states are pruned before we shrink and we never
        perform the shrinking if that pruning shows that the problem is
        unsolvable.

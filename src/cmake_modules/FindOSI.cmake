@@ -6,6 +6,7 @@
 #  Clp (internal solver of COIN)
 #  Cpx (CPLEX)
 #  Grb (Gurobi)
+#  Spx (SoPlex)
 #
 # This code defines the following variables:
 #
@@ -122,6 +123,16 @@ endif()
 if(OSI_Grb_LIBRARIES)
     message(FATAL_ERROR "Gurobi is not tested yet. Try to copy the config of cplex above and the file cmake/modules/FindCplex.cmake and adapt them for gurobi.")
     set(OSI_Grb_FOUND FALSE)
+endif()
+
+# Spx component
+if(OSI_Spx_LIBRARIES)
+    find_package(Soplex)
+    if (SOPLEX_FOUND)
+        list(APPEND OSI_Spx_LIBRARIES ${SOPLEX_LIBRARIES})
+        list(APPEND OSI_Spx_INCLUDE_DIRS ${SOPLEX_INCLUDE_DIRS})
+        set(OSI_Spx_FOUND TRUE)
+    endif()
 endif()
 
 
