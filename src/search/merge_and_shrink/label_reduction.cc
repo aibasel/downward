@@ -64,7 +64,7 @@ void LabelReduction::compute_label_mapping(
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
     utils::Verbosity verbosity) const {
-    const Labels &labels = fts.get_labels();
+    const GlobalLabels &labels = fts.get_labels();
     int next_new_label_no = labels.get_size();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
@@ -115,7 +115,7 @@ equivalence_relation::EquivalenceRelation
     */
 
     // Create the equivalence relation where all labels are equivalent.
-    const Labels &labels = fts.get_labels();
+    const GlobalLabels &labels = fts.get_labels();
     int num_labels = labels.get_size();
     vector<pair<int, int>> annotated_labels;
     annotated_labels.reserve(num_labels);

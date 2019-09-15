@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-Labels::Labels(vector<unique_ptr<Label>> &&labels)
+GlobalLabels::GlobalLabels(vector<unique_ptr<Label>> &&labels)
     : labels(move(labels)),
       max_size(0) {
     if (!this->labels.empty()) {
@@ -19,7 +19,7 @@ Labels::Labels(vector<unique_ptr<Label>> &&labels)
     }
 }
 
-void Labels::reduce_labels(const vector<int> &old_label_nos) {
+void GlobalLabels::reduce_labels(const vector<int> &old_label_nos) {
     /*
       Even though we currently only support exact label reductions where
       reduced labels are of equal cost, to support non-exact label reductions,
@@ -38,17 +38,17 @@ void Labels::reduce_labels(const vector<int> &old_label_nos) {
     labels.push_back(utils::make_unique_ptr<Label>(new_label_cost));
 }
 
-bool Labels::is_current_label(int label_no) const {
+bool GlobalLabels::is_current_label(int label_no) const {
     assert(utils::in_bounds(label_no, labels));
     return labels[label_no] != nullptr;
 }
 
-int Labels::get_label_cost(int label_no) const {
+int GlobalLabels::get_label_cost(int label_no) const {
     assert(labels[label_no]);
     return labels[label_no]->get_cost();
 }
 
-void Labels::dump_labels() const {
+void GlobalLabels::dump_labels() const {
     cout << "active labels:" << endl;
     for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
         if (labels[label_no]) {

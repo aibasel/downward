@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace merge_and_shrink {
-class Labels;
+class GlobalLabels;
 
 using LabelIter = std::list<int>::iterator;
 using LabelConstIter = std::list<int>::const_iterator;
@@ -65,7 +65,7 @@ class LabelEquivalenceRelation {
       have implicit IDs defined by their index in grouped_labels.
     */
 
-    const Labels &labels;
+    const GlobalLabels &labels;
 
     std::vector<LabelGroup> grouped_labels;
     /* Maps each label to its group's ID (index in grouped_labels) and its
@@ -75,7 +75,7 @@ class LabelEquivalenceRelation {
     void add_label_to_group(int group_id, int label_no);
 public:
     LabelEquivalenceRelation(
-        const Labels &labels, const std::vector<std::vector<int>> &label_groups);
+        const GlobalLabels &labels, const std::vector<std::vector<int>> &label_groups);
     /*
       NOTE: we need a custom copy constructor here because we need to fill
       label_to_positions with correct LabelIter objects that point to the

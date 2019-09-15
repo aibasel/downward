@@ -113,7 +113,7 @@ TransitionSystem::~TransitionSystem() {
 }
 
 unique_ptr<TransitionSystem> TransitionSystem::merge(
-    const Labels &labels,
+    const GlobalLabels &labels,
     const TransitionSystem &ts1,
     const TransitionSystem &ts2,
     utils::Verbosity verbosity) {

@@ -17,7 +17,7 @@ namespace merge_and_shrink {
 class Distances;
 class LabelEquivalenceRelation;
 class LabelGroup;
-class Labels;
+class GlobalLabels;
 
 struct Transition {
     int src;
@@ -151,7 +151,7 @@ public:
       (It is a bug to merge an unsolvable transition system.)
     */
     static std::unique_ptr<TransitionSystem> merge(
-        const Labels &labels,
+        const GlobalLabels &labels,
         const TransitionSystem &ts1,
         const TransitionSystem &ts2,
         utils::Verbosity verbosity);

@@ -58,7 +58,7 @@ class FTSFactory {
 
     vector<unique_ptr<Label>> create_labels();
     void build_state_data(VariableProxy var);
-    void initialize_transition_system_data(const Labels &labels);
+    void initialize_transition_system_data(const GlobalLabels &labels);
     bool is_relevant(int var_no, int label_no) const;
     void mark_as_relevant(int var_no, int label_no);
     unordered_map<int, int> compute_preconditions(OperatorProxy op);
@@ -76,7 +76,7 @@ class FTSFactory {
     void build_transitions_for_operator(OperatorProxy op);
     void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
-    vector<unique_ptr<TransitionSystem>> create_transition_systems(const Labels &labels);
+    vector<unique_ptr<TransitionSystem>> create_transition_systems(const GlobalLabels &labels);
     vector<unique_ptr<MergeAndShrinkRepresentation>> create_mas_representations() const;
     vector<unique_ptr<Distances>> create_distances(
         const vector<unique_ptr<TransitionSystem>> &transition_systems) const;
@@ -141,7 +141,7 @@ void FTSFactory::build_state_data(VariableProxy var) {
     }
 }
 
-void FTSFactory::initialize_transition_system_data(const Labels &labels) {
+void FTSFactory::initialize_transition_system_data(const GlobalLabels &labels) {
     VariablesProxy variables = task_proxy.get_variables();
     int num_labels = task_proxy.get_operators().size();
     transition_system_data_by_var.resize(variables.size());
@@ -364,7 +364,7 @@ void FTSFactory::build_transitions() {
         build_transitions_for_irrelevant_ops(variable);
 }
 
-vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const Labels &labels) {
+vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const GlobalLabels &labels) {
     // Create the actual TransitionSystem objects.
     int num_variables = task_proxy.get_variables().size();
 
@@ -435,7 +435,7 @@ FactoredTransitionSystem FTSFactory::create(
         cout << "Building atomic transition systems... " << endl;
     }
 
-    unique_ptr<Labels> labels = utils::make_unique_ptr<Labels>(create_labels());
+    unique_ptr<GlobalLabels> labels = utils::make_unique_ptr<GlobalLabels>(create_labels());
 
     initialize_transition_system_data(*labels);
     build_transitions();

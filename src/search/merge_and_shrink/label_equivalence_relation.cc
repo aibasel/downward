@@ -8,7 +8,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 LabelEquivalenceRelation::LabelEquivalenceRelation(
-    const Labels &labels, const vector<vector<int>> &label_groups)
+    const GlobalLabels &labels, const vector<vector<int>> &label_groups)
     : labels(labels) {
     /* In the worst case, each label forms a singleton group, and thus with
        label reduction, we could have labels.get_max_size() many groups. */
