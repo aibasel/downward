@@ -85,6 +85,7 @@ public:
 
     // See refine(const Block &block)
     void refine(ElementListConstIter block_x_begin, ElementListConstIter block_x_end);
+    void refine(std::vector<int>::const_iterator block_x_begin, std::vector<int>::const_iterator block_x_end);
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.

@@ -15,8 +15,6 @@ enum class Verbosity;
 
 namespace merge_and_shrink {
 class Distances;
-class LabelEquivalenceRelation;
-class LabelGroup;
 class GlobalLabels;
 
 struct Transition {
@@ -41,42 +39,45 @@ struct Transition {
     }
 };
 
+using LabelGroup = std::vector<int>;
+
 struct GroupAndTransitions {
     const LabelGroup &label_group;
     const std::vector<Transition> &transitions;
+    int cost;
     GroupAndTransitions(const LabelGroup &label_group,
-                        const std::vector<Transition> &transitions)
+                        const std::vector<Transition> &transitions,
+                        int cost)
         : label_group(label_group),
-          transitions(transitions) {
+          transitions(transitions),
+          cost(cost) {
     }
 };
 
 class TSConstIterator {
     /*
-      This class allows users to easily iterate over both label groups and
-      their transitions of a TransitionSystem. Most importantly, it hides
-      the data structure used by LabelEquivalenceRelation, which could be
-      easily exchanged.
+      This class allows users to easily iterate over both local labels and the
+      global labels they represent, as well as their transitions.
     */
-    const LabelEquivalenceRelation &label_equivalence_relation;
-    const std::vector<std::vector<Transition>> &transitions_by_group_id;
-    // current_group_id is the actual iterator
-    int current_group_id;
-
-    void next_valid_index();
+    const std::vector<std::vector<int>> &local_to_global_label_nos;
+    const std::vector<std::vector<Transition>> &transitions_by_local_label_no;
+    const std::vector<int> &local_label_no_to_cost;
+    int current_label_no;
 public:
-    TSConstIterator(const LabelEquivalenceRelation &label_equivalence_relation,
-                    const std::vector<std::vector<Transition>> &transitions_by_group_id,
-                    bool end);
+    TSConstIterator(
+        const std::vector<std::vector<int>> &local_to_global_label_nos,
+        const std::vector<std::vector<Transition>> &transitions_by_local_label_no,
+        const std::vector<int> &local_label_no_to_cost,
+        bool end);
     void operator++();
     GroupAndTransitions operator*() const;
 
     bool operator==(const TSConstIterator &rhs) const {
-        return current_group_id == rhs.current_group_id;
+        return current_label_no == rhs.current_label_no;
     }
 
     bool operator!=(const TSConstIterator &rhs) const {
-        return current_group_id != rhs.current_group_id;
+        return current_label_no != rhs.current_label_no;
     }
 };
 
@@ -94,40 +95,32 @@ private:
     const int num_variables;
     std::vector<int> incorporated_variables;
 
+    const GlobalLabels &global_labels;
     /*
       All locally equivalent labels are grouped together, and their
-      transitions are only stored once for every such group, see below.
-
-      LabelEquivalenceRelation stores the equivalence relation over all
-      labels of the underlying factored transition system.
+      transitions are only stored once for every such group. Each such group
+      is represented by a (virtual) local label id. Local label ids can be
+      mapped back to the set of global labels they represent. Their cost is
+      the minimum cost of all represented global labels.
     */
-    std::unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
-
-    /*
-      The transitions of a label group are indexed via its ID. The ID of a
-      group does not change, and hence its transitions are never moved.
-
-      We tested different alternatives to store the transitions, but they all
-      performed worse: storing a vector transitions in the label group increases
-      memory usage and runtime; storing the transitions more compactly and
-      incrementally increasing the size of transitions_of_groups whenever a
-      new label group is added also increases runtime. See also issue492 and
-      issue521.
-    */
-    std::vector<std::vector<Transition>> transitions_by_group_id;
+    std::vector<std::vector<int>> local_to_global_label_nos;
+    std::vector<std::vector<Transition>> transitions_by_local_label_no;
+    std::vector<int> local_label_no_to_cost;
 
     int num_states;
     std::vector<bool> goal_states;
     int init_state;
 
     /*
-      Check if two or more labels are locally equivalent to each other, and
-      if so, update the label equivalence relation.
+      Check if two or more local labels are locally equivalent to each other,
+      and if so, merge them and store their transitions only once.
     */
-    void compute_locally_equivalent_labels();
+    void compute_locally_equivalent_labels(
+        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
+        int ts_index);
 
-    const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
-        return transitions_by_group_id[group_id];
+    const std::vector<Transition> &get_transitions_for_local_label_no(int label_no) const {
+        return transitions_by_local_label_no[label_no];
     }
 
     // Statistics and output
@@ -137,8 +130,10 @@ public:
     TransitionSystem(
         int num_variables,
         std::vector<int> &&incorporated_variables,
-        std::unique_ptr<LabelEquivalenceRelation> &&label_equivalence_relation,
-        std::vector<std::vector<Transition>> &&transitions_by_group_id,
+        const GlobalLabels &global_labels,
+        std::vector<std::vector<int>> &&local_to_global_label_nos,
+        std::vector<std::vector<Transition>> &&transitions_by_local_label_no,
+        std::vector<int> &&local_label_no_to_cost,
         int num_states,
         std::vector<bool> &&goal_states,
         int init_state);
@@ -154,7 +149,11 @@ public:
         const GlobalLabels &labels,
         const TransitionSystem &ts1,
         const TransitionSystem &ts2,
-        utils::Verbosity verbosity);
+        utils::Verbosity verbosity,
+        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
+        int ts_index1,
+        int ts_index2,
+        int product_index);
 
     /*
       Applies the given state equivalence relation to the transition system.
@@ -166,26 +165,31 @@ public:
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping,
-        utils::Verbosity verbosity);
+        utils::Verbosity verbosity,
+        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
+        int ts_index);
 
     /*
       Applies the given label mapping, mapping old to new label numbers. This
-      updates the label equivalence relation which is internally used to group
-      locally equivalent labels and store their transitions only once.
+      potentially means regrouping or adding new local labels.
     */
     void apply_label_reduction(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-        bool only_equivalent_labels);
+        bool only_equivalent_labels,
+        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
+        int ts_index);
 
     TSConstIterator begin() const {
-        return TSConstIterator(*label_equivalence_relation,
-                               transitions_by_group_id,
+        return TSConstIterator(local_to_global_label_nos,
+                               transitions_by_local_label_no,
+                               local_label_no_to_cost,
                                false);
     }
 
     TSConstIterator end() const {
-        return TSConstIterator(*label_equivalence_relation,
-                               transitions_by_group_id,
+        return TSConstIterator(local_to_global_label_nos,
+                               transitions_by_local_label_no,
+                               local_label_no_to_cost,
                                true);
     }
 
@@ -203,7 +207,10 @@ public:
       sorted (by source, by target) and there are no duplicates.
     */
     bool are_transitions_sorted_unique() const;
-    bool in_sync_with_label_equivalence_relation() const;
+    bool is_valid() const;
+    bool is_label_mapping_consistent(
+        const std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
+        int index) const;
 
     bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;

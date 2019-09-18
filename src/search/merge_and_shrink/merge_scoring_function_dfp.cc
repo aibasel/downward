@@ -2,7 +2,6 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
 

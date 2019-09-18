@@ -1,7 +1,6 @@
 #include "label_reduction.h"
 
 #include "factored_transition_system.h"
-#include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
 #include "types.h"
@@ -88,6 +87,9 @@ void LabelReduction::compute_label_mapping(
             const vector<int> &label_nos = it->second;
             if (label_nos.size() > 1) {
                 label_mapping.push_back(make_pair(next_new_label_no, label_nos));
+                if (verbosity >= utils::Verbosity::DEBUG) {
+                    cout << "Reducing labels " << label_nos << " to " << next_new_label_no << endl;
+                }
                 ++next_new_label_no;
             }
             if (!label_nos.empty()) {

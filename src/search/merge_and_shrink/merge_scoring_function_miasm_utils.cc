@@ -26,7 +26,8 @@ unique_ptr<TransitionSystem> copy_and_shrink_ts(
     const Distances &distances,
     const ShrinkStrategy &shrink_strategy,
     int new_size,
-    utils::Verbosity verbosity) {
+    utils::Verbosity verbosity,
+    const FactoredTransitionSystem &fts, int index) {
     /*
       TODO: think about factoring out common logic of this function and the
       function shrink_factor in utils.cc
@@ -46,8 +47,10 @@ unique_ptr<TransitionSystem> copy_and_shrink_ts(
             ts.get_size(), equivalence_relation);
         unique_ptr<TransitionSystem> ts_copy =
             utils::make_unique_ptr<TransitionSystem>(ts);
+        vector<vector<int>> global_label_no_and_ts_index_to_local_label_no =
+            fts.get_global_label_no_and_ts_index_to_local_label_no();
         ts_copy->apply_abstraction(
-            equivalence_relation, abstraction_mapping, verbosity);
+            equivalence_relation, abstraction_mapping, verbosity, global_label_no_and_ts_index_to_local_label_no, index);
         return ts_copy;
     } else {
         return nullptr;
@@ -91,7 +94,8 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
             fts.get_distances(index1),
             shrink_strategy,
             new_sizes.first,
-            verbosity);
+            verbosity,
+            fts, index1);
     }
     unique_ptr<TransitionSystem> ts2 = nullptr;
     if (must_shrink_ts2) {
@@ -100,17 +104,22 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
             fts.get_distances(index2),
             shrink_strategy,
             new_sizes.second,
-            verbosity);
+            verbosity,
+            fts, index2);
     }
 
     /*
       Return the product, using either the original transition systems or
       the copied and shrunk ones.
     */
+    vector<vector<int>> global_label_no_and_ts_index_to_local_label_no =
+        fts.get_global_label_no_and_ts_index_to_local_label_no();
+    int merge_index = fts.get_size();
     return TransitionSystem::merge(
         fts.get_labels(),
         (ts1 ? *ts1 : original_ts1),
         (ts2 ? *ts2 : original_ts2),
-        verbosity);
+        verbosity,
+        global_label_no_and_ts_index_to_local_label_no, index1, index2, merge_index);
 }
 }
