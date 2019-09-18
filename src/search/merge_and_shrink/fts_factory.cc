@@ -56,7 +56,7 @@ class FTSFactory {
     int task_has_conditional_effects;
     vector<vector<int>> global_label_no_and_ts_index_to_local_label_no;
 
-    vector<unique_ptr<Label>> create_labels();
+    vector<unique_ptr<GlobalLabel>> create_labels();
     void build_state_data(VariableProxy var);
     void initialize_transition_system_data(const GlobalLabels &global_labels);
     bool is_relevant(int var_no, int label_no) const;
@@ -104,15 +104,15 @@ FTSFactory::FTSFactory(const TaskProxy &task_proxy)
 FTSFactory::~FTSFactory() {
 }
 
-vector<unique_ptr<Label>> FTSFactory::create_labels() {
-    vector<unique_ptr<Label>> result;
+vector<unique_ptr<GlobalLabel>> FTSFactory::create_labels() {
+    vector<unique_ptr<GlobalLabel>> result;
     int num_ops = task_proxy.get_operators().size();
     if (num_ops > 0) {
         int max_num_labels = 2 * num_ops - 1;
         result.reserve(max_num_labels);
     }
     for (OperatorProxy op : task_proxy.get_operators()) {
-        result.push_back(utils::make_unique_ptr<Label>(op.get_cost()));
+        result.push_back(utils::make_unique_ptr<GlobalLabel>(op.get_cost()));
     }
     return result;
 }
