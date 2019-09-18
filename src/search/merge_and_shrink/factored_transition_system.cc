@@ -38,7 +38,6 @@ void FTSConstIterator::operator++() {
 
 FactoredTransitionSystem::FactoredTransitionSystem(
     unique_ptr<GlobalLabels> labels,
-    vector<vector<int>> &&global_label_no_and_ts_index_to_local_label_no,
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
     vector<unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
     vector<unique_ptr<Distances>> &&distances,
@@ -46,7 +45,6 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     const bool compute_goal_distances,
     utils::Verbosity verbosity)
     : global_labels(move(labels)),
-      global_label_no_and_ts_index_to_local_label_no(move(global_label_no_and_ts_index_to_local_label_no)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
       distances(move(distances)),
@@ -64,7 +62,6 @@ FactoredTransitionSystem::FactoredTransitionSystem(
 
 FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&other)
     : global_labels(move(other.global_labels)),
-      global_label_no_and_ts_index_to_local_label_no(move(other.global_label_no_and_ts_index_to_local_label_no)),
       transition_systems(move(other.transition_systems)),
       mas_representations(move(other.mas_representations)),
       distances(move(other.distances)),
@@ -100,13 +97,7 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
     if (compute_goal_distances && !distances[index]->are_goal_distances_computed()) {
         return false;
     }
-    for (int label_no = 0; label_no < global_labels->get_size(); ++label_no) {
-        if (global_labels->is_current_label(label_no)) {
-            assert(global_label_no_and_ts_index_to_local_label_no[label_no][index] != -1);
-        }
-    }
-    return transition_systems[index]->is_valid()
-        && transition_systems[index]->is_label_mapping_consistent(global_label_no_and_ts_index_to_local_label_no, index);
+    return transition_systems[index]->is_valid();
 }
 
 void FactoredTransitionSystem::assert_all_components_valid() const {
@@ -127,10 +118,8 @@ void FactoredTransitionSystem::apply_label_mapping(
     }
     for (size_t i = 0; i < transition_systems.size(); ++i) {
         if (transition_systems[i]) {
-            // TODO: here, having the global_to_local mapping of a single abs would be good.
             transition_systems[i]->apply_label_reduction(
-                label_mapping, static_cast<int>(i) != combinable_index,
-                global_label_no_and_ts_index_to_local_label_no, i);
+                label_mapping, static_cast<int>(i) != combinable_index);
         }
     }
     assert_all_components_valid();
@@ -151,8 +140,7 @@ bool FactoredTransitionSystem::apply_abstraction(
         transition_systems[index]->get_size(), state_equivalence_relation);
 
     transition_systems[index]->apply_abstraction(
-        state_equivalence_relation, abstraction_mapping, verbosity,
-        global_label_no_and_ts_index_to_local_label_no, index);
+        state_equivalence_relation, abstraction_mapping, verbosity);
     if (compute_init_distances || compute_goal_distances) {
         distances[index]->apply_abstraction(
             state_equivalence_relation,
@@ -175,17 +163,12 @@ int FactoredTransitionSystem::merge(
     utils::Verbosity verbosity) {
     assert(is_component_valid(index1));
     assert(is_component_valid(index2));
-    int merged_index = mas_representations.size();
     transition_systems.push_back(
         TransitionSystem::merge(
             *global_labels,
             *transition_systems[index1],
             *transition_systems[index2],
-            verbosity,
-            global_label_no_and_ts_index_to_local_label_no,
-            index1,
-            index2,
-            merged_index));
+            verbosity));
     distances[index1] = nullptr;
     distances[index2] = nullptr;
     transition_systems[index1] = nullptr;

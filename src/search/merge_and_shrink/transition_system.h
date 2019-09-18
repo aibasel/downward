@@ -103,6 +103,7 @@ private:
       mapped back to the set of global labels they represent. Their cost is
       the minimum cost of all represented global labels.
     */
+    std::vector<int> global_to_local_label_nos;
     std::vector<std::vector<int>> local_to_global_label_nos;
     std::vector<std::vector<Transition>> transitions_by_local_label_no;
     std::vector<int> local_label_no_to_cost;
@@ -115,9 +116,7 @@ private:
       Check if two or more local labels are locally equivalent to each other,
       and if so, merge them and store their transitions only once.
     */
-    void compute_locally_equivalent_labels(
-        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
-        int ts_index);
+    void compute_locally_equivalent_labels();
 
     const std::vector<Transition> &get_transitions_for_local_label_no(int label_no) const {
         return transitions_by_local_label_no[label_no];
@@ -131,6 +130,7 @@ public:
         int num_variables,
         std::vector<int> &&incorporated_variables,
         const GlobalLabels &global_labels,
+        std::vector<int> &&global_to_local_label_nos,
         std::vector<std::vector<int>> &&local_to_global_label_nos,
         std::vector<std::vector<Transition>> &&transitions_by_local_label_no,
         std::vector<int> &&local_label_no_to_cost,
@@ -146,14 +146,10 @@ public:
       (It is a bug to merge an unsolvable transition system.)
     */
     static std::unique_ptr<TransitionSystem> merge(
-        const GlobalLabels &labels,
+        const GlobalLabels &global_labels,
         const TransitionSystem &ts1,
         const TransitionSystem &ts2,
-        utils::Verbosity verbosity,
-        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
-        int ts_index1,
-        int ts_index2,
-        int product_index);
+        utils::Verbosity verbosity);
 
     /*
       Applies the given state equivalence relation to the transition system.
@@ -165,9 +161,7 @@ public:
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping,
-        utils::Verbosity verbosity,
-        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
-        int ts_index);
+        utils::Verbosity verbosity);
 
     /*
       Applies the given label mapping, mapping old to new label numbers. This
@@ -175,9 +169,7 @@ public:
     */
     void apply_label_reduction(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-        bool only_equivalent_labels,
-        std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
-        int ts_index);
+        bool only_equivalent_labels);
 
     TSConstIterator begin() const {
         return TSConstIterator(local_to_global_label_nos,
@@ -208,9 +200,7 @@ public:
     */
     bool are_transitions_sorted_unique() const;
     bool is_valid() const;
-    bool is_label_mapping_consistent(
-        const std::vector<std::vector<int>> &global_label_no_and_ts_index_to_local_label_no,
-        int index) const;
+    bool is_label_mapping_consistent() const;
 
     bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;

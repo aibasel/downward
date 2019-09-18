@@ -59,7 +59,6 @@ public:
 */
 class FactoredTransitionSystem {
     std::unique_ptr<GlobalLabels> global_labels;
-    std::vector<std::vector<int>> global_label_no_and_ts_index_to_local_label_no;
     // Entries with nullptr have been merged.
     std::vector<std::unique_ptr<TransitionSystem>> transition_systems;
     std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;
@@ -85,7 +84,6 @@ class FactoredTransitionSystem {
 public:
     FactoredTransitionSystem(
         std::unique_ptr<GlobalLabels> global_labels,
-        std::vector<std::vector<int>> &&global_label_no_and_ts_index_to_local_label_no,
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
@@ -144,10 +142,6 @@ public:
     void statistics(int index) const;
     void dump(int index) const;
     void dump() const;
-
-    const std::vector<std::vector<int>> &get_global_label_no_and_ts_index_to_local_label_no() const {
-        return global_label_no_and_ts_index_to_local_label_no;
-    }
 
     const TransitionSystem &get_transition_system(int index) const {
         return *transition_systems[index];

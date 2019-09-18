@@ -29,6 +29,7 @@ class FTSFactory {
         int num_variables;
         vector<int> incorporated_variables;
 
+        vector<int> global_to_local_label_nos;
         vector<vector<int>> local_to_global_label_nos;
         vector<vector<Transition>> transitions_by_local_label_no;
         vector<int> local_label_no_to_cost;
@@ -39,6 +40,7 @@ class FTSFactory {
         TransitionSystemData(TransitionSystemData &&other)
             : num_variables(other.num_variables),
               incorporated_variables(move(other.incorporated_variables)),
+              global_to_local_label_nos(move(other.global_to_local_label_nos)),
               local_to_global_label_nos(move(other.local_to_global_label_nos)),
               transitions_by_local_label_no(move(other.transitions_by_local_label_no)),
               local_label_no_to_cost(move(other.local_label_no_to_cost)),
@@ -54,7 +56,6 @@ class FTSFactory {
     vector<TransitionSystemData> transition_system_data_by_var;
     // see TODO in build_transitions()
     int task_has_conditional_effects;
-    vector<vector<int>> global_label_no_and_ts_index_to_local_label_no;
 
     vector<unique_ptr<GlobalLabel>> create_labels();
     void build_state_data(VariableProxy var);
@@ -145,14 +146,14 @@ void FTSFactory::build_state_data(VariableProxy var) {
 
 void FTSFactory::initialize_transition_system_data(const GlobalLabels &global_labels) {
     VariablesProxy variables = task_proxy.get_variables();
-    int num_labels = task_proxy.get_operators().size();
     transition_system_data_by_var.resize(variables.size());
     for (VariableProxy var : variables) {
         TransitionSystemData &ts_data = transition_system_data_by_var[var.get_id()];
         ts_data.num_variables = variables.size();
         ts_data.incorporated_variables.push_back(var.get_id());
         ts_data.transitions_by_local_label_no.reserve(global_labels.get_max_size());
-        ts_data.relevant_labels.resize(num_labels, false);
+        ts_data.global_to_local_label_nos.resize(global_labels.get_max_size(), -1);
+        ts_data.relevant_labels.resize(global_labels.get_size(), false);
         build_state_data(var);
     }
 }
@@ -305,19 +306,23 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
             assert(utils::is_sorted_unique(transitions));
         }
 
+        vector<int> &global_to_local_label_nos =
+            transition_system_data_by_var[var_no].global_to_local_label_nos;
         vector<vector<Transition>> &transitions_by_local_label_no =
             transition_system_data_by_var[var_no].transitions_by_local_label_no;
-        vector<vector<int>> &local_to_global_labels = transition_system_data_by_var[var_no].local_to_global_label_nos;
-        vector<int> &local_label_to_cost = transition_system_data_by_var[var_no].local_label_no_to_cost;
+        vector<vector<int>> &local_to_global_labels =
+            transition_system_data_by_var[var_no].local_to_global_label_nos;
+        vector<int> &local_label_to_cost =
+            transition_system_data_by_var[var_no].local_label_no_to_cost;
         assert(transitions_by_local_label_no.size() == local_to_global_labels.size());
         assert(transitions_by_local_label_no.size() == local_label_to_cost.size());
         bool found_locally_equivalent_label_group = false;
         for (size_t local_label_no = 0; local_label_no < transitions_by_local_label_no.size(); ++local_label_no) {
             const vector<Transition> &group_transitions = transitions_by_local_label_no[local_label_no];
             if (transitions == group_transitions) {
+                assert(global_to_local_label_nos[label_no] == -1);
+                global_to_local_label_nos[label_no] = local_label_no;
                 local_to_global_labels[local_label_no].push_back(label_no);
-                assert(global_label_no_and_ts_index_to_local_label_no[label_no][var_no] == -1);
-                global_label_no_and_ts_index_to_local_label_no[label_no][var_no] = local_label_no;
                 local_label_to_cost[local_label_no] = min(local_label_to_cost[local_label_no], label_cost);
                 found_locally_equivalent_label_group = true;
                 break;
@@ -329,8 +334,8 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
             transitions_by_local_label_no.push_back(move(transitions));
             local_to_global_labels.push_back({label_no});
             local_label_to_cost.push_back(label_cost);
-            assert(global_label_no_and_ts_index_to_local_label_no[label_no][var_no] == -1);
-            global_label_no_and_ts_index_to_local_label_no[label_no][var_no] = new_local_label_no;
+            assert(global_to_local_label_nos[label_no] == -1);
+            global_to_local_label_nos[label_no] = new_local_label_no;
         }
     }
 }
@@ -358,8 +363,8 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, co
             transitions.emplace_back(state, state);
         int new_local_label_no = ts_data.transitions_by_local_label_no.size();
         for (int label_no : irrelevant_labels) {
-            assert(global_label_no_and_ts_index_to_local_label_no[label_no][var_no] == -1);
-            global_label_no_and_ts_index_to_local_label_no[label_no][var_no] = new_local_label_no;
+            assert(ts_data.global_to_local_label_nos[label_no] == -1);
+            ts_data.global_to_local_label_nos[label_no] = new_local_label_no;
         }
         ts_data.local_to_global_label_nos.push_back(move(irrelevant_labels));
         ts_data.transitions_by_local_label_no.push_back(move(transitions));
@@ -399,6 +404,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
                              ts_data.num_variables,
                              move(ts_data.incorporated_variables),
                              global_labels,
+                             move(ts_data.global_to_local_label_nos),
                              move(ts_data.local_to_global_label_nos),
                              move(ts_data.transitions_by_local_label_no),
                              move(ts_data.local_label_no_to_cost),
@@ -453,15 +459,6 @@ FactoredTransitionSystem FTSFactory::create(
     }
 
     unique_ptr<GlobalLabels> global_labels = utils::make_unique_ptr<GlobalLabels>(create_labels());
-    int num_variables = task_proxy.get_variables().size();
-//    global_label_no_and_ts_index_to_local_label_no.reserve(labels->get_max_size());
-    // TODO: this is probably overly conservative but saves the trouble of
-    // resizing the outer vector after each label reduction and the inner
-    // vector after each merge. In general, think about whether separate
-    // vector<int> global_to_local_label_nos for each transition system
-    // wouldn't be much more appropriate data structures.
-    global_label_no_and_ts_index_to_local_label_no.resize(
-        global_labels->get_max_size(), vector<int>(2 * num_variables - 1, -1));
 
     initialize_transition_system_data(*global_labels);
     build_transitions(*global_labels);
@@ -472,15 +469,8 @@ FactoredTransitionSystem FTSFactory::create(
     vector<unique_ptr<Distances>> distances =
         create_distances(transition_systems);
 
-    for (int label_no = 0; label_no < global_labels->get_size(); ++label_no) {
-        for (int var = 0; var < num_variables; ++var) {
-            assert(global_label_no_and_ts_index_to_local_label_no[label_no][var] != -1);
-        }
-    }
-
     return FactoredTransitionSystem(
         move(global_labels),
-        move(global_label_no_and_ts_index_to_local_label_no),
         move(transition_systems),
         move(mas_representations),
         move(distances),
