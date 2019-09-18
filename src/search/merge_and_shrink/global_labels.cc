@@ -1,4 +1,4 @@
-#include "labels.h"
+#include "global_labels.h"
 
 #include "types.h"
 

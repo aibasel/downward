@@ -1,7 +1,7 @@
 #include "label_reduction.h"
 
 #include "factored_transition_system.h"
-#include "labels.h"
+#include "global_labels.h"
 #include "transition_system.h"
 #include "types.h"
 

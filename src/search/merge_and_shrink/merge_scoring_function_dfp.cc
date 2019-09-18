@@ -2,7 +2,7 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "labels.h"
+#include "global_labels.h"
 #include "transition_system.h"
 
 #include "../options/option_parser.h"
