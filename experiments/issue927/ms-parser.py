@@ -30,8 +30,8 @@ parser.add_function(check_atomic_fts_constructed)
 def check_planner_exit_reason(content, props):
     ms_abstraction_constructed = props.get('ms_abstraction_constructed')
     error = props.get('error')
-    if error != 'success' and error != 'timeout' and error != 'out-of-memory':
-        print 'error: %s' % error
+    if error != 'success' and error != 'search-out-of-time' and error != 'search-out-of-memory':
+        print('error: %s' % error)
         return
 
     # Check whether merge-and-shrink computation or search ran out of
@@ -41,14 +41,14 @@ def check_planner_exit_reason(content, props):
     search_out_of_time = False
     search_out_of_memory = False
     if ms_abstraction_constructed == False:
-        if error == 'timeout':
+        if error == 'search-out-of-time':
             ms_out_of_time = True
-        elif error == 'out-of-memory':
+        elif error == 'search-out-of-memory':
             ms_out_of_memory = True
     elif ms_abstraction_constructed == True:
-        if error == 'timeout':
+        if error == 'search-out-of-time':
             search_out_of_time = True
-        elif error == 'out-of-memory':
+        elif error == 'search-out-of-memory':
             search_out_of_memory = True
     props['ms_out_of_time'] = ms_out_of_time
     props['ms_out_of_memory'] = ms_out_of_memory
