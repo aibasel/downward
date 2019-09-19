@@ -135,7 +135,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     vector<int> global_to_local_label_nos(global_labels.get_max_size(), -1);
     vector<vector<int>> local_to_global_label_nos;
     vector<vector<Transition>> transitions_by_local_label_no;
-    transitions_by_local_label_no.reserve(global_labels.get_max_size());
     vector<int> local_label_no_to_cost;
 
     int ts1_size = ts1.get_size();
@@ -242,6 +241,8 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         local_label_no_to_cost.push_back(cost);
     }
 
+    // TODO: call shrink_to_fit here?
+
     assert(transitions_by_local_label_no.size() == local_to_global_label_nos.size());
 
     return utils::make_unique_ptr<TransitionSystem>(
@@ -256,6 +257,41 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         move(goal_states),
         init_state
         );
+}
+
+void TransitionSystem::make_local_labels_contiguous() {
+    int num_local_labels = local_to_global_label_nos.size();
+    int new_num_local_labels = 0;
+    for (int local_label_no = 0; local_label_no < num_local_labels; ++local_label_no) {
+        if (!local_to_global_label_nos[local_label_no].empty()) {
+            ++new_num_local_labels;
+        }
+    }
+
+    if (new_num_local_labels < num_local_labels) {
+        vector<vector<int>> new_local_to_global_label_nos;
+        vector<vector<Transition>> new_transitions_by_local_label_no;
+        vector<int> new_local_label_no_to_cost;
+        new_local_to_global_label_nos.reserve(new_num_local_labels);
+        new_transitions_by_local_label_no.reserve(new_num_local_labels);
+        new_local_label_no_to_cost.reserve(new_num_local_labels);
+        int new_local_label_no = 0;
+        for (int local_label_no = 0; local_label_no < num_local_labels; ++local_label_no) {
+            if (!local_to_global_label_nos[local_label_no].empty()) {
+                for (int global_label_no : local_to_global_label_nos[local_label_no]) {
+                    assert(global_to_local_label_nos[global_label_no] == local_label_no);
+                    global_to_local_label_nos[global_label_no] = new_local_label_no;
+                }
+                new_local_to_global_label_nos.push_back(move(local_to_global_label_nos[local_label_no]));
+                new_transitions_by_local_label_no.push_back(move(transitions_by_local_label_no[local_label_no]));
+                new_local_label_no_to_cost.push_back(local_label_no_to_cost[local_label_no]);
+                ++new_local_label_no;
+            }
+        }
+        new_local_to_global_label_nos.swap(local_to_global_label_nos);
+        new_transitions_by_local_label_no.swap(transitions_by_local_label_no);
+        new_local_label_no_to_cost.swap(local_label_no_to_cost);
+    }
 }
 
 void TransitionSystem::compute_locally_equivalent_labels() {
@@ -287,8 +323,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
         }
     }
 
-    // TODO: if we want local label numbers to be contiguous, make it here.
-    assert(is_label_mapping_consistent());
+    make_local_labels_contiguous();
 }
 
 void TransitionSystem::apply_abstraction(
@@ -535,6 +570,7 @@ bool TransitionSystem::is_label_mapping_consistent() const {
         if (global_labels.is_current_label(label_no)) {
             int local_label_no = global_to_local_label_nos[label_no];
             const vector<int> &global_labels = local_to_global_label_nos[local_label_no];
+            assert(!local_to_global_label_nos[local_label_no].empty());
 
             if (find(global_labels.begin(),
                      global_labels.end(),

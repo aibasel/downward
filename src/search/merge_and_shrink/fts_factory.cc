@@ -151,7 +151,7 @@ void FTSFactory::initialize_transition_system_data(const GlobalLabels &global_la
         TransitionSystemData &ts_data = transition_system_data_by_var[var.get_id()];
         ts_data.num_variables = variables.size();
         ts_data.incorporated_variables.push_back(var.get_id());
-        ts_data.transitions_by_local_label_no.reserve(global_labels.get_max_size());
+        ts_data.transitions_by_local_label_no.reserve(global_labels.get_size());
         ts_data.global_to_local_label_nos.resize(global_labels.get_max_size(), -1);
         ts_data.relevant_labels.resize(global_labels.get_size(), false);
         build_state_data(var);

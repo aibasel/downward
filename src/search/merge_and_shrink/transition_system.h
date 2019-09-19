@@ -112,6 +112,7 @@ private:
     std::vector<bool> goal_states;
     int init_state;
 
+    void make_local_labels_contiguous();
     /*
       Check if two or more local labels are locally equivalent to each other,
       and if so, merge them and store their transitions only once.
