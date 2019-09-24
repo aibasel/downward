@@ -241,7 +241,9 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         local_label_no_to_cost.push_back(cost);
     }
 
-    // TODO: call shrink_to_fit here?
+    local_to_global_label_nos.shrink_to_fit();
+    transitions_by_local_label_no.shrink_to_fit();
+    local_label_no_to_cost.shrink_to_fit();
 
     assert(transitions_by_local_label_no.size() == local_to_global_label_nos.size());
 
