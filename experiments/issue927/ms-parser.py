@@ -7,6 +7,7 @@ from lab.parser import Parser
 
 parser = Parser()
 parser.add_pattern('ms_construction_time', 'Merge-and-shrink algorithm runtime: (.+)s', required=False, type=float)
+parser.add_pattern('ms_main_loop_max_time', 'Main loop max time in seconds: (.+)', required=False, type=float)
 parser.add_pattern('ms_atomic_construction_time', 'M&S algorithm timer: (.+)s \(after computation of atomic factors\)', required=False, type=float)
 parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink algorithm: (\d+) KB', required=False, type=int)
 parser.add_pattern('ms_num_remaining_factors', 'Number of remaining factors: (\d+)', required=False, type=int)
@@ -88,26 +89,13 @@ def add_construction_time_score(content, props):
         best_raw_score = math.log(min_bound) - math.log(max_bound)
         return raw_score / best_raw_score
 
-    main_loop_max_time = None
-    for line in content.splitlines():
-        if line.startswith("Starting main loop"):
-            if line.endswith("without a time limit."):
-                try:
-                    max_time = props['limit_search_time']
-                except KeyError:
-                    print("search time limit missing -> can't compute time scores")
-                else:
-                    main_loop_max_time = max_time
-            else:
-                z = re.match('Starting main loop with a time limit of (.+)s', line)
-                assert(len(z.groups()) == 1)
-                main_loop_max_time = float(z.groups()[0])
-            break
-    if main_loop_max_time is None:
-        score = 0
-    else:
-        score = log_score(props.get('ms_construction_time'), min_bound=1.0, max_bound=main_loop_max_time)
-    props['score_ms_construction_time'] = score
+    main_loop_max_time = props.get('ms_main_loop_max_time')
+    if main_loop_max_time is not None and main_loop_max_time == float('inf'):
+        max_time = props.get('limit_search_time')
+        if max_time is not None:
+            main_loop_max_time = max_time
+    if main_loop_max_time is not None and main_loop_max_time != float('inf'):
+        props['score_ms_construction_time'] = log_score(props.get('ms_construction_time'), min_bound=1.0, max_bound=main_loop_max_time)
 
 parser.add_function(add_construction_time_score)
 
