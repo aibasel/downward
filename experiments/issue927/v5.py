@@ -65,6 +65,7 @@ perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False
 
 # m&s attributes
 ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, functions=[geometric_mean])
+score_ms_construction_time = Attribute('score_ms_construction_time', min_wins=False, digits=4)
 ms_atomic_construction_time = Attribute('ms_atomic_construction_time', absolute=False, min_wins=True, functions=[geometric_mean])
 ms_abstraction_constructed = Attribute('ms_abstraction_constructed', absolute=True, min_wins=False)
 ms_atomic_fts_constructed = Attribute('ms_atomic_fts_constructed', absolute=True, min_wins=False)
@@ -77,6 +78,7 @@ extra_attributes = [
     perfect_heuristic,
 
     ms_construction_time,
+    score_ms_construction_time,
     ms_atomic_construction_time,
     ms_abstraction_constructed,
     ms_atomic_fts_constructed,
@@ -87,6 +89,8 @@ extra_attributes = [
 ]
 attributes = exp.DEFAULT_TABLE_ATTRIBUTES
 attributes.extend(extra_attributes)
+
+exp.add_parse_again_step()
 
 exp.add_comparison_table_step(attributes=attributes)
 

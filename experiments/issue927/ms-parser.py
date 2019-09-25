@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 
+import math
+import re
+
 from lab.parser import Parser
 
 parser = Parser()
@@ -67,5 +70,41 @@ def check_perfect_heuristic(content, props):
         props['perfect_heuristic'] = perfect_heuristic
 
 parser.add_function(check_perfect_heuristic)
+
+def add_construction_time_score(content, props):
+    """
+    Convert some properties into scores in the range [0, 1].
+
+    Best possible performance in a task is counted as 1, while failure
+    to solve a task and worst performance are counted as 0.
+
+    """
+    def log_score(value, min_bound, max_bound):
+        if value is None or not props['ms_abstraction_constructed']:
+            return 0
+        value = max(value, min_bound)
+        value = min(value, max_bound)
+        raw_score = math.log(value) - math.log(max_bound)
+        best_raw_score = math.log(min_bound) - math.log(max_bound)
+        return raw_score / best_raw_score
+
+    main_loop_max_time = None
+    for line in content.splitlines():
+        if line.startswith("Starting main loop"):
+            if line.endswith("without a time limit."):
+                try:
+                    max_time = props['limit_search_time']
+                except KeyError:
+                    print("search time limit missing -> can't compute time scores")
+                else:
+                    main_loop_max_time = max_time
+            else:
+                z = re.match('Starting main loop with a time limit of (.+)s', line)
+                assert(len(z.groups()) == 1)
+                main_loop_max_time = float(z.groups()[0])
+            break
+    props['score_ms_construction_time'] = log_score(props.get('ms_construction_time'), min_bound=1.0, max_bound=main_loop_max_time)
+
+parser.add_function(add_construction_time_score)
 
 parser.parse()
