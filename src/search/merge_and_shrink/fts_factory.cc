@@ -369,10 +369,6 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, co
         ts_data.transitions_by_local_label_no.push_back(move(transitions));
         ts_data.local_label_no_to_cost.push_back(cost);
     }
-
-    ts_data.local_to_global_label_nos.shrink_to_fit();
-    ts_data.transitions_by_local_label_no.shrink_to_fit();
-    ts_data.local_label_no_to_cost.shrink_to_fit();
 }
 
 void FTSFactory::build_transitions(const GlobalLabels &labels) {
