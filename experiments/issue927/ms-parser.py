@@ -74,10 +74,10 @@ parser.add_function(check_perfect_heuristic)
 
 def add_construction_time_score(content, props):
     """
-    Convert some properties into scores in the range [0, 1].
+    Convert ms_construction_time into scores in the range [0, 1].
 
     Best possible performance in a task is counted as 1, while failure
-    to solve a task and worst performance are counted as 0.
+    to construct the heuristic and worst performance are counted as 0.
 
     """
     def log_score(value, min_bound, max_bound):
