@@ -70,7 +70,7 @@ void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
 }
 
 void MergeAndShrinkAlgorithm::dump_options() const {
-    if (verbosity >= utils::Verbosity::VERBOSE) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         if (merge_strategy_factory) { // deleted after merge strategy extraction
             merge_strategy_factory->dump_options();
             cout << endl;
