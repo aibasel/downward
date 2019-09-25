@@ -87,11 +87,20 @@ void MergeAndShrinkAlgorithm::dump_options() const {
         shrink_strategy->dump_options();
         cout << endl;
 
+        cout << "Pruning unreachable states: "
+             << (prune_unreachable_states ? "yes" : "no") << endl;
+        cout << "Pruning irrelevant states: "
+             << (prune_irrelevant_states ? "yes" : "no") << endl;
+        cout << endl;
+
         if (label_reduction) {
             label_reduction->dump_options();
         } else {
             cout << "Label reduction disabled" << endl;
         }
+        cout << endl;
+
+        cout << "Main loop max time in seconds: " << main_loop_max_time << endl;
         cout << endl;
     }
 }
