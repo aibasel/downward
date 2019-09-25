@@ -80,7 +80,7 @@ def add_construction_time_score(content, props):
 
     """
     def log_score(value, min_bound, max_bound):
-        if value is None or not props['ms_abstraction_constructed']:
+        if value is None:
             return 0
         value = max(value, min_bound)
         value = min(value, max_bound)
@@ -103,7 +103,11 @@ def add_construction_time_score(content, props):
                 assert(len(z.groups()) == 1)
                 main_loop_max_time = float(z.groups()[0])
             break
-    props['score_ms_construction_time'] = log_score(props.get('ms_construction_time'), min_bound=1.0, max_bound=main_loop_max_time)
+    if main_loop_max_time is None:
+        score = 0
+    else:
+        score = log_score(props.get('ms_construction_time'), min_bound=1.0, max_bound=main_loop_max_time)
+    props['score_ms_construction_time'] = score
 
 parser.add_function(add_construction_time_score)
 

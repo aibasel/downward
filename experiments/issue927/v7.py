@@ -16,7 +16,7 @@ from relativescatter import RelativeScatterPlotReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue927-v5", "issue927-v6"]
+REVISIONS = ["issue927-v6", "issue927-v7"]
 BUILDS = ["release"]
 CONFIG_NICKS = [
     ('dfp-b50k-t900', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_stateless(merge_selector=score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order])),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1,main_loop_max_time=900))']),
@@ -89,8 +89,6 @@ extra_attributes = [
 ]
 attributes = exp.DEFAULT_TABLE_ATTRIBUTES
 attributes.extend(extra_attributes)
-
-exp.add_parse_again_step()
 
 exp.add_comparison_table_step(attributes=attributes)
 
