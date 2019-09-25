@@ -31,6 +31,7 @@ class GlobalLabels {
 public:
     explicit GlobalLabels(std::vector<std::unique_ptr<GlobalLabel>> &&labels);
     void reduce_labels(const std::vector<int> &old_label_nos);
+    int get_num_active_labels() const;
     bool is_current_label(int label_no) const;
     int get_label_cost(int label_no) const;
     void dump_labels() const;

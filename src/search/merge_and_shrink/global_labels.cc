@@ -38,6 +38,16 @@ void GlobalLabels::reduce_labels(const vector<int> &old_label_nos) {
     labels.push_back(utils::make_unique_ptr<GlobalLabel>(new_label_cost));
 }
 
+int GlobalLabels::get_num_active_labels() const {
+    int result = 0;
+    for (const auto &label : labels) {
+        if (label) {
+            ++result;
+        }
+    }
+    return result;
+}
+
 bool GlobalLabels::is_current_label(int label_no) const {
     assert(utils::in_bounds(label_no, labels));
     return labels[label_no] != nullptr;

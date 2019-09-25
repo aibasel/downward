@@ -136,6 +136,13 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     vector<vector<int>> local_to_global_label_nos;
     vector<vector<Transition>> transitions_by_local_label_no;
     vector<int> local_label_no_to_cost;
+    int max_num_local_labels_product =
+        min(static_cast<int>(ts1.local_label_no_to_cost.size()) *
+            static_cast<int>(ts2.local_label_no_to_cost.size()),
+            global_labels.get_num_active_labels());
+    local_to_global_label_nos.reserve(max_num_local_labels_product);
+    transitions_by_local_label_no.reserve(max_num_local_labels_product);
+    local_label_no_to_cost.reserve(max_num_local_labels_product);
 
     int ts1_size = ts1.get_size();
     int ts2_size = ts2.get_size();
@@ -245,6 +252,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     transitions_by_local_label_no.shrink_to_fit();
     local_label_no_to_cost.shrink_to_fit();
 
+    assert(static_cast<int>(local_label_no_to_cost.size()) <= max_num_local_labels_product);
     assert(transitions_by_local_label_no.size() == local_to_global_label_nos.size());
 
     return utils::make_unique_ptr<TransitionSystem>(
