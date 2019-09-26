@@ -158,24 +158,23 @@ public:
       pruned.
     */
     bool is_factor_solvable(int index) const;
+
     /*
-      A factor is trivial iff all of its states are goal states and the
-      corresponding merge-and-shrink representation is a total function.
+      A factor is trivial iff every concrete state is mapped to an abstract
+      goal state, which is equivalent to saying that the corresponding
+      merge-and-shrink representation is a total function and all abstract
+      states are goal states.
 
-      Notes:
-      1) We require the merge-and-shrink representation to be a total function
-      because otherwise, we would treat a factor as trivial even if it encodes
-      information of dead ends. However, we do not consider the special case
-      where pruning only pruned (unreachable) goal states, in which case the
-      factor could arguably be considered trivial because such states are never
-      encountered during search.
+      If h is the heuristic for the factor F, then we have:
+          F trivial => h(s) = 0 for all states s.
 
-      2) As an alternative for requiring all states to be goal states, we
-      considered requiring all represented variables to be non-goal variables.
-      However, this would have the drawback to depend on information of the
-      planning task and to be a syntactic rather than a semantic criterion,
-      which counters the M&S spirit. It would also not treat a factor as
-      trivial if it has only goal states due to shrinking, for example.
+      Note that a factor being trivial is sufficient but not necessary for
+      its heuristic to be useless. Scenarios of useless heuristics that are
+      not captured include:
+        - All non-goal states are connected to goal states on 0-cost paths.
+        - The only pruned states are unreachable (in this case, we get
+          h(s) = 0 for all reachable states, which is useless in most
+          contexts).
     */
     bool is_factor_trivial(int index) const;
 
