@@ -413,17 +413,9 @@ void TransitionSystem::apply_label_reduction(
         for (size_t i = 0; i < label_mapping.size(); ++i) {
             int new_label_no = label_mapping[i].first;
             vector<Transition> &transitions = new_transitions[i];
-            int new_group_id = label_equivalence_relation->get_group_id(new_label_no);
-            if (!utils::in_bounds(new_group_id, transitions_by_group_id)) {
-                /* Labels reduced to new_label_no were not locally equivalent
-                   and hence assigned to a new group. */
-                assert(new_group_id == static_cast<int>(transitions_by_group_id.size()));
-                transitions_by_group_id.push_back(move(transitions));
-            } else {
-                /* Labels reduced to new_label_no were locally equivalent before
-                   and hence the new label is part of the same group. */
-                transitions_by_group_id[new_group_id] = move(transitions);
-            }
+            assert(label_equivalence_relation->get_group_id(new_label_no)
+                == static_cast<int>(transitions_by_group_id.size()));
+            transitions_by_group_id.push_back(move(transitions));
         }
 
         // Go over all affected group IDs and remove their transitions if the
