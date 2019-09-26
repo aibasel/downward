@@ -163,7 +163,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     */
     int multiplier = ts2_size;
     vector<int> dead_labels;
-    for (const GroupAndTransitions &gat : ts1) {
+    for (GroupAndTransitions gat : ts1) {
         const LabelGroup &group1 = gat.label_group;
         const vector<Transition> &transitions1 = gat.transitions;
 
@@ -448,7 +448,7 @@ string TransitionSystem::tag() const {
 }
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         if (!utils::is_sorted_unique(gat.transitions))
             return false;
     }
@@ -472,7 +472,7 @@ bool TransitionSystem::is_solvable(const Distances &distances) const {
 
 int TransitionSystem::compute_total_transitions() const {
     int total = 0;
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         total += gat.transitions.size();
     }
     return total;
@@ -504,7 +504,7 @@ void TransitionSystem::dump_dot_graph() const {
         if (is_init)
             cout << "    start -> node" << i << ";" << endl;
     }
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
         const vector<Transition> &transitions = gat.transitions;
         for (const Transition &transition : transitions) {
@@ -525,7 +525,7 @@ void TransitionSystem::dump_dot_graph() const {
 
 void TransitionSystem::dump_labels_and_transitions() const {
     cout << tag() << "transitions" << endl;
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
 //        cout << "group ID: " << ts_it.get_id() << endl;
         cout << "labels: ";
