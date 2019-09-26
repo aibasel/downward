@@ -414,7 +414,7 @@ void TransitionSystem::apply_label_reduction(
             int new_label_no = label_mapping[i].first;
             vector<Transition> &transitions = new_transitions[i];
             assert(label_equivalence_relation->get_group_id(new_label_no)
-                == static_cast<int>(transitions_by_group_id.size()));
+                   == static_cast<int>(transitions_by_group_id.size()));
             transitions_by_group_id.push_back(move(transitions));
         }
 
