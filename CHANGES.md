@@ -19,8 +19,8 @@ after the corresponding tracker issues.
 
 - When the merge-and-shrink computation terminates with several factors (due to
   using a time limit), only keep those factors that are non-trivial, i.e.,
-  which consist of at least a goal state or which represent a non-total
-  function. <http://issues.fast-downward.org/issue914>
+  which have a non-goal state or which represent a non-total function.
+  <http://issues.fast-downward.org/issue914>
 
 ## Fast Downward 19.06
 
