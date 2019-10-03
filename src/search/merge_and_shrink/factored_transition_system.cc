@@ -225,6 +225,20 @@ bool FactoredTransitionSystem::is_factor_solvable(int index) const {
     return transition_systems[index]->is_solvable(*distances[index]);
 }
 
+bool FactoredTransitionSystem::is_factor_trivial(int index) const {
+    assert(is_component_valid(index));
+    if (!mas_representations[index]->is_total()) {
+        return false;
+    }
+    const TransitionSystem &ts = *transition_systems[index];
+    for (int state = 0; state < ts.get_size(); ++state) {
+        if (!ts.is_goal_state(state)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool FactoredTransitionSystem::is_active(int index) const {
     assert_index_valid(index);
     return transition_systems[index] != nullptr;
