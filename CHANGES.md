@@ -33,6 +33,10 @@ after the corresponding tracker issues.
   configuration with each solver outperforming the other in some cases.
   See the issue for a more detailed discussion of performance.
 
+- When the merge-and-shrink computation terminates with several factors (due to
+  using a time limit), only keep those factors that are non-trivial, i.e.,
+  which have a non-goal state or which represent a non-total function.
+  <http://issues.fast-downward.org/issue914>
 
 ## Fast Downward 19.06
 
