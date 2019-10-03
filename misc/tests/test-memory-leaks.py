@@ -41,7 +41,7 @@ def escape_list(l):
 
 
 def get_compiler_and_version():
-    output = subprocess.check_output(["cmake", "-LA", "-N", "../../src/"], cwd=BUILD_DIR)
+    output = subprocess.check_output(["cmake", "-LA", "-N", "../../src/"], cwd=BUILD_DIR).decode("utf-8")
     compiler = re.search("^DOWNWARD_CXX_COMPILER_ID:STRING=(.+)$", output, re.M).group(1)
     version = re.search("^DOWNWARD_CXX_COMPILER_VERSION:STRING=(.+)$", output, re.M).group(1)
     return compiler, version
