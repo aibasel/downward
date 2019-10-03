@@ -97,7 +97,7 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     */
     assert(mas_representations.empty());
 
-    int num_active_factors= fts.get_num_active_entries();
+    int num_active_factors = fts.get_num_active_entries();
     if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "Number of remaining factors: " << num_active_factors << endl;
     }
