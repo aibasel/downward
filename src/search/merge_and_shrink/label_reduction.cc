@@ -87,6 +87,9 @@ void LabelReduction::compute_label_mapping(
              it != equivalent_label_nos.end(); ++it) {
             const vector<int> &label_nos = it->second;
             if (label_nos.size() > 1) {
+                if (verbosity >= utils::Verbosity::DEBUG) {
+                    cout << "Reducing labels " << label_nos << " to " << next_new_label_no << endl;
+                }
                 label_mapping.push_back(make_pair(next_new_label_no, label_nos));
                 ++next_new_label_no;
             }
