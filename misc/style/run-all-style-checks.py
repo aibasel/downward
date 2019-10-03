@@ -37,18 +37,19 @@ def _get_src_files(path, extensions, ignore_dirs=None):
 
 
 def check_translator_style():
-    output = subprocess.check_output([
-        "./reindent.py", "--dryrun", "--recurse", "--verbose",
-        os.path.join(SRC_DIR, "translate")], cwd=DIR).decode("utf-8")
-    ok = True
-    for line in output.splitlines():
-        match = re.match("^checking (.+) ... changed.$", line)
-        if match:
-            ok = False
-            print('Wrong format detected in %s. '
-                  'Please run "./reindent.py -r ../src/translate"' %
-                  match.group(1))
-    return ok
+    try:
+        subprocess.check_call([
+            "flake8", "--select", "E101,W191,W291,W292,W293,W391",
+            os.path.join(SRC_DIR, "translate")])
+    except OSError as err:
+        if err.errno == errno.ENOENT:
+            sys.exit('Please install flake8 ("sudo apt install flake8").')
+        else:
+            raise
+    except subprocess.CalledProcessError:
+        return False
+    else:
+        return True
 
 
 def _run_pyflakes(path):
