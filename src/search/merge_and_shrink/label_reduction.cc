@@ -131,7 +131,7 @@ equivalence_relation::EquivalenceRelation
     for (int index : fts) {
         if (index != ts_index) {
             const TransitionSystem &ts = fts.get_transition_system(index);
-            for (const GroupAndTransitions &gat : ts) {
+            for (GroupAndTransitions gat : ts) {
                 const LabelGroup &label_group = gat.label_group;
                 relation->refine(label_group.begin(), label_group.end());
             }
@@ -170,7 +170,7 @@ bool LabelReduction::reduce(
             reduced = true;
         }
         delete relation;
-        relation = 0;
+        relation = nullptr;
         utils::release_vector_memory(label_mapping);
 
         relation = compute_combinable_equivalence_relation(

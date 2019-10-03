@@ -21,6 +21,10 @@ SAS_FILE = os.path.join(REPO, "test.sas")
 PLAN_FILE = os.path.join(REPO, "test.plan")
 VALGRIND_GCC5_SUPPRESSION_FILE = os.path.join(
     REPO, "misc", "tests", "valgrind", "gcc5.supp")
+DLOPEN_SUPPRESSION_FILE = os.path.join(
+    REPO, "misc", "tests", "valgrind", "dlopen.supp")
+DL_CATCH_ERROR_SUPPRESSION_FILE = os.path.join(
+    REPO, "misc", "tests", "valgrind", "dl_catch_error.supp")
 VALGRIND_ERROR_EXITCODE = 99
 
 TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
@@ -91,7 +95,10 @@ def main():
     subprocess.check_call(["./build.py"], cwd=REPO)
     compiler, compiler_version = get_compiler_and_version()
     print("Compiler:", compiler, compiler_version)
-    suppression_files = []
+    suppression_files = [
+        DLOPEN_SUPPRESSION_FILE,
+        DL_CATCH_ERROR_SUPPRESSION_FILE,
+    ]
     if compiler == "GNU" and compiler_version.split(".")[0] == "5":
         print("Using leak suppression file for GCC 5 "
               "(see http://issues.fast-downward.org/issue703).")

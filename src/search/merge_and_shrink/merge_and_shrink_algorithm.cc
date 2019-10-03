@@ -70,7 +70,7 @@ void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
 }
 
 void MergeAndShrinkAlgorithm::dump_options() const {
-    if (verbosity >= utils::Verbosity::VERBOSE) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         if (merge_strategy_factory) { // deleted after merge strategy extraction
             merge_strategy_factory->dump_options();
             cout << endl;
@@ -84,7 +84,10 @@ void MergeAndShrinkAlgorithm::dump_options() const {
              << shrink_threshold_before_merge << endl;
         cout << endl;
 
-        shrink_strategy->dump_options();
+        cout << "Pruning unreachable states: "
+             << (prune_unreachable_states ? "yes" : "no") << endl;
+        cout << "Pruning irrelevant states: "
+             << (prune_irrelevant_states ? "yes" : "no") << endl;
         cout << endl;
 
         if (label_reduction) {
@@ -92,6 +95,9 @@ void MergeAndShrinkAlgorithm::dump_options() const {
         } else {
             cout << "Label reduction disabled" << endl;
         }
+        cout << endl;
+
+        cout << "Main loop max time in seconds: " << main_loop_max_time << endl;
         cout << endl;
     }
 }
