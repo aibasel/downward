@@ -102,7 +102,8 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
         cout << "Number of remaining factors: " << num_active_factors << endl;
     }
 
-    if (!extract_unsolvable_factor(fts)) {
+    bool unsolvalbe = extract_unsolvable_factor(fts);
+    if (!unsolvalbe) {
         extract_nontrivial_factors(fts);
     }
 
@@ -113,12 +114,6 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
-    if (mas_representations.empty()) {
-        /* If all factors are trivial (and therefore not kept), the resulting
-           heuristic is the zero heuristic. */
-        return 0;
-    }
-
     State state = convert_global_state(global_state);
     int heuristic = 0;
     for (const unique_ptr<MergeAndShrinkRepresentation> &mas_representation : mas_representations) {
