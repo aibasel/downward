@@ -128,7 +128,7 @@ def check_search_code_with_clang_tidy():
     src_files = _get_src_files(search_dir, (".h", ".cc"))
     compile_commands = [{
         "directory": os.path.join(build_dir, "search"),
-        "command": "g++ -I{search_dir}/ext -std=c++11 -c {src_file}".format(**locals()),
+        "command": "g++ -I{}/ext -std=c++11 -c {}".format(search_dir, src_file),
         "file": src_file}
         for src_file in src_files
     ]
@@ -187,9 +187,10 @@ def check_search_code_with_clang_tidy():
     print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
     try:
-        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
+        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT).decode("utf-8")
+    except subprocess.CalledProcessError as err:
         print("Failed to run clang-tidy-5.0. Is it on the PATH?")
+        print("Output:", err.stdout)
         return False
     errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
     for error in errors:
