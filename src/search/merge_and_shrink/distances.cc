@@ -340,11 +340,26 @@ void Distances::apply_abstraction(
 }
 
 void Distances::dump() const {
-    cout << "Distances: ";
-    for (size_t i = 0; i < goal_distances.size(); ++i) {
-        cout << i << ": " << goal_distances[i] << ", ";
+    if (are_init_distances_computed()) {
+        cout << "Init distances: ";
+        for (size_t i = 0; i < init_distances.size(); ++i) {
+            cout << i << ": " << init_distances[i];
+            if (i != init_distances.size() - 1) {
+                cout << ", ";
+            }
+        }
+        cout << endl;
     }
-    cout << endl;
+    if (are_goal_distances_computed()) {
+        cout << "Goal distances: ";
+        for (size_t i = 0; i < goal_distances.size(); ++i) {
+            cout << i << ": " << goal_distances[i] << ", ";
+            if (i != goal_distances.size() - 1) {
+                cout << ", ";
+            }
+        }
+        cout << endl;
+    }
 }
 
 void Distances::statistics() const {
