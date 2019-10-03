@@ -163,7 +163,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     */
     int multiplier = ts2_size;
     vector<int> dead_labels;
-    for (const GroupAndTransitions &gat : ts1) {
+    for (GroupAndTransitions gat : ts1) {
         const LabelGroup &group1 = gat.label_group;
         const vector<Transition> &transitions1 = gat.transitions;
 
@@ -411,19 +411,10 @@ void TransitionSystem::apply_label_reduction(
           label groups of label_equivalence_relation.
         */
         for (size_t i = 0; i < label_mapping.size(); ++i) {
-            int new_label_no = label_mapping[i].first;
             vector<Transition> &transitions = new_transitions[i];
-            int new_group_id = label_equivalence_relation->get_group_id(new_label_no);
-            if (!utils::in_bounds(new_group_id, transitions_by_group_id)) {
-                /* Labels reduced to new_label_no were not locally equivalent
-                   and hence assigned to a new group. */
-                assert(new_group_id == static_cast<int>(transitions_by_group_id.size()));
-                transitions_by_group_id.push_back(move(transitions));
-            } else {
-                /* Labels reduced to new_label_no were locally equivalent before
-                   and hence the new label is part of the same group. */
-                transitions_by_group_id[new_group_id] = move(transitions);
-            }
+            assert(label_equivalence_relation->get_group_id(label_mapping[i].first)
+                   == static_cast<int>(transitions_by_group_id.size()));
+            transitions_by_group_id.push_back(move(transitions));
         }
 
         // Go over all affected group IDs and remove their transitions if the
@@ -448,7 +439,7 @@ string TransitionSystem::tag() const {
 }
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         if (!utils::is_sorted_unique(gat.transitions))
             return false;
     }
@@ -472,7 +463,7 @@ bool TransitionSystem::is_solvable(const Distances &distances) const {
 
 int TransitionSystem::compute_total_transitions() const {
     int total = 0;
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         total += gat.transitions.size();
     }
     return total;
@@ -504,7 +495,7 @@ void TransitionSystem::dump_dot_graph() const {
         if (is_init)
             cout << "    start -> node" << i << ";" << endl;
     }
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
         const vector<Transition> &transitions = gat.transitions;
         for (const Transition &transition : transitions) {
@@ -525,7 +516,7 @@ void TransitionSystem::dump_dot_graph() const {
 
 void TransitionSystem::dump_labels_and_transitions() const {
     cout << tag() << "transitions" << endl;
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
 //        cout << "group ID: " << ts_it.get_id() << endl;
         cout << "labels: ";
