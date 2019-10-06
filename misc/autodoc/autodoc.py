@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import argparse
 import logging
 import os
@@ -14,8 +16,8 @@ import xmlrpclib
 import markup
 
 
-#how many seconds to wait after a failed requests. Will be doubled after each failed request.
-#Don't lower this below ~5, or we may get locked out for an hour.
+# How many seconds to wait after a failed requests. Will be doubled after each failed request.
+# Don't lower this below ~5, or we may get locked out for an hour.
 sleep_time = 10
 
 BOT_USERNAME = "XmlRpcBot"
@@ -24,7 +26,7 @@ WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
 
 # a list of characters allowed to be used in doc titles
-TITLE_WHITE_LIST = "[\w\+-]" # match 'word characters' (including '_'), '+', and '-'
+TITLE_WHITE_LIST = r"[\w\+-]" # match 'word characters' (including '_'), '+', and '-'
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
@@ -42,9 +44,9 @@ def read_password():
     try:
         with open(path) as password_file:
             return password_file.read().strip()
-    except IOError, e:
+    except IOError:
         logging.critical("Could not find password file %s!\nIs it present?"
-                 % PASSWORD_FILE)
+            % PASSWORD_FILE)
         sys.exit(1)
 
 def connect():
@@ -80,17 +82,17 @@ def attempt(func, *args):
     try:
         result = func(*args)
     except xmlrpclib.Fault as error:
-        #this usually means the page content did not change.
+        # This usually means the page content did not change.
         logging.exception("Error: %s\nShould not happen anymore." % error)
         sys.exit(1)
-    except xmlrpclib.ProtocolError, err:
+    except xmlrpclib.ProtocolError as err:
         logging.warning("Error: %s\n"
             "Will retry after %s seconds." % (err.errcode, sleep_time))
-        #retry after sleeping
+        # Retry after sleeping.
         time.sleep(sleep_time)
         sleep_time *= 2
-        return attempt(func,*args)
-    except:
+        return attempt(func, *args)
+    except Exception:
         logging.exception("Unexpected error: %s" % sys.exc_info()[0])
         sys.exit(1)
     else:
@@ -101,8 +103,6 @@ def attempt(func, *args):
 
 def insert_wiki_links(text, titles):
     def make_link(m, prefix=''):
-        s = m.group(0)
-        key = s[1:-1]
         anchor = m.group('anchor') or ''
         link_name = m.group('link')
         target = prefix + link_name
@@ -110,19 +110,19 @@ def insert_wiki_links(text, titles):
             target += '#' + anchor
             link_name = anchor
         link_name = link_name.replace("_", " ")
-        #leave out the prefix in the link name
+        # Leave out the prefix in the link name.
         result = m.group('before') + "[[" + target + "|" + link_name + "]]" + m.group('after')
         return result
 
     def make_doc_link(m):
         return make_link(m, prefix=DOC_PREFIX)
 
-    re_link = "(?P<before>\W)(?P<link>%s)(#(?P<anchor>" + TITLE_WHITE_LIST + "+))?(?P<after>\W)"
+    re_link = r"(?P<before>\W)(?P<link>%s)(#(?P<anchor>" + TITLE_WHITE_LIST + r"+))?(?P<after>\W)"
     doctitles = [title[4:] for title in titles if title.startswith(DOC_PREFIX)]
     for key in doctitles:
         text = re.sub(re_link % key, make_doc_link, text)
     othertitles = [title for title in titles
-                        if not title.startswith(DOC_PREFIX) and title not in doctitles]
+                   if not title.startswith(DOC_PREFIX) and title not in doctitles]
     for key in othertitles:
         text = re.sub(re_link % key, make_link, text)
     return text
@@ -134,7 +134,7 @@ def get_pages_from_planner(build):
     out = subprocess.check_output(
         ["./fast-downward.py", "--build", build, "--search", "--", "--help", "--txt2tags"],
         cwd=REPO_ROOT_DIR)
-    #split the output into tuples (title, markup_text)
+    # Split the output into tuples (title, markup_text).
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
     pages = dict()
     for title, markup_text in pagesplitter.findall(out):
@@ -147,21 +147,21 @@ def get_pages_from_planner(build):
 
 def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     def add_page(title, text):
-        #check if this page is new or changed
+        # Check if this page is new or changed.
         if old_doc_pages.get(title, '') != text:
-            print title, "changed"
+            print(title, "changed")
             changed_pages.append([title, text])
         else:
-            print title, "unchanged"
+            print(title, "unchanged")
 
     changed_pages = []
-    overview_lines = [];
+    overview_lines = []
     for title, text in sorted(new_doc_pages.items()):
         overview_lines.append(" * [[" + title + "]]")
         text = insert_wiki_links(text, all_titles)
         add_page(title, text)
     overview_title = DOC_PREFIX + "Overview"
-    overview_text = "\n".join(overview_lines);
+    overview_text = "\n".join(overview_lines)
     add_page(overview_title, overview_text)
     return changed_pages
 
@@ -173,10 +173,10 @@ if __name__ == '__main__':
     new_doc_pages = get_pages_from_planner(args.build)
     if args.dry_run:
         for title, content in sorted(new_doc_pages.items()):
-            print "=" * 25, title, "=" * 25
-            print content
-            print
-            print
+            print("=" * 25, title, "=" * 25)
+            print(content)
+            print()
+            print()
         sys.exit()
     logging.info("getting existing page titles from wiki...")
     old_titles = attempt(get_all_titles_from_wiki)
@@ -197,4 +197,4 @@ if __name__ == '__main__':
             "There are pages in the wiki documentation "
             "that are not created by Fast Downward:\n" +
             "\n".join(sorted(missing_titles)))
-    print "Done"
+    print("Done")

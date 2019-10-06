@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import logging
 
 from downward.reports.absolute import AbsoluteReport
@@ -78,8 +80,8 @@ class RegressionCheckReport(AbsoluteReport):
         AbsoluteReport.write(self)
         markup = self.get_markup()
         if markup:
-            print 'There has been a regression:'
-            print
-            print markup
+            print('There has been a regression:')
+            print()
+            print(markup)
         success = not markup
         self.result_handler(success)
