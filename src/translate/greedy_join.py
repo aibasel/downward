@@ -106,7 +106,7 @@ def greedy_join(rule, name_generator):
         cost_matrix.add_entry(joint_condition)
         occurrences.update(joint_condition, +1)
 
-    #assert occurrences.variables() == set(rule.effect.args)
-    #for var in set(rule.effect.args):
-    #  assert occurrences.occurrences[var] == 2 * rule.effect.args.count(var)
+    # assert occurrences.variables() == set(rule.effect.args)
+    # for var in set(rule.effect.args):
+    #     assert occurrences.occurrences[var] == 2 * rule.effect.args.count(var)
     return result.get_result()

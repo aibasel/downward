@@ -53,7 +53,7 @@ def split_rule(rule, name_generator):
         result += split_into_binary_rules(proj_rule, name_generator)
 
     conditions = [proj_rule.effect for proj_rule in projected_rules] + \
-                 trivial_conditions
+        trivial_conditions
     combining_rule = Rule(conditions, rule.effect)
     if len(conditions) >= 2:
         combining_rule.type = "product"

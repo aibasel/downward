@@ -175,5 +175,5 @@ class CostEffect(object):
     def normalize(self):
         return self
     def extract_cost(self):
-        return self, None # this would only happen if
-    #an action has no effect apart from the cost effect
+        # This only happens if an action has no effect apart from the cost effect.
+        return self, None

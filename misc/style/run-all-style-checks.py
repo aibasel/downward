@@ -101,7 +101,7 @@ def check_cplusplus_style():
     try:
         returncode = subprocess.call(
             [executable, "-q", "-c", config_file, "--check"] + src_files,
-        cwd=DIR, stdout=subprocess.PIPE)
+            cwd=DIR, stdout=subprocess.PIPE)
     except OSError as err:
         if err.errno == errno.ENOENT:
             sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
@@ -143,7 +143,7 @@ def check_search_code_with_clang_tidy():
     checks = [
         # Enable with CheckTriviallyCopyableMove=0 when we require
         # clang-tidy >= 6.0 (see issue856).
-        #"misc-move-const-arg",
+        # "misc-move-const-arg",
         "misc-move-constructor-init",
         "misc-use-after-move",
 
@@ -152,20 +152,20 @@ def check_search_code_with_clang_tidy():
         "performance-inefficient-vector-operation",
 
         "readability-avoid-const-params-in-decls",
-        #"readability-braces-around-statements",
+        # "readability-braces-around-statements",
         "readability-container-size-empty",
         "readability-delete-null-pointer",
         "readability-deleted-default",
-        #"readability-else-after-return",
-        #"readability-function-size",
-        #"readability-identifier-naming",
-        #"readability-implicit-bool-cast",
+        # "readability-else-after-return",
+        # "readability-function-size",
+        # "readability-identifier-naming",
+        # "readability-implicit-bool-cast",
         # Disabled since we prefer a clean interface over consistent names.
-        #"readability-inconsistent-declaration-parameter-name",
+        # "readability-inconsistent-declaration-parameter-name",
         "readability-misleading-indentation",
         "readability-misplaced-array-index",
-        #"readability-named-parameter",
-        #"readability-non-const-parameter",
+        # "readability-named-parameter",
+        # "readability-non-const-parameter",
         "readability-redundant-control-flow",
         "readability-redundant-declaration",
         "readability-redundant-function-ptr-dereference",
