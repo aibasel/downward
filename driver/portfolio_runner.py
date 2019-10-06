@@ -189,7 +189,7 @@ def can_change_cost_type(args):
 
 def get_portfolio_attributes(portfolio):
     attributes = {}
-    with open(portfolio) as portfolio_file:
+    with open(portfolio, "rb") as portfolio_file:
         content = portfolio_file.read()
         try:
             exec(content, attributes)
