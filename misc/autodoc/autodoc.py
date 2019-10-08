@@ -92,7 +92,7 @@ def attempt(func, *args):
         time.sleep(sleep_time)
         sleep_time *= 2
         return attempt(func, *args)
-    except Exception:
+    except BaseException:
         logging.exception("Unexpected error: %s" % sys.exc_info()[0])
         sys.exit(1)
     else:

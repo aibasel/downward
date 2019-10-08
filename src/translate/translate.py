@@ -96,19 +96,19 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
 
     for fact in conditions:
         if fact.negated:
-            ## Note  Here we use a different solution than in Sec. 10.6.4
-            ##       of the thesis. Compare the last sentences of the third
-            ##       paragraph of the section.
-            ##       We could do what is written there. As a test case,
-            ##       consider Airport ADL tasks with only one airport, where
-            ##       (occupied ?x) variables are encoded in a single variable,
-            ##       and conditions like (not (occupied ?x)) do occur in
-            ##       preconditions.
-            ##       However, here we avoid introducing new derived predicates
-            ##       by treat the negative precondition as a disjunctive
-            ##       precondition and expanding it by "multiplying out" the
-            ##       possibilities.  This can lead to an exponential blow-up so
-            ##       it would be nice to choose the behaviour as an option.
+            ## Note: here we use a different solution than in Sec. 10.6.4
+            ## of the thesis. Compare the last sentences of the third
+            ## paragraph of the section.
+            ## We could do what is written there. As a test case,
+            ## consider Airport ADL tasks with only one airport, where
+            ## (occupied ?x) variables are encoded in a single variable,
+            ## and conditions like (not (occupied ?x)) do occur in
+            ## preconditions.
+            ## However, here we avoid introducing new derived predicates
+            ## by treat the negative precondition as a disjunctive
+            ## precondition and expanding it by "multiplying out" the
+            ## possibilities.  This can lead to an exponential blow-up so
+            ## it would be nice to choose the behaviour as an option.
             done = False
             new_condition = {}
             atom = pddl.Atom(fact.predicate, fact.args)  # force positive
@@ -720,11 +720,10 @@ if __name__ == "__main__":
     try:
         signal.signal(signal.SIGXCPU, handle_sigxcpu)
     except AttributeError:
-        print(
-            "Warning! SIGXCPU is not available on your platform. "
-            "This means that the planner cannot be gracefully terminated "
-            "when using a time limit, which, however, is probably "
-            "supported on your platform anyway.")
+        print("Warning! SIGXCPU is not available on your platform. "
+              "This means that the planner cannot be gracefully terminated "
+              "when using a time limit, which, however, is probably "
+              "supported on your platform anyway.")
     try:
         # Reserve about 10 MB (in Python 2) of emergency memory.
         # https://stackoverflow.com/questions/19469608/
