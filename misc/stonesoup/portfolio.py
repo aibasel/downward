@@ -189,7 +189,7 @@ class Portfolio(object):
                     succ = Portfolio(self.results, succ_timeouts)
                     succ_solved = succ.num_solved()
                     if succ_solved < prev_num_solved:
-                        for _ in range(prev_num_solved - succ_solved):
+                        for _ in xrange(prev_num_solved - succ_solved):
                             lost_at.append(str(reduction))
                         prev_num_solved = succ_solved
                     reduction += granularity
