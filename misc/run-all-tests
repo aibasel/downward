@@ -12,3 +12,5 @@ set -x
 ./build.py --debug
 
 ./misc/tests/run-all-code-tests
+
+./misc/autodoc/autodoc.py --dry-run > /dev/null
