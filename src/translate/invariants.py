@@ -253,7 +253,7 @@ class Invariant:
     def operator_too_heavy(self, h_action):
         add_effects = [eff for eff in h_action.effects
                        if not eff.literal.negated and
-                          self.predicate_to_part.get(eff.literal.predicate)]
+                       self.predicate_to_part.get(eff.literal.predicate)]
         inv_vars = find_unique_variables(h_action, self)
 
         if len(add_effects) <= 1:
@@ -323,8 +323,8 @@ class Invariant:
             lhs_by_pred[lit.predicate].append(lit)
 
         for del_effect in del_effects:
-            minimal_renamings = self.unbalanced_renamings(del_effect, add_effect,
-                inv_vars, lhs_by_pred, minimal_renamings)
+            minimal_renamings = self.unbalanced_renamings(
+                del_effect, add_effect, inv_vars, lhs_by_pred, minimal_renamings)
             if not minimal_renamings:
                 return False
 
@@ -342,8 +342,8 @@ class Invariant:
                                                    del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
-    def unbalanced_renamings(self, del_effect, add_effect,
-        inv_vars, lhs_by_pred, unbalanced_renamings):
+    def unbalanced_renamings(self, del_effect, add_effect, inv_vars,
+                             lhs_by_pred, unbalanced_renamings):
         """returns the renamings from unbalanced renamings for which
            the del_effect does not balance the add_effect."""
 
@@ -358,12 +358,12 @@ class Invariant:
         # below check that this is impossible with each unbalanced renaming.
         check_constants = False
         constant_test_system = constraints.ConstraintSystem()
-        for a,b in system.combinatorial_assignments[0][0].equalities:
+        for a, b in system.combinatorial_assignments[0][0].equalities:
             # first 0 because the system was empty before we called ensure_cover
             # second 0 because ensure_cover only adds assignments with one entry
             if b[0] != "?":
                 check_constants = True
-                neg_clause = constraints.NegativeClause([(a,b)])
+                neg_clause = constraints.NegativeClause([(a, b)])
                 constant_test_system.add_negative_clause(neg_clause)
 
         ensure_inequality(system, add_effect.literal, del_effect.literal)

@@ -392,7 +392,7 @@ class VarValueRenaming(object):
         new_var, new_value = self.translate_pair(axiom.effect)
         # If the new_value is always false, then the condition must
         # have been impossible.
-        assert not new_value is always_false
+        assert new_value is not always_false
         if new_value is always_true:
             raise DoesNothing
         axiom.effect = new_var, new_value

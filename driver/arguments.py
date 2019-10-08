@@ -419,7 +419,6 @@ def parse_args():
         "--cleanup", action="store_true",
         help="clean up temporary files (translator output and plan files) and exit")
 
-
     parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,
         help="file names and options passed on to planner components")

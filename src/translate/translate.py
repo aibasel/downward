@@ -96,19 +96,19 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
 
     for fact in conditions:
         if fact.negated:
-           ## Note  Here we use a different solution than in Sec. 10.6.4
-           ##       of the thesis. Compare the last sentences of the third
-           ##       paragraph of the section.
-           ##       We could do what is written there. As a test case,
-           ##       consider Airport ADL tasks with only one airport, where
-           ##       (occupied ?x) variables are encoded in a single variable,
-           ##       and conditions like (not (occupied ?x)) do occur in
-           ##       preconditions.
-           ##       However, here we avoid introducing new derived predicates
-           ##       by treat the negative precondition as a disjunctive
-           ##       precondition and expanding it by "multiplying out" the
-           ##       possibilities.  This can lead to an exponential blow-up so
-           ##       it would be nice to choose the behaviour as an option.
+            ## Note: here we use a different solution than in Sec. 10.6.4
+            ## of the thesis. Compare the last sentences of the third
+            ## paragraph of the section.
+            ## We could do what is written there. As a test case,
+            ## consider Airport ADL tasks with only one airport, where
+            ## (occupied ?x) variables are encoded in a single variable,
+            ## and conditions like (not (occupied ?x)) do occur in
+            ## preconditions.
+            ## However, here we avoid introducing new derived predicates
+            ## by treat the negative precondition as a disjunctive
+            ## precondition and expanding it by "multiplying out" the
+            ## possibilities.  This can lead to an exponential blow-up so
+            ## it would be nice to choose the behaviour as an option.
             done = False
             new_condition = {}
             atom = pddl.Atom(fact.predicate, fact.args)  # force positive
@@ -443,9 +443,6 @@ def translate_task(strips_to_sas, ranges, translation_key,
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
             actions, axioms, goals)
     init = init + axiom_init
-    #axioms.sort(key=lambda axiom: axiom.name)
-    #for axiom in axioms:
-    #  axiom.dump()
 
     if options.dump_task:
         # Remove init facts that don't occur in strips_to_sas: they're constant.
@@ -569,7 +566,7 @@ def pddl_to_sas(task):
             # With our current representation, emitting complete mutex
             # information for the full encoding can incur an
             # unacceptable (quadratic) blowup in the task representation
-            #size. See issue771 for details.
+            # size. See issue771 for details.
             print("using full encoding: between-variable mutex information skipped.")
             mutex_key = []
 
@@ -724,9 +721,9 @@ if __name__ == "__main__":
         signal.signal(signal.SIGXCPU, handle_sigxcpu)
     except AttributeError:
         print("Warning! SIGXCPU is not available on your platform. "
-            "This means that the planner cannot be gracefully terminated "
-            "when using a time limit, which, however, is probably "
-            "supported on your platform anyway.")
+              "This means that the planner cannot be gracefully terminated "
+              "when using a time limit, which, however, is probably "
+              "supported on your platform anyway.")
     try:
         # Reserve about 10 MB (in Python 2) of emergency memory.
         # https://stackoverflow.com/questions/19469608/

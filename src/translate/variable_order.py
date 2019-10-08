@@ -152,9 +152,8 @@ class MaxDAG(object):
             min_key = weights[0]
             min_elem = None
             entries = weight_to_nodes[min_key]
-            while (entries and
-                (min_elem is None or min_elem in done or
-                min_key > incoming_weights[min_elem])):
+            while entries and (min_elem is None or min_elem in done or
+                               min_key > incoming_weights[min_elem]):
                 min_elem = entries.popleft()
             if not entries:
                 del weight_to_nodes[min_key]

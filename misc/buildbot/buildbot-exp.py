@@ -89,15 +89,15 @@ TRANSLATOR_ATTRIBUTES = [
     'total_queue_pushes', 'uncovered_facts', 'variables']
 TIME_ATTRIBUTES = (
     ['search_time', 'total_time'] + ['translator_time_%s' % attr for attr in (
-    'building_dictionary_for_full_mutex_groups', 'building_mutex_information',
-    'building_strips_to_sas_dictionary', 'building_translation_key',
-    'checking_invariant_weight', 'choosing_groups', 'collecting_mutex_groups',
-    'completing_instantiation', 'computing_fact_groups', 'computing_model',
-    'detecting_unreachable_propositions', 'done', 'finding_invariants',
-    'generating_datalog_program', 'instantiating', 'instantiating_groups',
-    'normalizing_datalog_program', 'normalizing_task', 'parsing',
-    'preparing_model', 'processing_axioms', 'simplifying_axioms',
-    'translating_task', 'writing_output')])
+        'building_dictionary_for_full_mutex_groups', 'building_mutex_information',
+        'building_strips_to_sas_dictionary', 'building_translation_key',
+        'checking_invariant_weight', 'choosing_groups', 'collecting_mutex_groups',
+        'completing_instantiation', 'computing_fact_groups', 'computing_model',
+        'detecting_unreachable_propositions', 'done', 'finding_invariants',
+        'generating_datalog_program', 'instantiating', 'instantiating_groups',
+        'normalizing_datalog_program', 'normalizing_task', 'parsing',
+        'preparing_model', 'processing_axioms', 'simplifying_axioms',
+        'translating_task', 'writing_output')])
 SEARCH_ATTRIBUTES = ['dead_ends', 'evaluations', 'expansions',
                      'expansions_until_last_jump', 'generated', 'reopened']
 MEMORY_ATTRIBUTES = ['translator_peak_memory', 'memory']

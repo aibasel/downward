@@ -337,4 +337,3 @@ CONFIGS = [
         "--search",
         "eager(single(sum([g(),weight(hlm,5)])),preferred=[],reopen_closed=true,cost_type=one,bound=BOUND)"]),
 ]
-

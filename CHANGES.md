@@ -38,6 +38,9 @@ after the corresponding tracker issues.
   which have a non-goal state or which represent a non-total function.
   <http://issues.fast-downward.org/issue914>
 
+- Adjust style of Python code as suggested by flake8.
+  <http://issues.fast-downward.org/issue931>
+
 ## Fast Downward 19.06
 
 Released on June 11, 2019.

@@ -238,8 +238,6 @@ def compute_axiom_layers(axioms, axiom_init):
         for atom in scc:
             layers[atom] = scc_layer
 
-    #for atom, layer in layers.items():
-    #    print("Layer %d: %s" % (layer, atom))
     return layers
 
 def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
