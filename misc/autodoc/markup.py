@@ -123,7 +123,7 @@ class Document(object):
             result = err
 
         # Unknown error, show the traceback to the user
-        except BaseException:
+        except Exception:
             result = txt2tags.getUnknownErrorMessage()
             logging.error(result)
 
