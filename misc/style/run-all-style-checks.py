@@ -40,6 +40,7 @@ def check_python_style():
     try:
         subprocess.check_call([
             "flake8",
+            # https://flake8.pycqa.org/en/latest/user/error-codes.html
             "--extend-ignore", "E128,E129,E131,E261,E266,E301,E302,E305,E306,E402,E501,F401",
             "--exclude", "run-clang-tidy.py,txt2tags.py,.tox,stonesoup",
             "src/translate/", "driver/", "misc/", "*.py"], cwd=REPO)
