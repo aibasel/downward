@@ -85,7 +85,7 @@ def _get_all_tasks_by_domain(benchmarks_dir):
         name for name in os.listdir(benchmarks_dir)
         if os.path.isdir(os.path.join(benchmarks_dir, name)) and
         not name.startswith((".", "_")) and
-        not name in blacklisted_domains]
+        name not in blacklisted_domains]
     for domain in domains:
         path = os.path.join(benchmarks_dir, domain)
         tasks[domain] = [

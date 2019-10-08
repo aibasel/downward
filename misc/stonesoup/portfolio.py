@@ -1,5 +1,7 @@
-#! /usr/bin/env python2.6
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
+
+from __future__ import print_function
 
 import sys
 
@@ -88,7 +90,7 @@ class Results(object):
         for config in self.configs:
             for problem in self.problems:
                 if (config, problem) not in self.data:
-                    print "MISSING:", config, problem
+                    print("MISSING:", config, problem)
                     self.data[config, problem] = (None, None)
 
     def _verify_optimality_and_discard_costs(self):
@@ -113,14 +115,14 @@ class Results(object):
                    if self.solution_times(problem))
 
     def dump_statistics(self):
-        print len(self.data), "results"
-        print len(self.configs), "configs"
-        print len(self.problems), "problems"
-        print self._total_solved(), "problems solved by someone"
+        print(len(self.data), "results")
+        print(len(self.configs), "configs")
+        print(len(self.problems), "problems")
+        print(self._total_solved(), "problems solved by someone")
         for config in sorted(self.configs):
             num_solved = len([problem for problem in self.problems
                               if self.data[config, problem] is not None])
-            print num_solved, "problems solved by", config
+            print(num_solved, "problems solved by", config)
 
 
 class Portfolio(object):
@@ -162,7 +164,7 @@ class Portfolio(object):
                     break
 
     def dump_marginal_contributions(self):
-        print "Marginal contributions:"
+        print("Marginal contributions:")
         num_solved = self.num_solved()
         for config in self.configs:
             if self.timeouts[config] > EPSILON:
@@ -170,10 +172,10 @@ class Portfolio(object):
                 succ_timeouts[config] = 0
                 succ = Portfolio(self.results, succ_timeouts)
                 num_lost = num_solved - succ.num_solved()
-                print "   %3d problems from %s" % (num_lost, config)
+                print("   %3d problems from %s" % (num_lost, config))
 
     def dump_detailed_marginal_contributions(self, granularity):
-        print "Detailed marginal contributions:"
+        print("Detailed marginal contributions:")
         num_solved = self.num_solved()
         for config in self.configs:
             if self.timeouts[config] > EPSILON:
@@ -191,17 +193,17 @@ class Portfolio(object):
                             lost_at.append(str(reduction))
                         prev_num_solved = succ_solved
                     reduction += granularity
-                print "   %s: problems lost at %s" % (
-                    config, ", ".join(lost_at))
+                print("   %s: problems lost at %s" % (
+                    config, ", ".join(lost_at)))
 
     def dump(self):
-        print "portfolio for %.2f seconds solves %d problems:" % (
-            self.total_timeout(), self.num_solved())
+        print("portfolio for %.2f seconds solves %d problems:" % (
+            self.total_timeout(), self.num_solved()))
         for config in self.configs:
-            print "   %7.2f seconds for %s" % (self.timeouts[config], config)
+            print("   %7.2f seconds for %s" % (self.timeouts[config], config))
 
     def dump_unsolved(self):
-        print "Unsolved problems:"
+        print("Unsolved problems:")
         count = 0
         for problem in self.results.problems:
             solution_times = self.results.solution_times(problem)
@@ -209,9 +211,9 @@ class Portfolio(object):
                 formatted_solution_times = "{%s}" % ", ".join(
                     "%s: %.2f" % pair
                     for pair in sorted(solution_times.items()))
-                print "   %-35s %s" % (problem, formatted_solution_times)
+                print("   %-35s %s" % (problem, formatted_solution_times))
                 count += 1
-        print "(%d problems)" % count
+        print("(%d problems)" % count)
 
 
 def compute_portfolio(results, granularity):
@@ -235,18 +237,18 @@ def main():
     results = Results(open(sys.argv[1]))
     results.dump_statistics()
     portfolio = compute_portfolio(results, granularity=240)
-    print
+    print()
     portfolio.dump()
     # pprint.pprint(results.data)
-    print
-    print "Reducing portfolio..."
+    print()
+    print("Reducing portfolio...")
     portfolio.reduce(granularity=1)
     portfolio.dump()
-    print
+    print()
     portfolio.dump_unsolved()
-    print
+    print()
     portfolio.dump_marginal_contributions()
-    print
+    print()
     portfolio.dump_detailed_marginal_contributions(granularity=1)
 
 

@@ -123,9 +123,9 @@ def _get_lama(**kwargs):
                          lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=2),
                          lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=1)
                          ],repeat_last=true,continue_on_fail=true)""",
-        "--always"]
         # Append --always to be on the safe side if we want to append
         # additional options later.
+        "--always"]
 
 ALIASES["seq-sat-lama-2011"] = _get_lama(pref="true")
 ALIASES["lama"] = _get_lama(pref="false")
