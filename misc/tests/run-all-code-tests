@@ -8,7 +8,7 @@ cd "$(dirname "$0")/../../"
 ./build.py
 ./build.py --debug
 
-pytest driver/tests.py
+pytest driver/tests.py misc/tests/test-standard-configs.py
 
 cd misc/
 
@@ -17,7 +17,6 @@ cd misc/
 cd tests/
 
 ./test-exitcodes.py
-./test-standard-configs.py
 ./test-memory-leaks.py
 ./test-translator.py benchmarks/ all
 
