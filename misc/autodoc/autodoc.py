@@ -11,7 +11,11 @@ import re
 import subprocess
 import sys
 import time
-import xmlrpclib
+try:
+    import xmlrpc.client as xmlrpclib
+except ImportError:
+    # Python 2
+    import xmlrpclib
 
 import markup
 
@@ -133,7 +137,7 @@ def build_planner(build):
 def get_pages_from_planner(build):
     out = subprocess.check_output(
         ["./fast-downward.py", "--build", build, "--search", "--", "--help", "--txt2tags"],
-        cwd=REPO_ROOT_DIR)
+        cwd=REPO_ROOT_DIR).decode("utf-8")
     # Split the output into tuples (title, markup_text).
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
     pages = dict()
