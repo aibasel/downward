@@ -38,8 +38,10 @@ after the corresponding tracker issues.
   which have a non-goal state or which represent a non-total function.
   <http://issues.fast-downward.org/issue914>
 
-- Adjust style of Python code as suggested by flake8.
+- Adjust style of Python code as suggested by flake8 and add this style
+  check to the continuous integration test suite.
   <http://issues.fast-downward.org/issue931>
+  <http://issues.fast-downward.org/issue934>
 
 - Move Stone Soup generator scripts to separate repository at
   https://bitbucket.org/aibasel/stonesoup.

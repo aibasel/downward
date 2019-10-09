@@ -36,11 +36,14 @@ def _get_src_files(path, extensions, ignore_dirs=None):
     return src_files
 
 
-def check_translator_style():
+def check_python_style():
     try:
         subprocess.check_call([
-            "flake8", "--select", "E101,W191,W291,W292,W293,W391",
-            os.path.join(SRC_DIR, "translate")])
+            "flake8",
+            # https://flake8.pycqa.org/en/latest/user/error-codes.html
+            "--extend-ignore", "E128,E129,E131,E261,E266,E301,E302,E305,E306,E402,E501,F401",
+            "--exclude", "run-clang-tidy.py,txt2tags.py,.tox,stonesoup",
+            "src/translate/", "driver/", "misc/", "*.py"], cwd=REPO)
     except OSError as err:
         if err.errno == errno.ENOENT:
             sys.exit('Please install flake8 ("sudo apt install flake8").')
@@ -50,27 +53,6 @@ def check_translator_style():
         return False
     else:
         return True
-
-
-def _run_pyflakes(path):
-    python_files = _get_src_files(path, (".py",))
-    python_files = [f for f in python_files if not f.endswith("__init__.py")]
-    print("Checking {} files with pyflakes".format(len(python_files)))
-    try:
-        return subprocess.check_call(["pyflakes"] + python_files) == 0
-    except OSError as err:
-        if err.errno == 2:
-            print(
-                "Python style checks need pyflakes. Please install it "
-                "with \"sudo apt-get install pyflakes\".")
-        else:
-            raise
-
-def check_translator_pyflakes():
-    return _run_pyflakes(os.path.join(SRC_DIR, "translate"))
-
-def check_driver_pyflakes():
-    return _run_pyflakes(os.path.join(REPO, "driver"))
 
 
 def check_include_guard_convention():
