@@ -41,6 +41,10 @@ after the corresponding tracker issues.
 - Adjust style of Python code as suggested by flake8.
   <http://issues.fast-downward.org/issue931>
 
+- Move Stone Soup generator scripts to separate repository at
+  https://bitbucket.org/aibasel/stonesoup.
+  <http://issues.fast-downward.org/issue932>
+
 ## Fast Downward 19.06
 
 Released on June 11, 2019.
