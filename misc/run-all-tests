@@ -3,14 +3,6 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
-cd ..
 
-./misc/style/run-all-style-checks.py
-
-set -x
-./build.py
-./build.py --debug
-
-./misc/tests/run-all-code-tests
-
-./misc/autodoc/autodoc.py --dry-run > /dev/null
+./style/run-all-style-checks.py
+./tests/run-all-code-tests

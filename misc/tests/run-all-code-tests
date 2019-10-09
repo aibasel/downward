@@ -1,20 +1,25 @@
 #! /bin/bash
 
-set -euo pipefail
+set -exuo pipefail
 
-cd "$(dirname "$0")"
+# Change into the root directory of the repository.
+cd "$(dirname "$0")/../../"
 
-set -x
+./build.py
+./build.py --debug
+
+pytest driver/tests.py
+
+cd misc/
+
+./autodoc/autodoc.py --dry-run > /dev/null
+
+cd tests/
 
 ./test-exitcodes.py
 ./test-standard-configs.py
 ./test-memory-leaks.py
-./test-translator.py ../../misc/tests/benchmarks all
-
-command -v py.test >/dev/null 2>&1 || {
-    echo >&2 "Please install py.test (sudo apt-get install python-pytest). Aborting."; exit 1;
-}
-py.test ../../driver/tests.py
+./test-translator.py benchmarks/ all
 
 echo
 echo "All code tests passed"
