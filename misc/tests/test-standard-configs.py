@@ -51,12 +51,6 @@ def cleanup():
 
 
 def setup_module(module):
-    # On Windows, ./build.py has to be called from the correct environment.
-    # Since we want this script to work even when we are in a regular
-    # shell, we do not build on Windows. If the planner is not yet built,
-    # the driver script will complain about this.
-    if os.name == "posix":
-        subprocess.check_call(["./build.py", "release", "debug"], cwd=REPO)
     translate(TASK)
 
 
