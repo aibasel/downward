@@ -47,6 +47,9 @@ after the corresponding tracker issues.
   https://bitbucket.org/aibasel/stonesoup.
   <http://issues.fast-downward.org/issue932>
 
+- Use pytest for testing standard configurations.
+  <http://issues.fast-downward.org/issue935>
+
 ## Fast Downward 19.06
 
 Released on June 11, 2019.
