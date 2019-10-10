@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 from __future__ import print_function
 
 import errno
@@ -8,6 +6,8 @@ import pipes
 import re
 import subprocess
 import sys
+
+import pytest
 
 import configs
 
@@ -27,9 +27,7 @@ DL_CATCH_ERROR_SUPPRESSION_FILE = os.path.join(
     REPO, "misc", "tests", "valgrind", "dl_catch_error.supp")
 VALGRIND_ERROR_EXITCODE = 99
 
-TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
-    "miconic/s1-0.pddl",
-]]
+TASK = os.path.join(BENCHMARKS_DIR, "miconic/s1-0.pddl")
 
 CONFIGS = {}
 CONFIGS.update(configs.default_configs_optimal(core=True, extended=True))
@@ -47,7 +45,18 @@ def get_compiler_and_version():
     return compiler, version
 
 
-def run_plan_script(task, config, suppression_files):
+COMPILER, COMPILER_VERSION = get_compiler_and_version()
+SUPPRESSION_FILES = [
+    DLOPEN_SUPPRESSION_FILE,
+    DL_CATCH_ERROR_SUPPRESSION_FILE,
+]
+if COMPILER == "GNU" and COMPILER_VERSION.split(".")[0] == "5":
+    print("Using leak suppression file for GCC 5 "
+          "(see http://issues.fast-downward.org/issue703).")
+    SUPPRESSION_FILES.append(VALGRIND_GCC5_SUPPRESSION_FILE)
+
+
+def run_plan_script(task, config, SUPPRESSION_FILES):
     assert "--alias" not in config, config
     cmd = [
         "valgrind",
@@ -56,7 +65,7 @@ def run_plan_script(task, config, suppression_files):
         "--show-leak-kinds=all",
         "--errors-for-leak-kinds=all",
         "--track-origins=yes"]
-    for suppression_file in suppression_files:
+    for suppression_file in SUPPRESSION_FILES:
         cmd.append("--suppressions={}".format(suppression_file))
     cmd.extend([DOWNWARD_BIN] + config + ["--internal-plan-file", PLAN_FILE])
     print("\nRun: {}".format(escape_list(cmd)))
@@ -91,24 +100,14 @@ def cleanup():
     os.remove(PLAN_FILE)
 
 
-def main():
-    subprocess.check_call(["./build.py"], cwd=REPO)
-    compiler, compiler_version = get_compiler_and_version()
-    print("Compiler:", compiler, compiler_version)
-    suppression_files = [
-        DLOPEN_SUPPRESSION_FILE,
-        DL_CATCH_ERROR_SUPPRESSION_FILE,
-    ]
-    if compiler == "GNU" and compiler_version.split(".")[0] == "5":
-        print("Using leak suppression file for GCC 5 "
-              "(see http://issues.fast-downward.org/issue703).")
-        suppression_files.append(VALGRIND_GCC5_SUPPRESSION_FILE)
-    for task in TASKS:
-        translate(task)
-        for config in CONFIGS.values():
-            run_plan_script(task, config, suppression_files)
+def setup_module(module):
+    translate(TASK)
+
+
+@pytest.mark.parametrize("config", sorted(CONFIGS.values()))
+def test_configs(config):
+    run_plan_script(SAS_FILE, config, SUPPRESSION_FILES)
+
+
+def teardown_module(module):
     cleanup()
-    print("No memory leaks found.")
-
-
-main()
