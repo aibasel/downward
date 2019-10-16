@@ -98,11 +98,6 @@ def translate(task):
         cwd=REPO)
 
 
-def cleanup():
-    os.remove(SAS_FILE)
-    os.remove(PLAN_FILE)
-
-
 def setup_module(_module):
     translate(TASK)
 
@@ -113,4 +108,5 @@ def test_configs(config):
 
 
 def teardown_module(_module):
-    cleanup()
+    os.remove(SAS_FILE)
+    os.remove(PLAN_FILE)
