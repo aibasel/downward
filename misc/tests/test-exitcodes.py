@@ -150,18 +150,20 @@ def get_sas_file_name(task_type):
     return "{}.sas".format(task_type)
 
 
-def setup_module(module):
+def setup_module(_module):
     for task_type, relpath in SEARCH_TASKS.items():
         pddl_file = os.path.join(BENCHMARKS_DIR, relpath)
         sas_file = get_sas_file_name(task_type)
         translate(pddl_file, sas_file)
 
 
-@pytest.mark.parametrize("task_type, driver_options, translate_options, expected", TRANSLATE_TESTS)
+@pytest.mark.parametrize(
+    "task_type, driver_options, translate_options, expected", TRANSLATE_TESTS)
 def test_translator_exit_codes(task_type, driver_options, translate_options, expected):
     relpath = TRANSLATE_TASKS[task_type]
     problem = os.path.join(BENCHMARKS_DIR, relpath)
-    cmd = [sys.executable, DRIVER] + driver_options + ["--translate"] + translate_options + [problem]
+    cmd = ([sys.executable, DRIVER] + driver_options +
+        ["--translate"] + translate_options + [problem])
     print("\nRun {cmd}:".format(**locals()))
     sys.stdout.flush()
     exitcode = subprocess.call(cmd)
@@ -169,10 +171,12 @@ def test_translator_exit_codes(task_type, driver_options, translate_options, exp
     cleanup()
 
 
-@pytest.mark.parametrize("task_type, driver_options, search_options, expected", SEARCH_TESTS)
+@pytest.mark.parametrize(
+    "task_type, driver_options, search_options, expected", SEARCH_TESTS)
 def test_search_exit_codes(task_type, driver_options, search_options, expected):
     sas_file = get_sas_file_name(task_type)
-    cmd = [sys.executable, DRIVER] + driver_options + [sas_file, "--search", search_options]
+    cmd = ([sys.executable, DRIVER] + driver_options +
+        [sas_file, "--search", search_options])
     print("\nRun {cmd}:".format(**locals()))
     sys.stdout.flush()
     exitcode = subprocess.call(cmd)
@@ -180,6 +184,6 @@ def test_search_exit_codes(task_type, driver_options, search_options, expected):
     cleanup()
 
 
-def teardown_module(module):
+def teardown_module(_module):
     for task_type in SEARCH_TASKS:
         os.remove(get_sas_file_name(task_type))
