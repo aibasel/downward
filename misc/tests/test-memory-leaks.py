@@ -77,7 +77,7 @@ def run_plan_script(task, config):
         subprocess.check_call(cmd, stdin=open(SAS_FILE), cwd=REPO)
     except OSError as err:
         if err.errno == errno.ENOENT:
-            sys.exit(
+            pytest.fail(
                 "Could not find valgrind. Please install it "
                 "with \"sudo apt install valgrind\".")
     except subprocess.CalledProcessError as err:
@@ -87,10 +87,9 @@ def run_plan_script(task, config):
         #   - 1 in case of usage errors
         # Fortunately, we only use exit code 1 for portfolios.
         if err.returncode == 1:
-            sys.exit("\nError: failed to run valgrind")
+            pytest.fail("failed to run valgrind")
         elif err.returncode == VALGRIND_ERROR_EXITCODE:
-            sys.exit(
-                "\nError: {config} leaks memory for {task}".format(**locals()))
+            pytest.fail("{config} leaks memory for {task}".format(**locals()))
 
 
 def translate(task):
