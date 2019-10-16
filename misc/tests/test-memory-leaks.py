@@ -59,7 +59,7 @@ if COMPILER == "GNU" and COMPILER_VERSION.split(".")[0] == "5":
     SUPPRESSION_FILES.append(VALGRIND_GCC5_SUPPRESSION_FILE)
 
 
-def run_plan_script(task, config, SUPPRESSION_FILES):
+def run_plan_script(task, config):
     assert "--alias" not in config, config
     cmd = [
         "valgrind",
@@ -110,7 +110,7 @@ def setup_module(_module):
 
 @pytest.mark.parametrize("config", sorted(CONFIGS.values()))
 def test_configs(config):
-    run_plan_script(SAS_FILE, config, SUPPRESSION_FILES)
+    run_plan_script(SAS_FILE, config)
 
 
 def teardown_module(_module):
