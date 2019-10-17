@@ -1,11 +1,11 @@
-#! /usr/bin/env python
-
 from __future__ import print_function
 
 from collections import defaultdict
 import os
 import subprocess
 import sys
+
+import pytest
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
@@ -146,67 +146,44 @@ def cleanup():
     subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
 
-def log_failure(cmd, expected, exitcode):
-    assert exitcode != expected
-    print("{cmd} failed: expected {expected}, got {exitcode}".format(**locals()), file=sys.stderr)
+def get_sas_file_name(task_type):
+    return "{}.sas".format(task_type)
 
 
-def run_translator_tests():
-    for task_type, driver_options, translate_options, expected in TRANSLATE_TESTS:
-        relpath = TRANSLATE_TASKS[task_type]
-        problem = os.path.join(BENCHMARKS_DIR, relpath)
-        cmd = [sys.executable, DRIVER] + driver_options + ["--translate"] + translate_options + [problem]
-        print("\nRun {cmd}:".format(**locals()))
-        sys.stdout.flush()
-        exitcode = subprocess.call(cmd)
-        if exitcode != expected[sys.platform]:
-            log_failure(cmd, expected[sys.platform], exitcode)
-            yield (cmd, expected[sys.platform], exitcode)
-        cleanup()
-
-
-def run_search_tests():
-    def get_sas_file_name(task_type):
-        return "{}.sas".format(task_type)
-
+def setup_module(_module):
     for task_type, relpath in SEARCH_TASKS.items():
         pddl_file = os.path.join(BENCHMARKS_DIR, relpath)
         sas_file = get_sas_file_name(task_type)
         translate(pddl_file, sas_file)
 
-    for task_type, driver_options, search_options, expected in SEARCH_TESTS:
-        sas_file = get_sas_file_name(task_type)
-        cmd = [sys.executable, DRIVER] + driver_options + [sas_file, "--search", search_options]
-        print("\nRun {cmd}:".format(**locals()))
-        sys.stdout.flush()
-        exitcode = subprocess.call(cmd)
-        if not exitcode == expected[sys.platform]:
-            log_failure(cmd, expected[sys.platform], exitcode)
-            yield (cmd, expected[sys.platform], exitcode)
-        cleanup()
 
+@pytest.mark.parametrize(
+    "task_type, driver_options, translate_options, expected", TRANSLATE_TESTS)
+def test_translator_exit_codes(task_type, driver_options, translate_options, expected):
+    relpath = TRANSLATE_TASKS[task_type]
+    problem = os.path.join(BENCHMARKS_DIR, relpath)
+    cmd = ([sys.executable, DRIVER] + driver_options +
+        ["--translate"] + translate_options + [problem])
+    print("\nRun {cmd}:".format(**locals()))
+    sys.stdout.flush()
+    exitcode = subprocess.call(cmd)
+    assert exitcode == expected[sys.platform]
+    cleanup()
+
+
+@pytest.mark.parametrize(
+    "task_type, driver_options, search_options, expected", SEARCH_TESTS)
+def test_search_exit_codes(task_type, driver_options, search_options, expected):
+    sas_file = get_sas_file_name(task_type)
+    cmd = ([sys.executable, DRIVER] + driver_options +
+        [sas_file, "--search", search_options])
+    print("\nRun {cmd}:".format(**locals()))
+    sys.stdout.flush()
+    exitcode = subprocess.call(cmd)
+    assert exitcode == expected[sys.platform]
+    cleanup()
+
+
+def teardown_module(_module):
     for task_type in SEARCH_TASKS:
         os.remove(get_sas_file_name(task_type))
-
-
-def main():
-    # On Windows, ./build.py has to be called from the correct environment.
-    # Since we want this script to work even when we are in a regular
-    # shell, we do not build on Windows. If the planner is not yet built,
-    # the driver script will complain about this.
-    if os.name == "posix":
-        subprocess.check_call(["./build.py"], cwd=REPO_BASE)
-
-    failures = []
-    failures += run_translator_tests()
-    failures += run_search_tests()
-    if failures:
-        print("\nFailures:", file=sys.stderr)
-        for cmd, expected, exitcode in failures:
-            log_failure(cmd, expected, exitcode)
-        sys.exit(1)
-    else:
-        print("\nNo errors detected.")
-
-
-main()
