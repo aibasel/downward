@@ -30,7 +30,7 @@ TRANSLATE_TESTS = [
         win32=returncodes.DRIVER_UNSUPPORTED)),
     # We cannot set/enforce memory limits on Windows/macOS and thus expect
     # DRIVER_UNSUPPORTED as exit code in those cases.
-    ("large", ["--translate-memory-limit", "100M"], [], defaultdict(
+    ("large", ["--translate-memory-limit", "75M"], [], defaultdict(
         lambda: returncodes.TRANSLATE_OUT_OF_MEMORY,
         darwin=returncodes.DRIVER_UNSUPPORTED,
         win32=returncodes.DRIVER_UNSUPPORTED)),
