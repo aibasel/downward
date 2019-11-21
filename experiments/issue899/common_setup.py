@@ -372,7 +372,7 @@ class IssueExperiment(FastDownwardExperiment):
 
         def make_scatter_plot(config_nick, rev1, rev2, attribute):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
-            print "Make scatter plot for", name
+            print("Make scatter plot for", name)
             algo1 = get_algo_nick(rev1, config_nick)
             algo2 = get_algo_nick(rev2, config_nick)
             report = report_class(
