@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 # -*- coding: utf-8 -*-
 
 import contextlib
@@ -8,7 +6,7 @@ import sys
 import time
 
 
-class Timer(object):
+class Timer:
     def __init__(self):
         self.start_time = time.time()
         self.start_clock = self._clock()

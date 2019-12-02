@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import print_function
 
 from collections import defaultdict
 
@@ -16,8 +15,8 @@ def get_fluent_facts(task, model):
             fluent_predicates.add(effect.literal.predicate)
     for axiom in task.axioms:
         fluent_predicates.add(axiom.name)
-    return set([fact for fact in model
-                if fact.predicate in fluent_predicates])
+    return {fact for fact in model
+            if fact.predicate in fluent_predicates}
 
 def get_objects_by_type(typed_objects, types):
     result = defaultdict(list)
@@ -57,8 +56,8 @@ def instantiate(task, model):
             # actions with the same name after normalization, and we
             # want to distinguish their instantiations.
             reachable_action_parameters[action].append(inst_parameters)
-            variable_mapping = dict([(par.name, arg)
-                                     for par, arg in zip(parameters, atom.args)])
+            variable_mapping = {par.name: arg
+                                for par, arg in zip(parameters, atom.args)}
             inst_action = action.instantiate(
                 variable_mapping, init_facts, init_assignments,
                 fluent_facts, type_to_objects,
@@ -67,8 +66,8 @@ def instantiate(task, model):
                 instantiated_actions.append(inst_action)
         elif isinstance(atom.predicate, pddl.Axiom):
             axiom = atom.predicate
-            variable_mapping = dict([(par.name, arg)
-                                     for par, arg in zip(axiom.parameters, atom.args)])
+            variable_mapping = {par.name: arg
+                                for par, arg in zip(axiom.parameters, atom.args)}
             inst_axiom = axiom.instantiate(variable_mapping, init_facts, fluent_facts)
             if inst_axiom:
                 instantiated_axioms.append(inst_axiom)

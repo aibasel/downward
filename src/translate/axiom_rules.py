@@ -155,7 +155,7 @@ def compute_axiom_layers(axioms, axiom_init):
     # where weight is 1 for NBF dependencies and 0 for other
     # dependencies. Each such triple represents the constraint
     # layer(u) >= layer(v) + weight.
-    depends_on = dict((u, []) for u in derived_atoms)
+    depends_on = {u: [] for u in derived_atoms}
     weighted_depends_on = set()
     for axiom in axioms:
         if (axiom.effect in axiom_init or
@@ -279,7 +279,7 @@ def get_axiom_init(axioms_by_atom, necessary_literals):
     return result
 
 def simplify_axioms(axioms_by_atom, necessary_literals):
-    necessary_atoms = set([literal.positive() for literal in necessary_literals])
+    necessary_atoms = {literal.positive() for literal in necessary_literals}
     new_axioms = []
     for atom in necessary_atoms:
         axioms = simplify(axioms_by_atom[atom])

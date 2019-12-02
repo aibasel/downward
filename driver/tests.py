@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Test module for Fast Downward driver script. Run with
 

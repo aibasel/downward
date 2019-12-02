@@ -1,11 +1,9 @@
-from __future__ import print_function
-
 import copy
 
 from . import conditions
 
 
-class Action(object):
+class Action:
     def __init__(self, name, parameters, num_external_parameters,
                  precondition, effects, cost):
         assert 0 <= num_external_parameters <= len(parameters)
@@ -39,8 +37,7 @@ class Action(object):
             print("  None")
 
     def uniquify_variables(self):
-        self.type_map = dict([(par.name, par.type_name)
-                              for par in self.parameters])
+        self.type_map = {par.name: par.type_name for par in self.parameters}
         self.precondition = self.precondition.uniquify_variables(self.type_map)
         for effect in self.effects:
             effect.uniquify_variables(self.type_map)
