@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
