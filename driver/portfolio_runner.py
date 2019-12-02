@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 """ Module for running planner portfolios.
 
 Memory limits: We apply the same memory limit that is given to the

@@ -1,11 +1,9 @@
-from __future__ import print_function
-
 import logging
 
 from downward.reports.absolute import AbsoluteReport
 
 
-class Check(object):
+class Check:
     """
     Compare the attribute values x and y of two runs and check whether
     *min_rel* <= y/x <= *max_rel*. Even if the check fails, only report the

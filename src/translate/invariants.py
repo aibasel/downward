@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from collections import defaultdict
 import itertools
 
@@ -30,7 +28,7 @@ def instantiate_factored_mapping(pairs):
 
 def find_unique_variables(action, invariant):
     # find unique names for invariant variables
-    params = set([p.name for p in action.parameters])
+    params = {p.name for p in action.parameters}
     for eff in action.effects:
         params.update([p.name for p in eff.parameters])
     inv_vars = []
@@ -48,8 +46,7 @@ def get_literals(condition):
     if isinstance(condition, pddl.Literal):
         yield condition
     elif isinstance(condition, pddl.Conjunction):
-        for literal in condition.parts:
-            yield literal
+        yield from condition.parts
 
 
 def ensure_conjunction_sat(system, *parts):
@@ -197,8 +194,8 @@ class Invariant:
 
     def __init__(self, parts):
         self.parts = frozenset(parts)
-        self.predicates = set([part.predicate for part in parts])
-        self.predicate_to_part = dict([(part.predicate, part) for part in parts])
+        self.predicates = {part.predicate for part in parts}
+        self.predicate_to_part = {part.predicate: part for part in parts}
         assert len(self.parts) == len(self.predicates)
 
     def __eq__(self, other):

@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-class FunctionalExpression(object):
+class FunctionalExpression:
     def __init__(self, parts):
         self.parts = tuple(parts)
     def dump(self, indent="  "):
@@ -54,7 +52,7 @@ class PrimitiveNumericExpression(FunctionalExpression):
         assert result is not None, "Could not find instantiation for PNE: %r" % (str(pne),)
         return result
 
-class FunctionAssignment(object):
+class FunctionAssignment:
     def __init__(self, fluent, expression):
         self.fluent = fluent
         self.expression = expression

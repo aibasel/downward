@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
@@ -7,7 +6,6 @@ Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
 The file bitbucket-pipelines.yml shows how to install the dependencies.
 """
 
-from __future__ import print_function
 
 import errno
 import glob

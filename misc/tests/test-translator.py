@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import print_function
 
 HELP = """\
 Check that translator is deterministic.
@@ -21,7 +20,7 @@ import subprocess
 import sys
 
 
-VERSIONS = ["2.7", "3"]
+VERSIONS = ["3", "3.6"]
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))

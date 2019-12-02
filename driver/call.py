@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 """Make subprocess calls with time and memory limits."""
 
 from . import limits

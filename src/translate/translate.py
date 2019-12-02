@@ -1,7 +1,5 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
 
-from __future__ import print_function
 
 import os
 import sys
@@ -88,7 +86,7 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                     val not in condition.get(var)):
                 # Conflicting conditions on this variable: Operator invalid.
                 return None
-            condition[var] = set([val])
+            condition[var] = {val}
 
     def number_of_values(var_vals_pair):
         var, vals = var_vals_pair
@@ -664,14 +662,14 @@ def build_implied_facts(strips_to_sas, groups, mutex_groups):
 
 def dump_statistics(sas_task):
     print("Translator variables: %d" % len(sas_task.variables.ranges))
-    print(("Translator derived variables: %d" %
-           len([layer for layer in sas_task.variables.axiom_layers
-                if layer >= 0])))
+    print("Translator derived variables: %d" %
+          len([layer for layer in sas_task.variables.axiom_layers
+               if layer >= 0]))
     print("Translator facts: %d" % sum(sas_task.variables.ranges))
     print("Translator goal facts: %d" % len(sas_task.goal.pairs))
     print("Translator mutex groups: %d" % len(sas_task.mutexes))
-    print(("Translator total mutex groups size: %d" %
-           sum(mutex.get_encoding_size() for mutex in sas_task.mutexes)))
+    print("Translator total mutex groups size: %d" %
+          sum(mutex.get_encoding_size() for mutex in sas_task.mutexes))
     print("Translator operators: %d" % len(sas_task.operators))
     print("Translator axioms: %d" % len(sas_task.axioms))
     print("Translator task size: %d" % sas_task.get_encoding_size())
@@ -725,7 +723,7 @@ if __name__ == "__main__":
               "when using a time limit, which, however, is probably "
               "supported on your platform anyway.")
     try:
-        # Reserve about 10 MB (in Python 2) of emergency memory.
+        # Reserve about 10 MB of emergency memory.
         # https://stackoverflow.com/questions/19469608/
         emergency_memory = "x" * 10**7
         main()

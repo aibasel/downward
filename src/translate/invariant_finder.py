@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import print_function
 
 from collections import deque, defaultdict
 import itertools
@@ -11,7 +10,7 @@ import options
 import pddl
 import timers
 
-class BalanceChecker(object):
+class BalanceChecker:
     def __init__(self, task, reachable_action_params):
         self.predicates_to_add_actions = defaultdict(set)
         self.action_to_heavy_action = {}
