@@ -1,13 +1,12 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 
 HELP = """\
 Check that translator is deterministic.
 
-Run the translator on two different Python versions and test that the
-log and the output file are the same. Obviously, there might be false
-negatives, i.e., different Python versions might lead to the same
-nondeterministic results.
+Run the translator multiple times to test that the log and the output file are
+the same for every run. Obviously, there might be false negatives, i.e.,
+different runs might lead to the same nondeterministic results.
 """
 
 import argparse
@@ -19,8 +18,6 @@ import re
 import subprocess
 import sys
 
-
-VERSIONS = ["3", "3.6"]
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
@@ -46,9 +43,8 @@ def get_task_name(path):
     return "-".join(path.split("/")[-2:])
 
 
-def translate_task(python, python_version, task_file):
-    print("Translate {} with {} ({})".format(
-        get_task_name(task_file), python, python_version))
+def translate_task(python, task_file):
+    print("Translate {} with {}".format(get_task_name(task_file), python))
     sys.stdout.flush()
     cmd = [python, DRIVER, "--translate", task_file]
     env = os.environ.copy()
@@ -127,40 +123,34 @@ def get_abs_interpreter_path(python_name):
     return abs_python
 
 
-def get_python_version_info(python):
-    output = subprocess.check_output(
-        [python, '-V'],
-        stderr=subprocess.STDOUT,
-        universal_newlines=True).strip()
-    assert output.startswith("Python "), output
-    return output[len("Python "):]
-
-
 def main():
     args = parse_args()
     os.chdir(DIR)
     cleanup()
     subprocess.check_call(["./build.py", "translate"], cwd=REPO)
-    interpreter_paths = [get_abs_interpreter_path("python{}".format(version)) for version in VERSIONS]
-    interpreter_versions = [get_python_version_info(path) for path in interpreter_paths]
+    python_interpreter = get_abs_interpreter_path("python3")
     for task in get_tasks(args):
-        for python, python_version in zip(interpreter_paths, interpreter_versions):
-            log = translate_task(python, python_version, task)
-            with open(python_version + ".sas", "w") as combined_output:
+        log = translate_task(python_interpreter, task)
+        with open("base.sas", "w") as combined_output:
+            combined_output.write(log)
+            with open("output.sas") as output_sas:
+                combined_output.write(output_sas.read())
+        for iteration in range(10):
+            log = translate_task(python_interpreter, task)
+            with open("output{}.sas".format(iteration), "w") as combined_output:
                 combined_output.write(log)
                 with open("output.sas") as output_sas:
                     combined_output.write(output_sas.read())
-        print("Compare translator output")
-        sys.stdout.flush()
-        assert len(interpreter_versions) == 2, "Code only tests difference between 2 versions"
-        files = [version + ".sas" for version in interpreter_versions]
-        try:
-            subprocess.check_call(["diff", "-q"] + files)
-        except subprocess.CalledProcessError:
-            sys.exit(
-                "Error: Translator is nondeterministic for {task}.".format(**locals()))
-        print()
-        sys.stdout.flush()
+            print("Compare translator output")
+            sys.stdout.flush()
+            files = ["base.sas", "output{}.sas".format(iteration)]
+            try:
+                subprocess.check_call(["diff", "-q"] + files)
+            except subprocess.CalledProcessError:
+                sys.exit(
+                    "Error: Translator is nondeterministic for {task}.".format(**locals()))
+            print()
+            sys.stdout.flush()
     cleanup()
 
 
