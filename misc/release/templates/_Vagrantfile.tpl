@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
         g++       \
         make      \
         mercurial \
-        python
+        python3
 
     cd /home/vagrant
 
