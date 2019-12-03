@@ -49,7 +49,6 @@ def translate_task(task_file):
     sys.stdout.flush()
     cmd = [python, DRIVER, "--translate", task_file]
     env = os.environ.copy()
-    env["PYTHONHASHSEED"] = "random"
     try:
         output = subprocess.check_output(cmd, env=env)
     except OSError as err:
