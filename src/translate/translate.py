@@ -728,7 +728,7 @@ if __name__ == "__main__":
         emergency_memory = b"x" * 10**7
         main()
     except MemoryError:
-        emergency_memory = ""
+        del emergency_memory
         print()
         print("Translator ran out of memory, traceback:")
         print("=" * 79)
