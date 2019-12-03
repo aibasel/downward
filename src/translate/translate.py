@@ -725,7 +725,7 @@ if __name__ == "__main__":
     try:
         # Reserve about 10 MB of emergency memory.
         # https://stackoverflow.com/questions/19469608/
-        emergency_memory = "x" * 10**7
+        emergency_memory = b"x" * 10**7
         main()
     except MemoryError:
         emergency_memory = ""
