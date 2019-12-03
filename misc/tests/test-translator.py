@@ -43,7 +43,8 @@ def get_task_name(path):
     return "-".join(path.split("/")[-2:])
 
 
-def translate_task(python, task_file):
+def translate_task(task_file):
+    python = sys.executable
     print("Translate {} with {}".format(get_task_name(task_file), python))
     sys.stdout.flush()
     cmd = [python, DRIVER, "--translate", task_file]
@@ -113,44 +114,31 @@ def cleanup():
             os.remove(f)
 
 
-def get_abs_interpreter_path(python_name):
-    # For some reason, the driver cannot find the Python executable
-    # (sys.executable returns the empty string) if we don't use the
-    # absolute path here.
-    abs_python = find_executable(python_name)
-    if not abs_python:
-        sys.exit("Error: {} couldn't be found.".format(python_name))
-    return abs_python
-
-
 def main():
     args = parse_args()
     os.chdir(DIR)
     cleanup()
     subprocess.check_call(["./build.py", "translate"], cwd=REPO)
-    python_interpreter = get_abs_interpreter_path("python3")
     for task in get_tasks(args):
-        log = translate_task(python_interpreter, task)
+        log = translate_task(task)
         with open("base.sas", "w") as combined_output:
             combined_output.write(log)
             with open("output.sas") as output_sas:
                 combined_output.write(output_sas.read())
         for iteration in range(10):
-            log = translate_task(python_interpreter, task)
+            log = translate_task(task)
             with open("output{}.sas".format(iteration), "w") as combined_output:
                 combined_output.write(log)
                 with open("output.sas") as output_sas:
                     combined_output.write(output_sas.read())
-            print("Compare translator output")
-            sys.stdout.flush()
+            print("Compare translator output", flush=True)
             files = ["base.sas", "output{}.sas".format(iteration)]
             try:
                 subprocess.check_call(["diff", "-q"] + files)
             except subprocess.CalledProcessError:
                 sys.exit(
                     "Error: Translator is nondeterministic for {task}.".format(**locals()))
-            print()
-            sys.stdout.flush()
+            print(flush=True)
     cleanup()
 
 
