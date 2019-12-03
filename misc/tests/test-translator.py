@@ -114,23 +114,23 @@ def cleanup():
             os.remove(f)
 
 
+def write_combined_output(output_file, task):
+    log = translate_task(task)
+    with open(output_file, "w") as combined_output:
+        combined_output.write(log)
+        with open("output.sas") as output_sas:
+            combined_output.write(output_sas.read())
+
+
 def main():
     args = parse_args()
     os.chdir(DIR)
     cleanup()
     subprocess.check_call(["./build.py", "translate"], cwd=REPO)
     for task in get_tasks(args):
-        log = translate_task(task)
-        with open("base.sas", "w") as combined_output:
-            combined_output.write(log)
-            with open("output.sas") as output_sas:
-                combined_output.write(output_sas.read())
+        write_combined_output("base.sas", task)
         for iteration in range(3):
-            log = translate_task(task)
-            with open("output{}.sas".format(iteration), "w") as combined_output:
-                combined_output.write(log)
-                with open("output.sas") as output_sas:
-                    combined_output.write(output_sas.read())
+            write_combined_output("output{}.sas".format(iteration), task)
             print("Compare translator output", flush=True)
             files = ["base.sas", "output{}.sas".format(iteration)]
             try:
