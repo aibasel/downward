@@ -125,7 +125,7 @@ def main():
             combined_output.write(log)
             with open("output.sas") as output_sas:
                 combined_output.write(output_sas.read())
-        for iteration in range(10):
+        for iteration in range(3):
             log = translate_task(task)
             with open("output{}.sas".format(iteration), "w") as combined_output:
                 combined_output.write(log)
