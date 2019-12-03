@@ -128,7 +128,7 @@ def main():
     subprocess.check_call(["./build.py", "translate"], cwd=REPO)
     for task in get_tasks(args):
         write_combined_output("base.sas", task)
-        for iteration in range(3):
+        for iteration in range(2):
             write_combined_output("output{}.sas".format(iteration), task)
             print("Compare translator output", flush=True)
             files = ["base.sas", "output{}.sas".format(iteration)]
