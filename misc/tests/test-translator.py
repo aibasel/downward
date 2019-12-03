@@ -59,7 +59,7 @@ def translate_task(task_file):
     for pattern in [
             r"\[.+s CPU, .+s wall-clock\]",
             r"\d+ KB",
-            r".* command line string: .*/python\d(.\d)?"]:
+            r".* command line string: .*/python3\d(.\d)?"]:
         output = re.sub(pattern, "", output)
     return output
 
