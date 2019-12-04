@@ -7,10 +7,10 @@ import traceback
 
 def python_version_supported():
     major, minor = sys.version_info[:2]
-    return (major == 3 and minor >= 2)
+    return (major, minor) >= (3, 6)
 
 if not python_version_supported():
-    sys.exit("Error: Translator only supports Python >= 3.2.")
+    sys.exit("Error: Translator only supports Python >= 3.6.")
 
 
 from collections import defaultdict
