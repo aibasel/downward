@@ -1,9 +1,9 @@
-from builtins import open as file_open
-
 import options
 
 from . import lisp_parser
 from . import parsing_functions
+
+file_open = open
 
 
 def parse_pddl_file(type, filename):
@@ -21,6 +21,7 @@ def parse_pddl_file(type, filename):
     except lisp_parser.ParseError as e:
         raise SystemExit("Error: Could not parse %s file: %s\nReason: %s." %
                          (type, filename, e))
+
 
 def open(domain_filename=None, task_filename=None):
     task_filename = task_filename or options.task
