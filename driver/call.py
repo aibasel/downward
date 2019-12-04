@@ -2,7 +2,6 @@
 
 from . import limits
 from . import returncodes
-from . import util
 
 import logging
 import os
