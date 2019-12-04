@@ -6,8 +6,7 @@ import sys
 import traceback
 
 def python_version_supported():
-    major, minor = sys.version_info[:2]
-    return (major, minor) >= (3, 6)
+    return sys.version_info >= (3, 6)
 
 if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 3.6.")
