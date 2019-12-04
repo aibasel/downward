@@ -48,9 +48,8 @@ def translate_task(task_file):
     print("Translate {} with {}".format(get_task_name(task_file), python))
     sys.stdout.flush()
     cmd = [python, DRIVER, "--translate", task_file]
-    env = os.environ.copy()
     try:
-        output = subprocess.check_output(cmd, env=env)
+        output = subprocess.check_output(cmd)
     except OSError as err:
         sys.exit("Call failed: {}\n{}".format(" ".join(cmd), err))
     output = str(output)
