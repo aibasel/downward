@@ -8,6 +8,8 @@ from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.experiment import Experiment
 
 from downward.reports import PlanningReport
+from downward.reports.absolute import AbsoluteReport
+from downward.reports.compare import ComparativeReport
 
 import common_setup
 
@@ -73,5 +75,10 @@ exp.add_report(TranslatorDiffReport(
         attributes=["domain", "problem", "algorithm", "run_dir"]
     ), outfile="different_output_sas.csv"
 )
+
+exp.add_report(AbsoluteReport(attributes=ATTRIBUTES))
+exp.add_report(ComparativeReport([
+    ('issue939-base-translate-only', 'issue939-v1-translate-only')
+    ], attributes=ATTRIBUTES))
 
 exp.run_steps()
