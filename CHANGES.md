@@ -53,7 +53,7 @@ after the corresponding tracker issues.
 - Use pytest for testing standard configurations.
   <http://issues.fast-downward.org/issue935>
 
-- Drop support for python2.
+- Raise minimum supported Python version to 3.6.
   <http://issues.fast-downward.org/issue939>
 
 
