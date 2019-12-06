@@ -55,6 +55,10 @@ after the corresponding tracker issues.
 
 - Raise minimum supported Python version to 3.6.
   <http://issues.fast-downward.org/issue939>
+  Fast Downward now requires Python 3.6 or newer; support for Python 2.7 and
+  Python 3.2-3.5 has been dropped. The main reason for this change is Python 2
+  reaching its end of support on January 1, 2020. See
+  https://python3statement.org/ for more background.
 
 
 ## Fast Downward 19.06
