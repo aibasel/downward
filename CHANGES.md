@@ -53,6 +53,10 @@ after the corresponding tracker issues.
 - Use pytest for testing standard configurations.
   <http://issues.fast-downward.org/issue935>
 
+- Drop support for python2.
+  <http://issues.fast-downward.org/issue939>
+
+
 ## Fast Downward 19.06
 
 Released on June 11, 2019.
