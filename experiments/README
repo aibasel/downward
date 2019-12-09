@@ -22,8 +22,8 @@ following steps:
     deactivate  # leave the virtual environment
 
 Below we list some experiments that show how certain tasks can be
-performed. Some of them use Downward Lab's deprecated
-DownwardExperiment:
+performed. Please note that some of these experiments use outdated Lab and
+Python versions.
 
 - Test changes that affect the whole planner:
   - issue481/v1-*.py show the general setup. You will need different

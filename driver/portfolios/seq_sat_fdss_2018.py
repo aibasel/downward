@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This is the "Fast Downward Stone Soup 2018" sequential portfolio that participated in the IPC 2018
 satisficing and bounded-cost tracks. For more information, see the planner abstract:

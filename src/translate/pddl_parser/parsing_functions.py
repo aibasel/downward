@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import sys
 
 import graph
@@ -370,11 +366,11 @@ def parse_domain_pddl(domain_pddl):
     set_supertypes(the_types)
     yield requirements
     yield the_types
-    type_dict = dict((type.name, type) for type in the_types)
+    type_dict = {type.name: type for type in the_types}
     yield type_dict
     yield constants
     yield the_predicates
-    predicate_dict = dict((pred.name, pred) for pred in the_predicates)
+    predicate_dict = {pred.name: pred for pred in the_predicates}
     yield predicate_dict
     yield the_functions
 
