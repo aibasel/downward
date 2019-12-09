@@ -9,8 +9,7 @@ import pddl
 
 def get_connected_conditions(conditions):
     agraph = graph.Graph(conditions)
-    var_to_conditions = dict([(var, [])
-                              for var in get_variables(conditions)])
+    var_to_conditions = {var: [] for var in get_variables(conditions)}
     for cond in conditions:
         for var in cond.args:
             if var[0] == "?":

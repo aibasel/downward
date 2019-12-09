@@ -1,7 +1,4 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
+#! /usr/bin/env python3
 
 import argparse
 import logging
@@ -11,11 +8,7 @@ import re
 import subprocess
 import sys
 import time
-try:
-    import xmlrpc.client as xmlrpclib
-except ImportError:
-    # Python 2
-    import xmlrpclib
+import xmlrpc.client as xmlrpclib
 
 import markup
 
@@ -48,7 +41,7 @@ def read_password():
     try:
         with open(path) as password_file:
             return password_file.read().strip()
-    except IOError:
+    except OSError:
         logging.critical("Could not find password file %s!\nIs it present?"
             % PASSWORD_FILE)
         sys.exit(1)
@@ -195,7 +188,7 @@ if __name__ == '__main__':
         attempt(send_pages, changed_pages)
     else:
         logging.info("no changes found")
-    missing_titles = set(old_doc_titles) - set(new_doc_pages.keys()) - set([DOC_PREFIX + "Overview"])
+    missing_titles = set(old_doc_titles) - set(new_doc_pages.keys()) - {DOC_PREFIX + "Overview"}
     if missing_titles:
         sys.exit(
             "There are pages in the wiki documentation "

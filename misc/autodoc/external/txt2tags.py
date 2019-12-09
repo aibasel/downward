@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # txt2tags - generic text conversion tool
 # http://txt2tags.org
 #

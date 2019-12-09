@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import logging
 
 from external import txt2tags
@@ -69,7 +65,7 @@ def _get_config(target):
     return config
 
 
-class Document(object):
+class Document:
     def __init__(self, title='', author='', date='%%date(%Y-%m-%d)'):
         self.title = title
         self.author = author
