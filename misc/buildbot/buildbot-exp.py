@@ -60,7 +60,7 @@ EXPERIMENTS_DIR = os.path.join(BASE_DIR, 'data')
 REVISION_CACHE = os.path.join(BASE_DIR, 'revision-cache')
 REGRESSIONS_DIR = os.path.join(BASE_DIR, 'regressions')
 
-BASELINE = cached_revision.get_global_rev(REPO, rev='0b4344f8f5a8')
+BASELINE = '0b4344f8f5a8'
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
@@ -150,7 +150,7 @@ def main():
         rev = BASELINE
         name = 'baseline'
     else:
-        rev = cached_revision.get_global_rev(REPO, rev=args.revision)
+        rev = cached_revision.get_global_rev(REPO, vcs=cached_revision.MERCURIAL, rev=args.revision)
         name = rev
 
     exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), revision_cache=REVISION_CACHE)
