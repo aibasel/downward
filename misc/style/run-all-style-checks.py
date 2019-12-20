@@ -74,7 +74,7 @@ def check_cplusplus_style():
     ignored by mercurial). We therefore find the source files manually
     and call uncrustify directly.
     """
-    src_files = _get_src_files(REPO, (".h", ".cc"), ignore_dirs=["builds", "data"])
+    src_files = _get_src_files(REPO, (".h", ".cc"), ignore_dirs=["builds", "data", "venv"])
     print("Checking {} files with uncrustify".format(len(src_files)))
     config_file = os.path.join(REPO, ".uncrustify.cfg")
     executable = "uncrustify"
