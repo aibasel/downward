@@ -8,12 +8,7 @@ The file bitbucket-pipelines.yml shows how to install the dependencies.
 
 
 import errno
-import glob
-import json
 import os
-import pipes
-import re
-import shutil
 import subprocess
 import sys
 
