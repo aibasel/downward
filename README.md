@@ -27,7 +27,7 @@ contributing, and finally by last name.
 - 2016-2019 Cedric Geissmann
 - 2017-2019 Guillem Francès
 - 2018-2019 Augusto B. Corrêa
-- 2018 Patrick Ferber
+- 2018-2019 Patrick Ferber
 - 2017 Daniel Killenberger
 - 2016 Yusra Alkhazraji
 - 2016 Martin Wehrle
