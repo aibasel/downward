@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-import errno
-import glob
 import json
 import os
 import pipes
