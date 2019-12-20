@@ -13,6 +13,7 @@ import json
 import os
 import pipes
 import re
+import shutil
 import subprocess
 import sys
 
@@ -157,8 +158,12 @@ def check_search_code_with_clang_tidy():
         "readability-static-definition-in-anonymous-namespace",
         "readability-uniqueptr-delete-release",
         ]
+    # Since the script only supports Python 2 but uses plain "python" in
+    # the shebang line, we need to call Python 2 explicitly. Otherwise,
+    # the wrong Python version is picked up in virtual environments.
     cmd = [
-        "./run-clang-tidy.py",
+        "python2",
+        shutil.which("run-clang-tidy-5.0.py"),
         "-quiet",
         "-p", build_dir,
         "-clang-tidy-binary=clang-tidy-5.0",
