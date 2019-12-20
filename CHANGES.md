@@ -9,7 +9,19 @@ For more details, check the repository history
 (<http://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
-## Changes since the last release
+## Fast Downward 19.12
+
+Released on December 20, 2019.
+
+Highlights:
+
+- Fast Downward no longer supports Python 2.7, which reaches its end
+  of support on January 1, 2020. The minimum supported Python version
+  is now 3.6.
+
+- Fast Downward now supports the SoPlex LP solver.
+
+Details:
 
 - general: raise minimum supported Python version to 3.6
   <http://issues.fast-downward.org/issue939>
