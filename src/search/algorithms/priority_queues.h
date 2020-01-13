@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <limits>
 #include <queue>
 #include <utility>
 #include <vector>
@@ -137,6 +138,11 @@ class BucketQueue : public AbstractQueue<Value> {
     int num_entries;
     int num_pushes;
 
+    bool is_valid_key(int key) const {
+        int infty = std::numeric_limits<int>::max();
+        return key >= 0 && key != infty;
+    }
+
     void update_current_bucket_no() const {
         int num_buckets = buckets.size();
         while (current_bucket_no < num_buckets &&
@@ -167,6 +173,7 @@ public:
     }
 
     virtual void push(int key, const Value &value) {
+        assert(is_valid_key(key));
         ++num_entries;
         ++num_pushes;
         assert(num_pushes > 0); // Check against overflow.
@@ -206,6 +213,7 @@ public:
     }
 
     virtual AbstractQueue<Value> *convert_if_necessary(int key) {
+        assert(is_valid_key(key));
         if (key >= MIN_BUCKETS_BEFORE_SWITCH && key > num_pushes) {
             if (DEBUG) {
                 std::cout << "Switch from bucket-based to heap-based queue "
