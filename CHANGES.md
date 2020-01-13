@@ -11,7 +11,10 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- none so far
+- integrate code for saturated cost partitioning over abstraction heuristics
+  <http://issues.fast-downward.org/issue780>
+  See http://www.fast-downward.org/Doc/Evaluator#Saturated_cost_partitioning
+  for usage instructions.
 
 ## Fast Downward 19.12
 
