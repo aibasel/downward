@@ -7,7 +7,12 @@
 #include <vector>
 
 class AbstractTask;
+class Evaluator;
 class State;
+
+namespace options {
+class OptionParser;
+}
 
 namespace cost_saturation {
 class AbstractionGenerator;
@@ -42,6 +47,9 @@ std::vector<int> get_abstract_state_ids(
 
 extern void reduce_costs(
     std::vector<int> &remaining_costs, const std::vector<int> &saturated_costs);
+
+extern std::shared_ptr<Evaluator> get_max_cp_heuristic(
+    options::OptionParser &parser, CPFunction cp_function);
 }
 
 #endif

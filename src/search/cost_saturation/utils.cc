@@ -3,9 +3,16 @@
 #include "abstraction.h"
 #include "abstraction_generator.h"
 #include "cost_partitioning_heuristic.h"
+#include "cost_partitioning_heuristic_collection_generator.h"
+#include "max_cost_partitioning_heuristic.h"
 
+#include "../option_parser.h"
+
+#include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
+#include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <cassert>
 #include <numeric>
@@ -78,5 +85,97 @@ void reduce_costs(vector<int> &remaining_costs, const vector<int> &saturated_cos
         }
         assert(remaining >= 0);
     }
+}
+
+static void add_order_options_to_parser(OptionParser &parser) {
+    parser.add_option<shared_ptr<OrderGenerator>>(
+        "orders",
+        "order generator",
+        "greedy_orders()");
+    parser.add_option<int>(
+        "max_orders",
+        "maximum number of orders",
+        "infinity",
+        Bounds("0", "infinity"));
+    parser.add_option<double>(
+        "max_time",
+        "maximum time in seconds for finding orders",
+        "200",
+        Bounds("0", "infinity"));
+    parser.add_option<bool>(
+        "diversify",
+        "only keep orders that have a higher heuristic value than all previous "
+        "orders for any of the samples",
+        "true");
+    parser.add_option<int>(
+        "samples",
+        "number of samples for diversification",
+        "1000",
+        Bounds("1", "infinity"));
+    parser.add_option<double>(
+        "max_optimization_time",
+        "maximum time in seconds for optimizing each order with hill climbing",
+        "2",
+        Bounds("0", "infinity"));
+    utils::add_rng_options(parser);
+}
+
+static CostPartitioningHeuristicCollectionGenerator
+get_cp_heuristic_collection_generator_from_options(const options::Options &opts) {
+    return CostPartitioningHeuristicCollectionGenerator(
+        opts.get<shared_ptr<OrderGenerator>>("orders"),
+        opts.get<int>("max_orders"),
+        opts.get<double>("max_time"),
+        opts.get<bool>("diversify"),
+        opts.get<int>("samples"),
+        opts.get<double>("max_optimization_time"),
+        utils::parse_rng_from_options(opts));
+}
+
+shared_ptr<Evaluator> get_max_cp_heuristic(options::OptionParser &parser, CPFunction cp_function) {
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support(
+        "conditional effects",
+        "not supported (the heuristic supports them in theory, but none of "
+        "the currently implemented abstraction generators do)");
+    parser.document_language_support(
+        "axioms",
+        "not supported (the heuristic supports them in theory, but none of "
+        "the currently implemented abstraction generators do)");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
+
+    parser.add_list_option<shared_ptr<AbstractionGenerator>>(
+        "abstractions",
+        "abstraction generators",
+        "[projections(hillclimbing(max_time=60)), "
+        "projections(systematic(2)), "
+        "cartesian()]");
+    add_order_options_to_parser(parser);
+    Heuristic::add_options_to_parser(parser);
+
+    options::Options opts = parser.parse();
+    if (parser.help_mode())
+        return nullptr;
+
+    if (parser.dry_run())
+        return nullptr;
+
+    shared_ptr<AbstractTask> task = opts.get<shared_ptr<AbstractTask>>("transform");
+    TaskProxy task_proxy(*task);
+    vector<int> costs = task_properties::get_operator_costs(task_proxy);
+    Abstractions abstractions = generate_abstractions(
+        task, opts.get_list<shared_ptr<AbstractionGenerator>>("abstractions"));
+    UnsolvabilityHeuristic unsolvability_heuristic(abstractions);
+    vector<CostPartitioningHeuristic> cp_heuristics =
+        get_cp_heuristic_collection_generator_from_options(opts).generate_cost_partitionings(
+            task_proxy, abstractions, costs, cp_function, unsolvability_heuristic);
+    return make_shared<MaxCostPartitioningHeuristic>(
+        opts,
+        move(abstractions),
+        move(cp_heuristics),
+        move(unsolvability_heuristic));
 }
 }
