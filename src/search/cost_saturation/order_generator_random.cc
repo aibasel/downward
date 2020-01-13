@@ -23,8 +23,6 @@ void OrderGeneratorRandom::initialize(
 }
 
 Order OrderGeneratorRandom::compute_order_for_state(
-    const Abstractions &,
-    const vector<int> &,
     const vector<int> &,
     bool) {
     rng->shuffle(random_order);

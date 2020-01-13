@@ -92,8 +92,6 @@ void OrderGeneratorGreedy::initialize(
 }
 
 Order OrderGeneratorGreedy::compute_order_for_state(
-    const Abstractions &,
-    const vector<int> &,
     const vector<int> &abstract_state_ids,
     bool verbose) {
     utils::Timer greedy_timer;

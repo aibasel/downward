@@ -23,14 +23,10 @@ public:
     virtual ~OrderGenerator() = default;
 
     virtual void initialize(
-        const Abstractions &abstractions,
-        const std::vector<int> &costs) = 0;
+        const Abstractions &abstractions, const std::vector<int> &costs) = 0;
 
     virtual Order compute_order_for_state(
-        const Abstractions &abstractions,
-        const std::vector<int> &costs,
-        const std::vector<int> &abstract_state_ids,
-        bool verbose) = 0;
+        const std::vector<int> &abstract_state_ids, bool verbose) = 0;
 };
 
 extern void add_common_order_generator_options(options::OptionParser &parser);
