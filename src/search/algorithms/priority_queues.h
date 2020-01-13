@@ -70,6 +70,11 @@ template<typename Value>
 class HeapQueue : public AbstractQueue<Value> {
     typedef typename AbstractQueue<Value>::Entry Entry;
 
+    bool is_valid_key(int key) const {
+        int infty = std::numeric_limits<int>::max();
+        return key != infty;
+    }
+
     struct compare_func {
         bool operator()(const Entry &lhs, const Entry &rhs) const {
             return lhs.first > rhs.first;
@@ -92,6 +97,7 @@ public:
     }
 
     virtual void push(int key, const Value &value) {
+        assert(is_valid_key(key));
         heap.push(std::make_pair(key, value));
     }
 
