@@ -7,6 +7,7 @@
 #include "utils.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -42,7 +43,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     vector<unique_ptr<Distances>> &&distances,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    Verbosity verbosity)
+    utils::Verbosity verbosity)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
@@ -128,7 +129,7 @@ void FactoredTransitionSystem::apply_label_mapping(
 bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     assert(is_component_valid(index));
 
     int new_num_states = state_equivalence_relation.size();
@@ -160,7 +161,7 @@ bool FactoredTransitionSystem::apply_abstraction(
 int FactoredTransitionSystem::merge(
     int index1,
     int index2,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     assert(is_component_valid(index1));
     assert(is_component_valid(index2));
     transition_systems.push_back(
@@ -222,6 +223,20 @@ void FactoredTransitionSystem::dump() const {
 bool FactoredTransitionSystem::is_factor_solvable(int index) const {
     assert(is_component_valid(index));
     return transition_systems[index]->is_solvable(*distances[index]);
+}
+
+bool FactoredTransitionSystem::is_factor_trivial(int index) const {
+    assert(is_component_valid(index));
+    if (!mas_representations[index]->is_total()) {
+        return false;
+    }
+    const TransitionSystem &ts = *transition_systems[index];
+    for (int state = 0; state < ts.get_size(); ++state) {
+        if (!ts.is_goal_state(state)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool FactoredTransitionSystem::is_active(int index) const {

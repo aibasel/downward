@@ -11,8 +11,7 @@ pipelines:
             - apt-get -y install cmake g++ make mercurial python
 
             # Install dependencies for running code tests.
-            - apt-get -y install clang-5.0 clang-tidy-5.0 python3 python-pip valgrind wget
-            - pip install -U pyflakes pytest
+            - apt-get -y install clang-5.0 clang-tidy-5.0 python3.6 python3.7 tox valgrind wget
 
             # Print information about environment.
             - g++ --version
@@ -46,4 +45,5 @@ pipelines:
             - export PATH="$(pwd):$PATH"  # Add uncrustify and VAL to PATH.
             - export CXXFLAGS="-Werror"  # Treat compilation warnings as errors.
 
-            - ./misc/run-all-tests
+            - cd misc/
+            - tox

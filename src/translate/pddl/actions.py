@@ -1,11 +1,9 @@
-from __future__ import print_function
-
 import copy
 
 from . import conditions
 
 
-class Action(object):
+class Action:
     def __init__(self, name, parameters, num_external_parameters,
                  precondition, effects, cost):
         assert 0 <= num_external_parameters <= len(parameters)
@@ -39,8 +37,7 @@ class Action(object):
             print("  None")
 
     def uniquify_variables(self):
-        self.type_map = dict([(par.name, par.type_name)
-                              for par in self.parameters])
+        self.type_map = {par.name: par.type_name for par in self.parameters}
         self.precondition = self.precondition.uniquify_variables(self.type_map)
         for effect in self.effects:
             effect.uniquify_variables(self.type_map)
@@ -66,12 +63,12 @@ class Action(object):
         result.effects = [eff.untyped() for eff in self.effects]
         return result
 
-    def instantiate(self, var_mapping, init_facts, fluent_facts,
-        objects_by_type, metric):
+    def instantiate(self, var_mapping, init_facts, init_assignments,
+                    fluent_facts, objects_by_type, metric):
         """Return a PropositionalAction which corresponds to the instantiation of
         this action with the arguments in var_mapping. Only fluent parts of the
         conditions (those in fluent_facts) are included. init_facts are evaluated
-        whilte instantiating.
+        while instantiating.
         Precondition and effect conditions must be normalized for this to work.
         Returns None if var_mapping does not correspond to a valid instantiation
         (because it has impossible preconditions or an empty effect list.)"""
@@ -94,7 +91,8 @@ class Action(object):
                 if self.cost is None:
                     cost = 0
                 else:
-                    cost = int(self.cost.instantiate(var_mapping, init_facts).expression.value)
+                    cost = int(self.cost.instantiate(
+                        var_mapping, init_assignments).expression.value)
             else:
                 cost = 1
             return PropositionalAction(name, precondition, effects, cost)

@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
+#! /usr/bin/env python3
 
 """
 Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
@@ -7,7 +6,6 @@ Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
 The file bitbucket-pipelines.yml shows how to install the dependencies.
 """
 
-from __future__ import print_function
 
 import errno
 import glob
@@ -36,40 +34,23 @@ def _get_src_files(path, extensions, ignore_dirs=None):
     return src_files
 
 
-def check_translator_style():
-    output = subprocess.check_output([
-        "./reindent.py", "--dryrun", "--recurse", "--verbose",
-        os.path.join(SRC_DIR, "translate")], cwd=DIR).decode("utf-8")
-    ok = True
-    for line in output.splitlines():
-        match = re.match("^checking (.+) ... changed.$", line)
-        if match:
-            ok = False
-            print('Wrong format detected in %s. '
-                  'Please run "./reindent.py -r ../src/translate"' %
-                  match.group(1))
-    return ok
-
-
-def _run_pyflakes(path):
-    python_files = _get_src_files(path, (".py",))
-    python_files = [f for f in python_files if not f.endswith("__init__.py")]
-    print("Checking {} files with pyflakes".format(len(python_files)))
+def check_python_style():
     try:
-        return subprocess.check_call(["pyflakes"] + python_files) == 0
+        subprocess.check_call([
+            "flake8",
+            # https://flake8.pycqa.org/en/latest/user/error-codes.html
+            "--extend-ignore", "E128,E129,E131,E261,E266,E301,E302,E305,E306,E402,E501,F401",
+            "--exclude", "run-clang-tidy.py,txt2tags.py,.tox",
+            "src/translate/", "driver/", "misc/", "*.py"], cwd=REPO)
     except OSError as err:
-        if err.errno == 2:
-            print(
-                "Python style checks need pyflakes. Please install it "
-                "with \"sudo apt-get install pyflakes\".")
+        if err.errno == errno.ENOENT:
+            sys.exit('Please install flake8 ("sudo apt install flake8").')
         else:
             raise
-
-def check_translator_pyflakes():
-    return _run_pyflakes(os.path.join(SRC_DIR, "translate"))
-
-def check_driver_pyflakes():
-    return _run_pyflakes(os.path.join(REPO, "driver"))
+    except subprocess.CalledProcessError:
+        return False
+    else:
+        return True
 
 
 def check_include_guard_convention():
@@ -93,14 +74,14 @@ def check_cplusplus_style():
     ignored by mercurial). We therefore find the source files manually
     and call uncrustify directly.
     """
-    src_files = _get_src_files(REPO, (".h", ".cc"), ignore_dirs=["builds", "data"])
+    src_files = _get_src_files(REPO, (".h", ".cc"), ignore_dirs=["builds", "data", "venv"])
     print("Checking {} files with uncrustify".format(len(src_files)))
     config_file = os.path.join(REPO, ".uncrustify.cfg")
     executable = "uncrustify"
     try:
         returncode = subprocess.call(
             [executable, "-q", "-c", config_file, "--check"] + src_files,
-        cwd=DIR, stdout=subprocess.PIPE)
+            cwd=DIR, stdout=subprocess.PIPE)
     except OSError as err:
         if err.errno == errno.ENOENT:
             sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
@@ -128,7 +109,7 @@ def check_search_code_with_clang_tidy():
     src_files = _get_src_files(search_dir, (".h", ".cc"))
     compile_commands = [{
         "directory": os.path.join(build_dir, "search"),
-        "command": "g++ -I{search_dir}/ext -std=c++11 -c {src_file}".format(**locals()),
+        "command": "g++ -I{}/ext -std=c++11 -c {}".format(search_dir, src_file),
         "file": src_file}
         for src_file in src_files
     ]
@@ -142,7 +123,7 @@ def check_search_code_with_clang_tidy():
     checks = [
         # Enable with CheckTriviallyCopyableMove=0 when we require
         # clang-tidy >= 6.0 (see issue856).
-        #"misc-move-const-arg",
+        # "misc-move-const-arg",
         "misc-move-constructor-init",
         "misc-use-after-move",
 
@@ -151,20 +132,20 @@ def check_search_code_with_clang_tidy():
         "performance-inefficient-vector-operation",
 
         "readability-avoid-const-params-in-decls",
-        #"readability-braces-around-statements",
+        # "readability-braces-around-statements",
         "readability-container-size-empty",
         "readability-delete-null-pointer",
         "readability-deleted-default",
-        #"readability-else-after-return",
-        #"readability-function-size",
-        #"readability-identifier-naming",
-        #"readability-implicit-bool-cast",
+        # "readability-else-after-return",
+        # "readability-function-size",
+        # "readability-identifier-naming",
+        # "readability-implicit-bool-cast",
         # Disabled since we prefer a clean interface over consistent names.
-        #"readability-inconsistent-declaration-parameter-name",
+        # "readability-inconsistent-declaration-parameter-name",
         "readability-misleading-indentation",
         "readability-misplaced-array-index",
-        #"readability-named-parameter",
-        #"readability-non-const-parameter",
+        # "readability-named-parameter",
+        # "readability-non-const-parameter",
         "readability-redundant-control-flow",
         "readability-redundant-declaration",
         "readability-redundant-function-ptr-dereference",
@@ -187,9 +168,10 @@ def check_search_code_with_clang_tidy():
     print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
     try:
-        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
+        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT).decode("utf-8")
+    except subprocess.CalledProcessError as err:
         print("Failed to run clang-tidy-5.0. Is it on the PATH?")
+        print("Output:", err.stdout)
         return False
     errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
     for error in errors:
