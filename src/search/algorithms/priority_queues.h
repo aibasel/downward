@@ -71,8 +71,8 @@ class HeapQueue : public AbstractQueue<Value> {
     typedef typename AbstractQueue<Value>::Entry Entry;
 
     bool is_valid_key(int key) const {
-        int infty = std::numeric_limits<int>::max();
-        return key != infty;
+        int infinity = std::numeric_limits<int>::max();
+        return key != infinity;
     }
 
     struct compare_func {
@@ -145,8 +145,8 @@ class BucketQueue : public AbstractQueue<Value> {
     int num_pushes;
 
     bool is_valid_key(int key) const {
-        int infty = std::numeric_limits<int>::max();
-        return key >= 0 && key != infty;
+        int infinity = std::numeric_limits<int>::max();
+        return key >= 0 && key != infinity;
     }
 
     void update_current_bucket_no() const {
