@@ -127,6 +127,7 @@ public:
 
     LP_METHOD(void solve())
     LP_METHOD(void write_lp(std::string filename))
+    LP_METHOD(void print_failure_analysis())
 
     /*
       Return true if the solving the LP showed that it is bounded feasible and

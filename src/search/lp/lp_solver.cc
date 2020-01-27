@@ -312,6 +312,15 @@ void LPSolver::write_lp(string filename) {
     }
 }
 
+void LPSolver::print_failure_analysis() {
+    cout << "isAbandoned: " << lp_solver->isAbandoned() << endl;
+    cout << "isProvenOptimal:  " << lp_solver->isProvenOptimal() << endl;
+    cout << "isProvenPrimalInfeasible: " << lp_solver->isProvenPrimalInfeasible() << endl;
+    cout << "isProvenDualInfeasible: " << lp_solver->isProvenDualInfeasible() << endl;
+    cout << "isDualObjectiveLimitReached: " << lp_solver->isDualObjectiveLimitReached() << endl;
+    cout << "isIterationLimitReached: " << lp_solver->isIterationLimitReached() << endl;
+}
+
 bool LPSolver::has_optimal_solution() const {
     assert(is_solved);
     try {
