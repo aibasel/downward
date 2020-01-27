@@ -304,6 +304,14 @@ void LPSolver::solve() {
     }
 }
 
+void LPSolver::write_lp(string filename) {
+    try {
+        lp_solver->writeLp(filename.c_str());
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+}
+
 bool LPSolver::has_optimal_solution() const {
     assert(is_solved);
     try {
