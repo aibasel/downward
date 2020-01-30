@@ -4,7 +4,6 @@ import json
 import os
 import pipes
 import re
-import shutil
 import subprocess
 import sys
 
@@ -78,15 +77,11 @@ def check_search_code_with_clang_tidy():
         "readability-static-definition-in-anonymous-namespace",
         "readability-uniqueptr-delete-release",
         ]
-    # Since the script only supports Python 2 but uses plain "python" in
-    # the shebang line, we need to call Python 2 explicitly. Otherwise,
-    # the wrong Python version is picked up in virtual environments.
     cmd = [
-        "python2",
-        shutil.which("run-clang-tidy-5.0.py"),
+        "run-clang-tidy-8",
         "-quiet",
         "-p", build_dir,
-        "-clang-tidy-binary=clang-tidy-5.0",
+        "-clang-tidy-binary=clang-tidy-8",
         # Include all non-system headers (.*) except the ones from search/ext/.
         "-header-filter=.*,-tree.hh,-tree_util.hh",
         "-checks=-*," + ",".join(checks)]
@@ -95,7 +90,7 @@ def check_search_code_with_clang_tidy():
     try:
         output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT).decode("utf-8")
     except subprocess.CalledProcessError as err:
-        print("Failed to run clang-tidy-5.0. Is it on the PATH?")
+        print("Failed to run clang-tidy-8. Is it on the PATH?")
         print("Output:", err.stdout)
         return False
     errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
@@ -103,7 +98,7 @@ def check_search_code_with_clang_tidy():
         print(error)
     if errors:
         fix_cmd = cmd + [
-            "-clang-apply-replacements-binary=clang-apply-replacements-5.0", "-fix"]
+            "-clang-apply-replacements-binary=clang-apply-replacements-8", "-fix"]
         print()
         print("You may be able to fix these issues with the following command: " +
             " ".join(pipes.quote(x) for x in fix_cmd))
