@@ -4,7 +4,6 @@ import json
 import os
 import pipes
 import re
-import shutil
 import subprocess
 import sys
 
