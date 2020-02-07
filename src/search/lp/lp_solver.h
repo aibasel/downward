@@ -46,8 +46,9 @@ class LPConstraint {
     std::vector<double> coefficients;
     double lower_bound;
     double upper_bound;
+    std::string name;
 public:
-    LPConstraint(double lower_bound, double upper_bound);
+    LPConstraint(double lower_bound, double upper_bound, std::string name="");
 
     const std::vector<int> &get_variables() const {return variables;}
     const std::vector<double> &get_coefficients() const {return coefficients;}
@@ -56,6 +57,8 @@ public:
     void set_lower_bound(double lb) {lower_bound = lb;}
     double get_upper_bound() const {return upper_bound;}
     void set_upper_bound(double ub) {upper_bound = ub;}
+    std::string get_name() const {return name;}
+    void set_name(std::string n) {name = n;}
 
     void clear();
     bool empty() const;
@@ -67,10 +70,12 @@ struct LPVariable {
     double lower_bound;
     double upper_bound;
     double objective_coefficient;
+    std::string name;
 
     LPVariable(double lower_bound,
                double upper_bound,
-               double objective_coefficient);
+               double objective_coefficient,
+               std::string name="");
 };
 
 #ifdef __GNUG__
@@ -113,7 +118,8 @@ public:
     LP_METHOD(void load_problem(
                   LPObjectiveSense sense,
                   const std::vector<LPVariable> &variables,
-                  const std::vector<LPConstraint> &constraints))
+                  const std::vector<LPConstraint> &constraints,
+                  const std::string objectiveName=""))
     LP_METHOD(void add_temporary_constraints(const std::vector<LPConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity() const)

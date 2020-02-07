@@ -50,9 +50,10 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
         lp_solvers_doc);
 }
 
-LPConstraint::LPConstraint(double lower_bound, double upper_bound)
+LPConstraint::LPConstraint(double lower_bound, double upper_bound, string name)
     : lower_bound(lower_bound),
-      upper_bound(upper_bound) {
+      upper_bound(upper_bound),
+      name(name) {
 }
 
 void LPConstraint::clear() {
@@ -70,10 +71,11 @@ void LPConstraint::insert(int index, double coefficient) {
 }
 
 LPVariable::LPVariable(double lower_bound, double upper_bound,
-                       double objective_coefficient)
+                       double objective_coefficient, string name)
     : lower_bound(lower_bound),
       upper_bound(upper_bound),
-      objective_coefficient(objective_coefficient) {
+      objective_coefficient(objective_coefficient),
+      name(name) {
 }
 
 LPSolver::~LPSolver() {
@@ -103,7 +105,8 @@ void LPSolver::clear_temporary_data() {
 
 void LPSolver::load_problem(LPObjectiveSense sense,
                             const vector<LPVariable> &variables,
-                            const vector<LPConstraint> &constraints) {
+                            const vector<LPConstraint> &constraints,
+                            const string objectiveName) {
     clear_temporary_data();
     is_initialized = false;
     num_permanent_constraints = constraints.size();
@@ -162,6 +165,28 @@ void LPSolver::load_problem(LPObjectiveSense sense,
             lp_solver->setObjSense(1);
         } else {
             lp_solver->setObjSense(-1);
+        }
+
+        lp_solver->setIntParam(OsiIntParam::OsiNameDiscipline, 2);
+
+        if (!objectiveName.empty()) {
+            lp_solver->setObjName(objectiveName);
+        }
+
+        int index = 0;
+        for (const LPVariable variable : variables) {
+            if (!variable.name.empty()) {
+                lp_solver->setColName(index, variable.name);
+            }
+            ++index;
+        }
+
+        index = 0;
+        for (const LPConstraint constraint : constraints) {
+            if (!constraint.get_name().empty()) {
+                lp_solver->setRowName(index, constraint.get_name());
+            }
+            ++index;
         }
     } catch (CoinError &error) {
         handle_coin_error(error);
