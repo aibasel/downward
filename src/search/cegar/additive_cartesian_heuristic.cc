@@ -146,11 +146,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     utils::add_rng_options(parser);
 
-    /*
-      silent: no output during construction, only starting and final statistics
-      normal: basic output during construction, starting and final statistics
-      verbose: full output during construction, starting and final statistics
-    */
     utils::add_verbosity_option_to_parser(parser);
 
     Options opts = parser.parse();
