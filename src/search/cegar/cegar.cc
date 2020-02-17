@@ -106,8 +106,6 @@ CEGAR::CEGAR(
     refinement_loop(rng);
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Done building abstraction." << endl;
-    }
-    if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
 
         print_statistics();
