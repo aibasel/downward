@@ -228,14 +228,15 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
 }
 
 unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
-    if (verbosity >= utils::Verbosity::DEBUG)
+    bool debug = verbosity >= utils::Verbosity::DEBUG;
+    if (debug)
         cout << "Check solution:" << endl;
 
     const AbstractState *abstract_state = &abstraction->get_initial_state();
     State concrete_state = task_proxy.get_initial_state();
     assert(abstract_state->includes(concrete_state));
 
-    if (verbosity >= utils::Verbosity::DEBUG)
+    if (debug)
         cout << "  Initial abstract state: " << *abstract_state << endl;
 
     for (const Transition &step : solution) {
@@ -244,12 +245,12 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         OperatorProxy op = task_proxy.get_operators()[step.op_id];
         const AbstractState *next_abstract_state = &abstraction->get_state(step.target_id);
         if (task_properties::is_applicable(op, concrete_state)) {
-            if (verbosity >= utils::Verbosity::DEBUG)
+            if (debug)
                 cout << "  Move to " << *next_abstract_state << " with "
                      << op.get_name() << endl;
             State next_concrete_state = concrete_state.get_successor(op);
             if (!next_abstract_state->includes(next_concrete_state)) {
-                if (verbosity >= utils::Verbosity::DEBUG)
+                if (debug)
                     cout << "  Paths deviate." << endl;
                 return utils::make_unique_ptr<Flaw>(
                     move(concrete_state),
@@ -259,7 +260,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             abstract_state = next_abstract_state;
             concrete_state = move(next_concrete_state);
         } else {
-            if (verbosity >= utils::Verbosity::DEBUG)
+            if (debug)
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             return utils::make_unique_ptr<Flaw>(
                 move(concrete_state),
@@ -272,7 +273,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         // We found a concrete solution.
         return nullptr;
     } else {
-        if (verbosity >= utils::Verbosity::DEBUG)
+        if (debug)
             cout << "  Goal test failed." << endl;
         return utils::make_unique_ptr<Flaw>(
             move(concrete_state),
