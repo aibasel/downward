@@ -1,251 +1,108 @@
-#!/usr/bin/env python
-#
-#===- run-clang-tidy.py - Parallel clang-tidy runner ---------*- python -*--===#
-#
-#                     The LLVM Compiler Infrastructure
-#
-# This file is distributed under the University of Illinois Open Source
-# License. See LICENSE.TXT for details.
-#
-#===------------------------------------------------------------------------===#
-# FIXME: Integrate with clang-tidy-diff.py
+#! /usr/bin/env python3
 
-"""
-Parallel clang-tidy runner
-==========================
-
-Runs clang-tidy over all files in a compilation database. Requires clang-tidy
-and clang-apply-replacements in $PATH.
-
-Example invocations.
-- Run clang-tidy on all files in the current working directory with a default
-  set of checks and show warnings in the cpp files and all project headers.
-    run-clang-tidy.py $PWD
-
-- Fix all header guards.
-    run-clang-tidy.py -fix -checks=-*,llvm-header-guard
-
-- Fix all header guards included from clang-tidy and header guards
-  for clang-tidy headers.
-    run-clang-tidy.py -fix -checks=-*,llvm-header-guard extra/clang-tidy \
-                      -header-filter=extra/clang-tidy
-
-Compilation database setup:
-http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html
-"""
-
-from __future__ import print_function
-import argparse
 import json
-import multiprocessing
 import os
-import Queue
+import pipes
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
-import threading
-import traceback
+
+DIR = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(DIR))
+SRC_DIR = os.path.join(REPO, "src")
+
+import utils
 
 
-def find_compilation_database(path):
-  """Adjusts the directory until a compilation database is found."""
-  result = './'
-  while not os.path.isfile(os.path.join(result, path)):
-    if os.path.realpath(result) == '/':
-      print('Error: could not find compilation database.')
-      sys.exit(1)
-    result += '../'
-  return os.path.realpath(result)
+def check_search_code_with_clang_tidy():
+    # clang-tidy needs the CMake files.
+    build_dir = os.path.join(REPO, "builds", "clang-tidy")
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+    with open(os.devnull, 'w') as devnull:
+        subprocess.check_call(["cmake", "../../src"], cwd=build_dir, stdout=devnull)
 
+    # Create custom compilation database file. CMake outputs part of this information
+    # when passing -DCMAKE_EXPORT_COMPILE_COMMANDS=ON, but the resulting file
+    # contains no header files.
+    search_dir = os.path.join(REPO, "src/search")
+    src_files = utils.get_src_files(search_dir, (".h", ".cc"))
+    compile_commands = [{
+        "directory": os.path.join(build_dir, "search"),
+        "command": "g++ -I{}/ext -std=c++11 -c {}".format(search_dir, src_file),
+        "file": src_file}
+        for src_file in src_files
+    ]
+    with open(os.path.join(build_dir, "compile_commands.json"), "w") as f:
+        json.dump(compile_commands, f, indent=2)
 
-def get_tidy_invocation(f, clang_tidy_binary, checks, tmpdir, build_path,
-                        header_filter, extra_arg, extra_arg_before, quiet):
-  """Gets a command line for clang-tidy."""
-  start = [clang_tidy_binary]
-  if header_filter is not None:
-    start.append('-header-filter=' + header_filter)
-  else:
-    # Show warnings in all in-project headers by default.
-    start.append('-header-filter=^' + build_path + '/.*')
-  if checks:
-    start.append('-checks=' + checks)
-  if tmpdir is not None:
-    start.append('-export-fixes')
-    # Get a temporary file. We immediately close the handle so clang-tidy can
-    # overwrite it.
-    (handle, name) = tempfile.mkstemp(suffix='.yaml', dir=tmpdir)
-    os.close(handle)
-    start.append(name)
-  for arg in extra_arg:
-      start.append('-extra-arg=%s' % arg)
-  for arg in extra_arg_before:
-      start.append('-extra-arg-before=%s' % arg)
-  start.append('-p=' + build_path)
-  if quiet:
-      start.append('-quiet')
-  ## If we ever need to configure any checks, this is how to do it. However,
-  ## we should probably make this configurable via a commandline option. -- JS
-  ## start.append('''\
-  ##   -config={CheckOptions: \
-  ##   [{key: readability-implicit-bool-cast.AllowConditionalIntegerCasts, value: 1}, \
-  ##   {key: readability-implicit-bool-cast.AllowConditionalPointerCasts, value: 1}]}''')
-  start.append(f)
-  return start
+    # See https://clang.llvm.org/extra/clang-tidy/checks/list.html for
+    # an explanation of the checks. We comment out inactive checks of some
+    # categories instead of deleting them to see which additional checks
+    # we could activate.
+    checks = [
+        # Enable with CheckTriviallyCopyableMove=0 when we require
+        # clang-tidy >= 6.0 (see issue856).
+        # "misc-move-const-arg",
+        "misc-move-constructor-init",
+        "misc-use-after-move",
 
+        "performance-for-range-copy",
+        "performance-implicit-cast-in-loop",
+        "performance-inefficient-vector-operation",
 
-def check_clang_apply_replacements_binary(args):
-  """Checks if invoking supplied clang-apply-replacements binary works."""
-  try:
-    subprocess.check_call([args.clang_apply_replacements_binary, '--version'])
-  except:
-    print('Unable to run clang-apply-replacements. Is clang-apply-replacements '
-          'binary correctly specified?', file=sys.stderr)
-    traceback.print_exc()
-    sys.exit(1)
-
-
-def apply_fixes(args, tmpdir):
-  """Calls clang-apply-fixes on a given directory. Deletes the dir when done."""
-  invocation = [args.clang_apply_replacements_binary]
-  if args.format:
-    invocation.append('-format')
-  if args.style:
-    invocation.append('-style=' + args.style)
-  invocation.append(tmpdir)
-  subprocess.call(invocation)
-
-
-def run_tidy(args, tmpdir, build_path, queue):
-  """Takes filenames out of queue and runs clang-tidy on them."""
-  while True:
-    name = queue.get()
-    invocation = get_tidy_invocation(name, args.clang_tidy_binary, args.checks,
-                                     tmpdir, build_path, args.header_filter,
-                                     args.extra_arg, args.extra_arg_before,
-                                     args.quiet)
-    sys.stdout.write(' '.join(invocation) + '\n')
-    subprocess.call(invocation)
-    queue.task_done()
-
-
-def main():
-  parser = argparse.ArgumentParser(description='Runs clang-tidy over all files '
-                                   'in a compilation database. Requires '
-                                   'clang-tidy and clang-apply-replacements in '
-                                   '$PATH.')
-  parser.add_argument('-clang-tidy-binary', metavar='PATH',
-                      default='clang-tidy',
-                      help='path to clang-tidy binary')
-  parser.add_argument('-clang-apply-replacements-binary', metavar='PATH',
-                      default='clang-apply-replacements',
-                      help='path to clang-apply-replacements binary')
-  parser.add_argument('-checks', default=None,
-                      help='checks filter, when not specified, use clang-tidy '
-                      'default')
-  parser.add_argument('-header-filter', default=None,
-                      help='regular expression matching the names of the '
-                      'headers to output diagnostics from. Diagnostics from '
-                      'the main file of each translation unit are always '
-                      'displayed.')
-  parser.add_argument('-j', type=int, default=0,
-                      help='number of tidy instances to be run in parallel.')
-  parser.add_argument('files', nargs='*', default=['.*'],
-                      help='files to be processed (regex on path)')
-  parser.add_argument('-fix', action='store_true', help='apply fix-its')
-  parser.add_argument('-format', action='store_true', help='Reformat code '
-                      'after applying fixes')
-  parser.add_argument('-style', default='file', help='The style of reformat '
-                      'code after applying fixes')
-  parser.add_argument('-p', dest='build_path',
-                      help='Path used to read a compile command database.')
-  parser.add_argument('-extra-arg', dest='extra_arg',
-                      action='append', default=[],
-                      help='Additional argument to append to the compiler '
-                      'command line.')
-  parser.add_argument('-extra-arg-before', dest='extra_arg_before',
-                      action='append', default=[],
-                      help='Additional argument to prepend to the compiler '
-                      'command line.')
-  parser.add_argument('-quiet', action='store_true',
-                      help='Run clang-tidy in quiet mode')
-  args = parser.parse_args()
-
-  db_path = 'compile_commands.json'
-
-  if args.build_path is not None:
-    build_path = args.build_path
-  else:
-    # Find our database
-    build_path = find_compilation_database(db_path)
-
-  try:
-    invocation = [args.clang_tidy_binary, '-list-checks']
-    invocation.append('-p=' + build_path)
-    if args.checks:
-      invocation.append('-checks=' + args.checks)
-    invocation.append('-')
-    print(subprocess.check_output(invocation))
-  except:
-    print("Unable to run clang-tidy.", file=sys.stderr)
-    sys.exit(1)
-
-  # Load the database and extract all files.
-  database = json.load(open(os.path.join(build_path, db_path)))
-  files = [entry['file'] for entry in database]
-
-  max_task = args.j
-  if max_task == 0:
-    max_task = multiprocessing.cpu_count()
-
-  tmpdir = None
-  if args.fix:
-    check_clang_apply_replacements_binary(args)
-    tmpdir = tempfile.mkdtemp()
-
-  # Build up a big regexy filter from all command line arguments.
-  file_name_re = re.compile('|'.join(args.files))
-
-  try:
-    # Spin up a bunch of tidy-launching threads.
-    queue = Queue.Queue(max_task)
-    for _ in range(max_task):
-      t = threading.Thread(target=run_tidy,
-                           args=(args, tmpdir, build_path, queue))
-      t.daemon = True
-      t.start()
-
-    # Fill the queue with files.
-    for name in files:
-      if file_name_re.search(name):
-        queue.put(name)
-
-    # Wait for all threads to be done.
-    queue.join()
-
-  except KeyboardInterrupt:
-    # This is a sad hack. Unfortunately subprocess goes
-    # bonkers with ctrl-c and we start forking merrily.
-    print('\nCtrl-C detected, goodbye.')
-    if args.fix:
-      shutil.rmtree(tmpdir)
-    os.kill(0, 9)
-
-  if args.fix:
-    print('Applying fixes ...')
-    successfully_applied = False
-
+        "readability-avoid-const-params-in-decls",
+        # "readability-braces-around-statements",
+        "readability-container-size-empty",
+        "readability-delete-null-pointer",
+        "readability-deleted-default",
+        # "readability-else-after-return",
+        # "readability-function-size",
+        # "readability-identifier-naming",
+        # "readability-implicit-bool-cast",
+        # Disabled since we prefer a clean interface over consistent names.
+        # "readability-inconsistent-declaration-parameter-name",
+        "readability-misleading-indentation",
+        "readability-misplaced-array-index",
+        # "readability-named-parameter",
+        # "readability-non-const-parameter",
+        "readability-redundant-control-flow",
+        "readability-redundant-declaration",
+        "readability-redundant-function-ptr-dereference",
+        "readability-redundant-member-init",
+        "readability-redundant-smartptr-get",
+        "readability-redundant-string-cstr",
+        "readability-redundant-string-init",
+        "readability-simplify-boolean-expr",
+        "readability-static-definition-in-anonymous-namespace",
+        "readability-uniqueptr-delete-release",
+        ]
+    cmd = [
+        "run-clang-tidy-8",
+        "-quiet",
+        "-p", build_dir,
+        "-clang-tidy-binary=clang-tidy-8",
+        # Include all non-system headers (.*) except the ones from search/ext/.
+        "-header-filter=.*,-tree.hh,-tree_util.hh",
+        "-checks=-*," + ",".join(checks)]
+    print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
+    print()
     try:
-      apply_fixes(args, tmpdir)
-      successfully_applied = True
-    except:
-      print('Error applying fixes.\n', file=sys.stderr)
-      traceback.print_exc()
+        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT).decode("utf-8")
+    except subprocess.CalledProcessError as err:
+        print("Failed to run clang-tidy-8. Is it on the PATH?")
+        print("Output:", err.stdout)
+        return False
+    errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
+    for error in errors:
+        print(error)
+    if errors:
+        fix_cmd = cmd + [
+            "-clang-apply-replacements-binary=clang-apply-replacements-8", "-fix"]
+        print()
+        print("You may be able to fix these issues with the following command: " +
+            " ".join(pipes.quote(x) for x in fix_cmd))
+        sys.exit(1)
 
-    shutil.rmtree(tmpdir)
-    if not successfully_applied:
-      sys.exit(1)
 
-if __name__ == '__main__':
-  main()
+check_search_code_with_clang_tidy()

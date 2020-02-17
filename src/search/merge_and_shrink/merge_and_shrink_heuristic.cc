@@ -30,12 +30,17 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
-    finalize(fts);
+    extract_factors(fts);
     cout << "Done initializing merge-and-shrink heuristic." << endl << endl;
 }
 
-void MergeAndShrinkHeuristic::finalize_factor(
+void MergeAndShrinkHeuristic::extract_factor(
     FactoredTransitionSystem &fts, int index) {
+    /*
+      Extract the factor at the given index from the given factored transition
+      system, compute goal distances if necessary and store the M&S
+      representation, which serves as the heuristic.
+    */
     auto final_entry = fts.extract_factor(index);
     unique_ptr<MergeAndShrinkRepresentation> mas_representation = move(final_entry.first);
     unique_ptr<Distances> distances = move(final_entry.second);
@@ -49,7 +54,39 @@ void MergeAndShrinkHeuristic::finalize_factor(
     mas_representations.push_back(move(mas_representation));
 }
 
-void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
+bool MergeAndShrinkHeuristic::extract_unsolvable_factor(FactoredTransitionSystem &fts) {
+    /* Check if there is an unsolvable factor. If so, extract and store it and
+       return true. Otherwise, return false. */
+    for (int index : fts) {
+        if (!fts.is_factor_solvable(index)) {
+            mas_representations.reserve(1);
+            extract_factor(fts, index);
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                cout << fts.get_transition_system(index).tag()
+                     << "use this unsolvable factor as heuristic."
+                     << endl;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+void MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSystem &fts) {
+    // Iterate over remaining factors and extract and store the nontrivial ones.
+    for (int index : fts) {
+        if (fts.is_factor_trivial(index)) {
+            if (verbosity >= utils::Verbosity::VERBOSE) {
+                cout << fts.get_transition_system(index).tag()
+                     << "is trivial." << endl;
+            }
+        } else {
+            extract_factor(fts, index);
+        }
+    }
+}
+
+void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     /*
       TODO: This method has quite a bit of fiddling with aspects of
       transition systems and the merge-and-shrink representation (checking
@@ -58,36 +95,22 @@ void MergeAndShrinkHeuristic::finalize(FactoredTransitionSystem &fts) {
       factored_transition_system.h on improving the interface of that class
       (and also related classes like TransitionSystem etc).
     */
+    assert(mas_representations.empty());
 
-    int active_factors_count = fts.get_num_active_entries();
+    int num_active_factors = fts.get_num_active_entries();
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Number of remaining factors: " << active_factors_count << endl;
+        cout << "Number of remaining factors: " << num_active_factors << endl;
     }
 
-    // Check if there is an unsolvable factor. If so, use it as heuristic.
-    for (int index : fts) {
-        if (!fts.is_factor_solvable(index)) {
-            mas_representations.reserve(1);
-            finalize_factor(fts, index);
-            if (verbosity >= utils::Verbosity::NORMAL) {
-                cout << fts.get_transition_system(index).tag()
-                     << "use this unsolvable factor as heuristic."
-                     << endl;
-            }
-            return;
-        }
+    bool unsolvalbe = extract_unsolvable_factor(fts);
+    if (!unsolvalbe) {
+        extract_nontrivial_factors(fts);
     }
 
-    // Iterate over all remaining factors and extract them.
-    mas_representations.reserve(active_factors_count);
-    for (int index : fts) {
-        finalize_factor(fts, index);
-    }
+    int num_factors_kept = mas_representations.size();
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Use all factors in a maximum heuristic." << endl;
+        cout << "Number of factors kept: " << num_factors_kept << endl;
     }
-
-    assert(static_cast<int>(mas_representations.size()) == active_factors_count);
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {

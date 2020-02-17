@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import argparse
 import os.path
 import re
@@ -418,7 +416,6 @@ def parse_args():
     driver_other.add_argument(
         "--cleanup", action="store_true",
         help="clean up temporary files (translator output and plan files) and exit")
-
 
     parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,

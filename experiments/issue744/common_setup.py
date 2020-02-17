@@ -304,18 +304,20 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(
             'publish-absolute-report', subprocess.call, ['publish', outfile])
 
-    def add_sorted_report_step(self, sort_spec, **kwargs):
+    def add_sorted_report_step(self, sort_spec, name=None, **kwargs):
         """Add step that makes a sorted report.
 
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = SortedReport(sort_spec, **kwargs)
+        name = name or "sorted"
+        name = "-" + name
         outfile = os.path.join(
             self.eval_dir,
-            get_experiment_name() + "-sorted." + report.output_format)
+            get_experiment_name() + name + "." + report.output_format)
         self.add_report(report, outfile=outfile)
         self.add_step(
-            'publish-sorted-report', subprocess.call, ['publish', outfile])
+            'publish{}-report'.format(name), subprocess.call, ['publish', outfile])
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -386,7 +388,7 @@ class IssueExperiment(FastDownwardExperiment):
 
         def make_scatter_plot(config_nick, rev1, rev2, attribute):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
-            print "Make scatter plot for", name
+            print("Make scatter plot for", name)
             algo1 = "{}-{}".format(rev1, config_nick)
             algo2 = "{}-{}".format(rev2, config_nick)
             report = report_class(

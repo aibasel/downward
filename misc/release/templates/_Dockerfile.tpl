@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     g++       \
     make      \
     mercurial \
-    python
+    python3
 
 WORKDIR /workspace/downward/
 
@@ -34,7 +34,7 @@ RUN strip --strip-all builds/release/bin/downward
 FROM ubuntu:18.04 AS runner
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    python  \
+    python3  \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace/downward/

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 
 from external import txt2tags
@@ -67,8 +65,7 @@ def _get_config(target):
     return config
 
 
-class Document(object):
-    #TODO: Allow pre-/postprocessing
+class Document:
     def __init__(self, title='', author='', date='%%date(%Y-%m-%d)'):
         self.title = title
         self.author = author
@@ -117,12 +114,12 @@ class Document(object):
             result = '\n'.join(finished)
 
         # Txt2tags error, show the messsage to the user
-        except txt2tags.error, msg:
-            logging.error(msg)
-            result = msg
+        except txt2tags.error as err:
+            logging.error(err)
+            result = err
 
         # Unknown error, show the traceback to the user
-        except:
+        except Exception:
             result = txt2tags.getUnknownErrorMessage()
             logging.error(result)
 
@@ -131,6 +128,6 @@ class Document(object):
 if __name__ == '__main__':
     doc = Document('MyTitle', 'Max Mustermann')
     doc.add_text('{{Roter Text|color:red}}')
-    print doc
-    print
-    print doc.render('tex')
+    print(doc)
+    print()
+    print(doc.render('tex'))

@@ -1,22 +1,18 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 """Make subprocess calls with time and memory limits."""
 
 from . import limits
 from . import returncodes
-from . import util
 
 import logging
 import os
+import shlex
 import subprocess
 import sys
 
 
 def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
     if stdin is not None:
-        stdin = util.shell_escape(stdin)
+        stdin = shlex.quote(stdin)
     logging.info("{} stdin: {}".format(nick, stdin))
     if time_limit is not None:
         time_limit = str(time_limit) + "s"
@@ -26,9 +22,9 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
         memory_limit = str(memory_limit) + " MB"
     logging.info("{} memory limit: {}".format(nick, memory_limit))
 
-    escaped_cmd = [util.shell_escape(x) for x in cmd]
+    escaped_cmd = [shlex.quote(x) for x in cmd]
     if stdin is not None:
-        escaped_cmd.extend(["<", util.shell_escape(stdin)])
+        escaped_cmd.extend(["<", shlex.quote(stdin)])
     logging.info("{} command line string: {}".format(nick, " ".join(escaped_cmd)))
 
 

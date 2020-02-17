@@ -6,10 +6,9 @@
 namespace goal_count_heuristic {
 class GoalCountHeuristic : public Heuristic {
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
-    GoalCountHeuristic(const options::Options &opts);
-    ~GoalCountHeuristic();
+    explicit GoalCountHeuristic(const options::Options &opts);
 };
 }
 

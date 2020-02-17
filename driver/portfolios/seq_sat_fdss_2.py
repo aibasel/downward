@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 OPTIMAL = False
 
 CONFIGS = [
@@ -38,13 +36,13 @@ CONFIGS = [
      ]
 
 def FINAL_CONFIG_BUILDER(successful_args):
-# this heavily depends on that in CONFIGS only "simple" configurations are used
+    # This assumes that CONFIGS only contains "simple" configurations.
     new_args = list(successful_args)
     for pos, arg in enumerate(successful_args):
         if arg == "--search":
             orig_search = successful_args[pos + 1]
             sub_searches = []
-            for weight in (5,3,2,1):
+            for weight in (5, 3, 2, 1):
                 if orig_search.startswith("lazy"):
                     sub_search = \
                         "lazy_wastar([h],preferred=[h],w=%d,cost_type=S_COST_TYPE)" % weight
