@@ -96,7 +96,7 @@ CEGAR::CEGAR(
       timer(max_time),
       verbosity(verbosity) {
     assert(max_states >= 1);
-    if (verbosity >= utils::Verbosity::VERBOSE) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Start building abstraction." << endl;
         cout << "Maximum number of states: " << max_states << endl;
         cout << "Maximum number of transitions: "
@@ -104,7 +104,7 @@ CEGAR::CEGAR(
     }
 
     refinement_loop(rng);
-    if (verbosity >= utils::Verbosity::VERBOSE) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Done building abstraction." << endl;
     }
     if (verbosity >= utils::Verbosity::NORMAL) {
@@ -197,7 +197,7 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         unique_ptr<Flaw> flaw = find_flaw(*solution);
         find_flaw_timer.stop();
         if (!flaw) {
-            if (verbosity >= utils::Verbosity::VERBOSE) {
+            if (verbosity >= utils::Verbosity::NORMAL) {
                 cout << "Found concrete solution during refinement." << endl;
             }
             break;
@@ -214,13 +214,14 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
             state_id, new_state_ids.first, new_state_ids.second);
         refine_timer.stop();
 
-        if (abstraction->get_num_states() % 1000 == 0) {
+        if (verbosity >= utils::Verbosity::VERBOSE &&
+            abstraction->get_num_states() % 1000 == 0) {
             utils::g_log << abstraction->get_num_states() << "/" << max_states << " states, "
                          << abstraction->get_transition_system().get_num_non_loops() << "/"
                          << max_non_looping_transitions << " transitions" << endl;
         }
     }
-    if (verbosity >= utils::Verbosity::VERBOSE) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "Time for finding abstract traces: " << find_trace_timer << endl;
         cout << "Time for finding flaws: " << find_flaw_timer << endl;
         cout << "Time for splitting states: " << refine_timer << endl;
