@@ -47,10 +47,12 @@ DiversePotentialHeuristics::filter_samples_and_compute_functions(
             ++num_dead_ends;
         }
     }
-    cout << "Time for filtering dead ends: " << filtering_timer << endl;
-    cout << "Duplicate samples: " << num_duplicates << endl;
-    cout << "Dead end samples: " << num_dead_ends << endl;
-    cout << "Unique non-dead-end samples: " << samples_to_functions.size() << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Time for filtering dead ends: " << filtering_timer << endl;
+        cout << "Duplicate samples: " << num_duplicates << endl;
+        cout << "Dead end samples: " << num_dead_ends << endl;
+        cout << "Unique non-dead-end samples: " << samples_to_functions.size() << endl;
+    }
     assert(num_duplicates + num_dead_ends + samples_to_functions.size() == samples.size());
     return samples_to_functions;
 }
@@ -87,7 +89,7 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     size_t last_num_samples = samples_to_functions.size();
     remove_covered_samples(*function, samples_to_functions);
     if (samples_to_functions.size() == last_num_samples) {
-        if (verbosity >= utils::Verbosity::NORMAL) {
+        if (verbosity >= utils::Verbosity::VERBOSE) {
             cout << "No sample removed -> Use arbitrary precomputed function."
                  << endl;
         }
@@ -96,7 +98,7 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
         samples_to_functions.erase(samples_to_functions.begin());
         remove_covered_samples(*function, samples_to_functions);
     }
-    if (verbosity >= utils::Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::VERBOSE) {
         cout << "Removed " << last_num_samples - samples_to_functions.size()
              << " samples. " << samples_to_functions.size() << " remaining."
              << endl;
@@ -109,13 +111,15 @@ void DiversePotentialHeuristics::cover_samples(
     utils::Timer covering_timer;
     while (!samples_to_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
-        if (verbosity >= utils::Verbosity::NORMAL) {
+        if (verbosity >= utils::Verbosity::VERBOSE) {
             cout << "Find heuristic #" << diverse_functions.size() + 1 << endl;
         }
         diverse_functions.push_back(
             find_function_and_remove_covered_samples(samples_to_functions));
     }
-    cout << "Time for covering samples: " << covering_timer << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Time for covering samples: " << covering_timer << endl;
+    }
 }
 
 vector<unique_ptr<PotentialFunction>>
@@ -157,11 +161,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     prepare_parser_for_admissible_potentials(parser);
     utils::add_rng_options(parser);
 
-    /*
-      silent: no output during construction, only starting and final statistics
-      normal: basic output during construction, starting and final statistics
-      verbose: full output during construction, starting and final statistics
-    */
     utils::add_verbosity_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
