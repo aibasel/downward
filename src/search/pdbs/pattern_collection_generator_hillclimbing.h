@@ -41,10 +41,9 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     const int min_improvement;
     const double max_time;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
+    const utils::Verbosity verbosity;
 
     std::unique_ptr<IncrementalCanonicalPDBs> current_pdbs;
-
-    const utils::Verbosity verbosity;
 
     // for stats only
     int num_rejected;

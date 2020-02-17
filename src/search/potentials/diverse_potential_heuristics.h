@@ -26,9 +26,8 @@ class DiversePotentialHeuristics {
     const int max_num_heuristics;
     const int num_samples;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
-    std::vector<std::unique_ptr<PotentialFunction>> diverse_functions;
-
     const utils::Verbosity verbosity;
+    std::vector<std::unique_ptr<PotentialFunction>> diverse_functions;
 
     /* Filter dead end samples and duplicates. Store potential heuristics
        for remaining samples. */
