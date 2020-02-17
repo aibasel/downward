@@ -11,6 +11,7 @@
 #include "../task_utils/task_properties.h"
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -58,8 +59,11 @@ static void order_facts(
     const shared_ptr<AbstractTask> &task,
     FactOrder fact_order,
     vector<FactPair> &facts,
-    utils::RandomNumberGenerator &rng) {
-    cout << "Sort " << facts.size() << " facts" << endl;
+    utils::RandomNumberGenerator &rng,
+    utils::Verbosity verbosity) {
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        cout << "Sort " << facts.size() << " facts" << endl;
+    }
     switch (fact_order) {
     case FactOrder::ORIGINAL:
         // Nothing to do.
@@ -83,10 +87,11 @@ static Facts filter_and_order_facts(
     const shared_ptr<AbstractTask> &task,
     FactOrder fact_order,
     Facts &facts,
-    utils::RandomNumberGenerator &rng) {
+    utils::RandomNumberGenerator &rng,
+    utils::Verbosity verbosity) {
     TaskProxy task_proxy(*task);
     remove_initial_state_facts(task_proxy, facts);
-    order_facts(task, fact_order, facts, rng);
+    order_facts(task, fact_order, facts, rng, verbosity);
     return facts;
 }
 
@@ -96,7 +101,7 @@ TaskDuplicator::TaskDuplicator(const Options &opts)
 }
 
 SharedTasks TaskDuplicator::get_subtasks(
-    const shared_ptr<AbstractTask> &task) const {
+    const shared_ptr<AbstractTask> &task, utils::Verbosity) const {
     SharedTasks subtasks;
     subtasks.reserve(num_copies);
     for (int i = 0; i < num_copies; ++i) {
@@ -111,11 +116,11 @@ GoalDecomposition::GoalDecomposition(const Options &opts)
 }
 
 SharedTasks GoalDecomposition::get_subtasks(
-    const shared_ptr<AbstractTask> &task) const {
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity) const {
     SharedTasks subtasks;
     TaskProxy task_proxy(*task);
     Facts goal_facts = task_properties::get_fact_pairs(task_proxy.get_goals());
-    filter_and_order_facts(task, fact_order, goal_facts, *rng);
+    filter_and_order_facts(task, fact_order, goal_facts, *rng, verbosity);
     for (const FactPair &goal : goal_facts) {
         shared_ptr<AbstractTask> subtask =
             make_shared<extra_tasks::ModifiedGoalsTask>(task, Facts {goal});
@@ -147,12 +152,13 @@ shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
 }
 
 SharedTasks LandmarkDecomposition::get_subtasks(
-    const shared_ptr<AbstractTask> &task) const {
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity) const {
     SharedTasks subtasks;
+    // TODO: pass verbosity to following call in order to avoid output of h^m landmark factory
     shared_ptr<landmarks::LandmarkGraph> landmark_graph =
         get_landmark_graph(task);
     Facts landmark_facts = get_fact_landmarks(*landmark_graph);
-    filter_and_order_facts(task, fact_order, landmark_facts, *rng);
+    filter_and_order_facts(task, fact_order, landmark_facts, *rng, verbosity);
     for (const FactPair &landmark : landmark_facts) {
         shared_ptr<AbstractTask> subtask =
             make_shared<extra_tasks::ModifiedGoalsTask>(task, Facts {landmark});

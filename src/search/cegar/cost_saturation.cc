@@ -130,8 +130,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
 
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (const shared_ptr<SubtaskGenerator> &subtask_generator : subtask_generators) {
-        // TODO: pass verbosity to following call in order to avoid output of h^m landmark factory
-        SharedTasks subtasks = subtask_generator->get_subtasks(task);
+        SharedTasks subtasks = subtask_generator->get_subtasks(task, verbosity);
         build_abstractions(subtasks, timer, should_abort);
         if (should_abort())
             break;
