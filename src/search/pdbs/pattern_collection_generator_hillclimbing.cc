@@ -304,8 +304,10 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
-    cout << "Average operator cost: "
-         << task_properties::get_average_operator_cost(task_proxy) << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Average operator cost: "
+             << task_properties::get_average_operator_cost(task_proxy) << endl;
+    }
 
     const vector<vector<int>> relevant_neighbours =
         compute_relevant_neighbours(task_proxy);
@@ -614,9 +616,10 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
 
     /*
-     silent: no output during construction, only starting and final statistics
-     normal: basic output during construction, starting and final statistics
-     verbose: full output during construction, starting and final statistics
+     silent: no output during generation, only final statistics
+     normal: like silent, and additional basic output during generation
+     verbose: like normal and full output during generation
+     debug: like verbose with additional debug output
    */
     utils::add_verbosity_option_to_parser(parser);
 
