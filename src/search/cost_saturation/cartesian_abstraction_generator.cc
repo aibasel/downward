@@ -85,7 +85,9 @@ static pair<bool, unique_ptr<Abstraction>> convert_abstraction(
             continue;
         }
         for (const cegar::Transition &transition : ts.get_outgoing_transitions()[state_id]) {
-            // Prune transitions to unsolvable states (we know target is reachable).
+            /* Prune transitions to unsolvable states (no need to check unreachability:
+               either the state and thus the target is reachable or
+               prune_unreachable_transitions is false). */
             if (h_values[transition.target_id] == INF) {
                 continue;
             }
