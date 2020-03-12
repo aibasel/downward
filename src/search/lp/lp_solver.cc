@@ -22,6 +22,7 @@
 
 #include <cassert>
 #include <numeric>
+#include <iostream>
 
 using namespace std;
 using utils::ExitCode;
@@ -67,6 +68,22 @@ bool LPConstraint::empty() const {
 void LPConstraint::insert(int index, double coefficient) {
     variables.push_back(index);
     coefficients.push_back(coefficient);
+}
+
+ostream &LPConstraint::print(ostream &stream, const lp::LPConstraint &constraint, double infinity) {
+    if (constraint.get_lower_bound() != -infinity) {
+        stream << constraint.get_lower_bound() << " <= ";
+    }
+    for (size_t i = 0; i < constraint.get_variables().size(); ++i) {
+        if (i != 0)
+            stream << " + ";
+        stream << constraint.get_coefficients()[i] << " * v"
+               << constraint.get_variables()[i];
+    }
+    if (constraint.get_upper_bound() != infinity) {
+        stream << " <= " << constraint.get_upper_bound();
+    }
+    return stream;
 }
 
 LPVariable::LPVariable(double lower_bound, double upper_bound,
@@ -118,7 +135,11 @@ LPSolver::LPSolver(LPSolverType solver_type)
       is_solved(false),
       num_permanent_constraints(0),
       has_temporary_constraints_(false) {
-    lp_solver = create_lp_solver(solver_type);
+    try {
+        lp_solver = create_lp_solver(solver_type);
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
 }
 
 void LPSolver::clear_temporary_data() {
@@ -398,6 +419,28 @@ double LPSolver::get_objective_value() const {
     assert(has_optimal_solution());
     try {
         return lp_solver->getObjValue();
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+}
+
+bool LPSolver::is_infeasible() const {
+    assert(is_solved);
+    try {
+        return lp_solver->isProvenPrimalInfeasible() &&
+               !lp_solver->isProvenDualInfeasible() &&
+               !lp_solver->isProvenOptimal();
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+}
+
+bool LPSolver::is_unbounded() const {
+    assert(is_solved);
+    try {
+        return !lp_solver->isProvenPrimalInfeasible() &&
+               lp_solver->isProvenDualInfeasible() &&
+               !lp_solver->isProvenOptimal();
     } catch (CoinError &error) {
         handle_coin_error(error);
     }

@@ -63,6 +63,8 @@ public:
     bool empty() const;
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
+
+    std::ostream &print(std::ostream &stream, const lp::LPConstraint &constraint, double infinity);
 };
 
 struct LPVariable {
@@ -150,6 +152,8 @@ public:
     LP_METHOD(void solve())
     LP_METHOD(void write_lp(std::string filename))
     LP_METHOD(void print_failure_analysis())
+    LP_METHOD(bool is_infeasible() const)
+    LP_METHOD(bool is_unbounded() const)
 
     /*
       Return true if the solving the LP showed that it is bounded feasible and
