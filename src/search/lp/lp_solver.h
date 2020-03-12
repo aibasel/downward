@@ -49,7 +49,6 @@ class LPConstraint {
     double upper_bound;
 public:
     LPConstraint(double lower_bound, double upper_bound);
-    virtual ~LPConstraint() {}
 
     const std::vector<int> &get_variables() const {return variables;}
     const std::vector<double> &get_coefficients() const {return coefficients;}
@@ -75,7 +74,6 @@ struct LPVariable {
     LPVariable(double lower_bound,
                double upper_bound,
                double objective_coefficient);
-    virtual ~LPVariable() {}
 };
 
 class LinearProgram {
@@ -150,8 +148,8 @@ public:
     LP_METHOD(void set_variable_upper_bound(int index, double bound))
 
     LP_METHOD(void solve())
-    LP_METHOD(void write_lp(std::string filename))
-    LP_METHOD(void print_failure_analysis())
+    LP_METHOD(void write_lp(std::string filename) const)
+    LP_METHOD(void print_failure_analysis() const)
     LP_METHOD(bool is_infeasible() const)
     LP_METHOD(bool is_unbounded() const)
 

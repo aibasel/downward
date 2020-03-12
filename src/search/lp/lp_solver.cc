@@ -159,23 +159,18 @@ void LPSolver::load_problem(const LinearProgram &lp) {
     is_initialized = false;
     num_permanent_constraints = lp.get_constraints().size();
 
-    cout << "????????vars????????" << endl;
     for (const LPVariable &var : lp.get_variables()) {
-        cout << "var" << endl;
         col_lb.push_back(var.lower_bound);
         col_ub.push_back(var.upper_bound);
         objective.push_back(var.objective_coefficient);
     }
 
-    cout << "????????????cons?????????????" << endl;
     for (const LPConstraint &constraint : lp.get_constraints()) {
-        cout << "cons" << endl;
         row_lb.push_back(constraint.get_lower_bound());
         row_ub.push_back(constraint.get_upper_bound());
     }
 
     for (const LPConstraint &constraint : lp.get_constraints()) {
-        cout << "cons2" << endl;
         const vector<int> &vars = constraint.get_variables();
         const vector<double> &coeffs = constraint.get_coefficients();
         assert(vars.size() == coeffs.size());
@@ -233,17 +228,13 @@ void LPSolver::load_problem(const LinearProgram &lp) {
 
         if (lp.get_variables().has_names()) {
             for (int i = 0; i < lp.get_variables().size(); ++i) {
-                if (!lp.get_variables().get_name(i).empty()) {
-                    lp_solver->setColName(i, lp.get_variables().get_name(i));
-                }
+                lp_solver->setColName(i, lp.get_variables().get_name(i));
             }
         }
 
         if (lp.get_constraints().has_names()) {
             for (int i = 0; i < lp.get_constraints().size(); ++i) {
-                if (!lp.get_constraints().get_name(i).empty()) {
-                    lp_solver->setRowName(i, lp.get_constraints().get_name(i));
-                }
+                lp_solver->setRowName(i, lp.get_constraints().get_name(i));
             }
         }
     } catch (CoinError &error) {
@@ -387,7 +378,7 @@ void LPSolver::solve() {
     }
 }
 
-void LPSolver::write_lp(string filename) {
+void LPSolver::write_lp(string filename) const {
     try {
         lp_solver->writeLp(filename.c_str());
     } catch (CoinError &error) {
@@ -395,7 +386,7 @@ void LPSolver::write_lp(string filename) {
     }
 }
 
-void LPSolver::print_failure_analysis() {
+void LPSolver::print_failure_analysis() const {
     cout << "isAbandoned: " << lp_solver->isAbandoned() << endl;
     cout << "isProvenOptimal:  " << lp_solver->isProvenOptimal() << endl;
     cout << "isProvenPrimalInfeasible: " << lp_solver->isProvenPrimalInfeasible() << endl;
