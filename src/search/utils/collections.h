@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <iostream>
 
 namespace utils {
 template<class T>
@@ -151,6 +152,105 @@ int estimate_unordered_map_bytes(int num_entries) {
     // See comments for _estimate_hash_table_bytes.
     return _estimate_hash_table_bytes<std::unordered_map<Key, Value>>(num_entries);
 }
+
+template<typename T>
+class NamedVector {
+    std::vector<T> elements;
+    std::vector<std::string> names;
+    bool _has_names;
+    int reserved = 0;
+
+    void add_name(std::string name) {
+        if (!_has_names && !name.empty()) {
+            _has_names = true;
+            names.resize(elements.size(), "");
+            names.reserve(reserved);
+        }
+
+        if (_has_names) {
+            names.push_back(name);
+        }
+    }
+
+public:
+    NamedVector() = default;
+    NamedVector(NamedVector<T> &&other) = default;
+
+    template<typename ... _Args>
+    void emplace_back(_Args && ... __args) {
+        emplace_back_named("", std::forward<_Args>(__args) ...);
+    }
+
+    template<typename ... _Args>
+    void emplace_back_named(std::string name, _Args && ... __args) {
+        add_name(name);
+        elements.emplace_back(std::forward<_Args>(__args) ...);
+    }
+
+    void push_back(const T &element, std::string name = "") {
+        std::cout << "push back" << std::endl;
+        add_name(name);
+        elements.push_back(element);
+    }
+
+    T &operator[](int index) {
+        return elements[index];
+    }
+
+    std::string get_name(int index) const {
+        return _has_names ? names[index] : "";
+    }
+
+    int size() const {
+        return elements.size();
+    }
+
+    void reserve(int capacity) {
+        reserved = std::max(reserved, capacity);
+
+        elements.reserve(capacity);
+
+        if (_has_names) {
+            names.reserve(capacity);
+        }
+    }
+
+    bool has_names() const {
+        return _has_names;
+    }
+
+    typename std::vector<T>::reference back() {
+        return elements.back();
+    }
+
+    typename std::vector<T>::iterator begin() {
+        return elements.begin();
+    }
+
+    typename std::vector<T>::iterator end() {
+        return elements.end();
+    }
+
+    typename std::vector<T>::const_iterator begin() const {
+        return elements.begin();
+    }
+
+    typename std::vector<T>::const_iterator end() const {
+        return elements.end();
+    }
+
+    void clear() {
+        elements.clear();
+        names.clear();
+    }
+
+    void resize(int count, T value) {
+        elements.resize(count, value);
+        if (_has_names) {
+            names.resize(count, "");
+        }
+    }
+};
 }
 
 #endif

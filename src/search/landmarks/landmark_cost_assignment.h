@@ -46,9 +46,9 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
       recreated because the coefficient matrix of the LP changes from state to
       state. Reusing the vectors still saves some dynamic allocation overhead.
      */
-    std::vector<lp::LPVariable> lp_variables;
-    std::vector<lp::LPConstraint> lp_constraints;
-    std::vector<lp::LPConstraint> non_empty_lp_constraints;
+    utils::NamedVector<lp::LPVariable> lp_variables;
+    utils::NamedVector<lp::LPConstraint> lp_constraints;
+    utils::NamedVector<lp::LPConstraint> non_empty_lp_constraints;
 public:
     LandmarkEfficientOptimalSharedCostAssignment(const std::vector<int> &operator_costs,
                                                  const LandmarkGraph &graph,

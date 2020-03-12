@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+#include "../utils/collections.h"
+
 class AbstractTask;
 class State;
 
@@ -39,7 +41,7 @@ public:
     */
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,
-        std::vector<lp::LPConstraint> &constraints,
+        utils::NamedVector<lp::LPConstraint> &constraints,
         double infinity);
 
     /*

@@ -3,6 +3,7 @@
 
 #include "../utils/language.h"
 #include "../utils/system.h"
+#include "../utils/collections.h"
 
 #include <functional>
 #include <memory>
@@ -46,9 +47,9 @@ class LPConstraint {
     std::vector<double> coefficients;
     double lower_bound;
     double upper_bound;
-    std::string name;
 public:
-    LPConstraint(double lower_bound, double upper_bound, std::string name="");
+    LPConstraint(double lower_bound, double upper_bound);
+    virtual ~LPConstraint() {}
 
     const std::vector<int> &get_variables() const {return variables;}
     const std::vector<double> &get_coefficients() const {return coefficients;}
@@ -57,8 +58,6 @@ public:
     void set_lower_bound(double lb) {lower_bound = lb;}
     double get_upper_bound() const {return upper_bound;}
     void set_upper_bound(double ub) {upper_bound = ub;}
-    std::string get_name() const {return name;}
-    void set_name(std::string n) {name = n;}
 
     void clear();
     bool empty() const;
@@ -70,12 +69,33 @@ struct LPVariable {
     double lower_bound;
     double upper_bound;
     double objective_coefficient;
-    std::string name;
 
     LPVariable(double lower_bound,
                double upper_bound,
-               double objective_coefficient,
-               std::string name="");
+               double objective_coefficient);
+    virtual ~LPVariable() {}
+};
+
+class LinearProgram {
+    LPObjectiveSense sense;
+    std::string objective_name;
+
+    utils::NamedVector<LPVariable> variables;
+    utils::NamedVector<LPConstraint> constraints;
+
+public:
+    explicit LinearProgram(LPObjectiveSense sense, utils::NamedVector<LPVariable> &&variables, utils::NamedVector<LPConstraint> &&constraints, std::string objective_name = "")
+        : sense(sense), variables(std::move(variables)), constraints(std::move(constraints)), objective_name(objective_name) {
+    }
+
+    utils::NamedVector<LPVariable> &get_variables();
+    utils::NamedVector<LPConstraint> &get_constraints();
+    LPObjectiveSense get_sense();
+    std::string get_objective_name();
+    const utils::NamedVector<LPVariable> &get_variables() const;
+    const utils::NamedVector<LPConstraint> &get_constraints() const;
+    const LPObjectiveSense get_sense() const;
+    const std::string get_objective_name() const;
 };
 
 #ifdef __GNUG__
@@ -115,11 +135,7 @@ public:
     */
     ~LPSolver();
 
-    LP_METHOD(void load_problem(
-                  LPObjectiveSense sense,
-                  const std::vector<LPVariable> &variables,
-                  const std::vector<LPConstraint> &constraints,
-                  const std::string objectiveName=""))
+    LP_METHOD(void load_problem(const LinearProgram &lp))
     LP_METHOD(void add_temporary_constraints(const std::vector<LPConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity() const)
