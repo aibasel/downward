@@ -226,7 +226,9 @@ void register_event_handlers() {
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
     // print the peak memory usage.
 #if OPERATING_SYSTEM == LINUX
+# ifndef __ANDROID__
     on_exit(exit_handler, 0);
+# endif
 #elif OPERATING_SYSTEM == OSX
     atexit(exit_handler);
 #endif

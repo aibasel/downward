@@ -4,7 +4,11 @@
 #include <ostream>
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
+# ifndef __ANDROID__
 #include <sys/time.h>
+# else
+#include <chrono>
+# endif
 #endif
 
 #if OPERATING_SYSTEM == OSX
@@ -66,6 +70,9 @@ double Timer::current_clock() const {
     QueryPerformanceCounter(&now_ticks);
     double ticks = static_cast<double>(now_ticks.QuadPart - start_ticks.QuadPart);
     return ticks / frequency.QuadPart;
+#elif defined(__ANDROID__)
+    auto tp = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
 #else
     timespec tp;
 #if OPERATING_SYSTEM == OSX

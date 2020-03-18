@@ -36,7 +36,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 ## == Libraries ==
 
 # On Linux, find the rt library for clock_gettime().
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT ANDROID)
     target_link_libraries(downward rt)
 endif()
 
