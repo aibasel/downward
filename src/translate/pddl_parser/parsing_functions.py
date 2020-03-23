@@ -317,7 +317,7 @@ def parse_domain_pddl(domain_pddl):
     iterator = iter(domain_pddl)
 
     define_tag = next(iterator)
-    assert define_tag == "define"
+    assert define_tag == "define", "define_tag = \"%s\" instead of \"define\"" % define_tag
     domain_line = next(iterator)
     assert domain_line[0] == "domain" and len(domain_line) == 2
     yield domain_line[1]
