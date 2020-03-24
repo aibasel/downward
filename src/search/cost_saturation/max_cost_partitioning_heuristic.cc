@@ -81,7 +81,9 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
         cp_heuristics, unsolvability_heuristic, abstractions);
 
     int num_abstractions = abstractions.size();
-    int num_useful_abstractions = abstraction_functions.size();
+    int num_useless_abstractions = count(
+        abstraction_functions.begin(), abstraction_functions.end(), nullptr);
+    int num_useful_abstractions = num_abstractions - num_useless_abstractions;
     utils::Log() << "Useful abstractions: " << num_useful_abstractions << "/"
                  << num_abstractions << " = "
                  << static_cast<double>(num_useful_abstractions) / num_abstractions
