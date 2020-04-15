@@ -158,13 +158,12 @@ class NamedVector {
     std::vector<T> elements;
     std::vector<std::string> names;
     bool _has_names;
-    int reserved = 0;
 
     void add_name(std::string name) {
         if (!_has_names && !name.empty()) {
             _has_names = true;
+            names.reserve(elements.capacity());
             names.resize(elements.size(), "");
-            names.reserve(reserved);
         }
 
         if (_has_names) {
@@ -188,7 +187,6 @@ public:
     }
 
     void push_back(const T &element, std::string name = "") {
-        std::cout << "push back" << std::endl;
         add_name(name);
         elements.push_back(element);
     }
@@ -206,8 +204,6 @@ public:
     }
 
     void reserve(int capacity) {
-        reserved = std::max(reserved, capacity);
-
         elements.reserve(capacity);
 
         if (_has_names) {
