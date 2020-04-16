@@ -152,7 +152,7 @@ for portfolio in os.listdir(PORTFOLIO_DIR):
 
 
 def show_aliases():
-    for alias in sorted(ALIASES.keys() + PORTFOLIOS.keys()):
+    for alias in sorted(list(ALIASES) + list(PORTFOLIOS)):
         print(alias)
 
 
