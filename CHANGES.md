@@ -11,7 +11,7 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- none so far
+- Fix `--show-aliases` parameter.
 
 ## Fast Downward 19.12
 
