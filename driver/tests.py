@@ -46,6 +46,10 @@ def test_aliases():
         run_driver(cmd)
 
 
+def test_show_aliases():
+    run_driver(["./fast-downward.py", "--show-aliases"])
+
+
 def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
         cmd = ["./fast-downward.py", "--portfolio", portfolio,
