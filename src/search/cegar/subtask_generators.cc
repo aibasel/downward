@@ -73,6 +73,8 @@ static void order_facts(
         break;
     case FactOrder::HADD_UP:
     case FactOrder::HADD_DOWN:
+        // TODO: pass verbosity to following call in order to adjust/avoid
+        // output RelaxationHeuristic and AdditiveHeuristic.
         sort(facts.begin(), facts.end(), SortFactsByIncreasingHaddValues(task));
         if (fact_order == FactOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
@@ -154,7 +156,8 @@ shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
 SharedTasks LandmarkDecomposition::get_subtasks(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity) const {
     SharedTasks subtasks;
-    // TODO: pass verbosity to following call in order to avoid output of h^m landmark factory
+    // TODO: pass verbosity to following call in order to adjust/avoid output
+    // of h^m landmark factory.
     shared_ptr<landmarks::LandmarkGraph> landmark_graph =
         get_landmark_graph(task);
     Facts landmark_facts = get_fact_landmarks(*landmark_graph);
