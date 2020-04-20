@@ -5,6 +5,7 @@
 #include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 #include <cassert>
 #include <vector>
@@ -16,7 +17,9 @@ namespace additive_heuristic {
 AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     : RelaxationHeuristic(opts),
       did_write_overflow_warning(false) {
-    cout << "Initializing additive heuristic..." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Initializing additive heuristic..." << endl;
+    }
 }
 
 void AdditiveHeuristic::write_overflow_warning() {
@@ -157,6 +160,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_property("safe", "yes for tasks without axioms");
     parser.document_property("preferred operators", "yes");
 
+    relaxation_heuristic::add_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

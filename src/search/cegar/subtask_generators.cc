@@ -73,8 +73,6 @@ static void order_facts(
         break;
     case FactOrder::HADD_UP:
     case FactOrder::HADD_DOWN:
-        // TODO: pass verbosity to following call in order to adjust/avoid
-        // output RelaxationHeuristic and AdditiveHeuristic.
         sort(facts.begin(), facts.end(), SortFactsByIncreasingHaddValues(task));
         if (fact_order == FactOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());

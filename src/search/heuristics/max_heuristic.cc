@@ -4,6 +4,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <vector>
 
@@ -25,7 +27,9 @@ namespace max_heuristic {
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
     : RelaxationHeuristic(opts) {
-    cout << "Initializing HSP max heuristic..." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Initializing HSP max heuristic..." << endl;
+    }
 }
 
 // heuristic computation
@@ -111,6 +115,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_property("safe", "yes for tasks without axioms");
     parser.document_property("preferred operators", "no");
 
+    relaxation_heuristic::add_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

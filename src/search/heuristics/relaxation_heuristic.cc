@@ -1,7 +1,9 @@
 #include "relaxation_heuristic.h"
 
+#include "../option_parser.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -35,7 +37,7 @@ UnaryOperator::UnaryOperator(
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
-    : Heuristic(opts) {
+    : Heuristic(opts), verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 
@@ -69,7 +71,9 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     // Simplify unary operators.
     utils::Timer simplify_timer;
     simplify();
-    cout << "time to simplify: " << simplify_timer << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "time to simplify: " << simplify_timer << endl;
+    }
 
     // Cross-reference unary operators.
     vector<vector<OpID>> precondition_of_vectors(propositions.size());
@@ -170,7 +174,9 @@ void RelaxationHeuristic::simplify() {
 
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
-    cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
+    }
 
     /*
       First, we create a map that maps the preconditions and effect
@@ -292,6 +298,12 @@ void RelaxationHeuristic::simplify() {
             is_dominated),
         unary_operators.end());
 
-    cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
+    }
+}
+
+void add_options_to_parser(OptionParser &parser) {
+    utils::add_verbosity_option_to_parser(parser);
 }
 }
