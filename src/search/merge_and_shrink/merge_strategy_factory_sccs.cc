@@ -45,7 +45,8 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &optio
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     const TaskProxy &task_proxy,
-    const FactoredTransitionSystem &fts) {
+    const FactoredTransitionSystem &fts,
+    utils::Verbosity verbosity) {
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
@@ -81,12 +82,16 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
       SCCs have been merged.
     */
     int index = num_vars - 1;
-    cout << "SCCs of the causal graph:" << endl;
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        cout << "SCCs of the causal graph:" << endl;
+    }
     vector<vector<int>> non_singleton_cg_sccs;
     vector<int> indices_of_merged_sccs;
     indices_of_merged_sccs.reserve(sccs.size());
     for (const vector<int> &scc : sccs) {
-        cout << scc << endl;
+        if (verbosity >= utils::Verbosity::VERBOSE) {
+            cout << scc << endl;
+        }
         int scc_size = scc.size();
         if (scc_size == 1) {
             indices_of_merged_sccs.push_back(scc.front());
@@ -96,11 +101,13 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
             non_singleton_cg_sccs.push_back(scc);
         }
     }
-    if (sccs.size() == 1) {
+    if (sccs.size() == 1 && verbosity >= utils::Verbosity::VERBOSE) {
         cout << "Only one single SCC" << endl;
     }
     if (static_cast<int>(sccs.size()) == num_vars) {
-        cout << "Only singleton SCCs" << endl;
+        if (verbosity >= utils::Verbosity::VERBOSE) {
+            cout << "Only singleton SCCs" << endl;
+        }
         assert(non_singleton_cg_sccs.empty());
     }
 

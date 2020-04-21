@@ -6,6 +6,10 @@
 
 class TaskProxy;
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeStrategy;
@@ -20,7 +24,8 @@ public:
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
-        const FactoredTransitionSystem &fts) = 0;
+        const FactoredTransitionSystem &fts,
+        utils::Verbosity verbosity) = 0;
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
 };

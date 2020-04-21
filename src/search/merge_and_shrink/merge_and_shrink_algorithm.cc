@@ -176,7 +176,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         label_reduction->initialize(task_proxy);
     }
     unique_ptr<MergeStrategy> merge_strategy =
-        merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
+        merge_strategy_factory->compute_merge_strategy(task_proxy, fts, verbosity);
     merge_strategy_factory = nullptr;
 
     auto log_main_loop_progress = [&timer](const string &msg) {
