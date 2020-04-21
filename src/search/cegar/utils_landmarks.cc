@@ -5,6 +5,7 @@
 #include "../landmarks/landmark_factory_h_m.h"
 #include "../landmarks/landmark_graph.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -29,6 +30,7 @@ shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &tas
     hm_opts.set<bool>("disjunctive_landmarks", false);
     hm_opts.set<bool>("conjunctive_landmarks", false);
     hm_opts.set<bool>("no_orders", false);
+    hm_opts.set<int>("verbosity", static_cast<int>(utils::Verbosity::SILENT));
     LandmarkFactoryHM lm_graph_factory(hm_opts);
 
     return lm_graph_factory.compute_lm_graph(task);

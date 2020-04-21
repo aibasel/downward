@@ -8,6 +8,7 @@
 #include "../task_proxy.h"
 
 #include "../utils/language.h"
+#include "../utils/logging.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -23,14 +24,18 @@ LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
 void LandmarkFactoryZhuGivan::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
-    cout << "Generating landmarks using Zhu/Givan label propagation\n";
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Generating landmarks using Zhu/Givan label propagation\n";
+    }
 
     compute_triggers(task_proxy);
 
     PropositionLayer last_prop_layer = build_relaxed_plan_graph_with_labels(task_proxy);
 
     if (!satisfies_goal_conditions(task_proxy.get_goals(), last_prop_layer)) {
-        cout << "Problem not solvable, even if relaxed.\n";
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "Problem not solvable, even if relaxed.\n";
+        }
         return;
     }
 

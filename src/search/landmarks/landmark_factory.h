@@ -18,6 +18,10 @@ class OptionParser;
 class Options;
 }
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace landmarks {
 class Exploration;
 class LandmarkGraph;
@@ -38,6 +42,7 @@ public:
     virtual bool supports_conditional_effects() const = 0;
 
 protected:
+    const utils::Verbosity verbosity;
     std::shared_ptr<LandmarkGraph> lm_graph;
     AbstractTask *lm_graph_task;
 

@@ -6,6 +6,7 @@
 
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -548,7 +549,9 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
             }
             ++it;
         }
-        //    print_pm_op(pm_ops_[i]);
+        if (verbosity >= utils::Verbosity::DEBUG) {
+            print_pm_op(variables, pm_op);
+        }
     }
 }
 
@@ -565,7 +568,9 @@ LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
-    cout << "h^m landmarks m=" << m_ << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "h^m landmarks m=" << m_ << endl;
+    }
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
@@ -580,13 +585,17 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
         set_indices_[msets[i]] = i;
         h_m_table_[i].fluents = msets[i];
     }
-    cout << "Using " << h_m_table_.size() << " P^m fluents." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Using " << h_m_table_.size() << " P^m fluents." << endl;
+    }
 
     build_pm_ops(task_proxy);
 }
 
 void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
-    cout << "Calculating achievers." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Calculating achievers." << endl;
+    }
 
     OperatorsProxy operators = task_proxy.get_operators();
     VariablesProxy variables = task_proxy.get_variables();
@@ -803,10 +812,14 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
         current_trigger.swap(next_trigger);
         next_trigger.clear();
 
-        cout << "Level " << level << " completed." << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "Level " << level << " completed." << endl;
+        }
         ++level;
     }
-    cout << "h^m landmarks computed." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "h^m landmarks computed." << endl;
+    }
 }
 
 void LandmarkFactoryHM::compute_noop_landmarks(
@@ -914,10 +927,12 @@ void LandmarkFactoryHM::generate_landmarks(
         int set_index = set_indices_[goal_subset];
 
         if (h_m_table_[set_index].level == -1) {
-            cout << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
-            cout << "Subset is: ";
-            print_fluentset(variables, h_m_table_[set_index].fluents);
-            cout << endl;
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                cout << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
+                cout << "Subset is: ";
+                print_fluentset(variables, h_m_table_[set_index].fluents);
+                cout << endl;
+            }
         }
 
         // set up goals landmarks for processing

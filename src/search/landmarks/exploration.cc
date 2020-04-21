@@ -5,6 +5,7 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
+#include "../utils/logging.h"
 
 #include <algorithm>
 #include <cassert>
@@ -31,10 +32,13 @@ namespace landmarks {
 */
 
 // Construction and destruction
-Exploration::Exploration(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy),
+Exploration::Exploration(utils::Verbosity verbosity, const TaskProxy &task_proxy)
+    : verbosity(verbosity),
+      task_proxy(task_proxy),
       did_write_overflow_warning(false) {
-    cout << "Initializing Exploration..." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Initializing Exploration..." << endl;
+    }
 
     // Build propositions.
     for (VariableProxy var : task_proxy.get_variables()) {

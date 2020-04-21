@@ -6,6 +6,8 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/logging.h"
+
 #include <vector>
 using namespace std;
 
@@ -21,7 +23,9 @@ LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
 void LandmarkFactoryRpgExhaust::generate_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
-    cout << "Generating landmarks by testing all facts with RPG method" << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Generating landmarks by testing all facts with RPG method" << endl;
+    }
 
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {

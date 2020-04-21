@@ -11,6 +11,10 @@
 #include <unordered_set>
 #include <vector>
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace landmarks {
 struct ExProposition;
 struct ExUnaryOperator;
@@ -84,6 +88,7 @@ struct ExUnaryOperator {
 class Exploration {
     static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
 
+    const utils::Verbosity verbosity;
     TaskProxy task_proxy;
 
     std::vector<ExUnaryOperator> unary_operators;
@@ -104,7 +109,7 @@ class Exploration {
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
 public:
-    explicit Exploration(const TaskProxy &task_proxy);
+    explicit Exploration(utils::Verbosity verbosity, const TaskProxy &task_proxy);
 
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
                                             std::vector<utils::HashMap<FactPair, int>> &lvl_op,

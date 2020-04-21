@@ -9,6 +9,7 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 #include "../utils/timer.h"
 
@@ -19,7 +20,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
-    : lm_graph_task(nullptr),
+    : verbosity(utils::get_verbosity_from_options(opts)),
+      lm_graph_task(nullptr),
       reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
@@ -62,22 +64,27 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     TaskProxy task_proxy(*task);
 
     lm_graph = make_shared<LandmarkGraph>(task_proxy);
-    Exploration exploration(task_proxy);
+    Exploration exploration(verbosity, task_proxy);
     generate_landmarks(task, exploration);
 
     // the following replaces the old "build_lm_graph"
     generate(task_proxy, exploration);
-    cout << "Landmarks generation time: " << lm_generation_timer << endl;
-    if (lm_graph->number_of_landmarks() == 0)
-        cout << "Warning! No landmarks found. Task unsolvable?" << endl;
-    else {
-        cout << "Discovered " << lm_graph->number_of_landmarks()
-             << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
-             << " are disjunctive and "
-             << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
-             << lm_graph->number_of_edges() << " edges\n";
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Landmarks generation time: " << lm_generation_timer << endl;
+
+        if (lm_graph->number_of_landmarks() == 0)
+            cout << "Warning! No landmarks found. Task unsolvable?" << endl;
+        else {
+            cout << "Discovered " << lm_graph->number_of_landmarks()
+                 << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
+                 << " are disjunctive and "
+                 << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
+                 << lm_graph->number_of_edges() << " edges\n";
+        }
     }
-    //lm_graph->dump();
+    if (verbosity >= utils::Verbosity::DEBUG) {
+        lm_graph->dump(task_proxy.get_variables());
+    }
     return lm_graph;
 }
 
@@ -93,9 +100,13 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
     if (no_orders)
         discard_all_orderings();
     else if (reasonable_orders) {
-        cout << "approx. reasonable orders" << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "approx. reasonable orders" << endl;
+        }
         approximate_reasonable_orders(task_proxy, false);
-        cout << "approx. obedient reasonable orders" << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "approx. obedient reasonable orders" << endl;
+        }
         approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
@@ -612,8 +623,10 @@ void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, E
             return !is_causal_landmark(task_proxy, exploration, node);
         });
     int num_causal_landmarks = lm_graph->number_of_landmarks();
-    cout << "Discarded " << num_all_landmarks - num_causal_landmarks
-         << " non-causal landmarks" << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Discarded " << num_all_landmarks - num_causal_landmarks
+             << " non-causal landmarks" << endl;
+    }
 }
 
 void LandmarkFactory::discard_disjunctive_landmarks() {
@@ -623,8 +636,10 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
       allow removing disjunctive landmarks after landmark generation.
     */
     if (lm_graph->number_of_disj_landmarks() > 0) {
-        cout << "Discarding " << lm_graph->number_of_disj_landmarks()
-             << " disjunctive landmarks" << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "Discarding " << lm_graph->number_of_disj_landmarks()
+                 << " disjunctive landmarks" << endl;
+        }
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.disjunctive;});
     }
@@ -632,15 +647,19 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
 
 void LandmarkFactory::discard_conjunctive_landmarks() {
     if (lm_graph->number_of_conj_landmarks() > 0) {
-        cout << "Discarding " << lm_graph->number_of_conj_landmarks()
-             << " conjunctive landmarks" << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "Discarding " << lm_graph->number_of_conj_landmarks()
+                 << " conjunctive landmarks" << endl;
+        }
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.conjunctive;});
     }
 }
 
 void LandmarkFactory::discard_all_orderings() {
-    cout << "Removing all orderings." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Removing all orderings." << endl;
+    }
     for (auto &node : lm_graph->get_nodes()) {
         node->children.clear();
         node->parents.clear();
@@ -657,8 +676,10 @@ void LandmarkFactory::mk_acyclic_graph() {
     // [Malte] Commented out the following assertion because
     // the old method for this is no longer available.
     // assert(acyclic_node_set.size() == number_of_landmarks());
-    cout << "Removed " << removed_edges
-         << " reasonable or obedient reasonable orders\n";
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Removed " << removed_edges
+             << " reasonable or obedient reasonable orders\n";
+    }
 }
 
 bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
@@ -810,6 +831,7 @@ void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("no_orders",
                             "discard all orderings",
                             "false");
+    utils::add_verbosity_option_to_parser(parser);
 }
 
 
