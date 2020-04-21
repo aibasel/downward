@@ -54,7 +54,7 @@ SearchEngine::SearchEngine(const Options &opts)
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")),
-      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
+      verbosity(utils::get_verbosity_from_options(opts)) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);

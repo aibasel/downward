@@ -119,7 +119,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
       rng(utils::parse_rng_from_options(opts)),
-      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
+      verbosity(utils::get_verbosity_from_options(opts)),
       num_rejected(0),
       hill_climbing_timer(0) {
 }

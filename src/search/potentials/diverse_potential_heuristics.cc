@@ -22,7 +22,7 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
       num_samples(opts.get<int>("num_samples")),
       rng(utils::parse_rng_from_options(opts)),
-      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
+      verbosity(utils::get_verbosity_from_options(opts)) {
 }
 
 SamplesToFunctionsMap

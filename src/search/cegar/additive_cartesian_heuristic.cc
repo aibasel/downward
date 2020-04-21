@@ -33,7 +33,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<bool>("use_general_costs"),
         static_cast<PickSplit>(opts.get<int>("pick")),
         *rng,
-        static_cast<utils::Verbosity>(opts.get_enum("verbosity")));
+        utils::get_verbosity_from_options(opts));
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }

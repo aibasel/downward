@@ -10,6 +10,7 @@
 
 namespace options {
 class OptionParser;
+class Options;
 }
 
 namespace utils {
@@ -39,6 +40,7 @@ enum class Verbosity {
 };
 
 extern void add_verbosity_option_to_parser(options::OptionParser &parser);
+extern Verbosity get_verbosity_from_options(const options::Options &opts);
 
 class TraceBlock {
     std::string block_name;

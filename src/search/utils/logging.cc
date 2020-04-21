@@ -35,6 +35,10 @@ void add_verbosity_option_to_parser(options::OptionParser &parser) {
         verbosity_level_docs);
 }
 
+Verbosity get_verbosity_from_options(const options::Options &opts) {
+    return static_cast<Verbosity>(opts.get_enum("verbosity"));
+}
+
 class MemoryTracer {
     // The following constants affect the formatting of output.
     static const int INDENT_AMOUNT = 2;

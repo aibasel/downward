@@ -37,7 +37,7 @@ UnaryOperator::UnaryOperator(
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
-    : Heuristic(opts), verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
+    : Heuristic(opts), verbosity(utils::get_verbosity_from_options(opts)) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 
