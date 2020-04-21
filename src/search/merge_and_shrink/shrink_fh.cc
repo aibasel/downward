@@ -22,8 +22,8 @@ using namespace std;
 namespace merge_and_shrink {
 ShrinkFH::ShrinkFH(const Options &opts)
     : ShrinkBucketBased(opts),
-      f_start(HighLow(opts.get_enum("shrink_f"))),
-      h_start(HighLow(opts.get_enum("shrink_h"))) {
+      f_start(opts.get_enum<HighLow>("shrink_f")),
+      h_start(opts.get_enum<HighLow>("shrink_h")) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(

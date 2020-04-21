@@ -21,8 +21,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
     : MergeTreeFactory(options),
-      variable_order_type(static_cast<variable_order_finder::VariableOrderType>(
-                              options.get_enum("variable_order"))) {
+      variable_order_type(
+        options.get_enum<variable_order_finder::VariableOrderType>("variable_order")) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
