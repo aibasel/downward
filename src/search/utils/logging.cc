@@ -17,7 +17,7 @@ void add_verbosity_option_to_parser(options::OptionParser &parser) {
     vector<string> verbosity_level_docs;
     verbosity_levels.push_back("silent");
     verbosity_level_docs.push_back(
-        "only the most basic output");
+        "no output at all");
     verbosity_levels.push_back("normal");
     verbosity_level_docs.push_back(
         "relevant information to monitor progress");

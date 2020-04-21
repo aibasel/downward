@@ -70,36 +70,34 @@ void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
 }
 
 void MergeAndShrinkAlgorithm::dump_options() const {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        if (merge_strategy_factory) { // deleted after merge strategy extraction
-            merge_strategy_factory->dump_options();
-            cout << endl;
-        }
-
-        cout << "Options related to size limits and shrinking: " << endl;
-        cout << "Transition system size limit: " << max_states << endl
-             << "Transition system size limit right before merge: "
-             << max_states_before_merge << endl;
-        cout << "Threshold to trigger shrinking right before merge: "
-             << shrink_threshold_before_merge << endl;
-        cout << endl;
-
-        cout << "Pruning unreachable states: "
-             << (prune_unreachable_states ? "yes" : "no") << endl;
-        cout << "Pruning irrelevant states: "
-             << (prune_irrelevant_states ? "yes" : "no") << endl;
-        cout << endl;
-
-        if (label_reduction) {
-            label_reduction->dump_options();
-        } else {
-            cout << "Label reduction disabled" << endl;
-        }
-        cout << endl;
-
-        cout << "Main loop max time in seconds: " << main_loop_max_time << endl;
+    if (merge_strategy_factory) { // deleted after merge strategy extraction
+        merge_strategy_factory->dump_options();
         cout << endl;
     }
+
+    cout << "Options related to size limits and shrinking: " << endl;
+    cout << "Transition system size limit: " << max_states << endl
+         << "Transition system size limit right before merge: "
+         << max_states_before_merge << endl;
+    cout << "Threshold to trigger shrinking right before merge: "
+         << shrink_threshold_before_merge << endl;
+    cout << endl;
+
+    cout << "Pruning unreachable states: "
+         << (prune_unreachable_states ? "yes" : "no") << endl;
+    cout << "Pruning irrelevant states: "
+         << (prune_irrelevant_states ? "yes" : "no") << endl;
+    cout << endl;
+
+    if (label_reduction) {
+        label_reduction->dump_options();
+    } else {
+        cout << "Label reduction disabled" << endl;
+    }
+    cout << endl;
+
+    cout << "Main loop max time in seconds: " << main_loop_max_time << endl;
+    cout << endl;
 }
 
 void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
@@ -311,10 +309,12 @@ void MergeAndShrinkAlgorithm::main_loop(
         ++iteration_counter;
     }
 
-    cout << "End of merge-and-shrink algorithm, statistics:" << endl;
-    cout << "Main loop runtime: " << timer.get_elapsed_time() << endl;
-    cout << "Maximum intermediate abstraction size: "
-         << maximum_intermediate_size << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "End of merge-and-shrink algorithm, statistics:" << endl;
+        cout << "Main loop runtime: " << timer.get_elapsed_time() << endl;
+        cout << "Maximum intermediate abstraction size: "
+             << maximum_intermediate_size << endl;
+    }
     shrink_strategy = nullptr;
     label_reduction = nullptr;
 }
@@ -329,11 +329,13 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     starting_peak_memory = utils::get_peak_memory_in_kb();
 
     utils::Timer timer;
-    cout << "Running merge-and-shrink algorithm..." << endl;
     task_properties::verify_no_axioms(task_proxy);
-    dump_options();
-    warn_on_unusual_options();
-    cout << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Running merge-and-shrink algorithm..." << endl;
+        dump_options();
+        warn_on_unusual_options();
+        cout << endl;
+    }
 
     const bool compute_init_distances =
         shrink_strategy->requires_init_distances() ||
@@ -373,7 +375,9 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             pruned = pruned || pruned_factor;
         }
         if (!fts.is_factor_solvable(index)) {
-            cout << "Atomic FTS is unsolvable, stopping computation." << endl;
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                cout << "Atomic FTS is unsolvable, stopping computation." << endl;
+            }
             unsolvable = true;
             break;
         }
@@ -388,10 +392,12 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     if (!unsolvable && main_loop_max_time > 0) {
         main_loop(fts, task_proxy);
     }
-    const bool final = true;
-    report_peak_memory_delta(final);
-    cout << "Merge-and-shrink algorithm runtime: " << timer << endl;
-    cout << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        const bool final = true;
+        report_peak_memory_delta(final);
+        cout << "Merge-and-shrink algorithm runtime: " << timer << endl;
+        cout << endl;
+    }
     return fts;
 }
 
@@ -432,13 +438,6 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
         "true");
 
     add_transition_system_size_limit_options_to_parser(parser);
-
-    /*
-      silent: no output during construction, only starting and final statistics
-      normal: basic output during construction, starting and final statistics
-      verbose: full output during construction, starting and final statistics
-      debug: full output with additional debug output
-    */
     utils::add_verbosity_option_to_parser(parser);
 
     parser.add_option<double>(

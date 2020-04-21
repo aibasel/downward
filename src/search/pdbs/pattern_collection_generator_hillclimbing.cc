@@ -410,15 +410,19 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             }
         }
     } catch (HillClimbingTimeout &) {
-        cout << "Time limit reached. Abort hill climbing." << endl;
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            cout << "Time limit reached. Abort hill climbing." << endl;
+        }
     }
 
-    cout << "Hill climbing iterations: " << num_iterations << endl;
-    cout << "Hill climbing generated patterns: " << generated_patterns.size() << endl;
-    cout << "Hill climbing rejected patterns: " << num_rejected << endl;
-    cout << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
-    cout << "Hill climbing time: "
-         << hill_climbing_timer->get_elapsed_time() << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Hill climbing iterations: " << num_iterations << endl;
+        cout << "Hill climbing generated patterns: " << generated_patterns.size() << endl;
+        cout << "Hill climbing rejected patterns: " << num_rejected << endl;
+        cout << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
+        cout << "Hill climbing time: "
+             << hill_climbing_timer->get_elapsed_time() << endl;
+    }
 
     delete hill_climbing_timer;
     hill_climbing_timer = nullptr;
@@ -428,7 +432,9 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     utils::Timer timer;
-    cout << "Generating patterns using the hill climbing generator..." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        cout << "Generating patterns using the hill climbing generator..." << endl;
+    }
 
     // Generate initial collection: a pattern for each goal variable.
     PatternCollection initial_pattern_collection;
@@ -448,8 +454,10 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     }
 
     PatternCollectionInformation pci = current_pdbs->get_pattern_collection_information();
-    dump_pattern_collection_generation_statistics(
-        "Hill climbing generator", timer(), pci);
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        dump_pattern_collection_generation_statistics(
+            "Hill climbing generator", timer(), pci);
+    }
     return pci;
 }
 
@@ -487,6 +495,7 @@ void add_hillclimbing_options(OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
     utils::add_rng_options(parser);
+    utils::add_verbosity_option_to_parser(parser);
 }
 
 void check_hillclimbing_options(
@@ -614,14 +623,6 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     add_canonical_pdbs_options_to_parser(parser);
 
     Heuristic::add_options_to_parser(parser);
-
-    /*
-     silent: no output during generation, only final statistics
-     normal: like silent, and additional basic output during generation
-     verbose: like normal and full output during generation
-     debug: like verbose with additional debug output
-   */
-    utils::add_verbosity_option_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.help_mode())
