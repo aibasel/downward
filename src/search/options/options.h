@@ -76,6 +76,7 @@ public:
     T get_enum(const std::string &key) const {
         return static_cast<T>(get<int>(key));
     }
+
     bool contains(const std::string &key) const;
     const std::string &get_unparsed_config() const;
     void set_unparsed_config(const std::string &config);
