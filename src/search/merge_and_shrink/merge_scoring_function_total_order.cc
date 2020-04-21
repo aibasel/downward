@@ -20,8 +20,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const options::Options &options)
-    : atomic_ts_order(AtomicTSOrder(options.get_enum("atomic_ts_order"))),
-      product_ts_order(ProductTSOrder(options.get_enum("product_ts_order"))),
+    : atomic_ts_order(options.get_enum<AtomicTSOrder>("atomic_ts_order")),
+      product_ts_order(options.get_enum<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
       random_seed(options.get<int>("random_seed")),
       rng(utils::parse_rng_from_options(options)) {

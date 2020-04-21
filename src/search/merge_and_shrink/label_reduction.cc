@@ -30,8 +30,8 @@ namespace merge_and_shrink {
 LabelReduction::LabelReduction(const Options &options)
     : lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),
-      lr_method(LabelReductionMethod(options.get_enum("method"))),
-      lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))),
+      lr_method(options.get_enum<LabelReductionMethod>("method")),
+      lr_system_order(options.get_enum<LabelReductionSystemOrder>("system_order")),
       rng(utils::parse_rng_from_options(options)) {
 }
 

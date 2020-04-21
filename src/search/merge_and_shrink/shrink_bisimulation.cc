@@ -95,7 +95,7 @@ struct Signature {
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : greedy(opts.get<bool>("greedy")),
-      at_limit(AtLimit(opts.get_enum("at_limit"))) {
+      at_limit(opts.get_enum<AtLimit>("at_limit")) {
 }
 
 int ShrinkBisimulation::initialize_groups(

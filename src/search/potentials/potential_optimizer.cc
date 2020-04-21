@@ -23,7 +23,7 @@ static int get_undefined_value(VariableProxy var) {
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
     : task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task),
-      lp_solver(lp::LPSolverType(opts.get_enum("lpsolver"))),
+      lp_solver(opts.get_enum<lp::LPSolverType>("lpsolver")),
       max_potential(opts.get<double>("max_potential")),
       num_lp_vars(0) {
     task_properties::verify_no_axioms(task_proxy);

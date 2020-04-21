@@ -106,7 +106,7 @@ SharedTasks TaskDuplicator::get_subtasks(
 }
 
 GoalDecomposition::GoalDecomposition(const Options &opts)
-    : fact_order(FactOrder(opts.get_enum("order"))),
+    : fact_order(opts.get_enum<FactOrder>("order")),
       rng(utils::parse_rng_from_options(opts)) {
 }
 
@@ -126,7 +126,7 @@ SharedTasks GoalDecomposition::get_subtasks(
 
 
 LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
-    : fact_order(FactOrder(opts.get_enum("order"))),
+    : fact_order(opts.get_enum<FactOrder>("order")),
       combine_facts(opts.get<bool>("combine_facts")),
       rng(utils::parse_rng_from_options(opts)) {
 }
