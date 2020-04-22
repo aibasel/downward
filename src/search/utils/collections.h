@@ -157,38 +157,28 @@ template<typename T>
 class NamedVector {
     std::vector<T> elements;
     std::vector<std::string> names;
-    bool _has_names;
-
-    void add_name(std::string name) {
-        if (!_has_names && !name.empty()) {
-            _has_names = true;
-            names.reserve(elements.capacity());
-            names.resize(elements.size(), "");
-        }
-
-        if (_has_names) {
-            names.push_back(name);
-        }
-    }
-
 public:
     NamedVector() = default;
     NamedVector(NamedVector<T> &&other) = default;
 
     template<typename ... _Args>
     void emplace_back(_Args && ... __args) {
-        emplace_back_named("", std::forward<_Args>(__args) ...);
-    }
-
-    template<typename ... _Args>
-    void emplace_back_named(std::string name, _Args && ... __args) {
-        add_name(name);
         elements.emplace_back(std::forward<_Args>(__args) ...);
     }
 
-    void push_back(const T &element, std::string name = "") {
-        add_name(name);
+    void push_back(const T &element) {
         elements.push_back(element);
+    }
+
+    void set_name(int index, const std::string &name) {
+        if (index >= names.size()) {
+            if (name.empty()) {
+                // All unspecified names are empty by default.
+                return;
+            }
+            names.resize(index + 1, "");
+        }
+        names[index] = name;
     }
 
     T &operator[](int index) {
@@ -196,7 +186,12 @@ public:
     }
 
     std::string get_name(int index) const {
-        return _has_names ? names[index] : "";
+        if (index < names.size()) {
+            return names[index];
+        } else {
+            // All unspecified names are empty by default.
+            return "";
+        }
     }
 
     int size() const {
@@ -205,14 +200,10 @@ public:
 
     void reserve(int capacity) {
         elements.reserve(capacity);
-
-        if (_has_names) {
-            names.reserve(capacity);
-        }
     }
 
     bool has_names() const {
-        return _has_names;
+        return !names.empty();
     }
 
     typename std::vector<T>::reference back() {
@@ -242,9 +233,6 @@ public:
 
     void resize(int count, T value) {
         elements.resize(count, value);
-        if (_has_names) {
-            names.resize(count, "");
-        }
     }
 };
 }
