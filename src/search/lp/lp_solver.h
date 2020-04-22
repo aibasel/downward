@@ -1,9 +1,9 @@
 #ifndef LP_LP_SOLVER_H
 #define LP_LP_SOLVER_H
 
+#include "../utils/collections.h"
 #include "../utils/language.h"
 #include "../utils/system.h"
-#include "../utils/collections.h"
 
 #include <functional>
 #include <memory>

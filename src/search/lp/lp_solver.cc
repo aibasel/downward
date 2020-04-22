@@ -21,8 +21,8 @@
 #endif
 
 #include <cassert>
-#include <numeric>
 #include <iostream>
+#include <numeric>
 
 using namespace std;
 using utils::ExitCode;
