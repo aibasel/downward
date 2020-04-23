@@ -97,7 +97,7 @@ protected:
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
     explicit StubbornSets(const options::Options &opts);
-    ~StubbornSets();
+    virtual ~StubbornSets();
 
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 
