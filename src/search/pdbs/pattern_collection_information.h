@@ -16,15 +16,18 @@ namespace pdbs {
   Ownership of the information is shared between the creators of this class
   (usually PatternCollectionGenerators), the class itself, and its users
   (consumers of pattern collections like heuristics).
+
+  TODO: this should probably re-use PatternInformation and it could also act
+  as an interface for ownership transfer rather than sharing it.
 */
 class PatternCollectionInformation {
     TaskProxy task_proxy;
     std::shared_ptr<PatternCollection> patterns;
     std::shared_ptr<PDBCollection> pdbs;
-    std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
+    std::shared_ptr<std::vector<PatternClique>> pattern_cliques;
 
     void create_pdbs_if_missing();
-    void create_max_additive_subsets_if_missing();
+    void create_pattern_cliques_if_missing();
 
     bool information_is_valid() const;
 public:
@@ -34,12 +37,16 @@ public:
     ~PatternCollectionInformation() = default;
 
     void set_pdbs(const std::shared_ptr<PDBCollection> &pdbs);
-    void set_max_additive_subsets(
-        const std::shared_ptr<MaxAdditivePDBSubsets> &max_additive_subsets);
+    void set_pattern_cliques(
+        const std::shared_ptr<std::vector<PatternClique>> &pattern_cliques);
 
-    std::shared_ptr<PatternCollection> get_patterns();
+    TaskProxy get_task_proxy() const {
+        return task_proxy;
+    }
+
+    std::shared_ptr<PatternCollection> get_patterns() const;
     std::shared_ptr<PDBCollection> get_pdbs();
-    std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets();
+    std::shared_ptr<std::vector<PatternClique>> get_pattern_cliques();
 };
 }
 

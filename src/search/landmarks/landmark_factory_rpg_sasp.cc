@@ -304,7 +304,7 @@ static string get_predicate_for_fact(const VariablesProxy &variables,
     if (predicate_pos == 0 || paren_pos == string::npos) {
         cerr << "error: cannot extract predicate from fact: "
              << fact_name << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     return string(fact_name.begin() + predicate_pos, fact_name.begin() + paren_pos);
 }
@@ -435,7 +435,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
             // relaxed plan that propositions are achieved (in lvl_var) and operators
             // applied (in lvl_ops).
             vector<vector<int>> lvl_var;
-            vector<unordered_map<FactPair, int>> lvl_op;
+            vector<utils::HashMap<FactPair, int>> lvl_op;
             compute_predecessor_information(task_proxy, exploration, bp, lvl_var, lvl_op);
             // Use this information to determine all operators that can possibly achieve bp
             // for the first time, and collect any precondition propositions that all such
@@ -458,7 +458,6 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
                 if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
                     found_disj_lm_and_order(task_proxy, preconditions, *bp, EdgeType::greedy_necessary);
                 }
-
         }
     }
     add_lm_forward_orders();
@@ -501,7 +500,6 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
             if (!domain_connectivity(initial_state, lmk, exclude))
                 found_simple_lm_and_order(FactPair(lmk.var, value), *lmp, EdgeType::natural);
         }
-
 }
 
 bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
@@ -580,11 +578,10 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
             if (insert)
                 lmp->forward_orders.insert(fact);
         }
-
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
-    for (LandmarkNode *node : lm_graph->get_nodes()) {
+    for (auto &node : lm_graph->get_nodes()) {
         for (const auto &node2_pair : node->forward_orders) {
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
@@ -621,5 +618,5 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         return make_shared<LandmarkFactoryRpgSasp>(opts);
 }
 
-static PluginShared<LandmarkFactory> _plugin("lm_rhw", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_rhw", _parse);
 }

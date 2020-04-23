@@ -17,12 +17,10 @@ class SearchNode {
     const StateRegistry &state_registry;
     StateID state_id;
     SearchNodeInfo &info;
-    OperatorCost cost_type;
 public:
     SearchNode(const StateRegistry &state_registry,
                StateID state_id,
-               SearchNodeInfo &info,
-               OperatorCost cost_type);
+               SearchNodeInfo &info);
 
     StateID get_state_id() const {
         return state_id;
@@ -39,11 +37,14 @@ public:
 
     void open_initial();
     void open(const SearchNode &parent_node,
-              const OperatorProxy &parent_op);
+              const OperatorProxy &parent_op,
+              int adjusted_cost);
     void reopen(const SearchNode &parent_node,
-                const OperatorProxy &parent_op);
+                const OperatorProxy &parent_op,
+                int adjusted_cost);
     void update_parent(const SearchNode &parent_node,
-                       const OperatorProxy &parent_op);
+                       const OperatorProxy &parent_op,
+                       int adjusted_cost);
     void close();
     void mark_as_dead_end();
 
@@ -55,9 +56,8 @@ class SearchSpace {
     PerStateInformation<SearchNodeInfo> search_node_infos;
 
     StateRegistry &state_registry;
-    OperatorCost cost_type;
 public:
-    SearchSpace(StateRegistry &state_registry, OperatorCost cost_type);
+    explicit SearchSpace(StateRegistry &state_registry);
 
     SearchNode get_node(const GlobalState &state);
     void trace_path(const GlobalState &goal_state,

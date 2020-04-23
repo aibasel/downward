@@ -1,18 +1,28 @@
 #ifndef OPTIONS_DOC_PRINTER_H
 #define OPTIONS_DOC_PRINTER_H
 
+#include "registries.h"
+
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace options {
 struct PluginInfo;
+class Registry;
 
 class DocPrinter {
-    virtual void print_category(const std::string &plugin_type_name, const std::string &synopsis);
+    virtual void print_category(const std::string &plugin_type_name,
+                                const std::string &synopsis,
+                                const std::string &predefinition_key,
+                                const std::string &alias);
+    virtual void print_section(const std::string &group, const std::vector<PluginInfo> &infos);
     virtual void print_plugin(const std::string &name, const PluginInfo &info);
 
 protected:
     std::ostream &os;
+    Registry &registry;
+
 
     virtual void print_synopsis(const PluginInfo &info) = 0;
     virtual void print_usage(const std::string &name, const PluginInfo &info) = 0;
@@ -22,10 +32,12 @@ protected:
     virtual void print_properties(const PluginInfo &info) = 0;
     virtual void print_category_header(const std::string &category_name) = 0;
     virtual void print_category_synopsis(const std::string &synopsis) = 0;
+    virtual void print_category_predefinitions(
+        const std::string &predefinition_key, const std::string &alias) = 0;
     virtual void print_category_footer() = 0;
 
 public:
-    explicit DocPrinter(std::ostream &out);
+    DocPrinter(std::ostream &out, Registry &registry);
     virtual ~DocPrinter();
 
     void print_all();
@@ -43,10 +55,12 @@ protected:
     virtual void print_properties(const PluginInfo &info) override;
     virtual void print_category_header(const std::string &category_name) override;
     virtual void print_category_synopsis(const std::string &synopsis) override;
+    virtual void print_category_predefinitions(
+        const std::string &predefinition_key, const std::string &alias) override;
     virtual void print_category_footer() override;
 
 public:
-    explicit Txt2TagsPrinter(std::ostream &out);
+    Txt2TagsPrinter(std::ostream &out, Registry &registry);
 };
 
 
@@ -63,10 +77,12 @@ protected:
     virtual void print_properties(const PluginInfo &info) override;
     virtual void print_category_header(const std::string &category_name) override;
     virtual void print_category_synopsis(const std::string &synopsis) override;
+    virtual void print_category_predefinitions(
+        const std::string &predefinition_key, const std::string &alias) override;
     virtual void print_category_footer() override;
 
 public:
-    PlainPrinter(std::ostream &out, bool print_all = false);
+    PlainPrinter(std::ostream &out, Registry &registry, bool print_all = false);
 };
 }
 

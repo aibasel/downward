@@ -4,6 +4,8 @@
 #include "../global_state.h"
 #include "../task_proxy.h"
 
+#include "../utils/hash.h"
+
 #include <cassert>
 #include <list>
 #include <map>
@@ -51,7 +53,7 @@ public:
     landmark_status status;
     bool is_derived;
 
-    std::unordered_set<FactPair> forward_orders;
+    utils::HashSet<FactPair> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
@@ -130,30 +132,29 @@ using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:
+    using Nodes = std::vector<std::unique_ptr<LandmarkNode>>;
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
-    inline int cost_of_landmarks() const {return landmarks_cost; }
+    inline int cost_of_landmarks() const {return landmarks_cost;}
     void count_costs();
     LandmarkNode *get_lm_for_index(int) const;
-    int get_needed_cost() const {return needed_cost; }
-    int get_reached_cost() const {return reached_cost; }
+    int get_needed_cost() const {return needed_cost;}
+    int get_reached_cost() const {return reached_cost;}
     LandmarkNode *get_landmark(const FactPair &fact) const;
 
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
-    inline const std::set<LandmarkNode *> &get_nodes() const {
+    inline const Nodes &get_nodes() const {
         return nodes;
     }
 
     inline int number_of_landmarks() const {
-        assert(landmarks_count == static_cast<int>(nodes.size()));
-        return landmarks_count;
+        return nodes.size();
     }
 
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
-    LandmarkGraph(const TaskProxy &task_proxy);
-    ~LandmarkGraph() = default;
+    explicit LandmarkGraph(const TaskProxy &task_proxy);
 
     inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
         assert(simple_landmark_exists(a));
@@ -170,7 +171,7 @@ public:
     }
 
     int number_of_disj_landmarks() const {
-        return landmarks_count - (simple_lms_to_nodes.size() + conj_lms);
+        return number_of_landmarks() - (simple_lms_to_nodes.size() + conj_lms);
     }
     int number_of_conj_landmarks() const {
         return conj_lms;
@@ -185,7 +186,7 @@ public:
     LandmarkNode &landmark_add_simple(const FactPair &lm);
     LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);
     LandmarkNode &landmark_add_conjunctive(const std::set<FactPair> &lm);
-    void rm_landmark_node(LandmarkNode *node);
+    void remove_node_if(const std::function<bool (const LandmarkNode &)> &remove_node);
     LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
     void set_landmark_cost(int cost) {
@@ -195,15 +196,14 @@ public:
     void dump(const VariablesProxy &variables) const;
 private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
-    int landmarks_count;
+    void remove_node_occurrences(LandmarkNode *node);
     int conj_lms;
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
-    std::unordered_map<FactPair, LandmarkNode *> simple_lms_to_nodes;
-    std::unordered_map<FactPair, LandmarkNode *> disj_lms_to_nodes;
-    std::set<LandmarkNode *> nodes;
-    std::vector<LandmarkNode *> ordered_nodes;
+    utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
+    utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
+    Nodes nodes;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 };
 }

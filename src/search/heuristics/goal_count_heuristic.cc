@@ -12,9 +12,6 @@ GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
     cout << "Initializing goal count heuristic..." << endl;
 }
 
-GoalCountHeuristic::~GoalCountHeuristic() {
-}
-
 int GoalCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     const State state = convert_global_state(global_state);
     int unsatisfied_goal_count = 0;
@@ -28,7 +25,7 @@ int GoalCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     return unsatisfied_goal_count;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis("Goal count heuristic", "");
     parser.document_language_support("action costs", "ignored by design");
     parser.document_language_support("conditional effects", "supported");
@@ -41,11 +38,11 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new GoalCountHeuristic(opts);
+        return make_shared<GoalCountHeuristic>(opts);
 }
 
 
-static Plugin<Heuristic> _plugin("goalcount", _parse);
+static Plugin<Evaluator> _plugin("goalcount", _parse);
 }

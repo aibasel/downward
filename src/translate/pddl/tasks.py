@@ -1,10 +1,8 @@
-from __future__ import print_function
-
 from . import axioms
 from . import predicates
 
 
-class Task(object):
+class Task:
     def __init__(self, domain_name, task_name, requirements,
                  types, objects, predicates, functions, init, goal,
                  actions, axioms, use_metric):
@@ -58,7 +56,7 @@ class Task(object):
             for axiom in self.axioms:
                 axiom.dump()
 
-class Requirements(object):
+class Requirements:
     def __init__(self, requirements):
         self.requirements = requirements
         for req in requirements:

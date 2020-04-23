@@ -10,6 +10,9 @@
 namespace merge_and_shrink {
 class Labels;
 
+using LabelIter = std::list<int>::iterator;
+using LabelConstIter = std::list<int>::const_iterator;
+
 class LabelGroup {
     /*
       A label group contains a set of locally equivalent labels, possibly of
@@ -56,7 +59,7 @@ public:
 
 class LabelEquivalenceRelation {
     /*
-      This class groups labels together and allows easy acces to the group
+      This class groups labels together and allows easy access to the group
       and position within a group for every label. It is used by the class
       TransitionSystem to group locally equivalent labels. Label groups
       have implicit IDs defined by their index in grouped_labels.
@@ -64,27 +67,26 @@ class LabelEquivalenceRelation {
 
     const Labels &labels;
 
-    /*
-      NOTE: it is somewhat dangerous to use lists inside vectors and storing
-      iterators to these lists, because whenever the vector needs to be
-      resized, these iterators may become invalid. In the constructor, we
-      make sure to reserve enough memory so reallocation is never needed.
-    */
     std::vector<LabelGroup> grouped_labels;
-    // maps each label to its group's ID and its iterator within the group.
+    /* Maps each label to its group's ID (index in grouped_labels) and its
+       iterator within the group. */
     std::vector<std::pair<int, LabelIter>> label_to_positions;
 
     void add_label_to_group(int group_id, int label_no);
 public:
+    LabelEquivalenceRelation(
+        const Labels &labels, const std::vector<std::vector<int>> &label_groups);
     /*
-      Constructs an empty label equivalence relation. It can be filled using
-      the public add_label_group method below.
+      NOTE: we need a custom copy constructor here because we need to fill
+      label_to_positions with correct LabelIter objects that point to the
+      copied LabelGroup objects rather than to those of the given
+      LabelEquivalenceRelation other.
     */
-    explicit LabelEquivalenceRelation(const Labels &labels);
+    LabelEquivalenceRelation(const LabelEquivalenceRelation &other);
 
     /*
       The given label mappings (from label reduction) contain the new label
-      and the old label that were reduced to the new one.
+      and the old labels that were reduced to the new one.
 
       If affected_group_ids is not given, then all old labels must have been
       in the same group before, and the new labels are added to this group.
@@ -95,7 +97,7 @@ public:
     void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         const std::unordered_set<int> *affected_group_ids = nullptr);
-    // Moves all labels from one goup into the other
+    // Moves all labels from one group into the other.
     void move_group_into_group(int from_group_id, int to_group_id);
     int add_label_group(const std::vector<int> &new_labels);
 

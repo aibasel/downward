@@ -64,7 +64,7 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
         cerr << "More than one merge candidate remained after computing all "
             "scores! Did you forget to include a uniquely tie-breaking "
             "scoring function, e.g. total_order or single_random?" << endl;
-        utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
     return merge_candidates.front();
@@ -125,5 +125,5 @@ static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
         return make_shared<MergeSelectorScoreBasedFiltering>(opts);
 }
 
-static options::PluginShared<MergeSelector> _plugin("score_based_filtering", _parse);
+static options::Plugin<MergeSelector> _plugin("score_based_filtering", _parse);
 }

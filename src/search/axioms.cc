@@ -2,6 +2,7 @@
 
 #include "algorithms/int_packer.h"
 #include "task_utils/task_properties.h"
+#include "utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -9,6 +10,44 @@
 #include <vector>
 
 using namespace std;
+
+/*
+  We use a template-based version of the strategy pattern to support both packed
+  and non-packed states (more precisely, int vectors) within the axiom
+  evaluator. This is encapsulated in the following two accessor classes.
+
+  As of this writing (i.e., if this comment is not out of date),
+  PackedStateAccessor is not actually needed because the IntPacker itself
+  already has the correct interface. However, having an explicit accessor helps
+  decouple this code from the interface of IntPacker.
+*/
+
+class VectorStateAccessor {
+public:
+    void set(vector<int> &values, int var, int value) const {
+        values[var] = value;
+    }
+
+    int get(const vector<int> &values, int var) const {
+        return values[var];
+    }
+};
+
+class PackedStateAccessor {
+    const int_packer::IntPacker &state_packer;
+public:
+    explicit PackedStateAccessor(const int_packer::IntPacker &state_packer)
+        : state_packer(state_packer) {
+    }
+
+    void set(PackedStateBin *buffer, int var, int value) const {
+        state_packer.set(buffer, var, value);
+    }
+
+    int get(const PackedStateBin *buffer, int var) const {
+        return state_packer.get(buffer, var);
+    }
+};
 
 AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
     task_has_axioms = task_properties::has_axioms(task_proxy);
@@ -74,8 +113,17 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
 }
 
 // TODO rethink the way this is called: see issue348.
+void AxiomEvaluator::evaluate(vector<int> &state) {
+    evaluate_aux(state, VectorStateAccessor());
+}
+
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                               const int_packer::IntPacker &state_packer) {
+    evaluate_aux(buffer, PackedStateAccessor(state_packer));
+}
+
+template<typename Values, typename Accessor>
+inline void AxiomEvaluator::evaluate_aux(Values &values, const Accessor &accessor) {
     if (!task_has_axioms)
         return;
 
@@ -83,9 +131,9 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
         int default_value = default_values[var_id];
         if (default_value != -1) {
-            state_packer.set(buffer, var_id, default_value);
+            accessor.set(values, var_id, default_value);
         } else {
-            int value = state_packer.get(buffer, var_id);
+            int value = accessor.get(values, var_id);
             queue.push_back(&axiom_literals[var_id][value]);
         }
     }
@@ -107,8 +155,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
             */
             int var_no = rule.effect_var;
             int val = rule.effect_val;
-            if (state_packer.get(buffer, var_no) != val) {
-                state_packer.set(buffer, var_no, val);
+            if (accessor.get(values, var_no) != val) {
+                accessor.set(values, var_no, val);
                 queue.push_back(rule.effect_literal);
             }
         }
@@ -117,15 +165,15 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     for (size_t layer_no = 0; layer_no < nbf_info_by_layer.size(); ++layer_no) {
         // Apply Horn rules.
         while (!queue.empty()) {
-            AxiomLiteral *curr_literal = queue.back();
+            const AxiomLiteral *curr_literal = queue.back();
             queue.pop_back();
             for (size_t i = 0; i < curr_literal->condition_of.size(); ++i) {
                 AxiomRule *rule = curr_literal->condition_of[i];
                 if (--rule->unsatisfied_conditions == 0) {
                     int var_no = rule->effect_var;
                     int val = rule->effect_val;
-                    if (state_packer.get(buffer, var_no) != val) {
-                        state_packer.set(buffer, var_no, val);
+                    if (accessor.get(values, var_no) != val) {
+                        accessor.set(values, var_no, val);
                         queue.push_back(rule->effect_literal);
                     }
                 }
@@ -142,9 +190,11 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                 int var_no = nbf_info[i].var_no;
                 // Verify that variable is derived.
                 assert(default_values[var_no] != -1);
-                if (state_packer.get(buffer, var_no) == default_values[var_no])
+                if (accessor.get(values, var_no) == default_values[var_no])
                     queue.push_back(nbf_info[i].literal);
             }
         }
     }
 }
+
+PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;

@@ -155,9 +155,9 @@ bool LandmarkFactoryZhuGivan::operator_applicable(const OperatorProxy &op,
 }
 
 bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
-    const EffectConditionsProxy &effect_conditions, const PropositionLayer &state) const {
+    const EffectConditionsProxy &effect_conditions, const PropositionLayer &layer) const {
     for (FactProxy effect_condition : effect_conditions)
-        if (!state[effect_condition.get_variable().get_id()][effect_condition.get_value()].reached())
+        if (!layer[effect_condition.get_variable().get_id()][effect_condition.get_value()].reached())
             return false;
     return true;
 }
@@ -225,10 +225,7 @@ static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
     // (old_labels.size() == 0) && (labels.size() >= 1)
     // if old_labels.size() == labels.size(), then labels have not been refined
     // by intersection.
-    if (old_labels.size() != labels.size())
-        return true;
-
-    return false;
+    return old_labels.size() != labels.size();
 }
 
 lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
@@ -324,5 +321,5 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         return make_shared<LandmarkFactoryZhuGivan>(opts);
 }
 
-static PluginShared<LandmarkFactory> _plugin("lm_zg", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_zg", _parse);
 }

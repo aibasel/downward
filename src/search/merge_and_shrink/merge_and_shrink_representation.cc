@@ -60,8 +60,17 @@ int MergeAndShrinkRepresentationLeaf::get_value(const State &state) const {
     return lookup_table[value];
 }
 
+bool MergeAndShrinkRepresentationLeaf::is_total() const {
+    for (int entry : lookup_table) {
+        if (entry == PRUNED_STATE) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void MergeAndShrinkRepresentationLeaf::dump() const {
-    cout << "lookup table: ";
+    cout << "lookup table (leaf): ";
     for (const auto &value : lookup_table) {
         cout << value << ", ";
     }
@@ -122,18 +131,28 @@ int MergeAndShrinkRepresentationMerge::get_value(
     return lookup_table[state1][state2];
 }
 
+bool MergeAndShrinkRepresentationMerge::is_total() const {
+    for (const vector<int> &row : lookup_table) {
+        for (int entry : row) {
+            if (entry == PRUNED_STATE) {
+                return false;
+            }
+        }
+    }
+    return left_child->is_total() && right_child->is_total();
+}
+
 void MergeAndShrinkRepresentationMerge::dump() const {
-    cout << "lookup table: ";
+    cout << "lookup table (merge): " << endl;
     for (const auto &row : lookup_table) {
         for (const auto &value : row) {
             cout << value << ", ";
         }
         cout << endl;
     }
-    cout << endl;
-    cout << "dump left child:" << endl;
+    cout << "left child:" << endl;
     left_child->dump();
-    cout << "dump right child:" << endl;
+    cout << "right child:" << endl;
     right_child->dump();
 }
 }

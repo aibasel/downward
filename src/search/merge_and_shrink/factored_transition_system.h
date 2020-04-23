@@ -6,6 +6,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
@@ -40,6 +44,19 @@ public:
     }
 };
 
+/*
+  NOTE: A "factor" of this factored transition system is identfied by its
+  index as used in the vectors in this class. Since transformations like
+  merging also add and remove factors, not all indices are necessarily
+  associated with factors. This is what the class uses the notion of "active"
+  factors for: an index is active iff there exists a transition system, a
+  merge-and-shrink representation and an distances object in the corresponding
+  vectors.
+
+  TODO: The user of this class has to care more about the notion of active
+  factors as we would like it to be. We should change this and clean up the
+  interface that this class shows to the outside world.
+*/
 class FactoredTransitionSystem {
     std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
@@ -70,9 +87,9 @@ public:
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
-        const bool compute_init_distances,
-        const bool compute_goal_distances,
-        Verbosity verbosity);
+        bool compute_init_distances,
+        bool compute_goal_distances,
+        utils::Verbosity verbosity);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
@@ -106,7 +123,7 @@ public:
     bool apply_abstraction(
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Merge the two factors at index1 and index2.
@@ -114,7 +131,7 @@ public:
     int merge(
         int index1,
         int index2,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Extract the factor at the given index, rendering the FTS invalid.
@@ -124,8 +141,9 @@ public:
 
     void statistics(int index) const;
     void dump(int index) const;
+    void dump() const;
 
-    const TransitionSystem &get_ts(int index) const {
+    const TransitionSystem &get_transition_system(int index) const {
         return *transition_systems[index];
     }
 
@@ -140,6 +158,25 @@ public:
       pruned.
     */
     bool is_factor_solvable(int index) const;
+
+    /*
+      A factor is trivial iff every concrete state is mapped to an abstract
+      goal state, which is equivalent to saying that the corresponding
+      merge-and-shrink representation is a total function and all abstract
+      states are goal states.
+
+      If h is the heuristic for the factor F, then we have:
+          F trivial => h(s) = 0 for all states s.
+
+      Note that a factor being trivial is sufficient but not necessary for
+      its heuristic to be useless. Scenarios of useless heuristics that are
+      not captured include:
+        - All non-goal states are connected to goal states on 0-cost paths.
+        - The only pruned states are unreachable (in this case, we get
+          h(s) = 0 for all reachable states, which is useless in most
+          contexts).
+    */
+    bool is_factor_trivial(int index) const;
 
     int get_num_active_entries() const {
         return num_active_entries;

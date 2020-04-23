@@ -1,7 +1,6 @@
 #ifndef OPTIONS_ANY_H
 #define OPTIONS_ANY_H
 
-#include "../utils/language.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -17,6 +16,9 @@
     - references as values
     - perfect forwarding.
   These features can be added if needed (see boost::any).
+
+  Note that we don't use Boost's version of Any mainly because it would
+  require adding lots of files.
 */
 
 namespace options {
@@ -91,7 +93,7 @@ public:
 
 class BadAnyCast : public std::bad_cast {
 public:
-    virtual const char *what() const NOEXCEPT override {
+    virtual const char *what() const noexcept override {
         return "BadAnyCast: failed conversion using any_cast";
     }
 };

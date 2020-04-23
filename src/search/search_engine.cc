@@ -2,15 +2,15 @@
 
 #include "evaluation_context.h"
 #include "evaluator.h"
-#include "globals.h"
-#include "heuristic.h"
 #include "option_parser.h"
 #include "plugin.h"
 
 #include "algorithms/ordered_set.h"
+#include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
+#include "utils/logging.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -24,30 +24,46 @@ using utils::ExitCode;
 
 class PruningMethod;
 
+successor_generator::SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy) {
+    cout << "Building successor generator..." << flush;
+    int peak_memory_before = utils::get_peak_memory_in_kb();
+    utils::Timer successor_generator_timer;
+    successor_generator::SuccessorGenerator &successor_generator =
+        successor_generator::g_successor_generators[task_proxy];
+    successor_generator_timer.stop();
+    cout << "done! [t=" << utils::g_timer << "]" << endl;
+    int peak_memory_after = utils::get_peak_memory_in_kb();
+    int memory_diff = peak_memory_after - peak_memory_before;
+    cout << "peak memory difference for successor generator creation: "
+         << memory_diff << " KB" << endl
+         << "time for successor generation creation: "
+         << successor_generator_timer << endl;
+    return successor_generator;
+}
+
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
-      state_registry(
-          *task, *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
-      search_space(state_registry,
-                   static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      state_registry(task_proxy),
+      successor_generator(get_successor_generator(task_proxy)),
+      search_space(state_registry),
+      search_progress(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
+      statistics(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
-      max_time(opts.get<double>("max_time")) {
+      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+      max_time(opts.get<double>("max_time")),
+      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
+    task_properties::print_variable_statistics(task_proxy);
 }
 
 SearchEngine::~SearchEngine() {
-}
-
-void SearchEngine::print_statistics() const {
-    cout << "Bytes per state: "
-         << state_registry.get_state_size_in_bytes() << endl;
 }
 
 bool SearchEngine::found_solution() const {
@@ -102,7 +118,7 @@ void SearchEngine::save_plan_if_necessary() {
 }
 
 int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
-    return get_adjusted_action_cost(op, cost_type);
+    return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
 /* TODO: merge this into add_options_to_parser when all search
@@ -134,6 +150,7 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
+    utils::add_verbosity_option_to_parser(parser);
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
@@ -156,38 +173,28 @@ void SearchEngine::add_succ_order_options(OptionParser &parser) {
     utils::add_rng_options(parser);
 }
 
-void print_initial_h_values(const EvaluationContext &eval_context) {
+void print_initial_evaluator_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_evaluator_result(
         [] (const Evaluator *eval, const EvaluationResult &result) {
-        if (eval->is_used_for_reporting_minima()) {
-            eval->report_value_for_initial_state(result);
+            if (eval->is_used_for_reporting_minima()) {
+                eval->report_value_for_initial_state(result);
+            }
         }
-    }
         );
 }
-
 
 static PluginTypePlugin<SearchEngine> _type_plugin(
     "SearchEngine",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
 
-
-ordered_set::OrderedSet<OperatorID> collect_preferred_operators(
+void collect_preferred_operators(
     EvaluationContext &eval_context,
-    const vector<Heuristic *> &preferred_operator_heuristics) {
-    ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
-        /*
-          Unreliable heuristics might consider solvable states as dead
-          ends. We only want preferred operators from finite-value
-          heuristics.
-        */
-        if (!eval_context.is_heuristic_infinite(heuristic)) {
-            for (OperatorID op_id : eval_context.get_preferred_operators(heuristic)) {
-                preferred_operators.insert(op_id);
-            }
+    Evaluator *preferred_operator_evaluator,
+    ordered_set::OrderedSet<OperatorID> &preferred_operators) {
+    if (!eval_context.is_evaluator_value_infinite(preferred_operator_evaluator)) {
+        for (OperatorID op_id : eval_context.get_preferred_operators(preferred_operator_evaluator)) {
+            preferred_operators.insert(op_id);
         }
     }
-    return preferred_operators;
 }

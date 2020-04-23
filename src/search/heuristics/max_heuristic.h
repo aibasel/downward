@@ -8,29 +8,32 @@
 #include <cassert>
 
 namespace max_heuristic {
+using relaxation_heuristic::PropID;
+using relaxation_heuristic::OpID;
+
 using relaxation_heuristic::Proposition;
 using relaxation_heuristic::UnaryOperator;
 
 class HSPMaxHeuristic : public relaxation_heuristic::RelaxationHeuristic {
-    priority_queues::AdaptiveQueue<Proposition *> queue;
+    priority_queues::AdaptiveQueue<PropID> queue;
 
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void relaxed_exploration();
 
-    void enqueue_if_necessary(Proposition *prop, int cost) {
+    void enqueue_if_necessary(PropID prop_id, int cost) {
         assert(cost >= 0);
+        Proposition *prop = get_proposition(prop_id);
         if (prop->cost == -1 || prop->cost > cost) {
             prop->cost = cost;
-            queue.push(cost, prop);
+            queue.push(cost, prop_id);
         }
         assert(prop->cost != -1 && prop->cost <= cost);
     }
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
-    HSPMaxHeuristic(const options::Options &options);
-    ~HSPMaxHeuristic();
+    explicit HSPMaxHeuristic(const options::Options &opts);
 };
 }
 

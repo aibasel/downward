@@ -98,7 +98,7 @@ int VariableOrderFinder::next() {
         return var_no;
     }
     cerr << "Relevance analysis has not been performed." << endl;
-    utils::exit_with(ExitCode::INPUT_ERROR);
+    utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
 
 void dump_variable_order_type(VariableOrderType variable_order_type) {

@@ -29,6 +29,8 @@ namespace operator_counting {
 */
 class ConstraintGenerator {
 public:
+    virtual ~ConstraintGenerator() = default;
+
     /*
       Called upon initialization for the given task. Use this to add permanent
       constraints and perform other initialization. The parameter "infinity"
@@ -36,7 +38,7 @@ public:
       and variable bounds.
     */
     virtual void initialize_constraints(
-        const std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> &task,
         std::vector<lp::LPConstraint> &constraints,
         double infinity);
 

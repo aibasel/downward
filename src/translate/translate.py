@@ -1,17 +1,15 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
+#! /usr/bin/env python3
 
-from __future__ import print_function
 
+import os
 import sys
 import traceback
 
 def python_version_supported():
-    major, minor = sys.version_info[:2]
-    return (major == 2 and minor >= 7) or (major, minor) >= (3, 2)
+    return sys.version_info >= (3, 6)
 
 if not python_version_supported():
-    sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
+    sys.exit("Error: Translator only supports Python >= 3.6.")
 
 
 from collections import defaultdict
@@ -26,6 +24,7 @@ import options
 import pddl
 import pddl_parser
 import sas_tasks
+import signal
 import simplify
 import timers
 import tools
@@ -43,7 +42,11 @@ import variable_order
 
 DEBUG = False
 
-EXIT_MEMORY_ERROR = 100
+
+## For a full list of exit codes, please see driver/returncodes.py. Here,
+## we only list codes that are used by the translator component of the planner.
+TRANSLATE_OUT_OF_MEMORY = 20
+TRANSLATE_OUT_OF_TIME = 21
 
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -82,7 +85,7 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                     val not in condition.get(var)):
                 # Conflicting conditions on this variable: Operator invalid.
                 return None
-            condition[var] = set([val])
+            condition[var] = {val}
 
     def number_of_values(var_vals_pair):
         var, vals = var_vals_pair
@@ -90,19 +93,19 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
 
     for fact in conditions:
         if fact.negated:
-           ## Note  Here we use a different solution than in Sec. 10.6.4
-           ##       of the thesis. Compare the last sentences of the third
-           ##       paragraph of the section.
-           ##       We could do what is written there. As a test case,
-           ##       consider Airport ADL tasks with only one airport, where
-           ##       (occupied ?x) variables are encoded in a single variable,
-           ##       and conditions like (not (occupied ?x)) do occur in
-           ##       preconditions.
-           ##       However, here we avoid introducing new derived predicates
-           ##       by treat the negative precondition as a disjunctive
-           ##       precondition and expanding it by "multiplying out" the
-           ##       possibilities.  This can lead to an exponential blow-up so
-           ##       it would be nice to choose the behaviour as an option.
+            ## Note: here we use a different solution than in Sec. 10.6.4
+            ## of the thesis. Compare the last sentences of the third
+            ## paragraph of the section.
+            ## We could do what is written there. As a test case,
+            ## consider Airport ADL tasks with only one airport, where
+            ## (occupied ?x) variables are encoded in a single variable,
+            ## and conditions like (not (occupied ?x)) do occur in
+            ## preconditions.
+            ## However, here we avoid introducing new derived predicates
+            ## by treat the negative precondition as a disjunctive
+            ## precondition and expanding it by "multiplying out" the
+            ## possibilities.  This can lead to an exponential blow-up so
+            ## it would be nice to choose the behaviour as an option.
             done = False
             new_condition = {}
             atom = pddl.Atom(fact.predicate, fact.args)  # force positive
@@ -437,9 +440,6 @@ def translate_task(strips_to_sas, ranges, translation_key,
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
             actions, axioms, goals)
     init = init + axiom_init
-    #axioms.sort(key=lambda axiom: axiom.name)
-    #for axiom in axioms:
-    #  axiom.dump()
 
     if options.dump_task:
         # Remove init facts that don't occur in strips_to_sas: they're constant.
@@ -557,7 +557,15 @@ def pddl_to_sas(task):
         implied_facts = {}
 
     with timers.timing("Building mutex information", block=True):
-        mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+        if options.use_partial_encoding:
+            mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+        else:
+            # With our current representation, emitting complete mutex
+            # information for the full encoding can incur an
+            # unacceptable (quadratic) blowup in the task representation
+            # size. See issue771 for details.
+            print("using full encoding: between-variable mutex information skipped.")
+            mutex_key = []
 
     with timers.timing("Translating task", block=True):
         sas_task = translate_task(
@@ -590,13 +598,15 @@ def pddl_to_sas(task):
 
 
 def build_mutex_key(strips_to_sas, groups):
+    assert options.use_partial_encoding
     group_keys = []
     for group in groups:
         group_key = []
         for fact in group:
-            if strips_to_sas.get(fact):
-                for var, val in strips_to_sas[fact]:
-                    group_key.append((var, val))
+            represented_by = strips_to_sas.get(fact)
+            if represented_by:
+                assert len(represented_by) == 1
+                group_key.append(represented_by[0])
             else:
                 print("not in strips_to_sas, left out:", fact)
         group_keys.append(group_key)
@@ -651,14 +661,14 @@ def build_implied_facts(strips_to_sas, groups, mutex_groups):
 
 def dump_statistics(sas_task):
     print("Translator variables: %d" % len(sas_task.variables.ranges))
-    print(("Translator derived variables: %d" %
-           len([layer for layer in sas_task.variables.axiom_layers
-                if layer >= 0])))
+    print("Translator derived variables: %d" %
+          len([layer for layer in sas_task.variables.axiom_layers
+               if layer >= 0]))
     print("Translator facts: %d" % sum(sas_task.variables.ranges))
     print("Translator goal facts: %d" % len(sas_task.goal.pairs))
     print("Translator mutex groups: %d" % len(sas_task.mutexes))
-    print(("Translator total mutex groups size: %d" %
-           sum(mutex.get_encoding_size() for mutex in sas_task.mutexes)))
+    print("Translator total mutex groups size: %d" %
+          sum(mutex.get_encoding_size() for mutex in sas_task.mutexes))
     print("Translator operators: %d" % len(sas_task.operators))
     print("Translator axioms: %d" % len(sas_task.axioms))
     print("Translator task size: %d" % sas_task.get_encoding_size())
@@ -690,17 +700,37 @@ def main():
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
-        with open("output.sas", "w") as output_file:
+        with open(options.sas_file, "w") as output_file:
             sas_task.output(output_file)
     print("Done! %s" % timer)
 
 
+def handle_sigxcpu(signum, stackframe):
+    print()
+    print("Translator hit the time limit")
+    # sys.exit() is not safe to be called from within signal handlers, but
+    # os._exit() is.
+    os._exit(TRANSLATE_OUT_OF_TIME)
+
+
 if __name__ == "__main__":
     try:
+        signal.signal(signal.SIGXCPU, handle_sigxcpu)
+    except AttributeError:
+        print("Warning! SIGXCPU is not available on your platform. "
+              "This means that the planner cannot be gracefully terminated "
+              "when using a time limit, which, however, is probably "
+              "supported on your platform anyway.")
+    try:
+        # Reserve about 10 MB of emergency memory.
+        # https://stackoverflow.com/questions/19469608/
+        emergency_memory = b"x" * 10**7
         main()
     except MemoryError:
+        del emergency_memory
+        print()
         print("Translator ran out of memory, traceback:")
         print("=" * 79)
         traceback.print_exc(file=sys.stdout)
         print("=" * 79)
-        sys.exit(EXIT_MEMORY_ERROR)
+        sys.exit(TRANSLATE_OUT_OF_MEMORY)
