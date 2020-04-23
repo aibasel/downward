@@ -3,7 +3,7 @@ import logging
 from downward.reports.absolute import AbsoluteReport
 
 
-class Check(object):
+class Check:
     """
     Compare the attribute values x and y of two runs and check whether
     *min_rel* <= y/x <= *max_rel*. Even if the check fails, only report the
@@ -41,7 +41,7 @@ class RegressionCheckReport(AbsoluteReport):
     Write a table with the regressions. If there are none, no table is generated
     and therefore no output file is written.
     """
-    def __init__(self, baseline, checks, **kwargs):
+    def __init__(self, baseline, checks, result_handler, **kwargs):
         """
         *baseline* must be a global revision identifier.
 
@@ -50,6 +50,7 @@ class RegressionCheckReport(AbsoluteReport):
         AbsoluteReport.__init__(self, **kwargs)
         self.baseline = baseline
         self.checks = checks
+        self.result_handler = result_handler
 
     def _is_baseline_run(self, run):
         return run['global_revision'].startswith(self.baseline)
@@ -59,14 +60,14 @@ class RegressionCheckReport(AbsoluteReport):
         for (domain, problem), runs in self.problem_runs.items():
             runs_base = [run for run in runs if self._is_baseline_run(run)]
             runs_new = [run for run in runs if not self._is_baseline_run(run)]
-            assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new))
+            assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new), self.baseline)
             for base, new in zip(runs_base, runs_new):
-                config = new['config']
+                algo = new['algorithm']
                 for check in self.checks:
                     error = check.get_error(base, new)
                     if error:
                         lines.append('| %(domain)s:%(problem)s '
-                                     '| %(config)s '
+                                     '| %(algo)s '
                                      '| %(error)s |' % locals())
         if lines:
             # Add header.
@@ -77,7 +78,8 @@ class RegressionCheckReport(AbsoluteReport):
         AbsoluteReport.write(self)
         markup = self.get_markup()
         if markup:
-            print 'There has been a regression:'
-            print
-            print markup
-            logging.critical('Regression found.')
+            print('There has been a regression:')
+            print()
+            print(markup)
+        success = not markup
+        self.result_handler(success)

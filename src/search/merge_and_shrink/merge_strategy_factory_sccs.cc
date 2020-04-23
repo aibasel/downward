@@ -32,8 +32,7 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
-    : MergeStrategyFactory(),
-      order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
+    : order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
       merge_tree_factory(nullptr),
       merge_selector(nullptr) {
     if (options.contains("merge_tree")) {
@@ -169,14 +168,15 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Merge strategy SSCs",
         "This merge strategy implements the algorithm described in the paper "
-        + utils::format_paper_reference(
+        + utils::format_conference_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
             "Proceedings of the 26th International Conference on Planning and "
             "Scheduling (ICAPS 2016)",
             "2358-2366",
-            "AAAI Press 2016") +
+            "AAAI Press",
+            "2016") +
         "In a nutshell, it computes the maximal SCCs of the causal graph, "
         "obtaining a partitioning of the task's variables. Every such "
         "partition is then merged individually, using the specified fallback "
@@ -219,7 +219,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
             cerr << "You have to specify exactly one of the options merge_tree "
                 "and merge_selector!" << endl;
-            utils::exit_with(utils::ExitCode::INPUT_ERROR);
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
         return nullptr;
     } else {
@@ -227,5 +227,5 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin("merge_sccs", _parse);
+static options::Plugin<MergeStrategyFactory> _plugin("merge_sccs", _parse);
 }

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Test module for Fast Downward driver script. Run with
 
@@ -9,10 +7,12 @@ Test module for Fast Downward driver script. Run with
 import os
 import subprocess
 
+import pytest
+
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
 from . import limits
-from .returncodes import EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE
+from . import returncodes
 from .util import REPO_ROOT_DIR, find_domain_filename
 
 
@@ -20,7 +20,7 @@ def translate():
     """Create translated task."""
     cmd = ["./fast-downward.py", "--translate",
            "misc/tests/benchmarks/gripper/prob01.pddl"]
-    assert subprocess.check_call(cmd, cwd=REPO_ROOT_DIR) == 0
+    subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
 def cleanup():
@@ -31,40 +31,47 @@ def cleanup():
 def run_driver(cmd):
     cleanup()
     translate()
-    return subprocess.call(cmd, cwd=REPO_ROOT_DIR)
+    return subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
 def test_commandline_args():
     for description, cmd in EXAMPLES:
         cmd = [x.strip('"') for x in cmd]
-        assert run_driver(cmd) == 0
+        run_driver(cmd)
 
 
 def test_aliases():
     for alias, config in ALIASES.items():
         cmd = ["./fast-downward.py", "--alias", alias, "output.sas"]
-        assert run_driver(cmd) == 0
+        run_driver(cmd)
+
+
+def test_show_aliases():
+    run_driver(["./fast-downward.py", "--show-aliases"])
 
 
 def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
         cmd = ["./fast-downward.py", "--portfolio", portfolio,
                "--search-time-limit", "30m", "output.sas"]
-        assert run_driver(cmd) in [
-            EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE]
+        run_driver(cmd)
 
 
-def test_time_limits():
-    for internal, external, expected_soft, expected_hard in [
-            (1.5, 10, 2, 3),
-            (1.0, 10, 1, 2),
-            (0.5, 10, 1, 2),
-            (0.5, 1, 1, 1),
-            (0.5, float("inf"), 1, 2),
-            (0.5, 0, 0, 0),
-            ]:
-        assert (limits._get_soft_and_hard_time_limits(internal, external) ==
-            (expected_soft, expected_hard))
+def test_hard_time_limit():
+    def preexec_fn():
+        limits.set_time_limit(10)
+
+    cmd = [
+        "./fast-downward.py", "--translate", "--translate-time-limit",
+        "10s", "misc/tests/benchmarks/gripper/prob01.pddl"]
+    subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+
+    cmd = [
+        "./fast-downward.py", "--translate", "--translate-time-limit",
+        "20s", "misc/tests/benchmarks/gripper/prob01.pddl"]
+    with pytest.raises(subprocess.CalledProcessError) as exception_info:
+        subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+    assert exception_info.value.returncode == returncodes.DRIVER_INPUT_ERROR
 
 
 def test_automatic_domain_file_name_computation():

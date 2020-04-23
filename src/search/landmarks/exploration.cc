@@ -31,8 +31,8 @@ namespace landmarks {
 */
 
 // Construction and destruction
-Exploration::Exploration(const options::Options &opts)
-    : Heuristic(opts),
+Exploration::Exploration(const TaskProxy &task_proxy)
+    : task_proxy(task_proxy),
       did_write_overflow_warning(false) {
     cout << "Initializing Exploration..." << endl;
 
@@ -68,9 +68,6 @@ Exploration::Exploration(const options::Options &opts)
         for (ExProposition *pre : op.precondition)
             pre->precondition_of.push_back(&op);
     }
-    // Set flag that before heuristic values can be used, computation
-    // (relaxed exploration) needs to be done
-    heuristic_recomputation_needed = true;
 }
 
 void Exploration::increase_cost(int &cost, int amount) {
@@ -87,36 +84,10 @@ void Exploration::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
-        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
-             << MAX_COST_VALUE << endl;
-        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
+        cout << "WARNING: overflow on landmark exploration h^add! Costs clamped to "
              << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;
     }
-}
-
-void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
-    //Clear previous additional goals.
-    for (ExProposition *prop : termination_propositions) {
-        propositions[prop->fact.var][prop->fact.value].is_termination_condition = false;
-    }
-    termination_propositions.clear();
-    for (FactProxy goal_fact : task_proxy.get_goals()) {
-        int var_id = goal_fact.get_variable().get_id();
-        int value = goal_fact.get_value();
-        propositions[var_id][value].is_termination_condition = true;
-        termination_propositions.push_back(&propositions[var_id][value]);
-    }
-    // Build new additional goal propositions.
-    for (const FactPair &fact : add_goals) {
-        int var_id = fact.var;
-        int value = fact.value;
-        if (!propositions[var_id][value].is_goal_condition) {
-            propositions[var_id][value].is_termination_condition = true;
-            termination_propositions.push_back(&propositions[var_id][value]);
-        }
-    }
-    heuristic_recomputation_needed = true;
 }
 
 void Exploration::build_unary_operators(const OperatorProxy &op) {
@@ -228,7 +199,7 @@ void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
                 int depth = unary_op->is_induced_by_axiom(task_proxy)
-                            ? unary_op->depth : unary_op->depth + 1;
+                    ? unary_op->depth : unary_op->depth + 1;
                 if (use_h_max)
                     enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
                                          depth, unary_op, use_h_max);
@@ -263,63 +234,8 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
                prop->h_add_cost <= cost);
 }
 
-
-int Exploration::compute_hsp_add_heuristic() {
-    int total_cost = 0;
-    for (const ExProposition *goal : goal_propositions) {
-        int prop_cost = goal->h_add_cost;
-        if (prop_cost == -1)
-            return DEAD_END;
-        increase_cost(total_cost, prop_cost);
-    }
-    return total_cost;
-}
-
-
-int Exploration::compute_ff_heuristic(const State &state) {
-    int h_add_heuristic = compute_hsp_add_heuristic();
-    if (h_add_heuristic == DEAD_END) {
-        return DEAD_END;
-    } else {
-        relaxed_plan.clear();
-        // Collecting the relaxed plan also marks helpful actions as preferred.
-        for (ExProposition *goal : goal_propositions)
-            collect_relaxed_plan(goal, relaxed_plan, state);
-        int cost = 0;
-        for (int op_or_axiom_id : relaxed_plan)
-            cost += get_operator_or_axiom(task_proxy, op_or_axiom_id).get_cost();
-        return cost;
-    }
-}
-
-void Exploration::collect_relaxed_plan(ExProposition *goal,
-                                       RelaxedPlan &relaxed_plan, const State &state) {
-    if (!goal->marked) { // Only consider each subgoal once.
-        goal->marked = true;
-        ExUnaryOperator *unary_op = goal->reached_by;
-        if (unary_op) { // We have not yet chained back to a start node.
-            for (ExProposition *pre : unary_op->precondition)
-                collect_relaxed_plan(pre, relaxed_plan, state);
-            int op_or_axiom_id = unary_op->op_or_axiom_id;
-            bool added_to_relaxed_plan = false;
-            /* Using axioms in the relaxed plan actually improves
-               performance in many domains. We should look into this. */
-            added_to_relaxed_plan = relaxed_plan.insert(op_or_axiom_id).second;
-
-            assert(unary_op->depth != -1);
-            if (added_to_relaxed_plan
-                && unary_op->h_add_cost == unary_op->base_cost
-                && unary_op->depth == 0
-                && !unary_op->is_induced_by_axiom(task_proxy)) {
-                set_preferred(get_operator_or_axiom(task_proxy, op_or_axiom_id));
-                assert(task_properties::is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
-            }
-        }
-    }
-}
-
 void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
-                                                     vector<unordered_map<FactPair, int>> &lvl_op,
+                                                     vector<utils::HashMap<FactPair, int>> &lvl_op,
                                                      bool level_out,
                                                      const vector<FactPair> &excluded_props,
                                                      const unordered_set<int> &excluded_op_ids,
@@ -362,89 +278,5 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
                 lvl_op[op.op_or_axiom_id].find(effect)->second = new_lvl;
         }
     }
-    heuristic_recomputation_needed = true;
-}
-
-void Exploration::prepare_heuristic_computation(const State &state) {
-    setup_exploration_queue(state, false);
-    relaxed_exploration(false, false);
-    heuristic_recomputation_needed = false;
-}
-
-int Exploration::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
-    if (heuristic_recomputation_needed) {
-        prepare_heuristic_computation(state);
-    }
-    return compute_ff_heuristic(state);
-}
-
-
-void Exploration::collect_helpful_actions(
-    ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state) {
-    // This is the same as collect_relaxed_plan, except that preferred operators
-    // are saved in exported_ops rather than preferred_operators
-
-    ExUnaryOperator *unary_op = goal->reached_by;
-    if (unary_op) { // We have not yet chained back to a start node.
-        for (ExProposition *pre : unary_op->precondition)
-            collect_helpful_actions(pre, relaxed_plan, state);
-        int op_or_axiom_id = unary_op->op_or_axiom_id;
-        bool added_to_relaxed_plan = false;
-        if (!unary_op->is_induced_by_axiom(task_proxy)) {
-            added_to_relaxed_plan = relaxed_plan.insert(op_or_axiom_id).second;
-        }
-        if (added_to_relaxed_plan
-            && unary_op->h_add_cost == unary_op->base_cost
-            && unary_op->depth == 0
-            && !unary_op->is_induced_by_axiom(task_proxy)) {
-            exported_op_ids.push_back(op_or_axiom_id); // This is a helpful action.
-            assert(task_properties::is_applicable(get_operator_or_axiom(task_proxy, op_or_axiom_id), state));
-        }
-    }
-}
-
-// TODO: this should be in landmark class
-static bool is_landmark(vector<FactPair> &landmarks, const FactPair &fact) {
-    // TODO: change landmarks to set or unordered_set
-    return find(landmarks.begin(), landmarks.end(), fact) != landmarks.end();
-}
-
-bool Exploration::plan_for_disj(
-    vector<FactPair> &landmarks, const State &state) {
-    relaxed_plan.clear();
-    // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
-    if (!landmarks.empty()) {
-        // search for quickest achievable landmark leaves
-        if (heuristic_recomputation_needed) {
-            prepare_heuristic_computation(state);
-        }
-        int min_cost = numeric_limits<int>::max();
-        ExProposition *target = nullptr;
-        for (ExProposition *prop : termination_propositions) {
-            const int prop_cost = prop->h_add_cost;
-            if (prop_cost == -1 && is_landmark(landmarks, prop->fact)) {
-                return false; // dead end
-            }
-            if (prop_cost < min_cost && is_landmark(landmarks, prop->fact)) {
-                target = prop;
-                min_cost = prop_cost;
-            }
-        }
-        assert(target);
-        assert(exported_op_ids.empty());
-        collect_helpful_actions(target, relaxed_plan, state);
-    } else {
-        // search for original goals of the task
-        if (heuristic_recomputation_needed) {
-            prepare_heuristic_computation(state);
-        }
-        for (ExProposition *prop : goal_propositions) {
-            if (prop->h_add_cost == -1)
-                return false;  // dead end
-            collect_helpful_actions(prop, relaxed_plan, state);
-        }
-    }
-    return true;
 }
 }

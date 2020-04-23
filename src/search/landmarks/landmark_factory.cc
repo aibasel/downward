@@ -9,8 +9,6 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../tasks/cost_adapted_task.h"
-
 #include "../utils/memory.h"
 #include "../utils/timer.h"
 
@@ -21,19 +19,20 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
-    : reasonable_orders(opts.get<bool>("reasonable_orders")),
+    : lm_graph_task(nullptr),
+      reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
-      no_orders(opts.get<bool>("no_orders")),
-      lm_cost_type(static_cast<OperatorCost>(opts.get_enum("lm_cost_type"))) {
+      no_orders(opts.get<bool>("no_orders")) {
 }
 /*
   Note: To allow reusing landmark graphs, we use the following temporary
   solution.
 
   Landmark factories cache the first landmark graph they compute, so
-  each call to this function returns the same graph.
+  each call to this function returns the same graph. Asking for landmark graphs
+  of different tasks is an error and will exit with SEARCH_UNSUPPORTED.
 
   If you want to compute different landmark graphs for different
   Exploration objects, you have to use separate landmark factories.
@@ -47,23 +46,27 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   as the TaskProxy object passed to this function.
 */
 shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
-    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
-    if (lm_graph)
+    const shared_ptr<AbstractTask> &task) {
+    if (lm_graph) {
+        if (lm_graph_task != task.get()) {
+            cerr << "LandmarkFactory was asked to compute landmark graphs for "
+                 << "two different tasks. This is currently not supported."
+                 << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+        }
         return lm_graph;
+    }
+    lm_graph_task = task.get();
     utils::Timer lm_generation_timer;
 
-    Options options;
-    options.set<shared_ptr<AbstractTask>>("transform", task);
-    options.set<int>("cost_type", lm_cost_type);
-    shared_ptr<AbstractTask> cost_adapted_task =
-        make_shared<tasks::CostAdaptedTask>(options);
-    TaskProxy cost_adapted_task_proxy(*cost_adapted_task);
+    TaskProxy task_proxy(*task);
 
-    lm_graph = make_shared<LandmarkGraph>(cost_adapted_task_proxy);
-    generate_landmarks(cost_adapted_task, exploration);
+    lm_graph = make_shared<LandmarkGraph>(task_proxy);
+    Exploration exploration(task_proxy);
+    generate_landmarks(task, exploration);
 
     // the following replaces the old "build_lm_graph"
-    generate(cost_adapted_task_proxy, exploration);
+    generate(task_proxy, exploration);
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
@@ -121,7 +124,7 @@ bool LandmarkFactory::is_landmark_precondition(const OperatorProxy &op,
                                                const LandmarkNode *lmp) const {
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
-    assert(lmp != NULL);
+    assert(lmp);
     for (FactProxy pre : op.get_preconditions()) {
         for (const FactPair &lm_fact : lmp->facts) {
             if (pre.get_pair() == lm_fact)
@@ -134,7 +137,7 @@ bool LandmarkFactory::is_landmark_precondition(const OperatorProxy &op,
 bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
                                             Exploration &exploration,
                                             vector<vector<int>> &lvl_var,
-                                            vector<unordered_map<FactPair, int>> &lvl_op,
+                                            vector<utils::HashMap<FactPair, int>> &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
@@ -185,7 +188,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
 }
 
 void LandmarkFactory::add_operator_and_propositions_to_list(const OperatorProxy &op,
-                                                            vector<unordered_map<FactPair, int>> &lvl_op) const {
+                                                            vector<utils::HashMap<FactPair, int>> &lvl_op) const {
     int op_or_axiom_id = get_operator_or_axiom_id(op);
     for (EffectProxy effect : op.get_effects()) {
         lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
@@ -202,7 +205,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
     if (landmark.in_goal)
         return true;
     vector<vector<int>> lvl_var;
-    vector<unordered_map<FactPair, int>> lvl_op;
+    vector<utils::HashMap<FactPair, int>> lvl_op;
     // Initialize lvl_var to numeric_limits<int>::max()
     VariablesProxy variables = task_proxy.get_variables();
     lvl_var.resize(variables.size());
@@ -471,7 +474,7 @@ void LandmarkFactory::approximate_reasonable_orders(
     */
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
-    for (LandmarkNode *node_p : lm_graph->get_nodes()) {
+    for (auto &node_p : lm_graph->get_nodes()) {
         if (node_p->disjunctive)
             continue;
 
@@ -479,10 +482,10 @@ void LandmarkFactory::approximate_reasonable_orders(
             return;
 
         if (!obedient_orders && node_p->is_goal()) {
-            for (LandmarkNode *node2_p : lm_graph->get_nodes()) {
+            for (auto &node2_p : lm_graph->get_nodes()) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;
-                if (interferes(task_proxy, node2_p, node_p)) {
+                if (interferes(task_proxy, node2_p.get(), node_p.get())) {
                     edge_add(*node2_p, *node_p, EdgeType::reasonable);
                 }
             }
@@ -500,7 +503,7 @@ void LandmarkFactory::approximate_reasonable_orders(
                         if (parent.disjunctive)
                             continue;
                         if ((edge >= EdgeType::natural || (obedient_orders && edge == EdgeType::reasonable)) &&
-                            &parent != node_p) {  // find predecessors or parent and collect in
+                            &parent != node_p.get()) {  // find predecessors or parent and collect in
                             // "interesting nodes"
                             interesting_nodes.insert(&parent);
                             collect_ancestors(interesting_nodes, parent,
@@ -512,9 +515,9 @@ void LandmarkFactory::approximate_reasonable_orders(
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
             for (LandmarkNode *node : interesting_nodes) {
-                if (node == node_p || node->disjunctive)
+                if (node == node_p.get() || node->disjunctive)
                     continue;
-                if (interferes(task_proxy, node, node_p)) {
+                if (interferes(task_proxy, node, node_p.get())) {
                     if (!obedient_orders)
                         edge_add(*node, *node_p, EdgeType::reasonable);
                     else
@@ -543,7 +546,6 @@ void LandmarkFactory::collect_ancestors(
                 closed_nodes.insert(&parent);
                 result.insert(&parent);
             }
-
     }
     while (!open_nodes.empty()) {
         LandmarkNode &node2 = *(open_nodes.front());
@@ -604,78 +606,42 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
 }
 
 void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration) {
-    int number_of_noncausal_landmarks = 0;
-    bool change = true;
-    VariablesProxy variables = task_proxy.get_variables();
-    while (change) {
-        change = false;
-        for (LandmarkNode *landmark_node : lm_graph->get_nodes()) {
-            if (!is_causal_landmark(task_proxy, exploration, *landmark_node)) {
-                cout << "Discarding non-causal landmark: ";
-                lm_graph->dump_node(variables, landmark_node);
-                lm_graph->rm_landmark_node(landmark_node);
-                ++number_of_noncausal_landmarks;
-                change = true;
-                break;
-            }
-        }
-    }
-    cout << "Discarded " << number_of_noncausal_landmarks
+    int num_all_landmarks = lm_graph->number_of_landmarks();
+    lm_graph->remove_node_if(
+        [this, &task_proxy, &exploration](const LandmarkNode &node) {
+            return !is_causal_landmark(task_proxy, exploration, node);
+        });
+    int num_causal_landmarks = lm_graph->number_of_landmarks();
+    cout << "Discarded " << num_all_landmarks - num_causal_landmarks
          << " non-causal landmarks" << endl;
 }
 
 void LandmarkFactory::discard_disjunctive_landmarks() {
-    /* Using disjunctive landmarks during landmark generation can be
-    beneficial even if we don't want to use disunctive landmarks during s
-    search. This function deletes all disjunctive landmarks that have been
-    found. (Note: this is implemented inefficiently because "nodes" contains
-    pointers, not the actual nodes. We should change that.)
+    /*
+      Using disjunctive landmarks during landmark generation can be beneficial
+      even if we don't want to use disjunctive landmarks during search. So we
+      allow removing disjunctive landmarks after landmark generation.
     */
-    if (lm_graph->number_of_disj_landmarks() == 0)
-        return;
-    cout << "Discarding " << lm_graph->number_of_disj_landmarks()
-         << " disjunctive landmarks" << endl;
-    bool change = true;
-    while (change) {
-        change = false;
-        for (LandmarkNode *node : lm_graph->get_nodes()) {
-            if (node->disjunctive) {
-                lm_graph->rm_landmark_node(node);
-                change = true;
-                break;
-            }
-        }
+    if (lm_graph->number_of_disj_landmarks() > 0) {
+        cout << "Discarding " << lm_graph->number_of_disj_landmarks()
+             << " disjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.disjunctive;});
     }
-    // [Malte] Commented out the following assertions because
-    // the old methods for this are no longer available.
-    // assert(lm_graph->number_of_disj_landmarks() == 0);
-    // assert(disj_lms_to_nodes.size() == 0);
 }
 
 void LandmarkFactory::discard_conjunctive_landmarks() {
-    if (lm_graph->number_of_conj_landmarks() == 0)
-        return;
-    cout << "Discarding " << lm_graph->number_of_conj_landmarks()
-         << " conjunctive landmarks" << endl;
-    bool change = true;
-    while (change) {
-        change = false;
-        for (LandmarkNode *node : lm_graph->get_nodes()) {
-            if (node->conjunctive) {
-                lm_graph->rm_landmark_node(node);
-                change = true;
-                break;
-            }
-        }
+    if (lm_graph->number_of_conj_landmarks() > 0) {
+        cout << "Discarding " << lm_graph->number_of_conj_landmarks()
+             << " conjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.conjunctive;});
     }
-    // [Malte] Commented out the following assertion because
-    // the old method for this is no longer available.
-    // assert(number_of_conj_landmarks() == 0);
 }
 
 void LandmarkFactory::discard_all_orderings() {
     cout << "Removing all orderings." << endl;
-    for (LandmarkNode *node : lm_graph->get_nodes()) {
+    for (auto &node : lm_graph->get_nodes()) {
         node->children.clear();
         node->parents.clear();
     }
@@ -684,8 +650,8 @@ void LandmarkFactory::discard_all_orderings() {
 void LandmarkFactory::mk_acyclic_graph() {
     unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
-    for (LandmarkNode *node : lm_graph->get_nodes()) {
-        if (acyclic_node_set.find(node) == acyclic_node_set.end())
+    for (auto &node : lm_graph->get_nodes()) {
+        if (acyclic_node_set.find(node.get()) == acyclic_node_set.end())
             removed_edges += loop_acyclic_graph(*node, acyclic_node_set);
     }
     // [Malte] Commented out the following assertion because
@@ -784,7 +750,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
 
 int LandmarkFactory::calculate_lms_cost() const {
     int result = 0;
-    for (LandmarkNode *lmn : lm_graph->get_nodes())
+    for (auto &lmn : lm_graph->get_nodes())
         result += lmn->min_cost;
 
     return result;
@@ -795,7 +761,7 @@ void LandmarkFactory::compute_predecessor_information(
     Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
-    vector<unordered_map<FactPair, int>> &lvl_op) {
+    vector<utils::HashMap<FactPair, int>> &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
@@ -805,7 +771,7 @@ void LandmarkFactory::compute_predecessor_information(
 
 void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
     VariablesProxy variables = task_proxy.get_variables();
-    for (LandmarkNode *lmn : lm_graph->get_nodes()) {
+    for (auto &lmn : lm_graph->get_nodes()) {
         for (const FactPair &lm_fact : lmn->facts) {
             const vector<int> &ops = lm_graph->get_operators_including_eff(lm_fact);
             lmn->possible_achievers.insert(ops.begin(), ops.end());
@@ -815,13 +781,13 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
         }
 
         vector<vector<int>> lvl_var;
-        vector<unordered_map<FactPair, int>> lvl_op;
-        compute_predecessor_information(task_proxy, exploration, lmn, lvl_var, lvl_op);
+        vector<utils::HashMap<FactPair, int>> lvl_op;
+        compute_predecessor_information(task_proxy, exploration, lmn.get(), lvl_var, lvl_op);
 
         for (int op_or_axom_id : lmn->possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
-            if (_possibly_reaches_lm(op, lvl_var, lmn)) {
+            if (_possibly_reaches_lm(op, lvl_var, lmn.get())) {
                 lmn->first_achievers.insert(op_or_axom_id);
             }
         }
@@ -844,17 +810,6 @@ void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("no_orders",
                             "discard all orderings",
                             "false");
-
-    /* TODO: This option should go away anyway once the landmark code
-       is properly cleaned up. */
-    vector<string> cost_types;
-    cost_types.push_back("NORMAL");
-    cost_types.push_back("ONE");
-    cost_types.push_back("PLUSONE");
-    parser.add_enum_option("lm_cost_type",
-                           cost_types,
-                           "landmark action cost adjustment",
-                           "NORMAL");
 }
 
 
@@ -863,6 +818,6 @@ static PluginTypePlugin<LandmarkFactory> _type_plugin(
     "A landmark factory specification is either a newly created "
     "instance or a landmark factory that has been defined previously. "
     "This page describes how one can specify a new landmark factory instance. "
-    "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.\n\n"
-    "**Warning:** See OptionCaveats for using cost types with Landmarks");
+    "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.",
+    "landmarks");
 }

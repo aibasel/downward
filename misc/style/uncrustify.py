@@ -75,10 +75,10 @@ def _run_uncrustify(config_file, filenames):
                 ["uncrustify", "--version"]).strip()
             raise util.Abort(
                 "uncrustify exited with {returncode}. Are you using an "
-                "outdated version? We require uncrustify 0.61, you "
+                "outdated version? We require uncrustify 0.67, you "
                 "have {uncrustify_version}. Please consult "
                 "www.fast-downward.org/ForDevelopers/Uncrustify".format(
-                **locals()))
+                    **locals()))
 
 
 def _run_diff(oldfile, newfile):
@@ -184,7 +184,6 @@ def uncrustify(ui, repo, *patterns, **options):
 
     paths = [path for path in _get_files(repo, patterns, options)
              if path.endswith((".cc", ".h"))]
-
 
     uncrustify_cfg = repo.pathto(".uncrustify.cfg")
     relpaths = [repo.pathto(path) for path in paths]

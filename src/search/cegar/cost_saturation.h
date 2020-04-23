@@ -1,6 +1,7 @@
 #ifndef CEGAR_COST_SATURATION_H
 #define CEGAR_COST_SATURATION_H
 
+#include "refinement_hierarchy.h"
 #include "split_selector.h"
 
 #include <memory>
@@ -8,6 +9,7 @@
 
 namespace utils {
 class CountdownTimer;
+class Duration;
 class RandomNumberGenerator;
 }
 
@@ -30,6 +32,7 @@ class CostSaturation {
     const bool use_general_costs;
     const PickSplit pick_split;
     utils::RandomNumberGenerator &rng;
+    const bool debug;
 
     std::vector<CartesianHeuristicFunction> heuristic_functions;
     std::vector<int> remaining_costs;
@@ -46,17 +49,18 @@ class CostSaturation {
         const std::vector<std::shared_ptr<AbstractTask>> &subtasks,
         const utils::CountdownTimer &timer,
         std::function<bool()> should_abort);
-    void print_statistics() const;
+    void print_statistics(utils::Duration init_time) const;
 
 public:
     CostSaturation(
-        std::vector<std::shared_ptr<SubtaskGenerator>> &subtask_generators,
+        const std::vector<std::shared_ptr<SubtaskGenerator>> &subtask_generators,
         int max_states,
         int max_non_looping_transitions,
         double max_time,
         bool use_general_costs,
         PickSplit pick_split,
-        utils::RandomNumberGenerator &rng);
+        utils::RandomNumberGenerator &rng,
+        bool debug);
 
     std::vector<CartesianHeuristicFunction> generate_heuristic_functions(
         const std::shared_ptr<AbstractTask> &task);

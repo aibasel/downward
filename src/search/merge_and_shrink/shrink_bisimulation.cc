@@ -94,8 +94,7 @@ struct Signature {
 
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
-    : ShrinkStrategy(),
-      greedy(opts.get<bool>("greedy")),
+    : greedy(opts.get<bool>("greedy")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
@@ -107,7 +106,7 @@ int ShrinkBisimulation::initialize_groups(
 
        Each other group holds all states with one particular h value.
 
-       Note that some goal state *must* exist because irrelevant und
+       Note that some goal state *must* exist because irrelevant and
        unreachable states are pruned before we shrink and we never
        perform the shrinking if that pruning shows that the problem is
        unsolvable.
@@ -184,7 +183,7 @@ void ShrinkBisimulation::compute_signatures(
                                                 threshold=1),
             label_reduction=exact(before_shrinking=true,before_merging=false)))
     */
-    for (const GroupAndTransitions &gat : ts) {
+    for (GroupAndTransitions gat : ts) {
         const LabelGroup &label_group = gat.label_group;
         const vector<Transition> &transitions = gat.transitions;
         for (const Transition &transition : transitions) {
@@ -379,14 +378,15 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Bismulation based shrink strategy",
         "This shrink strategy implements the algorithm described in"
-        " the paper:" + utils::format_paper_reference(
+        " the paper:" + utils::format_conference_reference(
             {"Raz Nissim", "Joerg Hoffmann", "Malte Helmert"},
             "Computing Perfect Heuristics in Polynomial Time: On Bisimulation"
             " and Merge-and-Shrink Abstractions in Optimal Planning.",
-            "http://ai.cs.unibas.ch/papers/nissim-et-al-ijcai2011.pdf",
+            "https://ai.dmi.unibas.ch/papers/nissim-et-al-ijcai2011.pdf",
             "Proceedings of the Twenty-Second International Joint Conference"
             " on Artificial Intelligence (IJCAI 2011)",
             "1983-1990",
+            "AAAI Press",
             "2011"));
     parser.document_note(
         "shrink_bisimulation(greedy=true)",
@@ -430,5 +430,5 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         return make_shared<ShrinkBisimulation>(opts);
 }
 
-static PluginShared<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
+static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
 }

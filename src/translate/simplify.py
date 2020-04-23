@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """This module contains a function for simplifying tasks in
 finite-domain representation (SASTask). Usage:
 
@@ -25,9 +23,6 @@ removed, too. (See also the docstring of
 filter_unreachable_propositions.)
 """
 
-
-from __future__ import print_function
-
 from collections import defaultdict
 from itertools import count
 
@@ -42,7 +37,7 @@ DEBUG = False
 # working with int pairs is awkward.
 
 
-class DomainTransitionGraph(object):
+class DomainTransitionGraph:
     """Domain transition graphs.
 
     Attributes:
@@ -170,7 +165,7 @@ class TriviallySolvable(Exception):
 class DoesNothing(Exception):
     pass
 
-class VarValueRenaming(object):
+class VarValueRenaming:
     def __init__(self):
         self.new_var_nos = []   # indexed by old var_no
         self.new_values = []    # indexed by old var_no and old value
@@ -392,7 +387,7 @@ class VarValueRenaming(object):
         new_var, new_value = self.translate_pair(axiom.effect)
         # If the new_value is always false, then the condition must
         # have been impossible.
-        assert not new_value is always_false
+        assert new_value is not always_false
         if new_value is always_true:
             raise DoesNothing
         axiom.effect = new_var, new_value

@@ -15,18 +15,18 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "Open lists",
         "In most cases, lazy greedy best first search uses "
         "an alternation open list with one queue for each evaluator. "
-        "If preferred operator heuristics are used, it adds an "
+        "If preferred operator evaluators are used, it adds an "
         "extra queue for each of these evaluators that includes "
         "only the nodes that are generated with a preferred operator. "
-        "If only one evaluator and no preferred operator heuristic is used, "
+        "If only one evaluator and no preferred operator evaluator is used, "
         "the search does not use an alternation open list "
         "but a standard open list with only one queue.");
     parser.document_note(
         "Equivalent statements using general lazy search",
-        "\n```\n--heuristic h2=eval2\n"
+        "\n```\n--evaluator h2=eval2\n"
         "--search lazy_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "```\n--evaluator h1=eval1 --heuristic h2=eval2\n"
         "--search lazy(alt([single(h1), single(h1, pref_only=true), single(h2),\n"
         "                  single(h2, pref_only=true)], boost=100),\n"
         "              preferred=h2)\n```\n"
@@ -35,9 +35,9 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--search lazy(alt([single(eval1), single(eval2)], boost=100))\n```\n"
         "------------------------------------------------------------\n"
-        "```\n--heuristic h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
+        "```\n--evaluator h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
         "is equivalent to\n"
-        "```\n--heuristic h1=eval1\n"
+        "```\n--evaluator h1=eval1\n"
         "--search lazy(alt([single(h1), single(h1, pref_only=true)], boost=1000),\n"
         "              preferred=h1)\n```\n"
         "------------------------------------------------------------\n"
@@ -46,10 +46,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "```\n--search lazy(single(eval1))\n```\n",
         true);
 
-    parser.add_list_option<Evaluator *>("evals", "evaluators");
-    parser.add_list_option<Heuristic *>(
+    parser.add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+    parser.add_list_option<shared_ptr<Evaluator>>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these evaluators", "[]");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
     parser.add_option<int>(
@@ -66,11 +66,11 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         engine = make_shared<lazy_search::LazySearch>(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
+        vector<shared_ptr<Evaluator>> preferred_list = opts.get_list<shared_ptr<Evaluator>>("preferred");
+        engine->set_preferred_operator_evaluators(preferred_list);
     }
     return engine;
 }
 
-static PluginShared<SearchEngine> _plugin("lazy_greedy", _parse);
+static Plugin<SearchEngine> _plugin("lazy_greedy", _parse);
 }

@@ -13,7 +13,7 @@ class RandomNumberGenerator;
 
 namespace potentials {
 using SamplesToFunctionsMap =
-          std::unordered_map<State, std::unique_ptr<PotentialFunction>>;
+    utils::HashMap<State, std::unique_ptr<PotentialFunction>>;
 
 /*
   Factory class that finds diverse potential functions.

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import argparse
 import sys
 
@@ -27,6 +25,9 @@ def parse_args():
         "generation and obtain only binary variables. The limit is "
         "needed for grounded input files that would otherwise produce "
         "too many candidates.")
+    argparser.add_argument(
+        "--sas-file", default="output.sas",
+        help="path to the SAS output file (default: %(default)s)")
     argparser.add_argument(
         "--invariant-generation-max-time", default=300, type=int,
         help="max time for invariant generation (default: %(default)ds)")

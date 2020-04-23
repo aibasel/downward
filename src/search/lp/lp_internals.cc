@@ -33,6 +33,11 @@
 #include <OsiGrbSolverInterface.hpp>
 #endif
 
+#ifdef COIN_HAS_SPX
+#include <OsiSpxSolverInterface.hpp>
+#include <spxout.h>
+#endif
+
 #ifdef __GNUG__
 #pragma GCC diagnostic pop
 #endif
@@ -57,8 +62,7 @@ static const string CPLEX_ERROR_OOM_DEVEX = "CPX0000  Not enough memory for deve
 */
 class ErrorCatchingCoinMessageHandler : public CoinMessageHandler {
 public:
-    ErrorCatchingCoinMessageHandler()
-        : CoinMessageHandler() {
+    ErrorCatchingCoinMessageHandler() {
         setLogLevel(0);
     }
 
@@ -80,9 +84,9 @@ public:
         } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
                    messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
                    messageBuffer_ == CPLEX_ERROR_OOM_DEVEX) {
-            utils::exit_with(ExitCode::OUT_OF_MEMORY);
+            utils::exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
         } else {
-            utils::exit_with(ExitCode::CRITICAL_ERROR);
+            utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
         }
     }
 };
@@ -117,6 +121,17 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         missing_symbol = "COIN_HAS_GRB";
 #endif
         break;
+    case LPSolverType::SOPLEX:
+#ifdef COIN_HAS_SPX
+        {
+            OsiSpxSolverInterface *spx_solver = new OsiSpxSolverInterface;
+            spx_solver->getSPxOut()->setVerbosity(soplex::SPxOut::ERROR);
+            lp_solver = spx_solver;
+        }
+#else
+        missing_symbol = "COIN_HAS_SPX";
+#endif
+        break;
     default:
         ABORT("Unknown LP solver type.");
     }
@@ -125,7 +140,7 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         return unique_ptr<OsiSolverInterface>(lp_solver);
     } else {
         cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
-        utils::exit_with(ExitCode::CRITICAL_ERROR);
+        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
 
@@ -134,7 +149,7 @@ void handle_coin_error(const CoinError &error) {
     cerr << "Coin threw exception: " << error.message() << endl
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
-    utils::exit_with(ExitCode::CRITICAL_ERROR);
+    utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
 }
 }
 

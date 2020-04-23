@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import itertools
 
-class NegativeClause(object):
+class NegativeClause:
     # disjunction of inequalities
     def __init__(self, parts):
         self.parts = parts
@@ -26,7 +22,7 @@ class NegativeClause(object):
         return NegativeClause(new_parts)
 
 
-class Assignment(object):
+class Assignment:
     def __init__(self, equalities):
         self.equalities = tuple(equalities)
         # represents a conjunction of expressions ?x = ?y or ?x = d
@@ -44,8 +40,8 @@ class Assignment(object):
     def _compute_equivalence_classes(self):
         eq_classes = {}
         for (v1, v2) in self.equalities:
-            c1 = eq_classes.setdefault(v1, set([v1]))
-            c2 = eq_classes.setdefault(v2, set([v2]))
+            c1 = eq_classes.setdefault(v1, {v1})
+            c2 = eq_classes.setdefault(v2, {v2})
             if c1 is not c2:
                 if len(c2) > len(c1):
                     v1, c1, v2, c2 = v2, c2, v1, c1
@@ -89,7 +85,7 @@ class Assignment(object):
         return self.mapping
 
 
-class ConstraintSystem(object):
+class ConstraintSystem:
     def __init__(self):
         self.combinatorial_assignments = []
         self.neg_clauses = []

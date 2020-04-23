@@ -29,10 +29,10 @@ int main(int, char **) {
     benchmark("nothing", NUM_ITERATIONS, [] () {});
     benchmark("get_peak_memory_in_kb",
               NUM_ITERATIONS,
-              [&]() {get_peak_memory_in_kb(); });
+              [&]() {get_peak_memory_in_kb();});
     benchmark("sbrk",
               NUM_ITERATIONS,
-              [&]() {sbrk(0); });
+              [&]() {sbrk(0);});
     cout << endl;
     return 0;
 }

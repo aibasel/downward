@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
+#! /usr/bin/env python3
 
 """
 Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
@@ -7,12 +6,9 @@ Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
 The file bitbucket-pipelines.yml shows how to install the dependencies.
 """
 
-from __future__ import print_function
 
-import glob
+import errno
 import os
-import pipes
-import re
 import subprocess
 import sys
 
@@ -20,43 +16,26 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 SRC_DIR = os.path.join(REPO, "src")
 
-
-def check_translator_style():
-    output = subprocess.check_output([
-        "./reindent.py", "--dryrun", "--recurse", "--verbose",
-        os.path.join(SRC_DIR, "translate")], cwd=DIR).decode("utf-8")
-    ok = True
-    for line in output.splitlines():
-        match = re.match("^checking (.+) ... changed.$", line)
-        if match:
-            ok = False
-            print('Wrong format detected in %s. '
-                  'Please run "./reindent.py -r ../src/translate"' %
-                  match.group(1))
-    return ok
+import utils
 
 
-def _run_pyflakes(path):
-    python_files = []
-    for root, dirs, files in os.walk(path):
-        python_files.extend([
-            os.path.join(root, f) for f in files
-            if f.endswith(".py") and f != "__init__.py"])
+def check_python_style():
     try:
-        return subprocess.check_call(["pyflakes"] + python_files) == 0
+        subprocess.check_call([
+            "flake8",
+            # https://flake8.pycqa.org/en/latest/user/error-codes.html
+            "--extend-ignore", "E128,E129,E131,E261,E266,E301,E302,E305,E306,E402,E501,F401",
+            "--exclude", "run-clang-tidy.py,txt2tags.py,.tox",
+            "src/translate/", "driver/", "misc/", "*.py"], cwd=REPO)
     except OSError as err:
-        if err.errno == 2:
-            print(
-                "Python style checks need pyflakes. Please install it "
-                "with \"sudo apt-get install pyflakes\".")
+        if err.errno == errno.ENOENT:
+            sys.exit('Please install flake8 ("sudo apt install flake8").')
         else:
             raise
-
-def check_translator_pyflakes():
-    return _run_pyflakes(os.path.join(SRC_DIR, "translate"))
-
-def check_driver_pyflakes():
-    return _run_pyflakes(os.path.join(REPO, "driver"))
+    except subprocess.CalledProcessError:
+        return False
+    else:
+        return True
 
 
 def check_include_guard_convention():
@@ -68,9 +47,8 @@ def check_cc_files():
     Currently, we only check that there is no "std::" in .cc files.
     """
     search_dir = os.path.join(SRC_DIR, "search")
-    cc_files = (
-        glob.glob(os.path.join(search_dir, "*.cc")) +
-        glob.glob(os.path.join(search_dir, "*", "*.cc")))
+    cc_files = utils.get_src_files(search_dir, (".cc",))
+    print("Checking style of {} *.cc files".format(len(cc_files)))
     return subprocess.call(["./check-cc-file.py"] + cc_files, cwd=DIR) == 0
 
 
@@ -81,18 +59,20 @@ def check_cplusplus_style():
     ignored by mercurial). We therefore find the source files manually
     and call uncrustify directly.
     """
-    src_files = []
-    for root, dirs, files in os.walk(REPO):
-        for ignore_dir in ["builds", "data"]:
-            if ignore_dir in dirs:
-                dirs.remove(ignore_dir)
-        src_files.extend([
-            os.path.join(root, file)
-            for file in files if file.endswith((".h", ".cc"))])
+    src_files = utils.get_src_files(
+        REPO, (".h", ".cc"), ignore_dirs=["builds", "data", "venv"])
+    print("Checking {} files with uncrustify".format(len(src_files)))
     config_file = os.path.join(REPO, ".uncrustify.cfg")
-    returncode = subprocess.call(
-        ["uncrustify", "-q", "-c", config_file, "--check"] + src_files,
-        cwd=DIR, stdout=subprocess.PIPE)
+    executable = "uncrustify"
+    try:
+        returncode = subprocess.call(
+            [executable, "-q", "-c", config_file, "--check"] + src_files,
+            cwd=DIR, stdout=subprocess.PIPE)
+    except OSError as err:
+        if err.errno == errno.ENOENT:
+            sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
+        else:
+            raise
     if returncode != 0:
         print(
             'Run "hg uncrustify" to fix the coding style in the above '
@@ -100,47 +80,12 @@ def check_cplusplus_style():
     return returncode == 0
 
 
-def check_search_code_with_clang_tidy():
-    # clang-tidy needs the CMake files.
-    build_dir = os.path.join(REPO, "builds", "clang-tidy")
-    if not os.path.exists(build_dir):
-        os.makedirs(build_dir)
-    subprocess.check_call(
-        ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "../../src"], cwd=build_dir)
-    checks = [
-        "performance-for-range-copy",
-        "performance-implicit-cast-in-loop",
-        "performance-inefficient-vector-operation",
-        ]
-    cmd = [
-        "./run-clang-tidy.py",
-        "-quiet",
-        "-p", build_dir,
-        "-clang-tidy-binary=clang-tidy-5.0",
-        # Include all non-system headers (.*) except the ones from search/ext/.
-        "-header-filter=.*,-tree.hh,-tree_util.hh",
-        "-checks=-*," + ",".join(checks)]
-    print("Running clang-tidy (enabled checks: {})".format(", ".join(checks)))
-    try:
-        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
-        print("Failed to run clang-tidy-5.0. Is it on the PATH?")
-        return False
-    errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
-    for error in errors:
-        print(error)
-    if errors:
-        fix_cmd = cmd + [
-            "-clang-apply-replacements-binary=clang-apply-replacements-5.0", "-fix"]
-        print("You may be able to fix these issues with the following command: " +
-            " ".join(pipes.quote(x) for x in fix_cmd))
-    return not errors
-
-
 def main():
-    tests = [test for test_name, test in sorted(globals().items())
-             if test_name.startswith("check_")]
-    results = [test() for test in tests]
+    results = []
+    for test_name, test in sorted(globals().items()):
+        if test_name.startswith("check_"):
+            print("Running {}".format(test_name))
+            results.append(test())
     if all(results):
         print("All style checks passed")
     else:
