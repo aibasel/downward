@@ -101,10 +101,11 @@ void StubbornSetsQueue::enqueue_sibling_consumers(const FactPair &fact) {
     }
 }
 
-void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
+FactPair StubbornSetsQueue::select_fact(
+    const vector<FactPair> &facts, const State &state) const {
     FactPair fact = FactPair::no_fact;
     if (variable_ordering == VariableOrdering::FAST_DOWNWARD) {
-        fact = find_unsatisfied_precondition(op, state);
+        fact = stubborn_sets::find_unsatisfied_condition(facts, state);
     } else if (variable_ordering == VariableOrdering::MINIMIZE_SS) {
         /*
           If the precondition contains an unsatisfied fact whose producers are
@@ -112,21 +113,19 @@ void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
           Otherwise, choose the first unsatisfied precondition and enqueue its
           producers.
         */
-        for (const FactPair &condition : sorted_op_preconditions[op]) {
+        for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
                 if (marked_producers[condition.var][condition.value]) {
-                    return;
+                    return FactPair::no_fact;
                 } else if (fact == FactPair::no_fact) {
                     fact = condition;
                 }
             }
         }
-        assert(fact != FactPair::no_fact);
         assert(!marked_producers[fact.var][fact.value]);
-        enqueue_producers(fact);
     } else if (variable_ordering == VariableOrdering::STATIC_SMALL) {
         int min_count = numeric_limits<int>::max();
-        for (const FactPair &condition : sorted_op_preconditions[op]) {
+        for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
                 int count = achievers[condition.var][condition.value].size();
                 if (count < min_count) {
@@ -137,7 +136,7 @@ void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
         }
     } else if (variable_ordering == VariableOrdering::DYNAMIC_SMALL) {
         int min_count = numeric_limits<int>::max();
-        for (const FactPair &condition : sorted_op_preconditions[op]) {
+        for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
                 const vector<int> &ops = achievers[condition.var][condition.value];
                 int count = count_if(ops.begin(), ops.end(), [this](int op) {return !stubborn[op];});
@@ -151,7 +150,14 @@ void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
         ABORT("Unknown variable ordering");
     }
     assert(fact != FactPair::no_fact);
-    enqueue_producers(fact);
+    return fact;
+}
+
+void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
+    FactPair fact = select_fact(sorted_op_preconditions[op], state);
+    if (fact != FactPair::no_fact) {
+        enqueue_producers(fact);
+    }
 }
 
 /*
@@ -191,36 +197,7 @@ void StubbornSetsQueue::initialize_stubborn_set(const State &state) {
              MARKED_VALUES_NONE);
     }
 
-    FactPair unsatisfied_goal = FactPair::no_fact;
-    if (variable_ordering == VariableOrdering::FAST_DOWNWARD ||
-        variable_ordering == VariableOrdering::MINIMIZE_SS) {
-        unsatisfied_goal = find_unsatisfied_goal(state);
-    } else if (variable_ordering == VariableOrdering::STATIC_SMALL) {
-        int min_count = numeric_limits<int>::max();
-        for (const FactPair &condition : sorted_goals) {
-            if (state[condition.var].get_value() != condition.value) {
-                int count = achievers[condition.var][condition.value].size();
-                if (count < min_count) {
-                    unsatisfied_goal = condition;
-                    min_count = count;
-                }
-            }
-        }
-    } else if (variable_ordering == VariableOrdering::DYNAMIC_SMALL) {
-        int min_count = numeric_limits<int>::max();
-        for (const FactPair &condition : sorted_goals) {
-            if (state[condition.var].get_value() != condition.value) {
-                const vector<int> &ops = achievers[condition.var][condition.value];
-                int count = count_if(ops.begin(), ops.end(), [this](int op) {return !stubborn[op];});
-                if (count < min_count) {
-                    unsatisfied_goal = condition;
-                    min_count = count;
-                }
-            }
-        }
-    } else {
-        ABORT("Unknown variable ordering");
-    }
+    FactPair unsatisfied_goal = select_fact(sorted_goals, state);
     assert(unsatisfied_goal != FactPair::no_fact);
     enqueue_producers(unsatisfied_goal);
 
