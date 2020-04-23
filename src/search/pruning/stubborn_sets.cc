@@ -171,6 +171,10 @@ void StubbornSets::print_statistics() const {
          << num_unpruned_successors_generated << endl
          << "total successors after partial-order reduction: "
          << num_pruned_successors_generated << endl;
+    double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
+        static_cast<double>(num_pruned_successors_generated) /
+        static_cast<double>(num_unpruned_successors_generated));
+    cout << "Pruning ratio: " << pruning_ratio << endl;
     cout << "Time for pruning operators: " << *timer << endl;
 }
 
