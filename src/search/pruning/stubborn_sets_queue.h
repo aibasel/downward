@@ -4,10 +4,28 @@
 #include "stubborn_sets.h"
 
 namespace stubborn_sets_queue {
+static const int MARKED_VALUES_NONE = -2;
+static const int MARKED_VALUES_ALL = -1;
+
+enum class VariableOrdering {
+    FAST_DOWNWARD,
+    MINIMIZE_SS,
+    STATIC_SMALL,
+    DYNAMIC_SMALL,
+};
+
 class StubbornSetsQueue : public stubborn_sets::StubbornSets {
+    const bool mark_variables;
+    const VariableOrdering variable_ordering;
+
+    // Operator IDs that contain the fact in their precondition.
     std::vector<std::vector<std::vector<int>>> consumers;
+    // Marked producer and consumer facts.
     std::vector<std::vector<bool>> marked_producers;
     std::vector<std::vector<bool>> marked_consumers;
+    // Marked producer and consumer variables (marked iff whole domain is marked).
+    std::vector<int> marked_producer_variables;
+    std::vector<int> marked_consumer_variables;
     std::vector<FactPair> producer_queue;
     std::vector<FactPair> consumer_queue;
 
