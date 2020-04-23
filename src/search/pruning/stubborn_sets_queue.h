@@ -35,6 +35,7 @@ class StubbornSetsQueue : public stubborn_sets::StubbornSets {
     void enqueue_consumers(const FactPair &fact);
     void enqueue_sibling_consumers(const FactPair &fact);
     void enqueue_sibling_producers(const FactPair &fact);
+    FactPair select_fact(const std::vector<FactPair> &facts, const State &state) const;
     void enqueue_nes(int op, const State &state);
     void enqueue_interferers(int op);
 protected:
