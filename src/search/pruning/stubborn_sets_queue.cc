@@ -10,7 +10,9 @@ using namespace std;
 
 namespace stubborn_sets_queue {
 StubbornSetsQueue::StubbornSetsQueue(const options::Options &opts)
-    : StubbornSets(opts) {
+    : StubbornSets(opts),
+      mark_variables(opts.get<bool>("mark_variables")),
+      variable_ordering(static_cast<VariableOrdering>(opts.get_enum("variable_ordering"))) {
 }
 
 void StubbornSetsQueue::initialize(const shared_ptr<AbstractTask> &task) {
@@ -23,6 +25,11 @@ void StubbornSetsQueue::initialize(const shared_ptr<AbstractTask> &task) {
         marked_producers.emplace_back(var.get_domain_size(), false);
         marked_consumers.emplace_back(var.get_domain_size(), false);
     }
+    if (mark_variables) {
+        int num_variables = task_proxy.get_variables().size();
+        marked_producer_variables.resize(num_variables, MARKED_VALUES_NONE);
+        marked_consumer_variables.resize(num_variables, MARKED_VALUES_NONE);
+    }
 
     compute_consumers(task_proxy);
 }
@@ -33,9 +40,9 @@ void StubbornSetsQueue::compute_consumers(const TaskProxy &task_proxy) {
             return vector<vector<int>>(var.get_domain_size());
         });
 
-    for (const OperatorProxy op : task_proxy.get_operators()) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
         int op_id = op.get_id();
-        for (const FactProxy fact_proxy : op.get_preconditions()) {
+        for (FactProxy fact_proxy : op.get_preconditions()) {
             FactPair fact = fact_proxy.get_pair();
             consumers[fact.var][fact.value].push_back(op_id);
         }
@@ -61,47 +68,108 @@ void StubbornSetsQueue::enqueue_consumers(const FactPair &fact) {
 }
 
 void StubbornSetsQueue::enqueue_sibling_producers(const FactPair &fact) {
-    int domain_size = consumers[fact.var].size();
-    for (int value = 0; value < domain_size; ++value) {
-        if (value != fact.value) {
-            enqueue_producers(FactPair(fact.var, value));
+    int dummy_mark = MARKED_VALUES_NONE;
+    int &mark = mark_variables ? marked_producer_variables[fact.var] : dummy_mark;
+    if (mark == MARKED_VALUES_NONE) {
+        int domain_size = consumers[fact.var].size();
+        for (int value = 0; value < domain_size; ++value) {
+            if (value != fact.value) {
+                enqueue_producers(FactPair(fact.var, value));
+            }
         }
+        mark = fact.value;
+    } else if (mark != MARKED_VALUES_ALL && mark != fact.value) {
+        enqueue_producers(FactPair(fact.var, mark));
+        mark = MARKED_VALUES_ALL;
     }
 }
 
 void StubbornSetsQueue::enqueue_sibling_consumers(const FactPair &fact) {
-    int domain_size = consumers[fact.var].size();
-    for (int value = 0; value < domain_size; ++value) {
-        if (value != fact.value) {
-            enqueue_consumers(FactPair(fact.var, value));
+    int dummy_mark = MARKED_VALUES_NONE;
+    int &mark = mark_variables ? marked_consumer_variables[fact.var] : dummy_mark;
+    if (mark == MARKED_VALUES_NONE) {
+        int domain_size = consumers[fact.var].size();
+        for (int value = 0; value < domain_size; ++value) {
+            if (value != fact.value) {
+                enqueue_consumers(FactPair(fact.var, value));
+            }
         }
+        mark = fact.value;
+    } else if (mark != MARKED_VALUES_ALL && mark != fact.value) {
+        enqueue_consumers(FactPair(fact.var, mark));
+        mark = MARKED_VALUES_ALL;
     }
 }
 
 void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
     FactPair fact = FactPair::no_fact;
-    for (const FactPair &condition : sorted_op_preconditions[op]) {
-        if (state[condition.var].get_value() != condition.value) {
-            if (marked_producers[condition.var][condition.value]) {
-                return;
-            } else if (fact == FactPair::no_fact) {
-                fact = condition;
+    if (variable_ordering == VariableOrdering::FAST_DOWNWARD) {
+        fact = find_unsatisfied_precondition(op, state);
+    } else if (variable_ordering == VariableOrdering::MINIMIZE_SS) {
+        /*
+          If the precondition contains an unsatisfied fact whose producers are
+          already marked, choose it. In this case, there's nothing else to do.
+          Otherwise, choose the first unsatisfied precondition and enqueue its
+          producers.
+        */
+        for (const FactPair &condition : sorted_op_preconditions[op]) {
+            if (state[condition.var].get_value() != condition.value) {
+                if (marked_producers[condition.var][condition.value]) {
+                    return;
+                } else if (fact == FactPair::no_fact) {
+                    fact = condition;
+                }
             }
         }
+        assert(fact != FactPair::no_fact);
+        assert(!marked_producers[fact.var][fact.value]);
+        enqueue_producers(fact);
+    } else if (variable_ordering == VariableOrdering::STATIC_SMALL) {
+        int min_count = numeric_limits<int>::max();
+        for (const FactPair &condition : sorted_op_preconditions[op]) {
+            if (state[condition.var].get_value() != condition.value) {
+                int count = achievers[condition.var][condition.value].size();
+                if (count < min_count) {
+                    fact = condition;
+                    min_count = count;
+                }
+            }
+        }
+    } else if (variable_ordering == VariableOrdering::DYNAMIC_SMALL) {
+        int min_count = numeric_limits<int>::max();
+        for (const FactPair &condition : sorted_op_preconditions[op]) {
+            if (state[condition.var].get_value() != condition.value) {
+                const vector<int> &ops = achievers[condition.var][condition.value];
+                int count = count_if(ops.begin(), ops.end(), [this](int op) {return !stubborn[op];});
+                if (count < min_count) {
+                    fact = condition;
+                    min_count = count;
+                }
+            }
+        }
+    } else {
+        ABORT("Unknown variable ordering");
     }
-
     assert(fact != FactPair::no_fact);
-    assert(!marked_producers[fact.var][fact.value]);
-    marked_producers[fact.var][fact.value] = true;
-    producer_queue.push_back(fact);
+    enqueue_producers(fact);
 }
 
+/*
+  Enqueue an operator o2 iff op interferes with o2.
+
+  o1 interferes strongly with o2 iff o1 disables o2, or o2 disables o1, or o1 and o2 conflict.
+  o1 interferes weakly with o2 iff o1 disables o2, or o1 and o2 conflict.
+*/
 void StubbornSetsQueue::enqueue_interferers(int op) {
     for (const FactPair &fact : sorted_op_preconditions[op]) {
+        // Enqueue operators that disable op.
         enqueue_sibling_producers(fact);
     }
     for (const FactPair &fact : sorted_op_effects[op]) {
+        // Enqueue operators that conflict with op.
         enqueue_sibling_producers(fact);
+
+        // Enqueue operators that op disables.
         enqueue_sibling_consumers(fact);
     }
 }
@@ -109,14 +177,50 @@ void StubbornSetsQueue::enqueue_interferers(int op) {
 void StubbornSetsQueue::initialize_stubborn_set(const State &state) {
     assert(producer_queue.empty());
     assert(consumer_queue.empty());
+    // Reset datastructures from previous call.
     for (auto &facts : marked_producers) {
         fill(facts.begin(), facts.end(), false);
     }
     for (auto &facts : marked_consumers) {
         fill(facts.begin(), facts.end(), false);
     }
+    if (mark_variables) {
+        fill(marked_producer_variables.begin(), marked_producer_variables.end(),
+             MARKED_VALUES_NONE);
+        fill(marked_consumer_variables.begin(), marked_consumer_variables.end(),
+             MARKED_VALUES_NONE);
+    }
 
-    FactPair unsatisfied_goal = find_unsatisfied_goal(state);
+    FactPair unsatisfied_goal = FactPair::no_fact;
+    if (variable_ordering == VariableOrdering::FAST_DOWNWARD ||
+        variable_ordering == VariableOrdering::MINIMIZE_SS) {
+        unsatisfied_goal = find_unsatisfied_goal(state);
+    } else if (variable_ordering == VariableOrdering::STATIC_SMALL) {
+        int min_count = numeric_limits<int>::max();
+        for (const FactPair &condition : sorted_goals) {
+            if (state[condition.var].get_value() != condition.value) {
+                int count = achievers[condition.var][condition.value].size();
+                if (count < min_count) {
+                    unsatisfied_goal = condition;
+                    min_count = count;
+                }
+            }
+        }
+    } else if (variable_ordering == VariableOrdering::DYNAMIC_SMALL) {
+        int min_count = numeric_limits<int>::max();
+        for (const FactPair &condition : sorted_goals) {
+            if (state[condition.var].get_value() != condition.value) {
+                const vector<int> &ops = achievers[condition.var][condition.value];
+                int count = count_if(ops.begin(), ops.end(), [this](int op) {return !stubborn[op];});
+                if (count < min_count) {
+                    unsatisfied_goal = condition;
+                    min_count = count;
+                }
+            }
+        }
+    } else {
+        ABORT("Unknown variable ordering");
+    }
     assert(unsatisfied_goal != FactPair::no_fact);
     enqueue_producers(unsatisfied_goal);
 
@@ -152,27 +256,51 @@ void StubbornSetsQueue::handle_stubborn_operator(const State &state, int op) {
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Stubborn sets queue",
-        "Stubborn sets represent a state pruning method which computes a subset "
+        "Stubborn sets are a state pruning method which computes a subset "
         "of applicable operators in each state such that completeness and "
-        "optimality of the overall search is preserved. For details, see the "
-        "following papers: "
-        + utils::format_paper_reference(
+        "optimality of the overall search is preserved. Stubborn sets were "
+        "adapted to classical planning in the following paper: " +
+        utils::format_conference_reference(
             {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
             "A Stubborn Set Algorithm for Optimal Planning",
-            "http://ai.cs.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
+            "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
             "Proceedings of the 20th European Conference on Artificial Intelligence "
             "(ECAI 2012)",
             "891-892",
-            "IOS Press 2012")
-        + utils::format_paper_reference(
-            {"Martin Wehrle", "Malte Helmert"},
-            "Efficient Stubborn Sets: Generalized Algorithms and Selection Strategies",
-            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7922/8042",
-            "Proceedings of the 24th International Conference on Automated Planning "
-            " and Scheduling (ICAPS 2014)",
-            "323-331",
-            "AAAI Press, 2014"));
-
+            "IOS Press",
+            "2012") +
+        "Previous stubborn set implementations mainly track information about operators. "
+        "In contrast, this implementation focuses on atomic propositions, which often "
+        "speeds up the computation on IPC benchmarks. For details, see" +
+        utils::format_conference_reference(
+            {"Gabriele Röger", "Malte Helmert", "Jendrik Seipp", "Silvan Sievers"},
+            "An Atom-Centric Perspective on Stubborn Sets",
+            "https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf",
+            "Proceedings of the 13th Annual Symposium on Combinatorial Search "
+            "(SoCS 2020)",
+            "",
+            "AAAI Press",
+            "2020"));
+    parser.add_option<bool>(
+        "mark_variables",
+        "use variable-based marking in addition to fact-based marking",
+        "false");
+    vector<string> orderings;
+    vector<string> ordering_docs;
+    orderings.push_back("fast_downward");
+    ordering_docs.push_back("");
+    orderings.push_back("minimize_ss");
+    ordering_docs.push_back("select NES to opportunistically minimize stubborn set");
+    orderings.push_back("static_small");
+    ordering_docs.push_back("");
+    orderings.push_back("dynamic_small");
+    ordering_docs.push_back("");
+    parser.add_enum_option(
+        "variable_ordering",
+        orderings,
+        "variable ordering",
+        "fast_downward",
+        ordering_docs);
     stubborn_sets::add_pruning_options(parser);
 
     Options opts = parser.parse();
@@ -184,5 +312,5 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     return make_shared<StubbornSetsQueue>(opts);
 }
 
-static PluginShared<PruningMethod> _plugin("stubborn_sets_queue", _parse);
+static Plugin<PruningMethod> _plugin("stubborn_sets_queue", _parse);
 }
