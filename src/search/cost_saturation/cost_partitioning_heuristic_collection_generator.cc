@@ -111,12 +111,12 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
     int evaluated_orders = 0;
     while (static_cast<int>(cp_heuristics.size()) < max_orders &&
            (!timer.is_expired() || cp_heuristics.empty())) {
-        bool first_order = (evaluated_orders == 0);
+        bool is_first_order = (evaluated_orders == 0);
 
         vector<int> abstract_state_ids;
         Order order;
         CostPartitioningHeuristic cp_heuristic;
-        if (first_order) {
+        if (is_first_order) {
             // Use initial state as first sample.
             abstract_state_ids = abstract_state_ids_for_init;
             order = order_for_init;
@@ -137,8 +137,8 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
             int incumbent_h_value = cp_heuristic.compute_heuristic(abstract_state_ids);
             optimize_order_with_hill_climbing(
                 cp_function, opt_timer, abstractions, costs, abstract_state_ids, order,
-                cp_heuristic, incumbent_h_value, first_order);
-            if (first_order) {
+                cp_heuristic, incumbent_h_value, is_first_order);
+            if (is_first_order) {
                 log << "Time for optimizing order: " << opt_timer.get_elapsed_time()
                     << endl;
             }
