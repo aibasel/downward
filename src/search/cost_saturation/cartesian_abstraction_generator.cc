@@ -140,10 +140,9 @@ void CartesianAbstractionGenerator::build_abstractions_for_subtasks(
         unique_ptr<cegar::Abstraction> cartesian_abstraction =
             build_abstraction_for_subtask(subtask, remaining_subtasks, timer);
 
-        /* If we already have an abstraction A and run out of memory while
-           building another abstraction B, we discard B to avoid running out of
-           memory during the conversion. */
-        if (!abstractions.empty() && !utils::extra_memory_padding_is_reserved()) {
+        /* If we run out of memory while building an abstraction, we discard it
+           to avoid running out of memory during the abstraction conversion. */
+        if (!utils::extra_memory_padding_is_reserved()) {
             break;
         }
 
