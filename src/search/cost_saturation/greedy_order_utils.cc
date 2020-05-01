@@ -82,7 +82,6 @@ vector<int> compute_all_surplus_costs(
 
 double compute_score(int h, int used_costs, ScoringFunction scoring_function) {
     assert(h >= 0);
-    assert(h != INF);
     assert(used_costs != INF);
     assert(used_costs != -INF);
     if (scoring_function == ScoringFunction::MAX_HEURISTIC) {
