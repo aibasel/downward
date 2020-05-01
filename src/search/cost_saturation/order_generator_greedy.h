@@ -19,9 +19,6 @@ class OrderGeneratorGreedy : public OrderGenerator {
     double rate_abstraction(
         const std::vector<int> &abstract_state_ids,
         int abs_id) const;
-    Order compute_static_greedy_order_for_sample(
-        const std::vector<int> &abstract_state_ids,
-        bool verbose) const;
 
 public:
     explicit OrderGeneratorGreedy(const options::Options &opts);

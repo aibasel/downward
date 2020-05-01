@@ -36,30 +36,6 @@ double OrderGeneratorGreedy::rate_abstraction(
     return compute_score(h, stolen_costs, scoring_function);
 }
 
-Order OrderGeneratorGreedy::compute_static_greedy_order_for_sample(
-    const vector<int> &abstract_state_ids, bool verbose) const {
-    assert(abstract_state_ids.size() == h_values_by_abstraction.size());
-    int num_abstractions = abstract_state_ids.size();
-    Order order = get_default_order(num_abstractions);
-    // Shuffle order to break ties randomly.
-    rng->shuffle(order);
-    vector<double> scores;
-    scores.reserve(num_abstractions);
-    for (int abs = 0; abs < num_abstractions; ++abs) {
-        scores.push_back(rate_abstraction(abstract_state_ids, abs));
-    }
-    sort(order.begin(), order.end(), [&](int abs1, int abs2) {
-             return scores[abs1] > scores[abs2];
-         });
-    if (verbose) {
-        cout << "Static greedy scores: " << scores << endl;
-        unordered_set<double> unique_scores(scores.begin(), scores.end());
-        cout << "Static greedy unique scores: " << unique_scores.size() << endl;
-        cout << "Static greedy order: " << order << endl;
-    }
-    return order;
-}
-
 void OrderGeneratorGreedy::initialize(
     const Abstractions &abstractions,
     const vector<int> &costs) {
@@ -94,12 +70,27 @@ void OrderGeneratorGreedy::initialize(
 Order OrderGeneratorGreedy::compute_order_for_state(
     const vector<int> &abstract_state_ids,
     bool verbose) {
+    assert(abstract_state_ids.size() == h_values_by_abstraction.size());
     utils::Timer greedy_timer;
-    vector<int> order = compute_static_greedy_order_for_sample(
-        abstract_state_ids, verbose);
+    int num_abstractions = abstract_state_ids.size();
+    Order order = get_default_order(num_abstractions);
+    // Shuffle order to break ties randomly.
+    rng->shuffle(order);
+    vector<double> scores;
+    scores.reserve(num_abstractions);
+    for (int abs = 0; abs < num_abstractions; ++abs) {
+        scores.push_back(rate_abstraction(abstract_state_ids, abs));
+    }
+    sort(order.begin(), order.end(), [&](int abs1, int abs2) {
+             return scores[abs1] > scores[abs2];
+         });
 
     if (verbose) {
-        utils::Log() << "Time for computing greedy order: " << greedy_timer << endl;
+        cout << "Static greedy scores: " << scores << endl;
+        unordered_set<double> unique_scores(scores.begin(), scores.end());
+        cout << "Static greedy unique scores: " << unique_scores.size() << endl;
+        cout << "Static greedy order: " << order << endl;
+        cout << "Time for computing greedy order: " << greedy_timer << endl;
     }
 
     assert(order.size() == abstract_state_ids.size());
