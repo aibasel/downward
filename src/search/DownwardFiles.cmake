@@ -643,7 +643,6 @@ fast_downward_plugin(
         cost_saturation/projection_generator
         cost_saturation/saturated_cost_partitioning_heuristic
         cost_saturation/types
-        cost_saturation/unsolvability_heuristic
         cost_saturation/utils
     DEPENDS CEGAR PDBS PRIORITY_QUEUES SAMPLING TASK_PROPERTIES
 )

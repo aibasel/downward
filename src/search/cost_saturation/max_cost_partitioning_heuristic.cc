@@ -42,13 +42,11 @@ static void log_info_about_stored_lookup_tables(
 
 static AbstractionFunctions extract_abstraction_functions_from_useful_abstractions(
     const vector<CostPartitioningHeuristic> &cp_heuristics,
-    const UnsolvabilityHeuristic &unsolvability_heuristic,
     Abstractions &abstractions) {
     int num_abstractions = abstractions.size();
 
     // Collect IDs of useful abstractions.
     vector<bool> useful_abstractions(num_abstractions, false);
-    unsolvability_heuristic.mark_useful_abstractions(useful_abstractions);
     for (const auto &cp_heuristic : cp_heuristics) {
         cp_heuristic.mark_useful_abstractions(useful_abstractions);
     }
@@ -71,13 +69,12 @@ MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     Abstractions abstractions,
     vector<CostPartitioningHeuristic> &&cp_heuristics_)
     : Heuristic(opts),
-      cp_heuristics(move(cp_heuristics_)),
-      unsolvability_heuristic(abstractions, cp_heuristics) {
+      cp_heuristics(move(cp_heuristics_)) {
     log_info_about_stored_lookup_tables(abstractions, cp_heuristics);
 
     // We only need abstraction functions during search and no transition systems.
     abstraction_functions = extract_abstraction_functions_from_useful_abstractions(
-        cp_heuristics, unsolvability_heuristic, abstractions);
+        cp_heuristics, abstractions);
 
     int num_abstractions = abstractions.size();
     int num_useless_abstractions = count(
@@ -101,9 +98,6 @@ int MaxCostPartitioningHeuristic::compute_heuristic(const GlobalState &global_st
 int MaxCostPartitioningHeuristic::compute_heuristic(const State &state) const {
     vector<int> abstract_state_ids = get_abstract_state_ids(
         abstraction_functions, state);
-    if (unsolvability_heuristic.is_unsolvable(abstract_state_ids)) {
-        return DEAD_END;
-    }
     return compute_max_h_with_statistics(cp_heuristics, abstract_state_ids, num_best_order);
 }
 

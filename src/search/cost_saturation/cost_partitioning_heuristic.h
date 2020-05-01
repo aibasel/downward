@@ -18,9 +18,6 @@ namespace cost_saturation {
   To save space, we only store lookup tables that contain positive estimates.
 */
 class CostPartitioningHeuristic {
-    // Allow this class to extract and compress information about unsolvable states.
-    friend class UnsolvabilityHeuristic;
-
     struct LookupTable {
         int abstraction_id;
         /* h_values[i] is the goal distance of abstract state i under the cost
