@@ -132,7 +132,14 @@ int MergeAndShrinkRepresentationMerge::get_value(
 }
 
 bool MergeAndShrinkRepresentationMerge::is_total() const {
-    return left_child->is_total() || right_child->is_total();
+    for (const vector<int> &row : lookup_table) {
+        for (int entry : row) {
+            if (entry == PRUNED_STATE) {
+                return false;
+            }
+        }
+    }
+    return left_child->is_total() && right_child->is_total();
 }
 
 void MergeAndShrinkRepresentationMerge::dump() const {

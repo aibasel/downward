@@ -13,6 +13,7 @@ papers, we recommend using Python virtual environments. To create and
 activate a virtual environment for an issue experiment, use the
 following steps:
 
+    export PYTHONPATH=""  # clear PYTHONPATH to obtain a clean environment
     cd issue899
     python3 -m venv --prompt=issue899 venv
     source venv/bin/activate  # enter the virtual environment

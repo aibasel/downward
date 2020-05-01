@@ -262,8 +262,6 @@ void MergeAndShrinkAlgorithm::main_loop(
             log_main_loop_progress("after merging");
         }
 
-        // We do not check for num transitions here but only after pruning
-        // to allow recovering a too large product.
         if (ran_out_of_time(timer)) {
             break;
         }

@@ -15,6 +15,7 @@ after the corresponding tracker issues.
   <http://issues.fast-downward.org/issue780>
   See http://www.fast-downward.org/Doc/Evaluator#Saturated_cost_partitioning
   for usage instructions.
+- Fix `--show-aliases` parameter.
 
 ## Fast Downward 19.12
 
