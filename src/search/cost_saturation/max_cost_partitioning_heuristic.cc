@@ -69,11 +69,10 @@ static AbstractionFunctions extract_abstraction_functions_from_useful_abstractio
 MaxCostPartitioningHeuristic::MaxCostPartitioningHeuristic(
     const options::Options &opts,
     Abstractions abstractions,
-    vector<CostPartitioningHeuristic> &&cp_heuristics_,
-    UnsolvabilityHeuristic &&unsolvability_heuristic_)
+    vector<CostPartitioningHeuristic> &&cp_heuristics_)
     : Heuristic(opts),
       cp_heuristics(move(cp_heuristics_)),
-      unsolvability_heuristic(move(unsolvability_heuristic_)) {
+      unsolvability_heuristic(abstractions, cp_heuristics) {
     log_info_about_stored_lookup_tables(abstractions, cp_heuristics);
 
     // We only need abstraction functions during search and no transition systems.

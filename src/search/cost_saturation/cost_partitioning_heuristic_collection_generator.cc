@@ -4,7 +4,6 @@
 #include "diversifier.h"
 #include "order_generator.h"
 #include "order_optimizer.h"
-#include "unsolvability_heuristic.h"
 #include "utils.h"
 
 #include "../task_proxy.h"
@@ -68,25 +67,11 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
     const TaskProxy &task_proxy,
     const Abstractions &abstractions,
     const vector<int> &costs,
-    const CPFunction &cp_function,
-    const UnsolvabilityHeuristic &unsolvability_heuristic) const {
+    const CPFunction &cp_function) const {
     utils::Log log;
     utils::CountdownTimer timer(max_time);
 
-    DeadEndDetector is_dead_end =
-        [&abstractions, &unsolvability_heuristic](const State &state) {
-            return unsolvability_heuristic.is_unsolvable(
-                get_abstract_state_ids(abstractions, state));
-        };
-
     State initial_state = task_proxy.get_initial_state();
-
-    // If the unsolvability heuristic detects unsolvability in the initial state,
-    // we don't need any orders.
-    if (is_dead_end(initial_state)) {
-        log << "Initial state is unsolvable." << endl;
-        return {};
-    }
 
     order_generator->initialize(abstractions, costs);
 
@@ -99,7 +84,19 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
         abstractions, order_for_init, costs);
     int init_h = cp_for_init.compute_heuristic(abstract_state_ids_for_init);
 
+    if (init_h == INF) {
+        log << "Initial state is unsolvable." << endl;
+        return {
+                   cp_for_init
+        };
+    }
+
     sampling::RandomWalkSampler sampler(task_proxy, *rng);
+    DeadEndDetector is_dead_end =
+        [&abstractions, &cp_for_init](const State &state) {
+            return cp_for_init.compute_heuristic(
+                get_abstract_state_ids(abstractions, state)) == INF;
+        };
 
     unique_ptr<Diversifier> diversifier;
     if (diversify) {
@@ -152,10 +149,10 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
         if (!diversifier || diversifier->is_diverse(cp_heuristic)) {
             cp_heuristics.push_back(move(cp_heuristic));
             if (diversifier) {
-                log << "Sum over max h values for " << num_samples
+                log << "Average finite h-value for " << num_samples
                     << " samples after " << timer.get_elapsed_time()
                     << " of diversification: "
-                    << diversifier->compute_sum_portfolio_h_value_for_samples()
+                    << diversifier->compute_avg_finite_sample_h_value()
                     << endl;
             }
         }

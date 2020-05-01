@@ -4,6 +4,7 @@
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
+#include "../utils/strings.h"
 
 #include <unordered_set>
 
@@ -163,13 +164,40 @@ const vector<int> &ExplicitAbstraction::get_goal_states() const {
 }
 
 void ExplicitAbstraction::dump() const {
-    cout << "State-changing transitions:" << endl;
-    for (int state = 0; state < get_num_states(); ++state) {
-        if (!backward_graph[state].empty()) {
-            cout << "  " << state << " <- " << backward_graph[state] << endl;
+    int num_states = get_num_states();
+
+    cout << "States: " << num_states << endl;
+    cout << "Goal states: " << goal_states.size() << endl;
+    cout << "Operators inducing state-changing transitions: "
+         << count(active_operators.begin(), active_operators.end(), true) << endl;
+    cout << "Operators inducing self-loops: "
+         << count(looping_operators.begin(), looping_operators.end(), true) << endl;
+
+    vector<bool> is_goal(num_states, false);
+    for (int goal : goal_states) {
+        is_goal[goal] = true;
+    }
+
+    cout << "digraph transition_system";
+    cout << " {" << endl;
+    cout << "    node [shape = none] start;" << endl;
+    for (int i = 0; i < num_states; ++i) {
+        cout << "    node [shape = " << (is_goal[i] ? "doublecircle" : "circle")
+             << "] " << i << ";" << endl;
+    }
+    for (int target = 0; target < num_states; ++target) {
+        unordered_map<int, vector<int>> parallel_transitions;
+        for (const Successor &succ : backward_graph[target]) {
+            int src = succ.state;
+            parallel_transitions[src].push_back(succ.op);
+        }
+        for (auto &pair : parallel_transitions) {
+            int src = pair.first;
+            const vector<int> &operators = pair.second;
+            cout << "    " << src << " -> " << target
+                 << " [label = \"" << utils::join(operators, "_") << "\"];" << endl;
         }
     }
-    cout << "Looping operators: " << looping_operators << endl;
-    cout << "Goal states: " << goal_states << endl;
+    cout << "}" << endl;
 }
 }

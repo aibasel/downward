@@ -40,8 +40,7 @@ public:
         const TaskProxy &task_proxy,
         const Abstractions &abstractions,
         const std::vector<int> &costs,
-        const CPFunction &cp_function,
-        const UnsolvabilityHeuristic &unsolvability_heuristic) const;
+        const CPFunction &cp_function) const;
 };
 }
 

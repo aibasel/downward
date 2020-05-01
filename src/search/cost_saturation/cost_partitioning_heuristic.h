@@ -7,22 +7,20 @@
 
 namespace cost_saturation {
 /*
-  Compactly store cost-partitioned goal distances and compute heuristic values
-  by summing the goal distances of abstract states corresponding to a given
-  concrete state.
+  Compactly store cost-partitioned goal distances and use them to compute
+  heuristic values for a given concrete state.
 
-  For efficiency, users of this class need to store the abstractions and map a
-  given concrete state to the corresponding abstract state IDs in all
-  abstractions themselves. This allows them to compute the mapping only once
-  instead of for each order.
+  For efficiency, we map a given concrete state to the corresponding abstract
+  state IDs in each abstractions outside of this class. This allows us to
+  compute the mapping only once instead of once for each abstraction order.
 
-  We call an abstraction A useful if 0 < h^A(s) < INF for at least one state s.
-  To save space, we only store h values for useful abstractions.
-
-  This class only supports retrieving finite heuristic estimates (see
-  compute_heuristic() below).
+  We call the stored goal distances for an abstraction a lookup table.
+  To save space, we only store lookup tables that contain positive estimates.
 */
 class CostPartitioningHeuristic {
+    // Allow this class to extract and compress information about unsolvable states.
+    friend class UnsolvabilityHeuristic;
+
     struct LookupTable {
         int abstraction_id;
         /* h_values[i] is the goal distance of abstract state i under the cost
@@ -42,13 +40,9 @@ public:
 
     /*
       Compute cost-partitioned heuristic value for a concrete state s. Callers
-      need to precompute the abstract state IDs that s corresponds to in all
-      abstractions (not only useful abstractions). The result is the sum of all
-      stored heuristic values for abstract states corresponding to s.
-
-      It is an error (guarded by an assertion) to call this method for an
-      unsolvable abstract state s. Before calling this method, query
-      UnsolvabilityHeuristic to see whether s is unsolvable.
+      need to precompute the abstract state IDs that s corresponds to in each
+      abstraction with the get_abstract_state_ids() function. The result is the
+      sum of all goal distances of the abstract states corresponding to s.
     */
     int compute_heuristic(const std::vector<int> &abstract_state_ids) const;
 
