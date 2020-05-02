@@ -23,7 +23,6 @@ class CostPartitioningHeuristicCollectionGenerator {
     const double max_time;
     const bool diversify;
     const int num_samples;
-    const double max_optimization_time;
     const std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 public:
@@ -33,7 +32,6 @@ public:
         double max_time,
         bool diversify,
         int num_samples,
-        double max_optimization_time,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng);
 
     std::vector<CostPartitioningHeuristic> generate_cost_partitionings(

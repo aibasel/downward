@@ -3,7 +3,6 @@
 #include "cost_partitioning_heuristic.h"
 #include "diversifier.h"
 #include "order_generator.h"
-#include "order_optimizer.h"
 #include "utils.h"
 
 #include "../task_proxy.h"
@@ -51,14 +50,12 @@ CostPartitioningHeuristicCollectionGenerator::CostPartitioningHeuristicCollectio
     double max_time,
     bool diversify,
     int num_samples,
-    double max_optimization_time,
     const shared_ptr<utils::RandomNumberGenerator> &rng)
     : order_generator(order_generator),
       max_orders(max_orders),
       max_time(max_time),
       diversify(diversify),
       num_samples(num_samples),
-      max_optimization_time(max_optimization_time),
       rng(rng) {
 }
 
@@ -126,21 +123,6 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
             order = order_generator->compute_order_for_state(
                 abstract_state_ids, false);
             cp_heuristic = cp_function(abstractions, order, costs);
-        }
-
-        // Optimize order.
-        double optimization_time = min(
-            static_cast<double>(timer.get_remaining_time()), max_optimization_time);
-        if (optimization_time > 0) {
-            utils::CountdownTimer opt_timer(optimization_time);
-            int incumbent_h_value = cp_heuristic.compute_heuristic(abstract_state_ids);
-            optimize_order_with_hill_climbing(
-                cp_function, opt_timer, abstractions, costs, abstract_state_ids, order,
-                cp_heuristic, incumbent_h_value, is_first_order);
-            if (is_first_order) {
-                log << "Time for optimizing order: " << opt_timer.get_elapsed_time()
-                    << endl;
-            }
         }
 
         // If diversify=true, only add order if it improves upon previously

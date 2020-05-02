@@ -138,7 +138,7 @@ def configs_optimal_extended():
         "scp_single_order": [
             "--search",
             """astar(scp([cartesian()],
-                max_time=infinity, max_optimization_time=1, max_orders=1,
+                max_time=infinity, max_orders=1,
                 diversify=false, orders=random_orders()))"""]
     }
 

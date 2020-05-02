@@ -636,7 +636,6 @@ fast_downward_plugin(
         cost_saturation/max_cost_partitioning_heuristic
         cost_saturation/order_generator
         cost_saturation/order_generator_random
-        cost_saturation/order_optimizer
         cost_saturation/saturated_cost_partitioning_heuristic
         cost_saturation/types
         cost_saturation/utils

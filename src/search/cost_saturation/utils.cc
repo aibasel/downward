@@ -112,11 +112,6 @@ static void add_order_options_to_parser(OptionParser &parser) {
         "number of samples for diversification",
         "1000",
         Bounds("1", "infinity"));
-    parser.add_option<double>(
-        "max_optimization_time",
-        "maximum time in seconds for optimizing each order with hill climbing",
-        "2",
-        Bounds("0", "infinity"));
     utils::add_rng_options(parser);
 }
 
@@ -128,7 +123,6 @@ get_cp_heuristic_collection_generator_from_options(const options::Options &opts)
         opts.get<double>("max_time"),
         opts.get<bool>("diversify"),
         opts.get<int>("samples"),
-        opts.get<double>("max_optimization_time"),
         utils::parse_rng_from_options(opts));
 }
 
