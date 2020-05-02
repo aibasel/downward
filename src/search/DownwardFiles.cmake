@@ -338,10 +338,10 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME STUBBORN_SETS_QUEUE
-    HELP "Stubborn sets queue"
+    NAME STUBBORN_SETS_ATOM_CENTRIC
+    HELP "Atom-centric stubborn sets"
     SOURCES
-        pruning/stubborn_sets_queue
+        pruning/stubborn_sets_atom_centric
     DEPENDS STUBBORN_SETS
 )
 
