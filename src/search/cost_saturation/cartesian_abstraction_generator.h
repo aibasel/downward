@@ -27,7 +27,6 @@ class CartesianAbstractionGenerator : public AbstractionGenerator {
     const int max_transitions;
     const double max_time;
     const int extra_memory_padding_mb;
-    const bool prune_unreachable_transitions;
     const std::shared_ptr<utils::RandomNumberGenerator> rng;
     const bool debug;
 
