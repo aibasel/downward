@@ -30,7 +30,7 @@ Order OrderGeneratorRandom::compute_order_for_state(
 }
 
 
-static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
+static shared_ptr<OrderGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Random orders",
         "Shuffle abstractions randomly.");
@@ -42,5 +42,5 @@ static shared_ptr<OrderGenerator> _parse_greedy(OptionParser &parser) {
         return make_shared<OrderGeneratorRandom>(opts);
 }
 
-static Plugin<OrderGenerator> _plugin_greedy("random_orders", _parse_greedy);
+static Plugin<OrderGenerator> _plugin("random_orders", _parse);
 }
