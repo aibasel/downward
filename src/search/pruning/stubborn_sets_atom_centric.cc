@@ -11,8 +11,9 @@ using namespace std;
 namespace stubborn_sets_atom_centric {
 StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
     : StubbornSets(opts),
-      mark_variables(opts.get<bool>("mark_variables")),
-      variable_ordering(static_cast<VariableOrdering>(opts.get_enum("variable_ordering"))) {
+      use_sibling_shortcut(opts.get<bool>("use_sibling_shortcut")),
+      atom_selection_strategy(
+          static_cast<VariableOrdering>(opts.get_enum("atom_selection_strategy"))) {
 }
 
 void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
@@ -25,7 +26,7 @@ void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
         marked_producers.emplace_back(var.get_domain_size(), false);
         marked_consumers.emplace_back(var.get_domain_size(), false);
     }
-    if (mark_variables) {
+    if (use_sibling_shortcut) {
         int num_variables = task_proxy.get_variables().size();
         marked_producer_variables.resize(num_variables, MARKED_VALUES_NONE);
         marked_consumer_variables.resize(num_variables, MARKED_VALUES_NONE);
@@ -69,7 +70,7 @@ void StubbornSetsAtomCentric::enqueue_consumers(const FactPair &fact) {
 
 void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
     int dummy_mark = MARKED_VALUES_NONE;
-    int &mark = mark_variables ? marked_producer_variables[fact.var] : dummy_mark;
+    int &mark = use_sibling_shortcut ? marked_producer_variables[fact.var] : dummy_mark;
     if (mark == MARKED_VALUES_NONE) {
         int domain_size = consumers[fact.var].size();
         for (int value = 0; value < domain_size; ++value) {
@@ -86,7 +87,7 @@ void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
 
 void StubbornSetsAtomCentric::enqueue_sibling_consumers(const FactPair &fact) {
     int dummy_mark = MARKED_VALUES_NONE;
-    int &mark = mark_variables ? marked_consumer_variables[fact.var] : dummy_mark;
+    int &mark = use_sibling_shortcut ? marked_consumer_variables[fact.var] : dummy_mark;
     if (mark == MARKED_VALUES_NONE) {
         int domain_size = consumers[fact.var].size();
         for (int value = 0; value < domain_size; ++value) {
@@ -104,9 +105,9 @@ void StubbornSetsAtomCentric::enqueue_sibling_consumers(const FactPair &fact) {
 FactPair StubbornSetsAtomCentric::select_fact(
     const vector<FactPair> &facts, const State &state) const {
     FactPair fact = FactPair::no_fact;
-    if (variable_ordering == VariableOrdering::FAST_DOWNWARD) {
+    if (atom_selection_strategy == VariableOrdering::FAST_DOWNWARD) {
         fact = stubborn_sets::find_unsatisfied_condition(facts, state);
-    } else if (variable_ordering == VariableOrdering::MINIMIZE_SS) {
+    } else if (atom_selection_strategy == VariableOrdering::QUICK_SKIP) {
         /*
           If the precondition contains an unsatisfied fact whose producers are
           already marked, choose it. In this case, there's nothing else to do.
@@ -123,7 +124,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
             }
         }
         assert(!marked_producers[fact.var][fact.value]);
-    } else if (variable_ordering == VariableOrdering::STATIC_SMALL) {
+    } else if (atom_selection_strategy == VariableOrdering::STATIC_SMALL) {
         int min_count = numeric_limits<int>::max();
         for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
@@ -134,12 +135,13 @@ FactPair StubbornSetsAtomCentric::select_fact(
                 }
             }
         }
-    } else if (variable_ordering == VariableOrdering::DYNAMIC_SMALL) {
+    } else if (atom_selection_strategy == VariableOrdering::DYNAMIC_SMALL) {
         int min_count = numeric_limits<int>::max();
         for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
                 const vector<int> &ops = achievers[condition.var][condition.value];
-                int count = count_if(ops.begin(), ops.end(), [this](int op) {return !stubborn[op];});
+                int count = count_if(
+                    ops.begin(), ops.end(), [this](int op) {return !stubborn[op];});
                 if (count < min_count) {
                     fact = condition;
                     min_count = count;
@@ -163,7 +165,7 @@ void StubbornSetsAtomCentric::enqueue_nes(int op, const State &state) {
 /*
   Enqueue an operator o2 iff op interferes with o2.
 
-  o1 interferes strongly with o2 iff o1 disables o2, or o2 disables o1, or o1 and o2 conflict.
+  o1 interferes strongly with o2 iff o1 disables o2, o2 disables o1, or o1 and o2 conflict.
   o1 interferes weakly with o2 iff o1 disables o2, or o1 and o2 conflict.
 */
 void StubbornSetsAtomCentric::enqueue_interferers(int op) {
@@ -190,7 +192,7 @@ void StubbornSetsAtomCentric::initialize_stubborn_set(const State &state) {
     for (auto &facts : marked_consumers) {
         fill(facts.begin(), facts.end(), false);
     }
-    if (mark_variables) {
+    if (use_sibling_shortcut) {
         fill(marked_producer_variables.begin(), marked_producer_variables.end(),
              MARKED_VALUES_NONE);
         fill(marked_consumer_variables.begin(), marked_consumer_variables.end(),
@@ -259,21 +261,21 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "AAAI Press",
             "2020"));
     parser.add_option<bool>(
-        "mark_variables",
+        "use_sibling_shortcut",
         "use variable-based marking in addition to fact-based marking",
         "false");
     vector<string> orderings;
     vector<string> ordering_docs;
     orderings.push_back("fast_downward");
     ordering_docs.push_back("");
-    orderings.push_back("minimize_ss");
+    orderings.push_back("quick_skip");
     ordering_docs.push_back("select NES to opportunistically minimize stubborn set");
     orderings.push_back("static_small");
     ordering_docs.push_back("");
     orderings.push_back("dynamic_small");
     ordering_docs.push_back("");
     parser.add_enum_option(
-        "variable_ordering",
+        "atom_selection_strategy",
         orderings,
         "variable ordering",
         "fast_downward",
