@@ -9,14 +9,14 @@ static const int MARKED_VALUES_ALL = -1;
 
 enum class VariableOrdering {
     FAST_DOWNWARD,
-    MINIMIZE_SS,
+    QUICK_SKIP,
     STATIC_SMALL,
     DYNAMIC_SMALL,
 };
 
 class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
-    const bool mark_variables;
-    const VariableOrdering variable_ordering;
+    const bool use_sibling_shortcut;
+    const VariableOrdering atom_selection_strategy;
 
     // Operator IDs that contain the fact in their precondition.
     std::vector<std::vector<std::vector<int>>> consumers;
