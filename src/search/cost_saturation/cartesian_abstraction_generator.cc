@@ -60,21 +60,20 @@ static pair<bool, unique_ptr<Abstraction>> convert_abstraction(
 
     // Retrieve non-looping transitions.
     vector<vector<Successor>> backward_graph(cartesian_abstraction.get_num_states());
-    for (int state_id = 0; state_id < cartesian_abstraction.get_num_states(); ++state_id) {
-        // Prune transitions *from* unsolvable states.
-        if (h_values[state_id] == INF) {
+    for (int target = 0; target < cartesian_abstraction.get_num_states(); ++target) {
+        // Prune transitions *to* unsolvable states.
+        if (h_values[target] == INF) {
             continue;
         }
-        for (const cegar::Transition &transition : ts.get_outgoing_transitions()[state_id]) {
-            // Prune transitions *to* unsolvable states.
-            if (h_values[transition.target_id] == INF) {
+        for (const cegar::Transition &transition : ts.get_incoming_transitions()[target]) {
+            int src = transition.target_id;
+            // Prune transitions *from* unsolvable states.
+            if (h_values[src] == INF) {
                 continue;
             }
-            backward_graph[transition.target_id].emplace_back(transition.op_id, state_id);
+            backward_graph[target].emplace_back(transition.op_id, src);
         }
-    }
-    for (vector<Successor> &succesors : backward_graph) {
-        succesors.shrink_to_fit();
+        backward_graph[target].shrink_to_fit();
     }
 
     vector<bool> looping_operators = get_looping_operators(ts);
