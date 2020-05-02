@@ -1,9 +1,9 @@
-#ifndef PRUNING_STUBBORN_SETS_QUEUE_H
-#define PRUNING_STUBBORN_SETS_QUEUE_H
+#ifndef PRUNING_STUBBORN_SETS_ATOM_CENTRIC_H
+#define PRUNING_STUBBORN_SETS_ATOM_CENTRIC_H
 
 #include "stubborn_sets.h"
 
-namespace stubborn_sets_queue {
+namespace stubborn_sets_atom_centric {
 static const int MARKED_VALUES_NONE = -2;
 static const int MARKED_VALUES_ALL = -1;
 
@@ -14,7 +14,7 @@ enum class VariableOrdering {
     DYNAMIC_SMALL,
 };
 
-class StubbornSetsQueue : public stubborn_sets::StubbornSets {
+class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
     const bool mark_variables;
     const VariableOrdering variable_ordering;
 
@@ -42,7 +42,7 @@ protected:
     virtual void initialize_stubborn_set(const State &state) override;
     virtual void handle_stubborn_operator(const State &state, int op) override;
 public:
-    explicit StubbornSetsQueue(const options::Options &opts);
+    explicit StubbornSetsAtomCentric(const options::Options &opts);
 
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };

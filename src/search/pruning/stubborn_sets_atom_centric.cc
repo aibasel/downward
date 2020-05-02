@@ -1,4 +1,4 @@
-#include "stubborn_sets_queue.h"
+#include "stubborn_sets_atom_centric.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -8,14 +8,14 @@
 
 using namespace std;
 
-namespace stubborn_sets_queue {
-StubbornSetsQueue::StubbornSetsQueue(const options::Options &opts)
+namespace stubborn_sets_atom_centric {
+StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
     : StubbornSets(opts),
       mark_variables(opts.get<bool>("mark_variables")),
       variable_ordering(static_cast<VariableOrdering>(opts.get_enum("variable_ordering"))) {
 }
 
-void StubbornSetsQueue::initialize(const shared_ptr<AbstractTask> &task) {
+void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     cout << "pruning method: stubborn sets queue" << endl;
 
@@ -34,7 +34,7 @@ void StubbornSetsQueue::initialize(const shared_ptr<AbstractTask> &task) {
     compute_consumers(task_proxy);
 }
 
-void StubbornSetsQueue::compute_consumers(const TaskProxy &task_proxy) {
+void StubbornSetsAtomCentric::compute_consumers(const TaskProxy &task_proxy) {
     consumers = utils::map_vector<vector<vector<int>>>(
         task_proxy.get_variables(), [](const VariableProxy &var) {
             return vector<vector<int>>(var.get_domain_size());
@@ -49,25 +49,25 @@ void StubbornSetsQueue::compute_consumers(const TaskProxy &task_proxy) {
     }
 }
 
-bool StubbornSetsQueue::operator_is_applicable(int op, const State &state) {
+bool StubbornSetsAtomCentric::operator_is_applicable(int op, const State &state) {
     return find_unsatisfied_precondition(op, state) == FactPair::no_fact;
 }
 
-void StubbornSetsQueue::enqueue_producers(const FactPair &fact) {
+void StubbornSetsAtomCentric::enqueue_producers(const FactPair &fact) {
     if (!marked_producers[fact.var][fact.value]) {
         marked_producers[fact.var][fact.value] = true;
         producer_queue.push_back(fact);
     }
 }
 
-void StubbornSetsQueue::enqueue_consumers(const FactPair &fact) {
+void StubbornSetsAtomCentric::enqueue_consumers(const FactPair &fact) {
     if (!marked_consumers[fact.var][fact.value]) {
         marked_consumers[fact.var][fact.value] = true;
         consumer_queue.push_back(fact);
     }
 }
 
-void StubbornSetsQueue::enqueue_sibling_producers(const FactPair &fact) {
+void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
     int dummy_mark = MARKED_VALUES_NONE;
     int &mark = mark_variables ? marked_producer_variables[fact.var] : dummy_mark;
     if (mark == MARKED_VALUES_NONE) {
@@ -84,7 +84,7 @@ void StubbornSetsQueue::enqueue_sibling_producers(const FactPair &fact) {
     }
 }
 
-void StubbornSetsQueue::enqueue_sibling_consumers(const FactPair &fact) {
+void StubbornSetsAtomCentric::enqueue_sibling_consumers(const FactPair &fact) {
     int dummy_mark = MARKED_VALUES_NONE;
     int &mark = mark_variables ? marked_consumer_variables[fact.var] : dummy_mark;
     if (mark == MARKED_VALUES_NONE) {
@@ -101,7 +101,7 @@ void StubbornSetsQueue::enqueue_sibling_consumers(const FactPair &fact) {
     }
 }
 
-FactPair StubbornSetsQueue::select_fact(
+FactPair StubbornSetsAtomCentric::select_fact(
     const vector<FactPair> &facts, const State &state) const {
     FactPair fact = FactPair::no_fact;
     if (variable_ordering == VariableOrdering::FAST_DOWNWARD) {
@@ -153,7 +153,7 @@ FactPair StubbornSetsQueue::select_fact(
     return fact;
 }
 
-void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
+void StubbornSetsAtomCentric::enqueue_nes(int op, const State &state) {
     FactPair fact = select_fact(sorted_op_preconditions[op], state);
     if (fact != FactPair::no_fact) {
         enqueue_producers(fact);
@@ -166,7 +166,7 @@ void StubbornSetsQueue::enqueue_nes(int op, const State &state) {
   o1 interferes strongly with o2 iff o1 disables o2, or o2 disables o1, or o1 and o2 conflict.
   o1 interferes weakly with o2 iff o1 disables o2, or o1 and o2 conflict.
 */
-void StubbornSetsQueue::enqueue_interferers(int op) {
+void StubbornSetsAtomCentric::enqueue_interferers(int op) {
     for (const FactPair &fact : sorted_op_preconditions[op]) {
         // Enqueue operators that disable op.
         enqueue_sibling_producers(fact);
@@ -180,7 +180,7 @@ void StubbornSetsQueue::enqueue_interferers(int op) {
     }
 }
 
-void StubbornSetsQueue::initialize_stubborn_set(const State &state) {
+void StubbornSetsAtomCentric::initialize_stubborn_set(const State &state) {
     assert(producer_queue.empty());
     assert(consumer_queue.empty());
     // Reset datastructures from previous call.
@@ -218,7 +218,7 @@ void StubbornSetsQueue::initialize_stubborn_set(const State &state) {
     }
 }
 
-void StubbornSetsQueue::handle_stubborn_operator(const State &state, int op) {
+void StubbornSetsAtomCentric::handle_stubborn_operator(const State &state, int op) {
     if (!stubborn[op]) {
         stubborn[op] = true;
         if (operator_is_applicable(op, state)) {
@@ -286,7 +286,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         return nullptr;
     }
 
-    return make_shared<StubbornSetsQueue>(opts);
+    return make_shared<StubbornSetsAtomCentric>(opts);
 }
 
 static Plugin<PruningMethod> _plugin("stubborn_sets_queue", _parse);
