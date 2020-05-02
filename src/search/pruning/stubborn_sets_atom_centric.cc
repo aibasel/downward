@@ -245,7 +245,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.add_option<bool>(
         "use_sibling_shortcut",
         "use variable-based marking in addition to atom-based marking",
-        "false");
+        "true");
     vector<string> orderings;
     vector<string> ordering_docs;
     orderings.push_back("fast_downward");
@@ -267,7 +267,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "strategy for selecting unsatisfied atoms from action preconditions or "
         "the goal atoms. All strategies use the fast_downward strategy for "
         "breaking ties.",
-        "fast_downward",
+        "quick_skip",
         ordering_docs);
     stubborn_sets::add_pruning_options(parser);
 
