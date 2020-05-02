@@ -322,6 +322,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME STUBBORN_SETS_ATOM_CENTRIC
+    HELP "Atom-centric stubborn sets"
+    SOURCES
+        pruning/stubborn_sets_atom_centric
+    DEPENDS STUBBORN_SETS
+)
+
+fast_downward_plugin(
     NAME STUBBORN_SETS_SIMPLE
     HELP "Stubborn sets simple"
     SOURCES
@@ -335,14 +343,6 @@ fast_downward_plugin(
     SOURCES
         pruning/stubborn_sets_ec
     DEPENDS STUBBORN_SETS TASK_PROPERTIES
-)
-
-fast_downward_plugin(
-    NAME STUBBORN_SETS_ATOM_CENTRIC
-    HELP "Atom-centric stubborn sets"
-    SOURCES
-        pruning/stubborn_sets_atom_centric
-    DEPENDS STUBBORN_SETS
 )
 
 fast_downward_plugin(
