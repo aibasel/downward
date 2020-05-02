@@ -11,6 +11,11 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
+- Integrate atom-centric stubborn sets
+  <http://issues.fast-downward.org/issue781>
+  We merged the code for the SoCS 2020 paper "An Atom-Centric Perspective
+  on Stubborn Sets" (https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf).
+
 - Fix `--show-aliases` parameter.
 
 ## Fast Downward 19.12
