@@ -31,8 +31,7 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Saturated cost partitioning",
         "Compute the maximum over multiple saturated cost partitioning "
-        "heuristics using different orders. Depending on the options, orders "
-        "may be greedy, optimized and/or diverse. We describe saturated cost "
+        "heuristics using different orders. We describe saturated cost "
         "partitioning in the paper" +
         utils::format_journal_reference(
             {"Jendrik Seipp", "Malte Helmert"},

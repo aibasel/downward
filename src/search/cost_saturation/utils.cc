@@ -91,7 +91,7 @@ static void add_order_options_to_parser(OptionParser &parser) {
     parser.add_option<shared_ptr<OrderGenerator>>(
         "orders",
         "order generator",
-        "greedy_orders()");
+        "random_orders()");
     parser.add_option<int>(
         "max_orders",
         "maximum number of orders",

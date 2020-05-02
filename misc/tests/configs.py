@@ -139,7 +139,7 @@ def configs_optimal_extended():
             "--search",
             """astar(scp([cartesian()],
                 max_time=infinity, max_optimization_time=1, max_orders=1,
-                diversify=false, orders=greedy_orders()))"""]
+                diversify=false, orders=random_orders()))"""]
     }
 
 

@@ -75,7 +75,6 @@ CostPartitioningHeuristicCollectionGenerator::generate_cost_partitionings(
 
     order_generator->initialize(abstractions, costs);
 
-    // Compute h(s_0) using a greedy order for s_0.
     vector<int> abstract_state_ids_for_init = get_abstract_state_ids(
         abstractions, initial_state);
     Order order_for_init = order_generator->compute_order_for_state(
