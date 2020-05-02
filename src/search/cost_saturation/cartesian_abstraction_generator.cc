@@ -36,21 +36,6 @@ public:
 };
 
 
-CartesianAbstractionGenerator::CartesianAbstractionGenerator(
-    const options::Options &opts)
-    : subtask_generators(
-          opts.get_list<shared_ptr<cegar::SubtaskGenerator>>("subtasks")),
-      max_states(opts.get<int>("max_states")),
-      max_transitions(opts.get<int>("max_transitions")),
-      max_time(opts.get<double>("max_time")),
-      extra_memory_padding_mb(opts.get<int>("memory_padding")),
-      prune_unreachable_transitions(opts.get<bool>("prune_unreachable_transitions")),
-      rng(utils::parse_rng_from_options(opts)),
-      debug(opts.get<bool>("debug")),
-      num_states(0),
-      num_transitions(0) {
-}
-
 static vector<bool> get_looping_operators(const cegar::TransitionSystem &ts) {
     int num_operators = ts.get_num_operators();
     vector<bool> operator_induces_self_loop(num_operators, false);
@@ -113,6 +98,22 @@ static pair<bool, unique_ptr<Abstraction>> convert_abstraction(
                    move(looping_operators),
                    move(goal_states))
     };
+}
+
+
+CartesianAbstractionGenerator::CartesianAbstractionGenerator(
+    const options::Options &opts)
+    : subtask_generators(
+          opts.get_list<shared_ptr<cegar::SubtaskGenerator>>("subtasks")),
+      max_states(opts.get<int>("max_states")),
+      max_transitions(opts.get<int>("max_transitions")),
+      max_time(opts.get<double>("max_time")),
+      extra_memory_padding_mb(opts.get<int>("memory_padding")),
+      prune_unreachable_transitions(opts.get<bool>("prune_unreachable_transitions")),
+      rng(utils::parse_rng_from_options(opts)),
+      debug(opts.get<bool>("debug")),
+      num_states(0),
+      num_transitions(0) {
 }
 
 unique_ptr<cegar::Abstraction> CartesianAbstractionGenerator::build_abstraction_for_subtask(
@@ -213,12 +214,12 @@ static shared_ptr<AbstractionGenerator> _parse(OptionParser &parser) {
         "max_states",
         "maximum sum of abstract states over all abstractions",
         "infinity",
-        Bounds("0", "infinity"));
+        Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_transitions",
         "maximum sum of state-changing transitions (excluding self-loops) over "
         "all abstractions",
-        "1000000",
+        "1M",
         Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_time",
