@@ -150,9 +150,7 @@ shared_ptr<Evaluator> get_max_cp_heuristic(options::OptionParser &parser, CPFunc
     parser.add_list_option<shared_ptr<AbstractionGenerator>>(
         "abstractions",
         "abstraction generators",
-        "[projections(hillclimbing(max_time=60)), "
-        "projections(systematic(2)), "
-        "cartesian()]");
+        "[cartesian()]");
     add_order_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 

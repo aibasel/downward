@@ -137,8 +137,7 @@ def configs_optimal_extended():
             "astar(pdb())"],
         "scp_single_order": [
             "--search",
-            """astar(scp([
-                projections(systematic(2)), projections(hillclimbing(max_time=100)), cartesian()],
+            """astar(scp([cartesian()],
                 max_time=infinity, max_optimization_time=1, max_orders=1,
                 diversify=false, orders=greedy_orders()))"""]
     }
