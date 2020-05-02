@@ -15,7 +15,6 @@ class RandomNumberGenerator;
 namespace cost_saturation {
 class CostPartitioningHeuristic;
 class OrderGenerator;
-class UnsolvabilityHeuristic;
 
 class CostPartitioningHeuristicCollectionGenerator {
     const std::shared_ptr<OrderGenerator> order_generator;
