@@ -18,7 +18,7 @@ class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
     const bool use_sibling_shortcut;
     const VariableOrdering atom_selection_strategy;
 
-    // Operator IDs that contain the fact in their precondition.
+    // For each fact F store the IDs of operators that contain F in their precondition.
     std::vector<std::vector<std::vector<int>>> consumers;
     // Marked producer and consumer facts.
     std::vector<std::vector<bool>> marked_producers;
