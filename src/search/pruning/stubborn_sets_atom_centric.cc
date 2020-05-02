@@ -18,7 +18,7 @@ StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
 
 void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
-    cout << "pruning method: stubborn sets queue" << endl;
+    cout << "pruning method: atom-centric stubborn sets" << endl;
 
     TaskProxy task_proxy(*task);
 
@@ -109,10 +109,8 @@ FactPair StubbornSetsAtomCentric::select_fact(
         fact = stubborn_sets::find_unsatisfied_condition(facts, state);
     } else if (atom_selection_strategy == VariableOrdering::QUICK_SKIP) {
         /*
-          If the precondition contains an unsatisfied fact whose producers are
-          already marked, choose it. In this case, there's nothing else to do.
-          Otherwise, choose the first unsatisfied precondition and enqueue its
-          producers.
+          If there is an unsatisfied fact whose producers are already marked,
+          choose it. Otherwise, choose the first unsatisfied fact.
         */
         for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
@@ -149,7 +147,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
             }
         }
     } else {
-        ABORT("Unknown variable ordering");
+        ABORT("Unknown atom selection strategy");
     }
     assert(fact != FactPair::no_fact);
     return fact;
@@ -162,12 +160,6 @@ void StubbornSetsAtomCentric::enqueue_nes(int op, const State &state) {
     }
 }
 
-/*
-  Enqueue an operator o2 iff op interferes with o2.
-
-  o1 interferes strongly with o2 iff o1 disables o2, o2 disables o1, or o1 and o2 conflict.
-  o1 interferes weakly with o2 iff o1 disables o2, or o1 and o2 conflict.
-*/
 void StubbornSetsAtomCentric::enqueue_interferers(int op) {
     for (const FactPair &fact : sorted_op_preconditions[op]) {
         // Enqueue operators that disable op.
@@ -234,23 +226,13 @@ void StubbornSetsAtomCentric::handle_stubborn_operator(const State &state, int o
 
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Stubborn sets queue",
+        "Atom-centric stubborn sets",
         "Stubborn sets are a state pruning method which computes a subset "
         "of applicable operators in each state such that completeness and "
-        "optimality of the overall search is preserved. Stubborn sets were "
-        "adapted to classical planning in the following paper: " +
-        utils::format_conference_reference(
-            {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
-            "A Stubborn Set Algorithm for Optimal Planning",
-            "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
-            "Proceedings of the 20th European Conference on Artificial Intelligence "
-            "(ECAI 2012)",
-            "891-892",
-            "IOS Press",
-            "2012") +
-        "Previous stubborn set implementations mainly track information about operators. "
-        "In contrast, this implementation focuses on atomic propositions, which often "
-        "speeds up the computation on IPC benchmarks. For details, see" +
+        "optimality of the overall search is preserved. Previous stubborn set "
+        "implementations mainly track information about operators. In contrast, "
+        "this implementation focuses on atomic propositions (atoms), which "
+        "often speeds up the computation on IPC benchmarks. For details, see" +
         utils::format_conference_reference(
             {"Gabriele Röger", "Malte Helmert", "Jendrik Seipp", "Silvan Sievers"},
             "An Atom-Centric Perspective on Stubborn Sets",
@@ -262,22 +244,29 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "2020"));
     parser.add_option<bool>(
         "use_sibling_shortcut",
-        "use variable-based marking in addition to fact-based marking",
+        "use variable-based marking in addition to atom-based marking",
         "false");
     vector<string> orderings;
     vector<string> ordering_docs;
     orderings.push_back("fast_downward");
-    ordering_docs.push_back("");
+    ordering_docs.push_back(
+        "select the atom (v, d) with the variable v that comes first in the Fast "
+        "Downward variable ordering (which is based on the causal graph)");
     orderings.push_back("quick_skip");
-    ordering_docs.push_back("select NES to opportunistically minimize stubborn set");
+    ordering_docs.push_back(
+        "select first unsatisfied atom whose producers are already marked");
     orderings.push_back("static_small");
-    ordering_docs.push_back("");
+    ordering_docs.push_back("select the atom achieved by the fewest number of actions");
     orderings.push_back("dynamic_small");
-    ordering_docs.push_back("");
+    ordering_docs.push_back(
+        "select the atom achieved by the fewest number of actions that are not "
+        "yet part of the stubborn set");
     parser.add_enum_option(
         "atom_selection_strategy",
         orderings,
-        "variable ordering",
+        "strategy for selecting unsatisfied atoms from action preconditions or "
+        "the goal atoms. All strategies use the fast_downward strategy for "
+        "breaking ties.",
         "fast_downward",
         ordering_docs);
     stubborn_sets::add_pruning_options(parser);
@@ -291,5 +280,5 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     return make_shared<StubbornSetsAtomCentric>(opts);
 }
 
-static Plugin<PruningMethod> _plugin("stubborn_sets_queue", _parse);
+static Plugin<PruningMethod> _plugin("stubborn_sets_atom_centric", _parse);
 }
