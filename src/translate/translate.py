@@ -522,9 +522,11 @@ def unsolvable_sas_task(msg):
     return trivial_task(solvable=False)
 
 def pddl_to_sas(task):
+    task.dump()
     with timers.timing("Instantiating", block=True):
         (relaxed_reachable, atoms, actions, axioms,
          reachable_action_params) = instantiate.explore(task)
+    task.dump()
 
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
