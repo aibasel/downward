@@ -280,5 +280,5 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     return make_shared<StubbornSetsAtomCentric>(opts);
 }
 
-static Plugin<PruningMethod> _plugin("stubborn_sets_atom_centric", _parse);
+static Plugin<PruningMethod> _plugin("atom_centric_stubborn_sets", _parse);
 }
