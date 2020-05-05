@@ -13,7 +13,7 @@ StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
     : StubbornSets(opts),
       use_sibling_shortcut(opts.get<bool>("use_sibling_shortcut")),
       atom_selection_strategy(
-          static_cast<VariableOrdering>(opts.get_enum("atom_selection_strategy"))) {
+          static_cast<AtomSelectionStrategy>(opts.get_enum("atom_selection_strategy"))) {
 }
 
 void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
@@ -105,9 +105,9 @@ void StubbornSetsAtomCentric::enqueue_sibling_consumers(const FactPair &fact) {
 FactPair StubbornSetsAtomCentric::select_fact(
     const vector<FactPair> &facts, const State &state) const {
     FactPair fact = FactPair::no_fact;
-    if (atom_selection_strategy == VariableOrdering::FAST_DOWNWARD) {
+    if (atom_selection_strategy == AtomSelectionStrategy::FAST_DOWNWARD) {
         fact = stubborn_sets::find_unsatisfied_condition(facts, state);
-    } else if (atom_selection_strategy == VariableOrdering::QUICK_SKIP) {
+    } else if (atom_selection_strategy == AtomSelectionStrategy::QUICK_SKIP) {
         /*
           If there is an unsatisfied fact whose producers are already marked,
           choose it. Otherwise, choose the first unsatisfied fact.
@@ -122,7 +122,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
             }
         }
         assert(!marked_producers[fact.var][fact.value]);
-    } else if (atom_selection_strategy == VariableOrdering::STATIC_SMALL) {
+    } else if (atom_selection_strategy == AtomSelectionStrategy::STATIC_SMALL) {
         int min_count = numeric_limits<int>::max();
         for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
@@ -133,7 +133,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
                 }
             }
         }
-    } else if (atom_selection_strategy == VariableOrdering::DYNAMIC_SMALL) {
+    } else if (atom_selection_strategy == AtomSelectionStrategy::DYNAMIC_SMALL) {
         int min_count = numeric_limits<int>::max();
         for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
@@ -246,29 +246,29 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "use_sibling_shortcut",
         "use variable-based marking in addition to atom-based marking",
         "true");
-    vector<string> orderings;
-    vector<string> ordering_docs;
-    orderings.push_back("fast_downward");
-    ordering_docs.push_back(
+    vector<string> strategies;
+    vector<string> strategies_docs;
+    strategies.push_back("fast_downward");
+    strategies_docs.push_back(
         "select the atom (v, d) with the variable v that comes first in the Fast "
         "Downward variable ordering (which is based on the causal graph)");
-    orderings.push_back("quick_skip");
-    ordering_docs.push_back(
+    strategies.push_back("quick_skip");
+    strategies_docs.push_back(
         "select first unsatisfied atom whose producers are already marked");
-    orderings.push_back("static_small");
-    ordering_docs.push_back("select the atom achieved by the fewest number of actions");
-    orderings.push_back("dynamic_small");
-    ordering_docs.push_back(
+    strategies.push_back("static_small");
+    strategies_docs.push_back("select the atom achieved by the fewest number of actions");
+    strategies.push_back("dynamic_small");
+    strategies_docs.push_back(
         "select the atom achieved by the fewest number of actions that are not "
         "yet part of the stubborn set");
     parser.add_enum_option(
         "atom_selection_strategy",
-        orderings,
-        "strategy for selecting unsatisfied atoms from action preconditions or "
+        strategies,
+        "Strategy for selecting unsatisfied atoms from action preconditions or "
         "the goal atoms. All strategies use the fast_downward strategy for "
         "breaking ties.",
         "quick_skip",
-        ordering_docs);
+        strategies_docs);
     stubborn_sets::add_pruning_options(parser);
 
     Options opts = parser.parse();
