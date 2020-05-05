@@ -7,7 +7,8 @@ namespace stubborn_sets_atom_centric {
 static const int MARKED_VALUES_NONE = -2;
 static const int MARKED_VALUES_ALL = -1;
 
-enum class VariableOrdering {
+// See the .cc file for an explanation of the strategies.
+enum class AtomSelectionStrategy {
     FAST_DOWNWARD,
     QUICK_SKIP,
     STATIC_SMALL,
@@ -16,7 +17,7 @@ enum class VariableOrdering {
 
 class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
     const bool use_sibling_shortcut;
-    const VariableOrdering atom_selection_strategy;
+    const AtomSelectionStrategy atom_selection_strategy;
 
     // For each fact F store the IDs of operators that contain F in their precondition.
     std::vector<std::vector<std::vector<int>>> consumers;
