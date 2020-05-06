@@ -67,16 +67,6 @@ public:
         return get<std::vector<T>>(key);
     }
 
-    template<typename T>
-    void set_enum(const std::string &key, T value) {
-        set<int>(key, static_cast<int>(value));
-    }
-
-    template<typename T>
-    T get_enum(const std::string &key) const {
-        return static_cast<T>(get<int>(key));
-    }
-
     bool contains(const std::string &key) const;
     const std::string &get_unparsed_config() const;
     void set_unparsed_config(const std::string &config);

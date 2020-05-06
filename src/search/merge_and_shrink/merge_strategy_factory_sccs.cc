@@ -32,7 +32,7 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
-    : order_of_sccs(options.get_enum<OrderOfSCCs>("order_of_sccs")),
+    : order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
       merge_tree_factory(nullptr),
       merge_selector(nullptr) {
     if (options.contains("merge_tree")) {
@@ -189,7 +189,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     order_of_sccs.push_back("reverse_topological");
     order_of_sccs.push_back("decreasing");
     order_of_sccs.push_back("increasing");
-    parser.add_enum_option(
+    parser.add_enum_option<OrderOfSCCs>(
         "order_of_sccs",
         order_of_sccs,
         "choose an ordering of the SCCs: topological/reverse_topological or "
