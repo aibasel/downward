@@ -15,7 +15,7 @@ after the corresponding tracker issues.
 
 - OptionParser: make OptionParser::add_enum_option templated and remove Options::get_enum
   <http://issues.fast-downward.org/issue962>
-  “We now store enum options as enums instead of as ints in Options objects.“
+  We now store enum options as enums instead of as ints in Options objects.
 
 ## Fast Downward 19.12
 
