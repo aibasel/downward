@@ -73,7 +73,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
                 *lgraph,
-                opts.get_enum<lp::LPSolverType>("lpsolver"));
+                opts.get<lp::LPSolverType>("lpsolver"));
         } else {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),

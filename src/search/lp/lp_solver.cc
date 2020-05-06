@@ -41,7 +41,7 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
     lp_solvers_doc.push_back("commercial solver");
     lp_solvers.push_back("SOPLEX");
     lp_solvers_doc.push_back("open source solver by ZIB");
-    parser.add_enum_option(
+    parser.add_enum_option<LPSolverType>(
         "lpsolver",
         lp_solvers,
         "external solver that should be used to solve linear programs",

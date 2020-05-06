@@ -49,12 +49,12 @@ SearchEngine::SearchEngine(const Options &opts)
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy)),
       search_space(state_registry),
-      search_progress(opts.get_enum<utils::Verbosity>("verbosity")),
-      statistics(opts.get_enum<utils::Verbosity>("verbosity")),
-      cost_type(opts.get_enum<OperatorCost>("cost_type")),
+      search_progress(opts.get<utils::Verbosity>("verbosity")),
+      statistics(opts.get<utils::Verbosity>("verbosity")),
+      cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")),
-      verbosity(opts.get_enum<utils::Verbosity>("verbosity")) {
+      verbosity(opts.get<utils::Verbosity>("verbosity")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);

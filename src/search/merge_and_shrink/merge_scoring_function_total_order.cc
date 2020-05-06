@@ -20,8 +20,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const options::Options &options)
-    : atomic_ts_order(options.get_enum<AtomicTSOrder>("atomic_ts_order")),
-      product_ts_order(options.get_enum<ProductTSOrder>("product_ts_order")),
+    : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
+      product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
       random_seed(options.get<int>("random_seed")),
       rng(utils::parse_rng_from_options(options)) {
@@ -165,7 +165,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
     atomic_ts_order_documentation.push_back("opposite of reverse_level");
     atomic_ts_order.push_back("random");
     atomic_ts_order_documentation.push_back("a randomized order");
-    parser.add_enum_option(
+    parser.add_enum_option<AtomicTSOrder>(
         "atomic_ts_order",
         atomic_ts_order,
         "The order in which atomic transition systems are considered when "
@@ -183,7 +183,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
     product_ts_order_documentation.push_back("opposite of old_to_new");
     product_ts_order.push_back("random");
     product_ts_order_documentation.push_back("a randomized order");
-    parser.add_enum_option(
+    parser.add_enum_option<ProductTSOrder>(
         "product_ts_order",
         product_ts_order,
         "The order in which product transition systems are considered when "
