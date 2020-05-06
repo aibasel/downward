@@ -14,9 +14,8 @@ after the corresponding tracker issues.
 - Fix `--show-aliases` parameter.
 
 - OptionParser: make OptionParser::add_enum_option templated and remove Options::get_enum
-  http://issues.fast-downward.org/issue962
-  Options for enum classes are now directly stored in the option parser rather
-  than storing them as ints.
+  <http://issues.fast-downward.org/issue962>
+  “We now store enum options as enums instead of as ints in Options objects.“
 
 ## Fast Downward 19.12
 
