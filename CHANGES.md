@@ -13,13 +13,10 @@ after the corresponding tracker issues.
 
 - Fix `--show-aliases` parameter.
 
-- Options: add set_enum method and make get_enum method templated
+- OptionParser: make OptionParser::add_enum_option templated and remove Options::get_enum
   http://issues.fast-downward.org/issue962
-  Making get_enum templated for the enum type removes the need to cast the
-  previous integer to the enum type for all users. It also hides the fact that
-  enums are internally represented in Options. The same is true for set_enum
-  which now allows users to add an enum value to an Options object instead of
-  writing set<int>.
+  Options for enum classes are now directly stored in the option parser rather
+  than storing them as ints.
 
 ## Fast Downward 19.12
 
