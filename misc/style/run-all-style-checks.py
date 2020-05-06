@@ -29,7 +29,7 @@ def check_python_style():
             "src/translate/", "driver/", "misc/", "*.py"], cwd=REPO)
     except OSError as err:
         if err.errno == errno.ENOENT:
-            sys.exit('Please install flake8 ("sudo apt install flake8").')
+            sys.exit('Error: flake8 not found. Try "tox -e style".')
         else:
             raise
     except subprocess.CalledProcessError:
