@@ -65,7 +65,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     : SearchEngine(opts),
       evaluator(opts.get<shared_ptr<Evaluator>>("h")),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
-      preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
+      preferred_usage(opts.get<PreferredUsage>("preferred_usage")),
       current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
@@ -272,7 +272,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
-    parser.add_enum_option(
+    parser.add_enum_option<PreferredUsage>(
         "preferred_usage",
         preferred_usages,
         "preferred operator usage",
