@@ -22,8 +22,8 @@ using namespace std;
 namespace merge_and_shrink {
 ShrinkFH::ShrinkFH(const Options &opts)
     : ShrinkBucketBased(opts),
-      f_start(HighLow(opts.get_enum("shrink_f"))),
-      h_start(HighLow(opts.get_enum("shrink_h"))) {
+      f_start(opts.get<HighLow>("shrink_f")),
+      h_start(opts.get<HighLow>("shrink_h")) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
@@ -85,7 +85,7 @@ static void collect_f_h_buckets(
     ShrinkFH::HighLow h_start,
     vector<Bucket> &buckets) {
     for (FHIterator iter = begin; iter != end; ++iter) {
-        if (h_start == ShrinkFH::HIGH) {
+        if (h_start == ShrinkFH::HighLow::HIGH) {
             collect_h_buckets(iter->second.rbegin(), iter->second.rend(),
                               buckets);
         } else {
@@ -118,7 +118,7 @@ vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_map(
 
     vector<Bucket> buckets;
     buckets.reserve(bucket_count);
-    if (f_start == HIGH) {
+    if (f_start == HighLow::HIGH) {
         collect_f_h_buckets(
             states_by_f_and_h.rbegin(), states_by_f_and_h.rend(),
             h_start, buckets);
@@ -158,12 +158,12 @@ vector<ShrinkBucketBased::Bucket> ShrinkFH::ordered_buckets_use_vector(
 
     vector<Bucket> buckets;
     buckets.reserve(bucket_count);
-    int f_init = (f_start == HIGH ? max_f : 0);
-    int f_end = (f_start == HIGH ? 0 : max_f);
+    int f_init = (f_start == HighLow::HIGH ? max_f : 0);
+    int f_end = (f_start == HighLow::HIGH ? 0 : max_f);
     int f_incr = (f_init > f_end ? -1 : 1);
     for (int f = f_init; f != f_end + f_incr; f += f_incr) {
-        int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
-        int h_end = (h_start == HIGH ? 0 : states_by_f_and_h[f].size() - 1);
+        int h_init = (h_start == HighLow::HIGH ? states_by_f_and_h[f].size() - 1 : 0);
+        int h_end = (h_start == HighLow::HIGH ? 0 : states_by_f_and_h[f].size() - 1);
         int h_incr = (h_init > h_end ? -1 : 1);
         for (int h = h_init; h != h_end + h_incr; h += h_incr) {
             Bucket &bucket = states_by_f_and_h[f][h];
@@ -183,9 +183,9 @@ string ShrinkFH::name() const {
 
 void ShrinkFH::dump_strategy_specific_options() const {
     cout << "Prefer shrinking high or low f states: "
-         << (f_start == HIGH ? "high" : "low") << endl
+         << (f_start == HighLow::HIGH ? "high" : "low") << endl
          << "Prefer shrinking high or low h states: "
-         << (h_start == HIGH ? "high" : "low") << endl;
+         << (h_start == HighLow::HIGH ? "high" : "low") << endl;
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
@@ -223,11 +223,11 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     vector<string> high_low;
     high_low.push_back("HIGH");
     high_low.push_back("LOW");
-    parser.add_enum_option(
+    parser.add_enum_option<ShrinkFH::HighLow>(
         "shrink_f", high_low,
         "prefer shrinking states with high or low f values",
         "HIGH");
-    parser.add_enum_option(
+    parser.add_enum_option<ShrinkFH::HighLow>(
         "shrink_h", high_low,
         "prefer shrinking states with high or low h values",
         "LOW");

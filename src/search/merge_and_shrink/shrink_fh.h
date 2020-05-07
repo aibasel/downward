@@ -23,7 +23,7 @@ namespace merge_and_shrink {
 */
 class ShrinkFH : public ShrinkBucketBased {
 public:
-    enum HighLow {HIGH, LOW};
+    enum class HighLow {HIGH, LOW};
 
 private:
     const HighLow f_start;
