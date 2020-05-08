@@ -51,7 +51,7 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
     shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
     prune_unreachable_states(opts.get<bool>("prune_unreachable_states")),
     prune_irrelevant_states(opts.get<bool>("prune_irrelevant_states")),
-    verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
+    verbosity(opts.get<utils::Verbosity>("verbosity")),
     main_loop_max_time(opts.get<double>("main_loop_max_time")),
     starting_peak_memory(0) {
     assert(max_states_before_merge > 0);

@@ -12,8 +12,7 @@ namespace stubborn_sets_atom_centric {
 StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
     : StubbornSets(opts),
       use_sibling_shortcut(opts.get<bool>("use_sibling_shortcut")),
-      atom_selection_strategy(
-          static_cast<AtomSelectionStrategy>(opts.get_enum("atom_selection_strategy"))) {
+      atom_selection_strategy(opts.get<AtomSelectionStrategy>("atom_selection_strategy")) {
 }
 
 void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
@@ -261,7 +260,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     strategies_docs.push_back(
         "select the atom achieved by the fewest number of actions that are not "
         "yet part of the stubborn set");
-    parser.add_enum_option(
+    parser.add_enum_option<AtomSelectionStrategy>(
         "atom_selection_strategy",
         strategies,
         "Strategy for selecting unsatisfied atoms from action preconditions or "

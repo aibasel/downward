@@ -95,7 +95,7 @@ struct Signature {
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : greedy(opts.get<bool>("greedy")),
-      at_limit(AtLimit(opts.get_enum("at_limit"))) {
+      at_limit(opts.get<AtLimit>("at_limit")) {
 }
 
 int ShrinkBisimulation::initialize_groups(
@@ -300,7 +300,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
             }
             assert(sig_end > sig_start);
 
-            if (at_limit == RETURN &&
+            if (at_limit == AtLimit::RETURN &&
                 num_groups - num_old_groups + num_new_groups > target_size) {
                 /* Can't split the group (or the set of groups for
                    this h value) -- would exceed bound on abstract
@@ -364,9 +364,9 @@ string ShrinkBisimulation::name() const {
 void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
     cout << "At limit: ";
-    if (at_limit == RETURN) {
+    if (at_limit == AtLimit::RETURN) {
         cout << "return";
-    } else if (at_limit == USE_UP) {
+    } else if (at_limit == AtLimit::USE_UP) {
         cout << "use up limit";
     } else {
         ABORT("Unknown setting for at_limit.");
@@ -415,7 +415,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     vector<string> at_limit;
     at_limit.push_back("RETURN");
     at_limit.push_back("USE_UP");
-    parser.add_enum_option(
+    parser.add_enum_option<AtLimit>(
         "at_limit", at_limit,
         "what to do when the size limit is hit", "RETURN");
 

@@ -90,7 +90,7 @@ protected:
         return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
     }
 
-    // Returns true iff the operators was enqueued.
+    // Return true iff the operator was enqueued.
     // TODO: rename to enqueue_stubborn_operator?
     bool mark_as_stubborn(int op_no);
     virtual void initialize_stubborn_set(const State &state) = 0;

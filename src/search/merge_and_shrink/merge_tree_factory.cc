@@ -15,7 +15,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(const options::Options &options)
     : rng(utils::parse_rng_from_options(options)),
-      update_option(static_cast<UpdateOption>(options.get_enum("update_option"))) {
+      update_option(options.get<UpdateOption>("update_option")) {
 }
 
 void MergeTreeFactory::dump_options() const {
@@ -52,7 +52,7 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
     update_option.push_back("use_first");
     update_option.push_back("use_second");
     update_option.push_back("use_random");
-    parser.add_enum_option(
+    parser.add_enum_option<UpdateOption>(
         "update_option",
         update_option,
         "When the merge tree is used within another merge strategy, how "
