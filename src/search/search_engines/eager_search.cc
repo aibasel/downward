@@ -37,9 +37,9 @@ EagerSearch::EagerSearch(const Options &opts)
 
 void EagerSearch::initialize() {
     utils::g_log << "Conducting best first search"
-         << (reopen_closed_nodes ? " with" : " without")
-         << " reopening closed nodes, (real) bound = " << bound
-         << endl;
+                 << (reopen_closed_nodes ? " with" : " without")
+                 << " reopening closed nodes, (real) bound = " << bound
+                 << endl;
     assert(open_list);
 
     set<Evaluator *> evals;

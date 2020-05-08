@@ -178,7 +178,7 @@ void MatchTree::dump_recursive(Node *node) const {
     utils::g_log << endl;
     utils::g_log << "node->var_id = " << node->var_id << endl;
     utils::g_log << "Number of applicable operators at this node: "
-         << node->applicable_operator_ids.size() << endl;
+                 << node->applicable_operator_ids.size() << endl;
     for (int op_id : node->applicable_operator_ids) {
         utils::g_log << "AbstractOperator #" << op_id << endl;
     }
@@ -192,8 +192,8 @@ void MatchTree::dump_recursive(Node *node) const {
                 utils::g_log << "recursive call for child with value " << val << endl;
                 dump_recursive(node->successors[val]);
                 utils::g_log << "back from recursive call (for successors[" << val
-                     << "]) to node with var_id = " << node->var_id
-                     << endl;
+                             << "]) to node with var_id = " << node->var_id
+                             << endl;
             } else {
                 utils::g_log << "no child for value " << val << endl;
             }
@@ -202,7 +202,7 @@ void MatchTree::dump_recursive(Node *node) const {
             utils::g_log << "recursive call for star_successor" << endl;
             dump_recursive(node->star_successor);
             utils::g_log << "back from recursive call (for star_successor) "
-                 << "to node with var_id = " << node->var_id << endl;
+                         << "to node with var_id = " << node->var_id << endl;
         } else {
             utils::g_log << "no star_successor" << endl;
         }

@@ -113,7 +113,7 @@ void SearchNode::dump(const TaskProxy &task_proxy) const {
         OperatorsProxy operators = task_proxy.get_operators();
         OperatorProxy op = operators[info.creating_operator.get_index()];
         utils::g_log << " created by " << op.get_name()
-             << " from " << info.parent_state_id << endl;
+                     << " from " << info.parent_state_id << endl;
     } else {
         utils::g_log << " no parent" << endl;
     }
@@ -156,7 +156,7 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
             node_info.parent_state_id != StateID::no_state) {
             OperatorProxy op = operators[node_info.creating_operator.get_index()];
             utils::g_log << " created by " << op.get_name()
-                 << " from " << node_info.parent_state_id << endl;
+                         << " from " << node_info.parent_state_id << endl;
         } else {
             utils::g_log << "has no parent" << endl;
         }

@@ -184,9 +184,9 @@ string ShrinkFH::name() const {
 
 void ShrinkFH::dump_strategy_specific_options() const {
     utils::g_log << "Prefer shrinking high or low f states: "
-         << (f_start == HighLow::HIGH ? "high" : "low") << endl
-         << "Prefer shrinking high or low h states: "
-         << (h_start == HighLow::HIGH ? "high" : "low") << endl;
+                 << (f_start == HighLow::HIGH ? "high" : "low") << endl
+                 << "Prefer shrinking high or low h states: "
+                 << (h_start == HighLow::HIGH ? "high" : "low") << endl;
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {

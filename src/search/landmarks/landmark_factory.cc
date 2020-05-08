@@ -73,9 +73,9 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
         utils::g_log << "Warning! No landmarks found. Task unsolvable?" << endl;
     else {
         utils::g_log << "Discovered " << lm_graph->number_of_landmarks()
-             << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
-             << " are disjunctive and "
-             << lm_graph->number_of_conj_landmarks() << " are conjunctive." << endl;
+                     << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
+                     << " are disjunctive and "
+                     << lm_graph->number_of_conj_landmarks() << " are conjunctive." << endl;
         utils::g_log << lm_graph->number_of_edges() << " edges" << endl;
     }
     //lm_graph->dump();
@@ -614,7 +614,7 @@ void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, E
         });
     int num_causal_landmarks = lm_graph->number_of_landmarks();
     utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
-         << " non-causal landmarks" << endl;
+                 << " non-causal landmarks" << endl;
 }
 
 void LandmarkFactory::discard_disjunctive_landmarks() {
@@ -625,7 +625,7 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
     */
     if (lm_graph->number_of_disj_landmarks() > 0) {
         utils::g_log << "Discarding " << lm_graph->number_of_disj_landmarks()
-             << " disjunctive landmarks" << endl;
+                     << " disjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.disjunctive;});
     }
@@ -634,7 +634,7 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
 void LandmarkFactory::discard_conjunctive_landmarks() {
     if (lm_graph->number_of_conj_landmarks() > 0) {
         utils::g_log << "Discarding " << lm_graph->number_of_conj_landmarks()
-             << " conjunctive landmarks" << endl;
+                     << " conjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.conjunctive;});
     }
@@ -659,7 +659,7 @@ void LandmarkFactory::mk_acyclic_graph() {
     // the old method for this is no longer available.
     // assert(acyclic_node_set.size() == number_of_landmarks());
     utils::g_log << "Removed " << removed_edges
-         << " reasonable or obedient reasonable orders" << endl;
+                 << " reasonable or obedient reasonable orders" << endl;
 }
 
 bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,

@@ -119,7 +119,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     utils::Verbosity verbosity) {
     if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << "Merging " << ts1.get_description() << " and "
-             << ts2.get_description() << endl;
+                     << ts2.get_description() << endl;
     }
 
     assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
@@ -276,7 +276,7 @@ void TransitionSystem::apply_abstraction(
     assert(new_num_states < num_states);
     if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << tag() << "applying abstraction (" << get_size()
-             << " to " << new_num_states << " states)" << endl;
+                     << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
@@ -491,7 +491,7 @@ void TransitionSystem::dump_dot_graph() const {
         bool is_init = (i == init_state);
         bool is_goal = goal_states[i];
         utils::g_log << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
-             << "] node" << i << ";" << endl;
+                     << "] node" << i << ";" << endl;
         if (is_init)
             utils::g_log << "    start -> node" << i << ";" << endl;
     }
@@ -543,6 +543,6 @@ void TransitionSystem::dump_labels_and_transitions() const {
 
 void TransitionSystem::statistics() const {
     utils::g_log << tag() << get_size() << " states, "
-         << compute_total_transitions() << " arcs " << endl;
+                 << compute_total_transitions() << " arcs " << endl;
 }
 }

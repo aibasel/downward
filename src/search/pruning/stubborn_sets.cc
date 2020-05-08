@@ -120,10 +120,10 @@ void StubbornSets::prune_operators(
             static_cast<double>(num_pruned_successors_generated) /
             static_cast<double>(num_unpruned_successors_generated));
         utils::g_log << "Pruning ratio after " << num_expansions_before_checking_pruning_ratio
-             << " calls: " << pruning_ratio << endl;
+                     << " calls: " << pruning_ratio << endl;
         if (pruning_ratio < min_required_pruning_ratio) {
             utils::g_log << "-- pruning ratio is lower than minimum pruning ratio ("
-                 << min_required_pruning_ratio << ") -> switching off pruning" << endl;
+                         << min_required_pruning_ratio << ") -> switching off pruning" << endl;
             is_pruning_disabled = true;
         }
     }
@@ -159,9 +159,9 @@ void StubbornSets::prune_operators(
 
 void StubbornSets::print_statistics() const {
     utils::g_log << "total successors before partial-order reduction: "
-         << num_unpruned_successors_generated << endl
-         << "total successors after partial-order reduction: "
-         << num_pruned_successors_generated << endl;
+                 << num_unpruned_successors_generated << endl
+                 << "total successors after partial-order reduction: "
+                 << num_pruned_successors_generated << endl;
 }
 
 void add_pruning_options(options::OptionParser &parser) {

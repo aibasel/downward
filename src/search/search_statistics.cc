@@ -41,7 +41,7 @@ void SearchStatistics::report_f_value_progress(int f) {
 void SearchStatistics::print_f_line() const {
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "f = " << lastjump_f_value
-             << ", ";
+                     << ", ";
         print_basic_statistics();
         utils::g_log << endl;
     }
@@ -57,7 +57,7 @@ void SearchStatistics::print_checkpoint_line(int g) const {
 
 void SearchStatistics::print_basic_statistics() const {
     utils::g_log << evaluated_states << " evaluated, "
-         << expanded_states << " expanded";
+                 << expanded_states << " expanded";
     if (reopened_states > 0) {
         utils::g_log << ", " << reopened_states << " reopened";
     }
@@ -73,12 +73,12 @@ void SearchStatistics::print_detailed_statistics() const {
 
     if (lastjump_f_value >= 0) {
         utils::g_log << "Expanded until last jump: "
-             << lastjump_expanded_states << " state(s)." << endl;
+                     << lastjump_expanded_states << " state(s)." << endl;
         utils::g_log << "Reopened until last jump: "
-             << lastjump_reopened_states << " state(s)." << endl;
+                     << lastjump_reopened_states << " state(s)." << endl;
         utils::g_log << "Evaluated until last jump: "
-             << lastjump_evaluated_states << " state(s)." << endl;
+                     << lastjump_evaluated_states << " state(s)." << endl;
         utils::g_log << "Generated until last jump: "
-             << lastjump_generated_states << " state(s)." << endl;
+                     << lastjump_generated_states << " state(s)." << endl;
     }
 }

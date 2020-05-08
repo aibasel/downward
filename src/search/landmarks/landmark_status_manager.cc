@@ -59,7 +59,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
         }
     }
     utils::g_log << inserted << " initial landmarks, "
-         << num_goal_lms << " goal landmarks" << endl;
+                 << num_goal_lms << " goal landmarks" << endl;
 }
 
 

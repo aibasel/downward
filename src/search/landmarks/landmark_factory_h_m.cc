@@ -295,8 +295,8 @@ void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const
     VariableProxy var = variables[fluent.var];
     FactProxy fact = var.get_fact(fluent.value);
     utils::g_log << fact.get_name()
-         << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
-         << "->" << fact.get_value() << ")";
+                 << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
+                 << "->" << fact.get_value() << ")";
 }
 
 static FluentSet get_operator_precondition(const OperatorProxy &op) {

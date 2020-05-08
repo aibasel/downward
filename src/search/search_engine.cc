@@ -35,9 +35,9 @@ successor_generator::SuccessorGenerator &get_successor_generator(const TaskProxy
     int peak_memory_after = utils::get_peak_memory_in_kb();
     int memory_diff = peak_memory_after - peak_memory_before;
     utils::g_log << "peak memory difference for successor generator creation: "
-         << memory_diff << " KB" << endl
-         << "time for successor generation creation: "
-         << successor_generator_timer << endl;
+                 << memory_diff << " KB" << endl
+                 << "time for successor generation creation: "
+                 << successor_generator_timer << endl;
     return successor_generator;
 }
 

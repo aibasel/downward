@@ -86,7 +86,7 @@ void Exploration::write_overflow_warning() {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
         utils::g_log << "WARNING: overflow on landmark exploration h^add! Costs clamped to "
-             << MAX_COST_VALUE << endl;
+                     << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;
     }
 }

@@ -254,7 +254,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
         }
         if (count > 0) {
             utils::g_log << "pattern: " << candidate_pdbs[i]->get_pattern()
-                 << " - improvement: " << count << endl;
+                         << " - improvement: " << count << endl;
         }
     }
 
@@ -304,7 +304,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
     utils::g_log << "Average operator cost: "
-         << task_properties::get_average_operator_cost(task_proxy) << endl;
+                 << task_properties::get_average_operator_cost(task_proxy) << endl;
 
     const vector<vector<int>> relevant_neighbours =
         compute_relevant_neighbours(task_proxy);
@@ -342,7 +342,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             ++num_iterations;
             int init_h = current_pdbs->get_value(initial_state);
             utils::g_log << "current collection size is "
-                 << current_pdbs->get_size() << endl;
+                         << current_pdbs->get_size() << endl;
             utils::g_log << "current initial h value: ";
             if (current_pdbs->is_dead_end(initial_state)) {
                 utils::g_log << "infinite => stopping hill climbing" << endl;
@@ -365,7 +365,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
             if (improvement < min_improvement) {
                 utils::g_log << "Improvement below threshold. Stop hill climbing."
-                     << endl;
+                             << endl;
                 break;
             }
 
@@ -375,7 +375,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
                 candidate_pdbs[best_pdb_index];
             const Pattern &best_pattern = best_pdb->get_pattern();
             utils::g_log << "found a better pattern with improvement " << improvement
-                 << endl;
+                         << endl;
             utils::g_log << "pattern: " << best_pattern << endl;
             current_pdbs->add_pdb(best_pdb);
 
@@ -389,8 +389,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             candidate_pdbs[best_pdb_index] = nullptr;
 
             utils::g_log << "Hill climbing time so far: "
-                 << hill_climbing_timer->get_elapsed_time()
-                 << endl;
+                         << hill_climbing_timer->get_elapsed_time()
+                         << endl;
         }
     } catch (HillClimbingTimeout &) {
         utils::g_log << "Time limit reached. Abort hill climbing." << endl;
@@ -401,7 +401,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     utils::g_log << "Hill climbing rejected patterns: " << num_rejected << endl;
     utils::g_log << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
     utils::g_log << "Hill climbing time: "
-         << hill_climbing_timer->get_elapsed_time() << endl;
+                 << hill_climbing_timer->get_elapsed_time() << endl;
 
     delete hill_climbing_timer;
     hill_climbing_timer = nullptr;

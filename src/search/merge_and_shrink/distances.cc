@@ -328,7 +328,7 @@ void Distances::apply_abstraction(
     if (must_recompute) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << transition_system.tag()
-                 << "simplification was not f-preserving!" << endl;
+                         << "simplification was not f-preserving!" << endl;
         }
         clear_distances();
         compute_distances(

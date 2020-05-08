@@ -65,8 +65,8 @@ void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
     else
         utils::g_log << "Current";
     utils::g_log << " peak memory increase of merge-and-shrink algorithm: "
-         << utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
-         << endl;
+                 << utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
+                 << endl;
 }
 
 void MergeAndShrinkAlgorithm::dump_options() const {
@@ -78,16 +78,16 @@ void MergeAndShrinkAlgorithm::dump_options() const {
 
         utils::g_log << "Options related to size limits and shrinking: " << endl;
         utils::g_log << "Transition system size limit: " << max_states << endl
-             << "Transition system size limit right before merge: "
-             << max_states_before_merge << endl;
+                     << "Transition system size limit right before merge: "
+                     << max_states_before_merge << endl;
         utils::g_log << "Threshold to trigger shrinking right before merge: "
-             << shrink_threshold_before_merge << endl;
+                     << shrink_threshold_before_merge << endl;
         utils::g_log << endl;
 
         utils::g_log << "Pruning unreachable states: "
-             << (prune_unreachable_states ? "yes" : "no") << endl;
+                     << (prune_unreachable_states ? "yes" : "no") << endl;
         utils::g_log << "Pruning irrelevant states: "
-             << (prune_irrelevant_states ? "yes" : "no") << endl;
+                     << (prune_irrelevant_states ? "yes" : "no") << endl;
         utils::g_log << endl;
 
         if (label_reduction) {
@@ -106,38 +106,38 @@ void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
     string dashes(79, '=');
     if (!label_reduction) {
         utils::g_log << dashes << endl
-             << "WARNING! You did not enable label reduction.\nThis may "
+                     << "WARNING! You did not enable label reduction.\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
-             << endl << dashes << endl;
+                     << endl << dashes << endl;
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
         utils::g_log << dashes << endl
-             << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
+                     << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
             "iteration, both before shrinking and merging. This double computation effort\n"
             "does not pay off for most configurations!"
-             << endl << dashes << endl;
+                     << endl << dashes << endl;
     } else {
         if (label_reduction->reduce_before_shrinking() &&
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
             utils::g_log << dashes << endl
-                 << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
+                         << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
                 "best if used with label reduction before merging, not before shrinking!"
-                 << endl << dashes << endl;
+                         << endl << dashes << endl;
         }
         if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
             utils::g_log << dashes << endl
-                 << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
+                         << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
                 "reduction before shrinking, not before merging!"
-                 << endl << dashes << endl;
+                         << endl << dashes << endl;
         }
     }
 
     if (!prune_unreachable_states || !prune_irrelevant_states) {
         utils::g_log << dashes << endl
-             << "WARNING! Pruning is (partially) turned off!\nThis may "
+                     << "WARNING! Pruning is (partially) turned off!\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
-             << endl << dashes << endl;
+                     << endl << dashes << endl;
     }
 }
 
@@ -163,7 +163,7 @@ void MergeAndShrinkAlgorithm::main_loop(
             utils::g_log << "without a time limit." << endl;
         } else {
             utils::g_log << "with a time limit of "
-                 << main_loop_max_time << "s." << endl;
+                         << main_loop_max_time << "s." << endl;
         }
     }
     int maximum_intermediate_size = 0;
@@ -183,8 +183,8 @@ void MergeAndShrinkAlgorithm::main_loop(
 
     auto log_main_loop_progress = [&timer](const string &msg) {
             utils::g_log << "M&S algorithm main loop timer: "
-                 << timer.get_elapsed_time()
-                 << " (" << msg << ")" << endl;
+                         << timer.get_elapsed_time()
+                         << " (" << msg << ")" << endl;
         };
     int iteration_counter = 0;
     while (fts.get_num_active_entries() > 1) {
@@ -198,7 +198,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         assert(merge_index1 != merge_index2);
         if (verbosity >= utils::Verbosity::NORMAL) {
             utils::g_log << "Next pair of indices: ("
-                 << merge_index1 << ", " << merge_index2 << ")" << endl;
+                         << merge_index1 << ", " << merge_index2 << ")" << endl;
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 fts.statistics(merge_index1);
                 fts.statistics(merge_index2);
@@ -314,7 +314,7 @@ void MergeAndShrinkAlgorithm::main_loop(
     utils::g_log << "End of merge-and-shrink algorithm, statistics:" << endl;
     utils::g_log << "Main loop runtime: " << timer.get_elapsed_time() << endl;
     utils::g_log << "Maximum intermediate abstraction size: "
-         << maximum_intermediate_size << endl;
+                 << maximum_intermediate_size << endl;
     shrink_strategy = nullptr;
     label_reduction = nullptr;
 }
@@ -499,7 +499,7 @@ void handle_shrink_limit_options_defaults(Options &opts) {
 
     if (max_states_before_merge > max_states) {
         utils::g_log << "warning: max_states_before_merge exceeds max_states, "
-             << "correcting." << endl;
+                     << "correcting." << endl;
         max_states_before_merge = max_states;
     }
 

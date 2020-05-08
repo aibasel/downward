@@ -60,8 +60,8 @@ void AbstractOperator::dump(const Pattern &pattern,
         int var_id = regression_preconditions[i].var;
         int val = regression_preconditions[i].value;
         utils::g_log << "Variable: " << var_id << " (True name: "
-             << variables[pattern[var_id]].get_name()
-             << ", Index: " << i << ") Value: " << val << endl;
+                     << variables[pattern[var_id]].get_name()
+                     << ", Index: " << i << ") Value: " << val << endl;
     }
     utils::g_log << "Hash effect:" << hash_effect << endl;
 }

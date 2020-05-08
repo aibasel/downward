@@ -99,7 +99,7 @@ CEGAR::CEGAR(
     utils::g_log << "Start building abstraction." << endl;
     utils::g_log << "Maximum number of states: " << max_states << endl;
     utils::g_log << "Maximum number of transitions: "
-         << max_non_looping_transitions << endl;
+                 << max_non_looping_transitions << endl;
     refinement_loop(rng);
     utils::g_log << "Done building abstraction." << endl;
     utils::g_log << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
@@ -235,7 +235,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         if (task_properties::is_applicable(op, concrete_state)) {
             if (debug)
                 utils::g_log << "  Move to " << *next_abstract_state << " with "
-                     << op.get_name() << endl;
+                             << op.get_name() << endl;
             State next_concrete_state = concrete_state.get_successor(op);
             if (!next_abstract_state->includes(next_concrete_state)) {
                 if (debug)

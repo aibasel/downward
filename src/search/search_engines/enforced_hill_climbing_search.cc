@@ -101,10 +101,10 @@ void EnforcedHillClimbingSearch::reach_state(
 void EnforcedHillClimbingSearch::initialize() {
     assert(evaluator);
     utils::g_log << "Conducting enforced hill-climbing search, (real) bound = "
-         << bound << endl;
+                 << bound << endl;
     if (use_preferred) {
         utils::g_log << "Using preferred operators for "
-             << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
+                     << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
             "ranking successors" : "pruning") << endl;
     }
 
@@ -253,8 +253,8 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     utils::g_log << "EHC phases: " << num_ehc_phases << endl;
     assert(num_ehc_phases != 0);
     utils::g_log << "Average expansions per EHC phase: "
-         << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
-         << endl;
+                 << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
+                 << endl;
 
     for (auto count : d_counts) {
         int depth = count.first;
@@ -262,8 +262,8 @@ void EnforcedHillClimbingSearch::print_statistics() const {
         assert(phases != 0);
         int total_expansions = count.second.second;
         utils::g_log << "EHC phases of depth " << depth << ": " << phases
-             << " - Avg. Expansions: "
-             << static_cast<double>(total_expansions) / phases << endl;
+                     << " - Avg. Expansions: "
+                     << static_cast<double>(total_expansions) / phases << endl;
     }
 }
 
