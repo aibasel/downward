@@ -31,7 +31,7 @@ successor_generator::SuccessorGenerator &get_successor_generator(const TaskProxy
     successor_generator::SuccessorGenerator &successor_generator =
         successor_generator::g_successor_generators[task_proxy];
     successor_generator_timer.stop();
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
+    cout << "done!" << endl;
     int peak_memory_after = utils::get_peak_memory_in_kb();
     int memory_diff = peak_memory_after - peak_memory_before;
     cout << "peak memory difference for successor generator creation: "
@@ -96,8 +96,7 @@ void SearchEngine::search() {
         }
     }
     // TODO: Revise when and which search times are logged.
-    cout << "Actual search time: " << timer.get_elapsed_time()
-         << " [t=" << utils::g_timer << "]" << endl;
+    cout << "Actual search time: " << timer.get_elapsed_time() << endl;
 }
 
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
