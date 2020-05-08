@@ -101,9 +101,9 @@ void LabelReduction::compute_label_mapping(
     int number_reduced_labels = num_labels - num_labels_after_reduction;
     if (verbosity >= utils::Verbosity::VERBOSE && number_reduced_labels > 0) {
         utils::g_log << "Label reduction: "
-             << num_labels << " labels, "
-             << num_labels_after_reduction << " after reduction"
-             << endl;
+                     << num_labels << " labels, "
+                     << num_labels_after_reduction << " after reduction"
+                     << endl;
     }
 }
 
@@ -267,9 +267,9 @@ bool LabelReduction::reduce(
 void LabelReduction::dump_options() const {
     utils::g_log << "Label reduction options:" << endl;
     utils::g_log << "Before merging: "
-         << (lr_before_merging ? "enabled" : "disabled") << endl;
+                 << (lr_before_merging ? "enabled" : "disabled") << endl;
     utils::g_log << "Before shrinking: "
-         << (lr_before_shrinking ? "enabled" : "disabled") << endl;
+                 << (lr_before_shrinking ? "enabled" : "disabled") << endl;
     utils::g_log << "Method: ";
     switch (lr_method) {
     case LabelReductionMethod::TWO_TRANSITION_SYSTEMS:

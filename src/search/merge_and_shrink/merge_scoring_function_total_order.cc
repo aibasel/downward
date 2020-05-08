@@ -150,8 +150,8 @@ void MergeScoringFunctionTotalOrder::dump_function_specific_options() const {
     utils::g_log << endl;
 
     utils::g_log << "Consider " << (atomic_before_product ?
-                            "atomic before product" : "product before atomic")
-         << " transition systems" << endl;
+                                    "atomic before product" : "product before atomic")
+                 << " transition systems" << endl;
     utils::g_log << "Random seed: " << random_seed << endl;
 }
 

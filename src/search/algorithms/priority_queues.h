@@ -224,8 +224,8 @@ public:
         if (key >= MIN_BUCKETS_BEFORE_SWITCH && key > num_pushes) {
             if (DEBUG) {
                 utils::g_log << "Switch from bucket-based to heap-based queue "
-                          << "at key = " << key
-                          << ", num_pushes = " << num_pushes << std::endl;
+                             << "at key = " << key
+                             << ", num_pushes = " << num_pushes << std::endl;
             }
             std::vector<Entry> entries;
             extract_sorted_entries(entries);

@@ -205,11 +205,11 @@ void prune_dominated_cliques(
 
     int num_pruned_collections = num_cliques - remaining_pattern_cliques.size();
     utils::g_log << "Pruned " << num_pruned_collections << " of " << num_cliques
-         << " pattern cliques" << endl;
+                 << " pattern cliques" << endl;
 
     int num_pruned_patterns = num_patterns - num_remaining_patterns;
     utils::g_log << "Pruned " << num_pruned_patterns << " of " << num_patterns
-         << " PDBs" << endl;
+                 << " PDBs" << endl;
 
     patterns.swap(remaining_patterns);
     pdbs.swap(remaining_pdbs);

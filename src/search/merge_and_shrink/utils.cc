@@ -187,9 +187,9 @@ bool prune_step(
     if (verbosity >= utils::Verbosity::VERBOSE &&
         (unreachable_count || irrelevant_count)) {
         utils::g_log << ts.tag()
-             << "unreachable: " << unreachable_count << " states, "
-             << "irrelevant: " << irrelevant_count << " states ("
-             << "total dead: " << dead_count << " states)" << endl;
+                     << "unreachable: " << unreachable_count << " states, "
+                     << "irrelevant: " << irrelevant_count << " states ("
+                     << "total dead: " << dead_count << " states)" << endl;
     }
     return fts.apply_abstraction(index, state_equivalence_relation, verbosity);
 }

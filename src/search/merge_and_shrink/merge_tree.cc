@@ -285,7 +285,7 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
 
 void MergeTree::inorder_traversal(int indentation_offset) const {
     utils::g_log << "Merge tree, read from left to right (90° rotated tree): "
-         << endl;
+                 << endl;
     return root->inorder(indentation_offset, 0);
 }
 }

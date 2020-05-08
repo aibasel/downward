@@ -54,8 +54,8 @@ void Labels::dump_labels() const {
     for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
         if (labels[label_no]) {
             utils::g_log << "label " << label_no
-                 << ", cost " << labels[label_no]->get_cost()
-                 << endl;
+                         << ", cost " << labels[label_no]->get_cost()
+                         << endl;
         }
     }
 }

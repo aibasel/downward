@@ -24,7 +24,7 @@ void validate_and_normalize_pattern(const TaskProxy &task_proxy,
     if (it != pattern.end()) {
         pattern.erase(it, pattern.end());
         utils::g_log << "Warning: duplicate variables in pattern have been removed"
-             << endl;
+                     << endl;
     }
     if (!pattern.empty()) {
         if (pattern.front() < 0) {

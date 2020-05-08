@@ -75,7 +75,7 @@ void PatternCollectionInformation::create_pattern_cliques_if_missing() {
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
         pattern_cliques = compute_pattern_cliques(*patterns, are_additive);
         utils::g_log << "Done computing pattern cliques for pattern collection: "
-             << timer << endl;
+                     << timer << endl;
     }
 }
 

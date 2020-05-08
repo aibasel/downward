@@ -63,8 +63,8 @@ bool MergeAndShrinkHeuristic::extract_unsolvable_factor(FactoredTransitionSystem
             extract_factor(fts, index);
             if (verbosity >= utils::Verbosity::NORMAL) {
                 utils::g_log << fts.get_transition_system(index).tag()
-                     << "use this unsolvable factor as heuristic."
-                     << endl;
+                             << "use this unsolvable factor as heuristic."
+                             << endl;
             }
             return true;
         }
@@ -78,7 +78,7 @@ void MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSyste
         if (fts.is_factor_trivial(index)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << fts.get_transition_system(index).tag()
-                     << "is trivial." << endl;
+                             << "is trivial." << endl;
             }
         } else {
             extract_factor(fts, index);

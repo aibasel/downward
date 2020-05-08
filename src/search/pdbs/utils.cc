@@ -36,7 +36,7 @@ void dump_pattern_generation_statistics(
     utils::g_log << identifier << " pattern: " << pattern << endl;
     utils::g_log << identifier << " number of variables: " << pattern.size() << endl;
     utils::g_log << identifier << " PDB size: "
-         << compute_pdb_size(pattern_info.get_task_proxy(), pattern) << endl;
+                 << compute_pdb_size(pattern_info.get_task_proxy(), pattern) << endl;
     utils::g_log << identifier << " computation time: " << runtime << endl;
 }
 
@@ -50,10 +50,10 @@ void dump_pattern_collection_generation_statistics(
         utils::g_log << identifier << " collection: " << pattern_collection << endl;
     }
     utils::g_log << identifier << " number of patterns: " << pattern_collection.size()
-         << endl;
+                 << endl;
     utils::g_log << identifier << " total PDB size: "
-         << compute_total_pdb_size(pci.get_task_proxy(), pattern_collection)
-         << endl;
+                 << compute_total_pdb_size(pci.get_task_proxy(), pattern_collection)
+                 << endl;
     utils::g_log << identifier << " computation time: " << runtime << endl;
 }
 }

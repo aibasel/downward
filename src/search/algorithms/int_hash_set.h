@@ -314,9 +314,9 @@ public:
         int num_buckets = capacity();
         assert(num_buckets != 0);
         utils::g_log << "Int hash set load factor: " << num_entries << "/"
-                  << num_buckets << " = "
-                  << static_cast<double>(num_entries) / num_buckets
-                  << std::endl;
+                     << num_buckets << " = "
+                     << static_cast<double>(num_entries) / num_buckets
+                     << std::endl;
         utils::g_log << "Int hash set resizes: " << num_resizes << std::endl;
     }
 };

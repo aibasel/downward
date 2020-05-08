@@ -20,9 +20,11 @@ namespace utils {
   Usage:
         utils::g_log << "States: " << num_states << endl;
 */
-struct Log {
+class Log {
+private:
     bool line_has_started = false;
 
+public:
     template<typename T>
     Log &operator<<(const T &elem) {
         if (!line_has_started) {
@@ -35,7 +37,7 @@ struct Log {
         return *this;
     }
 
-    using manip_function = std::ostream&(*)(std::ostream&);
+    using manip_function = std::ostream &(*)(std::ostream &);
     Log &operator<<(manip_function f) {
         if (f == static_cast<manip_function>(&std::endl)) {
             line_has_started = false;

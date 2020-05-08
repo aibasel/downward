@@ -111,8 +111,8 @@ void print_variable_statistics(const TaskProxy &task_proxy) {
     utils::g_log << "Variables: " << variables.size() << endl;
     utils::g_log << "FactPairs: " << num_facts << endl;
     utils::g_log << "Bytes per state: "
-         << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
-         << endl;
+                 << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
+                 << endl;
 }
 
 void dump_pddl(const State &state) {
@@ -127,7 +127,7 @@ void dump_fdr(const State &state) {
     for (FactProxy fact : state) {
         VariableProxy var = fact.get_variable();
         utils::g_log << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
-             << fact.get_value() << endl;
+                     << fact.get_value() << endl;
     }
 }
 
@@ -135,7 +135,7 @@ void dump_goals(const GoalsProxy &goals) {
     utils::g_log << "Goal conditions:" << endl;
     for (FactProxy goal : goals) {
         utils::g_log << "  " << goal.get_variable().get_name() << ": "
-             << goal.get_value() << endl;
+                     << goal.get_value() << endl;
     }
 }
 
@@ -154,7 +154,7 @@ void dump_task(const TaskProxy &task_proxy) {
     utils::g_log << "Variables (" << variables.size() << "):" << endl;
     for (VariableProxy var : variables) {
         utils::g_log << "  " << var.get_name()
-             << " (range " << var.get_domain_size() << ")" << endl;
+                     << " (range " << var.get_domain_size() << ")" << endl;
         for (int val = 0; val < var.get_domain_size(); ++val) {
             utils::g_log << "    " << val << ": " << var.get_fact(val).get_name() << endl;
         }

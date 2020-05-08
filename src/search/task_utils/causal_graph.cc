@@ -195,11 +195,11 @@ void CausalGraph::dump(const TaskProxy &task_proxy) const {
     for (VariableProxy var : task_proxy.get_variables()) {
         int var_id = var.get_id();
         utils::g_log << "#" << var_id << " [" << var.get_name() << "]:" << endl
-             << "    pre->eff arcs: " << pre_to_eff[var_id] << endl
-             << "    eff->pre arcs: " << eff_to_pre[var_id] << endl
-             << "    eff->eff arcs: " << eff_to_eff[var_id] << endl
-             << "    successors: " << successors[var_id] << endl
-             << "    predecessors: " << predecessors[var_id] << endl;
+                     << "    pre->eff arcs: " << pre_to_eff[var_id] << endl
+                     << "    eff->pre arcs: " << eff_to_pre[var_id] << endl
+                     << "    eff->eff arcs: " << eff_to_eff[var_id] << endl
+                     << "    successors: " << successors[var_id] << endl
+                     << "    predecessors: " << predecessors[var_id] << endl;
     }
 }
 

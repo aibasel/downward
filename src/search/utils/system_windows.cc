@@ -19,7 +19,7 @@ void out_of_memory_handler() {
 }
 
 void signal_handler(int signal_number) {
-    cout<< "Peak memory: "
+    cout << "Peak memory: "
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "caught signal " << signal_number
          << " -- exiting" << endl;

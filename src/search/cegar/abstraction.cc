@@ -109,7 +109,7 @@ pair<int, int> Abstraction::refine(
         }
         if (debug) {
             utils::g_log << "New init state #" << init_id << ": " << get_state(init_id)
-                 << endl;
+                         << endl;
         }
     }
     if (goals.count(v_id)) {

@@ -239,8 +239,8 @@ void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNod
     for (const FactPair &lm_fact : node_p->facts) {
         VariableProxy var = variables[lm_fact.var];
         utils::g_log << var.get_fact(lm_fact.value).get_name() << " ("
-             << var.get_name() << "(" << lm_fact.var << ")"
-             << "->" << lm_fact.value << ")";
+                     << var.get_name() << "(" << lm_fact.var << ")"
+                     << "->" << lm_fact.value << ")";
         if (i++ < node_p->facts.size() - 1)
             utils::g_log << ", ";
     }

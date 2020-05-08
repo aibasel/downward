@@ -20,8 +20,8 @@ HMHeuristic::HMHeuristic(const Options &opts)
       goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
     utils::g_log << "Using h^" << m << "." << endl;
     utils::g_log << "The implementation of the h^m heuristic is preliminary." << endl
-         << "It is SLOOOOOOOOOOOW." << endl
-         << "Please do not use this for comparison!" << endl;
+                 << "It is SLOOOOOOOOOOOW." << endl
+                 << "Please do not use this for comparison!" << endl;
     generate_all_tuples();
 }
 

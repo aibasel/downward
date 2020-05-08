@@ -51,7 +51,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
     if (parser.dry_run() && !parser.help_mode())
         utils::g_log << "Warning: this command line option has been deprecated. Please "
             "consult fast-downward.org for equivalent new command line options."
-             << endl;
+                     << endl;
 
     options::Options options = parser.parse();
     if (parser.dry_run())
@@ -111,7 +111,7 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
     if (parser.dry_run() && !parser.help_mode())
         utils::g_log << "Warning: this command line option has been deprecated. Please "
             "consult fast-downward.org for equivalent new command line options."
-             << endl;
+                     << endl;
 
     options::Options opts = parser.parse();
     if (parser.dry_run())

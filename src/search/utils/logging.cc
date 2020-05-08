@@ -81,8 +81,8 @@ void MemoryTracer::leave_block(const string &block_name) {
 
 void MemoryTracer::print_trace_message(const string &msg) {
     g_log << "[TRACE] "
-         << setw(TIME_FIELD_WIDTH) << g_timer << " "
-         << setw(MEM_FIELD_WIDTH) << get_peak_memory_in_kb() << " KB";
+          << setw(TIME_FIELD_WIDTH) << g_timer << " "
+          << setw(MEM_FIELD_WIDTH) << get_peak_memory_in_kb() << " KB";
     for (size_t i = 0; i < block_stack.size() * INDENT_AMOUNT; ++i)
         g_log << ' ';
     g_log << ' ' << msg << endl;

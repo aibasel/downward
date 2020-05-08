@@ -79,15 +79,15 @@ struct Signature {
 
     void dump() const {
         utils::g_log << "Signature(h_and_goal = " << h_and_goal
-             << ", group = " << group
-             << ", state = " << state
-             << ", succ_sig = [";
+                     << ", group = " << group
+                     << ", state = " << state
+                     << ", succ_sig = [";
         for (size_t i = 0; i < succ_signature.size(); ++i) {
             if (i)
                 utils::g_log << ", ";
             utils::g_log << "(" << succ_signature[i].first
-                 << "," << succ_signature[i].second
-                 << ")";
+                         << "," << succ_signature[i].second
+                         << ")";
         }
         utils::g_log << "])" << endl;
     }
