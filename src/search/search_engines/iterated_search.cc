@@ -32,7 +32,7 @@ shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
 
     utils::g_log << "Starting search: ";
-    kptree::print_tree_bracketed(engine_configs[engine_configs_index], utils::g_log);
+    kptree::print_tree_bracketed(engine_configs[engine_configs_index], cout);
     utils::g_log << endl;
 
     return engine;
