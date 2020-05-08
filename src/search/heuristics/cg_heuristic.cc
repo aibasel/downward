@@ -7,6 +7,7 @@
 #include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 #include <algorithm>
 #include <cassert>
@@ -23,7 +24,7 @@ CGHeuristic::CGHeuristic(const Options &opts)
       cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
-    cout << "Initializing causal graph heuristic..." << endl;
+    utils::g_log << "Initializing causal graph heuristic..." << endl;
 
     int max_cache_size = opts.get<int>("max_cache_size");
     if (max_cache_size > 0)

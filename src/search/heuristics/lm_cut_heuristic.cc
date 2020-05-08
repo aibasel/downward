@@ -7,6 +7,7 @@
 #include "../task_proxy.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <iostream>
@@ -17,7 +18,7 @@ namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
     : Heuristic(opts),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
-    cout << "Initializing landmark cut heuristic..." << endl;
+    utils::g_log << "Initializing landmark cut heuristic..." << endl;
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {

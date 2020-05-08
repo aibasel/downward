@@ -40,45 +40,45 @@ void SearchStatistics::report_f_value_progress(int f) {
 
 void SearchStatistics::print_f_line() const {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "f = " << lastjump_f_value
+        utils::g_log << "f = " << lastjump_f_value
              << ", ";
         print_basic_statistics();
-        cout << endl;
+        utils::g_log << endl;
     }
 }
 
 void SearchStatistics::print_checkpoint_line(int g) const {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "g=" << g << ", ";
+        utils::g_log << "g=" << g << ", ";
         print_basic_statistics();
-        cout << endl;
+        utils::g_log << endl;
     }
 }
 
 void SearchStatistics::print_basic_statistics() const {
-    cout << evaluated_states << " evaluated, "
+    utils::g_log << evaluated_states << " evaluated, "
          << expanded_states << " expanded";
     if (reopened_states > 0) {
-        cout << ", " << reopened_states << " reopened";
+        utils::g_log << ", " << reopened_states << " reopened";
     }
 }
 
 void SearchStatistics::print_detailed_statistics() const {
-    cout << "Expanded " << expanded_states << " state(s)." << endl;
-    cout << "Reopened " << reopened_states << " state(s)." << endl;
-    cout << "Evaluated " << evaluated_states << " state(s)." << endl;
-    cout << "Evaluations: " << evaluations << endl;
-    cout << "Generated " << generated_states << " state(s)." << endl;
-    cout << "Dead ends: " << dead_end_states << " state(s)." << endl;
+    utils::g_log << "Expanded " << expanded_states << " state(s)." << endl;
+    utils::g_log << "Reopened " << reopened_states << " state(s)." << endl;
+    utils::g_log << "Evaluated " << evaluated_states << " state(s)." << endl;
+    utils::g_log << "Evaluations: " << evaluations << endl;
+    utils::g_log << "Generated " << generated_states << " state(s)." << endl;
+    utils::g_log << "Dead ends: " << dead_end_states << " state(s)." << endl;
 
     if (lastjump_f_value >= 0) {
-        cout << "Expanded until last jump: "
+        utils::g_log << "Expanded until last jump: "
              << lastjump_expanded_states << " state(s)." << endl;
-        cout << "Reopened until last jump: "
+        utils::g_log << "Reopened until last jump: "
              << lastjump_reopened_states << " state(s)." << endl;
-        cout << "Evaluated until last jump: "
+        utils::g_log << "Evaluated until last jump: "
              << lastjump_evaluated_states << " state(s)." << endl;
-        cout << "Generated until last jump: "
+        utils::g_log << "Generated until last jump: "
              << lastjump_generated_states << " state(s)." << endl;
     }
 }

@@ -5,6 +5,7 @@
 
 #include "../lp/lp_solver.h"
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -69,7 +70,7 @@ void StateEquationConstraints::add_constraints(
 void StateEquationConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, vector<lp::LPConstraint> &constraints,
     double infinity) {
-    cout << "Initializing constraints from state equation." << endl;
+    utils::g_log << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);

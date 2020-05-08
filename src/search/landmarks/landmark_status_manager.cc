@@ -2,6 +2,8 @@
 
 #include "landmark_graph.h"
 
+#include "../utils/logging.h"
+
 using namespace std;
 
 namespace landmarks {
@@ -56,7 +58,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
             }
         }
     }
-    cout << inserted << " initial landmarks, "
+    utils::g_log << inserted << " initial landmarks, "
          << num_goal_lms << " goal landmarks" << endl;
 }
 

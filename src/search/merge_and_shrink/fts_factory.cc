@@ -432,7 +432,7 @@ FactoredTransitionSystem FTSFactory::create(
     const bool compute_goal_distances,
     utils::Verbosity verbosity) {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Building atomic transition systems... " << endl;
+        utils::g_log << "Building atomic transition systems... " << endl;
     }
 
     unique_ptr<Labels> labels = utils::make_unique_ptr<Labels>(create_labels());

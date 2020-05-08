@@ -7,6 +7,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
@@ -45,10 +46,10 @@ DiversePotentialHeuristics::filter_samples_and_compute_functions(
             ++num_dead_ends;
         }
     }
-    cout << "Time for filtering dead ends: " << filtering_timer << endl;
-    cout << "Duplicate samples: " << num_duplicates << endl;
-    cout << "Dead end samples: " << num_dead_ends << endl;
-    cout << "Unique non-dead-end samples: " << samples_to_functions.size() << endl;
+    utils::g_log << "Time for filtering dead ends: " << filtering_timer << endl;
+    utils::g_log << "Duplicate samples: " << num_duplicates << endl;
+    utils::g_log << "Dead end samples: " << num_dead_ends << endl;
+    utils::g_log << "Unique non-dead-end samples: " << samples_to_functions.size() << endl;
     assert(num_duplicates + num_dead_ends + samples_to_functions.size() == samples.size());
     return samples_to_functions;
 }
@@ -85,14 +86,14 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     size_t last_num_samples = samples_to_functions.size();
     remove_covered_samples(*function, samples_to_functions);
     if (samples_to_functions.size() == last_num_samples) {
-        cout << "No sample removed -> Use arbitrary precomputed function."
+        utils::g_log << "No sample removed -> Use arbitrary precomputed function."
              << endl;
         function = move(samples_to_functions.begin()->second);
         // The move operation invalidated the entry, remove it.
         samples_to_functions.erase(samples_to_functions.begin());
         remove_covered_samples(*function, samples_to_functions);
     }
-    cout << "Removed " << last_num_samples - samples_to_functions.size()
+    utils::g_log << "Removed " << last_num_samples - samples_to_functions.size()
          << " samples. " << samples_to_functions.size() << " remaining."
          << endl;
     return function;
@@ -103,11 +104,11 @@ void DiversePotentialHeuristics::cover_samples(
     utils::Timer covering_timer;
     while (!samples_to_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
-        cout << "Find heuristic #" << diverse_functions.size() + 1 << endl;
+        utils::g_log << "Find heuristic #" << diverse_functions.size() + 1 << endl;
         diverse_functions.push_back(
             find_function_and_remove_covered_samples(samples_to_functions));
     }
-    cout << "Time for covering samples: " << covering_timer << endl;
+    utils::g_log << "Time for covering samples: " << covering_timer << endl;
 }
 
 vector<unique_ptr<PotentialFunction>>
@@ -126,8 +127,8 @@ DiversePotentialHeuristics::find_functions() {
     // Iteratively cover samples.
     cover_samples(samples_to_functions);
 
-    cout << "Potential heuristics: " << diverse_functions.size() << endl;
-    cout << "Initialization of potential heuristics: " << init_timer << endl;
+    utils::g_log << "Potential heuristics: " << diverse_functions.size() << endl;
+    utils::g_log << "Initialization of potential heuristics: " << init_timer << endl;
 
     return move(diverse_functions);
 }

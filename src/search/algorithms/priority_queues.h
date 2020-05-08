@@ -2,6 +2,7 @@
 #define ALGORITHMS_PRIORITY_QUEUES_H
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 
 #include <cassert>
 #include <iostream>
@@ -222,7 +223,7 @@ public:
         assert(is_valid_key(key));
         if (key >= MIN_BUCKETS_BEFORE_SWITCH && key > num_pushes) {
             if (DEBUG) {
-                std::cout << "Switch from bucket-based to heap-based queue "
+                utils::g_log << "Switch from bucket-based to heap-based queue "
                           << "at key = " << key
                           << ", num_pushes = " << num_pushes << std::endl;
             }

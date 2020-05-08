@@ -2,6 +2,7 @@
 
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -69,7 +70,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     // Simplify unary operators.
     utils::Timer simplify_timer;
     simplify();
-    cout << "time to simplify: " << simplify_timer << endl;
+    utils::g_log << "time to simplify: " << simplify_timer << endl;
 
     // Cross-reference unary operators.
     vector<vector<OpID>> precondition_of_vectors(propositions.size());
@@ -170,7 +171,7 @@ void RelaxationHeuristic::simplify() {
 
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
-    cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
+    utils::g_log << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
     /*
       First, we create a map that maps the preconditions and effect
@@ -292,6 +293,6 @@ void RelaxationHeuristic::simplify() {
             is_dominated),
         unary_operators.end());
 
-    cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
+    utils::g_log << " done! [" << unary_operators.size() << " unary operators]" << endl;
 }
 }

@@ -33,11 +33,11 @@ void dump_pattern_generation_statistics(
     utils::Duration runtime,
     const PatternInformation &pattern_info) {
     const Pattern &pattern = pattern_info.get_pattern();
-    cout << identifier << " pattern: " << pattern << endl;
-    cout << identifier << " number of variables: " << pattern.size() << endl;
-    cout << identifier << " PDB size: "
+    utils::g_log << identifier << " pattern: " << pattern << endl;
+    utils::g_log << identifier << " number of variables: " << pattern.size() << endl;
+    utils::g_log << identifier << " PDB size: "
          << compute_pdb_size(pattern_info.get_task_proxy(), pattern) << endl;
-    cout << identifier << " computation time: " << runtime << endl;
+    utils::g_log << identifier << " computation time: " << runtime << endl;
 }
 
 void dump_pattern_collection_generation_statistics(
@@ -47,13 +47,13 @@ void dump_pattern_collection_generation_statistics(
     bool dump_collection) {
     const PatternCollection &pattern_collection = *pci.get_patterns();
     if (dump_collection) {
-        cout << identifier << " collection: " << pattern_collection << endl;
+        utils::g_log << identifier << " collection: " << pattern_collection << endl;
     }
-    cout << identifier << " number of patterns: " << pattern_collection.size()
+    utils::g_log << identifier << " number of patterns: " << pattern_collection.size()
          << endl;
-    cout << identifier << " total PDB size: "
+    utils::g_log << identifier << " total PDB size: "
          << compute_total_pdb_size(pci.get_task_proxy(), pattern_collection)
          << endl;
-    cout << identifier << " computation time: " << runtime << endl;
+    utils::g_log << identifier << " computation time: " << runtime << endl;
 }
 }

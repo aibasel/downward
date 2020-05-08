@@ -5,6 +5,7 @@
 #include "../options/option_parser.h"
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/rng_options.h"
 #include "../utils/system.h"
 
@@ -19,21 +20,21 @@ MergeTreeFactory::MergeTreeFactory(const options::Options &options)
 }
 
 void MergeTreeFactory::dump_options() const {
-    cout << "Merge tree options: " << endl;
-    cout << "Type: " << name() << endl;
-    cout << "Update option: ";
+    utils::g_log << "Merge tree options: " << endl;
+    utils::g_log << "Type: " << name() << endl;
+    utils::g_log << "Update option: ";
     switch (update_option) {
     case UpdateOption::USE_FIRST:
-        cout << "use first";
+        utils::g_log << "use first";
         break;
     case UpdateOption::USE_SECOND:
-        cout << "use second";
+        utils::g_log << "use second";
         break;
     case UpdateOption::USE_RANDOM:
-        cout << "use random";
+        utils::g_log << "use random";
         break;
     }
-    cout << endl;
+    utils::g_log << endl;
     dump_tree_specific_options();
 }
 
