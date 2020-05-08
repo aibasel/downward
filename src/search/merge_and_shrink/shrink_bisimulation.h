@@ -10,12 +10,12 @@ class Options;
 namespace merge_and_shrink {
 struct Signature;
 
-class ShrinkBisimulation : public ShrinkStrategy {
-    enum AtLimit {
-        RETURN,
-        USE_UP
-    };
+enum class AtLimit {
+    RETURN,
+    USE_UP
+};
 
+class ShrinkBisimulation : public ShrinkStrategy {
     const bool greedy;
     const AtLimit at_limit;
 
