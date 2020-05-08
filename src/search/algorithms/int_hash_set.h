@@ -3,6 +3,7 @@
 
 #include "../utils/collections.h"
 #include "../utils/language.h"
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -293,30 +294,30 @@ public:
 
     void dump() const {
         int num_buckets = capacity();
-        std::cout << "[";
+        utils::g_log << "[";
         for (int i = 0; i < num_buckets; ++i) {
             const Bucket &bucket = buckets[i];
             if (bucket.full()) {
-                std::cout << bucket.key;
+                utils::g_log << bucket.key;
             } else {
-                std::cout << "_";
+                utils::g_log << "_";
             }
             if (i < num_buckets - 1) {
-                std::cout << ", ";
+                utils::g_log << ", ";
             }
         }
-        std::cout << "]" << std::endl;
+        utils::g_log << "]" << std::endl;
     }
 
     void print_statistics() const {
         assert(!buckets.empty());
         int num_buckets = capacity();
         assert(num_buckets != 0);
-        std::cout << "Int hash set load factor: " << num_entries << "/"
+        utils::g_log << "Int hash set load factor: " << num_entries << "/"
                   << num_buckets << " = "
                   << static_cast<double>(num_entries) / num_buckets
                   << std::endl;
-        std::cout << "Int hash set resizes: " << num_resizes << std::endl;
+        utils::g_log << "Int hash set resizes: " << num_resizes << std::endl;
     }
 };
 

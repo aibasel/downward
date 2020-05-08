@@ -5,6 +5,7 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
+#include "../utils/logging.h"
 
 #include <algorithm>
 #include <cassert>
@@ -34,7 +35,7 @@ namespace landmarks {
 Exploration::Exploration(const TaskProxy &task_proxy)
     : task_proxy(task_proxy),
       did_write_overflow_warning(false) {
-    cout << "Initializing Exploration..." << endl;
+    utils::g_log << "Initializing Exploration..." << endl;
 
     // Build propositions.
     for (VariableProxy var : task_proxy.get_variables()) {
@@ -84,7 +85,7 @@ void Exploration::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
-        cout << "WARNING: overflow on landmark exploration h^add! Costs clamped to "
+        utils::g_log << "WARNING: overflow on landmark exploration h^add! Costs clamped to "
              << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;
     }

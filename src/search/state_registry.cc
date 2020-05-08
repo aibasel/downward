@@ -4,6 +4,7 @@
 #include "task_proxy.h"
 
 #include "task_utils/task_properties.h"
+#include "utils/logging.h"
 
 using namespace std;
 
@@ -91,6 +92,6 @@ int StateRegistry::get_state_size_in_bytes() const {
 }
 
 void StateRegistry::print_statistics() const {
-    cout << "Number of registered states: " << size() << endl;
+    utils::g_log << "Number of registered states: " << size() << endl;
     registered_states.print_statistics();
 }

@@ -7,6 +7,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/timer.h"
 
 #include <iostream>
@@ -21,7 +22,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
     utils::Timer timer;
-    cout << "Initializing canonical PDB heuristic..." << endl;
+    utils::g_log << "Initializing canonical PDB heuristic..." << endl;
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
     shared_ptr<PatternCollection> patterns =

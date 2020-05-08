@@ -8,6 +8,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 #include <algorithm>
@@ -182,7 +183,7 @@ string ShrinkFH::name() const {
 }
 
 void ShrinkFH::dump_strategy_specific_options() const {
-    cout << "Prefer shrinking high or low f states: "
+    utils::g_log << "Prefer shrinking high or low f states: "
          << (f_start == HighLow::HIGH ? "high" : "low") << endl
          << "Prefer shrinking high or low h states: "
          << (h_start == HighLow::HIGH ? "high" : "low") << endl;

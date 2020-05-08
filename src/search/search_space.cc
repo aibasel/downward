@@ -4,6 +4,8 @@
 #include "search_node_info.h"
 #include "task_proxy.h"
 
+#include "utils/logging.h"
+
 #include <cassert>
 
 using namespace std;
@@ -105,15 +107,15 @@ void SearchNode::mark_as_dead_end() {
 }
 
 void SearchNode::dump(const TaskProxy &task_proxy) const {
-    cout << state_id << ": ";
+    utils::g_log << state_id << ": ";
     get_state().dump_fdr();
     if (info.creating_operator != OperatorID::no_operator) {
         OperatorsProxy operators = task_proxy.get_operators();
         OperatorProxy op = operators[info.creating_operator.get_index()];
-        cout << " created by " << op.get_name()
+        utils::g_log << " created by " << op.get_name()
              << " from " << info.parent_state_id << endl;
     } else {
-        cout << " no parent" << endl;
+        utils::g_log << " no parent" << endl;
     }
 }
 
@@ -148,15 +150,15 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
            a search node without discarding the const qualifier. */
         GlobalState state = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state];
-        cout << id << ": ";
+        utils::g_log << id << ": ";
         state.dump_fdr();
         if (node_info.creating_operator != OperatorID::no_operator &&
             node_info.parent_state_id != StateID::no_state) {
             OperatorProxy op = operators[node_info.creating_operator.get_index()];
-            cout << " created by " << op.get_name()
+            utils::g_log << " created by " << op.get_name()
                  << " from " << node_info.parent_state_id << endl;
         } else {
-            cout << "has no parent" << endl;
+            utils::g_log << "has no parent" << endl;
         }
     }
 }

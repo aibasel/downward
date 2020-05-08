@@ -20,7 +20,7 @@ PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
 PatternInformation PatternGeneratorManual::generate(
     const shared_ptr<AbstractTask> &task) {
     PatternInformation pattern_info(TaskProxy(*task), move(pattern));
-    cout << "Manual pattern: " << pattern_info.get_pattern() << endl;
+    utils::g_log << "Manual pattern: " << pattern_info.get_pattern() << endl;
     return pattern_info;
 }
 

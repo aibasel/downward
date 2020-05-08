@@ -76,12 +76,12 @@ bool shrink_factor(
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            cout << ts.tag() << "current size: " << num_states;
+            utils::g_log << ts.tag() << "current size: " << num_states;
             if (new_size < num_states)
-                cout << " (new size limit: " << new_size;
+                utils::g_log << " (new size limit: " << new_size;
             else
-                cout << " (shrink threshold: " << shrink_threshold_before_merge;
-            cout << ")" << endl;
+                utils::g_log << " (shrink threshold: " << shrink_threshold_before_merge;
+            utils::g_log << ")" << endl;
         }
 
         const Distances &distances = fts.get_distances(index);
@@ -186,7 +186,7 @@ bool prune_step(
     }
     if (verbosity >= utils::Verbosity::VERBOSE &&
         (unreachable_count || irrelevant_count)) {
-        cout << ts.tag()
+        utils::g_log << ts.tag()
              << "unreachable: " << unreachable_count << " states, "
              << "irrelevant: " << irrelevant_count << " states ("
              << "total dead: " << dead_count << " states)" << endl;

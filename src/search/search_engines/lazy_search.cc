@@ -6,6 +6,7 @@
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -42,7 +43,7 @@ void LazySearch::set_preferred_operator_evaluators(
 }
 
 void LazySearch::initialize() {
-    cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
+    utils::g_log << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
     assert(open_list);
     set<Evaluator *> evals;
@@ -116,7 +117,7 @@ void LazySearch::generate_successors() {
 
 SearchStatus LazySearch::fetch_next_state() {
     if (open_list->empty()) {
-        cout << "Completely explored state space -- no solution!" << endl;
+        utils::g_log << "Completely explored state space -- no solution!" << endl;
         return FAILED;
     }
 
