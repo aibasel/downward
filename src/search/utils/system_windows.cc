@@ -1,7 +1,5 @@
 #include "system_windows.h"
 
-#include "../utils/logging.h"
-
 #if OPERATING_SYSTEM == WINDOWS
 
 // TODO: find re-entrant alternatives on Windows.
@@ -16,14 +14,14 @@ using namespace std;
 
 namespace utils {
 void out_of_memory_handler() {
-    utils::g_log << "Failed to allocate memory." << endl;
+    cout << "Failed to allocate memory." << endl;
     exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {
-    utils::g_log << "Peak memory: "
+    cout<< "Peak memory: "
          << get_peak_memory_in_kb() << " KB" << endl;
-    utils::g_log << "caught signal " << signal_number
+    cout << "caught signal " << signal_number
          << " -- exiting" << endl;
     raise(signal_number);
 }
@@ -63,7 +61,7 @@ void report_exit_code_reentrant(ExitCode exitcode) {
     const char *message = get_exit_code_message_reentrant(exitcode);
     bool is_error = is_exit_code_error_reentrant(exitcode);
     if (message) {
-        ostream &stream = is_error ? cerr : utils::g_log;
+        ostream &stream = is_error ? cerr : cout;
         stream << message << endl;
     } else {
         cerr << "Exitcode: " << static_cast<int>(exitcode) << endl
