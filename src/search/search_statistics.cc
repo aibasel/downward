@@ -41,28 +41,26 @@ void SearchStatistics::report_f_value_progress(int f) {
 void SearchStatistics::print_f_line() const {
     if (verbosity >= utils::Verbosity::NORMAL) {
         cout << "f = " << lastjump_f_value
-             << " [";
+             << ", ";
         print_basic_statistics();
-        cout << "]" << endl;
+        cout << endl;
     }
 }
 
 void SearchStatistics::print_checkpoint_line(int g) const {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "[g=" << g << ", ";
+        cout << "g=" << g << ", ";
         print_basic_statistics();
-        cout << "]" << endl;
+        cout << endl;
     }
 }
 
 void SearchStatistics::print_basic_statistics() const {
     cout << evaluated_states << " evaluated, "
-         << expanded_states << " expanded, ";
+         << expanded_states << " expanded";
     if (reopened_states > 0) {
-        cout << reopened_states << " reopened, ";
+        cout << ", " << reopened_states << " reopened";
     }
-    cout << "t=" << utils::g_timer;
-    cout << ", " << utils::get_peak_memory_in_kb() << " KB";
 }
 
 void SearchStatistics::print_detailed_statistics() const {
