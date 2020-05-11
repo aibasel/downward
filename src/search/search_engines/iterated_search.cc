@@ -31,9 +31,9 @@ shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     OptionParser parser(engine_configs[engine_configs_index], registry, predefinitions, false);
     shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
 
-    utils::g_log << "Starting search: ";
-    kptree::print_tree_bracketed(engine_configs[engine_configs_index], cout);
-    utils::g_log << endl;
+    ostringstream stream;
+    kptree::print_tree_bracketed(engine_configs[engine_configs_index], stream);
+    utils::g_log << "Starting search: " << stream.str() << endl;
 
     return engine;
 }
