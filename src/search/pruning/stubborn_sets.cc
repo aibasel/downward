@@ -37,7 +37,8 @@ StubbornSets::StubbornSets(const options::Options &opts)
       num_expansions_before_checking_pruning_ratio(
           opts.get<int>("expansions_before_checking_pruning_ratio")),
       num_pruning_calls(0),
-      is_pruning_disabled(false) {
+      is_pruning_disabled(false),
+      timer(false) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
@@ -128,6 +129,8 @@ void StubbornSets::prune_operators(
         }
     }
 
+    timer.resume();
+
     num_unpruned_successors_generated += op_ids.size();
     ++num_pruning_calls;
 
@@ -155,6 +158,8 @@ void StubbornSets::prune_operators(
     op_ids.swap(remaining_op_ids);
 
     num_pruned_successors_generated += op_ids.size();
+
+    timer.stop();
 }
 
 void StubbornSets::print_statistics() const {
@@ -162,6 +167,11 @@ void StubbornSets::print_statistics() const {
                  << num_unpruned_successors_generated << endl
                  << "total successors after partial-order reduction: "
                  << num_pruned_successors_generated << endl;
+    double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
+        static_cast<double>(num_pruned_successors_generated) /
+        static_cast<double>(num_unpruned_successors_generated));
+    utils::g_log << "Pruning ratio: " << pruning_ratio << endl;
+    utils::g_log << "Time for pruning operators: " << timer << endl;
 }
 
 void add_pruning_options(options::OptionParser &parser) {
