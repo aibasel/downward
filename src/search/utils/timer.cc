@@ -1,6 +1,9 @@
 #include "timer.h"
 
+#include <cassert>
+#include <cmath>
 #include <ctime>
+#include <limits>
 #include <ostream>
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
@@ -50,14 +53,18 @@ void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp)
 #endif
 
 
-Timer::Timer() {
+Timer::Timer(bool start) {
 #if OPERATING_SYSTEM == WINDOWS
     QueryPerformanceFrequency(&frequency);
     QueryPerformanceCounter(&start_ticks);
 #endif
-    last_start_clock = current_clock();
     collected_time = 0;
-    stopped = false;
+    stopped = !start;
+    if (start) {
+        last_start_clock = current_clock();
+    } else {
+        last_start_clock = std::numeric_limits<double>::quiet_NaN();
+    }
 }
 
 double Timer::current_clock() const {
@@ -86,11 +93,13 @@ Duration Timer::stop() {
 }
 
 Duration Timer::operator()() const {
-    if (stopped)
+    if (stopped) {
         return Duration(collected_time);
-    else
+    } else {
+        assert(!isnan(last_start_clock));
         return Duration(collected_time
                         + compute_sanitized_duration(last_start_clock, current_clock()));
+    }
 }
 
 void Timer::resume() {
