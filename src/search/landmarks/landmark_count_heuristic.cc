@@ -14,6 +14,7 @@
 #include "../task_utils/task_properties.h"
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
@@ -37,7 +38,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
-    cout << "Initializing landmarks count heuristic..." << endl;
+    utils::g_log << "Initializing landmarks count heuristic..." << endl;
 
     /*
       Actually, we should like to test if this is the root task or a

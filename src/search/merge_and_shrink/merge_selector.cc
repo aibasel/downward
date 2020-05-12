@@ -4,6 +4,8 @@
 
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <iostream>
 
@@ -41,8 +43,8 @@ vector<pair<int, int>> MergeSelector::compute_merge_candidates(
 }
 
 void MergeSelector::dump_options() const {
-    cout << "Merge selector options:" << endl;
-    cout << "Name: " << name() << endl;
+    utils::g_log << "Merge selector options:" << endl;
+    utils::g_log << "Name: " << name() << endl;
     dump_specific_options();
 }
 

@@ -5,6 +5,7 @@
 #include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 #include <cassert>
 #include <vector>
@@ -16,15 +17,15 @@ namespace additive_heuristic {
 AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     : RelaxationHeuristic(opts),
       did_write_overflow_warning(false) {
-    cout << "Initializing additive heuristic..." << endl;
+    utils::g_log << "Initializing additive heuristic..." << endl;
 }
 
 void AdditiveHeuristic::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
-        cout << "WARNING: overflow on h^add! Costs clamped to "
-             << MAX_COST_VALUE << endl;
+        utils::g_log << "WARNING: overflow on h^add! Costs clamped to "
+                     << MAX_COST_VALUE << endl;
         cerr << "WARNING: overflow on h^add! Costs clamped to "
              << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;

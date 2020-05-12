@@ -22,6 +22,12 @@ after the corresponding tracker issues.
   <http://issues.fast-downward.org/issue962>
   We now store enum options as enums instead of as ints in Options objects.
 
+- Use global logging mechanism for all output
+  <http://issues.fast-downward.org/issue963>
+  All output of the planner is now handled by a global logging mechnism, which
+  prefaces printed lines with time and memory information. For developers, this
+  means that output is no longer passed to cout, but utils::g_log.
+
 - For developers: allow creating Timers in stopped state
   <http://issues.fast-downward.org/issue965>
 

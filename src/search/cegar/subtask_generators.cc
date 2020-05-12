@@ -11,6 +11,7 @@
 #include "../task_utils/task_properties.h"
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -59,7 +60,7 @@ static void order_facts(
     FactOrder fact_order,
     vector<FactPair> &facts,
     utils::RandomNumberGenerator &rng) {
-    cout << "Sort " << facts.size() << " facts" << endl;
+    utils::g_log << "Sort " << facts.size() << " facts" << endl;
     switch (fact_order) {
     case FactOrder::ORIGINAL:
         // Nothing to do.

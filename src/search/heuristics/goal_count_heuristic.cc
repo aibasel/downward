@@ -3,13 +3,15 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
+
 #include <iostream>
 using namespace std;
 
 namespace goal_count_heuristic {
 GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
     : Heuristic(opts) {
-    cout << "Initializing goal count heuristic..." << endl;
+    utils::g_log << "Initializing goal count heuristic..." << endl;
 }
 
 int GoalCountHeuristic::compute_heuristic(const GlobalState &global_state) {
