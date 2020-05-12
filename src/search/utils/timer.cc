@@ -63,7 +63,7 @@ Timer::Timer(bool start) {
     if (start) {
         last_start_clock = current_clock();
     } else {
-        last_start_clock = std::numeric_limits<double>::quiet_NaN();
+        last_start_clock = numeric_limits<double>::quiet_NaN();
     }
 }
 
