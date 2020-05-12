@@ -28,7 +28,7 @@ class Timer {
 
     double current_clock() const;
 public:
-    Timer();
+    explicit Timer(bool start = true);
     ~Timer() = default;
     Duration operator()() const;
     Duration stop();
