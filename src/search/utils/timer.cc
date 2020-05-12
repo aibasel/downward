@@ -1,9 +1,6 @@
 #include "timer.h"
 
-#include <cassert>
-#include <cmath>
 #include <ctime>
-#include <limits>
 #include <ostream>
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
@@ -60,11 +57,7 @@ Timer::Timer(bool start) {
 #endif
     collected_time = 0;
     stopped = !start;
-    if (start) {
-        last_start_clock = current_clock();
-    } else {
-        last_start_clock = numeric_limits<double>::quiet_NaN();
-    }
+    last_start_clock = start ? current_clock() : 0.;
 }
 
 double Timer::current_clock() const {
@@ -93,13 +86,11 @@ Duration Timer::stop() {
 }
 
 Duration Timer::operator()() const {
-    if (stopped) {
+    if (stopped)
         return Duration(collected_time);
-    } else {
-        assert(!isnan(last_start_clock));
+    else
         return Duration(collected_time
                         + compute_sanitized_duration(last_start_clock, current_clock()));
-    }
 }
 
 void Timer::resume() {
