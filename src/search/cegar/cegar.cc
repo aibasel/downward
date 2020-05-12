@@ -167,12 +167,9 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         separate_facts_unreachable_before_goal();
     }
 
-    utils::Timer find_trace_timer;
-    utils::Timer find_flaw_timer;
-    utils::Timer refine_timer;
-    find_trace_timer.stop();
-    find_flaw_timer.stop();
-    refine_timer.stop();
+    utils::Timer find_trace_timer(false);
+    utils::Timer find_flaw_timer(false);
+    utils::Timer refine_timer(false);
 
     while (may_keep_refining()) {
         find_trace_timer.resume();
