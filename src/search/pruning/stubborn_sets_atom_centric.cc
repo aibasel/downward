@@ -28,10 +28,6 @@ void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
         marked_producers.emplace_back(var.get_domain_size(), false);
         marked_consumers.emplace_back(var.get_domain_size(), false);
     }
-    if (use_sibling_shortcut) {
-        marked_producer_variables.resize(num_variables, MARKED_VALUES_NONE);
-        marked_consumer_variables.resize(num_variables, MARKED_VALUES_NONE);
-    }
 
     compute_consumers(task_proxy);
 }
@@ -199,10 +195,9 @@ void StubbornSetsAtomCentric::initialize_stubborn_set(const State &state) {
         facts.assign(facts.size(), false);
     }
     if (use_sibling_shortcut) {
-        marked_producer_variables.assign(
-            marked_producer_variables.size(), MARKED_VALUES_NONE);
-        marked_consumer_variables.assign(
-            marked_consumer_variables.size(), MARKED_VALUES_NONE);
+        int num_variables = state.size();
+        marked_producer_variables.assign(num_variables, MARKED_VALUES_NONE);
+        marked_consumer_variables.assign(num_variables, MARKED_VALUES_NONE);
     }
 
     FactPair unsatisfied_goal = select_fact(sorted_goals, state);
