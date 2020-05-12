@@ -12,7 +12,7 @@ enum class AtomSelectionStrategy {
     FAST_DOWNWARD,
     QUICK_SKIP,
     STATIC_SMALL,
-    DYNAMIC_SMALL,
+    DYNAMIC_SMALL
 };
 
 class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
@@ -21,17 +21,22 @@ class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
 
     // For each fact F store the IDs of operators that contain F in their precondition.
     std::vector<std::vector<std::vector<int>>> consumers;
-    // Marked producer and consumer facts.
+    /* Marked producer and consumer facts.
+       marked_{producers,consumers}[v][d] is true iff fact v=d is marked. */
     std::vector<std::vector<bool>> marked_producers;
     std::vector<std::vector<bool>> marked_consumers;
-    // Marked producer and consumer variables (marked iff whole domain is marked).
+    /* Data structures for shortcut handling of siblings.
+       marked_*_variables[v] = d iff all sibling facts v=d' with d'!=d are marked
+       marked_*_variables[v] = MARKED_VALUES_ALL iff all facts for v are marked
+       marked_*_variables[v] = MARKED_VALUES_NONE iff we have no such information */
     std::vector<int> marked_producer_variables;
     std::vector<int> marked_consumer_variables;
+
     std::vector<FactPair> producer_queue;
     std::vector<FactPair> consumer_queue;
 
     void compute_consumers(const TaskProxy &task_proxy);
-    bool operator_is_applicable(int op, const State &state);
+    bool operator_is_applicable(int op, const State &state) const;
     void enqueue_producers(const FactPair &fact);
     void enqueue_consumers(const FactPair &fact);
     void enqueue_sibling_consumers(const FactPair &fact);
