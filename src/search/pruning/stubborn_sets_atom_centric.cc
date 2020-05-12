@@ -29,6 +29,11 @@ void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
         marked_consumers.emplace_back(var.get_domain_size(), false);
     }
 
+    if (use_sibling_shortcut) {
+        marked_producer_variables.resize(num_variables, MARKED_VALUES_NONE);
+        marked_consumer_variables.resize(num_variables, MARKED_VALUES_NONE);
+    }
+
     compute_consumers(task_proxy);
 }
 
