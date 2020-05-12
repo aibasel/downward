@@ -13,6 +13,8 @@
 using namespace std;
 
 namespace additive_heuristic {
+const int AdditiveHeuristic::MAX_COST_VALUE;
+
 // construction and destruction
 AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     : RelaxationHeuristic(opts),
