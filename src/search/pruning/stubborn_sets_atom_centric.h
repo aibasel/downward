@@ -21,14 +21,18 @@ class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
 
     // For each fact F store the IDs of operators that contain F in their precondition.
     std::vector<std::vector<std::vector<int>>> consumers;
-    /* Marked producer and consumer facts.
-       marked_{producers,consumers}[v][d] is true iff fact v=d is marked. */
+    /*
+      Marked producer and consumer facts.
+      marked_{producers,consumers}[v][d] is true iff fact v=d is marked.
+    */
     std::vector<std::vector<bool>> marked_producers;
     std::vector<std::vector<bool>> marked_consumers;
-    /* Data structures for shortcut handling of siblings.
-       marked_*_variables[v] = d iff all sibling facts v=d' with d'!=d are marked
-       marked_*_variables[v] = MARKED_VALUES_ALL iff all facts for v are marked
-       marked_*_variables[v] = MARKED_VALUES_NONE iff we have no such information */
+    /*
+      Data structures for shortcut handling of siblings.
+      marked_*_variables[v] = d iff all sibling facts v=d' with d'!=d are marked
+      marked_*_variables[v] = MARKED_VALUES_ALL iff all facts for v are marked
+      marked_*_variables[v] = MARKED_VALUES_NONE iff we have no such information
+    */
     std::vector<int> marked_producer_variables;
     std::vector<int> marked_consumer_variables;
 
