@@ -21,12 +21,14 @@ void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
 
     TaskProxy task_proxy(*task);
 
+    int num_variables = task_proxy.get_variables().size();
+    marked_producers.reserve(num_variables);
+    marked_consumers.reserve(num_variables);
     for (VariableProxy var : task_proxy.get_variables()) {
         marked_producers.emplace_back(var.get_domain_size(), false);
         marked_consumers.emplace_back(var.get_domain_size(), false);
     }
     if (use_sibling_shortcut) {
-        int num_variables = task_proxy.get_variables().size();
         marked_producer_variables.resize(num_variables, MARKED_VALUES_NONE);
         marked_consumer_variables.resize(num_variables, MARKED_VALUES_NONE);
     }
@@ -35,10 +37,10 @@ void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
 }
 
 void StubbornSetsAtomCentric::compute_consumers(const TaskProxy &task_proxy) {
-    consumers = utils::map_vector<vector<vector<int>>>(
-        task_proxy.get_variables(), [](const VariableProxy &var) {
-            return vector<vector<int>>(var.get_domain_size());
-        });
+    consumers.reserve(task_proxy.get_variables().size());
+    for (VariableProxy var : task_proxy.get_variables()) {
+        consumers.emplace_back(var.get_domain_size());
+    }
 
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_id = op.get_id();
@@ -47,9 +49,15 @@ void StubbornSetsAtomCentric::compute_consumers(const TaskProxy &task_proxy) {
             consumers[fact.var][fact.value].push_back(op_id);
         }
     }
+
+    for (auto &outer : consumers) {
+        for (auto &inner : outer) {
+            inner.shrink_to_fit();
+        }
+    }
 }
 
-bool StubbornSetsAtomCentric::operator_is_applicable(int op, const State &state) {
+bool StubbornSetsAtomCentric::operator_is_applicable(int op, const State &state) const {
     return find_unsatisfied_precondition(op, state) == FactPair::no_fact;
 }
 
@@ -68,9 +76,14 @@ void StubbornSetsAtomCentric::enqueue_consumers(const FactPair &fact) {
 }
 
 void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
+    /* If we don't use the sibling shortcut handling, we ignore any
+       variable-based marking info and always enqueue all sibling facts of the
+       given fact v=d. */
     int dummy_mark = MARKED_VALUES_NONE;
     int &mark = use_sibling_shortcut ? marked_producer_variables[fact.var] : dummy_mark;
     if (mark == MARKED_VALUES_NONE) {
+        /* If we don't have marking info for variable v, enqueue all sibling
+           producers of v=d and remember that we marked all siblings. */
         int domain_size = consumers[fact.var].size();
         for (int value = 0; value < domain_size; ++value) {
             if (value != fact.value) {
@@ -79,12 +92,14 @@ void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
         }
         mark = fact.value;
     } else if (mark != MARKED_VALUES_ALL && mark != fact.value) {
+        /* If we have enqueued all facts for v except the given fact, enqueue it. */
         enqueue_producers(FactPair(fact.var, mark));
         mark = MARKED_VALUES_ALL;
     }
 }
 
 void StubbornSetsAtomCentric::enqueue_sibling_consumers(const FactPair &fact) {
+    // For documentation, see enqueue_sibling_producers().
     int dummy_mark = MARKED_VALUES_NONE;
     int &mark = use_sibling_shortcut ? marked_consumer_variables[fact.var] : dummy_mark;
     if (mark == MARKED_VALUES_NONE) {
@@ -138,7 +153,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
             if (state[condition.var].get_value() != condition.value) {
                 const vector<int> &ops = achievers[condition.var][condition.value];
                 int count = count_if(
-                    ops.begin(), ops.end(), [this](int op) {return !stubborn[op];});
+                    ops.begin(), ops.end(), [&](int op) {return !stubborn[op];});
                 if (count < min_count) {
                     fact = condition;
                     min_count = count;
@@ -176,18 +191,18 @@ void StubbornSetsAtomCentric::enqueue_interferers(int op) {
 void StubbornSetsAtomCentric::initialize_stubborn_set(const State &state) {
     assert(producer_queue.empty());
     assert(consumer_queue.empty());
-    // Reset datastructures from previous call.
+    // Reset data structures from previous call.
     for (auto &facts : marked_producers) {
-        fill(facts.begin(), facts.end(), false);
+        facts.assign(facts.size(), false);
     }
     for (auto &facts : marked_consumers) {
-        fill(facts.begin(), facts.end(), false);
+        facts.assign(facts.size(), false);
     }
     if (use_sibling_shortcut) {
-        fill(marked_producer_variables.begin(), marked_producer_variables.end(),
-             MARKED_VALUES_NONE);
-        fill(marked_consumer_variables.begin(), marked_consumer_variables.end(),
-             MARKED_VALUES_NONE);
+        marked_producer_variables.assign(
+            marked_producer_variables.size(), MARKED_VALUES_NONE);
+        marked_consumer_variables.assign(
+            marked_consumer_variables.size(), MARKED_VALUES_NONE);
     }
 
     FactPair unsatisfied_goal = select_fact(sorted_goals, state);
@@ -227,9 +242,9 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Atom-centric stubborn sets",
         "Stubborn sets are a state pruning method which computes a subset "
-        "of applicable operators in each state such that completeness and "
+        "of applicable actions in each state such that completeness and "
         "optimality of the overall search is preserved. Previous stubborn set "
-        "implementations mainly track information about operators. In contrast, "
+        "implementations mainly track information about actions. In contrast, "
         "this implementation focuses on atomic propositions (atoms), which "
         "often speeds up the computation on IPC benchmarks. For details, see" +
         utils::format_conference_reference(
@@ -253,7 +268,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "Downward variable ordering (which is based on the causal graph)");
     strategies.push_back("quick_skip");
     strategies_docs.push_back(
-        "select first unsatisfied atom whose producers are already marked");
+        "if possible, select an unsatisfied atom whose producers are already marked");
     strategies.push_back("static_small");
     strategies_docs.push_back("select the atom achieved by the fewest number of actions");
     strategies.push_back("dynamic_small");
