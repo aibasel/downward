@@ -19,8 +19,8 @@ after the corresponding tracker issues.
 
 - Use global logging mechanism for all output
   <http://issues.fast-downward.org/issue963>
-  All output of the planner, except for printing the plan and reentrant code
-  for error handling is redirected through the global logging mechanism. This
+  All output of the planner is now handled by a global logging mechnism, which
+  prefaces printed lines with time and memory information. For developers, this
   means that output is no longer passed to cout, but utils::g_log.
 
 ## Fast Downward 19.12
