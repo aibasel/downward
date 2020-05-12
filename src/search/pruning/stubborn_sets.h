@@ -4,12 +4,10 @@
 #include "../abstract_task.h"
 #include "../pruning_method.h"
 
+#include "../utils/timer.h"
+
 namespace options {
 class OptionParser;
-}
-
-namespace utils {
-class Timer;
 }
 
 namespace stubborn_sets {
@@ -22,7 +20,7 @@ class StubbornSets : public PruningMethod {
     int num_pruning_calls;
     bool is_pruning_disabled;
 
-    std::unique_ptr<utils::Timer> timer;
+    utils::Timer timer;
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
 
@@ -97,7 +95,6 @@ protected:
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
     explicit StubbornSets(const options::Options &opts);
-    virtual ~StubbornSets();
 
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 
