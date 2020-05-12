@@ -125,13 +125,13 @@ FactPair StubbornSetsAtomCentric::select_fact(
         for (const FactPair &condition : facts) {
             if (state[condition.var].get_value() != condition.value) {
                 if (marked_producers[condition.var][condition.value]) {
-                    return FactPair::no_fact;
+                    fact = condition;
+                    break;
                 } else if (fact == FactPair::no_fact) {
                     fact = condition;
                 }
             }
         }
-        assert(!marked_producers[fact.var][fact.value]);
     } else if (atom_selection_strategy == AtomSelectionStrategy::STATIC_SMALL) {
         int min_count = numeric_limits<int>::max();
         for (const FactPair &condition : facts) {
@@ -165,9 +165,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
 
 void StubbornSetsAtomCentric::enqueue_nes(int op, const State &state) {
     FactPair fact = select_fact(sorted_op_preconditions[op], state);
-    if (fact != FactPair::no_fact) {
-        enqueue_producers(fact);
-    }
+    enqueue_producers(fact);
 }
 
 void StubbornSetsAtomCentric::enqueue_interferers(int op) {
