@@ -31,6 +31,8 @@ namespace landmarks {
      proposition (needed for planning to nearest landmark).
 */
 
+const int Exploration::MAX_COST_VALUE;
+
 // Construction and destruction
 Exploration::Exploration(const TaskProxy &task_proxy)
     : task_proxy(task_proxy),
