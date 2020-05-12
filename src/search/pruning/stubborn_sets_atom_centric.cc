@@ -260,7 +260,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "Proceedings of the 13th Annual Symposium on Combinatorial Search "
             "(SoCS 2020)",
             // TODO: add page numbers.
-            "to appear",
+            "",
             "AAAI Press",
             "2020"));
     parser.add_option<bool>(
