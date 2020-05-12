@@ -25,19 +25,19 @@ using utils::ExitCode;
 class PruningMethod;
 
 successor_generator::SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy) {
-    cout << "Building successor generator..." << flush;
+    utils::g_log << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();
     utils::Timer successor_generator_timer;
     successor_generator::SuccessorGenerator &successor_generator =
         successor_generator::g_successor_generators[task_proxy];
     successor_generator_timer.stop();
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
+    utils::g_log << "done!" << endl;
     int peak_memory_after = utils::get_peak_memory_in_kb();
     int memory_diff = peak_memory_after - peak_memory_before;
-    cout << "peak memory difference for successor generator creation: "
-         << memory_diff << " KB" << endl
-         << "time for successor generation creation: "
-         << successor_generator_timer << endl;
+    utils::g_log << "peak memory difference for successor generator creation: "
+                 << memory_diff << " KB" << endl
+                 << "time for successor generation creation: "
+                 << successor_generator_timer << endl;
     return successor_generator;
 }
 
@@ -90,19 +90,18 @@ void SearchEngine::search() {
     while (status == IN_PROGRESS) {
         status = step();
         if (timer.is_expired()) {
-            cout << "Time limit reached. Abort search." << endl;
+            utils::g_log << "Time limit reached. Abort search." << endl;
             status = TIMEOUT;
             break;
         }
     }
     // TODO: Revise when and which search times are logged.
-    cout << "Actual search time: " << timer.get_elapsed_time()
-         << " [t=" << utils::g_timer << "]" << endl;
+    utils::g_log << "Actual search time: " << timer.get_elapsed_time() << endl;
 }
 
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
-        cout << "Solution found!" << endl;
+        utils::g_log << "Solution found!" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
         set_plan(plan);

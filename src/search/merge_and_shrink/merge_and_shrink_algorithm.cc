@@ -39,7 +39,7 @@ using utils::ExitCode;
 
 namespace merge_and_shrink {
 static void log_progress(const utils::Timer &timer, string msg) {
-    cout << "M&S algorithm timer: " << timer << " (" << msg << ")" << endl;
+    utils::g_log << "M&S algorithm timer: " << timer << " (" << msg << ")" << endl;
 }
 
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
@@ -61,83 +61,83 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
 
 void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
     if (final)
-        cout << "Final";
+        utils::g_log << "Final";
     else
-        cout << "Current";
-    cout << " peak memory increase of merge-and-shrink algorithm: "
-         << utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
-         << endl;
+        utils::g_log << "Current";
+    utils::g_log << " peak memory increase of merge-and-shrink algorithm: "
+                 << utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
+                 << endl;
 }
 
 void MergeAndShrinkAlgorithm::dump_options() const {
     if (verbosity >= utils::Verbosity::NORMAL) {
         if (merge_strategy_factory) { // deleted after merge strategy extraction
             merge_strategy_factory->dump_options();
-            cout << endl;
+            utils::g_log << endl;
         }
 
-        cout << "Options related to size limits and shrinking: " << endl;
-        cout << "Transition system size limit: " << max_states << endl
-             << "Transition system size limit right before merge: "
-             << max_states_before_merge << endl;
-        cout << "Threshold to trigger shrinking right before merge: "
-             << shrink_threshold_before_merge << endl;
-        cout << endl;
+        utils::g_log << "Options related to size limits and shrinking: " << endl;
+        utils::g_log << "Transition system size limit: " << max_states << endl
+                     << "Transition system size limit right before merge: "
+                     << max_states_before_merge << endl;
+        utils::g_log << "Threshold to trigger shrinking right before merge: "
+                     << shrink_threshold_before_merge << endl;
+        utils::g_log << endl;
 
-        cout << "Pruning unreachable states: "
-             << (prune_unreachable_states ? "yes" : "no") << endl;
-        cout << "Pruning irrelevant states: "
-             << (prune_irrelevant_states ? "yes" : "no") << endl;
-        cout << endl;
+        utils::g_log << "Pruning unreachable states: "
+                     << (prune_unreachable_states ? "yes" : "no") << endl;
+        utils::g_log << "Pruning irrelevant states: "
+                     << (prune_irrelevant_states ? "yes" : "no") << endl;
+        utils::g_log << endl;
 
         if (label_reduction) {
             label_reduction->dump_options();
         } else {
-            cout << "Label reduction disabled" << endl;
+            utils::g_log << "Label reduction disabled" << endl;
         }
-        cout << endl;
+        utils::g_log << endl;
 
-        cout << "Main loop max time in seconds: " << main_loop_max_time << endl;
-        cout << endl;
+        utils::g_log << "Main loop max time in seconds: " << main_loop_max_time << endl;
+        utils::g_log << endl;
     }
 }
 
 void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
     string dashes(79, '=');
     if (!label_reduction) {
-        cout << dashes << endl
-             << "WARNING! You did not enable label reduction.\nThis may "
+        utils::g_log << dashes << endl
+                     << "WARNING! You did not enable label reduction.\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
-             << endl << dashes << endl;
+                     << endl << dashes << endl;
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
-        cout << dashes << endl
-             << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
+        utils::g_log << dashes << endl
+                     << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
             "iteration, both before shrinking and merging. This double computation effort\n"
             "does not pay off for most configurations!"
-             << endl << dashes << endl;
+                     << endl << dashes << endl;
     } else {
         if (label_reduction->reduce_before_shrinking() &&
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
-            cout << dashes << endl
-                 << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
+            utils::g_log << dashes << endl
+                         << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
                 "best if used with label reduction before merging, not before shrinking!"
-                 << endl << dashes << endl;
+                         << endl << dashes << endl;
         }
         if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
-            cout << dashes << endl
-                 << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
+            utils::g_log << dashes << endl
+                         << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
                 "reduction before shrinking, not before merging!"
-                 << endl << dashes << endl;
+                         << endl << dashes << endl;
         }
     }
 
     if (!prune_unreachable_states || !prune_irrelevant_states) {
-        cout << dashes << endl
-             << "WARNING! Pruning is (partially) turned off!\nThis may "
+        utils::g_log << dashes << endl
+                     << "WARNING! Pruning is (partially) turned off!\nThis may "
             "drastically reduce the performance of merge-and-shrink!"
-             << endl << dashes << endl;
+                     << endl << dashes << endl;
     }
 }
 
@@ -145,8 +145,8 @@ bool MergeAndShrinkAlgorithm::ran_out_of_time(
     const utils::CountdownTimer &timer) const {
     if (timer.is_expired()) {
         if (verbosity >= utils::Verbosity::NORMAL) {
-            cout << "Ran out of time, stopping computation." << endl;
-            cout << endl;
+            utils::g_log << "Ran out of time, stopping computation." << endl;
+            utils::g_log << endl;
         }
         return true;
     }
@@ -158,12 +158,12 @@ void MergeAndShrinkAlgorithm::main_loop(
     const TaskProxy &task_proxy) {
     utils::CountdownTimer timer(main_loop_max_time);
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Starting main loop ";
+        utils::g_log << "Starting main loop ";
         if (main_loop_max_time == numeric_limits<double>::infinity()) {
-            cout << "without a time limit." << endl;
+            utils::g_log << "without a time limit." << endl;
         } else {
-            cout << "with a time limit of "
-                 << main_loop_max_time << "s." << endl;
+            utils::g_log << "with a time limit of "
+                         << main_loop_max_time << "s." << endl;
         }
     }
     int maximum_intermediate_size = 0;
@@ -182,9 +182,9 @@ void MergeAndShrinkAlgorithm::main_loop(
     merge_strategy_factory = nullptr;
 
     auto log_main_loop_progress = [&timer](const string &msg) {
-            cout << "M&S algorithm main loop timer: "
-                 << timer.get_elapsed_time()
-                 << " (" << msg << ")" << endl;
+            utils::g_log << "M&S algorithm main loop timer: "
+                         << timer.get_elapsed_time()
+                         << " (" << msg << ")" << endl;
         };
     int iteration_counter = 0;
     while (fts.get_num_active_entries() > 1) {
@@ -197,8 +197,8 @@ void MergeAndShrinkAlgorithm::main_loop(
         int merge_index2 = merge_indices.second;
         assert(merge_index1 != merge_index2);
         if (verbosity >= utils::Verbosity::NORMAL) {
-            cout << "Next pair of indices: ("
-                 << merge_index1 << ", " << merge_index2 << ")" << endl;
+            utils::g_log << "Next pair of indices: ("
+                         << merge_index1 << ", " << merge_index2 << ")" << endl;
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 fts.statistics(merge_index1);
                 fts.statistics(merge_index2);
@@ -290,7 +290,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         */
         if (!fts.is_factor_solvable(merged_index)) {
             if (verbosity >= utils::Verbosity::NORMAL) {
-                cout << "Abstract problem is unsolvable, stopping "
+                utils::g_log << "Abstract problem is unsolvable, stopping "
                     "computation. " << endl << endl;
             }
             break;
@@ -305,16 +305,16 @@ void MergeAndShrinkAlgorithm::main_loop(
             report_peak_memory_delta();
         }
         if (verbosity >= utils::Verbosity::NORMAL) {
-            cout << endl;
+            utils::g_log << endl;
         }
 
         ++iteration_counter;
     }
 
-    cout << "End of merge-and-shrink algorithm, statistics:" << endl;
-    cout << "Main loop runtime: " << timer.get_elapsed_time() << endl;
-    cout << "Maximum intermediate abstraction size: "
-         << maximum_intermediate_size << endl;
+    utils::g_log << "End of merge-and-shrink algorithm, statistics:" << endl;
+    utils::g_log << "Main loop runtime: " << timer.get_elapsed_time() << endl;
+    utils::g_log << "Maximum intermediate abstraction size: "
+                 << maximum_intermediate_size << endl;
     shrink_strategy = nullptr;
     label_reduction = nullptr;
 }
@@ -329,11 +329,11 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     starting_peak_memory = utils::get_peak_memory_in_kb();
 
     utils::Timer timer;
-    cout << "Running merge-and-shrink algorithm..." << endl;
+    utils::g_log << "Running merge-and-shrink algorithm..." << endl;
     task_properties::verify_no_axioms(task_proxy);
     dump_options();
     warn_on_unusual_options();
-    cout << endl;
+    utils::g_log << endl;
 
     const bool compute_init_distances =
         shrink_strategy->requires_init_distances() ||
@@ -373,7 +373,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
             pruned = pruned || pruned_factor;
         }
         if (!fts.is_factor_solvable(index)) {
-            cout << "Atomic FTS is unsolvable, stopping computation." << endl;
+            utils::g_log << "Atomic FTS is unsolvable, stopping computation." << endl;
             unsolvable = true;
             break;
         }
@@ -382,7 +382,7 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
         if (pruned) {
             log_progress(timer, "after pruning atomic factors");
         }
-        cout << endl;
+        utils::g_log << endl;
     }
 
     if (!unsolvable && main_loop_max_time > 0) {
@@ -390,8 +390,8 @@ FactoredTransitionSystem MergeAndShrinkAlgorithm::build_factored_transition_syst
     }
     const bool final = true;
     report_peak_memory_delta(final);
-    cout << "Merge-and-shrink algorithm runtime: " << timer << endl;
-    cout << endl;
+    utils::g_log << "Merge-and-shrink algorithm runtime: " << timer << endl;
+    utils::g_log << endl;
     return fts;
 }
 
@@ -498,8 +498,8 @@ void handle_shrink_limit_options_defaults(Options &opts) {
     }
 
     if (max_states_before_merge > max_states) {
-        cout << "warning: max_states_before_merge exceeds max_states, "
-             << "correcting." << endl;
+        utils::g_log << "warning: max_states_before_merge exceeds max_states, "
+                     << "correcting." << endl;
         max_states_before_merge = max_states;
     }
 
@@ -522,7 +522,7 @@ void handle_shrink_limit_options_defaults(Options &opts) {
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (threshold > max_states) {
-        cout << "warning: threshold exceeds max_states, correcting" << endl;
+        utils::g_log << "warning: threshold exceeds max_states, correcting" << endl;
         threshold = max_states;
     }
 

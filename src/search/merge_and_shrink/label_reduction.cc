@@ -88,7 +88,7 @@ void LabelReduction::compute_label_mapping(
             const vector<int> &label_nos = it->second;
             if (label_nos.size() > 1) {
                 if (verbosity >= utils::Verbosity::DEBUG) {
-                    cout << "Reducing labels " << label_nos << " to " << next_new_label_no << endl;
+                    utils::g_log << "Reducing labels " << label_nos << " to " << next_new_label_no << endl;
                 }
                 label_mapping.push_back(make_pair(next_new_label_no, label_nos));
                 ++next_new_label_no;
@@ -100,10 +100,10 @@ void LabelReduction::compute_label_mapping(
     }
     int number_reduced_labels = num_labels - num_labels_after_reduction;
     if (verbosity >= utils::Verbosity::VERBOSE && number_reduced_labels > 0) {
-        cout << "Label reduction: "
-             << num_labels << " labels, "
-             << num_labels_after_reduction << " after reduction"
-             << endl;
+        utils::g_log << "Label reduction: "
+                     << num_labels << " labels, "
+                     << num_labels_after_reduction << " after reduction"
+                     << endl;
     }
 }
 
@@ -265,39 +265,39 @@ bool LabelReduction::reduce(
 }
 
 void LabelReduction::dump_options() const {
-    cout << "Label reduction options:" << endl;
-    cout << "Before merging: "
-         << (lr_before_merging ? "enabled" : "disabled") << endl;
-    cout << "Before shrinking: "
-         << (lr_before_shrinking ? "enabled" : "disabled") << endl;
-    cout << "Method: ";
+    utils::g_log << "Label reduction options:" << endl;
+    utils::g_log << "Before merging: "
+                 << (lr_before_merging ? "enabled" : "disabled") << endl;
+    utils::g_log << "Before shrinking: "
+                 << (lr_before_shrinking ? "enabled" : "disabled") << endl;
+    utils::g_log << "Method: ";
     switch (lr_method) {
     case LabelReductionMethod::TWO_TRANSITION_SYSTEMS:
-        cout << "two transition systems (which will be merged next)";
+        utils::g_log << "two transition systems (which will be merged next)";
         break;
     case LabelReductionMethod::ALL_TRANSITION_SYSTEMS:
-        cout << "all transition systems";
+        utils::g_log << "all transition systems";
         break;
     case LabelReductionMethod::ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT:
-        cout << "all transition systems with fixpoint computation";
+        utils::g_log << "all transition systems with fixpoint computation";
         break;
     }
-    cout << endl;
+    utils::g_log << endl;
     if (lr_method == LabelReductionMethod::ALL_TRANSITION_SYSTEMS ||
         lr_method == LabelReductionMethod::ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
-        cout << "System order: ";
+        utils::g_log << "System order: ";
         switch (lr_system_order) {
         case LabelReductionSystemOrder::REGULAR:
-            cout << "regular";
+            utils::g_log << "regular";
             break;
         case LabelReductionSystemOrder::REVERSE:
-            cout << "reversed";
+            utils::g_log << "reversed";
             break;
         case LabelReductionSystemOrder::RANDOM:
-            cout << "random";
+            utils::g_log << "random";
             break;
         }
-        cout << endl;
+        utils::g_log << endl;
     }
 }
 

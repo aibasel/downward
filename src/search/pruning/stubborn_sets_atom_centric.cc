@@ -3,6 +3,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/memory.h"
 
@@ -17,7 +18,7 @@ StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
 
 void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
-    cout << "pruning method: atom-centric stubborn sets" << endl;
+    utils::g_log << "pruning method: atom-centric stubborn sets" << endl;
 
     TaskProxy task_proxy(*task);
 

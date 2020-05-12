@@ -199,13 +199,13 @@ void Distances::compute_distances(
     }
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        cout << transition_system.tag();
+        utils::g_log << transition_system.tag();
     }
 
     int num_states = get_num_states();
     if (num_states == 0) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            cout << "empty transition system, no distances to compute" << endl;
+            utils::g_log << "empty transition system, no distances to compute" << endl;
         }
         init_distances_computed = true;
         goal_distances_computed = true;
@@ -219,19 +219,19 @@ void Distances::compute_distances(
         goal_distances.resize(num_states, INF);
     }
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        cout << "computing ";
+        utils::g_log << "computing ";
         if (compute_init_distances && compute_goal_distances) {
-            cout << "init and goal";
+            utils::g_log << "init and goal";
         } else if (compute_init_distances) {
-            cout << "init";
+            utils::g_log << "init";
         } else if (compute_goal_distances) {
-            cout << "goal";
+            utils::g_log << "goal";
         }
-        cout << " distances using ";
+        utils::g_log << " distances using ";
     }
     if (is_unit_cost()) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            cout << "unit-cost";
+            utils::g_log << "unit-cost";
         }
         if (compute_init_distances) {
             compute_init_distances_unit_cost();
@@ -241,7 +241,7 @@ void Distances::compute_distances(
         }
     } else {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            cout << "general-cost";
+            utils::g_log << "general-cost";
         }
         if (compute_init_distances) {
             compute_init_distances_general_cost();
@@ -251,7 +251,7 @@ void Distances::compute_distances(
         }
     }
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        cout << " algorithm" << endl;
+        utils::g_log << " algorithm" << endl;
     }
 
     if (compute_init_distances) {
@@ -327,8 +327,8 @@ void Distances::apply_abstraction(
 
     if (must_recompute) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            cout << transition_system.tag()
-                 << "simplification was not f-preserving!" << endl;
+            utils::g_log << transition_system.tag()
+                         << "simplification was not f-preserving!" << endl;
         }
         clear_distances();
         compute_distances(
@@ -341,36 +341,36 @@ void Distances::apply_abstraction(
 
 void Distances::dump() const {
     if (are_init_distances_computed()) {
-        cout << "Init distances: ";
+        utils::g_log << "Init distances: ";
         for (size_t i = 0; i < init_distances.size(); ++i) {
-            cout << i << ": " << init_distances[i];
+            utils::g_log << i << ": " << init_distances[i];
             if (i != init_distances.size() - 1) {
-                cout << ", ";
+                utils::g_log << ", ";
             }
         }
-        cout << endl;
+        utils::g_log << endl;
     }
     if (are_goal_distances_computed()) {
-        cout << "Goal distances: ";
+        utils::g_log << "Goal distances: ";
         for (size_t i = 0; i < goal_distances.size(); ++i) {
-            cout << i << ": " << goal_distances[i] << ", ";
+            utils::g_log << i << ": " << goal_distances[i] << ", ";
             if (i != goal_distances.size() - 1) {
-                cout << ", ";
+                utils::g_log << ", ";
             }
         }
-        cout << endl;
+        utils::g_log << endl;
     }
 }
 
 void Distances::statistics() const {
-    cout << transition_system.tag();
+    utils::g_log << transition_system.tag();
     if (!are_goal_distances_computed()) {
-        cout << "goal distances not computed";
+        utils::g_log << "goal distances not computed";
     } else if (transition_system.is_solvable(*this)) {
-        cout << "init h=" << get_goal_distance(transition_system.get_init_state());
+        utils::g_log << "init h=" << get_goal_distance(transition_system.get_init_state());
     } else {
-        cout << "transition system is unsolvable";
+        utils::g_log << "transition system is unsolvable";
     }
-    cout << endl;
+    utils::g_log << endl;
 }
 }

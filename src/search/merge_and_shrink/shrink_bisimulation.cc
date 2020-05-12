@@ -9,6 +9,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -77,18 +78,18 @@ struct Signature {
     }
 
     void dump() const {
-        cout << "Signature(h_and_goal = " << h_and_goal
-             << ", group = " << group
-             << ", state = " << state
-             << ", succ_sig = [";
+        utils::g_log << "Signature(h_and_goal = " << h_and_goal
+                     << ", group = " << group
+                     << ", state = " << state
+                     << ", succ_sig = [";
         for (size_t i = 0; i < succ_signature.size(); ++i) {
             if (i)
-                cout << ", ";
-            cout << "(" << succ_signature[i].first
-                 << "," << succ_signature[i].second
-                 << ")";
+                utils::g_log << ", ";
+            utils::g_log << "(" << succ_signature[i].first
+                         << "," << succ_signature[i].second
+                         << ")";
         }
-        cout << "])" << endl;
+        utils::g_log << "])" << endl;
     }
 };
 
@@ -248,7 +249,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     signatures.reserve(num_states + 2);
 
     int num_groups = initialize_groups(ts, distances, state_to_group);
-    // cout << "number of initial groups: " << num_groups << endl;
+    // utils::g_log << "number of initial groups: " << num_groups << endl;
 
     // TODO: We currently violate this; see issue250
     // assert(num_groups <= target_size);
@@ -362,16 +363,16 @@ string ShrinkBisimulation::name() const {
 }
 
 void ShrinkBisimulation::dump_strategy_specific_options() const {
-    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
-    cout << "At limit: ";
+    utils::g_log << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+    utils::g_log << "At limit: ";
     if (at_limit == AtLimit::RETURN) {
-        cout << "return";
+        utils::g_log << "return";
     } else if (at_limit == AtLimit::USE_UP) {
-        cout << "use up limit";
+        utils::g_log << "use up limit";
     } else {
         ABORT("Unknown setting for at_limit.");
     }
-    cout << endl;
+    utils::g_log << endl;
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {

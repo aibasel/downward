@@ -4,6 +4,7 @@
 
 #include "../option_parser.h"
 
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 #ifdef USE_LP
@@ -354,8 +355,8 @@ int LPSolver::has_temporary_constraints() const {
 }
 
 void LPSolver::print_statistics() const {
-    cout << "LP variables: " << get_num_variables() << endl;
-    cout << "LP constraints: " << get_num_constraints() << endl;
+    utils::g_log << "LP variables: " << get_num_variables() << endl;
+    utils::g_log << "LP constraints: " << get_num_constraints() << endl;
 }
 
 #endif

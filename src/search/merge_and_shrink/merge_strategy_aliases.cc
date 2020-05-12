@@ -11,6 +11,7 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -48,9 +49,9 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
         "ordering options void.",
         "false");
     if (parser.dry_run() && !parser.help_mode())
-        cout << "Warning: this command line option has been deprecated. Please "
+        utils::g_log << "Warning: this command line option has been deprecated. Please "
             "consult fast-downward.org for equivalent new command line options."
-             << endl;
+                     << endl;
 
     options::Options options = parser.parse();
     if (parser.dry_run())
@@ -108,9 +109,9 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
         "equivalent configuration\n"
         "{{{\nmerge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))\n}}}");
     if (parser.dry_run() && !parser.help_mode())
-        cout << "Warning: this command line option has been deprecated. Please "
+        utils::g_log << "Warning: this command line option has been deprecated. Please "
             "consult fast-downward.org for equivalent new command line options."
-             << endl;
+                     << endl;
 
     options::Options opts = parser.parse();
     if (parser.dry_run())
