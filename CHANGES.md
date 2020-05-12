@@ -11,7 +11,7 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- Integrate atom-centric stubborn sets
+- Integrate new pruning method `atom_centric_stubborn_sets()`
   <http://issues.fast-downward.org/issue781>
   We merged the code for the SoCS 2020 paper "An Atom-Centric Perspective
   on Stubborn Sets" (https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf).
