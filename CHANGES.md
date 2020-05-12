@@ -22,6 +22,9 @@ after the corresponding tracker issues.
   <http://issues.fast-downward.org/issue962>
   We now store enum options as enums instead of as ints in Options objects.
 
+- For developers: allow creating Timers in stopped state
+  <http://issues.fast-downward.org/issue965>
+
 ## Fast Downward 19.12
 
 Released on December 20, 2019.

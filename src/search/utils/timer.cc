@@ -50,14 +50,14 @@ void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp)
 #endif
 
 
-Timer::Timer() {
+Timer::Timer(bool start) {
 #if OPERATING_SYSTEM == WINDOWS
     QueryPerformanceFrequency(&frequency);
     QueryPerformanceCounter(&start_ticks);
 #endif
-    last_start_clock = current_clock();
     collected_time = 0;
-    stopped = false;
+    stopped = !start;
+    last_start_clock = start ? current_clock() : 0.;
 }
 
 double Timer::current_clock() const {
