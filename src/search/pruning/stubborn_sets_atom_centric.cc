@@ -92,7 +92,10 @@ void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
         }
         mark = fact.value;
     } else if (mark != MARKED_VALUES_ALL && mark != fact.value) {
-        // If we have enqueued all facts for v except the given fact, enqueue it.
+        /*
+          Exactly one fact v=d' has not been enqueued. It is therefore the only
+          sibling of v=d that we need to enqueue.
+        */
         enqueue_producers(FactPair(fact.var, mark));
         mark = MARKED_VALUES_ALL;
     }
