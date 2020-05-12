@@ -72,14 +72,18 @@ void StubbornSetsAtomCentric::enqueue_consumers(const FactPair &fact) {
 }
 
 void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
-    /* If we don't use the sibling shortcut handling, we ignore any
-       variable-based marking info and always enqueue all sibling facts of the
-       given fact v=d. */
+    /*
+      If we don't use the sibling shortcut handling, we ignore any
+      variable-based marking info and always enqueue all sibling facts of the
+      given fact v=d.
+    */
     int dummy_mark = MARKED_VALUES_NONE;
     int &mark = use_sibling_shortcut ? marked_producer_variables[fact.var] : dummy_mark;
     if (mark == MARKED_VALUES_NONE) {
-        /* If we don't have marking info for variable v, enqueue all sibling
-           producers of v=d and remember that we marked all siblings. */
+        /*
+          If we don't have marking info for variable v, enqueue all sibling
+          producers of v=d and remember that we marked all siblings.
+        */
         int domain_size = consumers[fact.var].size();
         for (int value = 0; value < domain_size; ++value) {
             if (value != fact.value) {
@@ -88,7 +92,7 @@ void StubbornSetsAtomCentric::enqueue_sibling_producers(const FactPair &fact) {
         }
         mark = fact.value;
     } else if (mark != MARKED_VALUES_ALL && mark != fact.value) {
-        /* If we have enqueued all facts for v except the given fact, enqueue it. */
+        // If we have enqueued all facts for v except the given fact, enqueue it.
         enqueue_producers(FactPair(fact.var, mark));
         mark = MARKED_VALUES_ALL;
     }
