@@ -15,8 +15,8 @@ following steps:
 
     export PYTHONPATH=""  # clear PYTHONPATH to obtain a clean environment
     cd issue899
-    python3 -m venv --prompt=issue899 venv
-    source venv/bin/activate  # enter the virtual environment
+    python3 -m venv --prompt=issue899 .venv
+    source .venv/bin/activate  # enter the virtual environment
     # list exact versions of your dependencies in a file (for example, lab==4.2)
     pip install -r requirements.txt  # install dependencies
     ./v1-opt.py 1 2 3 4  # run your experiment
