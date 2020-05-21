@@ -439,7 +439,7 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
       verbose: full output during construction, starting and final statistics
       debug: full output with additional debug output
     */
-    utils::add_verbosity_option_to_parser(parser);
+    utils::add_log_options_to_parser(parser);
 
     parser.add_option<double>(
         "main_loop_max_time",

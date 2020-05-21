@@ -12,7 +12,9 @@
 using namespace std;
 
 namespace utils {
-void add_verbosity_option_to_parser(options::OptionParser &parser) {
+Log g_log(Verbosity::NORMAL);
+
+void add_log_options_to_parser(options::OptionParser &parser) {
     vector<string> verbosity_levels;
     vector<string> verbosity_level_docs;
     verbosity_levels.push_back("silent");
@@ -33,6 +35,14 @@ void add_verbosity_option_to_parser(options::OptionParser &parser) {
         "Option to specify the verbosity level.",
         "normal",
         verbosity_level_docs);
+}
+
+Log get_log_from_options(const options::Options &options) {
+    return Log(options.get<Verbosity>("verbosity"));
+}
+
+void add_verbosity_option_to_parser(options::OptionParser &parser) {
+    add_log_options_to_parser(parser);
 }
 
 class MemoryTracer {
@@ -103,6 +113,4 @@ TraceBlock::~TraceBlock() {
 void trace(const string &msg) {
     _tracer.print_trace_message(msg);
 }
-
-Log g_log;
 }

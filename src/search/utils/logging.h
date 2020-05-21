@@ -4,15 +4,28 @@
 #include "system.h"
 #include "timer.h"
 
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
 namespace options {
 class OptionParser;
+class Options;
 }
 
 namespace utils {
+// See add_verbosity_option_to_parser for documentation.
+enum class Verbosity {
+    SILENT,
+    NORMAL,
+    VERBOSE,
+    DEBUG
+};
+
+// TODO: to be removed
+extern void add_verbosity_option_to_parser(options::OptionParser &parser);
+
 /*
   Simple logger that prepends time and peak memory info to messages.
   Logs are written to stdout.
@@ -22,9 +35,14 @@ namespace utils {
 */
 class Log {
 private:
-    bool line_has_started = false;
+    const Verbosity verbosity;
+    bool line_has_started;
 
 public:
+    explicit Log(Verbosity verbosity)
+        : verbosity(verbosity), line_has_started(false) {
+    }
+
     template<typename T>
     Log &operator<<(const T &elem) {
         if (!line_has_started) {
@@ -46,19 +64,25 @@ public:
         std::cout << f;
         return *this;
     }
+
+    bool is_normal() const {
+        return verbosity >= Verbosity::NORMAL;
+    }
+
+    bool is_verbose() const {
+        return verbosity >= Verbosity::VERBOSE;
+    }
+
+    bool is_debug() const {
+        return verbosity >= Verbosity::DEBUG;
+    }
 };
 
 extern Log g_log;
 
-// See add_verbosity_option_to_parser for documentation.
-enum class Verbosity {
-    SILENT,
-    NORMAL,
-    VERBOSE,
-    DEBUG
-};
+extern void add_log_options_to_parser(options::OptionParser &parser);
 
-extern void add_verbosity_option_to_parser(options::OptionParser &parser);
+extern Log get_log_from_options(const options::Options &options);
 
 class TraceBlock {
     std::string block_name;

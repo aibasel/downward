@@ -12,7 +12,6 @@
 
 #include "../task_utils/task_properties.h"
 
-#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -26,12 +25,12 @@ using utils::ExitCode;
 namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      verbosity(opts.get<utils::Verbosity>("verbosity")) {
-    utils::g_log << "Initializing merge-and-shrink heuristic..." << endl;
+      log(utils::get_log_from_options(opts)) {
+    log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
     extract_factors(fts);
-    utils::g_log << "Done initializing merge-and-shrink heuristic." << endl << endl;
+    log << "Done initializing merge-and-shrink heuristic." << endl << endl;
 }
 
 void MergeAndShrinkHeuristic::extract_factor(
@@ -47,7 +46,8 @@ void MergeAndShrinkHeuristic::extract_factor(
     if (!distances->are_goal_distances_computed()) {
         const bool compute_init = false;
         const bool compute_goal = true;
-        distances->compute_distances(compute_init, compute_goal, verbosity);
+        // HACK: pass Log once its design is settled
+        distances->compute_distances(compute_init, compute_goal, utils::Verbosity::NORMAL);
     }
     assert(distances->are_goal_distances_computed());
     mas_representation->set_distances(*distances);
@@ -61,10 +61,10 @@ bool MergeAndShrinkHeuristic::extract_unsolvable_factor(FactoredTransitionSystem
         if (!fts.is_factor_solvable(index)) {
             mas_representations.reserve(1);
             extract_factor(fts, index);
-            if (verbosity >= utils::Verbosity::NORMAL) {
-                utils::g_log << fts.get_transition_system(index).tag()
-                             << "use this unsolvable factor as heuristic."
-                             << endl;
+            if (log.is_normal()) {
+                log << fts.get_transition_system(index).tag()
+                    << "use this unsolvable factor as heuristic."
+                    << endl;
             }
             return true;
         }
@@ -76,9 +76,9 @@ void MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSyste
     // Iterate over remaining factors and extract and store the nontrivial ones.
     for (int index : fts) {
         if (fts.is_factor_trivial(index)) {
-            if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << fts.get_transition_system(index).tag()
-                             << "is trivial." << endl;
+            if (log.is_verbose()) {
+                log << fts.get_transition_system(index).tag()
+                    << "is trivial." << endl;
             }
         } else {
             extract_factor(fts, index);
@@ -98,8 +98,8 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     assert(mas_representations.empty());
 
     int num_active_factors = fts.get_num_active_entries();
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Number of remaining factors: " << num_active_factors << endl;
+    if (log.is_normal()) {
+        log << "Number of remaining factors: " << num_active_factors << endl;
     }
 
     bool unsolvalbe = extract_unsolvable_factor(fts);
@@ -108,8 +108,8 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     }
 
     int num_factors_kept = mas_representations.size();
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Number of factors kept: " << num_factors_kept << endl;
+    if (log.is_normal()) {
+        log << "Number of factors kept: " << num_factors_kept << endl;
     }
 }
 
