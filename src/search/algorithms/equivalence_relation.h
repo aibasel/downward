@@ -84,8 +84,8 @@ public:
     void refine(const EquivalenceRelation &other);
 
     // See refine(const Block &block)
-    void refine(ElementListConstIter block_x_begin, ElementListConstIter block_x_end);
-    void refine(std::vector<int>::const_iterator block_x_begin, std::vector<int>::const_iterator block_x_end);
+    template<class RandomAccessIterator>
+    void refine(RandomAccessIterator block_x_begin, RandomAccessIterator block_x_end);
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.
@@ -141,6 +141,68 @@ EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
         }
     }
     return relation;
+}
+
+// TODO: can we use a more restricted class of iterators here? Ideally, a
+// const iterator which can be dereferences to int.
+template<class RandomAccessIterator>
+void EquivalenceRelation::refine(
+    RandomAccessIterator block_x_begin, RandomAccessIterator block_x_end) {
+    // An iterator to the block (B \cap X) is stored in every block B that has
+    // a non-empty intersection with X. This iterator has to be reset at the end
+    // so all such blocks are stored.
+    std::vector<BlockListIter> modified_blocks;
+    // All elements that are specified in X but not in our relation belong in
+    // the block (U \cap X) that is created on demand. This iterator refers to
+    // the block if it was created already or to blocks.end() otherwise.
+    BlockListIter it_unknown_elements = blocks.end();
+
+    // For every x \in X:
+    for (RandomAccessIterator it_x = block_x_begin; it_x != block_x_end; ++it_x) {
+        int x = *it_x;
+        ElementPositionMap::iterator it_pos = element_positions.find(x);
+        if (it_pos != element_positions.end()) {
+            // Look up the block B containing x.
+            ElementPosition &pos = it_pos->second;
+            BlockListIter it_block_B = pos.first;
+            Block &block_B = *it_block_B;
+            ElementListIter it_previous_element = pos.second;
+            // Create the block (B \cap X) on demand.
+            if (block_B.it_intersection_block == blocks.end()) {
+                block_B.it_intersection_block = add_empty_block();
+                // Remember to reset the iterator at the end.
+                modified_blocks.push_back(it_block_B);
+            }
+            // Remove x from B.
+            block_B.erase(it_previous_element);
+            // Add x to (B \cap X).
+            ElementListIter it_element = block_B.it_intersection_block->insert(x);
+            // Update the stored position of x.
+            pos.first = block_B.it_intersection_block;
+            pos.second = it_element;
+        } else {
+            // x is unspecified in our relation, so it belongs in block (U \cap X),
+            // which is created on demand.
+            if (it_unknown_elements == blocks.end()) {
+                it_unknown_elements = add_empty_block();
+            }
+            ElementListIter it_element = it_unknown_elements->insert(x);
+            // Store position of x.
+            // NOTE using insert instead of find above could a second lookup
+            //      but would complicate the code.
+            element_positions[x] = make_pair(it_unknown_elements, it_element);
+        }
+    }
+    // Reset the iterators referencing (B \cap X) for all modified blocks B and
+    // remove any blocks B that became empty.
+    for (size_t i = 0; i < modified_blocks.size(); ++i) {
+        BlockListIter modified_block = modified_blocks[i];
+        if (modified_block->empty()) {
+            blocks.erase(modified_block);
+        } else {
+            modified_block->it_intersection_block = blocks.end();
+        }
+    }
 }
 }
 
