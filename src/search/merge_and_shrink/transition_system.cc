@@ -304,6 +304,10 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     /*
       Compare every group of labels and their transitions to all others and
       merge two groups whenever the transitions are the same.
+
+      Note that there can be empety local label groups after applying label
+      reduction when combining labels which are combinable for this transition
+      system.
     */
     for (size_t local_label_no1 = 0; local_label_no1 < transitions_by_local_label_no.size();
          ++local_label_no1) {
