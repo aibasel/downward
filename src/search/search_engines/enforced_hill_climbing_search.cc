@@ -9,6 +9,7 @@
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 #include "../task_utils/successor_generator.h"
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -65,7 +66,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     : SearchEngine(opts),
       evaluator(opts.get<shared_ptr<Evaluator>>("h")),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
-      preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
+      preferred_usage(opts.get<PreferredUsage>("preferred_usage")),
       current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
@@ -99,11 +100,11 @@ void EnforcedHillClimbingSearch::reach_state(
 
 void EnforcedHillClimbingSearch::initialize() {
     assert(evaluator);
-    cout << "Conducting enforced hill-climbing search, (real) bound = "
-         << bound << endl;
+    utils::g_log << "Conducting enforced hill-climbing search, (real) bound = "
+                 << bound << endl;
     if (use_preferred) {
-        cout << "Using preferred operators for "
-             << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
+        utils::g_log << "Using preferred operators for "
+                     << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
             "ranking successors" : "pruning") << endl;
     }
 
@@ -112,7 +113,7 @@ void EnforcedHillClimbingSearch::initialize() {
     print_initial_evaluator_values(current_eval_context);
 
     if (dead_end) {
-        cout << "Initial state is a dead end, no solution" << endl;
+        utils::g_log << "Initial state is a dead end, no solution" << endl;
         if (evaluator->dead_ends_are_reliable())
             utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
         else
@@ -242,27 +243,27 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
         }
     }
-    cout << "No solution - FAILED" << endl;
+    utils::g_log << "No solution - FAILED" << endl;
     return FAILED;
 }
 
 void EnforcedHillClimbingSearch::print_statistics() const {
     statistics.print_detailed_statistics();
 
-    cout << "EHC phases: " << num_ehc_phases << endl;
+    utils::g_log << "EHC phases: " << num_ehc_phases << endl;
     assert(num_ehc_phases != 0);
-    cout << "Average expansions per EHC phase: "
-         << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
-         << endl;
+    utils::g_log << "Average expansions per EHC phase: "
+                 << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
+                 << endl;
 
     for (auto count : d_counts) {
         int depth = count.first;
         int phases = count.second.first;
         assert(phases != 0);
         int total_expansions = count.second.second;
-        cout << "EHC phases of depth " << depth << ": " << phases
-             << " - Avg. Expansions: "
-             << static_cast<double>(total_expansions) / phases << endl;
+        utils::g_log << "EHC phases of depth " << depth << ": " << phases
+                     << " - Avg. Expansions: "
+                     << static_cast<double>(total_expansions) / phases << endl;
     }
 }
 
@@ -272,7 +273,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
-    parser.add_enum_option(
+    parser.add_enum_option<PreferredUsage>(
         "preferred_usage",
         preferred_usages,
         "preferred operator usage",

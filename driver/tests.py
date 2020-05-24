@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Test module for Fast Downward driver script. Run with
 
@@ -46,6 +44,10 @@ def test_aliases():
     for alias, config in ALIASES.items():
         cmd = ["./fast-downward.py", "--alias", alias, "output.sas"]
         run_driver(cmd)
+
+
+def test_show_aliases():
+    run_driver(["./fast-downward.py", "--show-aliases"])
 
 
 def test_portfolios():

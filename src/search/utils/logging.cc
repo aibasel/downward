@@ -27,7 +27,7 @@ void add_verbosity_option_to_parser(options::OptionParser &parser) {
     verbosity_levels.push_back("debug");
     verbosity_level_docs.push_back(
         "like full with additional debug output");
-    parser.add_enum_option(
+    parser.add_enum_option<Verbosity>(
         "verbosity",
         verbosity_levels,
         "Option to specify the verbosity level.",
@@ -80,12 +80,12 @@ void MemoryTracer::leave_block(const string &block_name) {
 
 
 void MemoryTracer::print_trace_message(const string &msg) {
-    cout << "[TRACE] "
-         << setw(TIME_FIELD_WIDTH) << g_timer << " "
-         << setw(MEM_FIELD_WIDTH) << get_peak_memory_in_kb() << " KB";
+    g_log << "[TRACE] "
+          << setw(TIME_FIELD_WIDTH) << g_timer << " "
+          << setw(MEM_FIELD_WIDTH) << get_peak_memory_in_kb() << " KB";
     for (size_t i = 0; i < block_stack.size() * INDENT_AMOUNT; ++i)
-        cout << ' ';
-    cout << ' ' << msg << endl;
+        g_log << ' ';
+    g_log << ' ' << msg << endl;
 }
 
 

@@ -25,19 +25,19 @@ using utils::ExitCode;
 class PruningMethod;
 
 successor_generator::SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy) {
-    cout << "Building successor generator..." << flush;
+    utils::g_log << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();
     utils::Timer successor_generator_timer;
     successor_generator::SuccessorGenerator &successor_generator =
         successor_generator::g_successor_generators[task_proxy];
     successor_generator_timer.stop();
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
+    utils::g_log << "done!" << endl;
     int peak_memory_after = utils::get_peak_memory_in_kb();
     int memory_diff = peak_memory_after - peak_memory_before;
-    cout << "peak memory difference for successor generator creation: "
-         << memory_diff << " KB" << endl
-         << "time for successor generation creation: "
-         << successor_generator_timer << endl;
+    utils::g_log << "peak memory difference for successor generator creation: "
+                 << memory_diff << " KB" << endl
+                 << "time for successor generation creation: "
+                 << successor_generator_timer << endl;
     return successor_generator;
 }
 
@@ -49,12 +49,12 @@ SearchEngine::SearchEngine(const Options &opts)
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy)),
       search_space(state_registry),
-      search_progress(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
-      statistics(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))),
-      cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      search_progress(opts.get<utils::Verbosity>("verbosity")),
+      statistics(opts.get<utils::Verbosity>("verbosity")),
+      cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")),
-      verbosity(static_cast<utils::Verbosity>(opts.get_enum("verbosity"))) {
+      verbosity(opts.get<utils::Verbosity>("verbosity")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -90,19 +90,18 @@ void SearchEngine::search() {
     while (status == IN_PROGRESS) {
         status = step();
         if (timer.is_expired()) {
-            cout << "Time limit reached. Abort search." << endl;
+            utils::g_log << "Time limit reached. Abort search." << endl;
             status = TIMEOUT;
             break;
         }
     }
     // TODO: Revise when and which search times are logged.
-    cout << "Actual search time: " << timer.get_elapsed_time()
-         << " [t=" << utils::g_timer << "]" << endl;
+    utils::g_log << "Actual search time: " << timer.get_elapsed_time() << endl;
 }
 
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
-        cout << "Solution found!" << endl;
+        utils::g_log << "Solution found!" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
         set_plan(plan);

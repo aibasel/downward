@@ -4,6 +4,7 @@
 
 #include "../option_parser.h"
 
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 #ifdef USE_LP
@@ -41,7 +42,7 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
     lp_solvers_doc.push_back("commercial solver");
     lp_solvers.push_back("SOPLEX");
     lp_solvers_doc.push_back("open source solver by ZIB");
-    parser.add_enum_option(
+    parser.add_enum_option<LPSolverType>(
         "lpsolver",
         lp_solvers,
         "external solver that should be used to solve linear programs",
@@ -354,8 +355,8 @@ int LPSolver::has_temporary_constraints() const {
 }
 
 void LPSolver::print_statistics() const {
-    cout << "LP variables: " << get_num_variables() << endl;
-    cout << "LP constraints: " << get_num_constraints() << endl;
+    utils::g_log << "LP variables: " << get_num_variables() << endl;
+    utils::g_log << "LP constraints: " << get_num_constraints() << endl;
 }
 
 #endif

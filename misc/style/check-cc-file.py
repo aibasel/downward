@@ -1,7 +1,5 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
+#! /usr/bin/env python3
 
-from __future__ import print_function
 
 import argparse
 import re
@@ -19,7 +17,7 @@ def parse_args():
 
 def check_std(cc_file):
     source_without_comments = subprocess.check_output(
-        ["gcc", "-fpreprocessed", "-dD", "-E", cc_file])
+        ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
     errors = []
     for line in source_without_comments.splitlines():
         if re.search(STD_REGEX, line):

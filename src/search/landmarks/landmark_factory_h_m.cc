@@ -6,6 +6,7 @@
 
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -293,9 +294,9 @@ void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m,
 void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &fluent) const {
     VariableProxy var = variables[fluent.var];
     FactProxy fact = var.get_fact(fluent.value);
-    cout << fact.get_name()
-         << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
-         << "->" << fact.get_value() << ")";
+    utils::g_log << fact.get_name()
+                 << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
+                 << "->" << fact.get_value() << ")";
 }
 
 static FluentSet get_operator_precondition(const OperatorProxy &op) {
@@ -346,70 +347,70 @@ void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp 
         cond_eff.clear();
         int pm_fluent;
         size_t j;
-        cout << "PC:" << endl;
+        utils::g_log << "PC:" << endl;
         for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
             print_fluentset(variables, h_m_table_[pm_fluent].fluents);
-            cout << endl;
+            utils::g_log << endl;
 
             for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
                 cond_pc.insert(h_m_table_[pm_fluent].fluents[k]);
             }
         }
         // advance to effects section
-        cout << endl;
+        utils::g_log << endl;
         ++j;
 
-        cout << "EFF:" << endl;
+        utils::g_log << "EFF:" << endl;
         for (; j < op.cond_noops[i].size(); ++j) {
             int pm_fluent = op.cond_noops[i][j];
 
             print_fluentset(variables, h_m_table_[pm_fluent].fluents);
-            cout << endl;
+            utils::g_log << endl;
 
             for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
                 cond_eff.insert(h_m_table_[pm_fluent].fluents[k]);
             }
         }
         conds.emplace_back(cond_pc, cond_eff);
-        cout << endl << endl << endl;
+        utils::g_log << endl << endl << endl;
     }
 
-    cout << "Action " << op.index << endl;
-    cout << "Precondition: ";
+    utils::g_log << "Action " << op.index << endl;
+    utils::g_log << "Precondition: ";
     for (const FactPair &pc : pcs) {
         print_proposition(variables, pc);
-        cout << " ";
+        utils::g_log << " ";
     }
 
-    cout << endl << "Effect: ";
+    utils::g_log << endl << "Effect: ";
     for (const FactPair &eff : effs) {
         print_proposition(variables, eff);
-        cout << " ";
+        utils::g_log << " ";
     }
-    cout << endl << "Conditionals: " << endl;
+    utils::g_log << endl << "Conditionals: " << endl;
     int i = 0;
     for (const auto &cond : conds) {
-        cout << "Cond PC #" << i++ << ":" << endl << "\t";
+        utils::g_log << "Cond PC #" << i++ << ":" << endl << "\t";
         for (const FactPair &pc : cond.first) {
             print_proposition(variables, pc);
-            cout << " ";
+            utils::g_log << " ";
         }
-        cout << endl << "Cond Effect #" << i << ":" << endl << "\t";
+        utils::g_log << endl << "Cond Effect #" << i << ":" << endl << "\t";
         for (const FactPair &eff : cond.second) {
             print_proposition(variables, eff);
-            cout << " ";
+            utils::g_log << " ";
         }
-        cout << endl << endl;
+        utils::g_log << endl << endl;
     }
 }
 
 void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) {
-    cout << "( ";
+    utils::g_log << "( ";
     for (const FactPair &fact : fs) {
         print_proposition(variables, fact);
-        cout << " ";
+        utils::g_log << " ";
     }
-    cout << ")";
+    utils::g_log << ")";
 }
 
 // check whether fs2 is a possible noop set for action with fs1 as effect
@@ -565,7 +566,7 @@ LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
-    cout << "h^m landmarks m=" << m_ << endl;
+    utils::g_log << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
@@ -580,13 +581,13 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
         set_indices_[msets[i]] = i;
         h_m_table_[i].fluents = msets[i];
     }
-    cout << "Using " << h_m_table_.size() << " P^m fluents." << endl;
+    utils::g_log << "Using " << h_m_table_.size() << " P^m fluents." << endl;
 
     build_pm_ops(task_proxy);
 }
 
 void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
-    cout << "Calculating achievers." << endl;
+    utils::g_log << "Calculating achievers." << endl;
 
     OperatorsProxy operators = task_proxy.get_operators();
     VariablesProxy variables = task_proxy.get_variables();
@@ -803,10 +804,10 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
         current_trigger.swap(next_trigger);
         next_trigger.clear();
 
-        cout << "Level " << level << " completed." << endl;
+        utils::g_log << "Level " << level << " completed." << endl;
         ++level;
     }
-    cout << "h^m landmarks computed." << endl;
+    utils::g_log << "h^m landmarks computed." << endl;
 }
 
 void LandmarkFactoryHM::compute_noop_landmarks(
@@ -914,10 +915,10 @@ void LandmarkFactoryHM::generate_landmarks(
         int set_index = set_indices_[goal_subset];
 
         if (h_m_table_[set_index].level == -1) {
-            cout << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
-            cout << "Subset is: ";
+            utils::g_log << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
+            utils::g_log << "Subset is: ";
             print_fluentset(variables, h_m_table_[set_index].fluents);
-            cout << endl;
+            utils::g_log << endl;
         }
 
         // set up goals landmarks for processing

@@ -4,6 +4,7 @@
 
 #include "../utils/countdown_timer.h"
 #include "../utils/hash.h"
+#include "../utils/logging.h"
 
 #include <cassert>
 #include <unordered_map>
@@ -138,7 +139,7 @@ public:
                   computation here if reaching the time limit and use all
                   information we collected so far.
                 */
-                cout << "Time limit reached. Abort dominance pruning." << endl;
+                utils::g_log << "Time limit reached. Abort dominance pruning." << endl;
                 break;
             }
         }
@@ -153,7 +154,7 @@ void prune_dominated_cliques(
     vector<PatternClique> &pattern_cliques,
     int num_variables,
     double max_time) {
-    cout << "Running dominance pruning..." << endl;
+    utils::g_log << "Running dominance pruning..." << endl;
     utils::CountdownTimer timer(max_time);
 
     int num_patterns = patterns.size();
@@ -203,17 +204,17 @@ void prune_dominated_cliques(
     }
 
     int num_pruned_collections = num_cliques - remaining_pattern_cliques.size();
-    cout << "Pruned " << num_pruned_collections << " of " << num_cliques
-         << " pattern cliques" << endl;
+    utils::g_log << "Pruned " << num_pruned_collections << " of " << num_cliques
+                 << " pattern cliques" << endl;
 
     int num_pruned_patterns = num_patterns - num_remaining_patterns;
-    cout << "Pruned " << num_pruned_patterns << " of " << num_patterns
-         << " PDBs" << endl;
+    utils::g_log << "Pruned " << num_pruned_patterns << " of " << num_patterns
+                 << " PDBs" << endl;
 
     patterns.swap(remaining_patterns);
     pdbs.swap(remaining_pdbs);
     pattern_cliques.swap(remaining_pattern_cliques);
 
-    cout << "Dominance pruning took " << timer.get_elapsed_time() << endl;
+    utils::g_log << "Dominance pruning took " << timer.get_elapsed_time() << endl;
 }
 }

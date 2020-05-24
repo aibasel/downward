@@ -5,6 +5,7 @@
 #include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 #include <cstddef>
 #include <limits>
@@ -16,7 +17,7 @@ namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts),
       min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
-    cout << "Initializing blind search heuristic..." << endl;
+    utils::g_log << "Initializing blind search heuristic..." << endl;
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {

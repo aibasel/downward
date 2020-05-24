@@ -32,7 +32,7 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
-    : order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
+    : order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
       merge_tree_factory(nullptr),
       merge_selector(nullptr) {
     if (options.contains("merge_tree")) {
@@ -81,12 +81,12 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
       SCCs have been merged.
     */
     int index = num_vars - 1;
-    cout << "SCCs of the causal graph:" << endl;
+    utils::g_log << "SCCs of the causal graph:" << endl;
     vector<vector<int>> non_singleton_cg_sccs;
     vector<int> indices_of_merged_sccs;
     indices_of_merged_sccs.reserve(sccs.size());
     for (const vector<int> &scc : sccs) {
-        cout << scc << endl;
+        utils::g_log << scc << endl;
         int scc_size = scc.size();
         if (scc_size == 1) {
             indices_of_merged_sccs.push_back(scc.front());
@@ -97,10 +97,10 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         }
     }
     if (sccs.size() == 1) {
-        cout << "Only one single SCC" << endl;
+        utils::g_log << "Only one single SCC" << endl;
     }
     if (static_cast<int>(sccs.size()) == num_vars) {
-        cout << "Only singleton SCCs" << endl;
+        utils::g_log << "Only singleton SCCs" << endl;
         assert(non_singleton_cg_sccs.empty());
     }
 
@@ -134,24 +134,24 @@ bool MergeStrategyFactorySCCs::requires_goal_distances() const {
 }
 
 void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
-    cout << "Merge order of sccs: ";
+    utils::g_log << "Merge order of sccs: ";
     switch (order_of_sccs) {
     case OrderOfSCCs::TOPOLOGICAL:
-        cout << "topological";
+        utils::g_log << "topological";
         break;
     case OrderOfSCCs::REVERSE_TOPOLOGICAL:
-        cout << "reverse topological";
+        utils::g_log << "reverse topological";
         break;
     case OrderOfSCCs::DECREASING:
-        cout << "decreasing";
+        utils::g_log << "decreasing";
         break;
     case OrderOfSCCs::INCREASING:
-        cout << "increasing";
+        utils::g_log << "increasing";
         break;
     }
-    cout << endl;
+    utils::g_log << endl;
 
-    cout << "Merge strategy for merging within sccs: " << endl;
+    utils::g_log << "Merge strategy for merging within sccs: " << endl;
     if (merge_tree_factory) {
         merge_tree_factory->dump_options();
     }
@@ -189,7 +189,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     order_of_sccs.push_back("reverse_topological");
     order_of_sccs.push_back("decreasing");
     order_of_sccs.push_back("increasing");
-    parser.add_enum_option(
+    parser.add_enum_option<OrderOfSCCs>(
         "order_of_sccs",
         order_of_sccs,
         "choose an ordering of the SCCs: topological/reverse_topological or "

@@ -119,8 +119,8 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     const TransitionSystem &ts2,
     utils::Verbosity verbosity) {
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        cout << "Merging " << ts1.get_description() << " and "
-             << ts2.get_description() << endl;
+        utils::g_log << "Merging " << ts1.get_description() << " and "
+                     << ts2.get_description() << endl;
     }
 
     assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
@@ -341,8 +341,8 @@ void TransitionSystem::apply_abstraction(
     int new_num_states = state_equivalence_relation.size();
     assert(new_num_states < num_states);
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        cout << tag() << "applying abstraction (" << get_size()
-             << " to " << new_num_states << " states)" << endl;
+        utils::g_log << tag() << "applying abstraction (" << get_size()
+                     << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
@@ -391,7 +391,7 @@ void TransitionSystem::apply_abstraction(
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
     if (verbosity >= utils::Verbosity::VERBOSE && init_state == PRUNED_STATE) {
-        cout << tag() << "initial state pruned; task unsolvable" << endl;
+        utils::g_log << tag() << "initial state pruned; task unsolvable" << endl;
     }
 
     assert(is_valid());
@@ -628,18 +628,18 @@ string TransitionSystem::get_description() const {
 
 void TransitionSystem::dump_dot_graph() const {
     assert(is_valid());
-    cout << "digraph transition_system";
+    utils::g_log << "digraph transition_system";
     for (size_t i = 0; i < incorporated_variables.size(); ++i)
-        cout << "_" << incorporated_variables[i];
-    cout << " {" << endl;
-    cout << "    node [shape = none] start;" << endl;
+        utils::g_log << "_" << incorporated_variables[i];
+    utils::g_log << " {" << endl;
+    utils::g_log << "    node [shape = none] start;" << endl;
     for (int i = 0; i < num_states; ++i) {
         bool is_init = (i == init_state);
         bool is_goal = goal_states[i];
-        cout << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
-             << "] node" << i << ";" << endl;
+        utils::g_log << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
+                     << "] node" << i << ";" << endl;
         if (is_init)
-            cout << "    start -> node" << i << ";" << endl;
+            utils::g_log << "    start -> node" << i << ";" << endl;
     }
     for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
@@ -647,39 +647,39 @@ void TransitionSystem::dump_dot_graph() const {
         for (const Transition &transition : transitions) {
             int src = transition.src;
             int target = transition.target;
-            cout << "    node" << src << " -> node" << target << " [label = ";
+            utils::g_log << "    node" << src << " -> node" << target << " [label = ";
             for (size_t i = 0; i < label_group.size(); ++i) {
                 if (i != 0)
-                    cout << "_";
-                cout << "x" << label_group[i];
+                    utils::g_log << "_";
+                utils::g_log << "x" << label_group[i];
             }
-            cout << "];" << endl;
+            utils::g_log << "];" << endl;
         }
     }
-    cout << "}" << endl;
+    utils::g_log << "}" << endl;
 }
 
 void TransitionSystem::dump_labels_and_transitions() const {
-    cout << tag() << "transitions" << endl;
+    utils::g_log << tag() << "transitions" << endl;
     for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
-        cout << "labels: " << label_group << endl;
-        cout << "transitions: ";
+        utils::g_log << "labels: " << label_group << endl;
+        utils::g_log << "transitions: ";
         const vector<Transition> &transitions = gat.transitions;
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
             if (i != 0)
-                cout << ",";
-            cout << src << " -> " << target;
+                utils::g_log << ",";
+            utils::g_log << src << " -> " << target;
         }
-        cout << endl;
-        cout << "cost: " << gat.cost << endl;
+        utils::g_log << endl;
+        utils::g_log << "cost: " << gat.cost << endl;
     }
 }
 
 void TransitionSystem::statistics() const {
-    cout << tag() << get_size() << " states, "
-         << compute_total_transitions() << " arcs " << endl;
+    utils::g_log << tag() << get_size() << " states, "
+                 << compute_total_transitions() << " arcs " << endl;
 }
 }

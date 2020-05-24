@@ -21,8 +21,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
     : MergeTreeFactory(options),
-      variable_order_type(static_cast<variable_order_finder::VariableOrderType>(
-                              options.get_enum("variable_order"))) {
+      variable_order_type(
+          options.get<variable_order_finder::VariableOrderType>("variable_order")) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
@@ -117,7 +117,7 @@ void MergeTreeFactoryLinear::add_options_to_parser(
     merge_strategies.push_back("RANDOM");
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
-    parser.add_enum_option(
+    parser.add_enum_option<variable_order_finder::VariableOrderType>(
         "variable_order", merge_strategies,
         "the order in which atomic transition systems are merged",
         "CG_GOAL_LEVEL");
