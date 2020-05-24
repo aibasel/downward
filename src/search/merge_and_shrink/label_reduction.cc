@@ -90,9 +90,6 @@ void LabelReduction::compute_label_mapping(
                     utils::g_log << "Reducing labels " << label_nos << " to " << next_new_label_no << endl;
                 }
                 label_mapping.push_back(make_pair(next_new_label_no, label_nos));
-                if (verbosity >= utils::Verbosity::DEBUG) {
-                    utils::g_log << "Reducing labels " << label_nos << " to " << next_new_label_no << endl;
-                }
                 ++next_new_label_no;
             }
             if (!label_nos.empty()) {
