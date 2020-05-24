@@ -437,7 +437,7 @@ void TransitionSystem::apply_label_reduction(
                         ++it;
                     }
                 }
-                // Reset (TODO: not necessary).
+                // Reset (for consistency only, old labels are never accessed).
                 global_to_local_label_nos[old_label_no] = -1;
             }
         }
@@ -496,7 +496,7 @@ void TransitionSystem::apply_label_reduction(
                         ++it;
                     }
                 }
-                // Reset (TODO: not necessary).
+                // Reset (for consistency only, old labels are never accessed).
                 global_to_local_label_nos[old_label_no] = -1;
             }
         }
