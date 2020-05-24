@@ -430,7 +430,7 @@ void TransitionSystem::apply_label_reduction(
             for (int old_label_no : old_label_nos) {
                 assert(global_to_local_label_nos[old_label_no] == local_label_no);
                 for (vector<int>::const_iterator it = local_to_global_label_nos[local_label_no].begin();
-                     it != local_to_global_label_nos[local_label_no].end(); ) {
+                     it != local_to_global_label_nos[local_label_no].end();) {
                     if (*it == old_label_no) {
                         it = local_to_global_label_nos[local_label_no].erase(it);
                     } else {
@@ -489,7 +489,7 @@ void TransitionSystem::apply_label_reduction(
             for (int old_label_no : old_label_nos) {
                 int old_local_label_no = global_to_local_label_nos[old_label_no];
                 for (vector<int>::const_iterator it = local_to_global_label_nos[old_local_label_no].begin();
-                     it != local_to_global_label_nos[old_local_label_no].end(); ) {
+                     it != local_to_global_label_nos[old_local_label_no].end();) {
                     if (*it == old_label_no) {
                         it = local_to_global_label_nos[old_local_label_no].erase(it);
                     } else {
@@ -522,7 +522,7 @@ void TransitionSystem::apply_label_reduction(
         for (size_t i = 0; i < label_mapping.size(); ++i) {
             vector<Transition> &transitions = new_transitions[i];
             assert(global_to_local_label_nos[label_mapping[i].first]
-                == static_cast<int>(transitions_by_local_label_no.size()));
+                   == static_cast<int>(transitions_by_local_label_no.size()));
             transitions_by_local_label_no.push_back(move(transitions));
         }
 
@@ -556,9 +556,9 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 
 bool TransitionSystem::is_valid() const {
     return are_transitions_sorted_unique()
-        && local_to_global_label_nos.size() == local_label_no_to_cost.size()
-        && local_to_global_label_nos.size() == transitions_by_local_label_no.size()
-        && is_label_mapping_consistent();
+           && local_to_global_label_nos.size() == local_label_no_to_cost.size()
+           && local_to_global_label_nos.size() == transitions_by_local_label_no.size()
+           && is_label_mapping_consistent();
 }
 
 bool TransitionSystem::is_label_mapping_consistent() const {
@@ -581,7 +581,7 @@ bool TransitionSystem::is_label_mapping_consistent() const {
             if (find(global_labels.begin(),
                      global_labels.end(),
                      label_no)
-                    == global_labels.end()) {
+                == global_labels.end()) {
                 return false;
             }
         }
