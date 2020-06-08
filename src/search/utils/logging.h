@@ -65,15 +65,15 @@ public:
         return *this;
     }
 
-    bool is_normal() const {
+    bool is_at_least_normal() const {
         return verbosity >= Verbosity::NORMAL;
     }
 
-    bool is_verbose() const {
+    bool is_at_least_verbose() const {
         return verbosity >= Verbosity::VERBOSE;
     }
 
-    bool is_debug() const {
+    bool is_at_least_debug() const {
         return verbosity >= Verbosity::DEBUG;
     }
 };

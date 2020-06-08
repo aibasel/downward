@@ -61,7 +61,7 @@ bool MergeAndShrinkHeuristic::extract_unsolvable_factor(FactoredTransitionSystem
         if (!fts.is_factor_solvable(index)) {
             mas_representations.reserve(1);
             extract_factor(fts, index);
-            if (log.is_normal()) {
+            if (log.is_at_least_normal()) {
                 log << fts.get_transition_system(index).tag()
                     << "use this unsolvable factor as heuristic."
                     << endl;
@@ -76,7 +76,7 @@ void MergeAndShrinkHeuristic::extract_nontrivial_factors(FactoredTransitionSyste
     // Iterate over remaining factors and extract and store the nontrivial ones.
     for (int index : fts) {
         if (fts.is_factor_trivial(index)) {
-            if (log.is_verbose()) {
+            if (log.is_at_least_verbose()) {
                 log << fts.get_transition_system(index).tag()
                     << "is trivial." << endl;
             }
@@ -98,7 +98,7 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     assert(mas_representations.empty());
 
     int num_active_factors = fts.get_num_active_entries();
-    if (log.is_normal()) {
+    if (log.is_at_least_normal()) {
         log << "Number of remaining factors: " << num_active_factors << endl;
     }
 
@@ -108,7 +108,7 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     }
 
     int num_factors_kept = mas_representations.size();
-    if (log.is_normal()) {
+    if (log.is_at_least_normal()) {
         log << "Number of factors kept: " << num_factors_kept << endl;
     }
 }
