@@ -38,6 +38,9 @@ void add_log_options_to_parser(options::OptionParser &parser) {
 }
 
 Log get_log_from_options(const options::Options &options) {
+    if (options.get<Verbosity>("verbosity") == Verbosity::NORMAL) {
+        return g_log;
+    }
     return Log(options.get<Verbosity>("verbosity"));
 }
 
