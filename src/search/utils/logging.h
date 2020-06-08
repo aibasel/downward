@@ -26,6 +26,20 @@ enum class Verbosity {
 // TODO: to be removed
 extern void add_verbosity_option_to_parser(options::OptionParser &parser);
 
+// TODO: move to cc-file, together with Verbosity.
+class Log {
+    const Verbosity verbosity;
+
+public:
+    explicit Log(Verbosity verbosity)
+        : verbosity(verbosity) {
+    }
+
+    Verbosity get_verbosity() const {
+        return verbosity;
+    }
+};
+
 /*
   Simple logger that prepends time and peak memory info to messages.
   Logs are written to stdout.
@@ -33,18 +47,18 @@ extern void add_verbosity_option_to_parser(options::OptionParser &parser);
   Usage:
         utils::g_log << "States: " << num_states << endl;
 */
-class Log {
+class LogProxy {
 private:
-    const Verbosity verbosity;
+    std::shared_ptr<Log> log;
     bool line_has_started;
 
 public:
-    explicit Log(Verbosity verbosity)
-        : verbosity(verbosity), line_has_started(false) {
+    explicit LogProxy(const std::shared_ptr<Log> &log)
+        : log(log), line_has_started(false) {
     }
 
     template<typename T>
-    Log &operator<<(const T &elem) {
+    LogProxy &operator<<(const T &elem) {
         if (!line_has_started) {
             line_has_started = true;
             std::cout << "[t=" << g_timer << ", "
@@ -56,7 +70,7 @@ public:
     }
 
     using manip_function = std::ostream &(*)(std::ostream &);
-    Log &operator<<(manip_function f) {
+    LogProxy &operator<<(manip_function f) {
         if (f == static_cast<manip_function>(&std::endl)) {
             line_has_started = false;
         }
@@ -66,23 +80,23 @@ public:
     }
 
     bool is_at_least_normal() const {
-        return verbosity >= Verbosity::NORMAL;
+        return log->get_verbosity() >= Verbosity::NORMAL;
     }
 
     bool is_at_least_verbose() const {
-        return verbosity >= Verbosity::VERBOSE;
+        return log->get_verbosity() >= Verbosity::VERBOSE;
     }
 
     bool is_at_least_debug() const {
-        return verbosity >= Verbosity::DEBUG;
+        return log->get_verbosity() >= Verbosity::DEBUG;
     }
 };
 
-extern Log g_log;
+extern LogProxy g_log;
 
 extern void add_log_options_to_parser(options::OptionParser &parser);
 
-extern Log get_log_from_options(const options::Options &options);
+extern LogProxy get_log_from_options(const options::Options &options);
 
 class TraceBlock {
     std::string block_name;

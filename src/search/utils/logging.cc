@@ -12,7 +12,9 @@
 using namespace std;
 
 namespace utils {
-Log g_log(Verbosity::NORMAL);
+static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
+
+LogProxy g_log(global_log);
 
 void add_log_options_to_parser(options::OptionParser &parser) {
     vector<string> verbosity_levels;
@@ -37,11 +39,11 @@ void add_log_options_to_parser(options::OptionParser &parser) {
         verbosity_level_docs);
 }
 
-Log get_log_from_options(const options::Options &options) {
+LogProxy get_log_from_options(const options::Options &options) {
     if (options.get<Verbosity>("verbosity") == Verbosity::NORMAL) {
-        return g_log;
+        return LogProxy(global_log);
     }
-    return Log(options.get<Verbosity>("verbosity"));
+    return LogProxy(make_shared<Log>(options.get<Verbosity>("verbosity")));
 }
 
 void add_verbosity_option_to_parser(options::OptionParser &parser) {
