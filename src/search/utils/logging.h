@@ -28,11 +28,16 @@ extern void add_verbosity_option_to_parser(options::OptionParser &parser);
 
 // TODO: move to cc-file, together with Verbosity.
 class Log {
+    std::ostream &stream;
     const Verbosity verbosity;
 
 public:
     explicit Log(Verbosity verbosity)
-        : verbosity(verbosity) {
+        : stream(std::cout), verbosity(verbosity) {
+    }
+
+    std::ostream &get_stream() {
+        return stream;
     }
 
     Verbosity get_verbosity() const {
@@ -61,11 +66,11 @@ public:
     LogProxy &operator<<(const T &elem) {
         if (!line_has_started) {
             line_has_started = true;
-            std::cout << "[t=" << g_timer << ", "
-                      << get_peak_memory_in_kb() << " KB] ";
+            log->get_stream() << "[t=" << g_timer << ", "
+                              << get_peak_memory_in_kb() << " KB] ";
         }
 
-        std::cout << elem;
+        log->get_stream() << elem;
         return *this;
     }
 
@@ -75,7 +80,7 @@ public:
             line_has_started = false;
         }
 
-        std::cout << f;
+        log->get_stream() << f;
         return *this;
     }
 
