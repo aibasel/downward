@@ -19,7 +19,8 @@ MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
     const TaskProxy &task_proxy,
-    const FactoredTransitionSystem &fts) {
+    const FactoredTransitionSystem &fts,
+    utils::LogProxy &) {
     merge_selector->initialize(task_proxy);
     return utils::make_unique_ptr<MergeStrategyStateless>(fts, merge_selector);
 }
@@ -28,8 +29,9 @@ string MergeStrategyFactoryStateless::name() const {
     return "stateless";
 }
 
-void MergeStrategyFactoryStateless::dump_strategy_specific_options() const {
-    merge_selector->dump_options();
+void MergeStrategyFactoryStateless::dump_strategy_specific_options(
+    utils::LogProxy &log) const {
+    merge_selector->dump_options(log);
 }
 
 bool MergeStrategyFactoryStateless::requires_init_distances() const {

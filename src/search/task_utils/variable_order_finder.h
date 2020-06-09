@@ -6,6 +6,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace variable_order_finder {
 enum VariableOrderType {
     CG_GOAL_LEVEL,
@@ -16,7 +20,8 @@ enum VariableOrderType {
     REVERSE_LEVEL
 };
 
-extern void dump_variable_order_type(VariableOrderType variable_order_type);
+extern void dump_variable_order_type(
+    VariableOrderType variable_order_type, utils::LogProxy &log);
 
 /*
   NOTE: VariableOrderFinder keeps a reference to the task proxy passed to the

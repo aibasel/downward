@@ -42,8 +42,9 @@ string MergeScoringFunctionSingleRandom::name() const {
     return "single random";
 }
 
-void MergeScoringFunctionSingleRandom::dump_function_specific_options() const {
-    utils::g_log << "Random seed: " << random_seed << endl;
+void MergeScoringFunctionSingleRandom::dump_function_specific_options(
+    utils::LogProxy &log) const {
+    log << "Random seed: " << random_seed << endl;
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {

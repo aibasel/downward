@@ -9,10 +9,10 @@
 using namespace std;
 
 namespace merge_and_shrink {
-void MergeStrategyFactory::dump_options() const {
-    utils::g_log << "Merge strategy options:" << endl;
-    utils::g_log << "Type: " << name() << endl;
-    dump_strategy_specific_options();
+void MergeStrategyFactory::dump_options(utils::LogProxy &log) const {
+    log << "Merge strategy options:" << endl;
+    log << "Type: " << name() << endl;
+    dump_strategy_specific_options(log);
 }
 
 static options::PluginTypePlugin<MergeStrategyFactory> _type_plugin(

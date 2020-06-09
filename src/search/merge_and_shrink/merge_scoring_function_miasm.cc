@@ -30,6 +30,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
     const vector<pair<int, int>> &merge_candidates) {
     vector<double> scores;
     scores.reserve(merge_candidates.size());
+    utils::LogProxy log(make_shared<utils::Log>(utils::Verbosity::SILENT));
     for (pair<int, int> merge_candidate : merge_candidates) {
         int index1 = merge_candidate.first;
         int index2 = merge_candidate.second;
@@ -40,14 +41,14 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
             *shrink_strategy,
             max_states,
             max_states_before_merge,
-            shrink_threshold_before_merge);
+            shrink_threshold_before_merge,
+            log);
 
         // Compute distances for the product and count the alive states.
         unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
         const bool compute_init_distances = true;
         const bool compute_goal_distances = true;
-        const utils::Verbosity verbosity = utils::Verbosity::SILENT;
-        distances->compute_distances(compute_init_distances, compute_goal_distances, verbosity);
+        distances->compute_distances(compute_init_distances, compute_goal_distances, log);
         int num_states = product->get_size();
         int alive_states_count = 0;
         for (int state = 0; state < num_states; ++state) {
