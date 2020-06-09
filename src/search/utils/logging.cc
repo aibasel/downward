@@ -12,6 +12,11 @@
 using namespace std;
 
 namespace utils {
+/*
+  NOTE: When adding more options to Log, make sure to adapt the if block in
+  get_log_from_options below to test for *all* default values used for
+  global_log here.
+*/
 static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 
 LogProxy g_log(global_log);
@@ -40,6 +45,8 @@ void add_log_options_to_parser(options::OptionParser &parser) {
 }
 
 LogProxy get_log_from_options(const options::Options &options) {
+    /* NOTE: We return (a proxy to) the global log if all options match the
+       default values of the global log. */
     if (options.get<Verbosity>("verbosity") == Verbosity::NORMAL) {
         return LogProxy(global_log);
     }
