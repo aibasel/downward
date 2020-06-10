@@ -15,7 +15,7 @@ class Options;
 }
 
 namespace utils {
-// See add_verbosity_option_to_parser for documentation.
+// See add_log_options_to_parser for documentation.
 enum class Verbosity {
     SILENT,
     NORMAL,
@@ -23,10 +23,6 @@ enum class Verbosity {
     DEBUG
 };
 
-// TODO: to be removed
-extern void add_verbosity_option_to_parser(options::OptionParser &parser);
-
-// TODO: move to cc-file, together with Verbosity.
 class Log {
     std::ostream &stream;
     const Verbosity verbosity;

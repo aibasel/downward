@@ -57,10 +57,6 @@ LogProxy make_silent_log() {
     return utils::LogProxy(make_shared<utils::Log>(utils::Verbosity::SILENT));
 }
 
-void add_verbosity_option_to_parser(options::OptionParser &parser) {
-    add_log_options_to_parser(parser);
-}
-
 class MemoryTracer {
     // The following constants affect the formatting of output.
     static const int INDENT_AMOUNT = 2;
