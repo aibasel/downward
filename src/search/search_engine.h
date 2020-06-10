@@ -42,7 +42,7 @@ protected:
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 
-    utils::LogProxy log;
+    mutable utils::LogProxy log;
     PlanManager plan_manager;
     StateRegistry state_registry;
     const successor_generator::SuccessorGenerator &successor_generator;

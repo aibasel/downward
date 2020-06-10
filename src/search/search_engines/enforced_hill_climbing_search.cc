@@ -100,10 +100,10 @@ void EnforcedHillClimbingSearch::reach_state(
 
 void EnforcedHillClimbingSearch::initialize() {
     assert(evaluator);
-    utils::g_log << "Conducting enforced hill-climbing search, (real) bound = "
+    log << "Conducting enforced hill-climbing search, (real) bound = "
                  << bound << endl;
     if (use_preferred) {
-        utils::g_log << "Using preferred operators for "
+        log << "Using preferred operators for "
                      << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
             "ranking successors" : "pruning") << endl;
     }
@@ -113,7 +113,7 @@ void EnforcedHillClimbingSearch::initialize() {
     print_initial_evaluator_values(current_eval_context);
 
     if (dead_end) {
-        utils::g_log << "Initial state is a dead end, no solution" << endl;
+        log << "Initial state is a dead end, no solution" << endl;
         if (evaluator->dead_ends_are_reliable())
             utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
         else
@@ -243,16 +243,16 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
         }
     }
-    utils::g_log << "No solution - FAILED" << endl;
+    log << "No solution - FAILED" << endl;
     return FAILED;
 }
 
 void EnforcedHillClimbingSearch::print_statistics() const {
     statistics.print_detailed_statistics();
 
-    utils::g_log << "EHC phases: " << num_ehc_phases << endl;
+    log << "EHC phases: " << num_ehc_phases << endl;
     assert(num_ehc_phases != 0);
-    utils::g_log << "Average expansions per EHC phase: "
+    log << "Average expansions per EHC phase: "
                  << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
                  << endl;
 
@@ -261,7 +261,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
         int phases = count.second.first;
         assert(phases != 0);
         int total_expansions = count.second.second;
-        utils::g_log << "EHC phases of depth " << depth << ": " << phases
+        log << "EHC phases of depth " << depth << ": " << phases
                      << " - Avg. Expansions: "
                      << static_cast<double>(total_expansions) / phases << endl;
     }

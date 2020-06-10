@@ -36,7 +36,7 @@ EagerSearch::EagerSearch(const Options &opts)
 }
 
 void EagerSearch::initialize() {
-    utils::g_log << "Conducting best first search"
+    log << "Conducting best first search"
                  << (reopen_closed_nodes ? " with" : " without")
                  << " reopening closed nodes, (real) bound = " << bound
                  << endl;
@@ -86,7 +86,7 @@ void EagerSearch::initialize() {
     statistics.inc_evaluated_states();
 
     if (open_list->is_dead_end(eval_context)) {
-        utils::g_log << "Initial state is a dead end." << endl;
+        log << "Initial state is a dead end." << endl;
     } else {
         if (search_progress.check_progress(eval_context))
             statistics.print_checkpoint_line(0);
@@ -112,7 +112,7 @@ SearchStatus EagerSearch::step() {
     tl::optional<SearchNode> node;
     while (true) {
         if (open_list->empty()) {
-            utils::g_log << "Completely explored state space -- no solution!" << endl;
+            log << "Completely explored state space -- no solution!" << endl;
             return FAILED;
         }
         StateID id = open_list->remove_min();
