@@ -53,6 +53,10 @@ LogProxy get_log_from_options(const options::Options &options) {
     return LogProxy(make_shared<Log>(options.get<Verbosity>("verbosity")));
 }
 
+LogProxy make_silent_log() {
+    return utils::LogProxy(make_shared<utils::Log>(utils::Verbosity::SILENT));
+}
+
 void add_verbosity_option_to_parser(options::OptionParser &parser) {
     add_log_options_to_parser(parser);
 }
