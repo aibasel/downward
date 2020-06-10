@@ -62,7 +62,6 @@ def check_cplusplus_style():
     """
     src_files = utils.get_src_files(
         REPO, (".h", ".cc"), ignore_dirs=["builds", "data", "venv"])
-    print(src_files)
     print("Checking {} files with uncrustify".format(len(src_files)))
     config_file = os.path.join(REPO, ".uncrustify.cfg")
     executable = "uncrustify"
