@@ -101,16 +101,16 @@ void EnforcedHillClimbingSearch::reach_state(
 void EnforcedHillClimbingSearch::initialize() {
     assert(evaluator);
     log << "Conducting enforced hill-climbing search, (real) bound = "
-                 << bound << endl;
+        << bound << endl;
     if (use_preferred) {
         log << "Using preferred operators for "
-                     << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
+            << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
             "ranking successors" : "pruning") << endl;
     }
 
     bool dead_end = current_eval_context.is_evaluator_value_infinite(evaluator.get());
     statistics.inc_evaluated_states();
-    print_initial_evaluator_values(current_eval_context);
+    print_initial_evaluator_values(current_eval_context, log);
 
     if (dead_end) {
         log << "Initial state is a dead end, no solution" << endl;
@@ -179,7 +179,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
 SearchStatus EnforcedHillClimbingSearch::step() {
     last_num_expanded = statistics.get_expanded();
-    search_progress.check_progress(current_eval_context);
+    search_progress.check_progress(current_eval_context, log);
 
     if (check_goal_and_set_plan(current_eval_context.get_state())) {
         return SOLVED;
@@ -248,13 +248,13 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 }
 
 void EnforcedHillClimbingSearch::print_statistics() const {
-    statistics.print_detailed_statistics();
+    statistics.print_detailed_statistics(log);
 
     log << "EHC phases: " << num_ehc_phases << endl;
     assert(num_ehc_phases != 0);
     log << "Average expansions per EHC phase: "
-                 << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
-                 << endl;
+        << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
+        << endl;
 
     for (auto count : d_counts) {
         int depth = count.first;
@@ -262,8 +262,8 @@ void EnforcedHillClimbingSearch::print_statistics() const {
         assert(phases != 0);
         int total_expansions = count.second.second;
         log << "EHC phases of depth " << depth << ": " << phases
-                     << " - Avg. Expansions: "
-                     << static_cast<double>(total_expansions) / phases << endl;
+            << " - Avg. Expansions: "
+            << static_cast<double>(total_expansions) / phases << endl;
     }
 }
 

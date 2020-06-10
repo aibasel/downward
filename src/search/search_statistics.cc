@@ -9,8 +9,7 @@
 using namespace std;
 
 
-SearchStatistics::SearchStatistics(utils::Verbosity verbosity)
-    : verbosity(verbosity) {
+SearchStatistics::SearchStatistics() {
     expanded_states = 0;
     reopened_states = 0;
     evaluated_states = 0;
@@ -27,10 +26,10 @@ SearchStatistics::SearchStatistics(utils::Verbosity verbosity)
     lastjump_f_value = -1;
 }
 
-void SearchStatistics::report_f_value_progress(int f) {
+void SearchStatistics::report_f_value_progress(int f, utils::LogProxy &log) {
     if (f > lastjump_f_value) {
         lastjump_f_value = f;
-        print_f_line();
+        print_f_line(log);
         lastjump_expanded_states = expanded_states;
         lastjump_reopened_states = reopened_states;
         lastjump_evaluated_states = evaluated_states;
@@ -38,47 +37,47 @@ void SearchStatistics::report_f_value_progress(int f) {
     }
 }
 
-void SearchStatistics::print_f_line() const {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "f = " << lastjump_f_value
-                     << ", ";
-        print_basic_statistics();
-        utils::g_log << endl;
+void SearchStatistics::print_f_line(utils::LogProxy &log) const {
+    if (log.is_at_least_normal()) {
+        log << "f = " << lastjump_f_value
+            << ", ";
+        print_basic_statistics(log);
+        log << endl;
     }
 }
 
-void SearchStatistics::print_checkpoint_line(int g) const {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "g=" << g << ", ";
-        print_basic_statistics();
-        utils::g_log << endl;
+void SearchStatistics::print_checkpoint_line(int g, utils::LogProxy &log) const {
+    if (log.is_at_least_normal()) {
+        log << "g=" << g << ", ";
+        print_basic_statistics(log);
+        log << endl;
     }
 }
 
-void SearchStatistics::print_basic_statistics() const {
-    utils::g_log << evaluated_states << " evaluated, "
-                 << expanded_states << " expanded";
+void SearchStatistics::print_basic_statistics(utils::LogProxy &log) const {
+    log << evaluated_states << " evaluated, "
+        << expanded_states << " expanded";
     if (reopened_states > 0) {
-        utils::g_log << ", " << reopened_states << " reopened";
+        log << ", " << reopened_states << " reopened";
     }
 }
 
-void SearchStatistics::print_detailed_statistics() const {
-    utils::g_log << "Expanded " << expanded_states << " state(s)." << endl;
-    utils::g_log << "Reopened " << reopened_states << " state(s)." << endl;
-    utils::g_log << "Evaluated " << evaluated_states << " state(s)." << endl;
-    utils::g_log << "Evaluations: " << evaluations << endl;
-    utils::g_log << "Generated " << generated_states << " state(s)." << endl;
-    utils::g_log << "Dead ends: " << dead_end_states << " state(s)." << endl;
+void SearchStatistics::print_detailed_statistics(utils::LogProxy &log) const {
+    log << "Expanded " << expanded_states << " state(s)." << endl;
+    log << "Reopened " << reopened_states << " state(s)." << endl;
+    log << "Evaluated " << evaluated_states << " state(s)." << endl;
+    log << "Evaluations: " << evaluations << endl;
+    log << "Generated " << generated_states << " state(s)." << endl;
+    log << "Dead ends: " << dead_end_states << " state(s)." << endl;
 
     if (lastjump_f_value >= 0) {
-        utils::g_log << "Expanded until last jump: "
-                     << lastjump_expanded_states << " state(s)." << endl;
-        utils::g_log << "Reopened until last jump: "
-                     << lastjump_reopened_states << " state(s)." << endl;
-        utils::g_log << "Evaluated until last jump: "
-                     << lastjump_evaluated_states << " state(s)." << endl;
-        utils::g_log << "Generated until last jump: "
-                     << lastjump_generated_states << " state(s)." << endl;
+        log << "Expanded until last jump: "
+            << lastjump_expanded_states << " state(s)." << endl;
+        log << "Reopened until last jump: "
+            << lastjump_reopened_states << " state(s)." << endl;
+        log << "Evaluated until last jump: "
+            << lastjump_evaluated_states << " state(s)." << endl;
+        log << "Generated until last jump: "
+            << lastjump_generated_states << " state(s)." << endl;
     }
 }

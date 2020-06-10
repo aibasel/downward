@@ -51,8 +51,8 @@ SearchEngine::SearchEngine(const Options &opts)
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry),
-      search_progress(opts.get<utils::Verbosity>("verbosity")),
-      statistics(opts.get<utils::Verbosity>("verbosity")),
+      search_progress(),
+      statistics(),
       cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")) {
@@ -173,11 +173,12 @@ void SearchEngine::add_succ_order_options(OptionParser &parser) {
     utils::add_rng_options(parser);
 }
 
-void print_initial_evaluator_values(const EvaluationContext &eval_context) {
+void print_initial_evaluator_values(
+    const EvaluationContext &eval_context, utils::LogProxy &log) {
     eval_context.get_cache().for_each_evaluator_result(
-        [] (const Evaluator *eval, const EvaluationResult &result) {
+        [&log] (const Evaluator *eval, const EvaluationResult &result) {
             if (eval->is_used_for_reporting_minima()) {
-                eval->report_value_for_initial_state(result);
+                eval->report_value_for_initial_state(result, log);
             }
         }
         );

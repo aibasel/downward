@@ -12,6 +12,9 @@ class GlobalState;
 class OperatorProxy;
 class TaskProxy;
 
+namespace utils {
+class LogProxy;
+}
 
 class SearchNode {
     const StateRegistry &state_registry;
@@ -48,7 +51,7 @@ public:
     void close();
     void mark_as_dead_end();
 
-    void dump(const TaskProxy &task_proxy) const;
+    void dump(const TaskProxy &task_proxy, utils::LogProxy &log) const;
 };
 
 
@@ -63,8 +66,8 @@ public:
     void trace_path(const GlobalState &goal_state,
                     std::vector<OperatorID> &path) const;
 
-    void dump(const TaskProxy &task_proxy) const;
-    void print_statistics() const;
+    void dump(const TaskProxy &task_proxy, utils::LogProxy &log) const;
+    void print_statistics(utils::LogProxy &log) const;
 };
 
 #endif

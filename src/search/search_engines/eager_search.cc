@@ -37,9 +37,9 @@ EagerSearch::EagerSearch(const Options &opts)
 
 void EagerSearch::initialize() {
     log << "Conducting best first search"
-                 << (reopen_closed_nodes ? " with" : " without")
-                 << " reopening closed nodes, (real) bound = " << bound
-                 << endl;
+        << (reopen_closed_nodes ? " with" : " without")
+        << " reopening closed nodes, (real) bound = " << bound
+        << endl;
     assert(open_list);
 
     set<Evaluator *> evals;
@@ -88,8 +88,8 @@ void EagerSearch::initialize() {
     if (open_list->is_dead_end(eval_context)) {
         log << "Initial state is a dead end." << endl;
     } else {
-        if (search_progress.check_progress(eval_context))
-            statistics.print_checkpoint_line(0);
+        if (search_progress.check_progress(eval_context, log))
+            statistics.print_checkpoint_line(0, log);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial();
@@ -97,14 +97,14 @@ void EagerSearch::initialize() {
         open_list->insert(eval_context, initial_state.get_id());
     }
 
-    print_initial_evaluator_values(eval_context);
+    print_initial_evaluator_values(eval_context, log);
 
     pruning_method->initialize(task);
 }
 
 void EagerSearch::print_statistics() const {
-    statistics.print_detailed_statistics();
-    search_space.print_statistics();
+    statistics.print_detailed_statistics(log);
+    search_space.print_statistics(log);
     pruning_method->print_statistics();
 }
 
@@ -234,8 +234,8 @@ SearchStatus EagerSearch::step() {
             succ_node.open(*node, op, get_adjusted_cost(op));
 
             open_list->insert(succ_eval_context, succ_state.get_id());
-            if (search_progress.check_progress(succ_eval_context)) {
-                statistics.print_checkpoint_line(succ_node.get_g());
+            if (search_progress.check_progress(succ_eval_context, log)) {
+                statistics.print_checkpoint_line(succ_node.get_g(), log);
                 reward_progress();
             }
         } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
@@ -293,13 +293,13 @@ void EagerSearch::reward_progress() {
 }
 
 void EagerSearch::dump_search_space() const {
-    search_space.dump(task_proxy);
+    search_space.dump(task_proxy, log);
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
-        statistics.report_f_value_progress(f_value);
+        statistics.report_f_value_progress(f_value, log);
     }
 }
 
@@ -308,7 +308,7 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
 void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
-        statistics.report_f_value_progress(f_value);
+        statistics.report_f_value_progress(f_value, log);
     }
 }
 
