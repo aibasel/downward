@@ -27,7 +27,7 @@ class SuccessorGenerator;
 }
 
 namespace utils {
-enum class Verbosity;
+class LogProxy;
 }
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
@@ -42,6 +42,7 @@ protected:
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 
+    utils::LogProxy log;
     PlanManager plan_manager;
     StateRegistry state_registry;
     const successor_generator::SuccessorGenerator &successor_generator;
@@ -52,7 +53,6 @@ protected:
     OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
-    const utils::Verbosity verbosity;
 
     virtual void initialize() {}
     virtual SearchStatus step() = 0;
