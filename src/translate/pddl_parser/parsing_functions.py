@@ -61,6 +61,8 @@ def parse_condition(alist, type_dict, predicate_dict):
 
 def parse_condition_aux(alist, negated, type_dict, predicate_dict):
     """Parse a PDDL condition. The condition is translated into NNF on the fly."""
+    if len(alist) == 0:
+        raise RuntimeError("Empty condition expression")
     tag = alist[0]
     if tag in ("and", "or", "not", "imply"):
         args = alist[1:]
