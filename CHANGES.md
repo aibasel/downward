@@ -11,7 +11,8 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- none yet
+- Better error message for empty goal.
+<http://issues.fast-downward.org/issue1030>
 
 ## Fast Downward 22.06
 

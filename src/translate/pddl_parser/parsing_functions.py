@@ -460,7 +460,9 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
     yield initial
 
     goal = next(iterator)
-    assert goal[0] == ":goal" and len(goal) == 2
+    assert goal[0] == ":goal" and len(goal) == 2 and goal[1], (
+            "missing or empty goal"
+        )
     yield parse_condition(goal[1], type_dict, predicate_dict)
 
     use_metric = False
