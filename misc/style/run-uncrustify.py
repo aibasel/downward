@@ -25,8 +25,20 @@ def parse_args():
     return parser.parse_args()
 
 
+def repo_has_uncommited_changes():
+    if os.path.exists(os.path.join(REPO, ".git")):
+        return bool(
+            subprocess.call(["git", "diff", "--quiet"], cwd=REPO) or
+            subprocess.call(["git", "diff", "--cached", "--quiet"], cwd=REPO))
+    else:
+        assert os.path.exists(os.path.join(REPO, ".hg"))
+        return bool(subprocess.check_output(["hg", "diff"]))
+
+
 def main():
     args = parse_args()
+    if args.modify and repo_has_uncommited_changes():
+        sys.exit("Error: repo has uncommited changes.")
     src_files = utils.get_src_files(
         REPO, (".h", ".cc"), ignore_dirs=["builds", "data", "venv", ".venv"])
     print(f"Checking {len(src_files)} files with uncrustify.")
