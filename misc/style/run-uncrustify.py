@@ -5,16 +5,15 @@ Run uncrustify on all C++ files in the repository.
 """
 
 import argparse
-import errno
 import os.path
 import subprocess
 import sys
 
+import utils
+
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-SRC_DIR = os.path.join(REPO, "src")
-
-import utils
+SEARCH_DIR = os.path.join(REPO, "src", "search")
 
 
 def parse_args():
@@ -25,22 +24,21 @@ def parse_args():
     return parser.parse_args()
 
 
-def repo_has_uncommited_changes():
+def search_files_are_dirty():
     if os.path.exists(os.path.join(REPO, ".git")):
-        return bool(
-            subprocess.call(["git", "diff", "--quiet"], cwd=REPO) or
-            subprocess.call(["git", "diff", "--cached", "--quiet"], cwd=REPO))
+        cmd = ["git", "status", "--porcelain", SEARCH_DIR]
+    elif os.path.exists(os.path.join(REPO, ".hg")):
+        cmd = ["hg", "status", SEARCH_DIR]
     else:
-        assert os.path.exists(os.path.join(REPO, ".hg"))
-        return bool(subprocess.check_output(["hg", "diff"]))
+        sys.exit("Error: repo must contain a .git or .hg directory.")
+    return bool(subprocess.check_output(cmd, cwd=REPO))
 
 
 def main():
     args = parse_args()
-    if args.modify and repo_has_uncommited_changes():
-        sys.exit("Error: repo has uncommited changes.")
-    src_files = utils.get_src_files(
-        REPO, (".h", ".cc"), ignore_dirs=["builds", "data", "venv", ".venv"])
+    if args.modify and search_files_are_dirty():
+        sys.exit(f"Error: {SEARCH_DIR} has uncommited changes.")
+    src_files = utils.get_src_files(SEARCH_DIR, (".h", ".cc"))
     print(f"Checking {len(src_files)} files with uncrustify.")
     config_file = os.path.join(REPO, ".uncrustify.cfg")
     executable = "uncrustify"
@@ -52,11 +50,8 @@ def main():
     try:
         # Hide clean files printed on stdout.
         returncode = subprocess.call(cmd, stdout=subprocess.PIPE)
-    except OSError as err:
-        if err.errno == errno.ENOENT:
-            sys.exit(f"Error: {executable} not found. Is it on the PATH?")
-        else:
-            raise
+    except FileNotFoundError:
+        sys.exit(f"Error: {executable} not found. Is it on the PATH?")
     if returncode != 0:
         print('Run "tox -e fix-style" in the misc/ directory to fix the C++ style.')
     return returncode
