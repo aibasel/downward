@@ -32,18 +32,13 @@ fi
 
 # Set directories
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+RELEASESDIR=$SCRIPTDIR
 REPODIR="$(dirname $(dirname $SCRIPTDIR))"
 pushd $REPODIR
 
 # Verify that repository is clean
-if [[ $(hg st) ]]; then
+if [[ -n $(git status --porcelain) ]]; then
     echo "Repository is dirty. Please commit before preparing a release."
-    exit 1
-fi
-
-# Verify that DOWNWARD_CONTAINER_REPO exists
-if [ ! -d "$DOWNWARD_CONTAINER_REPO/.git" ]; then
-    echo "Please set the envronment variable DOWNWARD_CONTAINER_REPO to the path of a local clone of https://github.com/aibasel/downward."
     exit 1
 fi
 
@@ -54,10 +49,10 @@ function fill_template {
     sed -e "s/$PARAMETER/$VALUE/g" $SCRIPTDIR/templates/$TEMPLATE
 }
 
-function set_and_commit_version {
+function set_version {
     LOCALVERSION=$1
     fill_template _version.tpl VERSION "$LOCALVERSION" > $REPODIR/driver/version.py
-    hg commit -m "Update version number to $LOCALVERSION."
+    git add $REPODIR/driver/version.py
 }
 
 function create_recipe_and_link_latest {
@@ -71,12 +66,12 @@ function create_recipe_and_link_latest {
 set -x
 
 # Create the branch if it doesn't exist already.
-if [[ $(hg branches | grep "^$BRANCH ") ]]; then
+if [[ $(git rev-parse -q --verify "$BRANCH") ]]; then
     if [[ $MINOR = 0 ]]; then
         echo "The version number '$VERSION' implies that this is the first release in branch '$BRANCH' but the branch already exists."
         exit 1
     fi
-    if [[ "$(hg branch)" != "$BRANCH" ]]; then
+    if [[ "$(git rev-parse --abbrev-ref HEAD)" != "$BRANCH" ]]; then
         echo "It looks like we want to do a bugfix release, but we are not on the branch '$BRANCH'. Update to the branch head first."
         exit 1
     fi
@@ -85,30 +80,14 @@ else
         echo "The version number '$VERSION' implies a bugfix release but there is no branch '$BRANCH' yet."
         exit 1
     fi
-    hg branch "$BRANCH"
-    hg commit -m "Create branch $BRANCH."
+    git branch "$BRANCH"
 fi
 
 # Update version number.
-set_and_commit_version "$PRETTY_VERSION"
-
-# Tag release.
-hg tag $TAG -m "Create tag $TAG."
-
-# Back on the default branch, update version number.
-if [[ $MINOR = 0 ]]; then
-    hg update default
-    set_and_commit_version "${MAJOR}+"
-fi
-
-# Create tarball.
-hg archive -r $TAG -X .hg_archival.txt -X .hgignore \
-    -X .hgtags -X .uncrustify.cfg -X bitbucket-pipelines.yml \
-    -X experiments/ -X misc/ --type tgz \
-    fast-downward-$PRETTY_VERSION.tar.gz
+set_version "$PRETTY_VERSION"
 
 # Generate the different recipe files for Docker, Singularity and Vagrant.
-pushd $DOWNWARD_CONTAINER_REPO
+pushd $RELEASESDIR
 
 mkdir -p $MAJOR
 fill_template "_Dockerfile.tpl" "TAG" "$TAG" > $MAJOR/Dockerfile.$MAJOR
@@ -122,8 +101,23 @@ ln -fs ../$MAJOR/Singularity.$MAJOR latest/Singularity
 ln -fs ../$MAJOR/Vagrantfile.$MAJOR latest/Vagrantfile
 git add latest
 
-git commit -m "Add recipe files for release $VERSION."
 popd
+
+git commit -m "Release version $VERSION."
+
+# Tag release.
+hg tag $TAG -m "Create tag $TAG."
+
+# Back on the default branch, update version number.
+if [[ $MINOR = 0 ]]; then
+    git checkout main
+    git merge --ff $BRANCH
+    set_version "${MAJOR}+"
+    git commit -m "Update version number to ${MAJOR}+."
+fi
+
+# Create tarball. (ignored files are configured in .gitattributes)
+git archive -o fast-downward-$PRETTY_VERSION.tar.gz $TAG
 
 popd
 
@@ -131,15 +125,15 @@ cat << EOF
 Successfully prepared tag $TAG.
 Please take the following steps to verify the release:
   * Check that fast-downward-$PRETTY_VERSION.tar.gz contains the correct files
+  * Check that misc/releases contains the correct container recipe files.
   * Check that the branches and tags were created as intended
-  * Check that $DOWNWARD_CONTAINER_REPO has a commit with the correct
-    container recipe files.
 
 Once you are satisfied with everything, execute the following commands
 to publish the build:
 
 cd $REPODIR
-hg push
-misc/release/push-docker.sh $MAJOR
-git -C $DOWNWARD_CONTAINER_REPO push
+git push
+misc/releases/push-docker.sh $MAJOR
+
+Afterwards log in to singularity hub and trigger a build.
 EOF
