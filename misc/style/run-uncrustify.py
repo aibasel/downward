@@ -21,6 +21,9 @@ def parse_args():
     parser.add_argument(
         "-m", "--modify", action="store_true",
         help="modify the files that need to be uncrustified")
+    parser.add_argument(
+        "-f", "--force", action="store_true",
+        help="modify files even if there are uncommited changes")
     return parser.parse_args()
 
 
@@ -36,7 +39,7 @@ def search_files_are_dirty():
 
 def main():
     args = parse_args()
-    if args.modify and search_files_are_dirty():
+    if not args.force and args.modify and search_files_are_dirty():
         sys.exit(f"Error: {SEARCH_DIR} has uncommited changes.")
     src_files = utils.get_src_files(SEARCH_DIR, (".h", ".cc"))
     print(f"Checking {len(src_files)} files with uncrustify.")
@@ -52,7 +55,7 @@ def main():
         returncode = subprocess.call(cmd, stdout=subprocess.PIPE)
     except FileNotFoundError:
         sys.exit(f"Error: {executable} not found. Is it on the PATH?")
-    if returncode != 0:
+    if not args.modify and returncode != 0:
         print('Run "tox -e fix-style" in the misc/ directory to fix the C++ style.')
     return returncode
 
