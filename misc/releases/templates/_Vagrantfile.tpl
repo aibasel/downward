@@ -11,14 +11,14 @@ Vagrant.configure("2") do |config|
     apt update && apt install --no-install-recommends -y \
         cmake     \
         g++       \
+        git       \
         make      \
-        mercurial \
         python3
 
     cd /home/vagrant
 
     if ! [ -e downward ] ; then
-        hg clone http://hg.fast-downward.org -r TAG downward
+        git clone --branch TAG https://github.com/aibasel/downward.git
         ./downward/build.py
         chown -R vagrant.vagrant downward
     fi
