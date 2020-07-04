@@ -103,8 +103,7 @@ fi
 
 # Create tarball.
 hg archive -r $TAG -X .hg_archival.txt -X .hgignore \
-    -X .hgtags -X .uncrustify.cfg -X bitbucket-pipelines.yml \
-    -X experiments/ -X misc/ --type tgz \
+    -X .hgtags -X .uncrustify.cfg -X experiments/ -X misc/ --type tgz \
     fast-downward-$PRETTY_VERSION.tar.gz
 
 # Generate the different recipe files for Docker, Singularity and Vagrant.

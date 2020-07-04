@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
 """
-Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
+Run syntax checks on Python and C++ files.
 
-The file bitbucket-pipelines.yml shows how to install the dependencies.
+Exit with 0 if all tests pass and with 1 otherwise.
 """
 
 
@@ -28,11 +28,8 @@ def check_python_style():
             "--exclude", "run-clang-tidy.py,txt2tags.py,.tox",
             "src/translate/", "driver/", "misc/",
             "build.py", "build_configs.py", "fast-downward.py"], cwd=REPO)
-    except OSError as err:
-        if err.errno == errno.ENOENT:
-            sys.exit('Error: flake8 not found. Try "tox -e style".')
-        else:
-            raise
+    except FileNotFoundError:
+        sys.exit('Error: flake8 not found. Try "tox -e style".')
     except subprocess.CalledProcessError:
         return False
     else:
