@@ -8,7 +8,7 @@ For further information:
 - Fast Downward website: <http://www.fast-downward.org>
 - Report a bug or file an issue: <http://issues.fast-downward.org>
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
-- Fast Downward main repository: <http://hg.fast-downward.org>
+- Fast Downward main repository: <https://github.com/aibasel/downward>
 
 
 ## Contributors
