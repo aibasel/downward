@@ -103,7 +103,7 @@ git add latest
 
 popd
 
-git commit -m "Release version $VERSION."
+git commit -m "[$BRANCH] Release version $VERSION."
 
 # Tag release.
 git tag $TAG
@@ -113,7 +113,7 @@ if [[ $MINOR = 0 ]]; then
     git checkout main
     git merge --ff $BRANCH
     set_version "${MAJOR}+"
-    git commit -m "Update version number to ${MAJOR}+."
+    git commit -m "[main] Update version number to ${MAJOR}+."
 fi
 
 # Create tarball. (ignored files are configured in .gitattributes)
