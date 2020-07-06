@@ -106,7 +106,7 @@ popd
 git commit -m "Release version $VERSION."
 
 # Tag release.
-hg tag $TAG -m "Create tag $TAG."
+git tag -a $TAG -m "Create tag $TAG."
 
 # Back on the default branch, update version number.
 if [[ $MINOR = 0 ]]; then
