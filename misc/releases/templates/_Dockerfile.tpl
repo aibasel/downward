@@ -21,7 +21,7 @@ WORKDIR /workspace/downward/
 ENV CXX g++
 
 # Clone the desired tag into the current directory.
-RUN git clone --branch TAG https://github.com/aibasel/downward.git .
+RUN git clone --depth 1 --branch TAG https://github.com/aibasel/downward.git .
  
 # Invoke the build script with default options.
 RUN ./build.py
