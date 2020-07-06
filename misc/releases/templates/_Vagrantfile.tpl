@@ -9,10 +9,11 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     apt update && apt install --no-install-recommends -y \
-        cmake     \
-        g++       \
-        git       \
-        make      \
+        ca-certificates \
+        cmake           \
+        g++             \
+        git             \
+        make            \
         python3
 
     cd /home/vagrant
