@@ -124,17 +124,6 @@ popd
 cat << EOF
 ===============================================================================
 Successfully prepared tag $TAG.
-Please take the following steps to verify the release:
-  * Check that fast-downward-$PRETTY_VERSION.tar.gz contains the correct files
-  * Check that misc/releases contains the correct container recipe files.
-  * Check that the branches and tags were created as intended
-
-Once you are satisfied with everything, execute the following commands
-to publish the build:
-
-cd $REPODIR
-git push
-./misc/releases/push-docker.sh $MAJOR
-
-Afterwards log in to singularity hub and trigger a build.
+Please continue with the steps on
+http://www.fast-downward.org/ForDevelopers/ReleaseWorkflow
 EOF
