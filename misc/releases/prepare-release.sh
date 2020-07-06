@@ -66,7 +66,7 @@ function create_recipe_and_link_latest {
 set -x
 
 # Create the branch if it doesn't exist already.
-if [[ $(git rev-parse -q --verify "$BRANCH") ]]; then
+if git rev-parse -q --verify "$BRANCH"; then
     if [[ $MINOR = 0 ]]; then
         echo "The version number '$VERSION' implies that this is the first release in branch '$BRANCH' but the branch already exists."
         exit 1
@@ -122,6 +122,7 @@ git archive -o fast-downward-$PRETTY_VERSION.tar.gz $TAG
 popd
 
 cat << EOF
+===============================================================================
 Successfully prepared tag $TAG.
 Please take the following steps to verify the release:
   * Check that fast-downward-$PRETTY_VERSION.tar.gz contains the correct files
@@ -133,7 +134,7 @@ to publish the build:
 
 cd $REPODIR
 git push
-misc/releases/push-docker.sh $MAJOR
+./misc/releases/push-docker.sh $MAJOR
 
 Afterwards log in to singularity hub and trigger a build.
 EOF
