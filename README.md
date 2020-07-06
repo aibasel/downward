@@ -1,13 +1,17 @@
-Fast Downward is a domain-independent planning system.
+# Fast Downward
+
+Fast Downward is a domain-independent classical planning system.
 
 Copyright 2003-2019 Fast Downward contributors (see below).
 
-For documentation and contact information see
-<http://www.fast-downward.org>.
+For further information:
+- Fast Downward website: <http://www.fast-downward.org>
+- Report a bug or file an issue: <http://issues.fast-downward.org>
+- Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
+- Fast Downward main repository: <http://hg.fast-downward.org>
 
 
-Contributors
-============
+## Contributors
 
 The following list includes all people that actively contributed to
 Fast Downward, i.e. all people that appear in some commits in Fast
@@ -49,8 +53,7 @@ contributing, and finally by last name.
 - 2009 Christian Muise
 
 
-History
-=======
+## History
 
 The current version of Fast Downward is the merger of three different
 projects:
@@ -68,8 +71,7 @@ developed for various research papers. The main contributors to these
 branches are Malte Helmert, Gabi Röger and Silvia Richter.
 
 
-License
-=======
+## License
 
 The following directory is not part of Fast Downward as covered by
 this license:
