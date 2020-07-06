@@ -9,10 +9,11 @@
 FROM ubuntu:18.04 AS builder
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    cmake     \
-    g++       \
-    git       \
-    make      \
+    ca-certificates \
+    cmake           \
+    g++             \
+    git             \
+    make            \
     python3
 
 WORKDIR /workspace/downward/
