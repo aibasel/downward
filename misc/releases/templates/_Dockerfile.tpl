@@ -9,10 +9,11 @@
 FROM ubuntu:18.04 AS builder
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    cmake     \
-    g++       \
-    make      \
-    mercurial \
+    ca-certificates \
+    cmake           \
+    g++             \
+    git             \
+    make            \
     python3
 
 WORKDIR /workspace/downward/
@@ -21,8 +22,8 @@ WORKDIR /workspace/downward/
 ENV CXX g++
 
 # Clone the desired tag into the current directory.
-RUN hg clone http://hg.fast-downward.org . -r TAG
-
+RUN git clone --depth 1 --branch TAG https://github.com/aibasel/downward.git .
+ 
 # Invoke the build script with default options.
 RUN ./build.py
 RUN strip --strip-all builds/release/bin/downward
