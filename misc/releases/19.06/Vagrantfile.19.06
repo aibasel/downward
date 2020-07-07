@@ -9,16 +9,17 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     apt update && apt install --no-install-recommends -y \
-        cmake     \
-        g++       \
-        make      \
-        mercurial \
-        python3
+        ca-certificates \
+        cmake           \
+        g++             \
+        git             \
+        make            \
+        python
 
     cd /home/vagrant
 
     if ! [ -e downward ] ; then
-        hg clone http://hg.fast-downward.org -r TAG downward
+        git clone --branch release-19.06.0 https://github.com/aibasel/downward.git downward
         ./downward/build.py
         chown -R vagrant.vagrant downward
     fi
