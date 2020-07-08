@@ -1,4 +1,6 @@
 /**/*.pyc
+/**/output.sas
+/**/sas_plan*
 /experiments/issue[0-9]*/data/
 /experiments/issue[0-9]*/.venv/
 /experiments/issue[0-9]*/*-microbenchmark/.obj/
