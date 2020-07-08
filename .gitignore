@@ -1,12 +1,12 @@
-/**/*.pyc
+/**/__pycache__/
 /**/output.sas
 /**/sas_plan*
-/experiments/issue[0-9]*/data/
+/builds/
 /experiments/issue[0-9]*/.venv/
+/experiments/issue[0-9]*/data/
 /experiments/issue[0-9]*/*-microbenchmark/.obj/
 /experiments/issue[0-9]*/*-microbenchmark/benchmark
 /experiments/issue[0-9]*/*-microbenchmark/Makefile.depend
-/misc/autodoc/downward-xmlrpc.secret
 /misc/.tox/
-/builds/
+/misc/autodoc/downward-xmlrpc.secret
 /src/CMakeLists.txt.user
