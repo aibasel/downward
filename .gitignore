@@ -5,8 +5,5 @@ __pycache__/
 /builds/
 /experiments/issue*/.venv/
 /experiments/issue*/data/
-/experiments/issue*/*-microbenchmark/.obj/
-/experiments/issue*/*-microbenchmark/benchmark
-/experiments/issue*/*-microbenchmark/Makefile.depend
 /misc/.tox/
 /misc/autodoc/downward-xmlrpc.secret
