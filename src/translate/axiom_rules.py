@@ -185,6 +185,8 @@ def compute_clusters(axioms, goals, operators):
 
     groups = get_strongly_connected_components(dependencies)
     clusters = [AxiomCluster(group) for group in groups]
+    # TODO: why do we need to reverse here?
+    clusters.reverse()
 
     # Compute mapping from variables to their clusters and set needed_negative.
     variable_to_cluster = {}
