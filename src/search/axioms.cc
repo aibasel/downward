@@ -72,7 +72,7 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
             int num_conditions = cond_effect.get_conditions().size();
             // We ignore dummy rules which have no conditions and set the
             // variable on its default value.
-            if (num_conditions == 0 && effect.value == variables[effect.var].get_default_axiom_value()) {
+            if (effect.value == variables[effect.var].get_default_axiom_value()) {
                 continue;
             }
             AxiomLiteral *eff_literal = &axiom_literals[effect.var][effect.value];
@@ -85,9 +85,11 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
 
         // Cross-reference rules and literals
         for (OperatorProxy axiom : axioms) {
+            // Ignore axioms which set the variable on its default value
+            if (axiom_id_to_position.find(axiom.get_id()) == axiom_id_to_position.end()) {
+                continue;
+            }
             EffectProxy effect = axiom.get_effects()[0];
-	    // We do not need a special case for dummy rules here, since they
-	    // have an empty condition.
             for (FactProxy condition : effect.get_conditions()) {
                 int var_id = condition.get_variable().get_id();
                 int val = condition.get_value();
