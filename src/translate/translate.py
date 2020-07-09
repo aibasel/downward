@@ -437,9 +437,8 @@ def translate_task(strips_to_sas, ranges, translation_key,
                    init, goals,
                    actions, axioms, metric, implied_facts):
     with timers.timing("Processing axioms", block=True):
-        axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(actions, axioms, goals,
-                                                                         options.layer_strategy)
-    init = init + axiom_init
+        axioms, axiom_layer_dict = axiom_rules.handle_axioms(actions, axioms, goals,
+                                                                      options.layer_strategy)
 
     if options.dump_task:
         # Remove init facts that don't occur in strips_to_sas: they're constant.

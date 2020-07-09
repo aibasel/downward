@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -64,7 +64,7 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
         int count = 0;
         // Since we are skipping some ops, we cannot access them through their
         // id position directly
-        map<int, size_t> axiom_id_to_position;
+        unordered_map<int, size_t> axiom_id_to_position;
         for (OperatorProxy axiom : axioms) {
             assert(axiom.get_effects().size() == 1);
             EffectProxy cond_effect = axiom.get_effects()[0];
