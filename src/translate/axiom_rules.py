@@ -8,16 +8,27 @@ from collections import defaultdict
 DEBUG = False
 
 
-def handle_axioms(operators, axioms, goals):
-    axioms_by_atom = get_axioms_by_atom(axioms)
+def handle_axioms(operators, axioms, goals, overapproximate_axioms):
+    for axiom in axioms:
+        # Verify that we only get axioms whose head is a *positive*
+        # literal, not a negative one.
+        assert isinstance(axiom.effect, pddl.Atom)
 
-    axiom_literals = compute_necessary_axiom_literals(axioms_by_atom, operators, goals)
+    axioms_by_atom = get_axioms_by_atom(axioms)
+    if overapproximate_axioms:
+        axiom_literals = compute_all_axiom_literals(axioms_by_atom)
+    else:
+        axiom_literals = compute_necessary_axiom_literals(axioms_by_atom, operators, goals)
     axiom_init = get_axiom_init(axioms_by_atom, axiom_literals)
     with timers.timing("Simplifying axioms"):
         axioms = simplify_axioms(axioms_by_atom, axiom_literals)
-    axioms = compute_negative_axioms(axioms_by_atom, axiom_literals)
-    # NOTE: compute_negative_axioms more or less invalidates axioms_by_atom.
-    #       Careful with that axe, Eugene!
+    if overapproximate_axioms:
+        print("Using overapproximation of axiom rules.")
+        axioms += compute_negative_axioms_using_overapproximation(axiom_literals)
+    else:
+        axioms = compute_negative_axioms_in_dnf(axioms_by_atom, axiom_literals)
+        # NOTE: compute_negative_axioms more or less invalidates axioms_by_atom.
+        #       Careful with that axe, Eugene!
     axiom_layers = compute_axiom_layers(axioms, axiom_init)
     if DEBUG:
         verify_layering_condition(axioms, axiom_init, axiom_layers)
@@ -269,6 +280,13 @@ def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
             register_literals(axiom.condition, literal.negated)
     return necessary_literals
 
+def compute_all_axiom_literals(axioms_by_atom):
+    necessary_literals = set()
+    for atom in axioms_by_atom:
+        necessary_literals.add(atom)
+        necessary_literals.add(atom.negate())
+    return necessary_literals
+
 def get_axiom_init(axioms_by_atom, necessary_literals):
     result = set()
     for atom in axioms_by_atom:
@@ -327,7 +345,19 @@ def simplify(axioms):
                 axioms_to_skip.add(dominated_axiom)
     return [axiom for axiom in axioms if id(axiom) not in axioms_to_skip]
 
-def compute_negative_axioms(axioms_by_atom, necessary_literals):
+def compute_negative_axioms_using_overapproximation(literals):
+    """Compute axioms for a negative derived predicate 'd' using a dummy
+    rule True -> d.
+    """
+    new_axioms = []
+    for literal in literals:
+        if literal.negated:
+            axiom_name = str(literal)
+            result = pddl.PropositionalAxiom(axiom_name, [], literal)
+            new_axioms.append(result)
+    return new_axioms
+
+def compute_negative_axioms_in_dnf(axioms_by_atom, necessary_literals):
     new_axioms = []
     for literal in necessary_literals:
         if literal.negated:

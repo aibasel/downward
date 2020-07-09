@@ -50,6 +50,11 @@ def parse_args():
         dest="filter_unimportant_vars", action="store_false",
         help="keep variables that do not influence the goal in the causal graph")
     argparser.add_argument(
+        "--overapproximate-axioms",
+        dest="overapproximate_axioms", action="store_true",
+        help="use overapproximation of axiom rules in order to avoid potential "
+        "issues caused by cyclic dependency of derived predicates.")
+    argparser.add_argument(
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
     return argparser.parse_args()

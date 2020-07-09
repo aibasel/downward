@@ -438,7 +438,7 @@ def translate_task(strips_to_sas, ranges, translation_key,
                    actions, axioms, metric, implied_facts):
     with timers.timing("Processing axioms", block=True):
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
-            actions, axioms, goals)
+            actions, axioms, goals, options.overapproximate_axioms)
     init = init + axiom_init
 
     if options.dump_task:
