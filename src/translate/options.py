@@ -58,24 +58,10 @@ def parse_args():
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
     argparser.add_argument(
-        "--overapproximate_negated_axioms", default="cycles",
-        help="How to deal with negated axioms. 'none' negates all axioms "
-        "(leads to bugs), 'cycles' overapproxmates only the negation of axioms"
-        "whose effect variable is part of a cycle and 'all' overapproximates"
-        "all negated axioms.")
-    argparser.add_argument(
-        "--keep_redundant_positive_axioms", action="store_true",
-        help="Whether or not to keep positive axioms which have an exact negation.")
-    argparser.add_argument(
-        "--layer_strategy", default="min",
-        help="How to assign layers to dervied variables. 'min' attempts to put as"
+        "--layer-strategy", default="min", choices=["min", "max"],
+        help="How to assign layers to derived variables. 'min' attempts to put as"
         "many variables in the same layer as possible, while 'max' puts each variable"
         "in its own layer unless it is part of a cycle.")
-    argparser.add_argument(
-        "--overapproximate_necessary_literals", default="exact",
-        help="How to determine necessary literals. 'exact' performs a full relevance"
-        "analysis, 'non-derived' considers all non-derived literals as necessary and"
-        "'positive' considers all positive literals as necessary")
     return argparser.parse_args()
 
 

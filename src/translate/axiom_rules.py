@@ -8,6 +8,7 @@ from collections import defaultdict, OrderedDict
 
 DEBUG = False
 
+
 def collect_axiom_heads(axioms):
     """Return derived variables that occur as heads in axioms,
     as a set of pddl.Atom."""
@@ -39,16 +40,18 @@ class AxiomDependencies(object):
                     else:
                         self.positive_dependencies[head].add(body_atom)
 
+
 class AxiomCluster(object):
     def __init__(self, variables):
         self.variables = variables
         self.axioms =  dict((v, []) for v in variables)
         self.positive_children = set()
         self.negative_children = set()
-        self.needed_positive = False # will be set by remove_unnecessary_clusters
-        self.needed_negative = False # will be set by remove_unnecessary_clusters
-        self.layer = 0 # will be set by compute_axiom_layers
-        self.inverted = False # will be set by compute_negative_axioms if we set the default value of the cluster to True
+        self.needed_positive = False  # will be set by remove_unnecessary_clusters
+        self.needed_negative = False  # will be set by remove_unnecessary_clusters
+        self.layer = 0  # will be set by compute_axiom_layers
+        self.inverted = False  # will be set by compute_negative_axioms if we set the default value of the cluster to True
+
 
 def compute_clusters(axioms, dependencies):
     groups = sccs.get_sccs_adjacency_dict(dependencies.all_dependencies)
@@ -83,57 +86,72 @@ def compute_clusters(axioms, dependencies):
 
     return clusters, variable_to_cluster
 
-def remove_unnecessary_clusters(clusters, goals, operators, variable_to_cluster, overapprox_nec_lit):
+
+def remove_unnecessary_clusters(clusters, goals, operators, variable_to_cluster):
     depends_on = defaultdict(set)
+    necessary_literals = set()
+
+    for g in goals:
+        if g.positive() in variable_to_cluster:
+            necessary_literals.add(g)
     
     for op in operators:
+        derived_pres = [l for l in op.precondition if l.positive() in variable_to_cluster]
+        
         for condition, effect in op.add_effects:
-            depends_on[effect].update(op.precondition)
-            depends_on[effect].update(condition)
-            for c in condition:
-                depends_on[effect.negate()].add(c.negate())
+            derived_conds = [c for c in condition if c.positive() in variable_to_cluster]
+            effect_derived = effect.positive() in variable_to_cluster
+            if effect_derived:
+                depends_on[effect].update(derived_pres)
+                depends_on[effect].update(derived_conds)
+            else:
+                necessary_literals.update(derived_pres)
+                necessary_literals.update(derived_conds)
+            for c in derived_conds:
+                if effect_derived:
+                    depends_on[effect.negate()].add(c.negate())
+                else:
+                    necessary_literals.add(c.negate())
+                
         for condition, effect in op.del_effects:
-            depends_on[effect.negate()].update(op.precondition)
-            depends_on[effect.negate()].update(condition)
-            for c in condition:
-                depends_on[effect].add(c.negate())
+            derived_conds = [c for c in condition if c.positive() in variable_to_cluster]
+            effect_derived = effect.positive() in variable_to_cluster
+
+            if effect_derived:
+                depends_on[effect.negate()].update(derived_pres)
+                depends_on[effect.negate()].update(derived_conds)
+            else:
+                necessary_literals.update(derived_pres)
+                necessary_literals.update(derived_conds)
+            for c in derived_conds:
+                if effect_derived:
+                    depends_on[effect].add(c.negate())
+                else:
+                    necessary_literals.add(c.negate())
+    
     for cluster in clusters:
         for v in cluster.variables:
             for axiom in cluster.axioms[v]:
-                depends_on[axiom.effect].update(axiom.condition)
-                for c in axiom.condition:
+                derived_conds = [c for c in axiom.condition if c.positive() in variable_to_cluster]
+                depends_on[axiom.effect].update(derived_conds)
+                for c in derived_conds:
                     depends_on[axiom.effect.negate()].add(c.negate())
     
-    queue = []
-    # goal variables are always necessary, even if they are derived or negated!
-    for g in goals:
-        queue.append(g)
-    
-    assert(overapprox_nec_lit in ["exact", "non-derived", "positive"])
-    # for exact we do not need to do anything more, since the goal has been added already
-    if overapprox_nec_lit == "positive": 
-        for literal in depends_on:
-            if not literal.negated and literal not in variable_to_cluster:
-                queue.append(literal)
-    elif overapprox_nec_lit == "non-derived":
-        for literal in depends_on:
-            if literal.positive() not in variable_to_cluster:
-                queue.append(literal)
-                
-    necessary_literals = set(queue)
+    queue = list(necessary_literals)
 
     while queue:
         l = queue.pop()
-        if l in variable_to_cluster:
-            variable_to_cluster[l].needed_positive = True
-        elif l.negate() in variable_to_cluster:
+        if l.negated:
             variable_to_cluster[l.negate()].needed_negative = True
+        else:
+            variable_to_cluster[l].needed_positive = True
         for l2 in depends_on[l]:
             if l2 not in necessary_literals:
                 queue.append(l2)
                 necessary_literals.add(l2)
-        
+
     return [c for c in clusters if c.needed_positive or c.needed_negative]
+
 
 def get_only_negative_needed_variables(clusters):
     variables = []
@@ -141,6 +159,7 @@ def get_only_negative_needed_variables(clusters):
         if cluster.needed_negative and not cluster.needed_positive:
             variables += cluster.variables
     return variables
+
 
 def get_axioms(clusters):
     axioms = []
@@ -150,23 +169,23 @@ def get_axioms(clusters):
     return axioms
 
 
-def handle_axioms(operators, axioms, goals, overapproximate_axioms):
-    # TODO: what did this timer do?
-    #with timers.timing("Simplifying axioms"):
-    #    axioms = simplify_axioms(axiom_data)
-
+def handle_axioms(operators, axioms, goals, layer_strategy):
     dependencies = AxiomDependencies(axioms)
     clusters, variable_to_cluster = compute_clusters(axioms, dependencies)
-    clusters = remove_unnecessary_clusters(clusters, goals, operators, variable_to_cluster, options.overapproximate_necessary_literals)
-    simplify_axioms(clusters) # dominance testing and duplicate elimination
+    clusters = remove_unnecessary_clusters(clusters, goals, operators, variable_to_cluster)
 
-    axiom_init = compute_negative_axioms(clusters, options.keep_redundant_positive_axioms, options.overapproximate_negated_axioms)
+    with timers.timing("Simplifying axioms"):
+        simplify_axioms(clusters)  # dominance testing and duplicate elimination
+
+    with timers.timing("Computing negative axioms"):
+        axiom_init = compute_negative_axioms(clusters)
     
-    axiom_layers = compute_axiom_layers(clusters, options.layer_strategy)
+    axiom_layers = compute_axiom_layers(clusters, layer_strategy)
     axioms = get_axioms(clusters)
     if DEBUG:
         verify_layering_condition(axioms, set(axiom_init), axiom_layers)
     return axioms, list(axiom_init), axiom_layers
+
 
 def verify_layering_condition(axioms, axiom_init, axiom_layers):
     # This function is only used for debugging.
@@ -265,6 +284,7 @@ def verify_layering_condition(axioms, axiom_init, axiom_layers):
                 # our error handler to be able to print the line.
                 assert (axiom_layers[cond_positive] <= axiom_layers[head_positive]), (axiom_layers[cond_positive], axiom_layers[head_positive])
 
+
 def compute_reversed_topological_sort(clusters):
     sorted_clusters = []
     temporarily_marked = set()
@@ -285,7 +305,24 @@ def compute_reversed_topological_sort(clusters):
         if cluster not in permanently_marked:
             visit(cluster)
     return sorted_clusters
-    
+
+
+def compute_single_cluster_layer(cluster):
+    # TODO: discuss with Malte if this is the right way to calculate layers
+    layers = [0]
+    for pos_child in cluster.positive_children:
+        if pos_child.inverted == cluster.inverted:
+            layers.append(pos_child.layer)
+        else:
+            layers.append(pos_child.layer + 1)
+    for neg_child in cluster.negative_children:
+        if neg_child.inverted == cluster.inverted:
+            layers.append(neg_child.layer + 1)
+        else:
+            layers.append(neg_child.layer)
+    return max(layers)
+
+
 def compute_axiom_layers(clusters, strategy):
     reversed_clusters = compute_reversed_topological_sort(clusters)
     
@@ -298,18 +335,17 @@ def compute_axiom_layers(clusters, strategy):
             layer += 1
     elif strategy == "min":
         for cluster in reversed_clusters:
-            # TODO: discuss with Malte if this is the right way to calculate layers
-            cluster.layer = max([0] +
-                [pos_child.layer if pos_child.inverted == cluster.inverted else pos_child.layer+1 for pos_child in cluster.positive_children] +
-                [neg_child.layer+1 if neg_child.inverted == cluster.inverted else neg_child.layer for neg_child in cluster.negative_children])
+            cluster.layer = compute_single_cluster_layer(cluster)
             for variable in cluster.variables:
                 layers[variable] = cluster.layer
     return layers
+
 
 def simplify_axioms(clusters):
     for cluster in clusters:
         for variable in cluster.variables:
             simplify(cluster.axioms[variable])
+
 
 def remove_duplicates(alist):
     next_elem = 1
@@ -318,6 +354,7 @@ def remove_duplicates(alist):
             alist[next_elem] = alist[i]
             next_elem += 1
     alist[next_elem:] = []
+
 
 def simplify(axioms):
     """Remove duplicate axioms, duplicates within axioms, and dominated axioms."""
@@ -340,7 +377,7 @@ def simplify(axioms):
     for axiom in axioms:
         if id(axiom) in axioms_to_skip:
             continue   # Required to keep one of multiple identical axioms.
-        if not axiom.condition: # empty condition: dominates everything
+        if not axiom.condition:  # empty condition: dominates everything
             return [axiom]
         literals = iter(axiom.condition)
         dominated_axioms = axioms_by_literal[next(literals)]
@@ -351,6 +388,7 @@ def simplify(axioms):
                 axioms_to_skip.add(dominated_axiom)
     return [axiom for axiom in axioms if id(axiom) not in axioms_to_skip]
 
+
 def negate_overapproximation(variable):
     """Compute axioms for a negative derived predicate 'd' using a dummy
     rule True -> d.
@@ -359,32 +397,21 @@ def negate_overapproximation(variable):
     result = pddl.PropositionalAxiom(axiom_name, [], variable.negate())
     return [result]
 
-def compute_negative_axioms(clusters, keep_redundant_positive_axioms, overapprox_strategy):
-    assert(overapprox_strategy in ["all", "cycles", "none"])
+
+def compute_negative_axioms(clusters):
     axiom_init = []
     for cluster in clusters:
         if cluster.needed_negative:
-            overapproximate = False
-            if overapprox_strategy == "all" or (overapprox_strategy == "cycles" and len(cluster.variables) > 1):
-                overapproximate = True
-
-            delete_positive = False
-            if not cluster.needed_positive and not overapproximate and not keep_redundant_positive_axioms:
-                delete_positive = True
-                cluster.inverted = True
-                axiom_init += cluster.variables
-            
+            atomic_cluster = len(cluster.variables) > 1
             for variable in cluster.variables:
-                if overapproximate:
+                if atomic_cluster:
                     negated_axioms = negate_overapproximation(variable)
                 else:
                     negated_axioms = negate(cluster.axioms[variable])
 
-                if delete_positive:
-                    cluster.axioms[variable] = negated_axioms
-                else:
-                    cluster.axioms[variable] += negated_axioms
+                cluster.axioms[variable] += negated_axioms
     return axiom_init
+
 
 def negate(axioms):
     assert axioms
