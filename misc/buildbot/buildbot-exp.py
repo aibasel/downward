@@ -42,9 +42,8 @@ import subprocess
 import sys
 
 from lab.experiment import ARGPARSER
-from lab import tools
+from lab import cached_revision, tools
 
-from downward import cached_revision
 from downward.experiment import FastDownwardExperiment
 from downward.reports.absolute import AbsoluteReport
 
@@ -150,7 +149,7 @@ def main():
         rev = BASELINE
         name = 'baseline'
     else:
-        rev = cached_revision.get_global_rev(REPO, vcs=cached_revision.GIT, rev=args.revision)
+        rev = cached_revision.get_global_rev(REPO, rev=args.revision)
         name = rev
 
     exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), revision_cache=REVISION_CACHE)
