@@ -61,40 +61,34 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
             axiom_literals.emplace_back(var.get_domain_size());
 
         // Initialize rules
-        int count = 0;
-        // Since we are skipping some ops, we cannot access them through their
-        // id position directly
-        unordered_map<int, size_t> axiom_id_to_position;
+        // Since we are skipping some axioms, we cannot access them through
+        // their id position directly.
+        std::vector<int> axiom_id_to_position(axioms.size(),-1);
         for (OperatorProxy axiom : axioms) {
             assert(axiom.get_effects().size() == 1);
             EffectProxy cond_effect = axiom.get_effects()[0];
             FactPair effect = cond_effect.get_fact().get_pair();
             int num_conditions = cond_effect.get_conditions().size();
-            // We ignore dummy rules which have no conditions and set the
-            // variable on its default value.
-            if (effect.value == variables[effect.var].get_default_axiom_value()) {
-                continue;
+            // Ignore axioms which set the variable to its default value.
+            if (effect.value != variables[effect.var].get_default_axiom_value()) {
+                AxiomLiteral *eff_literal = &axiom_literals[effect.var][effect.value];
+                axiom_id_to_position[axiom.get_id()] = rules.size();
+                rules.emplace_back(
+                    num_conditions, effect.var, effect.value, eff_literal);
             }
-            AxiomLiteral *eff_literal = &axiom_literals[effect.var][effect.value];
-            assert(axiom_id_to_position.count(axiom.get_id()) == 0);
-            axiom_id_to_position[axiom.get_id()] = count;
-            count++;
-            rules.emplace_back(
-                num_conditions, effect.var, effect.value, eff_literal);
         }
 
         // Cross-reference rules and literals
         for (OperatorProxy axiom : axioms) {
-            // Ignore axioms which set the variable on its default value
-            if (axiom_id_to_position.find(axiom.get_id()) == axiom_id_to_position.end()) {
-                continue;
-            }
-            EffectProxy effect = axiom.get_effects()[0];
-            for (FactProxy condition : effect.get_conditions()) {
-                int var_id = condition.get_variable().get_id();
-                int val = condition.get_value();
-                AxiomRule *rule = &rules[axiom_id_to_position[axiom.get_id()]];
-                axiom_literals[var_id][val].condition_of.push_back(rule);
+            // Ignore axioms which set the variable to its default value.
+            if (axiom_id_to_position[axiom.get_id()] >= 0) {
+                EffectProxy effect = axiom.get_effects()[0];
+                for (FactProxy condition : effect.get_conditions()) {
+                    int var_id = condition.get_variable().get_id();
+                    int val = condition.get_value();
+                    AxiomRule *rule = &rules[axiom_id_to_position[axiom.get_id()]];
+                    axiom_literals[var_id][val].condition_of.push_back(rule);
+                }
             }
         }
 
