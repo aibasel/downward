@@ -63,7 +63,7 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
         // Initialize rules
         // Since we are skipping some axioms, we cannot access them through
         // their id position directly.
-        std::vector<int> axiom_id_to_position(axioms.size(),-1);
+        vector<int> axiom_id_to_position(axioms.size(), -1);
         for (OperatorProxy axiom : axioms) {
             assert(axiom.get_effects().size() == 1);
             EffectProxy cond_effect = axiom.get_effects()[0];
@@ -81,12 +81,13 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
         // Cross-reference rules and literals
         for (OperatorProxy axiom : axioms) {
             // Ignore axioms which set the variable to its default value.
-            if (axiom_id_to_position[axiom.get_id()] >= 0) {
+            int position = axiom_id_to_position[axiom.get_id()];
+            if (position != -1) {
                 EffectProxy effect = axiom.get_effects()[0];
                 for (FactProxy condition : effect.get_conditions()) {
                     int var_id = condition.get_variable().get_id();
                     int val = condition.get_value();
-                    AxiomRule *rule = &rules[axiom_id_to_position[axiom.get_id()]];
+                    AxiomRule *rule = &rules[position];
                     axiom_literals[var_id][val].condition_of.push_back(rule);
                 }
             }

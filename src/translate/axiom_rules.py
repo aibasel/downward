@@ -32,10 +32,10 @@ class AxiomDependencies(object):
     # must be relevant by definition.
     def remove_unnecessary_variables(self, necessary_literals):
         for var in self.derived_variables.copy():
-           if var not in necessary_literals and var.negate() not in necessary_literals:
-               self.derived_variables.remove(var)
-               self.positive_dependencies.pop(var,None)
-               self.negative_dependencies.pop(var,None)
+            if var not in necessary_literals and var.negate() not in necessary_literals:
+                self.derived_variables.remove(var)
+                self.positive_dependencies.pop(var, None)
+                self.negative_dependencies.pop(var, None)
 
 
 class AxiomCluster(object):
@@ -56,6 +56,12 @@ def handle_axioms(operators, axioms, goals, layer_strategy):
     clusters = compute_clusters(axioms, goals, operators)
     axiom_layers = compute_axiom_layers(clusters, layer_strategy)
 
+    # TODO: It would be cleaner if these negated rules were an implementation
+    # detail of the heuristics in the search component that make use of them
+    # rather than part of the translation process. They should be removed in
+    # the future. Similarly, it would be a good idea to remove the notion of
+    # axiom layers and derived variable default values from the output.
+    # (All derived variables should be binary and default to false.)
     with timers.timing("Computing negative axioms"):
         compute_negative_axioms(clusters)
 
@@ -110,10 +116,10 @@ def get_strongly_connected_components(dependencies):
 
     adjacency_list = []
     for derived_var in sorted_vars:
-      pos = dependencies.positive_dependencies[derived_var]
-      neg = dependencies.negative_dependencies[derived_var]
-      indices = [variable_to_index[atom] for atom in sorted(pos.union(neg))]
-      adjacency_list.append(indices)
+        pos = dependencies.positive_dependencies[derived_var]
+        neg = dependencies.negative_dependencies[derived_var]
+        indices = [variable_to_index[atom] for atom in sorted(pos.union(neg))]
+        adjacency_list.append(indices)
 
     index_groups = sccs.get_sccs_adjacency_list(adjacency_list)
     groups = [[sorted_vars[i] for i in g] for g in index_groups]
@@ -121,12 +127,12 @@ def get_strongly_connected_components(dependencies):
 
 # Expects a list of axioms *with the same head* and returns a subset consisting
 # of all non-dominated axioms whose conditions have been cleaned up
-# (duplicate elimination)
+# (duplicate elimination).
 def compute_simplified_axioms(axioms):
     """Remove duplicate axioms, duplicates within axioms, and dominated axioms."""
 
     if DEBUG:
-       assert len(set(axiom.effect for axiom in axioms)) == 1
+        assert len(set(axiom.effect for axiom in axioms)) == 1
 
     # Remove duplicates from axiom conditions.
     for axiom in axioms:
@@ -180,14 +186,14 @@ def compute_clusters(axioms, goals, operators):
         # axiom.effect is derived but might have been pruned
         if axiom.effect in dependencies.derived_variables:
             variable_to_cluster[axiom.effect].axioms[axiom.effect].append(axiom)
-            
+
     removed = 0
     with timers.timing("Simplifying axioms"):
-      for cluster in clusters:
-          for variable in cluster.variables:
-              old_size = len(cluster.axioms[variable])
-              cluster.axioms[variable] = compute_simplified_axioms(cluster.axioms[variable])
-              removed += (old_size-len(cluster.axioms[variable]))
+        for cluster in clusters:
+            for variable in cluster.variables:
+                old_size = len(cluster.axioms[variable])
+                cluster.axioms[variable] = compute_simplified_axioms(cluster.axioms[variable])
+                removed += old_size - len(cluster.axioms[variable])
     print("Simplifying axioms removed {} axioms".format(removed))
 
     # Create links between clusters (positive dependencies).
@@ -223,16 +229,15 @@ def compute_single_cluster_layer(cluster):
 # Clusters must be ordered topologically based on AxiomDependencies.
 # Since we need to visit clusters containing variables that occur in the body
 # of an atom before we visit the cluster containing the head, we need to
-# reverse the clusters.
+# traverse the clusters in reverse order.
 def compute_axiom_layers(clusters, strategy):
-    reversed_clusters = reverse(clusters)
     if strategy == "max":
         layer = 0
-        for cluster in reversed_clusters:
+        for cluster in reversed(clusters):
             cluster.layer = layer
             layer += 1
     elif strategy == "min":
-        for cluster in reversed_clusters:
+        for cluster in reversed(clusters):
             cluster.layer = compute_single_cluster_layer(cluster)
 
     layers = dict()
@@ -246,18 +251,19 @@ def compute_negative_axioms(clusters):
     for cluster in clusters:
         if cluster.needed_negatively:
             if len(cluster.variables) > 1:
-                # If the cluster contains several variables they depend
-                # (positively) on each other and the normal negation computation
-                # can lead to some heuristics incorrectly detecting states as
-                # unsolvable because they don't consider negation by failure and
-                # conclude that a derived variable cannot be reached negatively
-                # (for details see issue453).
-                # We avoid this by instead giving a naive overapproximation
-                # saying that the negated variable can always be reached with
-                # no conditions.
-                # This does not interfere with the sucessor generator in the
-                # search component since it only considers axioms which set a
-                # derived variable to its non-default value.
+                # If the cluster contains multiple variables, they have a cyclic
+                # positive dependency. In this case, the "obvious" way of
+                # negating the formula defining the derived variable is
+                # semantically wrong. For details, see issue453.
+                #
+                # Therefore, in this case we perform a naive overapproximation
+                # instead, which assumes that derived variables occurring in
+                # such clusters can be false unconditionally. This is good
+                # enough for correctness of the code that uses these negated
+                # axioms (within heuristics of the search component), but loses
+                # accuracy. Negating the rules in an exact
+                # (non-overapproximating) way is possible but more expensive.
+                # Again, see issue453 for details.
                 for variable in cluster.variables:
                     name = cluster.axioms[variable][0].name
                     negated_axiom = pddl.PropositionalAxiom(name, [], variable.negate())
