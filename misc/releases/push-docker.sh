@@ -20,7 +20,7 @@ DOCKERFILE_CPLEX="$RELEASESDIR/$MAJOR/Dockerfile.$MAJOR-cplex"
 CPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/cplex_studio129.linux-x86-64.bin"
 SOPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/soplex-3.1.1.tgz"
 
-# Verify that th LP installer files exist
+# Verify that the LP installer files exist
 if [ ! -f "$CPLEX_INSTALLER" ]; then
     echo "CPLEX 12.9 installation file not found at '$CPLEX_INSTALLER'. Please set the environment variable DOWNWARD_LP_INSTALLERS to a path containing the SoPlex and CPLEX installers."
     exit 1

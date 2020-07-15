@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
           provision_env["CPLEX_INSTALLER"] = "/lp/" + File.basename(cplex_installer)
           provision_env["SOPLEX_INSTALLER"] = "/lp/" + File.basename(soplex_installer)
       end
-    end
+  end
 
   config.vm.provision "shell", env: provision_env, inline: <<-SHELL
 
@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
         zlib1g-dev
 
     OSI_LD_FLAGS=""
-    OSI_CONFIG_OPTIONS=""
+    OSI_CONFIG_OPTIONS=()
     if [ -f "$CPLEX_INSTALLER" ]; then
         # Set environment variables for CPLEX.
         cat > /etc/profile.d/downward-cplex.sh <<- EOM
@@ -47,13 +47,13 @@ Vagrant.configure("2") do |config|
         source /etc/profile.d/downward-cplex.sh
 
         # Install CPLEX.
-        $DOWNWARD_CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -i silent
+        $CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -i silent
 
         # Prepare configuration of OSI.
         OSI_LD_FLAGS="$OSI_LD_FLAGS -L$DOWNWARD_CPLEX_ROOT/bin/x86-64_linux"
-        OSI_CONFIG_OPTIONS="$OSI_CONFIG_OPTIONS \
-            --with-cplex-incdir=$DOWNWARD_CPLEX_ROOT/include/ilcplex \
-            --with-cplex-lib=\"-l$CPLEX_LIBRARY -lm\""
+        OSI_CONFIG_OPTIONS+=(
+            "--with-cplex-incdir=$DOWNWARD_CPLEX_ROOT/include/ilcplex"
+            "--with-cplex-lib=-lcplex1290 -lm")
     fi
 
     if [ -f "$SOPLEX_INSTALLER" ]; then
@@ -75,9 +75,9 @@ Vagrant.configure("2") do |config|
 
         # Prepare configuration of OSI.
         OSI_LD_FLAGS="$OSI_LD_FLAGS -L$DOWNWARD_SOPLEX_ROOT/lib"
-        OSI_CONFIG_OPTIONS="$OSI_CONFIG_OPTIONS \
-            --with-soplex-incdir="$DOWNWARD_SOPLEX_ROOT/include" \
-            --with-soplex-lib=\"-lsoplex\""
+        OSI_CONFIG_OPTIONS+=(
+            "--with-soplex-incdir=$DOWNWARD_SOPLEX_ROOT/include"
+            "--with-soplex-lib=-lsoplex")
     fi
 
     if [ -f "$CPLEX_INSTALLER" ] || [ -f "$SOPLEX_INSTALLER" ]; then
@@ -100,7 +100,7 @@ Vagrant.configure("2") do |config|
                     --without-lapack --enable-static=no \
                     --prefix="$DOWNWARD_COIN_ROOT" \
                     --disable-bzlib \
-                    $OSI_CONFIG_OPTIONS
+                    "${OSI_CONFIG_OPTIONS[@]}"
         make
         make install
         popd
