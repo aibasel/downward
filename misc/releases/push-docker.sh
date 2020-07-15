@@ -12,8 +12,10 @@ if [[ ! "$MAJOR" =~ ^[1-9][0-9]\.[0-9][0-9]$ ]]; then
     echo "Unrecognized version number '$MAJOR'. Expected the format YY.MM (e.g. 19.06)."
     exit 1
 fi
-DOCKERFILE="$DOWNWARD_CONTAINER_REPO/$MAJOR/Dockerfile.$MAJOR"
-DOCKERFILE_CPLEX="$DOWNWARD_CONTAINER_REPO/$MAJOR/Dockerfile.$MAJOR-cplex"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+RELEASESDIR=$SCRIPTDIR
+DOCKERFILE="$RELEASESDIR/$MAJOR/Dockerfile.$MAJOR"
+DOCKERFILE_CPLEX="$RELEASESDIR/$MAJOR/Dockerfile.$MAJOR-cplex"
 
 CPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/cplex_studio129.linux-x86-64.bin"
 SOPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/soplex-3.1.1.tgz"
@@ -41,7 +43,6 @@ function docker_build_and_tag {
     TEMPDIR=$(mktemp -d)
     pushd $TEMPDIR
     cp $RECIPE_FILE Dockerfile
-    cp $DOWNWARD_SOPLEX_INSTALLER .
     cp $CPLEX_INSTALLER .
     cp $SOPLEX_INSTALLER .
     docker build -t $BUILD_TAG .
