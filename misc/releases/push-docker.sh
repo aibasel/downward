@@ -12,30 +12,54 @@ if [[ ! "$MAJOR" =~ ^[1-9][0-9]\.[0-9][0-9]$ ]]; then
     echo "Unrecognized version number '$MAJOR'. Expected the format YY.MM (e.g. 19.06)."
     exit 1
 fi
-
-# Verify that Dockerfile exists
 DOCKERFILE="$DOWNWARD_CONTAINER_REPO/$MAJOR/Dockerfile.$MAJOR"
-if [ ! -f "$DOCKERFILE" ]; then
-    echo "Could not find Dockerfile at '$DOCKERFILE'. Please run ./prepare-release.sh $MAJOR.0 first."
+DOCKERFILE_CPLEX="$DOWNWARD_CONTAINER_REPO/$MAJOR/Dockerfile.$MAJOR-cplex"
+
+CPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/cplex_studio129.linux-x86-64.bin"
+SOPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/soplex-3.1.1.tgz"
+
+# Verify that th LP installer files exist
+if [ ! -f "$CPLEX_INSTALLER" ]; then
+    echo "CPLEX 12.9 installation file not found at '$CPLEX_INSTALLER'. Please set the environment variable DOWNWARD_LP_INSTALLERS to a path containing the SoPlex and CPLEX installers."
+    exit 1
+fi
+if [ ! -f "$SOPLEX_INSTALLER" ]; then
+    echo "SoPlex 3.1.1 installation file not found at '$SOPLEX_INSTALLER'. Please set the environment variable DOWNWARD_LP_INSTALLERS to a path containing the SoPlex and CPLEX installers."
     exit 1
 fi
 
+function docker_build_and_tag {
+    RECIPE_FILE=$1
+    BUILD_TAG=$2
+    if [ ! -f "$RECIPE_FILE" ]; then
+        echo "Could not find Dockerfile at '$RECIPE_FILE'. Please run ./prepare-release.sh $MAJOR.0 first."
+        exit 1
+    fi
+    # Take the generated Dockerfile, put it into a temporary directory with the
+    # correct build context, and build it. The directory can be removed
+    # afterwards as the docker image is stored in the local registry.
+    TEMPDIR=$(mktemp -d)
+    pushd $TEMPDIR
+    cp $RECIPE_FILE Dockerfile
+    cp $DOWNWARD_SOPLEX_INSTALLER .
+    cp $CPLEX_INSTALLER .
+    cp $SOPLEX_INSTALLER .
+    docker build -t $BUILD_TAG .
+    popd
+    rm -rf $TEMPDIR
+}
+
 set -x
 
-# Take the generated Dockerfile, put it into a temporary empty directory,
-# and build it. The directory can be removed afterwards as the docker
-# image is stored in the local registry.
-TEMPDIR=$(mktemp -d)
-pushd $TEMPDIR
-cp $DOCKERFILE Dockerfile
-docker build -t aibasel/downward:$MAJOR .
-docker tag aibasel/downward:$MAJOR aibasel/downward:latest
-popd
-rm -rf $TEMPDIR
+docker_build_and_tag $DOCKERFILE "aibasel/downward:$MAJOR"
+docker tag "aibasel/downward:$MAJOR" "aibasel/downward:latest"
+docker_build_and_tag $DOCKERFILE_CPLEX "aibasel/downward:$MAJOR-cplex"
 
 docker login
 docker push aibasel/downward:$MAJOR
 docker push aibasel/downward:latest
+docker push aibasel/downward:$MAJOR-cplex
 
 docker rmi aibasel/downward:$MAJOR
+docker rmi aibasel/downward:$MAJOR-cplex
 docker image prune -f
