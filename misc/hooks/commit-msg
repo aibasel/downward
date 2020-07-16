@@ -34,6 +34,7 @@ with open(COMMIT_MESSAGE_FILE, "r+") as f:
     else:
         new_commit_message = COMMIT_MESSAGE_START + "".join(commit_message)
         print(f"Prepending '{COMMIT_MESSAGE_START}' to commit message")
+        f.seek(0) # Reset file pointer to start to overwrite write.
         f.write(new_commit_message)
 
 sys.exit(0)
