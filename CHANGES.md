@@ -11,6 +11,13 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
+- Fix incorrect computation of derived predicates.
+  <http://issues.fast-downward.org/issue453>
+  Derived predicates could be evaluated incorrectly in cases where
+  there is a cyclic dependency between derived variables and the
+  derived predicate is only ever needed in negated form. This has been
+  fixed.
+
 - Integrate new pruning method `atom_centric_stubborn_sets()`
   <http://issues.fast-downward.org/issue781>
   We merged the code for the SoCS 2020 paper "An Atom-Centric Perspective
