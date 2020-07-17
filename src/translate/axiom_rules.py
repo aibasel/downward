@@ -194,7 +194,7 @@ def compute_clusters(axioms, goals, operators):
                 old_size = len(cluster.axioms[variable])
                 cluster.axioms[variable] = compute_simplified_axioms(cluster.axioms[variable])
                 removed += old_size - len(cluster.axioms[variable])
-    print(f"Translator axioms removed by simplifying: {removed}")
+    print("Translator axioms removed by simplifying: %d" % removed)
 
     # Create links between clusters (positive dependencies).
     for from_variable, depends_on in dependencies.positive_dependencies.items():
