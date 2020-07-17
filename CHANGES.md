@@ -95,7 +95,7 @@ Details:
   <http://issues.fast-downward.org/issue934>
 
 - scripts: move Stone Soup generator scripts to separate repository at
-  https://bitbucket.org/aibasel/stonesoup.
+  https://github.com/aibasel/stonesoup.
   <http://issues.fast-downward.org/issue932>
 
 ## Fast Downward 19.06

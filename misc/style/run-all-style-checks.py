@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
 """
-Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
+Run syntax checks on Python and C++ files.
 
-The file bitbucket-pipelines.yml shows how to install the dependencies.
+Exit with 0 if all tests pass and with 1 otherwise.
 """
 
 
@@ -28,11 +28,8 @@ def check_python_style():
             "--exclude", "run-clang-tidy.py,txt2tags.py,.tox",
             "src/translate/", "driver/", "misc/",
             "build.py", "build_configs.py", "fast-downward.py"], cwd=REPO)
-    except OSError as err:
-        if err.errno == errno.ENOENT:
-            sys.exit('Error: flake8 not found. Try "tox -e style".')
-        else:
-            raise
+    except FileNotFoundError:
+        sys.exit('Error: flake8 not found. Try "tox -e style".')
     except subprocess.CalledProcessError:
         return False
     else:
@@ -54,31 +51,7 @@ def check_cc_files():
 
 
 def check_cplusplus_style():
-    """
-    Calling the uncrustify mercurial extension doesn't work for
-    bitbucket pipelines (the local .hg/hgrc file is untrusted and
-    ignored by mercurial). We therefore find the source files manually
-    and call uncrustify directly.
-    """
-    src_files = utils.get_src_files(
-        REPO, (".h", ".cc"), ignore_dirs=["builds", "data", "venv"])
-    print("Checking {} files with uncrustify".format(len(src_files)))
-    config_file = os.path.join(REPO, ".uncrustify.cfg")
-    executable = "uncrustify"
-    try:
-        returncode = subprocess.call(
-            [executable, "-q", "-c", config_file, "--check"] + src_files,
-            cwd=DIR, stdout=subprocess.PIPE)
-    except OSError as err:
-        if err.errno == errno.ENOENT:
-            sys.exit("Error: {} not found. Is it on the PATH?".format(executable))
-        else:
-            raise
-    if returncode != 0:
-        print(
-            'Run "hg uncrustify" to fix the coding style in the above '
-            'mentioned files.')
-    return returncode == 0
+    return subprocess.call(["./run-uncrustify.py"], cwd=DIR) == 0
 
 
 def main():
