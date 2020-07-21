@@ -653,7 +653,6 @@ fast_downward_plugin(
         merge_and_shrink/merge_selector
         merge_and_shrink/merge_selector_score_based_filtering
         merge_and_shrink/merge_strategy
-        merge_and_shrink/merge_strategy_aliases
         merge_and_shrink/merge_strategy_factory
         merge_and_shrink/merge_strategy_factory_precomputed
         merge_and_shrink/merge_strategy_factory_sccs
