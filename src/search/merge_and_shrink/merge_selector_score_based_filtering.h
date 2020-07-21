@@ -25,9 +25,6 @@ protected:
 public:
     explicit MergeSelectorScoreBasedFiltering(const options::Options &options);
     virtual ~MergeSelectorScoreBasedFiltering() override = default;
-    // TODO: get rid of this extra constructor
-    explicit MergeSelectorScoreBasedFiltering(
-        std::vector<std::shared_ptr<MergeScoringFunction>> scoring_functions);
     virtual std::pair<int, int> select_merge(
         const FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset = std::vector<int>()) const override;
