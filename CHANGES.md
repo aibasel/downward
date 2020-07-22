@@ -25,6 +25,11 @@ after the corresponding tracker issues.
   We merged the code for the SoCS 2020 paper "An Atom-Centric Perspective
   on Stubborn Sets" (https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf).
 
+- Remove deprecate aliases for linear merge strategies and the DFP merge
+  strategy: command line options merge_linear and merge_dfp are no longer
+  available. See http://www.fast-downward.org/Doc/MergeStrategy for equivalent
+  command line options to use these merge strategies.
+
 - For developers: Use global logging mechanism for all output
   <http://issues.fast-downward.org/issue963>
   All output of the planner is now handled by a global logging mechnism, which
