@@ -51,9 +51,16 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "strategy relies on the factored transition system being synchronized "
         "with this merge tree, i.e. all merges are performed exactly as given "
         "by the merge tree.");
+    parser.document_note(
+        "Note",
+        "An example of a precomputed merge startegy is a linear merge strategy, "
+        "which can be obtained using:\n"
+        "{{{\n"
+        "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
+        "\n}}}");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
-        "The precomputed merge tree");
+        "The precomputed merge tree.");
 
     options::Options opts = parser.parse();
     if (parser.dry_run())

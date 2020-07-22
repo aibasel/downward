@@ -45,7 +45,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "Goal relevance scoring",
         "This scoring function assigns a merge candidate a value of 0 iff at "
         "least one of the two transition systems of the merge candidate is "
-        "goal relevant in the sense that there is an abstract non-goal state."
+        "goal relevant in the sense that there is an abstract non-goal state. "
         "All other candidates get a score of positive infinity.");
     if (parser.dry_run())
         return nullptr;
