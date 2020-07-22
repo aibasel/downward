@@ -43,8 +43,13 @@ public:
 };
 
 /*
-  Simple logger that prepends time and peak memory info to messages.
-  Logs are written to stdout.
+  Simple line-based logger that prepends time and peak memory info to each line
+  of output. Lines should be eventually terminated by endl. Logs are written to
+  stdout.
+
+  This class wraps Log which holds onto the used stream (currently hard-coded
+  to be cout) and any further options for modifying output (currently only
+  the verbosity level).
 */
 class LogProxy {
 private:
