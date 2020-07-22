@@ -31,6 +31,13 @@ after the corresponding tracker issues.
   prefaces printed lines with time and memory information. For developers, this
   means that output is no longer passed to cout, but utils::g_log.
 
+- For developers: Add option to use a local (configurable) logger instead of
+  the global one.
+  <http://issues.fast-downward.org/issue964>
+  Classes which want to configure the logger (current only option: its
+  verbosity level) should now use the facilities add_log_options_to_parser and
+  get_log_from_options to obtain their local log object.
+
 - For developers: store enum options as enums (not ints) in Options objects.
   <http://issues.fast-downward.org/issue962>
 
