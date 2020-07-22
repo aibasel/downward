@@ -10,6 +10,10 @@
 
 using namespace std;
 
+SearchProgress::SearchProgress(utils::LogProxy &log)
+    : log(log) {
+}
+
 bool SearchProgress::process_evaluator_value(const Evaluator *evaluator, int value) {
     /*
       Handle one evaluator value:
@@ -33,10 +37,10 @@ bool SearchProgress::process_evaluator_value(const Evaluator *evaluator, int val
     return false;
 }
 
-bool SearchProgress::check_progress(const EvaluationContext &eval_context, utils::LogProxy &log) {
+bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
     bool boost = false;
     eval_context.get_cache().for_each_evaluator_result(
-        [this, &boost, &log](const Evaluator *eval, const EvaluationResult &result) {
+        [this, &boost](const Evaluator *eval, const EvaluationResult &result) {
             if (eval->is_used_for_reporting_minima() || eval->is_used_for_boosting()) {
                 if (process_evaluator_value(eval, result.get_evaluator_value())) {
                     if (log.is_at_least_normal() &&

@@ -173,8 +173,8 @@ SearchStatus LazySearch::step() {
             // TODO: Generalize code for using multiple evaluators.
             if (current_predecessor_id == StateID::no_state) {
                 node.open_initial();
-                if (search_progress.check_progress(current_eval_context, log))
-                    statistics.print_checkpoint_line(current_g, log);
+                if (search_progress.check_progress(current_eval_context))
+                    statistics.print_checkpoint_line(current_g);
             } else {
                 GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
                 SearchNode parent_node = search_space.get_node(parent_state);
@@ -189,8 +189,8 @@ SearchStatus LazySearch::step() {
             node.close();
             if (check_goal_and_set_plan(current_state))
                 return SOLVED;
-            if (search_progress.check_progress(current_eval_context, log)) {
-                statistics.print_checkpoint_line(current_g, log);
+            if (search_progress.check_progress(current_eval_context)) {
+                statistics.print_checkpoint_line(current_g);
                 reward_progress();
             }
             generate_successors();
@@ -211,7 +211,7 @@ void LazySearch::reward_progress() {
 }
 
 void LazySearch::print_statistics() const {
-    statistics.print_detailed_statistics(log);
-    search_space.print_statistics(log);
+    statistics.print_detailed_statistics();
+    search_space.print_statistics();
 }
 }

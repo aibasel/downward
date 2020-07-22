@@ -9,7 +9,8 @@
 using namespace std;
 
 
-SearchStatistics::SearchStatistics() {
+SearchStatistics::SearchStatistics(utils::LogProxy &log) 
+    : log(log) {
     expanded_states = 0;
     reopened_states = 0;
     evaluated_states = 0;
@@ -26,10 +27,10 @@ SearchStatistics::SearchStatistics() {
     lastjump_f_value = -1;
 }
 
-void SearchStatistics::report_f_value_progress(int f, utils::LogProxy &log) {
+void SearchStatistics::report_f_value_progress(int f) {
     if (f > lastjump_f_value) {
         lastjump_f_value = f;
-        print_f_line(log);
+        print_f_line();
         lastjump_expanded_states = expanded_states;
         lastjump_reopened_states = reopened_states;
         lastjump_evaluated_states = evaluated_states;
@@ -37,24 +38,24 @@ void SearchStatistics::report_f_value_progress(int f, utils::LogProxy &log) {
     }
 }
 
-void SearchStatistics::print_f_line(utils::LogProxy &log) const {
+void SearchStatistics::print_f_line() const {
     if (log.is_at_least_normal()) {
         log << "f = " << lastjump_f_value
             << ", ";
-        print_basic_statistics(log);
+        print_basic_statistics();
         log << endl;
     }
 }
 
-void SearchStatistics::print_checkpoint_line(int g, utils::LogProxy &log) const {
+void SearchStatistics::print_checkpoint_line(int g) const {
     if (log.is_at_least_normal()) {
         log << "g=" << g << ", ";
-        print_basic_statistics(log);
+        print_basic_statistics();
         log << endl;
     }
 }
 
-void SearchStatistics::print_basic_statistics(utils::LogProxy &log) const {
+void SearchStatistics::print_basic_statistics() const {
     log << evaluated_states << " evaluated, "
         << expanded_states << " expanded";
     if (reopened_states > 0) {
@@ -62,7 +63,7 @@ void SearchStatistics::print_basic_statistics(utils::LogProxy &log) const {
     }
 }
 
-void SearchStatistics::print_detailed_statistics(utils::LogProxy &log) const {
+void SearchStatistics::print_detailed_statistics() const {
     log << "Expanded " << expanded_states << " state(s)." << endl;
     log << "Reopened " << reopened_states << " state(s)." << endl;
     log << "Evaluated " << evaluated_states << " state(s)." << endl;

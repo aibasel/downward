@@ -14,6 +14,8 @@ class LogProxy;
 }
 
 class SearchStatistics {
+    utils::LogProxy &log;
+
     // General statistics
     int expanded_states;  // no states for which successors were generated
     int evaluated_states; // no states for which h fn was computed
@@ -31,9 +33,9 @@ class SearchStatistics {
     int lastjump_evaluated_states;
     int lastjump_generated_states;
 
-    void print_f_line(utils::LogProxy &log) const;
+    void print_f_line() const;
 public:
-    SearchStatistics();
+    explicit SearchStatistics(utils::LogProxy &log);
     ~SearchStatistics() = default;
 
     // Methods that update statistics.
@@ -69,12 +71,12 @@ public:
       order in which successors are generated or the tie-breaking
       performed by the open list.)
     */
-    void report_f_value_progress(int f, utils::LogProxy &log);
-    void print_checkpoint_line(int g, utils::LogProxy &log) const;
+    void report_f_value_progress(int f);
+    void print_checkpoint_line(int g) const;
 
     // output
-    void print_basic_statistics(utils::LogProxy &log) const;
-    void print_detailed_statistics(utils::LogProxy &log) const;
+    void print_basic_statistics() const;
+    void print_detailed_statistics() const;
 };
 
 #endif

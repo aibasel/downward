@@ -179,7 +179,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
 SearchStatus EnforcedHillClimbingSearch::step() {
     last_num_expanded = statistics.get_expanded();
-    search_progress.check_progress(current_eval_context, log);
+    search_progress.check_progress(current_eval_context);
 
     if (check_goal_and_set_plan(current_eval_context.get_state())) {
         return SOLVED;
@@ -248,7 +248,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 }
 
 void EnforcedHillClimbingSearch::print_statistics() const {
-    statistics.print_detailed_statistics(log);
+    statistics.print_detailed_statistics();
 
     log << "EHC phases: " << num_ehc_phases << endl;
     assert(num_ehc_phases != 0);

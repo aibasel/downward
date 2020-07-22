@@ -10,6 +10,8 @@
 #include "state_registry.h"
 #include "task_proxy.h"
 
+#include "utils/logging.h"
+
 #include <vector>
 
 namespace options {
@@ -24,10 +26,6 @@ class OrderedSet;
 
 namespace successor_generator {
 class SuccessorGenerator;
-}
-
-namespace utils {
-class LogProxy;
 }
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};

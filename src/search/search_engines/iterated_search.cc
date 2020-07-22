@@ -121,7 +121,7 @@ SearchStatus IteratedSearch::step_return_value() {
 
 void IteratedSearch::print_statistics() const {
     log << "Cumulative statistics:" << endl;
-    statistics.print_detailed_statistics(log);
+    statistics.print_detailed_statistics();
 }
 
 void IteratedSearch::save_plan_if_necessary() {

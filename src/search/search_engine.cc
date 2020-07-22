@@ -10,7 +10,6 @@
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
-#include "utils/logging.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -50,7 +49,9 @@ SearchEngine::SearchEngine(const Options &opts)
       log(utils::get_log_from_options(opts)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
-      search_space(state_registry),
+      search_space(state_registry, log),
+      search_progress(log),
+      statistics(log),
       cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")) {

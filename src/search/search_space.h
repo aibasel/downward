@@ -59,15 +59,16 @@ class SearchSpace {
     PerStateInformation<SearchNodeInfo> search_node_infos;
 
     StateRegistry &state_registry;
+    utils::LogProxy &log;
 public:
-    explicit SearchSpace(StateRegistry &state_registry);
+    SearchSpace(StateRegistry &state_registry, utils::LogProxy &log);
 
     SearchNode get_node(const GlobalState &state);
     void trace_path(const GlobalState &goal_state,
                     std::vector<OperatorID> &path) const;
 
-    void dump(const TaskProxy &task_proxy, utils::LogProxy &log) const;
-    void print_statistics(utils::LogProxy &log) const;
+    void dump(const TaskProxy &task_proxy) const;
+    void print_statistics() const;
 };
 
 #endif
