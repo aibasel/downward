@@ -1,13 +1,15 @@
 #ifndef MERGE_AND_SHRINK_MERGE_STRATEGY_FACTORY_H
 #define MERGE_AND_SHRINK_MERGE_STRATEGY_FACTORY_H
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <string>
 
 class TaskProxy;
 
-namespace utils {
-class LogProxy;
+namespace options {
+class Options;
 }
 
 namespace merge_and_shrink {
@@ -16,19 +18,22 @@ class MergeStrategy;
 
 class MergeStrategyFactory {
 protected:
+    mutable utils::LogProxy log;
+
     virtual std::string name() const = 0;
-    virtual void dump_strategy_specific_options(utils::LogProxy &log) const = 0;
+    virtual void dump_strategy_specific_options() const = 0;
 public:
-    MergeStrategyFactory() = default;
+    explicit MergeStrategyFactory(const options::Options &options);
     virtual ~MergeStrategyFactory() = default;
-    void dump_options(utils::LogProxy &log) const;
+    void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
-        const FactoredTransitionSystem &fts,
-        utils::LogProxy &log) = 0;
+        const FactoredTransitionSystem &fts) = 0;
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
 };
+
+extern void add_merge_strategy_options_to_parser(options::OptionParser &parser);
 }
 
 #endif

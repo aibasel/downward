@@ -23,6 +23,7 @@ enum class Verbosity {
     DEBUG
 };
 
+// Internal class encapsulated by LogProxy.
 class Log {
     std::ostream &stream;
     const Verbosity verbosity;
@@ -44,9 +45,6 @@ public:
 /*
   Simple logger that prepends time and peak memory info to messages.
   Logs are written to stdout.
-
-  Usage:
-        utils::g_log << "States: " << num_states << endl;
 */
 class LogProxy {
 private:
@@ -93,13 +91,17 @@ public:
     }
 };
 
+/*
+  In the long term, this should not be global anymore. Instead, local LogProxy
+  objects should be used everywhere. For classes constructed from the command
+  line, they are parsed from Options. For other classes and functions, they
+  must be passed in by the caller.
+*/
 extern LogProxy g_log;
 
 extern void add_log_options_to_parser(options::OptionParser &parser);
 
 extern LogProxy get_log_from_options(const options::Options &options);
-
-extern LogProxy make_silent_log();
 
 class TraceBlock {
     std::string block_name;

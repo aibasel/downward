@@ -53,10 +53,6 @@ LogProxy get_log_from_options(const options::Options &options) {
     return LogProxy(make_shared<Log>(options.get<Verbosity>("verbosity")));
 }
 
-LogProxy make_silent_log() {
-    return utils::LogProxy(make_shared<utils::Log>(utils::Verbosity::SILENT));
-}
-
 class MemoryTracer {
     // The following constants affect the formatting of output.
     static const int INDENT_AMOUNT = 2;

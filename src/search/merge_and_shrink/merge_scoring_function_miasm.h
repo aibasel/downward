@@ -5,10 +5,6 @@
 
 #include <memory>
 
-namespace options {
-class Options;
-}
-
 namespace merge_and_shrink {
 class ShrinkStrategy;
 class MergeScoringFunctionMIASM : public MergeScoringFunction {

@@ -21,7 +21,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const options::Options &options)
-    : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
+    : MergeScoringFunction(options),
+      atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
       product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
       random_seed(options.get<int>("random_seed")),
@@ -120,8 +121,7 @@ string MergeScoringFunctionTotalOrder::name() const {
     return "total order";
 }
 
-void MergeScoringFunctionTotalOrder::dump_function_specific_options(
-    utils::LogProxy &log) const {
+void MergeScoringFunctionTotalOrder::dump_function_specific_options() const {
     log << "Atomic transition system order: ";
     switch (atomic_ts_order) {
     case AtomicTSOrder::REVERSE_LEVEL:
@@ -199,6 +199,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
         "false");
 
     utils::add_rng_options(parser);
+    add_merge_scoring_function_options_to_parser(parser);
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {

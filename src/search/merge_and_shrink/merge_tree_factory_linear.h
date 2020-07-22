@@ -10,7 +10,7 @@ class MergeTreeFactoryLinear : public MergeTreeFactory {
     variable_order_finder::VariableOrderType variable_order_type;
 protected:
     virtual std::string name() const override;
-    virtual void dump_tree_specific_options(utils::LogProxy &log) const override;
+    virtual void dump_tree_specific_options() const override;
 public:
     explicit MergeTreeFactoryLinear(const options::Options &options);
     virtual ~MergeTreeFactoryLinear() override = default;

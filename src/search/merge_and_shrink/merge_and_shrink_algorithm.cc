@@ -71,7 +71,7 @@ void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
 void MergeAndShrinkAlgorithm::dump_options() const {
     if (log.is_at_least_normal()) {
         if (merge_strategy_factory) { // deleted after merge strategy extraction
-            merge_strategy_factory->dump_options(log);
+            merge_strategy_factory->dump_options();
             log << endl;
         }
 
@@ -177,7 +177,7 @@ void MergeAndShrinkAlgorithm::main_loop(
         label_reduction->initialize(task_proxy);
     }
     unique_ptr<MergeStrategy> merge_strategy =
-        merge_strategy_factory->compute_merge_strategy(task_proxy, fts, log);
+        merge_strategy_factory->compute_merge_strategy(task_proxy, fts);
     merge_strategy_factory = nullptr;
 
     auto log_main_loop_progress = [&timer, this](const string &msg) {

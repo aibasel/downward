@@ -32,7 +32,8 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
-    : order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
+    : MergeStrategyFactory(options),
+      order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
       merge_tree_factory(nullptr),
       merge_selector(nullptr) {
     if (options.contains("merge_tree")) {
@@ -44,9 +45,7 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &optio
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
-    const TaskProxy &task_proxy,
-    const FactoredTransitionSystem &fts,
-    utils::LogProxy &log) {
+    const TaskProxy &task_proxy, const FactoredTransitionSystem &fts) {
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
@@ -134,8 +133,7 @@ bool MergeStrategyFactorySCCs::requires_goal_distances() const {
     }
 }
 
-void MergeStrategyFactorySCCs::dump_strategy_specific_options(
-    utils::LogProxy &log) const {
+void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
     log << "Merge order of sccs: ";
     switch (order_of_sccs) {
     case OrderOfSCCs::TOPOLOGICAL:
@@ -155,10 +153,10 @@ void MergeStrategyFactorySCCs::dump_strategy_specific_options(
 
     log << "Merge strategy for merging within sccs: " << endl;
     if (merge_tree_factory) {
-        merge_tree_factory->dump_options(log);
+        merge_tree_factory->dump_options();
     }
     if (merge_selector) {
-        merge_selector->dump_options(log);
+        merge_selector->dump_options();
     }
 }
 
@@ -211,6 +209,8 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "the fallback merge strategy to use if a stateless strategy should "
         "be used.",
         options::OptionParser::NONE);
+
+    add_merge_strategy_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.help_mode()) {

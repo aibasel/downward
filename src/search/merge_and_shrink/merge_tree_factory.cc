@@ -5,7 +5,6 @@
 #include "../options/option_parser.h"
 #include "../options/plugin.h"
 
-#include "../utils/logging.h"
 #include "../utils/rng_options.h"
 #include "../utils/system.h"
 
@@ -16,10 +15,11 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(const options::Options &options)
     : rng(utils::parse_rng_from_options(options)),
-      update_option(options.get<UpdateOption>("update_option")) {
+      update_option(options.get<UpdateOption>("update_option")),
+      log(utils::get_log_from_options(options)) {
 }
 
-void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
+void MergeTreeFactory::dump_options() const {
     log << "Merge tree options: " << endl;
     log << "Type: " << name() << endl;
     log << "Update option: ";
@@ -35,7 +35,7 @@ void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
         break;
     }
     log << endl;
-    dump_tree_specific_options(log);
+    dump_tree_specific_options();
 }
 
 unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
@@ -64,6 +64,7 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
         "let the node represententing the index that would have been merged "
         "earlier (later) survive. use_random chooses a random node.",
         "use_random");
+    utils::add_log_options_to_parser(parser);
 }
 
 static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(

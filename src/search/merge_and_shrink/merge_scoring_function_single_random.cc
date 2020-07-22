@@ -17,7 +17,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     const options::Options &options)
-    : random_seed(options.get<int>("random_seed")),
+    : MergeScoringFunction(options),
+      random_seed(options.get<int>("random_seed")),
       rng(utils::parse_rng_from_options(options)) {
 }
 
@@ -42,8 +43,7 @@ string MergeScoringFunctionSingleRandom::name() const {
     return "single random";
 }
 
-void MergeScoringFunctionSingleRandom::dump_function_specific_options(
-    utils::LogProxy &log) const {
+void MergeScoringFunctionSingleRandom::dump_function_specific_options() const {
     log << "Random seed: " << random_seed << endl;
 }
 
@@ -53,6 +53,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "This scoring function assigns exactly one merge candidate a score of "
         "0, chosen randomly, and infinity to all others.");
     utils::add_rng_options(parser);
+    add_merge_scoring_function_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.dry_run())

@@ -4,14 +4,13 @@
 #include "merge_scoring_function.h"
 
 namespace merge_and_shrink {
-class TransitionSystem;
 class MergeScoringFunctionDFP : public MergeScoringFunction {
     std::vector<int> compute_label_ranks(
         const FactoredTransitionSystem &fts, int index) const;
 protected:
     virtual std::string name() const override;
 public:
-    MergeScoringFunctionDFP() = default;
+    explicit MergeScoringFunctionDFP(const options::Options &options);
     virtual ~MergeScoringFunctionDFP() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
