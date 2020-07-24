@@ -42,9 +42,8 @@ import subprocess
 import sys
 
 from lab.experiment import ARGPARSER
-from lab import tools
+from lab import cached_revision, tools
 
-from downward import cached_revision
 from downward.experiment import FastDownwardExperiment
 from downward.reports.absolute import AbsoluteReport
 
@@ -116,7 +115,7 @@ ABSOLUTE_ATTRIBUTES = [check.attribute for check in RELATIVE_CHECKS]
 
 def parse_custom_args():
     ARGPARSER.description = USAGE
-    ARGPARSER.add_argument('--rev', dest='revision', default='default',
+    ARGPARSER.add_argument('--rev', dest='revision', default='main',
         help='Fast Downward revision or "baseline".')
     ARGPARSER.add_argument('--test', choices=['nightly', 'weekly'], default='nightly',
         help='Select whether "nightly" or "weekly" tests should be run.')
@@ -150,7 +149,7 @@ def main():
         rev = BASELINE
         name = 'baseline'
     else:
-        rev = cached_revision.get_global_rev(REPO, vcs=cached_revision.MERCURIAL, rev=args.revision)
+        rev = cached_revision.get_global_rev(REPO, rev=args.revision)
         name = rev
 
     exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), revision_cache=REVISION_CACHE)

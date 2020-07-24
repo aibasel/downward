@@ -83,7 +83,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
 
     int num_propositions = propositions.size();
     for (PropID prop_id = 0; prop_id < num_propositions; ++prop_id) {
-        auto precondition_of_vec = move(precondition_of_vectors[prop_id]);
+        const auto &precondition_of_vec = precondition_of_vectors[prop_id];
         propositions[prop_id].precondition_of =
             precondition_of_pool.append(precondition_of_vec);
         propositions[prop_id].num_precondition_occurences = precondition_of_vec.size();

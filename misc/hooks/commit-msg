@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+"""
+Copy the content of this file to .git/hooks/commit-msg in the same repository
+to enable a commit message hook that automatically prepends '[<branch>] ' to
+all commits made on branch <branch> in this repository.
+
+Note that this hook will abort the commit if the commit message is empty or
+starts with '[' but does not conform to the above described form.
+"""
+
+import subprocess
+import sys
+
+if len(sys.argv) != 2:
+    sys.exit("Expected single argument containing path to file with commit "
+             "message")
+
+COMMIT_MESSAGE_FILE = sys.argv[1]
+BRANCH_NAME = subprocess.check_output(
+    ["git", "symbolic-ref", "--short", "-q", "HEAD"]).decode(
+        sys.stdout.encoding).rstrip("\n")
+COMMIT_MESSAGE_START = f"[{BRANCH_NAME}] "
+
+with open(COMMIT_MESSAGE_FILE, "r+") as f:
+    commit_message = f.readlines()
+    if not commit_message:
+        sys.exit("Empty commit message is not allowed")
+    first_line = commit_message[0]
+    if first_line.startswith("["):
+        if not first_line.startswith(COMMIT_MESSAGE_START):
+            sys.exit("Commit message starts with [ but not with the right " +
+                     f"identifier '{COMMIT_MESSAGE_START}'. Aborting commit.")
+    else:
+        new_commit_message = COMMIT_MESSAGE_START + "".join(commit_message)
+        print(f"Prepending '{COMMIT_MESSAGE_START}' to commit message")
+        f.seek(0) # Reset file pointer to start to overwrite write.
+        f.write(new_commit_message)
+
+sys.exit(0)

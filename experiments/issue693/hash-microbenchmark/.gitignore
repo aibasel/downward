@@ -1,0 +1,4 @@
+/.obj/
+/benchmark32
+/benchmark64
+/Makefile.depend
