@@ -8,9 +8,23 @@ creation of experiments. We recommend using common_setup.py (and related
 *.py files) from issue899 for new experiments since it is the most
 recent version.
 
+To isolate the Downward Lab versions used for different experiments and
+papers, we recommend using Python virtual environments. To create and
+activate a virtual environment for an issue experiment, use the
+following steps:
+
+    unset PYTHONPATH  # If PYTHONPATH is set, unset it for a clean environment.
+    cd issue899
+    python3 -m venv --prompt=issue899 .venv
+    source .venv/bin/activate  # enter the virtual environment
+    # list exact versions of your dependencies in a file (for example, lab==4.2)
+    pip install -r requirements.txt  # install dependencies
+    ./v1-opt.py 1 2 3 4  # run your experiment
+    deactivate  # leave the virtual environment
+
 Below we list some experiments that show how certain tasks can be
-performed. Some of them use Downward Lab's deprecated
-DownwardExperiment:
+performed. Please note that some of these experiments use outdated Lab and
+Python versions.
 
 - Test changes that affect the whole planner:
   - issue481/v1-*.py show the general setup. You will need different
@@ -37,8 +51,8 @@ DownwardExperiment:
 - RelativeScatterPlotReport:
   - issue77/issue77-v7-opt.py
 
-- M&S: configs and additional parsing and a check for availability of matplotlib
-  - issue849/v1.py and issue849/ms-parser.py
+- M&S: configs and additional parsing:
+  - issue914/v1.py and issue914/ms-parser.py
 
 - Run experiment in debug mode (with assertions):
   - issue650/v2.py

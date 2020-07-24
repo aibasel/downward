@@ -4,6 +4,7 @@
 
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 
 #include <algorithm>
 #include <cassert>
@@ -36,7 +37,8 @@ StubbornSets::StubbornSets(const options::Options &opts)
       num_expansions_before_checking_pruning_ratio(
           opts.get<int>("expansions_before_checking_pruning_ratio")),
       num_pruning_calls(0),
-      is_pruning_disabled(false) {
+      is_pruning_disabled(false),
+      timer(false) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
@@ -118,14 +120,16 @@ void StubbornSets::prune_operators(
         double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
             static_cast<double>(num_pruned_successors_generated) /
             static_cast<double>(num_unpruned_successors_generated));
-        cout << "Pruning ratio after " << num_expansions_before_checking_pruning_ratio
-             << " calls: " << pruning_ratio << endl;
+        utils::g_log << "Pruning ratio after " << num_expansions_before_checking_pruning_ratio
+                     << " calls: " << pruning_ratio << endl;
         if (pruning_ratio < min_required_pruning_ratio) {
-            cout << "-- pruning ratio is lower than minimum pruning ratio ("
-                 << min_required_pruning_ratio << ") -> switching off pruning" << endl;
+            utils::g_log << "-- pruning ratio is lower than minimum pruning ratio ("
+                         << min_required_pruning_ratio << ") -> switching off pruning" << endl;
             is_pruning_disabled = true;
         }
     }
+
+    timer.resume();
 
     num_unpruned_successors_generated += op_ids.size();
     ++num_pruning_calls;
@@ -154,13 +158,20 @@ void StubbornSets::prune_operators(
     op_ids.swap(remaining_op_ids);
 
     num_pruned_successors_generated += op_ids.size();
+
+    timer.stop();
 }
 
 void StubbornSets::print_statistics() const {
-    cout << "total successors before partial-order reduction: "
-         << num_unpruned_successors_generated << endl
-         << "total successors after partial-order reduction: "
-         << num_pruned_successors_generated << endl;
+    utils::g_log << "total successors before partial-order reduction: "
+                 << num_unpruned_successors_generated << endl
+                 << "total successors after partial-order reduction: "
+                 << num_pruned_successors_generated << endl;
+    double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
+        static_cast<double>(num_pruned_successors_generated) /
+        static_cast<double>(num_unpruned_successors_generated));
+    utils::g_log << "Pruning ratio: " << pruning_ratio << endl;
+    utils::g_log << "Time for pruning operators: " << timer << endl;
 }
 
 void add_pruning_options(options::OptionParser &parser) {

@@ -25,6 +25,6 @@ def get_peak_memory_in_kb():
                 parts = line.split()
                 if parts[0] == "VmPeak:":
                     return int(parts[1])
-    except IOError:
+    except OSError:
         pass
     raise Warning("warning: could not determine peak memory")

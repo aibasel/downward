@@ -3,6 +3,7 @@
 #include "option_parser.h"
 #include "plugin.h"
 
+#include "utils/logging.h"
 #include "utils/system.h"
 
 #include <cassert>
@@ -26,18 +27,18 @@ bool Evaluator::dead_ends_are_reliable() const {
 
 void Evaluator::report_value_for_initial_state(const EvaluationResult &result) const {
     assert(use_for_reporting_minima);
-    cout << "Initial heuristic value for " << description << ": ";
+    utils::g_log << "Initial heuristic value for " << description << ": ";
     if (result.is_infinite())
-        cout << "infinity";
+        utils::g_log << "infinity";
     else
-        cout << result.get_evaluator_value();
-    cout << endl;
+        utils::g_log << result.get_evaluator_value();
+    utils::g_log << endl;
 }
 
 void Evaluator::report_new_minimum_value(const EvaluationResult &result) const {
     assert(use_for_reporting_minima);
-    cout << "New best heuristic value for " << description << ": "
-         << result.get_evaluator_value() << endl;
+    utils::g_log << "New best heuristic value for " << description << ": "
+                 << result.get_evaluator_value() << endl;
 }
 
 const string &Evaluator::get_description() const {

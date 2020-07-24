@@ -4,6 +4,7 @@
 
 #include "../option_parser.h"
 
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 #ifdef USE_LP
@@ -39,7 +40,9 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
     lp_solvers_doc.push_back("commercial solver by IBM");
     lp_solvers.push_back("GUROBI");
     lp_solvers_doc.push_back("commercial solver");
-    parser.add_enum_option(
+    lp_solvers.push_back("SOPLEX");
+    lp_solvers_doc.push_back("open source solver by ZIB");
+    parser.add_enum_option<LPSolverType>(
         "lpsolver",
         lp_solvers,
         "external solver that should be used to solve linear programs",
@@ -115,12 +118,6 @@ void LPSolver::load_problem(LPObjectiveSense sense,
         row_ub.push_back(constraint.get_upper_bound());
     }
 
-    if (sense == LPObjectiveSense::MINIMIZE) {
-        lp_solver->setObjSense(1);
-    } else {
-        lp_solver->setObjSense(-1);
-    }
-
     for (const LPConstraint &constraint : constraints) {
         const vector<int> &vars = constraint.get_variables();
         const vector<double> &coeffs = constraint.get_coefficients();
@@ -156,6 +153,16 @@ void LPSolver::load_problem(LPObjectiveSense sense,
                                objective.data(),
                                row_lb.data(),
                                row_ub.data());
+        /*
+          We set the objective sense after loading because the SoPlex
+          interfaces of all OSI versions <= 0.108.4 ignore it when it is
+          set earlier. See issue752 for details.
+        */
+        if (sense == LPObjectiveSense::MINIMIZE) {
+            lp_solver->setObjSense(1);
+        } else {
+            lp_solver->setObjSense(-1);
+        }
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -348,8 +355,8 @@ int LPSolver::has_temporary_constraints() const {
 }
 
 void LPSolver::print_statistics() const {
-    cout << "LP variables: " << get_num_variables() << endl;
-    cout << "LP constraints: " << get_num_constraints() << endl;
+    utils::g_log << "LP variables: " << get_num_variables() << endl;
+    utils::g_log << "LP constraints: " << get_num_constraints() << endl;
 }
 
 #endif

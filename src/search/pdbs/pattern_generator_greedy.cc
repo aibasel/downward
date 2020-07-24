@@ -27,7 +27,7 @@ PatternGeneratorGreedy::PatternGeneratorGreedy(int max_states)
 
 PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
     utils::Timer timer;
-    cout << "Generating a pattern using the greedy generator..." << endl;
+    utils::g_log << "Generating a pattern using the greedy generator..." << endl;
     TaskProxy task_proxy(*task);
     Pattern pattern;
     variable_order_finder::VariableOrderFinder order(task_proxy, variable_order_finder::GOAL_CG_LEVEL);

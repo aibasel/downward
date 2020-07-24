@@ -10,13 +10,15 @@ class Options;
 namespace merge_and_shrink {
 class MergeTreeFactory;
 class MergeSelector;
+
+enum class OrderOfSCCs {
+    TOPOLOGICAL,
+    REVERSE_TOPOLOGICAL,
+    DECREASING,
+    INCREASING
+};
+
 class MergeStrategyFactorySCCs : public MergeStrategyFactory {
-    enum class OrderOfSCCs {
-        TOPOLOGICAL,
-        REVERSE_TOPOLOGICAL,
-        DECREASING,
-        INCREASING
-    };
     OrderOfSCCs order_of_sccs;
     std::shared_ptr<MergeTreeFactory> merge_tree_factory;
     std::shared_ptr<MergeSelector> merge_selector;

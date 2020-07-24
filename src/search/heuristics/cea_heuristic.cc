@@ -7,6 +7,7 @@
 #include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 #include <cassert>
 #include <limits>
@@ -413,7 +414,7 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const Options &opts)
     : Heuristic(opts),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
-    cout << "Initializing context-enhanced additive heuristic..." << endl;
+    utils::g_log << "Initializing context-enhanced additive heuristic..." << endl;
 
     DTGFactory factory(task_proxy, true, [](int, int) {return false;});
     transition_graphs = factory.build_dtgs();

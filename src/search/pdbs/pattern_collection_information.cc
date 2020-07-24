@@ -6,6 +6,7 @@
 
 #include "../task_proxy.h"
 
+#include "../utils/logging.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -58,14 +59,14 @@ void PatternCollectionInformation::create_pdbs_if_missing(
     assert(patterns);
     if (!pdbs) {
         utils::Timer timer;
-        cout << "Computing PDBs for pattern collection..." << endl;
+        utils::g_log << "Computing PDBs for pattern collection..." << endl;
         pdbs = make_shared<PDBCollection>();
         for (const Pattern &pattern : *patterns) {
             shared_ptr<PatternDatabase> pdb =
                 make_shared<PatternDatabase>(task_proxy, pattern);
             pdbs->push_back(pdb);
         }
-        cout << "Done computing PDBs for pattern collection: " << timer << endl;
+        utils::g_log << "Done computing PDBs for pattern collection: " << timer << endl;
     }
 }
 
@@ -73,11 +74,11 @@ void PatternCollectionInformation::create_pattern_cliques_if_missing(
     const TaskProxy &task_proxy) {
     if (!pattern_cliques) {
         utils::Timer timer;
-        cout << "Computing pattern cliques for pattern collection..." << endl;
+        utils::g_log << "Computing pattern cliques for pattern collection..." << endl;
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
         pattern_cliques = compute_pattern_cliques(*patterns, are_additive);
-        cout << "Done computing pattern cliques for pattern collection: "
-             << timer << endl;
+        utils::g_log << "Done computing pattern cliques for pattern collection: "
+                     << timer << endl;
     }
 }
 

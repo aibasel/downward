@@ -162,7 +162,7 @@ bool PatternCollectionGeneratorGenetic::mark_used_variables(
 void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values) {
     TaskProxy task_proxy(*task);
     for (const auto &collection : pattern_collections) {
-        //cout << "evaluate pattern collection " << (i + 1) << " of "
+        //utils::g_log << "evaluate pattern collection " << (i + 1) << " of "
         //     << pattern_collections.size() << endl;
         double fitness = 0;
         bool pattern_valid = true;
@@ -173,14 +173,14 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
             Pattern pattern = transform_to_pattern_normal_form(bitvector);
 
             if (is_pattern_too_large(pattern)) {
-                cout << "pattern exceeds the memory limit!" << endl;
+                utils::g_log << "pattern exceeds the memory limit!" << endl;
                 pattern_valid = false;
                 break;
             }
 
             if (disjoint_patterns) {
                 if (mark_used_variables(pattern, variables_used)) {
-                    cout << "patterns are not disjoint anymore!" << endl;
+                    utils::g_log << "patterns are not disjoint anymore!" << endl;
                     pattern_valid = false;
                     break;
                 }
@@ -201,7 +201,7 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
             // Update the best heuristic found so far.
             if (fitness > best_fitness) {
                 best_fitness = fitness;
-                cout << "best_fitness = " << best_fitness << endl;
+                utils::g_log << "best_fitness = " << best_fitness << endl;
                 best_patterns = pattern_collection;
             }
         }
@@ -263,8 +263,8 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm() {
     vector<double> initial_fitness_values;
     evaluate(initial_fitness_values);
     for (int i = 0; i < num_episodes; ++i) {
-        cout << endl;
-        cout << "--------- episode no " << (i + 1) << " ---------" << endl;
+        utils::g_log << endl;
+        utils::g_log << "--------- episode no " << (i + 1) << " ---------" << endl;
         mutate();
         vector<double> fitness_values;
         evaluate(fitness_values);
@@ -276,7 +276,7 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm() {
 PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     const shared_ptr<AbstractTask> &task_) {
     utils::Timer timer;
-    cout << "Generating patterns using the genetic generator..." << endl;
+    utils::g_log << "Generating patterns using the genetic generator..." << endl;
     task = task_;
     genetic_algorithm();
 

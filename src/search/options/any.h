@@ -16,6 +16,9 @@
     - references as values
     - perfect forwarding.
   These features can be added if needed (see boost::any).
+
+  Note that we don't use Boost's version of Any mainly because it would
+  require adding lots of files.
 */
 
 namespace options {

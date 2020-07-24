@@ -4,6 +4,8 @@
 
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <iostream>
 
@@ -41,8 +43,8 @@ vector<pair<int, int>> MergeSelector::compute_merge_candidates(
 }
 
 void MergeSelector::dump_options() const {
-    cout << "Merge selector options:" << endl;
-    cout << "Name: " << name() << endl;
+    utils::g_log << "Merge selector options:" << endl;
+    utils::g_log << "Name: " << name() << endl;
     dump_specific_options();
 }
 
@@ -51,6 +53,6 @@ static options::PluginTypePlugin<MergeSelector> _type_plugin(
     "This page describes the available merge selectors. They are used to "
     "compute the next merge purely based on the state of the given factored "
     "transition system. They are used in the merge strategy of type "
-    "'stateless', but they can also easily be used in different 'combined'"
+    "'stateless', but they can also easily be used in different 'combined' "
     "merged strategies.");
 }

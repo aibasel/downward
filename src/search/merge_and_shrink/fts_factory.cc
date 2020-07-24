@@ -11,6 +11,7 @@
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -76,9 +77,9 @@ class FTSFactory {
     void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
     vector<unique_ptr<TransitionSystem>> create_transition_systems(const Labels &labels);
-    vector<unique_ptr<MergeAndShrinkRepresentation>> create_mas_representations();
+    vector<unique_ptr<MergeAndShrinkRepresentation>> create_mas_representations() const;
     vector<unique_ptr<Distances>> create_distances(
-        const vector<unique_ptr<TransitionSystem>> &transition_systems);
+        const vector<unique_ptr<TransitionSystem>> &transition_systems) const;
 public:
     explicit FTSFactory(const TaskProxy &task_proxy);
     ~FTSFactory();
@@ -90,7 +91,7 @@ public:
     FactoredTransitionSystem create(
         bool compute_init_distances,
         bool compute_goal_distances,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 };
 
 
@@ -392,7 +393,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
     return result;
 }
 
-vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_representations() {
+vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_representations() const {
     // Create the actual MergeAndShrinkRepresentation objects.
     int num_variables = task_proxy.get_variables().size();
 
@@ -410,7 +411,7 @@ vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_represen
 }
 
 vector<unique_ptr<Distances>> FTSFactory::create_distances(
-    const vector<unique_ptr<TransitionSystem>> &transition_systems) {
+    const vector<unique_ptr<TransitionSystem>> &transition_systems) const {
     // Create the actual Distances objects.
     int num_variables = task_proxy.get_variables().size();
 
@@ -429,9 +430,9 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 FactoredTransitionSystem FTSFactory::create(
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    Verbosity verbosity) {
-    if (verbosity >= Verbosity::NORMAL) {
-        cout << "Building atomic transition systems... " << endl;
+    utils::Verbosity verbosity) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Building atomic transition systems... " << endl;
     }
 
     unique_ptr<Labels> labels = utils::make_unique_ptr<Labels>(create_labels());
@@ -459,7 +460,7 @@ FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     return FTSFactory(task_proxy).create(
         compute_init_distances,
         compute_goal_distances,

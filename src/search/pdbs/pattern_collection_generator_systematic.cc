@@ -204,7 +204,7 @@ void PatternCollectionGeneratorSystematic::build_patterns(
         enqueue_pattern_if_new(pattern);
 
 
-    cout << "Found " << sga_patterns.size() << " SGA patterns." << endl;
+    utils::g_log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
 
     /*
       Combine patterns in the queue with SGA patterns until all
@@ -234,7 +234,7 @@ void PatternCollectionGeneratorSystematic::build_patterns(
     }
 
     pattern_set.clear();
-    cout << "Found " << patterns->size() << " interesting patterns." << endl;
+    utils::g_log << "Found " << patterns->size() << " interesting patterns." << endl;
 }
 
 void PatternCollectionGeneratorSystematic::build_patterns_naive(
@@ -258,13 +258,13 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
         next_patterns.clear();
     }
 
-    cout << "Found " << patterns->size() << " patterns." << endl;
+    utils::g_log << "Found " << patterns->size() << " patterns." << endl;
 }
 
 PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     const shared_ptr<AbstractTask> &task) {
     utils::Timer timer;
-    cout << "Generating patterns using the systematic generator..." << endl;
+    utils::g_log << "Generating patterns using the systematic generator..." << endl;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
     if (only_interesting_patterns) {

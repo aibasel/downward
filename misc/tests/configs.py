@@ -57,6 +57,8 @@ def configs_optimal_core():
             "astar(blind(), pruning=stubborn_sets_simple())"],
         "blind-sss-ec": [
             "--search", "astar(blind(), pruning=stubborn_sets_ec())"],
+        "blind-atom-centric-sss": [
+            "--search", "astar(blind(), pruning=atom_centric_stubborn_sets())"],
     }
 
 

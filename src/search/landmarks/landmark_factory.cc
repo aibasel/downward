@@ -9,6 +9,7 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 #include "../utils/timer.h"
 
@@ -67,15 +68,15 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 
     // the following replaces the old "build_lm_graph"
     generate(task_proxy, exploration);
-    cout << "Landmarks generation time: " << lm_generation_timer << endl;
+    utils::g_log << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
-        cout << "Warning! No landmarks found. Task unsolvable?" << endl;
+        utils::g_log << "Warning! No landmarks found. Task unsolvable?" << endl;
     else {
-        cout << "Discovered " << lm_graph->number_of_landmarks()
-             << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
-             << " are disjunctive and "
-             << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
-             << lm_graph->number_of_edges() << " edges\n";
+        utils::g_log << "Discovered " << lm_graph->number_of_landmarks()
+                     << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
+                     << " are disjunctive and "
+                     << lm_graph->number_of_conj_landmarks() << " are conjunctive." << endl;
+        utils::g_log << lm_graph->number_of_edges() << " edges" << endl;
     }
     //lm_graph->dump();
     return lm_graph;
@@ -93,9 +94,9 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
     if (no_orders)
         discard_all_orderings();
     else if (reasonable_orders) {
-        cout << "approx. reasonable orders" << endl;
+        utils::g_log << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(task_proxy, false);
-        cout << "approx. obedient reasonable orders" << endl;
+        utils::g_log << "approx. obedient reasonable orders" << endl;
         approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
@@ -575,7 +576,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
 
     if (type == EdgeType::reasonable || type == EdgeType::obedient_reasonable) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
-            //cout << "edge in opposite direction exists" << endl;
+            //utils::g_log << "edge in opposite direction exists" << endl;
             if (from.parents.find(&to)->second > type) // Stronger order present, return
                 return;
             // Edge in opposite direction is weaker, delete
@@ -599,7 +600,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
         assert(to.parents.find(&from) == to.parents.end());
         from.children.emplace(&to, type);
         to.parents.emplace(&from, type);
-        //cout << "added parent with address " << &from << endl;
+        //utils::g_log << "added parent with address " << &from << endl;
     }
     assert(from.children.find(&to) != from.children.end());
     assert(to.parents.find(&from) != to.parents.end());
@@ -612,8 +613,8 @@ void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, E
             return !is_causal_landmark(task_proxy, exploration, node);
         });
     int num_causal_landmarks = lm_graph->number_of_landmarks();
-    cout << "Discarded " << num_all_landmarks - num_causal_landmarks
-         << " non-causal landmarks" << endl;
+    utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
+                 << " non-causal landmarks" << endl;
 }
 
 void LandmarkFactory::discard_disjunctive_landmarks() {
@@ -623,8 +624,8 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
       allow removing disjunctive landmarks after landmark generation.
     */
     if (lm_graph->number_of_disj_landmarks() > 0) {
-        cout << "Discarding " << lm_graph->number_of_disj_landmarks()
-             << " disjunctive landmarks" << endl;
+        utils::g_log << "Discarding " << lm_graph->number_of_disj_landmarks()
+                     << " disjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.disjunctive;});
     }
@@ -632,15 +633,15 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
 
 void LandmarkFactory::discard_conjunctive_landmarks() {
     if (lm_graph->number_of_conj_landmarks() > 0) {
-        cout << "Discarding " << lm_graph->number_of_conj_landmarks()
-             << " conjunctive landmarks" << endl;
+        utils::g_log << "Discarding " << lm_graph->number_of_conj_landmarks()
+                     << " conjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.conjunctive;});
     }
 }
 
 void LandmarkFactory::discard_all_orderings() {
-    cout << "Removing all orderings." << endl;
+    utils::g_log << "Removing all orderings." << endl;
     for (auto &node : lm_graph->get_nodes()) {
         node->children.clear();
         node->parents.clear();
@@ -657,8 +658,8 @@ void LandmarkFactory::mk_acyclic_graph() {
     // [Malte] Commented out the following assertion because
     // the old method for this is no longer available.
     // assert(acyclic_node_set.size() == number_of_landmarks());
-    cout << "Removed " << removed_edges
-         << " reasonable or obedient reasonable orders\n";
+    utils::g_log << "Removed " << removed_edges
+                 << " reasonable or obedient reasonable orders" << endl;
 }
 
 bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,

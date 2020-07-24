@@ -4,6 +4,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <vector>
 
@@ -25,7 +27,7 @@ namespace max_heuristic {
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
     : RelaxationHeuristic(opts) {
-    cout << "Initializing HSP max heuristic..." << endl;
+    utils::g_log << "Initializing HSP max heuristic..." << endl;
 }
 
 // heuristic computation
