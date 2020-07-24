@@ -1,7 +1,7 @@
 #ifndef OPERATOR_COUNTING_LM_CUT_CONSTRAINTS_H
 #define OPERATOR_COUNTING_LM_CUT_CONSTRAINTS_H
 
-#include  "constraint_generator.h"
+#include "constraint_generator.h"
 
 #include <memory>
 

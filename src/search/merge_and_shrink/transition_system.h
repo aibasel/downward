@@ -9,6 +9,10 @@
 #include <utility>
 #include <vector>
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace merge_and_shrink {
 class Distances;
 class LabelEquivalenceRelation;
@@ -150,7 +154,7 @@ public:
         const Labels &labels,
         const TransitionSystem &ts1,
         const TransitionSystem &ts2,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Applies the given state equivalence relation to the transition system.
@@ -162,7 +166,7 @@ public:
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Applies the given label mapping, mapping old to new label numbers. This

@@ -3,7 +3,7 @@ import logging
 from downward.reports.absolute import AbsoluteReport
 
 
-class Check(object):
+class Check:
     """
     Compare the attribute values x and y of two runs and check whether
     *min_rel* <= y/x <= *max_rel*. Even if the check fails, only report the
@@ -78,8 +78,8 @@ class RegressionCheckReport(AbsoluteReport):
         AbsoluteReport.write(self)
         markup = self.get_markup()
         if markup:
-            print 'There has been a regression:'
-            print
-            print markup
+            print('There has been a regression:')
+            print()
+            print(markup)
         success = not markup
         self.result_handler(success)

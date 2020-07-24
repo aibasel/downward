@@ -5,14 +5,16 @@
 
 #include "../plugin.h"
 
+#include "../utils/logging.h"
+
 #include <iostream>
 
 using namespace std;
 
 namespace merge_and_shrink {
 void ShrinkStrategy::dump_options() const {
-    cout << "Shrink strategy options: " << endl;
-    cout << "Type: " << name() << endl;
+    utils::g_log << "Shrink strategy options: " << endl;
+    utils::g_log << "Type: " << name() << endl;
     dump_strategy_specific_options();
 }
 

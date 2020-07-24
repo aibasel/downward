@@ -3,6 +3,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 
@@ -17,7 +18,7 @@ void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     interference_relation.resize(num_operators);
     interference_relation_computed.resize(num_operators, false);
-    cout << "pruning method: stubborn sets simple" << endl;
+    utils::g_log << "pruning method: stubborn sets simple" << endl;
 }
 
 const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {

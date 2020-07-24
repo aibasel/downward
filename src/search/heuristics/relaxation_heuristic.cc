@@ -2,6 +2,7 @@
 
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -69,7 +70,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     // Simplify unary operators.
     utils::Timer simplify_timer;
     simplify();
-    cout << "time to simplify: " << simplify_timer << endl;
+    utils::g_log << "time to simplify: " << simplify_timer << endl;
 
     // Cross-reference unary operators.
     vector<vector<OpID>> precondition_of_vectors(propositions.size());
@@ -82,7 +83,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
 
     int num_propositions = propositions.size();
     for (PropID prop_id = 0; prop_id < num_propositions; ++prop_id) {
-        auto precondition_of_vec = move(precondition_of_vectors[prop_id]);
+        const auto &precondition_of_vec = precondition_of_vectors[prop_id];
         propositions[prop_id].precondition_of =
             precondition_of_pool.append(precondition_of_vec);
         propositions[prop_id].num_precondition_occurences = precondition_of_vec.size();
@@ -170,7 +171,7 @@ void RelaxationHeuristic::simplify() {
 
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
-    cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
+    utils::g_log << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
     /*
       First, we create a map that maps the preconditions and effect
@@ -292,6 +293,6 @@ void RelaxationHeuristic::simplify() {
             is_dominated),
         unary_operators.end());
 
-    cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
+    utils::g_log << " done! [" << unary_operators.size() << " unary operators]" << endl;
 }
 }

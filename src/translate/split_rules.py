@@ -9,8 +9,7 @@ import pddl
 
 def get_connected_conditions(conditions):
     agraph = graph.Graph(conditions)
-    var_to_conditions = dict([(var, [])
-                              for var in get_variables(conditions)])
+    var_to_conditions = {var: [] for var in get_variables(conditions)}
     for cond in conditions:
         for var in cond.args:
             if var[0] == "?":
@@ -52,8 +51,8 @@ def split_rule(rule, name_generator):
     for proj_rule in projected_rules:
         result += split_into_binary_rules(proj_rule, name_generator)
 
-    conditions = [proj_rule.effect for proj_rule in projected_rules] + \
-                 trivial_conditions
+    conditions = ([proj_rule.effect for proj_rule in projected_rules] +
+                  trivial_conditions)
     combining_rule = Rule(conditions, rule.effect)
     if len(conditions) >= 2:
         combining_rule.type = "product"

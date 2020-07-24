@@ -6,6 +6,7 @@
 #include "../algorithms/ordered_set.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -42,7 +43,7 @@ void LazySearch::set_preferred_operator_evaluators(
 }
 
 void LazySearch::initialize() {
-    cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
+    utils::g_log << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
     assert(open_list);
     set<Evaluator *> evals;
@@ -116,7 +117,7 @@ void LazySearch::generate_successors() {
 
 SearchStatus LazySearch::fetch_next_state() {
     if (open_list->empty()) {
-        cout << "Completely explored state space -- no solution!" << endl;
+        utils::g_log << "Completely explored state space -- no solution!" << endl;
         return FAILED;
     }
 
@@ -173,7 +174,7 @@ SearchStatus LazySearch::step() {
             if (current_predecessor_id == StateID::no_state) {
                 node.open_initial();
                 if (search_progress.check_progress(current_eval_context))
-                    print_checkpoint_line(current_g);
+                    statistics.print_checkpoint_line(current_g);
             } else {
                 GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
                 SearchNode parent_node = search_space.get_node(parent_state);
@@ -189,7 +190,7 @@ SearchStatus LazySearch::step() {
             if (check_goal_and_set_plan(current_state))
                 return SOLVED;
             if (search_progress.check_progress(current_eval_context)) {
-                print_checkpoint_line(current_g);
+                statistics.print_checkpoint_line(current_g);
                 reward_progress();
             }
             generate_successors();
@@ -207,12 +208,6 @@ SearchStatus LazySearch::step() {
 
 void LazySearch::reward_progress() {
     open_list->boost_preferred();
-}
-
-void LazySearch::print_checkpoint_line(int g) const {
-    cout << "[g=" << g << ", ";
-    statistics.print_basic_statistics();
-    cout << "]" << endl;
 }
 
 void LazySearch::print_statistics() const {

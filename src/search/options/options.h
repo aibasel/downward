@@ -67,7 +67,6 @@ public:
         return get<std::vector<T>>(key);
     }
 
-    int get_enum(const std::string &key) const;
     bool contains(const std::string &key) const;
     const std::string &get_unparsed_config() const;
     void set_unparsed_config(const std::string &config);

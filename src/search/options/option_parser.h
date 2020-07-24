@@ -9,6 +9,7 @@
 #include "../utils/math.h"
 #include "../utils/strings.h"
 
+#include <cctype>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -68,6 +69,7 @@ public:
         const std::string &default_value = "",
         const Bounds &bounds = Bounds::unlimited());
 
+    template<typename T>
     void add_enum_option(
         const std::string &key,
         const std::vector<std::string> &names,
@@ -170,7 +172,9 @@ inline int TokenParser<int>::parse(OptionParser &parser) {
     char suffix = value.back();
     int factor = 1;
     if (isalpha(suffix)) {
-        assert(islower(suffix));
+        /* Option values from the command line are already lower case, but
+           default values specified in the code might be upper case. */
+        suffix = static_cast<char>(std::tolower(suffix));
         if (suffix == 'k') {
             factor = 1000;
         } else if (suffix == 'm') {
@@ -345,6 +349,75 @@ void OptionParser::add_option(
        default value, increment the argument position pointer. */
     if (!use_default && arg->key.empty()) {
         ++next_unparsed_argument;
+    }
+}
+
+template<typename T>
+void OptionParser::add_enum_option(
+    const std::string &key,
+    const std::vector<std::string> &names,
+    const std::string &help,
+    const std::string &default_value,
+    const std::vector<std::string> &docs) {
+    if (help_mode_) {
+        std::string enum_descr = "{";
+        for (size_t i = 0; i < names.size(); ++i) {
+            enum_descr += names[i];
+            if (i != names.size() - 1) {
+                enum_descr += ", ";
+            }
+        }
+        enum_descr += "}";
+
+        ValueExplanations value_explanations;
+        if (!docs.empty() && docs.size() != names.size()) {
+            ABORT("Please provide documentation for all or none of the values of " + key);
+        }
+        for (size_t i = 0; i < docs.size(); ++i) {
+            value_explanations.emplace_back(names[i], docs[i]);
+        }
+
+        registry.add_plugin_info_arg(
+            get_root_value(), key, help, enum_descr, default_value,
+            Bounds::unlimited(), value_explanations);
+        return;
+    }
+
+    // Enum arguments can be given by name or by number.
+    // First, parse the corresponding string like a normal argument ...
+    add_option<std::string>(key, help, default_value);
+
+    if (!opts.contains(key))
+        return;
+
+    std::string value = opts.get<std::string>(key);
+
+    // ... then check if the parsed string can be treated as a number.
+    std::istringstream stream(value);
+    int choice;
+    if (!(stream >> choice).fail()) {
+        int max_choice = names.size();
+        if (choice > max_choice) {
+            error("invalid enum argument " + value + " for option " + key);
+        }
+        opts.set<T>(key, static_cast<T>(choice));
+    } else {
+        // ... otherwise map the string to its position in the enumeration vector.
+        auto it = find_if(names.begin(), names.end(),
+                          [&](const std::string &name) {
+                              if (name.size() != value.size())
+                                  return false;
+                              for (size_t i = 0; i < value.size(); ++i) {
+                                  // Ignore case.
+                                  if (tolower(name[i]) != tolower(value[i]))
+                                      return false;
+                              }
+                              return true;
+                          });
+        if (it == names.end()) {
+            error("invalid enum argument " + value + " for option " + key);
+        }
+        opts.set<T>(key, static_cast<T>(it - names.begin()));
     }
 }
 

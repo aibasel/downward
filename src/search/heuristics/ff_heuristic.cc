@@ -5,6 +5,7 @@
 #include "../plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 #include <cassert>
 
@@ -15,7 +16,7 @@ namespace ff_heuristic {
 FFHeuristic::FFHeuristic(const Options &opts)
     : AdditiveHeuristic(opts),
       relaxed_plan(task_proxy.get_operators().size(), false) {
-    cout << "Initializing FF heuristic..." << endl;
+    utils::g_log << "Initializing FF heuristic..." << endl;
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(

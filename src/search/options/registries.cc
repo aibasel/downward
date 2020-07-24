@@ -61,7 +61,7 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
         }
     }
 
-    for (auto it : occurrences_names) {
+    for (auto &it : occurrences_names) {
         if (it.second.size() > 1) {
             errors.push_back(
                 "Multiple definitions for PluginTypePlugin " + it.first +
@@ -72,7 +72,7 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
                             ", ") + ")");
         }
     }
-    for (auto it : occurrences_types) {
+    for (auto &it : occurrences_types) {
         if (it.second.size() > 1) {
             errors.push_back(
                 "Multiple definitions for PluginTypePlugin of type " +
@@ -80,7 +80,7 @@ void Registry::insert_plugin_types(const RawRegistry &raw_registry,
                 " (names: " + utils::join(it.second, ", ") + ")");
         }
     }
-    for (auto it : occurrences_predefinition) {
+    for (auto &it : occurrences_predefinition) {
         if (it.second.size() > 1) {
             errors.push_back("Multiple PluginTypePlugins use the predefinition "
                              "key " + it.first + " (types: " +
@@ -99,7 +99,7 @@ void Registry::insert_plugin_groups(const RawRegistry &raw_registry,
         }
     }
 
-    for (auto it : occurrences) {
+    for (auto &it : occurrences) {
         if (it.second > 1) {
             errors.push_back("Multiple definitions (" + to_string(it.second) +
                              ") for PluginGroupPlugin " + it.first);
@@ -137,7 +137,7 @@ void Registry::insert_plugins(const RawRegistry &raw_registry,
         }
     }
 
-    for (auto it : occurrences) {
+    for (auto &it : occurrences) {
         if (it.second.size() > 1) {
             errors.push_back(
                 "Multiple definitions for Plugin " + it.first + " (types: " +
@@ -171,7 +171,7 @@ const PluginTypeInfo &Registry::get_type_info(const type_index &type) const {
 
 vector<PluginTypeInfo> Registry::get_sorted_type_infos() const {
     vector<PluginTypeInfo> types;
-    for (auto it : plugin_type_infos) {
+    for (auto &it : plugin_type_infos) {
         types.push_back(it.second);
     }
     sort(types.begin(), types.end());

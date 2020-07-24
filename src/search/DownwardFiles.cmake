@@ -322,6 +322,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME STUBBORN_SETS_ATOM_CENTRIC
+    HELP "Atom-centric stubborn sets"
+    SOURCES
+        pruning/stubborn_sets_atom_centric
+    DEPENDS STUBBORN_SETS
+)
+
+fast_downward_plugin(
     NAME STUBBORN_SETS_SIMPLE
     HELP "Stubborn sets simple"
     SOURCES
@@ -645,7 +653,6 @@ fast_downward_plugin(
         merge_and_shrink/merge_selector
         merge_and_shrink/merge_selector_score_based_filtering
         merge_and_shrink/merge_strategy
-        merge_and_shrink/merge_strategy_aliases
         merge_and_shrink/merge_strategy_factory
         merge_and_shrink/merge_strategy_factory_precomputed
         merge_and_shrink/merge_strategy_factory_sccs

@@ -4,6 +4,8 @@
 #include "../abstract_task.h"
 #include "../pruning_method.h"
 
+#include "../utils/timer.h"
+
 namespace options {
 class OptionParser;
 }
@@ -18,12 +20,9 @@ class StubbornSets : public PruningMethod {
     int num_pruning_calls;
     bool is_pruning_disabled;
 
+    utils::Timer timer;
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
-
-    /* stubborn[op_no] is true iff the operator with operator index
-       op_no is contained in the stubborn set */
-    std::vector<bool> stubborn;
 
     /*
       stubborn_queue contains the operator indices of operators that
@@ -49,6 +48,10 @@ protected:
     /* achievers[var][value] contains all operator indices of
        operators that achieve the fact (var, value). */
     std::vector<std::vector<std::vector<int>>> achievers;
+
+    /* stubborn[op_no] is true iff the operator with operator index
+       op_no is contained in the stubborn set */
+    std::vector<bool> stubborn;
 
     bool can_disable(int op1_no, int op2_no) const;
     bool can_conflict(int op1_no, int op2_no) const;
@@ -85,7 +88,7 @@ protected:
         return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
     }
 
-    // Returns true iff the operators was enqueued.
+    // Return true iff the operator was enqueued.
     // TODO: rename to enqueue_stubborn_operator?
     bool mark_as_stubborn(int op_no);
     virtual void initialize_stubborn_set(const State &state) = 0;

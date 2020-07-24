@@ -1,11 +1,9 @@
-from __future__ import print_function
-
 import sys
 
 import pddl
 import pddl_to_prolog
 
-class OccurrencesTracker(object):
+class OccurrencesTracker:
     """Keeps track of the number of times each variable appears
     in a list of symbolic atoms."""
     def __init__(self, rule):
@@ -25,7 +23,7 @@ class OccurrencesTracker(object):
     def variables(self):
         return set(self.occurrences)
 
-class CostMatrix(object):
+class CostMatrix:
     def __init__(self, joinees):
         self.joinees = []
         self.cost_matrix = []
@@ -68,7 +66,7 @@ class CostMatrix(object):
     def can_join(self):
         return len(self.joinees) >= 2
 
-class ResultList(object):
+class ResultList:
     def __init__(self, rule, name_generator):
         self.final_effect = rule.effect
         self.result = []
@@ -106,7 +104,7 @@ def greedy_join(rule, name_generator):
         cost_matrix.add_entry(joint_condition)
         occurrences.update(joint_condition, +1)
 
-    #assert occurrences.variables() == set(rule.effect.args)
-    #for var in set(rule.effect.args):
-    #  assert occurrences.occurrences[var] == 2 * rule.effect.args.count(var)
+    # assert occurrences.variables() == set(rule.effect.args)
+    # for var in set(rule.effect.args):
+    #     assert occurrences.occurrences[var] == 2 * rule.effect.args.count(var)
     return result.get_result()

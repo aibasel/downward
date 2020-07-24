@@ -1,6 +1,7 @@
 #include "variable_order_finder.h"
 
 #include "../task_utils/causal_graph.h"
+#include "../utils/logging.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -102,29 +103,29 @@ int VariableOrderFinder::next() {
 }
 
 void dump_variable_order_type(VariableOrderType variable_order_type) {
-    cout << "Variable order type: ";
+    utils::g_log << "Variable order type: ";
     switch (variable_order_type) {
     case CG_GOAL_LEVEL:
-        cout << "CG/GOAL, tie breaking on level (main)";
+        utils::g_log << "CG/GOAL, tie breaking on level (main)";
         break;
     case CG_GOAL_RANDOM:
-        cout << "CG/GOAL, tie breaking random";
+        utils::g_log << "CG/GOAL, tie breaking random";
         break;
     case GOAL_CG_LEVEL:
-        cout << "GOAL/CG, tie breaking on level";
+        utils::g_log << "GOAL/CG, tie breaking on level";
         break;
     case RANDOM:
-        cout << "random";
+        utils::g_log << "random";
         break;
     case LEVEL:
-        cout << "by level";
+        utils::g_log << "by level";
         break;
     case REVERSE_LEVEL:
-        cout << "by reverse level";
+        utils::g_log << "by reverse level";
         break;
     default:
         ABORT("Unknown variable order type.");
     }
-    cout << endl;
+    utils::g_log << endl;
 }
 }

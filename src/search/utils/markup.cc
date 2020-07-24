@@ -34,8 +34,10 @@ string format_conference_reference(
     ss << "\n\n"
        << " * " << format_authors(authors) << ".<<BR>>\n"
        << " [" << t2t_escape(title) << " " << url << "].<<BR>>\n"
-       << " In //" << t2t_escape(conference) << "//,"
-       << " pp. " << t2t_escape(pages) << ". ";
+       << " In //" << t2t_escape(conference) << "//";
+    if (!pages.empty())
+        ss << ", pp. " << t2t_escape(pages);
+    ss << ". ";
     if (!publisher.empty())
         ss << t2t_escape(publisher) << ", ";
     ss << t2t_escape(year) << ".\n\n\n";

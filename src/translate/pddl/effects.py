@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from . import conditions
 
 def cartesian_product(*sequences):
@@ -13,7 +11,7 @@ def cartesian_product(*sequences):
                 yield (item,) + tup
 
 
-class Effect(object):
+class Effect:
     def __init__(self, parameters, condition, literal):
         self.parameters = parameters
         self.condition = condition
@@ -74,7 +72,7 @@ class Effect(object):
         return Effect(self.parameters, self.condition.simplified(), self.literal)
 
 
-class ConditionalEffect(object):
+class ConditionalEffect:
     def __init__(self, condition, effect):
         if isinstance(effect, ConditionalEffect):
             self.condition = conditions.Conjunction([condition, effect.condition])
@@ -104,7 +102,7 @@ class ConditionalEffect(object):
     def extract_cost(self):
         return None, self
 
-class UniversalEffect(object):
+class UniversalEffect:
     def __init__(self, parameters, effect):
         if isinstance(effect, UniversalEffect):
             self.parameters = parameters + effect.parameters
@@ -129,7 +127,7 @@ class UniversalEffect(object):
     def extract_cost(self):
         return None, self
 
-class ConjunctiveEffect(object):
+class ConjunctiveEffect:
     def __init__(self, effects):
         flattened_effects = []
         for effect in effects:
@@ -157,7 +155,7 @@ class ConjunctiveEffect(object):
                 new_effects.append(effect)
         return cost_effect, ConjunctiveEffect(new_effects)
 
-class SimpleEffect(object):
+class SimpleEffect:
     def __init__(self, effect):
         self.effect = effect
     def dump(self, indent="  "):
@@ -167,7 +165,7 @@ class SimpleEffect(object):
     def extract_cost(self):
         return None, self
 
-class CostEffect(object):
+class CostEffect:
     def __init__(self, effect):
         self.effect = effect
     def dump(self, indent="  "):
@@ -175,5 +173,5 @@ class CostEffect(object):
     def normalize(self):
         return self
     def extract_cost(self):
-        return self, None # this would only happen if
-    #an action has no effect apart from the cost effect
+        # This only happens if an action has no effect apart from the cost effect.
+        return self, None

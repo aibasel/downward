@@ -6,6 +6,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class ShrinkStrategy;
@@ -50,7 +54,7 @@ extern bool shrink_before_merge_step(
     int max_states_before_merge,
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
-    Verbosity verbosity);
+    utils::Verbosity verbosity);
 
 /*
   Prune unreachable and/or irrelevant states of the factor at index. This
@@ -64,7 +68,7 @@ extern bool prune_step(
     int index,
     bool prune_unreachable_states,
     bool prune_irrelevant_states,
-    Verbosity verbosity);
+    utils::Verbosity verbosity);
 
 /*
   Compute the abstraction mapping based on the given state equivalence

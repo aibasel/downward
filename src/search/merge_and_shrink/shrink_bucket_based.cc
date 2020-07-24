@@ -1,5 +1,6 @@
 #include "shrink_bucket_based.h"
 
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -52,8 +53,8 @@ StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(
                     equiv_relation.push_back(StateEquivalenceClass());
                 if (show_combine_buckets_warning) {
                     show_combine_buckets_warning = false;
-                    cout << "Very small node limit, must combine buckets."
-                         << endl;
+                    utils::g_log << "Very small node limit, must combine buckets."
+                                 << endl;
                 }
             }
             StateEquivalenceClass &group = equiv_relation.back();

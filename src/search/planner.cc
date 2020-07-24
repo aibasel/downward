@@ -5,6 +5,7 @@
 #include "options/registries.h"
 #include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
+#include "../utils/logging.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -17,15 +18,15 @@ int main(int argc, const char **argv) {
     utils::register_event_handlers();
 
     if (argc < 2) {
-        cout << usage(argv[0]) << endl;
+        utils::g_log << usage(argv[0]) << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
     bool unit_cost = false;
     if (static_cast<string>(argv[1]) != "--help") {
-        cout << "reading input... [t=" << utils::g_timer << "]" << endl;
+        utils::g_log << "reading input..." << endl;
         tasks::read_root_task(cin);
-        cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
+        utils::g_log << "done reading input!" << endl;
         TaskProxy task_proxy(*tasks::g_root_task);
         unit_cost = task_properties::is_unit_cost(task_proxy);
     }
@@ -58,8 +59,8 @@ int main(int argc, const char **argv) {
 
     engine->save_plan_if_necessary();
     engine->print_statistics();
-    cout << "Search time: " << search_timer << endl;
-    cout << "Total time: " << utils::g_timer << endl;
+    utils::g_log << "Search time: " << search_timer << endl;
+    utils::g_log << "Total time: " << utils::g_timer << endl;
 
     ExitCode exitcode = engine->found_solution()
         ? ExitCode::SUCCESS

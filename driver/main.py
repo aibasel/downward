@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-
 import logging
 import os
 import sys
@@ -9,6 +6,7 @@ from . import aliases
 from . import arguments
 from . import cleanup
 from . import run_components
+from . import __version__
 
 
 def main():
@@ -17,6 +15,10 @@ def main():
                         format="%(levelname)-8s %(message)s",
                         stream=sys.stdout)
     logging.debug("processed args: %s" % args)
+
+    if args.version:
+        print(__version__)
+        sys.exit()
 
     if args.show_aliases:
         aliases.show_aliases()
@@ -39,8 +41,8 @@ def main():
             (exitcode, continue_execution) = run_components.run_validate(args)
         else:
             assert False, "Error: unhandled component: {}".format(component)
-        print()
         print("{component} exit code: {exitcode}".format(**locals()))
+        print()
         if not continue_execution:
             print("Driver aborting after {}".format(component))
             break

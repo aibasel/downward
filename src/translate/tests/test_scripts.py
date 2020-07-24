@@ -1,5 +1,6 @@
 import os.path
 import subprocess
+import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 TRANSLATE_DIR = os.path.dirname(DIR)
@@ -21,4 +22,4 @@ def test_scripts():
     for script in SCRIPTS:
         script = os.path.join(TRANSLATE_DIR, script)
         folder, filename = os.path.split(script)
-        assert subprocess.check_call(["python", filename, DOMAIN, PROBLEM], cwd=folder) == 0
+        assert subprocess.check_call([sys.executable, filename, DOMAIN, PROBLEM], cwd=folder) == 0

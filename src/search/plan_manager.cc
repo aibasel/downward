@@ -3,6 +3,7 @@
 #include "task_proxy.h"
 
 #include "task_utils/task_properties.h"
+#include "utils/logging.h"
 
 #include <fstream>
 #include <iostream>
@@ -64,7 +65,7 @@ void PlanManager::save_plan(
     outfile << "; cost = " << plan_cost << " ("
             << (is_unit_cost ? "unit cost" : "general cost") << ")" << endl;
     outfile.close();
-    cout << "Plan length: " << plan.size() << " step(s)." << endl;
-    cout << "Plan cost: " << plan_cost << endl;
+    utils::g_log << "Plan length: " << plan.size() << " step(s)." << endl;
+    utils::g_log << "Plan cost: " << plan_cost << endl;
     ++num_previously_generated_plans;
 }

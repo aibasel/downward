@@ -3,12 +3,4 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
-cd ..
-
-./misc/style/run-all-style-checks.py
-
-set -x
-./build.py
-./build.py --debug
-
-./misc/tests/run-all-code-tests
+tox

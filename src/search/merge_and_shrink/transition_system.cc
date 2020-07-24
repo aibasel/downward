@@ -5,6 +5,7 @@
 #include "labels.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -115,10 +116,10 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     const Labels &labels,
     const TransitionSystem &ts1,
     const TransitionSystem &ts2,
-    Verbosity verbosity) {
-    if (verbosity >= Verbosity::VERBOSE) {
-        cout << "Merging " << ts1.get_description() << " and "
-             << ts2.get_description() << endl;
+    utils::Verbosity verbosity) {
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        utils::g_log << "Merging " << ts1.get_description() << " and "
+                     << ts2.get_description() << endl;
     }
 
     assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
@@ -162,7 +163,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     */
     int multiplier = ts2_size;
     vector<int> dead_labels;
-    for (const GroupAndTransitions &gat : ts1) {
+    for (GroupAndTransitions gat : ts1) {
         const LabelGroup &group1 = gat.label_group;
         const vector<Transition> &transitions1 = gat.transitions;
 
@@ -267,15 +268,15 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 void TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
-    Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
     assert(in_sync_with_label_equivalence_relation());
 
     int new_num_states = state_equivalence_relation.size();
     assert(new_num_states < num_states);
-    if (verbosity >= Verbosity::VERBOSE) {
-        cout << tag() << "applying abstraction (" << get_size()
-             << " to " << new_num_states << " states)" << endl;
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        utils::g_log << tag() << "applying abstraction (" << get_size()
+                     << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
@@ -323,8 +324,8 @@ void TransitionSystem::apply_abstraction(
 
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
-    if (verbosity >= Verbosity::VERBOSE && init_state == PRUNED_STATE) {
-        cout << tag() << "initial state pruned; task unsolvable" << endl;
+    if (verbosity >= utils::Verbosity::VERBOSE && init_state == PRUNED_STATE) {
+        utils::g_log << tag() << "initial state pruned; task unsolvable" << endl;
     }
 
     assert(are_transitions_sorted_unique());
@@ -410,19 +411,10 @@ void TransitionSystem::apply_label_reduction(
           label groups of label_equivalence_relation.
         */
         for (size_t i = 0; i < label_mapping.size(); ++i) {
-            int new_label_no = label_mapping[i].first;
             vector<Transition> &transitions = new_transitions[i];
-            int new_group_id = label_equivalence_relation->get_group_id(new_label_no);
-            if (!utils::in_bounds(new_group_id, transitions_by_group_id)) {
-                /* Labels reduced to new_label_no were not locally equivalent
-                   and hence assigned to a new group. */
-                assert(new_group_id == static_cast<int>(transitions_by_group_id.size()));
-                transitions_by_group_id.push_back(move(transitions));
-            } else {
-                /* Labels reduced to new_label_no were locally equivalent before
-                   and hence the new label is part of the same group. */
-                transitions_by_group_id[new_group_id] = move(transitions);
-            }
+            assert(label_equivalence_relation->get_group_id(label_mapping[i].first)
+                   == static_cast<int>(transitions_by_group_id.size()));
+            transitions_by_group_id.push_back(move(transitions));
         }
 
         // Go over all affected group IDs and remove their transitions if the
@@ -447,7 +439,7 @@ string TransitionSystem::tag() const {
 }
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         if (!utils::is_sorted_unique(gat.transitions))
             return false;
     }
@@ -471,7 +463,7 @@ bool TransitionSystem::is_solvable(const Distances &distances) const {
 
 int TransitionSystem::compute_total_transitions() const {
     int total = 0;
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         total += gat.transitions.size();
     }
     return total;
@@ -490,67 +482,67 @@ string TransitionSystem::get_description() const {
 
 void TransitionSystem::dump_dot_graph() const {
     assert(are_transitions_sorted_unique());
-    cout << "digraph transition_system";
+    utils::g_log << "digraph transition_system";
     for (size_t i = 0; i < incorporated_variables.size(); ++i)
-        cout << "_" << incorporated_variables[i];
-    cout << " {" << endl;
-    cout << "    node [shape = none] start;" << endl;
+        utils::g_log << "_" << incorporated_variables[i];
+    utils::g_log << " {" << endl;
+    utils::g_log << "    node [shape = none] start;" << endl;
     for (int i = 0; i < num_states; ++i) {
         bool is_init = (i == init_state);
         bool is_goal = goal_states[i];
-        cout << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
-             << "] node" << i << ";" << endl;
+        utils::g_log << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
+                     << "] node" << i << ";" << endl;
         if (is_init)
-            cout << "    start -> node" << i << ";" << endl;
+            utils::g_log << "    start -> node" << i << ";" << endl;
     }
-    for (const GroupAndTransitions &gat : *this) {
+    for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
         const vector<Transition> &transitions = gat.transitions;
         for (const Transition &transition : transitions) {
             int src = transition.src;
             int target = transition.target;
-            cout << "    node" << src << " -> node" << target << " [label = ";
+            utils::g_log << "    node" << src << " -> node" << target << " [label = ";
             for (LabelConstIter label_it = label_group.begin();
                  label_it != label_group.end(); ++label_it) {
                 if (label_it != label_group.begin())
-                    cout << "_";
-                cout << "x" << *label_it;
+                    utils::g_log << "_";
+                utils::g_log << "x" << *label_it;
             }
-            cout << "];" << endl;
+            utils::g_log << "];" << endl;
         }
     }
-    cout << "}" << endl;
+    utils::g_log << "}" << endl;
 }
 
 void TransitionSystem::dump_labels_and_transitions() const {
-    cout << tag() << "transitions" << endl;
-    for (const GroupAndTransitions &gat : *this) {
+    utils::g_log << tag() << "transitions" << endl;
+    for (GroupAndTransitions gat : *this) {
         const LabelGroup &label_group = gat.label_group;
-//        cout << "group ID: " << ts_it.get_id() << endl;
-        cout << "labels: ";
+//        utils::g_log << "group ID: " << ts_it.get_id() << endl;
+        utils::g_log << "labels: ";
         for (LabelConstIter label_it = label_group.begin();
              label_it != label_group.end(); ++label_it) {
             if (label_it != label_group.begin())
-                cout << ",";
-            cout << *label_it;
+                utils::g_log << ",";
+            utils::g_log << *label_it;
         }
-        cout << endl;
-        cout << "transitions: ";
+        utils::g_log << endl;
+        utils::g_log << "transitions: ";
         const vector<Transition> &transitions = gat.transitions;
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
             if (i != 0)
-                cout << ",";
-            cout << src << " -> " << target;
+                utils::g_log << ",";
+            utils::g_log << src << " -> " << target;
         }
-        cout << endl;
-        cout << "cost: " << label_group.get_cost() << endl;
+        utils::g_log << endl;
+        utils::g_log << "cost: " << label_group.get_cost() << endl;
     }
 }
 
 void TransitionSystem::statistics() const {
-    cout << tag() << get_size() << " states, "
-         << compute_total_transitions() << " arcs " << endl;
+    utils::g_log << tag() << get_size() << " states, "
+                 << compute_total_transitions() << " arcs " << endl;
 }
 }

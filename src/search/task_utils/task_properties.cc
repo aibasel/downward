@@ -1,5 +1,6 @@
 #include "task_properties.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -107,34 +108,34 @@ void print_variable_statistics(const TaskProxy &task_proxy) {
     for (VariableProxy var : variables)
         num_facts += var.get_domain_size();
 
-    cout << "Variables: " << variables.size() << endl;
-    cout << "FactPairs: " << num_facts << endl;
-    cout << "Bytes per state: "
-         << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
-         << endl;
+    utils::g_log << "Variables: " << variables.size() << endl;
+    utils::g_log << "FactPairs: " << num_facts << endl;
+    utils::g_log << "Bytes per state: "
+                 << state_packer.get_num_bins() * sizeof(int_packer::IntPacker::Bin)
+                 << endl;
 }
 
 void dump_pddl(const State &state) {
     for (FactProxy fact : state) {
         string fact_name = fact.get_name();
         if (fact_name != "<none of those>")
-            cout << fact_name << endl;
+            utils::g_log << fact_name << endl;
     }
 }
 
 void dump_fdr(const State &state) {
     for (FactProxy fact : state) {
         VariableProxy var = fact.get_variable();
-        cout << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
-             << fact.get_value() << endl;
+        utils::g_log << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
+                     << fact.get_value() << endl;
     }
 }
 
 void dump_goals(const GoalsProxy &goals) {
-    cout << "Goal conditions:" << endl;
+    utils::g_log << "Goal conditions:" << endl;
     for (FactProxy goal : goals) {
-        cout << "  " << goal.get_variable().get_name() << ": "
-             << goal.get_value() << endl;
+        utils::g_log << "  " << goal.get_variable().get_name() << ": "
+                     << goal.get_value() << endl;
     }
 }
 
@@ -146,22 +147,22 @@ void dump_task(const TaskProxy &task_proxy) {
         min_action_cost = min(min_action_cost, op.get_cost());
         max_action_cost = max(max_action_cost, op.get_cost());
     }
-    cout << "Min action cost: " << min_action_cost << endl;
-    cout << "Max action cost: " << max_action_cost << endl;
+    utils::g_log << "Min action cost: " << min_action_cost << endl;
+    utils::g_log << "Max action cost: " << max_action_cost << endl;
 
     VariablesProxy variables = task_proxy.get_variables();
-    cout << "Variables (" << variables.size() << "):" << endl;
+    utils::g_log << "Variables (" << variables.size() << "):" << endl;
     for (VariableProxy var : variables) {
-        cout << "  " << var.get_name()
-             << " (range " << var.get_domain_size() << ")" << endl;
+        utils::g_log << "  " << var.get_name()
+                     << " (range " << var.get_domain_size() << ")" << endl;
         for (int val = 0; val < var.get_domain_size(); ++val) {
-            cout << "    " << val << ": " << var.get_fact(val).get_name() << endl;
+            utils::g_log << "    " << val << ": " << var.get_fact(val).get_name() << endl;
         }
     }
     State initial_state = task_proxy.get_initial_state();
-    cout << "Initial state (PDDL):" << endl;
+    utils::g_log << "Initial state (PDDL):" << endl;
     dump_pddl(initial_state);
-    cout << "Initial state (FDR):" << endl;
+    utils::g_log << "Initial state (FDR):" << endl;
     dump_fdr(initial_state);
     dump_goals(task_proxy.get_goals());
 }

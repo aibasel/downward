@@ -1,5 +1,7 @@
 #include "memory.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <iostream>
 
@@ -13,7 +15,7 @@ static void (*standard_out_of_memory_handler)() = nullptr;
 
 void continuing_out_of_memory_handler() {
     release_extra_memory_padding();
-    cout << "Failed to allocate memory. Released extra memory padding." << endl;
+    utils::g_log << "Failed to allocate memory. Released extra memory padding." << endl;
 }
 
 void reserve_extra_memory_padding(int memory_in_mb) {

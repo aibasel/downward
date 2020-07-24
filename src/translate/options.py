@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import argparse
 import sys
 
@@ -54,6 +52,11 @@ def parse_args():
     argparser.add_argument(
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
+    argparser.add_argument(
+        "--layer-strategy", default="min", choices=["min", "max"],
+        help="How to assign layers to derived variables. 'min' attempts to put as "
+        "many variables into the same layer as possible, while 'max' puts each variable "
+        "into its own layer unless it is part of a cycle.")
     return argparser.parse_args()
 
 

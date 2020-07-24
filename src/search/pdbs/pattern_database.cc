@@ -54,16 +54,16 @@ AbstractOperator::~AbstractOperator() {
 
 void AbstractOperator::dump(const Pattern &pattern,
                             const VariablesProxy &variables) const {
-    cout << "AbstractOperator:" << endl;
-    cout << "Regression preconditions:" << endl;
+    utils::g_log << "AbstractOperator:" << endl;
+    utils::g_log << "Regression preconditions:" << endl;
     for (size_t i = 0; i < regression_preconditions.size(); ++i) {
         int var_id = regression_preconditions[i].var;
         int val = regression_preconditions[i].value;
-        cout << "Variable: " << var_id << " (True name: "
-             << variables[pattern[var_id]].get_name()
-             << ", Index: " << i << ") Value: " << val << endl;
+        utils::g_log << "Variable: " << var_id << " (True name: "
+                     << variables[pattern[var_id]].get_name()
+                     << ", Index: " << i << ") Value: " << val << endl;
     }
-    cout << "Hash effect:" << hash_effect << endl;
+    utils::g_log << "Hash effect:" << hash_effect << endl;
 }
 
 PatternDatabase::PatternDatabase(
@@ -95,7 +95,7 @@ PatternDatabase::PatternDatabase(
     }
     create_pdb(task_proxy, operator_costs);
     if (dump)
-        cout << "PDB construction time: " << timer << endl;
+        utils::g_log << "PDB construction time: " << timer << endl;
 }
 
 void PatternDatabase::multiply_out(

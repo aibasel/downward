@@ -1,6 +1,5 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
-from __future__ import print_function
 
 import itertools
 
@@ -100,7 +99,7 @@ class PrologProgram:
 def get_variables(symbolic_atoms):
     variables = set()
     for sym_atom in symbolic_atoms:
-        variables |= set([arg for arg in sym_atom.args if arg[0] == "?"])
+        variables |= {arg for arg in sym_atom.args if arg[0] == "?"}
     return variables
 
 class Fact:
@@ -149,7 +148,7 @@ def translate_typed_object(prog, obj, type_dict):
         prog.add_fact(pddl.TypedObject(obj.name, type_name).get_atom())
 
 def translate_facts(prog, task):
-    type_dict = dict((type.name, type) for type in task.types)
+    type_dict = {type.name: type for type in task.types}
     for obj in task.objects:
         translate_typed_object(prog, obj, type_dict)
     for fact in task.init:

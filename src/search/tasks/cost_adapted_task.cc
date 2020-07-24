@@ -38,7 +38,7 @@ static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     } else {
-        OperatorCost cost_type = OperatorCost(opts.get_enum("cost_type"));
+        OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
         return make_shared<CostAdaptedTask>(g_root_task, cost_type);
     }
 }

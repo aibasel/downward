@@ -1,11 +1,10 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
-from __future__ import print_function
 
 class Graph:
     def __init__(self, nodes):
         self.nodes = nodes
-        self.neighbours = dict((u, set()) for u in nodes)
+        self.neighbours = {u: set() for u in nodes}
     def connect(self, u, v):
         self.neighbours[u].add(v)
         self.neighbours[v].add(u)
@@ -29,7 +28,7 @@ class Graph:
 def transitive_closure(pairs):
     # Warshall's algorithm.
     result = set(pairs)
-    nodes = set(u for (u, v) in pairs) | set(v for (u, v) in pairs)
+    nodes = {u for (u, v) in pairs} | {v for (u, v) in pairs}
     for k in nodes:
         for i in nodes:
             for j in nodes:

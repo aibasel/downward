@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import sys
 
 import graph
@@ -184,7 +180,7 @@ def add_effect(tmp_effect, result):
         condition = condition.simplified()
         new_effect = pddl.Effect(parameters, condition, effect)
         contradiction = pddl.Effect(parameters, condition, effect.negate())
-        if not contradiction in result:
+        if contradiction not in result:
             result.append(new_effect)
         else:
             # We use add-after-delete semantics, keep positive effect
@@ -359,9 +355,9 @@ def parse_domain_pddl(domain_pddl):
         elif field == ":predicates":
             the_predicates = [parse_predicate(entry)
                               for entry in opt[1:]]
-            the_predicates += [pddl.Predicate("=",
-                                 [pddl.TypedObject("?x", "object"),
-                                  pddl.TypedObject("?y", "object")])]
+            the_predicates += [pddl.Predicate("=", [
+                pddl.TypedObject("?x", "object"),
+                pddl.TypedObject("?y", "object")])]
         elif field == ":functions":
             the_functions = parse_typed_list(
                 opt[1:],
@@ -370,11 +366,11 @@ def parse_domain_pddl(domain_pddl):
     set_supertypes(the_types)
     yield requirements
     yield the_types
-    type_dict = dict((type.name, type) for type in the_types)
+    type_dict = {type.name: type for type in the_types}
     yield type_dict
     yield constants
     yield the_predicates
-    predicate_dict = dict((pred.name, pred) for pred in the_predicates)
+    predicate_dict = {pred.name: pred for pred in the_predicates}
     yield predicate_dict
     yield the_functions
 
@@ -435,11 +431,11 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
                 assignment = parse_assignment(fact)
             except ValueError as e:
                 raise SystemExit("Error in initial state specification\n" +
-                                 "Reason: %s." %  e)
+                                 "Reason: %s." % e)
             if not isinstance(assignment.expression,
                               pddl.NumericConstant):
                 raise SystemExit("Illegal assignment in initial state " +
-                    "specification:\n%s" % assignment)
+                                 "specification:\n%s" % assignment)
             if assignment.fluent in initial_assignments:
                 prev = initial_assignments[assignment.fluent]
                 if assignment.expression == prev.expression:
@@ -448,7 +444,7 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
                 else:
                     raise SystemExit("Error in initial state specification\n" +
                                      "Reason: conflicting assignment for " +
-                                     "%s." %  assignment.fluent)
+                                     "%s." % assignment.fluent)
             else:
                 initial_assignments[assignment.fluent] = assignment
                 initial.append(assignment)
@@ -470,7 +466,7 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
     use_metric = False
     for entry in iterator:
         if entry[0] == ":metric":
-            if entry[1]=="minimize" and entry[2][0] == "total-cost":
+            if entry[1] == "minimize" and entry[2][0] == "total-cost":
                 use_metric = True
             else:
                 assert False, "Unknown metric."
@@ -483,7 +479,7 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
 def check_atom_consistency(atom, same_truth_value, other_truth_value, atom_is_true=True):
     if atom in other_truth_value:
         raise SystemExit("Error in initial state specification\n" +
-                         "Reason: %s is true and false." %  atom)
+                         "Reason: %s is true and false." % atom)
     if atom in same_truth_value:
         if not atom_is_true:
             atom = atom.negate()

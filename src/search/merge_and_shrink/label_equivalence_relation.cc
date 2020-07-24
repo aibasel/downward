@@ -21,12 +21,17 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(
 
 LabelEquivalenceRelation::LabelEquivalenceRelation(
     const LabelEquivalenceRelation &other)
-    : labels(other.labels),
-      /* We copy label_to_positions to have identical vectors even on
-      "unused" positions (for label numbers that do not exist any more). */
-      label_to_positions(other.label_to_positions) {
+    : labels(other.labels) {
     // For the reserve call, see the comment in the constructor above.
     grouped_labels.reserve(labels.get_max_size());
+    /*
+      Note that we do not copy label_to_positions because copying iterators
+      from potentially uninitialized iterators causes problems in debug mode.
+      This also means that label_to_positions contains uninitialized values
+      at all positions corresponding to already reduced labels (inactive
+      labels).
+    */
+    label_to_positions.resize(other.label_to_positions.size());
     for (size_t other_group_id = 0;
          other_group_id < other.grouped_labels.size();
          ++other_group_id) {

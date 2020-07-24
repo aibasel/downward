@@ -7,6 +7,7 @@
 #include "../task_proxy.h"
 
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 #include <algorithm>
 #include <map>
@@ -335,7 +336,7 @@ void TransitionSystem::print_statistics() const {
     assert(total_outgoing_transitions == total_incoming_transitions);
     assert(get_num_loops() == total_loops);
     assert(get_num_non_loops() == total_outgoing_transitions);
-    cout << "Looping transitions: " << total_loops << endl;
-    cout << "Non-looping transitions: " << total_outgoing_transitions << endl;
+    utils::g_log << "Looping transitions: " << total_loops << endl;
+    utils::g_log << "Non-looping transitions: " << total_outgoing_transitions << endl;
 }
 }

@@ -4,6 +4,7 @@
 
 #include "../task_proxy.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -229,30 +230,30 @@ void LandmarkGraph::set_landmark_ids() {
 }
 
 void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const {
-    cout << "LM " << node_p->get_id() << " ";
+    utils::g_log << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
-        cout << "disj {";
+        utils::g_log << "disj {";
     else if (node_p->conjunctive)
-        cout << "conj {";
+        utils::g_log << "conj {";
     size_t i = 0;
     for (const FactPair &lm_fact : node_p->facts) {
         VariableProxy var = variables[lm_fact.var];
-        cout << var.get_fact(lm_fact.value).get_name() << " ("
-             << var.get_name() << "(" << lm_fact.var << ")"
-             << "->" << lm_fact.value << ")";
+        utils::g_log << var.get_fact(lm_fact.value).get_name() << " ("
+                     << var.get_name() << "(" << lm_fact.var << ")"
+                     << "->" << lm_fact.value << ")";
         if (i++ < node_p->facts.size() - 1)
-            cout << ", ";
+            utils::g_log << ", ";
     }
     if (node_p->disjunctive || node_p->conjunctive)
-        cout << "}";
+        utils::g_log << "}";
     if (node_p->in_goal)
-        cout << "(goal)";
-    cout << " Achievers (" << node_p->possible_achievers.size() << ", " << node_p->first_achievers.size() << ")";
-    cout << endl;
+        utils::g_log << "(goal)";
+    utils::g_log << " Achievers (" << node_p->possible_achievers.size() << ", " << node_p->first_achievers.size() << ")";
+    utils::g_log << endl;
 }
 
 void LandmarkGraph::dump(const VariablesProxy &variables) const {
-    cout << "Landmark graph: " << endl;
+    utils::g_log << "Landmark graph: " << endl;
     set<LandmarkNode *, LandmarkNodeComparer> nodes2;
     for (auto &node: nodes) {
         nodes2.insert(node.get());
@@ -263,22 +264,22 @@ void LandmarkGraph::dump(const VariablesProxy &variables) const {
         for (const auto &parent : node_p->parents) {
             const LandmarkNode *parent_node = parent.first;
             const EdgeType &edge = parent.second;
-            cout << "\t\t<-_";
+            utils::g_log << "\t\t<-_";
             switch (edge) {
             case EdgeType::necessary:
-                cout << "nec ";
+                utils::g_log << "nec ";
                 break;
             case EdgeType::greedy_necessary:
-                cout << "gn  ";
+                utils::g_log << "gn  ";
                 break;
             case EdgeType::natural:
-                cout << "nat ";
+                utils::g_log << "nat ";
                 break;
             case EdgeType::reasonable:
-                cout << "r   ";
+                utils::g_log << "r   ";
                 break;
             case EdgeType::obedient_reasonable:
-                cout << "o_r ";
+                utils::g_log << "o_r ";
                 break;
             }
             dump_node(variables, parent_node);
@@ -286,28 +287,28 @@ void LandmarkGraph::dump(const VariablesProxy &variables) const {
         for (const auto &child : node_p->children) {
             const LandmarkNode *child_node = child.first;
             const EdgeType &edge = child.second;
-            cout << "\t\t->_";
+            utils::g_log << "\t\t->_";
             switch (edge) {
             case EdgeType::necessary:
-                cout << "nec ";
+                utils::g_log << "nec ";
                 break;
             case EdgeType::greedy_necessary:
-                cout << "gn  ";
+                utils::g_log << "gn  ";
                 break;
             case EdgeType::natural:
-                cout << "nat ";
+                utils::g_log << "nat ";
                 break;
             case EdgeType::reasonable:
-                cout << "r   ";
+                utils::g_log << "r   ";
                 break;
             case EdgeType::obedient_reasonable:
-                cout << "o_r ";
+                utils::g_log << "o_r ";
                 break;
             }
             dump_node(variables, child_node);
         }
-        cout << endl;
+        utils::g_log << endl;
     }
-    cout << "Landmark graph end." << endl;
+    utils::g_log << "Landmark graph end." << endl;
 }
 }

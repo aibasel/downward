@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import errno
 import logging
 import os.path
@@ -15,7 +11,7 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
-#TODO: We might want to turn translate into a module and call it with "python -m translate".
+# TODO: We might want to turn translate into a module and call it with "python3 -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
     REL_SEARCH_PATH = "downward"

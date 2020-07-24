@@ -8,10 +8,6 @@ Options::Options(bool help_mode)
       help_mode(help_mode) {
 }
 
-int Options::get_enum(const string &key) const {
-    return get<int>(key);
-}
-
 bool Options::contains(const string &key) const {
     return storage.find(key) != storage.end();
 }

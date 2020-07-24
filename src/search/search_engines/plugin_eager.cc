@@ -22,8 +22,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "preferred",
         "use preferred operators of these evaluators", "[]");
 
-    SearchEngine::add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
+    eager_search::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     shared_ptr<eager_search::EagerSearch> engine;

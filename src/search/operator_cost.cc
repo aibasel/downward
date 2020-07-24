@@ -49,7 +49,7 @@ void add_cost_type_option_to_parser(OptionParser &parser) {
         "This is the behaviour known for the heuristics of the LAMA planner. "
         "This is intended to be used by the heuristics, not search engines, "
         "but is supported for both.");
-    parser.add_enum_option(
+    parser.add_enum_option<OperatorCost>(
         "cost_type",
         cost_types,
         "Operator cost adjustment type. "

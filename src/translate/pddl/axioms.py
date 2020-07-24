@@ -1,9 +1,7 @@
-from __future__ import print_function
-
 from . import conditions
 
 
-class Axiom(object):
+class Axiom:
     def __init__(self, name, parameters, num_external_parameters, condition):
         # For an explanation of num_external_parameters, see the
         # related Action class. Note that num_external_parameters
@@ -21,14 +19,14 @@ class Axiom(object):
         self.condition.dump()
 
     def uniquify_variables(self):
-        self.type_map = dict([(par.name, par.type_name)
-                              for par in self.parameters])
+        self.type_map = {par.name: par.type_name for par in self.parameters}
         self.condition = self.condition.uniquify_variables(self.type_map)
 
     def instantiate(self, var_mapping, init_facts, fluent_facts):
         # The comments for Action.instantiate apply accordingly.
-        arg_list = [self.name] + [var_mapping[par.name]
-                    for par in self.parameters[:self.num_external_parameters]]
+        arg_list = [self.name] + [
+            var_mapping[par.name]
+            for par in self.parameters[:self.num_external_parameters]]
         name = "(%s)" % " ".join(arg_list)
 
         condition = []

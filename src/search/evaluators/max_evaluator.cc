@@ -42,5 +42,5 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     return make_shared<MaxEvaluator>(opts);
 }
 
-static Plugin<Evaluator> plugin("max", _parse);
+static Plugin<Evaluator> plugin("max", _parse, "evaluators_basic");
 }

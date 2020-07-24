@@ -6,6 +6,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+enum class Verbosity;
+}
+
 namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
@@ -85,7 +89,7 @@ public:
         std::vector<std::unique_ptr<Distances>> &&distances,
         bool compute_init_distances,
         bool compute_goal_distances,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
@@ -119,7 +123,7 @@ public:
     bool apply_abstraction(
         int index,
         const StateEquivalenceRelation &state_equivalence_relation,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Merge the two factors at index1 and index2.
@@ -127,7 +131,7 @@ public:
     int merge(
         int index1,
         int index2,
-        Verbosity verbosity);
+        utils::Verbosity verbosity);
 
     /*
       Extract the factor at the given index, rendering the FTS invalid.
@@ -154,6 +158,25 @@ public:
       pruned.
     */
     bool is_factor_solvable(int index) const;
+
+    /*
+      A factor is trivial iff every concrete state is mapped to an abstract
+      goal state, which is equivalent to saying that the corresponding
+      merge-and-shrink representation is a total function and all abstract
+      states are goal states.
+
+      If h is the heuristic for the factor F, then we have:
+          F trivial => h(s) = 0 for all states s.
+
+      Note that a factor being trivial is sufficient but not necessary for
+      its heuristic to be useless. Scenarios of useless heuristics that are
+      not captured include:
+        - All non-goal states are connected to goal states on 0-cost paths.
+        - The only pruned states are unreachable (in this case, we get
+          h(s) = 0 for all reachable states, which is useless in most
+          contexts).
+    */
+    bool is_factor_trivial(int index) const;
 
     int get_num_active_entries() const {
         return num_active_entries;

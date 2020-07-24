@@ -9,6 +9,7 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -20,8 +21,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const options::Options &options)
-    : atomic_ts_order(AtomicTSOrder(options.get_enum("atomic_ts_order"))),
-      product_ts_order(ProductTSOrder(options.get_enum("product_ts_order"))),
+    : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
+      product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
       random_seed(options.get<int>("random_seed")),
       rng(utils::parse_rng_from_options(options)) {
@@ -120,38 +121,38 @@ string MergeScoringFunctionTotalOrder::name() const {
 }
 
 void MergeScoringFunctionTotalOrder::dump_function_specific_options() const {
-    cout << "Atomic transition system order: ";
+    utils::g_log << "Atomic transition system order: ";
     switch (atomic_ts_order) {
     case AtomicTSOrder::REVERSE_LEVEL:
-        cout << "reverse level";
+        utils::g_log << "reverse level";
         break;
     case AtomicTSOrder::LEVEL:
-        cout << "level";
+        utils::g_log << "level";
         break;
     case AtomicTSOrder::RANDOM:
-        cout << "random";
+        utils::g_log << "random";
         break;
     }
-    cout << endl;
+    utils::g_log << endl;
 
-    cout << "Product transition system order: ";
+    utils::g_log << "Product transition system order: ";
     switch (product_ts_order) {
     case ProductTSOrder::OLD_TO_NEW:
-        cout << "old to new";
+        utils::g_log << "old to new";
         break;
     case ProductTSOrder::NEW_TO_OLD:
-        cout << "new to old";
+        utils::g_log << "new to old";
         break;
     case ProductTSOrder::RANDOM:
-        cout << "random";
+        utils::g_log << "random";
         break;
     }
-    cout << endl;
+    utils::g_log << endl;
 
-    cout << "Consider " << (atomic_before_product ?
-                            "atomic before product" : "product before atomic")
-         << " transition systems" << endl;
-    cout << "Random seed: " << random_seed << endl;
+    utils::g_log << "Consider " << (atomic_before_product ?
+                                    "atomic before product" : "product before atomic")
+                 << " transition systems" << endl;
+    utils::g_log << "Random seed: " << random_seed << endl;
 }
 
 void MergeScoringFunctionTotalOrder::add_options_to_parser(
@@ -165,7 +166,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
     atomic_ts_order_documentation.push_back("opposite of reverse_level");
     atomic_ts_order.push_back("random");
     atomic_ts_order_documentation.push_back("a randomized order");
-    parser.add_enum_option(
+    parser.add_enum_option<AtomicTSOrder>(
         "atomic_ts_order",
         atomic_ts_order,
         "The order in which atomic transition systems are considered when "
@@ -183,7 +184,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
     product_ts_order_documentation.push_back("opposite of old_to_new");
     product_ts_order.push_back("random");
     product_ts_order_documentation.push_back("a randomized order");
-    parser.add_enum_option(
+    parser.add_enum_option<ProductTSOrder>(
         "product_ts_order",
         product_ts_order,
         "The order in which product transition systems are considered when "

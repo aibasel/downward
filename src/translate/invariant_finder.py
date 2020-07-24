@@ -1,6 +1,5 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
-from __future__ import print_function
 
 from collections import deque, defaultdict
 import itertools
@@ -11,7 +10,7 @@ import options
 import pddl
 import timers
 
-class BalanceChecker(object):
+class BalanceChecker:
     def __init__(self, task, reachable_action_params):
         self.predicates_to_add_actions = defaultdict(set)
         self.action_to_heavy_action = {}
@@ -97,10 +96,10 @@ def find_invariants(task, reachable_action_params):
             candidates.append(invariant)
             seen_candidates.add(invariant)
 
-    start_time = time.clock()
+    start_time = time.process_time()
     while candidates:
         candidate = candidates.popleft()
-        if time.clock() - start_time > options.invariant_generation_max_time:
+        if time.process_time() - start_time > options.invariant_generation_max_time:
             print("Time limit reached, aborting invariant generation")
             return
         if candidate.check_balance(balance_checker, enqueue_func):

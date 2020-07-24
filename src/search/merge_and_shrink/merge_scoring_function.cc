@@ -2,6 +2,8 @@
 
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
+
 #include <iostream>
 
 using namespace std;
@@ -12,8 +14,8 @@ MergeScoringFunction::MergeScoringFunction()
 }
 
 void MergeScoringFunction::dump_options() const {
-    cout << "Merge scoring function:" << endl;
-    cout << "Name: " << name() << endl;
+    utils::g_log << "Merge scoring function:" << endl;
+    utils::g_log << "Name: " << name() << endl;
     dump_function_specific_options();
 }
 

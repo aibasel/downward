@@ -2,14 +2,16 @@
 
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
+
 #include <iostream>
 
 using namespace std;
 
 namespace merge_and_shrink {
 void MergeStrategyFactory::dump_options() const {
-    cout << "Merge strategy options:" << endl;
-    cout << "Type: " << name() << endl;
+    utils::g_log << "Merge strategy options:" << endl;
+    utils::g_log << "Type: " << name() << endl;
     dump_strategy_specific_options();
 }
 

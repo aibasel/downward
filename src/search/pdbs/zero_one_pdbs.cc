@@ -64,7 +64,7 @@ double ZeroOnePDBs::compute_approx_mean_finite_h() const {
 
 void ZeroOnePDBs::dump() const {
     for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
-        cout << pdb->get_pattern() << endl;
+        utils::g_log << pdb->get_pattern() << endl;
     }
 }
 }

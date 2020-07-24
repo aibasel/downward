@@ -17,12 +17,12 @@ class CGCache {
     std::vector<std::vector<int>> depends_on;
 
     int get_index(int var, const State &state, int from_val, int to_val) const;
-    int compute_required_cache_size(int var_id,
-                                    const std::vector<int> &depends_on) const;
+    int compute_required_cache_size(
+        int var_id, const std::vector<int> &depends_on, int max_cache_size) const;
 public:
     static const int NOT_COMPUTED = -2;
 
-    explicit CGCache(TaskProxy &task_proxy);
+    CGCache(const TaskProxy &task_proxy, int max_cache_size);
     ~CGCache();
 
     bool is_cached(int var) const {

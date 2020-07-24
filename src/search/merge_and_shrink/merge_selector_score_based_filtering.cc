@@ -19,11 +19,6 @@ MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
               "scoring_functions")) {
 }
 
-MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
-    vector<shared_ptr<MergeScoringFunction>> scoring_functions)
-    : merge_scoring_functions(move(scoring_functions)) {
-}
-
 vector<pair<int, int>> MergeSelectorScoreBasedFiltering::get_remaining_candidates(
     const vector<pair<int, int>> &merge_candidates,
     const vector<double> &scores) const {

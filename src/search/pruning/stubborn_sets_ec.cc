@@ -4,6 +4,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -126,7 +127,7 @@ void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
     disabled.resize(num_operators);
     disabled_computed.resize(num_operators, false);
 
-    cout << "pruning method: stubborn sets ec" << endl;
+    utils::g_log << "pruning method: stubborn sets ec" << endl;
 }
 
 void StubbornSetsEC::compute_operator_preconditions(const TaskProxy &task_proxy) {

@@ -6,6 +6,7 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -42,7 +43,7 @@ string MergeScoringFunctionSingleRandom::name() const {
 }
 
 void MergeScoringFunctionSingleRandom::dump_function_specific_options() const {
-    cout << "Random seed: " << random_seed << endl;
+    utils::g_log << "Random seed: " << random_seed << endl;
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
