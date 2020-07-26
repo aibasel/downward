@@ -5,7 +5,7 @@ timed release model was not adopted until 2019. This file documents
 the changes since the first timed release, Fast Downward 19.06.
 
 For more details, check the repository history
-(<http://hg.fast-downward.org>) and the issue tracker
+(<https://github.com/aibasel/downward>) and the issue tracker
 (<http://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
