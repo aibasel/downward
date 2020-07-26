@@ -9,6 +9,10 @@ For more details, check the repository history
 (<http://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Changes since the last release
+
+- There have been no relevant changes yet.
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
