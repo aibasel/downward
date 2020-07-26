@@ -83,9 +83,7 @@ pushd $RELEASESDIR
 
 mkdir -p $MAJOR
 fill_template "_Dockerfile.tpl" "TAG" "$TAG" > $MAJOR/Dockerfile.$MAJOR
-fill_template "_Dockerfile_CPLEX.tpl" "TAG" "$TAG" > $MAJOR/Dockerfile.$MAJOR-cplex
 fill_template "_Singularity.tpl" "MAJOR" "$MAJOR" > $MAJOR/Singularity.$MAJOR
-fill_template "_Singularity.tpl" "MAJOR" "$MAJOR-cplex" > $MAJOR/Singularity.$MAJOR-cplex
 fill_template "_Vagrantfile.tpl" "TAG" "$TAG" > $MAJOR/Vagrantfile.$MAJOR
 git add $MAJOR
 

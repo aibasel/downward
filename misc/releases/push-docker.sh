@@ -15,18 +15,12 @@ fi
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 RELEASESDIR=$SCRIPTDIR
 DOCKERFILE="$RELEASESDIR/$MAJOR/Dockerfile.$MAJOR"
-DOCKERFILE_CPLEX="$RELEASESDIR/$MAJOR/Dockerfile.$MAJOR-cplex"
 
-CPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/cplex_studio129.linux-x86-64.bin"
 SOPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/soplex-3.1.1.tgz"
 
 # Verify that the LP installer files exist
-if [ ! -f "$CPLEX_INSTALLER" ]; then
-    echo "CPLEX 12.9 installation file not found at '$CPLEX_INSTALLER'. Please set the environment variable DOWNWARD_LP_INSTALLERS to a path containing the SoPlex and CPLEX installers."
-    exit 1
-fi
 if [ ! -f "$SOPLEX_INSTALLER" ]; then
-    echo "SoPlex 3.1.1 installation file not found at '$SOPLEX_INSTALLER'. Please set the environment variable DOWNWARD_LP_INSTALLERS to a path containing the SoPlex and CPLEX installers."
+    echo "SoPlex 3.1.1 installation file not found at '$SOPLEX_INSTALLER'. Please set the environment variable DOWNWARD_LP_INSTALLERS to a path containing the SoPlex installer."
     exit 1
 fi
 
@@ -43,7 +37,6 @@ function docker_build_and_tag {
     TEMPDIR=$(mktemp -d)
     pushd $TEMPDIR
     cp $RECIPE_FILE Dockerfile
-    cp $CPLEX_INSTALLER .
     cp $SOPLEX_INSTALLER .
     docker build -t $BUILD_TAG .
     popd
@@ -54,13 +47,10 @@ set -x
 
 docker_build_and_tag $DOCKERFILE "aibasel/downward:$MAJOR"
 docker tag "aibasel/downward:$MAJOR" "aibasel/downward:latest"
-docker_build_and_tag $DOCKERFILE_CPLEX "aibasel/downward:$MAJOR-cplex"
 
 docker login
 docker push aibasel/downward:$MAJOR
 docker push aibasel/downward:latest
-docker push aibasel/downward:$MAJOR-cplex
 
 docker rmi aibasel/downward:$MAJOR
-docker rmi aibasel/downward:$MAJOR-cplex
 docker image prune -f
