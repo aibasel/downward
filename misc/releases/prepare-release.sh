@@ -117,7 +117,8 @@ if [[ $MINOR = 0 ]]; then
 fi
 
 # Create tarball. (ignored files are configured in .gitattributes)
-git archive -o fast-downward-$PRETTY_VERSION.tar.gz $TAG
+ARCHIVE=fast-downward-$PRETTY_VERSION
+git archive --prefix=$ARCHIVE/ -o $ARCHIVE.tar.gz $TAG
 
 popd
 
