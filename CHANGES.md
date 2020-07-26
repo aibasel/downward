@@ -49,24 +49,26 @@ Details:
   cyclically depended on other derived predicates could be computed
   incorrectly.
 
-- Integrate new pruning method `atom_centric_stubborn_sets`
+- Integrate new pruning method `atom_centric_stubborn_sets`.
   <http://issues.fast-downward.org/issue781>
-  We merged the code for the SoCS 2020 paper "An Atom-Centric Perspective
-  on Stubborn Sets" (<https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf>).
-  See <http://www.fast-downward.org/Doc/PruningMethod>.
+  We merged the code for the SoCS 2020 paper "An Atom-Centric
+  Perspective on Stubborn Sets"
+  (<https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf>). See
+  <http://www.fast-downward.org/Doc/PruningMethod>.
 
 - Remove deprecated merge strategy aliases `merge_linear` and `merge_dfp`.
   The deprecated merge strategy aliases `merge_linear` for linear
-  merge strategies and `merge_dfp` for the DFP merge strategy are no longer
-  available. See http://www.fast-downward.org/Doc/MergeStrategy for equivalent
-  command line options to use these merge strategies.
+  merge strategies and `merge_dfp` for the DFP merge strategy are no
+  longer available. See http://www.fast-downward.org/Doc/MergeStrategy
+  for equivalent command line options to use these merge strategies.
 
-- For developers: use global logging mechanism for all output
+- For developers: use global logging mechanism for all output.
   <http://issues.fast-downward.org/issue963>
-  All output of the planner is now handled by a global logging mechanism, which
-  prefaces printed lines with time and memory information. For developers, this
-  means that output show no longer be passed to cout but to
-  utils::g_log. Further changes to logging are in the works.
+  All output of the planner is now handled by a global logging
+  mechanism, which prefaces printed lines with time and memory
+  information. For developers, this means that output should no longer
+  be passed to `cout` but to `utils::g_log`. Further changes to
+  logging are in the works.
 
 - For developers: store enum options as enums (not ints) in Options objects.
   <http://issues.fast-downward.org/issue962>
