@@ -55,14 +55,6 @@ function set_version {
     git add $REPODIR/driver/version.py
 }
 
-function create_recipe_and_link_latest {
-    CONTAINERTYPE=$1
-    PARAMETER=$2
-    VALUE=$3
-    fill_template "_$CONTAINERTYPE.tpl" "$PARAMETER" "$VALUE" > $MAJOR/$CONTAINERTYPE.$MAJOR
-    ln -fs $MAJOR/$CONTAINERTYPE.$MAJOR latest/$CONTAINERTYPE
-}
-
 set -x
 
 # Create the branch if it doesn't exist already.
@@ -91,7 +83,9 @@ pushd $RELEASESDIR
 
 mkdir -p $MAJOR
 fill_template "_Dockerfile.tpl" "TAG" "$TAG" > $MAJOR/Dockerfile.$MAJOR
+fill_template "_Dockerfile_CPLEX.tpl" "TAG" "$TAG" > $MAJOR/Dockerfile.$MAJOR-cplex
 fill_template "_Singularity.tpl" "MAJOR" "$MAJOR" > $MAJOR/Singularity.$MAJOR
+fill_template "_Singularity.tpl" "MAJOR" "$MAJOR-cplex" > $MAJOR/Singularity.$MAJOR-cplex
 fill_template "_Vagrantfile.tpl" "TAG" "$TAG" > $MAJOR/Vagrantfile.$MAJOR
 git add $MAJOR
 
