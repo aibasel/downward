@@ -15,10 +15,15 @@ Released on July 26, 2020.
 
 Highlights:
 
-- The Singularity, Docker and Vagrant distributions of the planner now
-  include LP support using the SoPlex solver out of the box. Thank you
-  to ZIB for their solver and for giving permission to include it in
-  the release.
+- The Singularity and Docker distributions of the planner now include
+  LP support using the SoPlex solver out of the box. Thank you to ZIB
+  for their solver and for giving permission to include it in the
+  release.
+
+- The Vagrant distribution of the planner now includes LP support
+  using the SoPlex and/or CPLEX solvers out of the box if they are
+  made available when the virtual machine is first provisioned. See
+  <http://www.fast-downward.org/QuickStart> for more information.
 
 - A long-standing bug in the computation of derived predicates has
   been fixed. Thanks to everyone who provided bug reports for their
