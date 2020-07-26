@@ -80,7 +80,7 @@ else
         echo "The version number '$VERSION' implies a bugfix release but there is no branch '$BRANCH' yet."
         exit 1
     fi
-    git switch -c "$BRANCH"
+    git branch "$BRANCH"
 fi
 
 # Update version number.
