@@ -9,37 +9,60 @@ For more details, check the repository history
 (<http://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
-## Changes since the last release
+## Fast Downward 20.06
 
-- Fix crash when using `--show-aliases` option of fast-downward.py.
+Released on July 26, 2020.
+
+Highlights:
+
+- The Singularity, Docker and Vagrant distributions of the planner now
+  include LP support using the SoPlex solver out of the box. Thank you
+  to ZIB for their solver and for giving permission to include it in
+  the release.
+
+- A long-standing bug in the computation of derived predicates has
+  been fixed. Thanks to everyone who provided bug reports for their
+  help and for their patience!
+
+- A new and much faster method for computing stubborn sets has been
+  added to the planner.
+
+- The deprecated merge strategy aliases `merge_linear` and `merge_dfp`
+  have been removed.
+
+Details:
+
+- Fix crash of `--show-aliases` option of fast-downward.py.
 
 - Fix incorrect computation of derived predicates.
   <http://issues.fast-downward.org/issue453>
-  Derived predicates could be evaluated incorrectly in cases where
-  there is a cyclic dependency between derived variables and the
-  derived predicate is only ever needed in negated form. This has been
-  fixed.
+  Derived predicates that were only needed in negated form and
+  cyclically depended on other derived predicates could be computed
+  incorrectly.
 
-- Integrate new pruning method `atom_centric_stubborn_sets()`
+- Integrate new pruning method `atom_centric_stubborn_sets`
   <http://issues.fast-downward.org/issue781>
   We merged the code for the SoCS 2020 paper "An Atom-Centric Perspective
-  on Stubborn Sets" (https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf).
+  on Stubborn Sets" (<https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf>).
+  See <http://www.fast-downward.org/Doc/PruningMethod>.
 
-- Remove deprecate aliases for linear merge strategies and the DFP merge
-  strategy: command line options merge_linear and merge_dfp are no longer
+- Remove deprecated merge strategy aliases `merge_linear` and `merge_dfp`.
+  The deprecated merge strategy aliases `merge_linear` for linear
+  merge strategies and `merge_dfp` for the DFP merge strategy are no longer
   available. See http://www.fast-downward.org/Doc/MergeStrategy for equivalent
   command line options to use these merge strategies.
 
-- For developers: Use global logging mechanism for all output
+- For developers: use global logging mechanism for all output
   <http://issues.fast-downward.org/issue963>
-  All output of the planner is now handled by a global logging mechnism, which
+  All output of the planner is now handled by a global logging mechanism, which
   prefaces printed lines with time and memory information. For developers, this
-  means that output is no longer passed to cout, but utils::g_log.
+  means that output show no longer be passed to cout but to
+  utils::g_log. Further changes to logging are in the works.
 
 - For developers: store enum options as enums (not ints) in Options objects.
   <http://issues.fast-downward.org/issue962>
 
-- For developers: allow creating Timers in stopped state
+- For developers: allow creating Timers in stopped state.
   <http://issues.fast-downward.org/issue965>
 
 ## Fast Downward 19.12
