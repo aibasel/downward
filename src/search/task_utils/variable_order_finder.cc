@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 #include <vector>
 
 using namespace std;
@@ -31,7 +32,9 @@ VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
     if (variable_order_type == CG_GOAL_RANDOM ||
         variable_order_type == RANDOM) {
         // TODO: use an instance of RandomNumberGenerator for shuffling.
-        random_shuffle(remaining_vars.begin(), remaining_vars.end());
+        random_device rd;
+        mt19937 g(rd());
+        shuffle(remaining_vars.begin(), remaining_vars.end(), g);
     }
 
     is_causal_predecessor.resize(var_count, false);
