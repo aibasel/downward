@@ -71,18 +71,20 @@ void LPConstraint::insert(int index, double coefficient) {
 }
 
 ostream &LPConstraint::print(ostream &stream, double infinity, LinearProgram *program) {
-    if (this->get_lower_bound() != -infinity) {
-        stream << this->get_lower_bound() << " <= ";
+    if (get_lower_bound() != -infinity) {
+        stream << get_lower_bound() << " <= ";
     }
-    for (size_t i = 0; i < this->get_variables().size(); ++i) {
+    for (size_t i = 0; i < get_variables().size(); ++i) {
         if (i != 0)
             stream << " + ";
-        int variable = this->get_variables()[i];
-        auto variable_name = program != nullptr && program->get_variables().has_names()
-            ? program->get_variables().get_name(variable)
-            : ("v" + std::to_string(variable));
-        stream << this->get_coefficients()[i] << " * v"
-               << variable_name;
+        int variable = get_variables()[i];
+        string variable_name;
+        if (program != nullptr && program->get_variables().has_names()) {
+            variable_name = program->get_variables().get_name(variable);
+        } else {
+            variable_name = "v" + std::to_string(variable);
+        }
+        stream << this->get_coefficients()[i] << " * " << variable_name;
     }
     if (this->get_upper_bound() != infinity) {
         stream << " <= " << this->get_upper_bound();

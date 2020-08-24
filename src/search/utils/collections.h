@@ -153,13 +153,13 @@ int estimate_unordered_map_bytes(int num_entries) {
     return _estimate_hash_table_bytes<std::unordered_map<Key, Value>>(num_entries);
 }
 
-template<typename T>
-class NamedVector {
     /**
      * NamedVector is a vector-like collection with optional names to be associated with each element.
      * It is optimized to have minimal overhead when there are no names.
+     * Any name which is not specified is assumed to be an empty string.
      */
-
+template<typename T>
+class NamedVector {
     std::vector<T> elements;
     std::vector<std::string> names;
 public:
@@ -234,12 +234,12 @@ public:
     }
 
     void reserve(int capacity) {
-        // the names vector is not reserved because it is kept at minimal length and only reserved when necessary
+        // No space is reserved in the names vector because it is kept at minimal length and space is only used when necessary.
         elements.reserve(capacity);
     }
 
     void resize(int count, T value) {
-        // the names vector is not resized because it is kept at minimal length and only resized when necessary
+        // The names vector is not resized because it is kept at minimal length and only resized when necessary.
         elements.resize(count, value);
     }
 };

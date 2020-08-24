@@ -84,6 +84,7 @@ class LinearProgram {
 
     utils::NamedVector<LPVariable> variables;
     utils::NamedVector<LPConstraint> constraints;
+    double infinity;
 
 public:
     explicit LinearProgram(LPObjectiveSense sense, utils::NamedVector<LPVariable> &&variables, utils::NamedVector<LPConstraint> &&constraints, std::string objective_name = "")
