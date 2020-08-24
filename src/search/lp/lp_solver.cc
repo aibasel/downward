@@ -70,18 +70,24 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-ostream &LPConstraint::print(ostream &stream, const lp::LPConstraint &constraint, double infinity) {
-    if (constraint.get_lower_bound() != -infinity) {
-        stream << constraint.get_lower_bound() << " <= ";
+ostream &LPConstraint::print(ostream &stream, double infinity, LinearProgram *program) {
+    if (this->get_lower_bound() != -infinity) {
+        stream << this->get_lower_bound() << " <= ";
     }
-    for (size_t i = 0; i < constraint.get_variables().size(); ++i) {
+    for (size_t i = 0; i < this->get_variables().size(); ++i) {
         if (i != 0)
             stream << " + ";
-        stream << constraint.get_coefficients()[i] << " * v"
-               << constraint.get_variables()[i];
+        int variable = this->get_variables()[i];
+        auto variable_name = program != nullptr && program->get_variables().has_names()
+            ? program->get_variables().get_name(variable)
+            : ("v" + std::to_string(variable));
+        stream << this->get_coefficients()[i] << " * v"
+               << variable_name;
     }
-    if (constraint.get_upper_bound() != infinity) {
-        stream << " <= " << constraint.get_upper_bound();
+    if (this->get_upper_bound() != infinity) {
+        stream << " <= " << this->get_upper_bound();
+    } else if (this->get_lower_bound() == -infinity) {
+        stream << " <= infinity";
     }
     return stream;
 }
@@ -387,12 +393,12 @@ void LPSolver::write_lp(string filename) const {
 }
 
 void LPSolver::print_failure_analysis() const {
-    cout << "isAbandoned: " << lp_solver->isAbandoned() << endl;
-    cout << "isProvenOptimal:  " << lp_solver->isProvenOptimal() << endl;
-    cout << "isProvenPrimalInfeasible: " << lp_solver->isProvenPrimalInfeasible() << endl;
-    cout << "isProvenDualInfeasible: " << lp_solver->isProvenDualInfeasible() << endl;
-    cout << "isDualObjectiveLimitReached: " << lp_solver->isDualObjectiveLimitReached() << endl;
-    cout << "isIterationLimitReached: " << lp_solver->isIterationLimitReached() << endl;
+    cout << "abandoned: " << lp_solver->isAbandoned() << endl;
+    cout << "proven optimal:  " << lp_solver->isProvenOptimal() << endl;
+    cout << "proven primal infeasible: " << lp_solver->isProvenPrimalInfeasible() << endl;
+    cout << "proven dual infeasible: " << lp_solver->isProvenDualInfeasible() << endl;
+    cout << "dual objective limit reached: " << lp_solver->isDualObjectiveLimitReached() << endl;
+    cout << "iteration limit reached: " << lp_solver->isIterationLimitReached() << endl;
 }
 
 bool LPSolver::has_optimal_solution() const {

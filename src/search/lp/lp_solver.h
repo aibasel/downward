@@ -63,7 +63,7 @@ public:
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 
-    std::ostream &print(std::ostream &stream, const lp::LPConstraint &constraint, double infinity);
+    std::ostream &print(std::ostream &stream, double infinity, LinearProgram *program = nullpt);
 };
 
 struct LPVariable {
@@ -88,6 +88,10 @@ public:
         : sense(sense), variables(std::move(variables)), constraints(std::move(constraints)), objective_name(objective_name) {
     }
 
+    /**
+     * Variables and constraints can be given a custom name for debugging purposes.
+     * This has an impact on performance and should never be used in production code.
+     */
     utils::NamedVector<LPVariable> &get_variables();
     utils::NamedVector<LPConstraint> &get_constraints();
     LPObjectiveSense get_sense();

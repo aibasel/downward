@@ -155,6 +155,11 @@ int estimate_unordered_map_bytes(int num_entries) {
 
 template<typename T>
 class NamedVector {
+    /**
+     * NamedVector is a vector-like collection with optional names to be associated with each element.
+     * It is optimized to have minimal overhead when there are no names.
+     */
+
     std::vector<T> elements;
     std::vector<std::string> names;
 public:
@@ -170,6 +175,14 @@ public:
         elements.push_back(element);
     }
 
+    T &operator[](int index) {
+        return elements[index];
+    }
+
+    bool has_names() const {
+        return !names.empty();
+    }
+
     void set_name(int index, const std::string &name) {
         if (index >= names.size()) {
             if (name.empty()) {
@@ -179,10 +192,6 @@ public:
             names.resize(index + 1, "");
         }
         names[index] = name;
-    }
-
-    T &operator[](int index) {
-        return elements[index];
     }
 
     std::string get_name(int index) const {
@@ -196,14 +205,6 @@ public:
 
     int size() const {
         return elements.size();
-    }
-
-    void reserve(int capacity) {
-        elements.reserve(capacity);
-    }
-
-    bool has_names() const {
-        return !names.empty();
     }
 
     typename std::vector<T>::reference back() {
@@ -231,7 +232,13 @@ public:
         names.clear();
     }
 
+    void reserve(int capacity) {
+        // the names vector is not reserved because it is kept at minimal length and only reserved when necessary
+        elements.reserve(capacity);
+    }
+
     void resize(int count, T value) {
+        // the names vector is not resized because it is kept at minimal length and only resized when necessary
         elements.resize(count, value);
     }
 };

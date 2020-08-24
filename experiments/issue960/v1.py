@@ -16,6 +16,8 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue960-base", "issue960-v1"]
 CONFIGS = [
     IssueConfig("opcount-seq", ["--search", "astar(operatorcounting([state_equation_constraints()]))"]),
+    IssueConfig("diverse-pot", ["--search", "astar(diverse_potentials(random_seed=1729)"]),
+    IssueConfig("lm_count", ["--search", "astar(lmcount(lm_rhw(), admissible=true, optimal=true)"]),
 ]
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
@@ -45,6 +47,6 @@ exp.add_fetcher(name='fetch')
 
 #exp.add_absolute_report_step()
 exp.add_comparison_table_step()
-exp.add_scatter_plot_step(relative=True, attributes=["search_time", "total_time"])
+exp.add_scatter_plot_step(relative=True, attributes=["total_time", "memory", "coverage"])
 
 exp.run_steps()
