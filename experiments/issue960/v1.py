@@ -15,9 +15,9 @@ SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue960-base", "issue960-v1"]
 CONFIGS = [
-    IssueConfig("opcount-seq", ["--search", "astar(operatorcounting([state_equation_constraints()]))"]),
-    IssueConfig("diverse-pot", ["--search", "astar(diverse_potentials(random_seed=1729)"]),
-    IssueConfig("lm_count", ["--search", "astar(lmcount(lm_rhw(), admissible=true, optimal=true)"]),
+    IssueConfig("opcount-seq-lmcut-soplex", ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver=soplex))"]),
+    IssueConfig("diverse-potentials-soplex", ["--search", "astar(diverse_potentials(lpsolver=soplex))"]),
+    IssueConfig("optimal-lmcount-soplex", ["--search", "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]), admissible=true, optimal=true, lpsolver=soplex))"]),
 ]
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE

@@ -107,7 +107,7 @@ utils::NamedVector<LPConstraint> &LinearProgram::get_constraints() {
     return constraints;
 }
 
-LPObjectiveSense LinearProgram::get_sense() {
+LPObjectiveSense LinearProgram::get_sense() const {
     return sense;
 }
 
@@ -121,10 +121,6 @@ const utils::NamedVector<LPVariable> &LinearProgram::get_variables() const {
 
 const utils::NamedVector<LPConstraint> &LinearProgram::get_constraints() const {
     return constraints;
-}
-
-const LPObjectiveSense LinearProgram::get_sense() const {
-    return sense;
 }
 
 const std::string LinearProgram::get_objective_name() const {

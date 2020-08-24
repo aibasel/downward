@@ -165,6 +165,7 @@ class NamedVector {
 public:
     NamedVector() = default;
     NamedVector(NamedVector<T> &&other) = default;
+    NamedVector(NamedVector<T> &other) = default;
 
     template<typename ... _Args>
     void emplace_back(_Args && ... __args) {
@@ -195,7 +196,7 @@ public:
     }
 
     std::string get_name(int index) const {
-        if (index < names.size()) {
+        if ((size_t) index < names.size()) {
             return names[index];
         } else {
             // All unspecified names are empty by default.

@@ -203,7 +203,9 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     }
 
     // Load the problem into the LP solver.
-    lp_solver.load_problem(lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables), move(non_empty_lp_constraints)));
+    auto temp_variables = lp_variables; 
+    auto temp_constraints = non_empty_lp_constraints; 
+    lp_solver.load_problem(lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(temp_variables), move(temp_constraints)));
 
     // Solve the linear program.
     lp_solver.solve();

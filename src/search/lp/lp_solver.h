@@ -42,6 +42,8 @@ enum class LPObjectiveSense {
 
 void add_lp_solver_option_to_parser(options::OptionParser &parser);
 
+class LinearProgram;
+
 class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
@@ -63,7 +65,7 @@ public:
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 
-    std::ostream &print(std::ostream &stream, double infinity, LinearProgram *program = nullpt);
+    std::ostream &print(std::ostream &stream, double infinity, LinearProgram *program = nullptr);
 };
 
 struct LPVariable {
@@ -85,7 +87,7 @@ class LinearProgram {
 
 public:
     explicit LinearProgram(LPObjectiveSense sense, utils::NamedVector<LPVariable> &&variables, utils::NamedVector<LPConstraint> &&constraints, std::string objective_name = "")
-        : sense(sense), variables(std::move(variables)), constraints(std::move(constraints)), objective_name(objective_name) {
+        : sense(sense), objective_name(objective_name), variables(std::move(variables)), constraints(std::move(constraints)) {
     }
 
     /**
@@ -98,7 +100,7 @@ public:
     std::string get_objective_name();
     const utils::NamedVector<LPVariable> &get_variables() const;
     const utils::NamedVector<LPConstraint> &get_constraints() const;
-    const LPObjectiveSense get_sense() const;
+    LPObjectiveSense get_sense() const;
     const std::string get_objective_name() const;
 };
 
