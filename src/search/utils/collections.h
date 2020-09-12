@@ -196,7 +196,8 @@ public:
     }
 
     std::string get_name(int index) const {
-        if ((size_t) index < names.size()) {
+        int names_num = names.size();
+        if (index < names_num) {
             return names[index];
         } else {
             // All unspecified names are empty by default.

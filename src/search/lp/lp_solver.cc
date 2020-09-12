@@ -79,7 +79,7 @@ ostream &LPConstraint::print(ostream &stream, double infinity, LinearProgram *pr
             stream << " + ";
         int variable = get_variables()[i];
         string variable_name;
-        if (program != nullptr && program->get_variables().has_names()) {
+        if (program != nullptr && program->get_variables().has_names() && program->get_variables().get_name(variable) != "") {
             variable_name = program->get_variables().get_name(variable);
         } else {
             variable_name = "v" + std::to_string(variable);

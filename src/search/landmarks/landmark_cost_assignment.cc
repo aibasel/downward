@@ -126,11 +126,16 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     const LandmarkGraph &graph,
     lp::LPSolverType solver_type)
     : LandmarkCostAssignment(operator_costs, graph),
-      lp_solver(solver_type) {
+      lp_solver(solver_type),
+      lp_program(initial_program()) {}
+
+lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::initial_program() {
     /* The LP has one variable (column) per landmark and one
        inequality (row) per operator. */
     int num_cols = lm_graph.number_of_landmarks();
     int num_rows = operator_costs.size();
+
+    utils::NamedVector<lp::LPVariable> lp_variables;
 
     /* We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
        so the coefficients are all 1.
@@ -145,8 +150,11 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
         lp_constraints[op_id].set_lower_bound(0);
         lp_constraints[op_id].set_upper_bound(operator_costs[op_id]);
     }
-}
 
+    utils::NamedVector<lp::LPConstraint> non_empty_constraints;
+
+    return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables), move(non_empty_constraints));
+}
 
 double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     /* TODO: We could also do the same thing with action landmarks we
@@ -162,9 +170,9 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         if (lm->get_status() == lm_reached) {
-            lp_variables[lm_id].upper_bound = 0;
+            lp_program.get_variables()[lm_id].upper_bound = 0;
         } else {
-            lp_variables[lm_id].upper_bound = lp_solver.get_infinity();
+            lp_program.get_variables()[lm_id].upper_bound = lp_solver.get_infinity();
         }
     }
 
@@ -196,16 +204,14 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     /* Copy non-empty constraints and use those in the LP.
        This significantly speeds up the heuristic calculation. See issue443. */
     // TODO: do not copy the data here.
-    non_empty_lp_constraints.clear();
+    lp_program.get_constraints().clear();
     for (const lp::LPConstraint &constraint : lp_constraints) {
         if (!constraint.empty())
-            non_empty_lp_constraints.push_back(constraint);
+            lp_program.get_constraints().push_back(constraint);
     }
 
     // Load the problem into the LP solver.
-    auto temp_variables = lp_variables; 
-    auto temp_constraints = non_empty_lp_constraints; 
-    lp_solver.load_problem(lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(temp_variables), move(temp_constraints)));
+    lp_solver.load_problem(lp_program);
 
     // Solve the linear program.
     lp_solver.solve();
