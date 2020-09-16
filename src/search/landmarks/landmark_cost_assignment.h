@@ -47,7 +47,7 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
       state. Reusing the vectors still saves some dynamic allocation overhead.
      */
     utils::NamedVector<lp::LPConstraint> lp_constraints;
-    lp::LinearProgram lp_program;
+    lp::LinearProgram lp;
 public:
     LandmarkEfficientOptimalSharedCostAssignment(const std::vector<int> &operator_costs,
                                                  const LandmarkGraph &graph,

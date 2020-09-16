@@ -127,7 +127,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     lp::LPSolverType solver_type)
     : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type),
-      lp_program(initial_program()) {}
+      lp(initial_program()) {}
 
 lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::initial_program() {
     /* The LP has one variable (column) per landmark and one
@@ -170,9 +170,9 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         if (lm->get_status() == lm_reached) {
-            lp_program.get_variables()[lm_id].upper_bound = 0;
+            lp.get_variables()[lm_id].upper_bound = 0;
         } else {
-            lp_program.get_variables()[lm_id].upper_bound = lp_solver.get_infinity();
+            lp.get_variables()[lm_id].upper_bound = lp_solver.get_infinity();
         }
     }
 
@@ -204,14 +204,14 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     /* Copy non-empty constraints and use those in the LP.
        This significantly speeds up the heuristic calculation. See issue443. */
     // TODO: do not copy the data here.
-    lp_program.get_constraints().clear();
+    lp.get_constraints().clear();
     for (const lp::LPConstraint &constraint : lp_constraints) {
         if (!constraint.empty())
-            lp_program.get_constraints().push_back(constraint);
+            lp.get_constraints().push_back(constraint);
     }
 
     // Load the problem into the LP solver.
-    lp_solver.load_problem(lp_program);
+    lp_solver.load_problem(lp);
 
     // Solve the linear program.
     lp_solver.solve();
