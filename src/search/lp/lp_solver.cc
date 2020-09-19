@@ -113,10 +113,6 @@ LPObjectiveSense LinearProgram::get_sense() const {
     return sense;
 }
 
-std::string LinearProgram::get_objective_name() {
-    return objective_name;
-}
-
 const utils::NamedVector<LPVariable> &LinearProgram::get_variables() const {
     return variables;
 }

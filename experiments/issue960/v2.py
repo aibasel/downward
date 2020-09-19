@@ -13,7 +13,7 @@ from common_setup import IssueConfig, IssueExperiment
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue960-base", "issue960-v1"]
+REVISIONS = ["issue960-base", "issue960-v2"]
 CONFIGS = [
     IssueConfig("opcount-seq-lmcut-cplex", ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver=cplex))"]),
     IssueConfig("diverse-potentials-cplex", ["--search", "astar(diverse_potentials(lpsolver=cplex,random_seed=1729))"]),

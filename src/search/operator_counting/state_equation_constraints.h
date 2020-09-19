@@ -31,12 +31,12 @@ class StateEquationConstraints : public ConstraintGenerator {
     std::vector<int> goal_state;
 
     void build_propositions(const TaskProxy &task_proxy);
-    void add_constraints(std::vector<lp::LPConstraint> &constraints, double infinity);
+    void add_constraints(utils::NamedVector<lp::LPConstraint> &constraints, double infinity);
 public:
     virtual void initialize_constraints(const std::shared_ptr<AbstractTask> &task,
-                                        std::vector<lp::LPConstraint> &constraints,
-                                        double infinity);
-    virtual bool update_constraints(const State &state, lp::LPSolver &lp_solver);
+                                        utils::NamedVector<lp::LPConstraint> &constraints,
+                                        double infinity) override;
+    virtual bool update_constraints(const State &state, lp::LPSolver &lp_solver) override;
 };
 }
 

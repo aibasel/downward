@@ -97,8 +97,6 @@ public:
      */
     utils::NamedVector<LPVariable> &get_variables();
     utils::NamedVector<LPConstraint> &get_constraints();
-    LPObjectiveSense get_sense();
-    std::string get_objective_name();
     const utils::NamedVector<LPVariable> &get_variables() const;
     const utils::NamedVector<LPConstraint> &get_constraints() const;
     LPObjectiveSense get_sense() const;
