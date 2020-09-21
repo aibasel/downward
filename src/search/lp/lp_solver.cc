@@ -165,11 +165,9 @@ void LPSolver::load_problem(const LinearProgram &lp) {
         objective.push_back(var.objective_coefficient);
     }
 
-    int i = 0;
     for (const LPConstraint &constraint : lp.get_constraints()) {
         row_lb.push_back(constraint.get_lower_bound());
         row_ub.push_back(constraint.get_upper_bound());
-        cout << "row" << i++ << endl;
     }
 
     for (const LPConstraint &constraint : lp.get_constraints()) {
@@ -221,6 +219,7 @@ void LPSolver::load_problem(const LinearProgram &lp) {
         if (!lp.get_objective_name().empty()) {
             lp_solver->setObjName(lp.get_objective_name());
         } else if (lp.get_variables().has_names() || lp.get_constraints().has_names()) {
+            // OSI requires the objective name to be set whenever any variable or constraint names are set.
             lp_solver->setObjName("obj");
         }
 
