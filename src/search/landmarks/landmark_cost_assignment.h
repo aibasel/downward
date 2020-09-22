@@ -55,7 +55,7 @@ public:
     LandmarkEfficientOptimalSharedCostAssignment(const std::vector<int> &operator_costs,
                                                  const LandmarkGraph &graph,
                                                  lp::LPSolverType solver_type);
-    
+
     virtual double cost_sharing_h_value() override;
 };
 }

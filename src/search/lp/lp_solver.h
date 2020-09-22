@@ -1,6 +1,7 @@
 #ifndef LP_LP_SOLVER_H
 #define LP_LP_SOLVER_H
 
+#include "../algorithms/named_vector.h"
 #include "../utils/collections.h"
 #include "../utils/language.h"
 #include "../utils/system.h"
@@ -82,25 +83,26 @@ class LinearProgram {
     LPObjectiveSense sense;
     std::string objective_name;
 
-    utils::NamedVector<LPVariable> variables;
-    utils::NamedVector<LPConstraint> constraints;
+    named_vector::NamedVector<LPVariable> variables;
+    named_vector::NamedVector<LPConstraint> constraints;
     double infinity;
 
 public:
     // objective_name is the name of the objective function used when writing the lp to a file.
-    explicit LinearProgram(LPObjectiveSense sense, utils::NamedVector<LPVariable> &&variables, utils::NamedVector<LPConstraint> &&constraints, std::string objective_name = "")
-        : sense(sense), objective_name(objective_name), variables(std::move(variables)), constraints(std::move(constraints)) {
+    explicit LinearProgram(LPObjectiveSense sense, named_vector::NamedVector<LPVariable> &&variables, named_vector::NamedVector<LPConstraint> &&constraints)
+        : sense(sense), objective_name(""), variables(std::move(variables)), constraints(std::move(constraints)) {
     }
 
     /*
       Variables and constraints can be given a custom name for debugging purposes.
       This has an impact on performance and should not be used in production code.
      */
-    utils::NamedVector<LPVariable> &get_variables();
-    utils::NamedVector<LPConstraint> &get_constraints();
-    const utils::NamedVector<LPVariable> &get_variables() const;
-    const utils::NamedVector<LPConstraint> &get_constraints() const;
+    named_vector::NamedVector<LPVariable> &get_variables();
+    named_vector::NamedVector<LPConstraint> &get_constraints();
+    const named_vector::NamedVector<LPVariable> &get_variables() const;
+    const named_vector::NamedVector<LPConstraint> &get_constraints() const;
     LPObjectiveSense get_sense() const;
+    void set_objective_name(std::string name);
     const std::string get_objective_name() const;
 };
 

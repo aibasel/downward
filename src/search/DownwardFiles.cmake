@@ -178,6 +178,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME NAMED_VECTOR
+    HELP "Generic vector with associated name for each element"
+    SOURCES
+        algorithms/named_vector
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
     NAME EQUIVALENCE_RELATION
     HELP "Equivalence relation over [1, ..., n] that can be iteratively refined"
     SOURCES
@@ -440,7 +448,6 @@ fast_downward_plugin(
     SOURCES
         search_engines/lazy_search
     DEPENDS ORDERED_SET SUCCESSOR_GENERATOR
-    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -449,7 +456,7 @@ fast_downward_plugin(
     SOURCES
         lp/lp_internals
         lp/lp_solver
-    DEPENDENCY_ONLY
+    DEPENDS NAMED_VECTOR
 )
 
 fast_downward_plugin(

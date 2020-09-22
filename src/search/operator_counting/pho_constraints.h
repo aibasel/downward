@@ -3,6 +3,8 @@
 
 #include "constraint_generator.h"
 
+#include "../algorithms/named_vector.h"
+
 #include "../pdbs/types.h"
 
 #include <memory>
@@ -26,7 +28,7 @@ public:
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,
-        utils::NamedVector<lp::LPConstraint> &constraints,
+        named_vector::NamedVector<lp::LPConstraint> &constraints,
         double infinity) override;
     virtual bool update_constraints(
         const State &state, lp::LPSolver &lp_solver) override;

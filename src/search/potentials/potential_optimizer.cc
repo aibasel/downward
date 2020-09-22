@@ -102,14 +102,14 @@ void PotentialOptimizer::construct_lp() {
     double upper_bound = (potentials_are_bounded() ? max_potential :
                           lp_solver.get_infinity());
 
-    utils::NamedVector<lp::LPVariable> lp_variables;
+    named_vector::NamedVector<lp::LPVariable> lp_variables;
     lp_variables.reserve(num_lp_vars);
     for (int lp_var_id = 0; lp_var_id < num_lp_vars; ++lp_var_id) {
         // Use dummy coefficient for now. Adapt coefficient later.
         lp_variables.emplace_back(-lp_solver.get_infinity(), upper_bound, 1.0);
     }
 
-    utils::NamedVector<lp::LPConstraint> lp_constraints;
+    named_vector::NamedVector<lp::LPConstraint> lp_constraints;
     for (OperatorProxy op : task_proxy.get_operators()) {
         // Create constraint:
         // Sum_{V in vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)

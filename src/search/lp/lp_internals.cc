@@ -147,7 +147,7 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
 
 NO_RETURN
 void handle_coin_error(const CoinError &error) {
-    if (error.message().find(COIN_CPLEX_ERROR_OOM) != std::string::npos) {
+    if (error.message().find(COIN_CPLEX_ERROR_OOM) != string::npos) {
         cout << "CPLEX ran out of memory during OSI method." << endl
              << "Coin exception: " << error.message() << endl
              << " from method " << error.methodName() << endl

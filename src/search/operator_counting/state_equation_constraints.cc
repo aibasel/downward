@@ -52,7 +52,7 @@ void StateEquationConstraints::build_propositions(const TaskProxy &task_proxy) {
 }
 
 void StateEquationConstraints::add_constraints(
-    utils::NamedVector<lp::LPConstraint> &constraints, double infinity) {
+    named_vector::NamedVector<lp::LPConstraint> &constraints, double infinity) {
     for (vector<Proposition> &var_propositions : propositions) {
         for (Proposition &prop : var_propositions) {
             lp::LPConstraint constraint(-infinity, infinity);
@@ -68,7 +68,7 @@ void StateEquationConstraints::add_constraints(
 }
 
 void StateEquationConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> &task, utils::NamedVector<lp::LPConstraint> &constraints,
+    const shared_ptr<AbstractTask> &task, named_vector::NamedVector<lp::LPConstraint> &constraints,
     double infinity) {
     utils::g_log << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);

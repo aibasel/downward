@@ -71,24 +71,24 @@ void LPConstraint::insert(int index, double coefficient) {
 }
 
 ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgram *program) {
-    if (get_lower_bound() != -infinity) {
-        stream << get_lower_bound() << " <= ";
+    if (lower_bound != -infinity) {
+        stream << lower_bound << " <= ";
     }
-    for (size_t i = 0; i < get_variables().size(); ++i) {
+    for (size_t i = 0; i < variables.size(); ++i) {
         if (i != 0)
             stream << " + ";
-        int variable = get_variables()[i];
+        int variable = variables[i];
         string variable_name;
         if (program != nullptr && program->get_variables().has_names() && program->get_variables().get_name(variable) != "") {
             variable_name = program->get_variables().get_name(variable);
         } else {
-            variable_name = "v" + std::to_string(variable);
+            variable_name = "v" + to_string(variable);
         }
-        stream << this->get_coefficients()[i] << " * " << variable_name;
+        stream << coefficients[i] << " * " << variable_name;
     }
-    if (this->get_upper_bound() != infinity) {
-        stream << " <= " << this->get_upper_bound();
-    } else if (this->get_lower_bound() == -infinity) {
+    if (upper_bound != infinity) {
+        stream << " <= " << upper_bound;
+    } else if (lower_bound == -infinity) {
         stream << " <= infinity";
     }
     return stream;
@@ -101,11 +101,11 @@ LPVariable::LPVariable(double lower_bound, double upper_bound,
       objective_coefficient(objective_coefficient) {
 }
 
-utils::NamedVector<LPVariable> &LinearProgram::get_variables() {
+named_vector::NamedVector<LPVariable> &LinearProgram::get_variables() {
     return variables;
 }
 
-utils::NamedVector<LPConstraint> &LinearProgram::get_constraints() {
+named_vector::NamedVector<LPConstraint> &LinearProgram::get_constraints() {
     return constraints;
 }
 
@@ -113,16 +113,20 @@ LPObjectiveSense LinearProgram::get_sense() const {
     return sense;
 }
 
-const utils::NamedVector<LPVariable> &LinearProgram::get_variables() const {
+const named_vector::NamedVector<LPVariable> &LinearProgram::get_variables() const {
     return variables;
 }
 
-const utils::NamedVector<LPConstraint> &LinearProgram::get_constraints() const {
+const named_vector::NamedVector<LPConstraint> &LinearProgram::get_constraints() const {
     return constraints;
 }
 
-const std::string LinearProgram::get_objective_name() const {
+const string LinearProgram::get_objective_name() const {
     return objective_name;
+}
+
+void LinearProgram::set_objective_name(string name) {
+    objective_name = name;
 }
 
 LPSolver::~LPSolver() {

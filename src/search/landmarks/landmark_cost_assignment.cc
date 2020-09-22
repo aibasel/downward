@@ -135,7 +135,7 @@ lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::initial_lp() {
     int num_cols = lm_graph.number_of_landmarks();
     int num_rows = operator_costs.size();
 
-    utils::NamedVector<lp::LPVariable> lp_variables;
+    named_vector::NamedVector<lp::LPVariable> lp_variables;
 
     /* We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
        so the coefficients are all 1.
@@ -152,7 +152,7 @@ lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::initial_lp() {
     }
 
     // Coefficients of constraints will be updated and recreated in each state. We ignore them for the initial LP.
-    return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables), utils::NamedVector<lp::LPConstraint>());
+    return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables), named_vector::NamedVector<lp::LPConstraint>());
 }
 
 double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
