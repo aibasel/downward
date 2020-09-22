@@ -49,12 +49,12 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     lp::LinearProgram lp;
     // We keep an additional copy of the constraints around to avoid some effort with recreating the vector (see issue443).
     std::vector<lp::LPConstraint> lp_constraints;
+
+    lp::LinearProgram initial_lp();
 public:
     LandmarkEfficientOptimalSharedCostAssignment(const std::vector<int> &operator_costs,
                                                  const LandmarkGraph &graph,
                                                  lp::LPSolverType solver_type);
-
-    lp::LinearProgram initial_program();
     
     virtual double cost_sharing_h_value() override;
 };

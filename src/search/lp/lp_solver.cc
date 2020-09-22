@@ -70,7 +70,7 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-ostream &LPConstraint::print(ostream &stream, double infinity, LinearProgram *program) {
+ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgram *program) {
     if (get_lower_bound() != -infinity) {
         stream << get_lower_bound() << " <= ";
     }
@@ -391,7 +391,7 @@ void LPSolver::write_lp(string filename) const {
 
 void LPSolver::print_failure_analysis() const {
     cout << "abandoned: " << lp_solver->isAbandoned() << endl;
-    cout << "proven optimal:  " << lp_solver->isProvenOptimal() << endl;
+    cout << "proven optimal: " << lp_solver->isProvenOptimal() << endl;
     cout << "proven primal infeasible: " << lp_solver->isProvenPrimalInfeasible() << endl;
     cout << "proven dual infeasible: " << lp_solver->isProvenDualInfeasible() << endl;
     cout << "dual objective limit reached: " << lp_solver->isDualObjectiveLimitReached() << endl;

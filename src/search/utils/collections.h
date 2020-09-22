@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <iostream>
 
 namespace utils {
 template<class T>
@@ -153,10 +152,10 @@ int estimate_unordered_map_bytes(int num_entries) {
     return _estimate_hash_table_bytes<std::unordered_map<Key, Value>>(num_entries);
 }
 
-    /**
-     * NamedVector is a vector-like collection with optional names to be associated with each element.
-     * It is optimized to have minimal overhead when there are no names.
-     * Any name which is not specified is assumed to be an empty string.
+    /*
+      NamedVector is a vector-like collection with optional names to be associated with each element.
+      It is optimized to have minimal overhead when there are no names.
+      Any name which is not specified is assumed to be an empty string.
      */
 template<typename T>
 class NamedVector {
@@ -196,8 +195,8 @@ public:
     }
 
     std::string get_name(int index) const {
-        int names_num = names.size();
-        if (index < names_num) {
+        int num_names = names.size();
+        if (index < num_names) {
             return names[index];
         } else {
             // All unspecified names are empty by default.
@@ -235,12 +234,14 @@ public:
     }
 
     void reserve(int capacity) {
-        // No space is reserved in the names vector because it is kept at minimal length and space is only used when necessary.
+        /* No space is reserved in the names vector because it is kept at minimal length 
+           and space is only used when necessary. */
         elements.reserve(capacity);
     }
 
     void resize(int count, T value) {
-        // The names vector is not resized because it is kept at minimal length and only resized when necessary.
+        /* The names vector is not resized because it is kept at minimal length 
+           and only resized when necessary. */
         elements.resize(count, value);
     }
 };

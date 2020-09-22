@@ -65,7 +65,7 @@ public:
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 
-    std::ostream &print(std::ostream &stream, double infinity, LinearProgram *program = nullptr);
+    std::ostream &dump(std::ostream &stream, double infinity, const LinearProgram *program = nullptr);
 };
 
 struct LPVariable {
@@ -87,13 +87,14 @@ class LinearProgram {
     double infinity;
 
 public:
+    // objective_name is the name of the objective function used when writing the lp to a file.
     explicit LinearProgram(LPObjectiveSense sense, utils::NamedVector<LPVariable> &&variables, utils::NamedVector<LPConstraint> &&constraints, std::string objective_name = "")
         : sense(sense), objective_name(objective_name), variables(std::move(variables)), constraints(std::move(constraints)) {
     }
 
-    /**
-     * Variables and constraints can be given a custom name for debugging purposes.
-     * This has an impact on performance and should never be used in production code.
+    /*
+      Variables and constraints can be given a custom name for debugging purposes.
+      This has an impact on performance and should not be used in production code.
      */
     utils::NamedVector<LPVariable> &get_variables();
     utils::NamedVector<LPConstraint> &get_constraints();
