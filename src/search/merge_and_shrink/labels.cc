@@ -1,4 +1,6 @@
-#include "global_labels.h"
+#include "labels.h"
+
+// TODO: rename this file to global_labels.cc
 
 #include "types.h"
 

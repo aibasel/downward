@@ -4,7 +4,7 @@
 #include "factored_transition_system.h"
 #include "fts_factory.h"
 #include "label_reduction.h"
-#include "global_labels.h"
+#include "labels.h"
 #include "merge_and_shrink_representation.h"
 #include "merge_strategy.h"
 #include "merge_strategy_factory.h"

@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_GLOBAL_LABELS_H
 #define MERGE_AND_SHRINK_GLOBAL_LABELS_H
 
+// TODO: rename this file to global_labels.h
+
 #include <memory>
 #include <vector>
 

@@ -2,7 +2,7 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "global_labels.h"
+#include "labels.h"
 #include "merge_and_shrink_representation.h"
 #include "transition_system.h"
 #include "types.h"

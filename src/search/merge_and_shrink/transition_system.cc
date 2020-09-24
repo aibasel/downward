@@ -1,7 +1,7 @@
 #include "transition_system.h"
 
 #include "distances.h"
-#include "global_labels.h"
+#include "labels.h"
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
