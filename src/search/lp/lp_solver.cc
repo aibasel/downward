@@ -79,7 +79,7 @@ ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgra
             stream << " + ";
         int variable = variables[i];
         string variable_name;
-        if (program != nullptr && program->get_variables().has_names() && program->get_variables().get_name(variable) != "") {
+        if (program && program->get_variables().has_names() && program->get_variables().get_name(variable) != "") {
             variable_name = program->get_variables().get_name(variable);
         } else {
             variable_name = "v" + to_string(variable);
@@ -121,7 +121,7 @@ const named_vector::NamedVector<LPConstraint> &LinearProgram::get_constraints() 
     return constraints;
 }
 
-const string LinearProgram::get_objective_name() const {
+const string &LinearProgram::get_objective_name() const {
     return objective_name;
 }
 
@@ -227,7 +227,7 @@ void LPSolver::load_problem(const LinearProgram &lp) {
             lp_solver->setObjName("obj");
         }
 
-        if (lp.get_variables().has_names() || lp.get_constraints().has_names()) {
+        if (lp.get_variables().has_names() || lp.get_constraints().has_names() || !lp.get_objective_name().empty()) {
             lp_solver->setIntParam(OsiIntParam::OsiNameDiscipline, 2);
         } else {
             lp_solver->setIntParam(OsiIntParam::OsiNameDiscipline, 0);
@@ -385,7 +385,7 @@ void LPSolver::solve() {
     }
 }
 
-void LPSolver::write_lp(string filename) const {
+void LPSolver::write_lp(const string &filename) const {
     try {
         lp_solver->writeLp(filename.c_str());
     } catch (CoinError &error) {

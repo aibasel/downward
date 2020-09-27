@@ -2,7 +2,6 @@
 #define LP_LP_SOLVER_H
 
 #include "../algorithms/named_vector.h"
-#include "../utils/collections.h"
 #include "../utils/language.h"
 #include "../utils/system.h"
 
@@ -103,7 +102,7 @@ public:
     const named_vector::NamedVector<LPConstraint> &get_constraints() const;
     LPObjectiveSense get_sense() const;
     void set_objective_name(std::string name);
-    const std::string get_objective_name() const;
+    const std::string &get_objective_name() const;
 };
 
 #ifdef __GNUG__
@@ -156,7 +155,7 @@ public:
     LP_METHOD(void set_variable_upper_bound(int index, double bound))
 
     LP_METHOD(void solve())
-    LP_METHOD(void write_lp(std::string filename) const)
+    LP_METHOD(void write_lp(const std::string &filename) const)
     LP_METHOD(void print_failure_analysis() const)
     LP_METHOD(bool is_infeasible() const)
     LP_METHOD(bool is_unbounded() const)

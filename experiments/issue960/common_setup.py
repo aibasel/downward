@@ -345,7 +345,7 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(
             "publish-comparison-tables", publish_comparison_tables)
 
-    def add_scatter_plot_step(self, relative=False, attributes=None):
+    def add_scatter_plot_step(self, relative=False, attributes=None, additional=[]):
         """Add step creating (relative) scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
@@ -366,11 +366,13 @@ class IssueExperiment(FastDownwardExperiment):
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
 
-        def make_scatter_plot(config_nick, rev1, rev2, attribute):
+        def make_scatter_plot(config_nick, rev1, rev2, attribute, config_nick2=None):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
+            if config_nick2 is not None:
+                name += "-" + config_nick2
             print("Make scatter plot for", name)
             algo1 = get_algo_nick(rev1, config_nick)
-            algo2 = get_algo_nick(rev2, config_nick)
+            algo2 = get_algo_nick(rev2, config_nick if config_nick2 is None else config_nick2)
             report = ScatterPlotReport(
                 filter_algorithm=[algo1, algo2],
                 attributes=[attribute],
@@ -386,5 +388,7 @@ class IssueExperiment(FastDownwardExperiment):
                     for attribute in self.get_supported_attributes(
                             config.nick, attributes):
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
+            for nick1, nick2, rev1, rev2, attribute in additional:
+                make_scatter_plot(nick1, rev1, rev2, attribute, config_nick2=nick2)
 
-        self.add_step(step_name, make_scatter_plots)
+        self.add_step(step_name, lambda: make_scatter_plots)

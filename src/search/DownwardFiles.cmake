@@ -448,6 +448,7 @@ fast_downward_plugin(
     SOURCES
         search_engines/lazy_search
     DEPENDS ORDERED_SET SUCCESSOR_GENERATOR
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
