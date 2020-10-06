@@ -88,8 +88,10 @@ class LinearProgram {
 
 public:
     // objective_name is the name of the objective function used when writing the lp to a file.
-    explicit LinearProgram(LPObjectiveSense sense, named_vector::NamedVector<LPVariable> &&variables, named_vector::NamedVector<LPConstraint> &&constraints)
-        : sense(sense), objective_name(""), variables(std::move(variables)), constraints(std::move(constraints)) {
+    LinearProgram(LPObjectiveSense sense,
+                  named_vector::NamedVector<LPVariable> &&variables,
+                  named_vector::NamedVector<LPConstraint> &&constraints)
+        : sense(sense), variables(std::move(variables)), constraints(std::move(constraints)) {
     }
 
     /*
