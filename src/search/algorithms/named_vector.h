@@ -41,7 +41,7 @@ public:
     }
 
     void set_name(int index, const std::string &name) {
-        assert(0 <= index && index < size());
+        assert(index >= 0 && index < size());
         if (index >= names.size()) {
             if (name.empty()) {
                 // All unspecified names are empty by default.
@@ -53,7 +53,7 @@ public:
     }
 
     std::string get_name(int index) const {
-        assert(0 <= index && index < size());
+        assert(index >= 0  && index < size());
         int num_names = names.size();
         if (index < num_names) {
             return names[index];
