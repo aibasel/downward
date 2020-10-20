@@ -1,24 +1,24 @@
 #ifndef ALGORITHMS_NAMED_VECTOR_H
 #define ALGORITHMS_NAMED_VECTOR_H
 
+#include <assert.h>
 #include <string>
 #include <vector>
 
 namespace named_vector {
 /*
-  NamedVector is a vector-like collection with optional names to be associated with each element.
-  It is optimized to have minimal overhead when there are no names.
-  Any name which is not specified is assumed to be an empty string.
+  NamedVector is a vector-like collection with optional names to be
+  associated with each element. It is intended to be used to attach
+  names to objects in vectors for debugging purposes and is optimized
+  to have minimal overhead when there are no names. Any name which is
+  not specified is assumed to be an empty string.
+  Accessing a name with an invalid index will result in an error.
  */
 template<typename T>
 class NamedVector {
     std::vector<T> elements;
     std::vector<std::string> names;
 public:
-    NamedVector() = default;
-    NamedVector(NamedVector<T> &&other) = default;
-    NamedVector(NamedVector<T> &other) = default;
-
     template<typename ... _Args>
     void emplace_back(_Args && ... __args) {
         elements.emplace_back(std::forward<_Args>(__args) ...);
@@ -32,11 +32,16 @@ public:
         return elements[index];
     }
 
+    const T &operator[](int index) const {
+        return elements[index];
+    }
+
     bool has_names() const {
         return !names.empty();
     }
 
     void set_name(int index, const std::string &name) {
+        assert(0 < index || index < size());
         if (index >= names.size()) {
             if (name.empty()) {
                 // All unspecified names are empty by default.
@@ -48,6 +53,7 @@ public:
     }
 
     std::string get_name(int index) const {
+        assert(0 < index || index < size());
         int num_names = names.size();
         if (index < num_names) {
             return names[index];
@@ -87,14 +93,20 @@ public:
     }
 
     void reserve(int capacity) {
-        /* No space is reserved in the names vector because it is kept at minimal length
-           and space is only used when necessary. */
+        /* No space is reserved in the names vector because it is kept
+           at minimal length and space is only used when necessary. */
         elements.reserve(capacity);
     }
 
-    void resize(int count, T value) {
-        /* The names vector is not resized because it is kept at minimal length
-           and only resized when necessary. */
+    void resize(int count) {
+        /* The names vector is not resized because it is kept
+           at minimal length and only resized when necessary. */
+        elements.resize(count);
+    }
+
+    void resize(int count, const T &value) {
+        /* The names vector is not resized because it is kept
+           at minimal length and only resized when necessary. */
         elements.resize(count, value);
     }
 };
