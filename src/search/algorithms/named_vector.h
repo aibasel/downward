@@ -1,18 +1,18 @@
 #ifndef ALGORITHMS_NAMED_VECTOR_H
 #define ALGORITHMS_NAMED_VECTOR_H
 
-#include <assert.h>
+#include <cassert>
 #include <string>
 #include <vector>
 
 namespace named_vector {
 /*
-  NamedVector is a vector-like collection with optional names to be
+  NamedVector is a vector-like collection with optional names
   associated with each element. It is intended to be used to attach
   names to objects in vectors for debugging purposes and is optimized
   to have minimal overhead when there are no names. Any name which is
-  not specified is assumed to be an empty string.
-  Accessing a name with an invalid index will result in an error.
+  not specified is assumed to be an empty string. Accessing a name
+  with an invalid index will result in an error in debug mode.
  */
 template<typename T>
 class NamedVector {
@@ -41,7 +41,7 @@ public:
     }
 
     void set_name(int index, const std::string &name) {
-        assert(0 < index || index < size());
+        assert(0 <= index && index < size());
         if (index >= names.size()) {
             if (name.empty()) {
                 // All unspecified names are empty by default.
@@ -53,7 +53,7 @@ public:
     }
 
     std::string get_name(int index) const {
-        assert(0 < index || index < size());
+        assert(0 <= index && index < size());
         int num_names = names.size();
         if (index < num_names) {
             return names[index];
@@ -94,19 +94,19 @@ public:
 
     void reserve(int capacity) {
         /* No space is reserved in the names vector because it is kept
-           at minimal length and space is only used when necessary. */
+           at minimal size and space is only used when necessary. */
         elements.reserve(capacity);
     }
 
     void resize(int count) {
         /* The names vector is not resized because it is kept
-           at minimal length and only resized when necessary. */
+           at minimal size and only resized when necessary. */
         elements.resize(count);
     }
 
     void resize(int count, const T &value) {
         /* The names vector is not resized because it is kept
-           at minimal length and only resized when necessary. */
+           at minimal size and only resized when necessary. */
         elements.resize(count, value);
     }
 };
