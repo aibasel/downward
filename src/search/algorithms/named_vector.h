@@ -8,7 +8,7 @@
 namespace named_vector {
 /*
   NamedVector is a vector-like collection with optional names
-  associated with each element. It is intended to be used to attach
+  associated with each element. It is intended for attaching
   names to objects in vectors for debugging purposes and is optimized
   to have minimal overhead when there are no names. Any name which is
   not specified is assumed to be an empty string. Accessing a name
