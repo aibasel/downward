@@ -25,7 +25,7 @@ PhOConstraints::PhOConstraints(const Options &opts)
 
 void PhOConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task,
-    vector<lp::LPConstraint> &constraints,
+    named_vector::NamedVector<lp::LPConstraint> &constraints,
     double infinity) {
     assert(pattern_generator);
     pdbs::PatternCollectionInformation pattern_collection_info =

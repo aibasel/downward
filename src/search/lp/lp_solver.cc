@@ -21,6 +21,7 @@
 #endif
 
 #include <cassert>
+#include <iostream>
 #include <numeric>
 
 using namespace std;
@@ -69,11 +70,63 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
+ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgram *program) {
+    if (lower_bound != -infinity) {
+        stream << lower_bound << " <= ";
+    }
+    for (size_t i = 0; i < variables.size(); ++i) {
+        if (i != 0)
+            stream << " + ";
+        int variable = variables[i];
+        string variable_name;
+        if (program && program->get_variables().has_names() && program->get_variables().get_name(variable) != "") {
+            variable_name = program->get_variables().get_name(variable);
+        } else {
+            variable_name = "v" + to_string(variable);
+        }
+        stream << coefficients[i] << " * " << variable_name;
+    }
+    if (upper_bound != infinity) {
+        stream << " <= " << upper_bound;
+    } else if (lower_bound == -infinity) {
+        stream << " <= infinity";
+    }
+    return stream;
+}
+
 LPVariable::LPVariable(double lower_bound, double upper_bound,
                        double objective_coefficient)
     : lower_bound(lower_bound),
       upper_bound(upper_bound),
       objective_coefficient(objective_coefficient) {
+}
+
+named_vector::NamedVector<LPVariable> &LinearProgram::get_variables() {
+    return variables;
+}
+
+named_vector::NamedVector<LPConstraint> &LinearProgram::get_constraints() {
+    return constraints;
+}
+
+LPObjectiveSense LinearProgram::get_sense() const {
+    return sense;
+}
+
+const named_vector::NamedVector<LPVariable> &LinearProgram::get_variables() const {
+    return variables;
+}
+
+const named_vector::NamedVector<LPConstraint> &LinearProgram::get_constraints() const {
+    return constraints;
+}
+
+const string &LinearProgram::get_objective_name() const {
+    return objective_name;
+}
+
+void LinearProgram::set_objective_name(string name) {
+    objective_name = name;
 }
 
 LPSolver::~LPSolver() {
@@ -86,7 +139,11 @@ LPSolver::LPSolver(LPSolverType solver_type)
       is_solved(false),
       num_permanent_constraints(0),
       has_temporary_constraints_(false) {
-    lp_solver = create_lp_solver(solver_type);
+    try {
+        lp_solver = create_lp_solver(solver_type);
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
 }
 
 void LPSolver::clear_temporary_data() {
@@ -101,24 +158,23 @@ void LPSolver::clear_temporary_data() {
     rows.clear();
 }
 
-void LPSolver::load_problem(LPObjectiveSense sense,
-                            const vector<LPVariable> &variables,
-                            const vector<LPConstraint> &constraints) {
+void LPSolver::load_problem(const LinearProgram &lp) {
     clear_temporary_data();
     is_initialized = false;
-    num_permanent_constraints = constraints.size();
+    num_permanent_constraints = lp.get_constraints().size();
 
-    for (const LPVariable &var : variables) {
+    for (const LPVariable &var : lp.get_variables()) {
         col_lb.push_back(var.lower_bound);
         col_ub.push_back(var.upper_bound);
         objective.push_back(var.objective_coefficient);
     }
-    for (const LPConstraint &constraint : constraints) {
+
+    for (const LPConstraint &constraint : lp.get_constraints()) {
         row_lb.push_back(constraint.get_lower_bound());
         row_ub.push_back(constraint.get_upper_bound());
     }
 
-    for (const LPConstraint &constraint : constraints) {
+    for (const LPConstraint &constraint : lp.get_constraints()) {
         const vector<int> &vars = constraint.get_variables();
         const vector<double> &coeffs = constraint.get_coefficients();
         assert(vars.size() == coeffs.size());
@@ -140,8 +196,8 @@ void LPSolver::load_problem(LPObjectiveSense sense,
 
     try {
         CoinPackedMatrix matrix(false,
-                                variables.size(),
-                                constraints.size(),
+                                lp.get_variables().size(),
+                                lp.get_constraints().size(),
                                 elements.size(),
                                 elements.data(),
                                 indices.data(),
@@ -158,10 +214,35 @@ void LPSolver::load_problem(LPObjectiveSense sense,
           interfaces of all OSI versions <= 0.108.4 ignore it when it is
           set earlier. See issue752 for details.
         */
-        if (sense == LPObjectiveSense::MINIMIZE) {
+        if (lp.get_sense() == LPObjectiveSense::MINIMIZE) {
             lp_solver->setObjSense(1);
         } else {
             lp_solver->setObjSense(-1);
+        }
+
+        if (!lp.get_objective_name().empty()) {
+            lp_solver->setObjName(lp.get_objective_name());
+        } else if (lp.get_variables().has_names() || lp.get_constraints().has_names()) {
+            // OSI requires the objective name to be set whenever any variable or constraint names are set.
+            lp_solver->setObjName("obj");
+        }
+
+        if (lp.get_variables().has_names() || lp.get_constraints().has_names() || !lp.get_objective_name().empty()) {
+            lp_solver->setIntParam(OsiIntParam::OsiNameDiscipline, 2);
+        } else {
+            lp_solver->setIntParam(OsiIntParam::OsiNameDiscipline, 0);
+        }
+
+        if (lp.get_variables().has_names()) {
+            for (int i = 0; i < lp.get_variables().size(); ++i) {
+                lp_solver->setColName(i, lp.get_variables().get_name(i));
+            }
+        }
+
+        if (lp.get_constraints().has_names()) {
+            for (int i = 0; i < lp.get_constraints().size(); ++i) {
+                lp_solver->setRowName(i, lp.get_constraints().get_name(i));
+            }
         }
     } catch (CoinError &error) {
         handle_coin_error(error);
@@ -304,6 +385,23 @@ void LPSolver::solve() {
     }
 }
 
+void LPSolver::write_lp(const string &filename) const {
+    try {
+        lp_solver->writeLp(filename.c_str());
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+}
+
+void LPSolver::print_failure_analysis() const {
+    cout << "abandoned: " << lp_solver->isAbandoned() << endl;
+    cout << "proven optimal: " << lp_solver->isProvenOptimal() << endl;
+    cout << "proven primal infeasible: " << lp_solver->isProvenPrimalInfeasible() << endl;
+    cout << "proven dual infeasible: " << lp_solver->isProvenDualInfeasible() << endl;
+    cout << "dual objective limit reached: " << lp_solver->isDualObjectiveLimitReached() << endl;
+    cout << "iteration limit reached: " << lp_solver->isIterationLimitReached() << endl;
+}
+
 bool LPSolver::has_optimal_solution() const {
     assert(is_solved);
     try {
@@ -319,6 +417,28 @@ double LPSolver::get_objective_value() const {
     assert(has_optimal_solution());
     try {
         return lp_solver->getObjValue();
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+}
+
+bool LPSolver::is_infeasible() const {
+    assert(is_solved);
+    try {
+        return lp_solver->isProvenPrimalInfeasible() &&
+               !lp_solver->isProvenDualInfeasible() &&
+               !lp_solver->isProvenOptimal();
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+}
+
+bool LPSolver::is_unbounded() const {
+    assert(is_solved);
+    try {
+        return !lp_solver->isProvenPrimalInfeasible() &&
+               lp_solver->isProvenDualInfeasible() &&
+               !lp_solver->isProvenOptimal();
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
