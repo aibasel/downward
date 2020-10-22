@@ -84,7 +84,6 @@ class LinearProgram {
 
     named_vector::NamedVector<LPVariable> variables;
     named_vector::NamedVector<LPConstraint> constraints;
-    double infinity;
 
 public:
     // objective_name is the name of the objective function used when writing the lp to a file.
