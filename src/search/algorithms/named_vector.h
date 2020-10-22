@@ -53,7 +53,7 @@ public:
     }
 
     std::string get_name(int index) const {
-        assert(index >= 0  && index < size());
+        assert(index >= 0 && index < size());
         int num_names = names.size();
         if (index < num_names) {
             return names[index];

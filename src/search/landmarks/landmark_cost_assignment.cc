@@ -128,8 +128,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type),
       lp(build_initial_lp()) {
-        
-    }
+}
 
 lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::build_initial_lp() {
     /* The LP has one variable (column) per landmark and one

@@ -39,7 +39,7 @@ public:
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
-    lp::LPSolver lp_solver;    
+    lp::LPSolver lp_solver;
     // We keep an additional copy of the constraints around to avoid some effort with recreating the vector (see issue443).
     std::vector<lp::LPConstraint> lp_constraints;
     /*
