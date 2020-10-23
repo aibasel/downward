@@ -11,7 +11,11 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- There have been no relevant changes yet.
+- Add debugging methods to LP solver interface.
+  <http://issues.fast-downward.org/issue960>
+  You can now assign names to LP variables and constraints for easier
+  debugging. Since this incurs a slight runtime penalty, we recommend
+  against using this feature when running experiments.
 
 ## Fast Downward 20.06
 
