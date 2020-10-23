@@ -108,9 +108,9 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "use_integer_operator_counts",
         "restrict operator counting variables to integer values. Computing the "
         "heuristic with integer variables can produce higher values but "
-        "requires solving an MIP instead of an LP which is generally more "
-        "computationally expensive. Turning this option on can thus kill "
-        "performance.",
+        "requires solving a MIP instead of an LP which is generally more "
+        "computationally expensive. Turning this option on can thus drastically "
+        "increase the runtime.",
         "false");
 
     lp::add_lp_solver_option_to_parser(parser);
