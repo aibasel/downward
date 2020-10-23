@@ -19,7 +19,6 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
       lp_solver(opts.get<lp::LPSolverType>("lpsolver")),
       use_integer_operator_counts(opts.get<bool>("use_integer_operator_counts")) {
     named_vector::NamedVector<lp::LPVariable> variables;
-==== BASE ====
     double infinity = lp_solver.get_infinity();
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_cost = op.get_cost();

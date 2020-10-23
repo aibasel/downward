@@ -216,6 +216,7 @@ void LPSolver::load_problem(const LinearProgram &lp) {
             if (lp.get_variables()[i].is_integer) {
                 lp_solver->setInteger(i);
                 is_mip = true;
+            }
         }
 
         /*
