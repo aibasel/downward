@@ -25,6 +25,12 @@ after the corresponding tracker issues.
   forcing operator counts to take integer values. Solving a MIP is NP-hard
   and usually takes much longer than solving the corresponding LP.
 
+- Add delete-relation constraints to the operator-counting framework.
+  <http://issues.fast-downward.org/issue983>
+  The constraints defined by Imai and Fukunaga (JAIR 2015) encode
+  different relaxations of the delete-relaxation heuristic.
+  For details, see [our documentation](http://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints).
+
 
 ## Fast Downward 20.06
 
