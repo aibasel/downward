@@ -25,10 +25,11 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
         variables.push_back(lp::LPVariable(0, infinity, op_cost, use_integer_operator_counts));
     }
     named_vector::NamedVector<lp::LPConstraint> constraints;
+    lp::LinearProgram lp(lp::LPObjectiveSense::MINIMIZE, move(variables), move(constraints), infinity);
     for (const auto &generator : constraint_generators) {
-        generator->initialize_constraints(task, constraints, infinity);
+        generator->initialize_constraints(task, lp);
     }
-    lp_solver.load_problem(lp::LinearProgram(lp::LPObjectiveSense::MINIMIZE, move(variables), move(constraints)));
+    lp_solver.load_problem(move(lp));
 }
 
 OperatorCountingHeuristic::~OperatorCountingHeuristic() {

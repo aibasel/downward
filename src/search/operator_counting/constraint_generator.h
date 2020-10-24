@@ -10,8 +10,8 @@ class AbstractTask;
 class State;
 
 namespace lp {
-class LPConstraint;
 class LPSolver;
+class LinearProgram;
 }
 
 namespace operator_counting {
@@ -40,9 +40,7 @@ public:
       and variable bounds.
     */
     virtual void initialize_constraints(
-        const std::shared_ptr<AbstractTask> &task,
-        named_vector::NamedVector<lp::LPConstraint> &constraints,
-        double infinity);
+        const std::shared_ptr<AbstractTask> &task, lp::LinearProgram &lp);
 
     /*
       Called before evaluating a state. Use this to add temporary constraints
@@ -52,7 +50,7 @@ public:
       Returns true if a dead end was detected and false otherwise.
     */
     virtual bool update_constraints(const State &state,
-                                    lp::LPSolver &lp_solver) = 0;
+        lp::LPSolver &lp_solver) = 0;
 };
 }
 
