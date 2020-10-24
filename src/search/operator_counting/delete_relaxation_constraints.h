@@ -50,14 +50,14 @@ class DeleteRelaxationConstraints : public ConstraintGenerator {
 
     /* The state that is currently used for setting the bounds. Remembering
        this makes it faster to unset the bounds when the state changes. */
-    std::vector<FactProxy> last_state;
+    std::vector<FactPair> last_state;
 
     int get_var_op_used(const OperatorProxy &op);
-    int get_var_fact_reached(const FactProxy &f);
-    int get_var_first_achiever(const OperatorProxy &op, const FactProxy &f);
+    int get_var_fact_reached(FactPair f);
+    int get_var_first_achiever(const OperatorProxy &op, FactPair f);
     int get_var_op_time(const OperatorProxy &op);
-    int get_var_fact_time(const FactProxy &f);
-    int get_constraint_id(const FactProxy &f);
+    int get_var_fact_time(FactPair f);
+    int get_constraint_id(FactPair f);
 
     void create_auxiliary_variables(
         const TaskProxy &task_proxy, LPVariables &variables);

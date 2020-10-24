@@ -31,25 +31,25 @@ int DeleteRelaxationConstraints::get_var_op_used(const OperatorProxy &op) {
     return lp_var_id_op_used[op.get_id()];
 }
 
-int DeleteRelaxationConstraints::get_var_fact_reached(const FactProxy &f) {
-    return lp_var_id_fact_reached[f.get_variable().get_id()][f.get_value()];
+int DeleteRelaxationConstraints::get_var_fact_reached(FactPair f) {
+    return lp_var_id_fact_reached[f.var][f.value];
 }
 
 int DeleteRelaxationConstraints::get_var_first_achiever(
-    const OperatorProxy &op, const FactProxy &f) {
-    return lp_var_id_first_achiever[op.get_id()][f.get_variable().get_id()][f.get_value()];
+    const OperatorProxy &op, FactPair f) {
+    return lp_var_id_first_achiever[op.get_id()][f.var][f.value];
 }
 
 int DeleteRelaxationConstraints::get_var_op_time(const OperatorProxy &op) {
     return lp_var_id_op_time[op.get_id()];
 }
 
-int DeleteRelaxationConstraints::get_var_fact_time(const FactProxy &f) {
-    return lp_var_id_fact_time[f.get_variable().get_id()][f.get_value()];
+int DeleteRelaxationConstraints::get_var_fact_time(FactPair f) {
+    return lp_var_id_fact_time[f.var][f.value];
 }
 
-int DeleteRelaxationConstraints::get_constraint_id(const FactProxy &f) {
-    return constraint_ids[f.get_variable().get_id()][f.get_value()];
+int DeleteRelaxationConstraints::get_constraint_id(FactPair f) {
+    return constraint_ids[f.var][f.value];
 }
 
 void DeleteRelaxationConstraints::create_auxiliary_variables(
@@ -109,7 +109,7 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
           R_f = 1 for all goal facts f.
     */
     for (FactProxy goal : task_proxy.get_goals()) {
-        variables[get_var_fact_reached(goal)].lower_bound = 1;
+        variables[get_var_fact_reached(goal.get_pair())].lower_bound = 1;
     }
 
     /*
@@ -119,19 +119,21 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
     */
     constraint_ids.resize(vars.size());
     for (VariableProxy var : vars) {
-        constraint_ids[var.get_id()].resize(var.get_domain_size());
+        int var_id = var.get_id();
+        constraint_ids[var_id].resize(var.get_domain_size());
         for (int value = 0; value < var.get_domain_size(); ++value) {
-            constraint_ids[var.get_id()][value] = constraints.size();
+            constraint_ids[var_id][value] = constraints.size();
             constraints.emplace_back(0, infinity);
             /* We add "- R_f" here, collect the achiever below and adapt
                the lower bound in each iteration, i.e., in
                update_constraints. */
-            constraints.back().insert(get_var_fact_reached(var.get_fact(value)), -1);
+            constraints.back().insert(
+                get_var_fact_reached(FactPair(var_id, value)), -1);
         }
     }
     for (OperatorProxy op : ops) {
         for (EffectProxy eff : op.get_effects()) {
-            FactProxy f = eff.get_fact();
+            FactPair f = eff.get_fact().get_pair();
             lp::LPConstraint &constraint = constraints[get_constraint_id(f)];
             constraint.insert(get_var_first_achiever(op, f), 1);
         }
@@ -143,7 +145,7 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
     */
     for (OperatorProxy op : ops) {
         for (EffectProxy eff : op.get_effects()) {
-            FactProxy f = eff.get_fact();
+            FactPair f = eff.get_fact().get_pair();
             lp::LPConstraint constraint(0, infinity);
             constraint.insert(get_var_op_used(op), 1);
             constraint.insert(get_var_first_achiever(op, f), -1);
@@ -158,7 +160,7 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
     for (OperatorProxy op : ops) {
         for (FactProxy f : op.get_preconditions()) {
             lp::LPConstraint constraint(0, infinity);
-            constraint.insert(get_var_fact_reached(f), 1);
+            constraint.insert(get_var_fact_reached(f.get_pair()), 1);
             constraint.insert(get_var_op_used(op), -1);
             constraints.push_back(constraint);
         }
@@ -173,7 +175,7 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
             for (FactProxy f : op.get_preconditions()) {
                 lp::LPConstraint constraint(0, infinity);
                 constraint.insert(get_var_op_time(op), 1);
-                constraint.insert(get_var_fact_time(f), -1);
+                constraint.insert(get_var_fact_time(f.get_pair()), -1);
                 constraints.push_back(constraint);
             }
         }
@@ -189,7 +191,7 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
         int M = ops.size() + 1;
         for (OperatorProxy op : ops) {
             for (EffectProxy eff : op.get_effects()) {
-                FactProxy f = eff.get_fact();
+                FactPair f = eff.get_fact().get_pair();
                 lp::LPConstraint constraint(1 - M, infinity);
                 constraint.insert(get_var_fact_time(f), 1);
                 constraint.insert(get_var_op_time(op), -1);
@@ -223,14 +225,14 @@ void DeleteRelaxationConstraints::initialize_constraints(
 bool DeleteRelaxationConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     // Unset old bounds.
-    for (FactProxy f : last_state) {
+    for (FactPair f : last_state) {
         lp_solver.set_constraint_lower_bound(get_constraint_id(f), 0);
     }
     last_state.clear();
     // Set new bounds.
     for (FactProxy f : state) {
-        lp_solver.set_constraint_lower_bound(get_constraint_id(f), -1);
-        last_state.push_back(f);
+        lp_solver.set_constraint_lower_bound(get_constraint_id(f.get_pair()), -1);
+        last_state.push_back(f.get_pair());
     }
     return false;
 }
