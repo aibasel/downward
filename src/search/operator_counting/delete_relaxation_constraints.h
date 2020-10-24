@@ -44,23 +44,22 @@ class DeleteRelaxationConstraints : public ConstraintGenerator {
        Indexed with var.id, value */
     std::vector<std::vector<int>> constraint_ids;
 
-    /* The state that is currently used for setting the bounds.
-       Remembering this makes it faster to unset the bounds when the state
-       changes. */
+    /* The state that is currently used for setting the bounds. Remembering
+       this makes it faster to unset the bounds when the state changes. */
     std::vector<FactProxy> last_state;
 
-    int get_var_op_used(OperatorProxy op);
-    int get_var_fact_reached(FactProxy f);
-    int get_var_first_achiever(OperatorProxy op, FactProxy f);
-    int get_var_op_time(OperatorProxy op);
-    int get_var_fact_time(FactProxy f);
-    int get_constraint_id(FactProxy f);
+    int get_var_op_used(const OperatorProxy &op);
+    int get_var_fact_reached(const FactProxy &f);
+    int get_var_first_achiever(const OperatorProxy &op, const FactProxy &f);
+    int get_var_op_time(const OperatorProxy &op);
+    int get_var_fact_time(const FactProxy &f);
+    int get_constraint_id(const FactProxy &f);
 
-    void create_auxiliary_variables(TaskProxy task_proxy,
+    void create_auxiliary_variables(const TaskProxy &task_proxy,
         named_vector::NamedVector<lp::LPVariable> &variables);
-    void create_constraints(TaskProxy task_proxy, lp::LinearProgram &lp);
+    void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp);
 public:
-    DeleteRelaxationConstraints(const options::Options &opts);
+    explicit DeleteRelaxationConstraints(const options::Options &opts);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

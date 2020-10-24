@@ -35,9 +35,7 @@ public:
 
     /*
       Called upon initialization for the given task. Use this to add permanent
-      constraints and perform other initialization. The parameter "infinity"
-      is the value that the LP solver uses for infinity. Use it for constraint
-      and variable bounds.
+      constraints and perform other initialization.
     */
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task, lp::LinearProgram &lp);
@@ -49,8 +47,8 @@ public:
 
       Returns true if a dead end was detected and false otherwise.
     */
-    virtual bool update_constraints(const State &state,
-        lp::LPSolver &lp_solver) = 0;
+    virtual bool update_constraints(
+        const State &state, lp::LPSolver &lp_solver) = 0;
 };
 }
 

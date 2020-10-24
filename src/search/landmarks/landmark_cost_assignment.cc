@@ -152,9 +152,10 @@ lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::build_initial_lp
         lp_constraints[op_id].set_upper_bound(operator_costs[op_id]);
     }
 
-    // Coefficients of constraints will be updated and recreated in each state. We ignore them for the initial LP.
+    /* Coefficients of constraints will be updated and recreated in each state.
+       We ignore them for the initial LP. */
     return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
-        named_vector::NamedVector<lp::LPConstraint>(), lp_solver.get_infinity());
+        {}, lp_solver.get_infinity());
 }
 
 double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
