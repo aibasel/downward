@@ -12,9 +12,9 @@
 using namespace std;
 
 namespace operator_counting {
-void add_lp_variables(int count, named_vector::NamedVector<lp::LPVariable> &variables,
-                      vector<int> &indices, double lower, double upper,
-                      double objective, bool /*is_integer*/) {
+void add_lp_variables(int count, LPVariables &variables, vector<int> &indices,
+                      double lower, double upper, double objective,
+                      bool /*is_integer*/) {
     for (int i = 0; i < count; ++i) {
         indices.push_back(variables.size());
         variables.emplace_back(lower, upper, objective /*, is_integer*/); // TODO: issue891
@@ -53,7 +53,7 @@ int DeleteRelaxationConstraints::get_constraint_id(const FactProxy &f) {
 }
 
 void DeleteRelaxationConstraints::create_auxiliary_variables(
-    const TaskProxy &task_proxy, named_vector::NamedVector<lp::LPVariable> &variables) {
+    const TaskProxy &task_proxy, LPVariables &variables) {
     OperatorsProxy ops = task_proxy.get_operators();
     int num_ops = ops.size();
     VariablesProxy vars = task_proxy.get_variables();
@@ -97,8 +97,8 @@ void DeleteRelaxationConstraints::create_auxiliary_variables(
 
 void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy,
                                                      lp::LinearProgram &lp) {
-    named_vector::NamedVector<lp::LPVariable> &variables = lp.get_variables();
-    named_vector::NamedVector<lp::LPConstraint> &constraints = lp.get_constraints();
+    LPVariables &variables = lp.get_variables();
+    LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
     OperatorsProxy ops = task_proxy.get_operators();
     VariablesProxy vars = task_proxy.get_variables();

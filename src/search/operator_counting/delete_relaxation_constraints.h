@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace lp {
+class LPConstraint;
 class LPVariable;
 }
 
@@ -16,6 +17,9 @@ class Options;
 }
 
 namespace operator_counting {
+using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
+using LPVariables = named_vector::NamedVector<lp::LPVariable>;
+
 class DeleteRelaxationConstraints : public ConstraintGenerator {
     bool use_time_vars;
     bool use_integer_vars;
@@ -56,8 +60,7 @@ class DeleteRelaxationConstraints : public ConstraintGenerator {
     int get_constraint_id(const FactProxy &f);
 
     void create_auxiliary_variables(
-        const TaskProxy &task_proxy,
-        named_vector::NamedVector<lp::LPVariable> &variables);
+        const TaskProxy &task_proxy, LPVariables &variables);
     void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp);
 public:
     explicit DeleteRelaxationConstraints(const options::Options &opts);
@@ -65,8 +68,8 @@ public:
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,
         lp::LinearProgram &lp) override;
-    virtual bool update_constraints(const State &state,
-                                    lp::LPSolver &lp_solver) override;
+    virtual bool update_constraints(
+        const State &state, lp::LPSolver &lp_solver) override;
 };
 }
 
