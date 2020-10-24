@@ -239,12 +239,12 @@ bool DeleteRelaxationConstraints::update_constraints(
 
 static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Delete Relaxation constraints",
+        "Delete relaxation constraints",
         "Operator-counting constraints based on the delete relaxation. By "
-        "default the constraints encode an easy-to-compute relaxation of h^+."
+        "default the constraints encode an easy-to-compute relaxation of h^+. "
         "If both use_time_vars and use_integer_vars are set to true and this "
         "is the only constriant in an operator-counting heursitic with "
-        "integer variables for the operator-counts, the resulting heuristic "
+        "integer variables for the operator counts, the resulting heuristic "
         "is the optimal delete-relaxation heuristic h^+. "
         "For details, see" + utils::format_journal_reference(
             {"Tatsuya Imai", "Alex Fukunaga"},
@@ -262,17 +262,17 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "constraints enforce an order between the selected operators. Leaving "
         "this off (default) corresponds to the time relaxation by Imai and "
         "Fukunaga. Switching it on, can increase the heuristic value but will "
-        "increase the size of the constraints which has a stong impact on "
+        "increase the size of the constraints which has a strong impact on "
         "runtime. Constraints involving time variables use a big-M encoding, "
-        "so are more useful if used with integer variables.",
+        "so they are more useful if used with integer variables.",
         "false");
     parser.add_option<bool>(
         "use_integer_vars",
-        "auxilliary variables will be restricted to integer values. These "
-        "variables encode whether operators are used, facts are reached, "
-        "which operator first achieves which fact, and in which order the "
-        "operators are used. Restricting them to integers generally improves "
-        "the heursitic value at the cost of increased runtime.",
+        "restrict auxiliary variables to integer values. These variables "
+        "encode whether operators are used, facts are reached, which operator "
+        "first achieves which fact, and in which order the operators are used. "
+        "Restricting them to integers generally improves the heursitic value "
+        "at the cost of increased runtime.",
         "false");
 
     Options opts = parser.parse();
