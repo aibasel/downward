@@ -12,12 +12,12 @@
 using namespace std;
 
 namespace operator_counting {
-
 void add_lp_variables(int count, named_vector::NamedVector<lp::LPVariable> &variables,
-    vector<int> &indices, double lower, double upper, double objective, bool /*is_integer*/) {
+                      vector<int> &indices, double lower, double upper,
+                      double objective, bool /*is_integer*/) {
     for (int i = 0; i < count; ++i) {
         indices.push_back(variables.size());
-        variables.emplace_back(lower, upper, objective/*, is_integer*/); // TODO: issue891
+        variables.emplace_back(lower, upper, objective /*, is_integer*/); // TODO: issue891
     }
 }
 
@@ -96,7 +96,7 @@ void DeleteRelaxationConstraints::create_auxiliary_variables(
 }
 
 void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy,
-    lp::LinearProgram &lp) {
+                                                     lp::LinearProgram &lp) {
     named_vector::NamedVector<lp::LPVariable> &variables = lp.get_variables();
     named_vector::NamedVector<lp::LPConstraint> &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
@@ -127,7 +127,6 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
                the lower bound in each iteration, i.e., in
                update_constraints. */
             constraints.back().insert(get_var_fact_reached(var.get_fact(value)), -1);
-
         }
     }
     for (OperatorProxy op : ops) {
@@ -191,7 +190,7 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
         for (OperatorProxy op : ops) {
             for (EffectProxy eff : op.get_effects()) {
                 FactProxy f = eff.get_fact();
-                lp::LPConstraint constraint(1-M, infinity);
+                lp::LPConstraint constraint(1 - M, infinity);
                 constraint.insert(get_var_fact_time(f), 1);
                 constraint.insert(get_var_op_time(op), -1);
                 constraint.insert(get_var_first_achiever(op, f), -M);
@@ -264,9 +263,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "increase the size of the constraints which has a stong impact on "
         "runtime. Constraints involving time variables use a big-M encoding, "
         "so are more useful if used with integer variables.",
-        "false"
-    );
-
+        "false");
     parser.add_option<bool>(
         "use_integer_vars",
         "auxilliary variables will be restricted to integer values. These "
@@ -274,8 +271,8 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "which operator first achieves which fact, and in which order the "
         "operators are used. Restricting them to integers generally improves "
         "the heursitic value at the cost of increased runtime.",
-        "false"
-    );
+        "false");
+
     Options opts = parser.parse();
 
     if (parser.dry_run())

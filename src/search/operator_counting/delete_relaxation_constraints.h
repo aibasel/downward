@@ -55,7 +55,8 @@ class DeleteRelaxationConstraints : public ConstraintGenerator {
     int get_var_fact_time(const FactProxy &f);
     int get_constraint_id(const FactProxy &f);
 
-    void create_auxiliary_variables(const TaskProxy &task_proxy,
+    void create_auxiliary_variables(
+        const TaskProxy &task_proxy,
         named_vector::NamedVector<lp::LPVariable> &variables);
     void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp);
 public:

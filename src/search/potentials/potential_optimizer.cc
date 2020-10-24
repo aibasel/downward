@@ -183,8 +183,9 @@ void PotentialOptimizer::construct_lp() {
             lp_constraints.push_back(constraint);
         }
     }
-    lp_solver.load_problem(lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE,
-        move(lp_variables), move(lp_constraints), infinity));
+    lp::LinearProgram lp(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
+                         move(lp_constraints), infinity);
+    lp_solver.load_problem(lp);
 }
 
 void PotentialOptimizer::solve_and_extract() {
