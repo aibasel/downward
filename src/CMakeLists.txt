@@ -40,7 +40,13 @@ include(FastDownwardMacros)
 
 fast_downward_default_to_release_build()
 project(fast-downward)
-fast_downward_report_bitwidth()
+if (EMSCRIPTEN)
+	MESSAGE("Configuring emscripten build.")
+else()
+	MESSAGE("Configuring native build.")
+	fast_downward_report_bitwidth()
+endif()
+
 # Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
 # This means that cmake has to be called twice for multi-config generators like Visual Studio.
 fast_downward_set_configuration_types()

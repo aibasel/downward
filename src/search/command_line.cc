@@ -8,9 +8,11 @@
 #include "options/predefinitions.h"
 #include "options/registries.h"
 #include "utils/strings.h"
+#include "string.h"
 
 #include <algorithm>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -64,6 +66,11 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             OptionParser parser(sanitize_arg_string(args[i]), registry,
                                 predefinitions, dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
+        } else if (arg == "--input") {
+            if (is_last)
+                throw ArgError("missing argument after --input");
+            ++i;
+            // do nothing as task already parsed in parse_root_task_input
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
@@ -149,6 +156,31 @@ shared_ptr<SearchEngine> parse_cmd_line(
     return parse_cmd_line_aux(args, registry, dry_run);
 }
 
+stringstream getBufferFrom(string filepath) {
+    ifstream in (filepath);
+    if (!in.is_open()) {
+        cout << "file " << filepath << "could not be opened " << endl;
+        throw ArgError("file could not be opened");
+    }
+    stringstream buffer;
+    buffer << in.rdbuf();
+    return buffer;
+}
+
+stringstream parse_root_task_input(int argc, const char **argv){
+    std::string input_filename = "";
+    for (int i = 1; i < argc; ++i) {
+        bool is_last = (i == argc - 1);
+        if (strcmp(argv[i],"--input") == 0) {
+            if (is_last) throw ArgError("missing argument after --input");
+            ++i;
+            input_filename = argv[i];
+            return getBufferFrom(input_filename);
+        } 
+    }
+    stringstream buffer;
+    return buffer;
+}
 
 string usage(const string &progname) {
     return "usage: \n" +

@@ -25,7 +25,12 @@ int main(int argc, const char **argv) {
     bool unit_cost = false;
     if (static_cast<string>(argv[1]) != "--help") {
         utils::g_log << "reading input..." << endl;
-        tasks::read_root_task(cin);
+        stringstream acin = parse_root_task_input(argc, argv);
+        if (acin.peek() != char_traits<char>::eof()) {
+            tasks::read_root_task(acin);
+        } else {
+            tasks::read_root_task(cin);
+        }
         utils::g_log << "done reading input!" << endl;
         TaskProxy task_proxy(*tasks::g_root_task);
         unit_cost = task_properties::is_unit_cost(task_proxy);

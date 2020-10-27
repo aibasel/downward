@@ -18,6 +18,9 @@ fast_downward_set_linker_flags()
 # Collect source files needed for the active plugins.
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 add_executable(downward ${PLANNER_SOURCES})
+if (EMSCRIPTEN)
+    set_target_properties(downward PROPERTIES SUFFIX ".js")
+endif()
 
 ## == Includes ==
 
