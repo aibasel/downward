@@ -391,4 +391,4 @@ class IssueExperiment(FastDownwardExperiment):
             for nick1, nick2, rev1, rev2, attribute in additional:
                 make_scatter_plot(nick1, rev1, rev2, attribute, config_nick2=nick2)
 
-        self.add_step(step_name, lambda: make_scatter_plots)
+        self.add_step(step_name, make_scatter_plots)
