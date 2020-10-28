@@ -17,6 +17,15 @@ after the corresponding tracker issues.
   debugging. Since this incurs a slight runtime penalty, we recommend
   against using this feature when running experiments.
 
+- Support integer variables in linear programs.
+  <http://issues.fast-downward.org/issue891>
+  You can now use the LP solver interface to solve mixed integer programs.
+  In particular, the operator-counting heuristics now have an option
+  `use_integer_operator_counts` that improves the heuristic value by
+  forcing operator counts to take integer values. Solving a MIP is NP-hard
+  and usually takes much longer than solving the corresponding LP.
+
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
