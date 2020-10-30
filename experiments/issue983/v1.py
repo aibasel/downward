@@ -53,12 +53,20 @@ exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
 
+def add_hplus(run):
+    if "hplus" in run["algorithm"]:
+        run["hplus"] = run.get("initial_h_value")
+    else:
+        run["hplus"] = run.get("cost")
+    return run
+
 exp.add_report(ComparativeReport([
         ("issue983-v1-opcount-hplus", "issue983-v1-opcount-hplus-lmcut", "Diff (adding landmarks)"),
         ("issue983-v1-opcount-hplus", "issue983-v1-relaxed-lmcut", "Diff (MIP/search)"),
         ("issue983-v1-opcount-hplus-lmcut", "issue983-v1-relaxed-lmcut", "Diff (MIP+LM/search)"),
     ],
-    attributes=exp.DEFAULT_TABLE_ATTRIBUTES + ["initial_h_value"]))
+    filter=add_hplus,
+    attributes=exp.DEFAULT_TABLE_ATTRIBUTES + ["initial_h_value", "hplus"]))
 
 exp.add_scatter_plot_step(relative=False, attributes=["total_time", "memory"],
     additional=[
