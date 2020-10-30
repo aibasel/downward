@@ -54,6 +54,7 @@ static const string CPLEX_WARNING_WRITE_MPS_ROWS = "CPX0000  Default row    name
 static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
 static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
 static const string CPLEX_ERROR_OOM_DEVEX = "CPX0000  Not enough memory for devex.";
+static const string CPLEX_ERROR_OOM_MIP = "CPX0000  Warning: MIP starts not constructed because of out-of-memory status.";
 static const string COIN_CPLEX_ERROR_OOM = "returned error 1001";
 
 /*
@@ -84,7 +85,8 @@ public:
             CoinMessageHandler::checkSeverity();
         } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
                    messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
-                   messageBuffer_ == CPLEX_ERROR_OOM_DEVEX) {
+                   messageBuffer_ == CPLEX_ERROR_OOM_DEVEX ||
+                   messageBuffer_ == CPLEX_ERROR_OOM_MIP) {
             utils::exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
         } else {
             utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
