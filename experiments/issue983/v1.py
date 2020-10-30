@@ -72,10 +72,10 @@ exp.add_scatter_plot_step(relative=False, attributes=["total_time", "memory"],
     additional=[
         ("opcount-hplus", "opcount-hplus-lmcut", "issue983-v1", "issue983-v1", "total_time"),
         ("opcount-hplus", "opcount-hplus-lmcut", "issue983-v1", "issue983-v1", "memory"),
-        ("opcount-hplus", "opcount-relaxed-lmcut", "issue983-v1", "issue983-v1", "total_time"),
-        ("opcount-hplus", "opcount-relaxed-lmcut", "issue983-v1", "issue983-v1", "memory"),
-        ("opcount-hplus-lmcut", "opcount-relaxed-lmcut", "issue983-v1", "issue983-v1", "total_time"),
-        ("opcount-hplus-lmcut", "opcount-relaxed-lmcut", "issue983-v1", "issue983-v1", "memory"),
+        ("opcount-hplus", "relaxed-lmcut", "issue983-v1", "issue983-v1", "total_time"),
+        ("opcount-hplus", "relaxed-lmcut", "issue983-v1", "issue983-v1", "memory"),
+        ("opcount-hplus-lmcut", "relaxed-lmcut", "issue983-v1", "issue983-v1", "total_time"),
+        ("opcount-hplus-lmcut", "relaxed-lmcut", "issue983-v1", "issue983-v1", "memory"),
     ])
 
 exp.run_steps()
