@@ -58,7 +58,8 @@ void PlanManager::save_plan(
     OperatorsProxy operators = task_proxy.get_operators();
     for (OperatorID op_id : plan) {
         cout << operators[op_id].get_name() << " (" << operators[op_id].get_cost() << ")" << endl;
-        outfile << "(" << operators[op_id].get_name() << ")" << endl;
+        outfile << "(" << operators[op_id].get_name() << ") ; " << "("
+		<< operators[op_id].get_cost() << ")" << endl;
     }
     int plan_cost = calculate_plan_cost(plan, task_proxy);
     bool is_unit_cost = task_properties::is_unit_cost(task_proxy);
