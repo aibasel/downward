@@ -458,6 +458,7 @@ fast_downward_plugin(
         lp/lp_internals
         lp/lp_solver
     DEPENDS NAMED_VECTOR
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -706,6 +707,7 @@ fast_downward_plugin(
     HELP "Plugin containing the code for operator counting heuristics"
     SOURCES
         operator_counting/constraint_generator
+        operator_counting/delete_relaxation_constraints
         operator_counting/lm_cut_constraints
         operator_counting/operator_counting_heuristic
         operator_counting/pho_constraints
