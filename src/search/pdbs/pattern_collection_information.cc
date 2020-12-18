@@ -4,6 +4,8 @@
 #include "pattern_cliques.h"
 #include "validation.h"
 
+#include "../task_proxy.h"
+
 #include "../utils/logging.h"
 #include "../utils/timer.h"
 
@@ -18,8 +20,7 @@ namespace pdbs {
 PatternCollectionInformation::PatternCollectionInformation(
     const TaskProxy &task_proxy,
     const shared_ptr<PatternCollection> &patterns)
-    : task_proxy(task_proxy),
-      patterns(patterns),
+    : patterns(patterns),
       pdbs(nullptr),
       pattern_cliques(nullptr) {
     assert(patterns);
@@ -53,7 +54,8 @@ bool PatternCollectionInformation::information_is_valid() const {
     return true;
 }
 
-void PatternCollectionInformation::create_pdbs_if_missing() {
+void PatternCollectionInformation::create_pdbs_if_missing(
+    const TaskProxy &task_proxy) {
     assert(patterns);
     if (!pdbs) {
         utils::Timer timer;
@@ -68,7 +70,8 @@ void PatternCollectionInformation::create_pdbs_if_missing() {
     }
 }
 
-void PatternCollectionInformation::create_pattern_cliques_if_missing() {
+void PatternCollectionInformation::create_pattern_cliques_if_missing(
+    const TaskProxy &task_proxy) {
     if (!pattern_cliques) {
         utils::Timer timer;
         utils::g_log << "Computing pattern cliques for pattern collection..." << endl;
@@ -95,13 +98,15 @@ shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() const
     return patterns;
 }
 
-shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs() {
-    create_pdbs_if_missing();
+shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs(
+    const TaskProxy &task_proxy) {
+    create_pdbs_if_missing(task_proxy);
     return pdbs;
 }
 
-shared_ptr<vector<PatternClique>> PatternCollectionInformation::get_pattern_cliques() {
-    create_pattern_cliques_if_missing();
+shared_ptr<vector<PatternClique>> PatternCollectionInformation::get_pattern_cliques(
+    const TaskProxy &task_proxy) {
+    create_pattern_cliques_if_missing(task_proxy);
     return pattern_cliques;
 }
 }

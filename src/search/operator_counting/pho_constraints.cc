@@ -37,8 +37,8 @@ void PhOConstraints::initialize_constraints(
       it.
     */
     pattern_generator = nullptr;
-    pdbs = pattern_collection_info.get_pdbs();
     TaskProxy task_proxy(*task);
+    pdbs = pattern_collection_info.get_pdbs(task_proxy);
     constraint_offset = constraints.size();
     for (const shared_ptr<pdbs::PatternDatabase> &pdb : *pdbs) {
         constraints.emplace_back(0, infinity);
