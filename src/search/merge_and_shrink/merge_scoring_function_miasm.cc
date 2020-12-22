@@ -19,7 +19,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
     const options::Options &options)
-    : shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
+    : MergeScoringFunction(options),
+      shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
       max_states(options.get<int>("max_states")),
       max_states_before_merge(options.get<int>("max_states_before_merge")),
       shrink_threshold_before_merge(options.get<int>("threshold_before_merge")) {
@@ -40,14 +41,14 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
             *shrink_strategy,
             max_states,
             max_states_before_merge,
-            shrink_threshold_before_merge);
+            shrink_threshold_before_merge,
+            log);
 
         // Compute distances for the product and count the alive states.
         unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
         const bool compute_init_distances = true;
         const bool compute_goal_distances = true;
-        const utils::Verbosity verbosity = utils::Verbosity::SILENT;
-        distances->compute_distances(compute_init_distances, compute_goal_distances, verbosity);
+        distances->compute_distances(compute_init_distances, compute_goal_distances, log);
         int num_states = product->get_size();
         int alive_states_count = 0;
         for (int state = 0; state < num_states; ++state) {
@@ -126,6 +127,9 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "We recommend setting this to match the shrink strategy configuration "
         "given to {{{merge_and_shrink}}}, see note below.");
     add_transition_system_size_limit_options_to_parser(parser);
+
+
+    add_merge_scoring_function_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.help_mode()) {

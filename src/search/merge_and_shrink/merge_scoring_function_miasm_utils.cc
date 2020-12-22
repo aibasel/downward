@@ -26,13 +26,13 @@ unique_ptr<TransitionSystem> copy_and_shrink_ts(
     const Distances &distances,
     const ShrinkStrategy &shrink_strategy,
     int new_size,
-    utils::Verbosity verbosity) {
+    utils::LogProxy &log) {
     /*
       TODO: think about factoring out common logic of this function and the
       function shrink_factor in utils.cc
     */
     StateEquivalenceRelation equivalence_relation =
-        shrink_strategy.compute_equivalence_relation(ts, distances, new_size);
+        shrink_strategy.compute_equivalence_relation(ts, distances, new_size, log);
     // TODO: We currently violate this; see issue250
     //assert(equivalence_relation.size() <= target_size);
     int new_num_states = equivalence_relation.size();
@@ -47,7 +47,7 @@ unique_ptr<TransitionSystem> copy_and_shrink_ts(
         unique_ptr<TransitionSystem> ts_copy =
             utils::make_unique_ptr<TransitionSystem>(ts);
         ts_copy->apply_abstraction(
-            equivalence_relation, abstraction_mapping, verbosity);
+            equivalence_relation, abstraction_mapping, log);
         return ts_copy;
     } else {
         return nullptr;
@@ -61,7 +61,8 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
     const ShrinkStrategy &shrink_strategy,
     int max_states,
     int max_states_before_merge,
-    int shrink_threshold_before_merge) {
+    int shrink_threshold_before_merge,
+    utils::LogProxy &log) {
     const TransitionSystem &original_ts1 = fts.get_transition_system(index1);
     const TransitionSystem &original_ts2 = fts.get_transition_system(index2);
 
@@ -83,7 +84,6 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
       only triggered due to the threshold being passed but no perfect
       shrinking is possible, the method returns a null pointer.)
     */
-    utils::Verbosity verbosity = utils::Verbosity::SILENT;
     unique_ptr<TransitionSystem> ts1 = nullptr;
     if (must_shrink_ts1) {
         ts1 = copy_and_shrink_ts(
@@ -91,7 +91,7 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
             fts.get_distances(index1),
             shrink_strategy,
             new_sizes.first,
-            verbosity);
+            log);
     }
     unique_ptr<TransitionSystem> ts2 = nullptr;
     if (must_shrink_ts2) {
@@ -100,7 +100,7 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
             fts.get_distances(index2),
             shrink_strategy,
             new_sizes.second,
-            verbosity);
+            log);
     }
 
     /*
@@ -111,6 +111,6 @@ unique_ptr<TransitionSystem> shrink_before_merge_externally(
         fts.get_labels(),
         (ts1 ? *ts1 : original_ts1),
         (ts2 ? *ts2 : original_ts2),
-        verbosity);
+        log);
 }
 }

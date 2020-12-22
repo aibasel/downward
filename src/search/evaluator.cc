@@ -25,20 +25,22 @@ bool Evaluator::dead_ends_are_reliable() const {
     return true;
 }
 
-void Evaluator::report_value_for_initial_state(const EvaluationResult &result) const {
+void Evaluator::report_value_for_initial_state(
+    const EvaluationResult &result, utils::LogProxy &log) const {
     assert(use_for_reporting_minima);
-    utils::g_log << "Initial heuristic value for " << description << ": ";
+    log << "Initial heuristic value for " << description << ": ";
     if (result.is_infinite())
-        utils::g_log << "infinity";
+        log << "infinity";
     else
-        utils::g_log << result.get_evaluator_value();
-    utils::g_log << endl;
+        log << result.get_evaluator_value();
+    log << endl;
 }
 
-void Evaluator::report_new_minimum_value(const EvaluationResult &result) const {
+void Evaluator::report_new_minimum_value(
+    const EvaluationResult &result, utils::LogProxy &log) const {
     assert(use_for_reporting_minima);
-    utils::g_log << "New best heuristic value for " << description << ": "
-                 << result.get_evaluator_value() << endl;
+    log << "New best heuristic value for " << description << ": "
+        << result.get_evaluator_value() << endl;
 }
 
 const string &Evaluator::get_description() const {

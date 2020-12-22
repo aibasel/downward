@@ -292,32 +292,32 @@ public:
         return insert(key, hasher(key));
     }
 
-    void dump() const {
+    void dump(utils::LogProxy &log) const {
         int num_buckets = capacity();
-        utils::g_log << "[";
+        log << "[";
         for (int i = 0; i < num_buckets; ++i) {
             const Bucket &bucket = buckets[i];
             if (bucket.full()) {
-                utils::g_log << bucket.key;
+                log << bucket.key;
             } else {
-                utils::g_log << "_";
+                log << "_";
             }
             if (i < num_buckets - 1) {
-                utils::g_log << ", ";
+                log << ", ";
             }
         }
-        utils::g_log << "]" << std::endl;
+        log << "]" << std::endl;
     }
 
-    void print_statistics() const {
+    void print_statistics(utils::LogProxy &log) const {
         assert(!buckets.empty());
         int num_buckets = capacity();
         assert(num_buckets != 0);
-        utils::g_log << "Int hash set load factor: " << num_entries << "/"
-                     << num_buckets << " = "
-                     << static_cast<double>(num_entries) / num_buckets
-                     << std::endl;
-        utils::g_log << "Int hash set resizes: " << num_resizes << std::endl;
+        log << "Int hash set load factor: " << num_entries << "/"
+            << num_buckets << " = "
+            << static_cast<double>(num_entries) / num_buckets
+            << std::endl;
+        log << "Int hash set resizes: " << num_resizes << std::endl;
     }
 };
 

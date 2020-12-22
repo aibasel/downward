@@ -43,7 +43,8 @@ protected:
 private:
     StateEquivalenceRelation compute_abstraction(
         const std::vector<Bucket> &buckets,
-        int target_size) const;
+        int target_size,
+        utils::LogProxy &log) const;
 
 protected:
     virtual std::vector<Bucket> partition_into_buckets(
@@ -55,7 +56,8 @@ public:
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,
         const Distances &distances,
-        int target_size) const override;
+        int target_size,
+        utils::LogProxy &log) const override;
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

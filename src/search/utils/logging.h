@@ -4,53 +4,18 @@
 #include "system.h"
 #include "timer.h"
 
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
 namespace options {
 class OptionParser;
+class Options;
 }
 
 namespace utils {
-/*
-  Simple logger that prepends time and peak memory info to messages.
-  Logs are written to stdout.
-
-  Usage:
-        utils::g_log << "States: " << num_states << endl;
-*/
-class Log {
-private:
-    bool line_has_started = false;
-
-public:
-    template<typename T>
-    Log &operator<<(const T &elem) {
-        if (!line_has_started) {
-            line_has_started = true;
-            std::cout << "[t=" << g_timer << ", "
-                      << get_peak_memory_in_kb() << " KB] ";
-        }
-
-        std::cout << elem;
-        return *this;
-    }
-
-    using manip_function = std::ostream &(*)(std::ostream &);
-    Log &operator<<(manip_function f) {
-        if (f == static_cast<manip_function>(&std::endl)) {
-            line_has_started = false;
-        }
-
-        std::cout << f;
-        return *this;
-    }
-};
-
-extern Log g_log;
-
-// See add_verbosity_option_to_parser for documentation.
+// See add_log_options_to_parser for documentation.
 enum class Verbosity {
     SILENT,
     NORMAL,
@@ -58,7 +23,90 @@ enum class Verbosity {
     DEBUG
 };
 
-extern void add_verbosity_option_to_parser(options::OptionParser &parser);
+// Internal class encapsulated by LogProxy.
+class Log {
+    std::ostream &stream;
+    const Verbosity verbosity;
+
+public:
+    explicit Log(Verbosity verbosity)
+        : stream(std::cout), verbosity(verbosity) {
+    }
+
+    std::ostream &get_stream() {
+        return stream;
+    }
+
+    Verbosity get_verbosity() const {
+        return verbosity;
+    }
+};
+
+/*
+  Simple line-based logger that prepends time and peak memory info to each line
+  of output. Lines should be eventually terminated by endl. Logs are written to
+  stdout.
+
+  This class wraps Log which holds onto the used stream (currently hard-coded
+  to be cout) and any further options for modifying output (currently only
+  the verbosity level).
+*/
+class LogProxy {
+private:
+    std::shared_ptr<Log> log;
+    bool line_has_started;
+
+public:
+    explicit LogProxy(const std::shared_ptr<Log> &log)
+        : log(log), line_has_started(false) {
+    }
+
+    template<typename T>
+    LogProxy &operator<<(const T &elem) {
+        if (!line_has_started) {
+            line_has_started = true;
+            log->get_stream() << "[t=" << g_timer << ", "
+                              << get_peak_memory_in_kb() << " KB] ";
+        }
+
+        log->get_stream() << elem;
+        return *this;
+    }
+
+    using manip_function = std::ostream &(*)(std::ostream &);
+    LogProxy &operator<<(manip_function f) {
+        if (f == static_cast<manip_function>(&std::endl)) {
+            line_has_started = false;
+        }
+
+        log->get_stream() << f;
+        return *this;
+    }
+
+    bool is_at_least_normal() const {
+        return log->get_verbosity() >= Verbosity::NORMAL;
+    }
+
+    bool is_at_least_verbose() const {
+        return log->get_verbosity() >= Verbosity::VERBOSE;
+    }
+
+    bool is_at_least_debug() const {
+        return log->get_verbosity() >= Verbosity::DEBUG;
+    }
+};
+
+/*
+  In the long term, this should not be global anymore. Instead, local LogProxy
+  objects should be used everywhere. For classes constructed from the command
+  line, they are parsed from Options. For other classes and functions, they
+  must be passed in by the caller.
+*/
+extern LogProxy g_log;
+
+extern void add_log_options_to_parser(options::OptionParser &parser);
+
+extern LogProxy get_log_from_options(const options::Options &options);
 
 class TraceBlock {
     std::string block_name;

@@ -8,10 +8,6 @@
 #include <memory>
 #include <vector>
 
-namespace options {
-class Options;
-}
-
 namespace merge_and_shrink {
 class MergeSelectorScoreBasedFiltering : public MergeSelector {
     std::vector<std::shared_ptr<MergeScoringFunction>> merge_scoring_functions;

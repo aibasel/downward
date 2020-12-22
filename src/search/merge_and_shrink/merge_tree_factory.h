@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 #define MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -25,8 +27,10 @@ class MergeTreeFactory {
 protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     UpdateOption update_option;
+    mutable utils::LogProxy log;
+
     virtual std::string name() const = 0;
-    virtual void dump_tree_specific_options() const {}
+    virtual void dump_tree_specific_options() const = 0;
 public:
     explicit MergeTreeFactory(const options::Options &options);
     virtual ~MergeTreeFactory() = default;

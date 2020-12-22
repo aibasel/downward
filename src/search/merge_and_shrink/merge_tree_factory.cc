@@ -5,7 +5,6 @@
 #include "../options/option_parser.h"
 #include "../options/plugin.h"
 
-#include "../utils/logging.h"
 #include "../utils/rng_options.h"
 #include "../utils/system.h"
 
@@ -16,25 +15,26 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(const options::Options &options)
     : rng(utils::parse_rng_from_options(options)),
-      update_option(options.get<UpdateOption>("update_option")) {
+      update_option(options.get<UpdateOption>("update_option")),
+      log(utils::get_log_from_options(options)) {
 }
 
 void MergeTreeFactory::dump_options() const {
-    utils::g_log << "Merge tree options: " << endl;
-    utils::g_log << "Type: " << name() << endl;
-    utils::g_log << "Update option: ";
+    log << "Merge tree options: " << endl;
+    log << "Type: " << name() << endl;
+    log << "Update option: ";
     switch (update_option) {
     case UpdateOption::USE_FIRST:
-        utils::g_log << "use first";
+        log << "use first";
         break;
     case UpdateOption::USE_SECOND:
-        utils::g_log << "use second";
+        log << "use second";
         break;
     case UpdateOption::USE_RANDOM:
-        utils::g_log << "use random";
+        log << "use random";
         break;
     }
-    utils::g_log << endl;
+    log << endl;
     dump_tree_specific_options();
 }
 
@@ -64,6 +64,7 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
         "let the node represententing the index that would have been merged "
         "earlier (later) survive. use_random chooses a random node.",
         "use_random");
+    utils::add_log_options_to_parser(parser);
 }
 
 static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(

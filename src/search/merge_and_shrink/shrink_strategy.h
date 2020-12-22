@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace merge_and_shrink {
 class Distances;
 class TransitionSystem;
@@ -13,7 +17,7 @@ class TransitionSystem;
 class ShrinkStrategy {
 protected:
     virtual std::string name() const = 0;
-    virtual void dump_strategy_specific_options() const = 0;
+    virtual void dump_strategy_specific_options(utils::LogProxy &log) const = 0;
 public:
     ShrinkStrategy() = default;
     virtual ~ShrinkStrategy() = default;
@@ -35,11 +39,12 @@ public:
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,
         const Distances &distances,
-        int target_size) const = 0;
+        int target_size,
+        utils::LogProxy &log) const = 0;
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
 
-    void dump_options() const;
+    void dump_options(utils::LogProxy &log) const;
     std::string get_name() const;
 };
 }

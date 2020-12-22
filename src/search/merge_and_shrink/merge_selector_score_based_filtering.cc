@@ -14,7 +14,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
     const options::Options &options)
-    : merge_scoring_functions(
+    : MergeSelector(options),
+      merge_scoring_functions(
           options.get_list<shared_ptr<MergeScoringFunction>>(
               "scoring_functions")) {
 }
@@ -112,6 +113,8 @@ static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
     parser.add_list_option<shared_ptr<MergeScoringFunction>>(
         "scoring_functions",
         "The list of scoring functions used to compute scores for candidates.");
+
+    add_merge_selector_options_to_parser(parser);
 
     options::Options opts = parser.parse();
     if (parser.dry_run())

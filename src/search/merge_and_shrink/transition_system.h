@@ -10,7 +10,7 @@
 #include <vector>
 
 namespace utils {
-enum class Verbosity;
+class LogProxy;
 }
 
 namespace merge_and_shrink {
@@ -154,7 +154,7 @@ public:
         const Labels &labels,
         const TransitionSystem &ts1,
         const TransitionSystem &ts2,
-        utils::Verbosity verbosity);
+        utils::LogProxy &log);
 
     /*
       Applies the given state equivalence relation to the transition system.
@@ -166,7 +166,7 @@ public:
     void apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping,
-        utils::Verbosity verbosity);
+        utils::LogProxy &log);
 
     /*
       Applies the given label mapping, mapping old to new label numbers. This
@@ -206,9 +206,9 @@ public:
     bool in_sync_with_label_equivalence_relation() const;
 
     bool is_solvable(const Distances &distances) const;
-    void dump_dot_graph() const;
-    void dump_labels_and_transitions() const;
-    void statistics() const;
+    void dump_dot_graph(utils::LogProxy &log) const;
+    void dump_labels_and_transitions(utils::LogProxy &log) const;
+    void statistics(utils::LogProxy &log) const;
 
     int get_size() const {
         return num_states;

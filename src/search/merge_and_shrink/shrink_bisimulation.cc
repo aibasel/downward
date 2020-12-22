@@ -77,19 +77,19 @@ struct Signature {
         return state < other.state;
     }
 
-    void dump() const {
-        utils::g_log << "Signature(h_and_goal = " << h_and_goal
-                     << ", group = " << group
-                     << ", state = " << state
-                     << ", succ_sig = [";
+    void dump(utils::LogProxy &log) const {
+        log << "Signature(h_and_goal = " << h_and_goal
+            << ", group = " << group
+            << ", state = " << state
+            << ", succ_sig = [";
         for (size_t i = 0; i < succ_signature.size(); ++i) {
             if (i)
-                utils::g_log << ", ";
-            utils::g_log << "(" << succ_signature[i].first
-                         << "," << succ_signature[i].second
-                         << ")";
+                log << ", ";
+            log << "(" << succ_signature[i].first
+                << "," << succ_signature[i].second
+                << ")";
         }
-        utils::g_log << "])" << endl;
+        log << "])" << endl;
     }
 };
 
@@ -240,7 +240,8 @@ void ShrinkBisimulation::compute_signatures(
 StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
-    int target_size) const {
+    int target_size,
+    utils::LogProxy &) const {
     assert(distances.are_goal_distances_computed());
     int num_states = ts.get_size();
 
@@ -249,7 +250,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     signatures.reserve(num_states + 2);
 
     int num_groups = initialize_groups(ts, distances, state_to_group);
-    // utils::g_log << "number of initial groups: " << num_groups << endl;
+    // log << "number of initial groups: " << num_groups << endl;
 
     // TODO: We currently violate this; see issue250
     // assert(num_groups <= target_size);
@@ -362,17 +363,17 @@ string ShrinkBisimulation::name() const {
     return "bisimulation";
 }
 
-void ShrinkBisimulation::dump_strategy_specific_options() const {
-    utils::g_log << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
-    utils::g_log << "At limit: ";
+void ShrinkBisimulation::dump_strategy_specific_options(utils::LogProxy &log) const {
+    log << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+    log << "At limit: ";
     if (at_limit == AtLimit::RETURN) {
-        utils::g_log << "return";
+        log << "return";
     } else if (at_limit == AtLimit::USE_UP) {
-        utils::g_log << "use up limit";
+        log << "use up limit";
     } else {
         ABORT("Unknown setting for at_limit.");
     }
-    utils::g_log << endl;
+    log << endl;
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {

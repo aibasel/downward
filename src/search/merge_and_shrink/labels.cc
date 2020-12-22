@@ -49,13 +49,13 @@ int Labels::get_label_cost(int label_no) const {
     return labels[label_no]->get_cost();
 }
 
-void Labels::dump_labels() const {
-    utils::g_log << "active labels:" << endl;
+void Labels::dump_labels(utils::LogProxy &log) const {
+    log << "active labels:" << endl;
     for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
         if (labels[label_no]) {
-            utils::g_log << "label " << label_no
-                         << ", cost " << labels[label_no]->get_cost()
-                         << endl;
+            log << "label " << label_no
+                << ", cost " << labels[label_no]->get_cost()
+                << endl;
         }
     }
 }

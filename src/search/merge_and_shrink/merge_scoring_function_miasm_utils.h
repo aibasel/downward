@@ -3,6 +3,10 @@
 
 #include <memory>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class ShrinkStrategy;
@@ -20,7 +24,8 @@ extern std::unique_ptr<TransitionSystem> shrink_before_merge_externally(
     const ShrinkStrategy &shrink_strategy,
     int max_states,
     int max_states_before_merge,
-    int shrink_threshold_before_merge);
+    int shrink_threshold_before_merge,
+    utils::LogProxy &log);
 }
 
 #endif

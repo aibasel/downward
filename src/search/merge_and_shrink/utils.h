@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace utils {
-enum class Verbosity;
+class LogProxy;
 }
 
 namespace merge_and_shrink {
@@ -54,7 +54,7 @@ extern bool shrink_before_merge_step(
     int max_states_before_merge,
     int shrink_threshold_before_merge,
     const ShrinkStrategy &shrink_strategy,
-    utils::Verbosity verbosity);
+    utils::LogProxy &log);
 
 /*
   Prune unreachable and/or irrelevant states of the factor at index. This
@@ -68,7 +68,7 @@ extern bool prune_step(
     int index,
     bool prune_unreachable_states,
     bool prune_irrelevant_states,
-    utils::Verbosity verbosity);
+    utils::LogProxy &log);
 
 /*
   Compute the abstraction mapping based on the given state equivalence

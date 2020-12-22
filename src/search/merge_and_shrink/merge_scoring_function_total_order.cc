@@ -21,7 +21,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const options::Options &options)
-    : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
+    : MergeScoringFunction(options),
+      atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
       product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
       random_seed(options.get<int>("random_seed")),
@@ -121,38 +122,38 @@ string MergeScoringFunctionTotalOrder::name() const {
 }
 
 void MergeScoringFunctionTotalOrder::dump_function_specific_options() const {
-    utils::g_log << "Atomic transition system order: ";
+    log << "Atomic transition system order: ";
     switch (atomic_ts_order) {
     case AtomicTSOrder::REVERSE_LEVEL:
-        utils::g_log << "reverse level";
+        log << "reverse level";
         break;
     case AtomicTSOrder::LEVEL:
-        utils::g_log << "level";
+        log << "level";
         break;
     case AtomicTSOrder::RANDOM:
-        utils::g_log << "random";
+        log << "random";
         break;
     }
-    utils::g_log << endl;
+    log << endl;
 
-    utils::g_log << "Product transition system order: ";
+    log << "Product transition system order: ";
     switch (product_ts_order) {
     case ProductTSOrder::OLD_TO_NEW:
-        utils::g_log << "old to new";
+        log << "old to new";
         break;
     case ProductTSOrder::NEW_TO_OLD:
-        utils::g_log << "new to old";
+        log << "new to old";
         break;
     case ProductTSOrder::RANDOM:
-        utils::g_log << "random";
+        log << "random";
         break;
     }
-    utils::g_log << endl;
+    log << endl;
 
-    utils::g_log << "Consider " << (atomic_before_product ?
-                                    "atomic before product" : "product before atomic")
-                 << " transition systems" << endl;
-    utils::g_log << "Random seed: " << random_seed << endl;
+    log << "Consider " << (atomic_before_product ?
+                           "atomic before product" : "product before atomic")
+        << " transition systems" << endl;
+    log << "Random seed: " << random_seed << endl;
 }
 
 void MergeScoringFunctionTotalOrder::add_options_to_parser(
@@ -198,6 +199,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
         "false");
 
     utils::add_rng_options(parser);
+    add_merge_scoring_function_options_to_parser(parser);
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {

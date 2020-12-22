@@ -5,16 +5,11 @@
 
 #include <memory>
 
-namespace options {
-class Options;
-}
-
 namespace utils {
 class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
-class TransitionSystem;
 class MergeScoringFunctionSingleRandom : public MergeScoringFunction {
     int random_seed; // only for dump options
     std::shared_ptr<utils::RandomNumberGenerator> rng;

@@ -5,6 +5,7 @@
 #include <utility>
 
 namespace utils {
+class LogProxy;
 class RandomNumberGenerator;
 }
 
@@ -34,7 +35,7 @@ struct MergeTreeNode {
     // Find the parent node for the given index.
     MergeTreeNode *get_parent_of_ts_index(int index);
     int compute_num_internal_nodes() const;
-    void inorder(int offset, int current_indentation) const;
+    void inorder(int offset, int current_indentation, utils::LogProxy &log) const;
 
     bool is_leaf() const {
         return !left_child && !right_child;
@@ -113,7 +114,7 @@ public:
     // NOTE: this performs the "inverted" inorder_traversal, i.e. from right
     // to left, so that the printed tree matches the correct left-to-right
     // order.
-    void inorder_traversal(int indentation_offset) const;
+    void inorder_traversal(int indentation_offset, utils::LogProxy &log) const;
 };
 }
 

@@ -91,7 +91,7 @@ public:
     FactoredTransitionSystem create(
         bool compute_init_distances,
         bool compute_goal_distances,
-        utils::Verbosity verbosity);
+        utils::LogProxy &log);
 };
 
 
@@ -430,9 +430,9 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 FactoredTransitionSystem FTSFactory::create(
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    utils::Verbosity verbosity) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Building atomic transition systems... " << endl;
+    utils::LogProxy &log) {
+    if (log.is_at_least_normal()) {
+        log << "Building atomic transition systems... " << endl;
     }
 
     unique_ptr<Labels> labels = utils::make_unique_ptr<Labels>(create_labels());
@@ -453,17 +453,17 @@ FactoredTransitionSystem FTSFactory::create(
         move(distances),
         compute_init_distances,
         compute_goal_distances,
-        verbosity);
+        log);
 }
 
 FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    utils::Verbosity verbosity) {
+    utils::LogProxy &log) {
     return FTSFactory(task_proxy).create(
         compute_init_distances,
         compute_goal_distances,
-        verbosity);
+        log);
 }
 }

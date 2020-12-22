@@ -33,7 +33,7 @@ shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
 
     ostringstream stream;
     kptree::print_tree_bracketed(engine_configs[engine_configs_index], stream);
-    utils::g_log << "Starting search: " << stream.str() << endl;
+    log << "Starting search: " << stream.str() << endl;
 
     return engine;
 }
@@ -98,29 +98,29 @@ SearchStatus IteratedSearch::step() {
 
 SearchStatus IteratedSearch::step_return_value() {
     if (iterated_found_solution)
-        utils::g_log << "Best solution cost so far: " << best_bound << endl;
+        log << "Best solution cost so far: " << best_bound << endl;
 
     if (last_phase_found_solution) {
         if (continue_on_solve) {
-            utils::g_log << "Solution found - keep searching" << endl;
+            log << "Solution found - keep searching" << endl;
             return IN_PROGRESS;
         } else {
-            utils::g_log << "Solution found - stop searching" << endl;
+            log << "Solution found - stop searching" << endl;
             return SOLVED;
         }
     } else {
         if (continue_on_fail) {
-            utils::g_log << "No solution found - keep searching" << endl;
+            log << "No solution found - keep searching" << endl;
             return IN_PROGRESS;
         } else {
-            utils::g_log << "No solution found - stop searching" << endl;
+            log << "No solution found - stop searching" << endl;
             return iterated_found_solution ? SOLVED : FAILED;
         }
     }
 }
 
 void IteratedSearch::print_statistics() const {
-    utils::g_log << "Cumulative statistics:" << endl;
+    log << "Cumulative statistics:" << endl;
     statistics.print_detailed_statistics();
 }
 

@@ -104,7 +104,7 @@ string MergeTreeFactoryLinear::name() const {
 }
 
 void MergeTreeFactoryLinear::dump_tree_specific_options() const {
-    dump_variable_order_type(variable_order_type);
+    dump_variable_order_type(variable_order_type, log);
 }
 
 void MergeTreeFactoryLinear::add_options_to_parser(

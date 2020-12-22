@@ -16,6 +16,10 @@
 using namespace std;
 
 namespace merge_and_shrink {
+MergeScoringFunctionDFP::MergeScoringFunctionDFP(const options::Options &options)
+    : MergeScoringFunction(options) {
+}
+
 vector<int> MergeScoringFunctionDFP::compute_label_ranks(
     const FactoredTransitionSystem &fts, int index) const {
     const TransitionSystem &ts = fts.get_transition_system(index);
@@ -130,10 +134,13 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "greedy=false),label_reduction=exact(before_shrinking=true,"
         "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}");
 
+    add_merge_scoring_function_options_to_parser(parser);
+
     if (parser.dry_run())
         return nullptr;
-    else
-        return make_shared<MergeScoringFunctionDFP>();
+
+    options::Options options = parser.parse();
+    return make_shared<MergeScoringFunctionDFP>(options);
 }
 
 static options::Plugin<MergeScoringFunction> _plugin("dfp", _parse);
