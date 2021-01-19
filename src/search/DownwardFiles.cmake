@@ -70,11 +70,11 @@ fast_downward_plugin(
         plugin
         pruning_method
         search_engine
-        state_handle
         search_node_info
         search_progress
         search_space
         search_statistics
+        state_handle
         state_id
         state_registry
         task_id
