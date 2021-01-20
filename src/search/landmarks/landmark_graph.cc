@@ -18,7 +18,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : conj_lms(0) {
+    : conj_lms(0), disj_lms(0) {
     generate_operators_lookups(task_proxy);
 }
 
@@ -140,6 +140,7 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
     for (const FactPair &lm_fact : lm) {
         disj_lms_to_nodes.emplace(lm_fact, new_node_p);
     }
+    ++disj_lms;
     return *new_node_p;
 }
 
@@ -168,6 +169,7 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         assert(child_node.parents.find(node) == child_node.parents.end());
     }
     if (node->disjunctive) {
+        --disj_lms;
         for (const FactPair &lm_fact : node->facts) {
             disj_lms_to_nodes.erase(lm_fact);
         }

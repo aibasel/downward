@@ -169,9 +169,8 @@ public:
         return operators_eff_lookup[eff.var][eff.value];
     }
 
-    // Redesign
     int number_of_disj_landmarks() const {
-        return number_of_landmarks() - (simple_lms_to_nodes.size() + conj_lms);
+        return disj_lms;
     }
     int number_of_conj_landmarks() const {
         return conj_lms;
@@ -198,7 +197,7 @@ private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
     void remove_node_occurrences(LandmarkNode *node);
     // Not clear, same for disjunctive and simple?
-    int conj_lms;
+    int conj_lms, disj_lms;
 
     // Remove cost members
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
