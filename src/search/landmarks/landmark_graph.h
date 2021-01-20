@@ -30,16 +30,12 @@ enum class EdgeType {
     obedient_reasonable = 0
 };
 
-// Does not belong here
-enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
-
 class LandmarkNode {
     int id;
 public:
     LandmarkNode(std::vector<FactPair> &facts, bool disj, bool conj = false)
         : id(-1), facts(facts), disjunctive(disj), conjunctive(conj), in_goal(false),
-          min_cost(1), shared_cost(0.0), status(lm_not_reached),
-          is_derived(false) {
+          min_cost(1), shared_cost(0.0), is_derived(false) {
     }
 
     std::vector<FactPair> facts;
@@ -52,8 +48,6 @@ public:
 // Does not belong here
     double shared_cost;
 
-// Does not belong here
-    landmark_status status;
 // What does this mean?
     bool is_derived;
 
@@ -113,11 +107,6 @@ public:
             return true;
         }
     }
-
-    // Does not belong here
-    int get_status() const {
-        return status;
-    }
 };
 
 // Only used once
@@ -147,11 +136,7 @@ public:
     // methods needed only by non-landmarkgraph-factories
 
     // Can we get rid of these costs? Nodes should have method to get costs.
-    inline int cost_of_landmarks() const {return landmarks_cost;}
-    void count_costs();
     LandmarkNode *get_lm_for_index(int) const;
-    int get_needed_cost() const {return needed_cost;}
-    int get_reached_cost() const {return reached_cost;}
     LandmarkNode *get_landmark(const FactPair &fact) const;
 
     // ------------------------------------------------------------------------------

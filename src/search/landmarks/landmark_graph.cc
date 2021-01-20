@@ -77,27 +77,6 @@ int LandmarkGraph::number_of_edges() const {
     return total;
 }
 
-void LandmarkGraph::count_costs() {
-    reached_cost = 0;
-    needed_cost = 0;
-
-    for (auto &lm : nodes) {
-        LandmarkNode &node = *lm;
-
-        switch (node.status) {
-        case lm_reached:
-            reached_cost += node.min_cost;
-            break;
-        case lm_needed_again:
-            reached_cost += node.min_cost;
-            needed_cost += node.min_cost;
-            break;
-        case lm_not_reached:
-            break;
-        }
-    }
-}
-
 bool LandmarkGraph::simple_landmark_exists(const FactPair &lm) const {
     auto it = simple_lms_to_nodes.find(lm);
     assert(it == simple_lms_to_nodes.end() || !it->second->disjunctive);

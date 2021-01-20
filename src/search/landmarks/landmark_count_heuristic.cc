@@ -74,11 +74,13 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
                 *lgraph,
-                opts.get<lp::LPSolverType>("lpsolver"));
+                opts.get<lp::LPSolverType>("lpsolver"),
+                    *lm_status_manager);
         } else {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
-                *lgraph, opts.get<bool>("alm"));
+                *lgraph, opts.get<bool>("alm"),
+                    *lm_status_manager);
         }
     } else {
         lm_cost_assignment = nullptr;
@@ -109,14 +111,14 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     int h = -1;
 
     if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value();
+        double h_val = lm_cost_assignment->cost_sharing_h_value(global_state);
         h = static_cast<int>(ceil(h_val - epsilon));
     } else {
-        lgraph->count_costs();
+        lm_status_manager->count_costs(global_state);
 
-        int total_cost = lgraph->cost_of_landmarks();
-        int reached_cost = lgraph->get_reached_cost();
-        int needed_cost = lgraph->get_needed_cost();
+        int total_cost = lm_status_manager->cost_of_landmarks();
+        int reached_cost = lm_status_manager->get_reached_cost();
+        int needed_cost = lm_status_manager->get_needed_cost();
 
         h = total_cost - reached_cost + needed_cost;
     }

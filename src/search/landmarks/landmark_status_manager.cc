@@ -13,10 +13,28 @@ namespace landmarks {
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
+      needed_again_lms(vector<bool>(graph.number_of_landmarks(), false)),
       lm_graph(graph) {
 }
 
-BitsetView LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
+landmark_status LandmarkStatusManager::get_landmark_status(
+    size_t id, const GlobalState &state) {
+
+    assert(0 <= id && id < lm_graph.number_of_landmarks());
+
+    if (reached_lms[state].test(id)) {
+        if (needed_again_lms[state].test(id)) {
+            return landmark_status::lm_needed_again;
+        } else {
+            return landmark_status::lm_reached;
+        }
+    } else {
+        return landmark_status::lm_not_reached;
+    }
+}
+
+BitsetView
+LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
     return reached_lms[state];
 }
 
@@ -62,16 +80,17 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                  << num_goal_lms << " goal landmarks" << endl;
 }
 
-
-bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
-                                               OperatorID,
-                                               const GlobalState &global_state) {
+bool LandmarkStatusManager::update_reached_lms(
+    const GlobalState &parent_global_state,
+    OperatorID,
+    const GlobalState &global_state) {
     if (global_state.get_id() == parent_global_state.get_id()) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }
 
-    const BitsetView parent_reached = get_reached_landmarks(parent_global_state);
+    const BitsetView parent_reached = get_reached_landmarks(
+        parent_global_state);
     BitsetView reached = get_reached_landmarks(global_state);
 
     int num_landmarks = lm_graph.number_of_landmarks();
@@ -94,7 +113,7 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
     // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
-            LandmarkNode *node = lm_graph.get_lm_for_index(id);
+            LandmarkNode* node = lm_graph.get_lm_for_index(id);
             if (node->is_true_in_state(global_state)) {
                 if (landmark_is_leaf(*node, reached)) {
                     reached.set(id);
@@ -110,26 +129,18 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     const BitsetView reached = get_reached_landmarks(global_state);
 
     const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
-    // initialize all nodes to not reached and not effect of unused ALM
-    for (auto &node : nodes) {
-        node->status = lm_not_reached;
-        if (reached.test(node->get_id())) {
-            node->status = lm_reached;
-        }
-    }
 
     bool dead_end_found = false;
 
     // mark reached and find needed again landmarks
     for (auto &node : nodes) {
-        if (node->status == lm_reached) {
+        int id = node->get_id();
+        if (reached_lms[global_state].test(node->get_id())) {
             if (!node->is_true_in_state(global_state)) {
-                if (node->is_goal()) {
-                    node->status = lm_needed_again;
-                } else {
-                    if (check_lost_landmark_children_needed_again(*node)) {
-                        node->status = lm_needed_again;
-                    }
+                if (node->is_goal()
+                    || check_lost_landmark_children_needed_again(
+                        global_state, *node)) {
+                    needed_again_lms[global_state].set(id);
                 }
             }
         }
@@ -144,11 +155,11 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
         // from the current state.
 
         if (!node->is_derived) {
-            if ((node->status == lm_not_reached) &&
+            if ((get_landmark_status(id, global_state) == lm_not_reached) &&
                 node->first_achievers.empty()) {
                 dead_end_found = true;
             }
-            if ((node->status == lm_needed_again) &&
+            if ((get_landmark_status(id, global_state) == lm_needed_again) &&
                 node->possible_achievers.empty()) {
                 dead_end_found = true;
             }
@@ -158,25 +169,50 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     return dead_end_found;
 }
 
+bool LandmarkStatusManager::check_lost_landmark_children_needed_again(
+    const GlobalState &state, const LandmarkNode &node) {
 
-bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const LandmarkNode &node) const {
     for (const auto &child : node.children) {
-        LandmarkNode *child_node = child.first;
-        if (child.second >= EdgeType::greedy_necessary && child_node->status == lm_not_reached)
+        LandmarkNode* child_node = child.first;
+        if (child.second >= EdgeType::greedy_necessary
+            && get_landmark_status(child_node->get_id(), state)
+                == lm_not_reached)
             return true;
     }
     return false;
 }
 
-bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node, const BitsetView &reached) const {
+bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
+                                             const BitsetView &reached) const {
     //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
-        LandmarkNode *parent_node = parent.first;
+        LandmarkNode* parent_node = parent.first;
         // Note: no condition on edge type here
         if (!reached.test(parent_node->get_id())) {
             return false;
         }
     }
     return true;
+}
+
+void LandmarkStatusManager::count_costs(const GlobalState &state) {
+    reached_cost = 0;
+    needed_cost = 0;
+
+    for (auto &lm : lm_graph.get_nodes()) {
+        LandmarkNode &node = *lm;
+
+        switch (get_landmark_status(lm->get_id(), state)) {
+        case lm_reached:
+            reached_cost += node.min_cost;
+            break;
+        case lm_needed_again:
+            reached_cost += node.min_cost;
+            needed_cost += node.min_cost;
+            break;
+        case lm_not_reached:
+            break;
+        }
+    }
 }
 }
