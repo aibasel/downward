@@ -15,11 +15,6 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
       needed_again_lms(vector<bool>(graph.number_of_landmarks(), false)),
       lm_graph(graph) {
-
-    landmarks_cost = 0;
-    for (auto &lmn : lm_graph.get_nodes()) {
-        landmarks_cost += lmn->min_cost;
-    }
 }
 
 landmark_status LandmarkStatusManager::get_landmark_status(

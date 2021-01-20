@@ -108,35 +108,24 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
         return DEAD_END;
     }
 
-    int h = -1;
-
     if (admissible) {
         double h_val = lm_cost_assignment->cost_sharing_h_value(global_state);
-        h = static_cast<int>(ceil(h_val - epsilon));
+        return static_cast<int>(ceil(h_val - epsilon));
     } else {
-        int reached_cost = 0;
-        int needed_cost = 0;
-
+        int h = 0;
         for (auto &lm : lgraph->get_nodes()) {
             switch(lm_status_manager->get_landmark_status(
                 lm->get_id(), global_state)) {
             case lm_reached:
-                reached_cost += lm->min_cost;
-                break;
-            case lm_needed_again:
-                reached_cost += lm->min_cost;
-                needed_cost += lm->min_cost;
                 break;
             case lm_not_reached:
+            case lm_needed_again:
+                h += lm->min_cost;
                 break;
             }
         }
-
-        h = lm_status_manager->cost_of_landmarks() - reached_cost + needed_cost;
+        return h;
     }
-
-    assert(h >= 0);
-    return h;
 }
 
 int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {

@@ -18,8 +18,6 @@ class LandmarkStatusManager {
     bool landmark_is_leaf(const LandmarkNode &node, const BitsetView &reached) const;
     bool check_lost_landmark_children_needed_again(
         const GlobalState &state, const LandmarkNode &node);
-
-    int landmarks_cost;
 public:
     explicit LandmarkStatusManager(LandmarkGraph &graph);
 
@@ -34,8 +32,6 @@ public:
 
     landmark_status get_landmark_status(
         size_t id, const GlobalState &state);
-
-    inline int cost_of_landmarks() const { return landmarks_cost; }
 };
 }
 
