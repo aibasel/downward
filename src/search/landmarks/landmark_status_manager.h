@@ -19,7 +19,7 @@ class LandmarkStatusManager {
     bool check_lost_landmark_children_needed_again(
         const GlobalState &state, const LandmarkNode &node);
 
-    int reached_cost, needed_cost, landmarks_cost;
+    int landmarks_cost;
 public:
     explicit LandmarkStatusManager(LandmarkGraph &graph);
 
@@ -35,10 +35,7 @@ public:
     landmark_status get_landmark_status(
         size_t id, const GlobalState &state);
 
-    void count_costs(const GlobalState &state);
     inline int cost_of_landmarks() const { return landmarks_cost; }
-    int get_needed_cost() const { return needed_cost; }
-    int get_reached_cost() const { return reached_cost; }
 };
 }
 
