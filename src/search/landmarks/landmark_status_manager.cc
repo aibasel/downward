@@ -194,25 +194,4 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
     }
     return true;
 }
-
-void LandmarkStatusManager::count_costs(const GlobalState &state) {
-    reached_cost = 0;
-    needed_cost = 0;
-
-    for (auto &lm : lm_graph.get_nodes()) {
-        LandmarkNode &node = *lm;
-
-        switch (get_landmark_status(lm->get_id(), state)) {
-        case lm_reached:
-            reached_cost += node.min_cost;
-            break;
-        case lm_needed_again:
-            reached_cost += node.min_cost;
-            needed_cost += node.min_cost;
-            break;
-        case lm_not_reached:
-            break;
-        }
-    }
-}
 }

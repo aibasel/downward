@@ -35,10 +35,7 @@ public:
     landmark_status get_landmark_status(
         size_t id, const GlobalState &state);
 
-    void count_costs(const GlobalState &state);
     inline int cost_of_landmarks() const { return landmarks_cost; }
-    int get_needed_cost() const { return needed_cost; }
-    int get_reached_cost() const { return reached_cost; }
 };
 }
 
