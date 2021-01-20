@@ -17,7 +17,7 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
 }
 
 BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {
-    return reached_lms[state.get_handle()];
+    return reached_lms[state];
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
@@ -66,7 +66,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_state,
                                                OperatorID,
                                                const State &ancestor_state) {
-    if (ancestor_state.get_handle() == parent_ancestor_state.get_handle()) {
+    if (ancestor_state == parent_ancestor_state) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }

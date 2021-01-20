@@ -13,18 +13,11 @@ class TaskProxy;
 
 
 class SearchNode {
-    const StateRegistry &state_registry;
-    StateID state_id;
+    State state;
     SearchNodeInfo &info;
-    mutable std::unique_ptr<State> state;
 public:
-    SearchNode(const StateRegistry &state_registry,
-               StateID state_id,
-               SearchNodeInfo &info);
+    SearchNode(const State &state, SearchNodeInfo &info);
 
-    StateID get_state_id() const {
-        return state_id;
-    }
     const State &get_state() const;
 
     bool is_new() const;
@@ -59,7 +52,7 @@ class SearchSpace {
 public:
     explicit SearchSpace(StateRegistry &state_registry);
 
-    SearchNode get_node(StateID id);
+    SearchNode get_node(const State &state);
     void trace_path(const State &goal_state,
                     std::vector<OperatorID> &path) const;
 

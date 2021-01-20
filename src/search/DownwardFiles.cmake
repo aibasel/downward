@@ -74,7 +74,6 @@ fast_downward_plugin(
         search_progress
         search_space
         search_statistics
-        state_handle
         state_id
         state_registry
         task_id

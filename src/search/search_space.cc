@@ -10,20 +10,13 @@
 
 using namespace std;
 
-SearchNode::SearchNode(const StateRegistry &state_registry,
-                       StateID state_id,
-                       SearchNodeInfo &info)
-    : state_registry(state_registry),
-      state_id(state_id),
-      info(info) {
-    assert(state_id != StateID::no_state);
+SearchNode::SearchNode(const State &state, SearchNodeInfo &info)
+    : state(state), info(info) {
+    assert(state.get_id() != StateID::no_state);
 }
 
 const State &SearchNode::get_state() const {
-    if (!state) {
-        state = utils::make_unique_ptr<State>(state_registry.lookup_state(state_id));
-    }
-    return *state;
+    return state;
 }
 
 bool SearchNode::is_open() const {
@@ -67,7 +60,7 @@ void SearchNode::open(const SearchNode &parent_node,
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state_id();
+    info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
@@ -82,7 +75,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state_id();
+    info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
@@ -96,7 +89,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     // may require reopening closed nodes.
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state_id();
+    info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
@@ -110,7 +103,7 @@ void SearchNode::mark_as_dead_end() {
 }
 
 void SearchNode::dump(const TaskProxy &task_proxy) const {
-    utils::g_log << state_id << ": ";
+    utils::g_log << state.get_id() << ": ";
     task_properties::dump_fdr(get_state());
     if (info.creating_operator != OperatorID::no_operator) {
         OperatorsProxy operators = task_proxy.get_operators();
@@ -126,24 +119,23 @@ SearchSpace::SearchSpace(StateRegistry &state_registry)
     : state_registry(state_registry) {
 }
 
-SearchNode SearchSpace::get_node(StateID id) {
-    StateHandle handle(&state_registry, id);
-    return SearchNode(state_registry, id, search_node_infos[handle]);
+SearchNode SearchSpace::get_node(const State &state) {
+    return SearchNode(state, search_node_infos[state]);
 }
 
 void SearchSpace::trace_path(const State &goal_state,
                              vector<OperatorID> &path) const {
-    StateHandle current_state_handle = goal_state.get_handle();
-    assert(current_state_handle.get_registry() == &state_registry);
+    State current_state = goal_state;
+    assert(current_state.get_registry() == &state_registry);
     assert(path.empty());
     for (;;) {
-        const SearchNodeInfo &info = search_node_infos[current_state_handle];
+        const SearchNodeInfo &info = search_node_infos[current_state];
         if (info.creating_operator == OperatorID::no_operator) {
             assert(info.parent_state_id == StateID::no_state);
             break;
         }
         path.push_back(info.creating_operator);
-        current_state_handle = StateHandle(&state_registry, info.parent_state_id);
+        current_state = state_registry.lookup_state(info.parent_state_id);
     }
     reverse(path.begin(), path.end());
 }
@@ -154,7 +146,7 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
         /* The body duplicates SearchNode::dump() but we cannot create
            a search node without discarding the const qualifier. */
         State state = state_registry.lookup_state(id);
-        const SearchNodeInfo &node_info = search_node_infos[state.get_handle()];
+        const SearchNodeInfo &node_info = search_node_infos[state];
         utils::g_log << id << ": ";
         task_properties::dump_fdr(state);
         if (node_info.creating_operator != OperatorID::no_operator &&

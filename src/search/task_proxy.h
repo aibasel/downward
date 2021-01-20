@@ -3,9 +3,10 @@
 
 #include "abstract_task.h"
 #include "operator_id.h"
-#include "state_handle.h"
+#include "state_id.h"
 #include "task_id.h"
 
+#include "algorithms/int_packer.h"
 #include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
@@ -29,6 +30,7 @@ class OperatorProxy;
 class OperatorsProxy;
 class PreconditionsProxy;
 class State;
+class StateRegistry;
 class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
@@ -36,6 +38,8 @@ class VariablesProxy;
 namespace causal_graph {
 class CausalGraph;
 }
+
+using PackedStateBin = int_packer::IntPacker::Bin;
 
 /*
   Overview of the task interface.
@@ -547,39 +551,97 @@ public:
 bool does_fire(const EffectProxy &effect, const State &state);
 
 
+class StateData {
+    mutable const StateRegistry *registry;
+    mutable StateID id;
+    mutable const PackedStateBin *buffer;
+    mutable std::vector<int> values;
+public:
+    StateData(const StateRegistry *registry, const StateID &id,
+              const PackedStateBin *buffer, std::vector<int> &&values);
+
+    void unpack() const;
+    std::size_t size() const;
+    int operator[](std::size_t var_id) const;
+
+    bool operator==(const StateData &other) const {
+        if (registry != other.registry) {
+            std::cerr << "Comparing registered states with unregistered states "
+                         "or registered states from different registries is "
+                         "treated as an error because it is likely not "
+                         "intentional." << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+        if (registry) {
+            // Both states are registered and from the same registry.
+            return id == other.id;
+        }
+        // Both states are unregistered.
+        assert(!values.empty());
+        return values == other.values;
+    }
+
+    bool operator!=(const StateData &other) const {
+        return !(*this == other);
+    }
+
+    StateID get_id() const {
+        return id;
+    }
+
+    const std::vector<int> &get_values() const {
+        if (values.empty()) {
+            std::cerr << "Accessing the unpacked values of a state without "
+                         "unpacking them first is treated as an error. Please "
+                         "use State::unpack first." << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+        return values;
+    }
+
+    const StateRegistry *get_registry() const {
+        return registry;
+    }
+};
+
+
 class State {
     const AbstractTask *task;
-    std::shared_ptr<std::vector<int>> values;
-    StateHandle handle;
+    std::shared_ptr<StateData> data;
 public:
     using ItemType = FactProxy;
-    State(const AbstractTask &task, std::vector<int> &&values, StateHandle handle)
-        : task(&task), values(std::make_shared<std::vector<int>>(std::move(values))), handle(handle) {
-        assert(static_cast<int>(size()) == this->task->get_num_variables());
+
+    State(const AbstractTask &task, const StateRegistry *registry,
+          const StateID &id, const PackedStateBin *buffer,
+          std::vector<int> &&values);
+    State(const AbstractTask &task, std::vector<int> &&values)
+        : State(task, nullptr, StateID::no_state, nullptr, move(values)) {
     }
-    State(const State &unregistered_state, StateHandle handle)
-        : task(unregistered_state.task), values(unregistered_state.values), handle(handle) {
-    }
-    ~State() = default;
-    State(const State &) = default;
-    State &operator=(const State &) = default;
 
     bool operator==(const State &other) const {
         assert(task == other.task);
-        return *values == *other.values;
+        assert(data);
+        assert(other.data);
+        return *data == *other.data;
     }
 
     bool operator!=(const State &other) const {
         return !(*this == other);
     }
 
+    void unpack() const {
+        assert(data);
+        data->unpack();
+    }
+
     std::size_t size() const {
-        return values->size();
+        assert(data);
+        return data->size();
     }
 
     FactProxy operator[](std::size_t var_id) const {
-        assert(var_id < size());
-        return FactProxy(*task, var_id, (*values)[var_id]);
+        assert(data);
+        return FactProxy(*task, var_id, (*data)[var_id]);
     }
 
     FactProxy operator[](VariableProxy var) const {
@@ -587,17 +649,19 @@ public:
     }
 
     inline TaskProxy get_task() const;
-
-    StateID get_id() const {
-        return handle.get_id();
+    const StateRegistry *get_registry() const {
+        assert(data);
+        return data->get_registry();
     }
 
-    StateHandle get_handle() const {
-        return handle;
+    StateID get_id() const {
+        assert(data);
+        return data->get_id();
     }
 
     const std::vector<int> &get_values() const {
-        return *values;
+        assert(data);
+        return data->get_values();
     }
 
     State get_successor(const OperatorProxy &op) const;
@@ -642,12 +706,22 @@ public:
         return GoalsProxy(*task);
     }
 
-    State create_state(std::vector<int> &&state_values, StateHandle handle) const {
-        return State(*task, std::move(state_values), handle);
+    State create_state(std::vector<int> &&state_values) const {
+        return State(*task, std::move(state_values));
+    }
+
+    State create_state(const StateRegistry *registry, const StateID id,
+        const PackedStateBin *buffer) const {
+        return State(*task, registry, id, buffer, {});
+    }
+
+    State create_state(const StateRegistry *registry, const StateID id,
+        const PackedStateBin *buffer, std::vector<int> &&state_values) const {
+        return State(*task, registry, id, buffer, std::move(state_values));
     }
 
     State get_initial_state() const {
-        return create_state(task->get_initial_state_values(), StateHandle::unregistered_state);
+        return create_state(task->get_initial_state_values());
     }
 
     /*
@@ -664,9 +738,10 @@ public:
     State convert_ancestor_state(const State &ancestor_state) const {
         TaskProxy ancestor_task_proxy = ancestor_state.get_task();
         // Create a copy of the state values for the new state.
+        ancestor_state.unpack();
         std::vector<int> state_values = ancestor_state.get_values();
         task->convert_state_values(state_values, ancestor_task_proxy.task);
-        return create_state(std::move(state_values), StateHandle::unregistered_state);
+        return create_state(std::move(state_values));
     }
 
     const causal_graph::CausalGraph &get_causal_graph() const;

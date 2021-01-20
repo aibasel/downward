@@ -130,7 +130,7 @@ SearchStatus LazySearch::fetch_next_state() {
     assert(task_properties::is_applicable(current_operator, current_predecessor));
     current_state = state_registry.get_successor_state(current_predecessor, current_operator);
 
-    SearchNode pred_node = search_space.get_node(current_predecessor_id);
+    SearchNode pred_node = search_space.get_node(current_predecessor);
     current_g = pred_node.get_g() + get_adjusted_cost(current_operator);
     current_real_g = pred_node.get_real_g() + current_operator.get_cost();
 
@@ -156,7 +156,7 @@ SearchStatus LazySearch::step() {
     // - current_real_g is the g value of the current state (using real costs)
 
 
-    SearchNode node = search_space.get_node(current_state.get_id());
+    SearchNode node = search_space.get_node(current_state);
     bool reopen = reopen_closed_nodes && !node.is_new() &&
         !node.is_dead_end() && (current_g < node.get_g());
 
@@ -178,7 +178,8 @@ SearchStatus LazySearch::step() {
                 if (search_progress.check_progress(current_eval_context))
                     statistics.print_checkpoint_line(current_g);
             } else {
-                SearchNode parent_node = search_space.get_node(current_predecessor_id);
+                State parent_state = state_registry.lookup_state(current_predecessor_id);
+                SearchNode parent_node = search_space.get_node(parent_state);
                 OperatorProxy current_operator = task_proxy.get_operators()[current_operator_id];
                 if (reopen) {
                     node.reopen(parent_node, current_operator, get_adjusted_cost(current_operator));

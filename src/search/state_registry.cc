@@ -38,15 +38,11 @@ StateID StateRegistry::insert_id_or_pop_state() {
 
 State StateRegistry::lookup_state(StateID id) const {
     const PackedStateBin *buffer = state_data_pool[id.value];
-    vector<int> values(num_variables);
-    for (int var = 0; var < num_variables; ++var) {
-        values[var] = state_packer.get(buffer, var);
-    }
-    return task_proxy.create_state(move(values), StateHandle(this, id));
+    return task_proxy.create_state(this, id, buffer);
 }
 
 const State &StateRegistry::get_initial_state() {
-    if (cached_initial_unpacked_state == nullptr) {
+    if (cached_initial_state == nullptr) {
         int num_bins = get_bins_per_state();
         unique_ptr<PackedStateBin[]> buffer(new PackedStateBin[num_bins]);
         // Avoid garbage values in half-full bins.
@@ -58,10 +54,9 @@ const State &StateRegistry::get_initial_state() {
         }
         state_data_pool.push_back(buffer.get());
         StateID id = insert_id_or_pop_state();
-        cached_initial_unpacked_state =
-            utils::make_unique_ptr<State>(move(initial_state), StateHandle(this, id));
+        cached_initial_state = utils::make_unique_ptr<State>(lookup_state(id));
     }
-    return *cached_initial_unpacked_state;
+    return *cached_initial_state;
 }
 
 //TODO it would be nice to move the actual state creation (and operator application)
@@ -71,11 +66,14 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     assert(!op.is_axiom());
     state_data_pool.push_back(state_data_pool[predecessor.get_id().value]);
     PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
+    predecessor.unpack();
     vector<int> new_values = predecessor.get_values();
     for (EffectProxy effect : op.get_effects()) {
         if (does_fire(effect, predecessor)) {
             FactPair effect_pair = effect.get_fact().get_pair();
-            state_packer.set(buffer, effect_pair.var, effect_pair.value);
+            if (!task_properties::has_axioms(task_proxy)) {
+                state_packer.set(buffer, effect_pair.var, effect_pair.value);
+            }
             new_values[effect_pair.var] = effect_pair.value;
         }
     }
@@ -86,7 +84,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
         }
     }
     StateID id = insert_id_or_pop_state();
-    return task_proxy.create_state(move(new_values), StateHandle(this, id));
+    return task_proxy.create_state(this, id, buffer, move(new_values));
 }
 
 int StateRegistry::get_bins_per_state() const {

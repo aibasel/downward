@@ -1,7 +1,6 @@
 #ifndef PER_STATE_INFORMATION_H
 #define PER_STATE_INFORMATION_H
 
-#include "state_handle.h"
 #include "state_registry.h"
 
 #include "algorithms/segmented_vector.h"
@@ -9,6 +8,7 @@
 #include "utils/collections.h"
 
 #include <cassert>
+#include <iostream>
 #include <unordered_map>
 
 /*
@@ -110,12 +110,16 @@ public:
         }
     }
 
-    Entry &operator[](StateHandle handle) {
-        const StateRegistry *registry = handle.get_registry();
-        assert(registry);
+    Entry &operator[](const State &state) {
+        const StateRegistry *registry = state.get_registry();
+        if (!registry) {
+            std::cerr << "Tried to access per state information with an "
+                         "unregistered state." << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
         segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
-        int state_id = handle.get_id().value;
-        assert(handle.get_id() != StateID::no_state);
+        int state_id = state.get_id().value;
+        assert(state.get_id() != StateID::no_state);
         size_t virtual_size = registry->size();
         assert(utils::in_bounds(state_id, *registry));
         if (entries->size() < virtual_size) {
@@ -124,15 +128,19 @@ public:
         return (*entries)[state_id];
     }
 
-    const Entry &operator[](StateHandle handle) const {
-        const StateRegistry *registry = handle.get_registry();
-        assert(registry);
+    const Entry &operator[](const State &state) const {
+        const StateRegistry *registry = state.get_registry();
+        if (!registry) {
+            std::cerr << "Tried to access per state information with an "
+                         "unregistered state." << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
         const segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
         if (!entries) {
             return default_value;
         }
-        int state_id = handle.get_id().value;
-        assert(handle.get_id() != StateID::no_state);
+        int state_id = state.get_id().value;
+        assert(state.get_id() != StateID::no_state);
         assert(utils::in_bounds(state_id, *registry));
         int num_entries = entries->size();
         if (state_id >= num_entries) {

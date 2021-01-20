@@ -166,7 +166,7 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
-    std::unique_ptr<State> cached_initial_unpacked_state;
+    std::unique_ptr<State> cached_initial_state;
 
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
@@ -179,6 +179,10 @@ public:
 
     int get_num_variables() const {
         return num_variables;
+    }
+
+    const int_packer::IntPacker &get_state_packer() const {
+        return state_packer;
     }
 
     /*
