@@ -191,9 +191,6 @@ public:
     void remove_node_if(const std::function<bool (const LandmarkNode &)> &remove_node);
     LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
-    void set_landmark_cost(int cost) {
-        landmarks_cost = cost;
-    }
     // Possible without VariablesProxy?
     void dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const;
     void dump(const VariablesProxy &variables) const;
@@ -205,9 +202,6 @@ private:
     int conj_lms;
 
     // Remove cost members
-    int reached_cost;
-    int needed_cost;
-    int landmarks_cost;
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
     Nodes nodes;

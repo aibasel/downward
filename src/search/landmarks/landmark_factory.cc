@@ -100,7 +100,6 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
         approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
-    lm_graph->set_landmark_cost(calculate_lms_cost());
     calc_achievers(task_proxy, exploration);
 }
 
@@ -747,14 +746,6 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
     }
     assert(acyclic_node_set.find(&lmn) != acyclic_node_set.end());
     return nr_removed;
-}
-
-int LandmarkFactory::calculate_lms_cost() const {
-    int result = 0;
-    for (auto &lmn : lm_graph->get_nodes())
-        result += lmn->min_cost;
-
-    return result;
 }
 
 void LandmarkFactory::compute_predecessor_information(
