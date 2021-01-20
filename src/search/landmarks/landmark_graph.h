@@ -135,7 +135,6 @@ public:
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
 
-    // Can we get rid of these costs? Nodes should have method to get costs.
     LandmarkNode *get_lm_for_index(int) const;
     LandmarkNode *get_landmark(const FactPair &fact) const;
 
