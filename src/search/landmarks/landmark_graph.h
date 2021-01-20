@@ -30,6 +30,7 @@ enum class EdgeType {
     obedient_reasonable = 0
 };
 
+// Does not belong here
 enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
 
 class LandmarkNode {
@@ -48,19 +49,26 @@ public:
     std::unordered_map<LandmarkNode *, EdgeType> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
+// Does not belong here
     double shared_cost;
 
+// Does not belong here
     landmark_status status;
+// What does this mean?
     bool is_derived;
 
+// What does this mean?
     utils::HashSet<FactPair> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
+
+    // No implementations in header
 
     int get_id() const {
         return id;
     }
 
+    // Possibly should not be changable
     void assign_id(int new_id) {
         assert(id == -1 || new_id == id);
         id = new_id;
@@ -106,11 +114,13 @@ public:
         }
     }
 
+    // Does not belong here
     int get_status() const {
         return status;
     }
 };
 
+// Only used once
 struct LandmarkNodeComparer {
     bool operator()(LandmarkNode *a, LandmarkNode *b) const {
         if (a->facts.size() != b->facts.size())
@@ -135,6 +145,8 @@ public:
     using Nodes = std::vector<std::unique_ptr<LandmarkNode>>;
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
+
+    // Can we get rid of these costs? Nodes should have method to get costs.
     inline int cost_of_landmarks() const {return landmarks_cost;}
     void count_costs();
     LandmarkNode *get_lm_for_index(int) const;
@@ -144,6 +156,8 @@ public:
 
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
+
+    // Redundant?
     inline const Nodes &get_nodes() const {
         return nodes;
     }
@@ -166,10 +180,12 @@ public:
         assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
         return *(disj_lms_to_nodes.find(a)->second);
     }
+    // Does not belong here
     inline const std::vector<int> &get_operators_including_eff(const FactPair &eff) const {
         return operators_eff_lookup[eff.var][eff.value];
     }
 
+    // Redesign
     int number_of_disj_landmarks() const {
         return number_of_landmarks() - (simple_lms_to_nodes.size() + conj_lms);
     }
@@ -186,18 +202,24 @@ public:
     LandmarkNode &landmark_add_simple(const FactPair &lm);
     LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);
     LandmarkNode &landmark_add_conjunctive(const std::set<FactPair> &lm);
+    // rather if (...) remove node
     void remove_node_if(const std::function<bool (const LandmarkNode &)> &remove_node);
     LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;
     }
+    // Possible without VariablesProxy?
     void dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const;
     void dump(const VariablesProxy &variables) const;
 private:
+    // Do we need this (here)?
     void generate_operators_lookups(const TaskProxy &task_proxy);
     void remove_node_occurrences(LandmarkNode *node);
+    // Not clear, same for disjunctive and simple?
     int conj_lms;
+
+    // Remove cost members
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
