@@ -25,7 +25,7 @@ LandmarkCutHeuristic::~LandmarkCutHeuristic() {
 }
 
 int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
-    const State &state = convert_ancestor_state(ancestor_state);
+    State state = convert_ancestor_state(ancestor_state);
     int total_cost = 0;
     bool dead_end = landmark_generator->compute_landmarks(
         state,

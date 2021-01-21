@@ -145,7 +145,7 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
     for (StateID id : state_registry) {
         /* The body duplicates SearchNode::dump() but we cannot create
            a search node without discarding the const qualifier. */
-        const State &state = state_registry.lookup_state(id);
+        State state = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state];
         utils::g_log << id << ": ";
         task_properties::dump_fdr(state);

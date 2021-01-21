@@ -27,7 +27,7 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
 }
 
 int ZeroOnePDBsHeuristic::compute_heuristic(const State &ancestor_state) {
-    const State &state = convert_ancestor_state(ancestor_state);
+    State state = convert_ancestor_state(ancestor_state);
     int h = zero_one_pdbs.get_value(state);
     if (h == numeric_limits<int>::max())
         return DEAD_END;

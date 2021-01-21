@@ -15,7 +15,7 @@ GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
 }
 
 int GoalCountHeuristic::compute_heuristic(const State &ancestor_state) {
-    const State &state = convert_ancestor_state(ancestor_state);
+    State state = convert_ancestor_state(ancestor_state);
     int unsatisfied_goal_count = 0;
 
     for (FactProxy goal : task_proxy.get_goals()) {

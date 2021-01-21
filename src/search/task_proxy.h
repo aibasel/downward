@@ -77,7 +77,7 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   Heuristic::convert_ancestor_state() and Heuristic::set_preferred().
 
       int FantasyHeuristic::compute_heuristic(const State &ancestor_state) {
-          const State &state = convert_ancestor_state(ancestor_state);
+          State state = convert_ancestor_state(ancestor_state);
           set_preferred(task->get_operators()[42]);
           int sum = 0;
           for (FactProxy fact : state)
