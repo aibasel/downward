@@ -125,9 +125,8 @@ bool LandmarkStatusManager::update_reached_lms(
     return true;
 }
 
-bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
+void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
-    bool dead_end_found = false;
 
     // mark reached and find needed again landmarks
     for (auto &node : nodes) {
@@ -141,6 +140,13 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
                 }
             }
         }
+    }
+}
+
+bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
+    bool dead_end_found = false;
+    for (auto &node : lm_graph.get_nodes()) {
+        int id = node->get_id();
 
         // This dead-end detection works for the following case:
         // X is a goal, it is true in the initial state, and has no achievers.

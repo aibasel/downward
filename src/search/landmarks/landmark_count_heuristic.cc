@@ -102,9 +102,8 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
-    bool dead_end = lm_status_manager->update_lm_status(global_state);
-
-    if (dead_end) {
+    lm_status_manager->update_lm_status(global_state);
+    if (lm_status_manager->dead_end_exists(global_state)) {
         return DEAD_END;
     }
 
