@@ -160,11 +160,13 @@ public:
     void remove_node_if(const std::function<bool (const LandmarkNode &)> &remove_node);
     LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
-    void dump_node(const LandmarkNode *node_p) const;
     void dump() const;
 private:
     void remove_node_occurrences(LandmarkNode *node);
     int conj_lms, disj_lms;
+
+    void dump_node(const std::unique_ptr<LandmarkNode> &node) const;
+    void dump_edge(int from, int to, EdgeType edge) const;
 
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
