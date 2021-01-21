@@ -126,18 +126,16 @@ bool LandmarkStatusManager::update_reached_lms(
 }
 
 void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
-
     // mark reached and find needed again landmarks
-    for (auto &node : nodes) {
+    for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
-        if (reached_lms[global_state].test(node->get_id())) {
-            if (!node->is_true_in_state(global_state)) {
-                if (node->is_goal()
-                    || check_lost_landmark_children_needed_again(
-                        global_state, *node)) {
-                    needed_again_lms[global_state].set(id);
-                }
+        if (reached_lms[global_state].test(id)
+            && !node->is_true_in_state(global_state)) {
+
+            if (node->is_goal() || check_lost_landmark_children_needed_again(
+                global_state, *node)) {
+
+                needed_again_lms[global_state].set(id);
             }
         }
     }
