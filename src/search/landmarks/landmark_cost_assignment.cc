@@ -179,7 +179,6 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
     */
     int num_cols = lm_graph.number_of_landmarks();
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         if (lm_status_manager.get_landmark_status(lm_id, state) == lm_reached) {
             lp.get_variables()[lm_id].upper_bound = 0;
         } else {
