@@ -235,14 +235,10 @@ void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNod
 
 void LandmarkGraph::dump(const VariablesProxy &variables) const {
     utils::g_log << "Landmark graph: " << endl;
-    set<LandmarkNode *, LandmarkNodeComparer> nodes2;
-    for (auto &node: nodes) {
-        nodes2.insert(node.get());
-    }
 
-    for (const LandmarkNode *node_p : nodes2) {
-        dump_node(variables, node_p);
-        for (const auto &parent : node_p->parents) {
+    for (const unique_ptr<LandmarkNode> &node : nodes) {
+        dump_node(variables, node.get());
+        for (const auto &parent : node->parents) {
             const LandmarkNode *parent_node = parent.first;
             const EdgeType &edge = parent.second;
             utils::g_log << "\t\t<-_";
@@ -265,7 +261,7 @@ void LandmarkGraph::dump(const VariablesProxy &variables) const {
             }
             dump_node(variables, parent_node);
         }
-        for (const auto &child : node_p->children) {
+        for (const auto &child : node->children) {
             const LandmarkNode *child_node = child.first;
             const EdgeType &edge = child.second;
             utils::g_log << "\t\t->_";
