@@ -1,15 +1,10 @@
 #include "landmark_graph.h"
 
-#include "util.h"
-
-#include "../task_proxy.h"
-
 #include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <cassert>
 #include <list>
-#include <map>
 #include <set>
 #include <sstream>
 #include <vector>
