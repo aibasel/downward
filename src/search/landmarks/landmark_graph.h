@@ -169,9 +169,8 @@ public:
     void remove_node_if(const std::function<bool (const LandmarkNode &)> &remove_node);
     LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
-    // Possible without VariablesProxy?
-    void dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const;
-    void dump(const VariablesProxy &variables) const;
+    void dump_node(const LandmarkNode *node_p) const;
+    void dump() const;
 private:
     // Do we need this (here)?
     void generate_operators_lookups(const TaskProxy &task_proxy);
@@ -183,6 +182,7 @@ private:
     utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
     Nodes nodes;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
+    const TaskProxy &task_proxy;
 };
 }
 

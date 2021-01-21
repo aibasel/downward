@@ -18,7 +18,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : conj_lms(0), disj_lms(0) {
+    : conj_lms(0), disj_lms(0), task_proxy(task_proxy) {
     generate_operators_lookups(task_proxy);
 }
 
@@ -210,7 +210,8 @@ void LandmarkGraph::set_landmark_ids() {
     }
 }
 
-void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const {
+void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
+    const VariablesProxy variables = task_proxy.get_variables();
     utils::g_log << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
         utils::g_log << "disj {";
@@ -233,11 +234,11 @@ void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNod
     utils::g_log << endl;
 }
 
-void LandmarkGraph::dump(const VariablesProxy &variables) const {
+void LandmarkGraph::dump() const {
     utils::g_log << "Landmark graph: " << endl;
 
     for (const unique_ptr<LandmarkNode> &node : nodes) {
-        dump_node(variables, node.get());
+        dump_node(node.get());
         for (const auto &parent : node->parents) {
             const LandmarkNode *parent_node = parent.first;
             const EdgeType &edge = parent.second;
@@ -259,7 +260,7 @@ void LandmarkGraph::dump(const VariablesProxy &variables) const {
                 utils::g_log << "o_r ";
                 break;
             }
-            dump_node(variables, parent_node);
+            dump_node(parent_node);
         }
         for (const auto &child : node->children) {
             const LandmarkNode *child_node = child.first;
@@ -282,7 +283,7 @@ void LandmarkGraph::dump(const VariablesProxy &variables) const {
                 utils::g_log << "o_r ";
                 break;
             }
-            dump_node(variables, child_node);
+            dump_node(child_node);
         }
         utils::g_log << endl;
     }
