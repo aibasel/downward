@@ -35,7 +35,7 @@ class LandmarkNode {
 public:
     LandmarkNode(std::vector<FactPair> &facts, bool disj, bool conj = false)
         : id(-1), facts(facts), disjunctive(disj), conjunctive(conj), in_goal(false),
-          min_cost(1), shared_cost(0.0), is_derived(false) {
+          min_cost(1), is_derived(false) {
     }
 
     std::vector<FactPair> facts;
@@ -45,8 +45,6 @@ public:
     std::unordered_map<LandmarkNode *, EdgeType> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
-// Does not belong here
-    double shared_cost;
 
 // What does this mean?
     bool is_derived;
