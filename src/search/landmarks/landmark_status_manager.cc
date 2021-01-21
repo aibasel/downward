@@ -144,7 +144,6 @@ void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
 }
 
 bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
-    bool dead_end_found = false;
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
 
@@ -160,16 +159,15 @@ bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
         if (!node->is_derived) {
             if ((get_landmark_status(id, global_state) == lm_not_reached) &&
                 node->first_achievers.empty()) {
-                dead_end_found = true;
+                return true;
             }
             if ((get_landmark_status(id, global_state) == lm_needed_again) &&
                 node->possible_achievers.empty()) {
-                dead_end_found = true;
+                return true;
             }
         }
     }
-
-    return dead_end_found;
+    return false;
 }
 
 bool LandmarkStatusManager::check_lost_landmark_children_needed_again(
