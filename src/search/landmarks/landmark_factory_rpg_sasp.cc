@@ -207,7 +207,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
             child.first->parents.erase(&node);
         }
         node.children.clear();
-        node.forward_orders.clear();
+        forward_orders[&node].clear();
 
         edge_add(node, b, t);
         // Node has changed, reexamine it again. This also fixes min_cost.
@@ -428,7 +428,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
     while (!open_landmarks.empty()) {
         LandmarkNode *bp = open_landmarks.front();
         open_landmarks.pop_front();
-        assert(bp->forward_orders.empty());
+        assert(forward_orders[bp].empty());
 
         if (!bp->is_true_in_state(initial_state)) {
             // Backchain from landmark bp and compute greedy necessary predecessors.
@@ -577,19 +577,19 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
                 }
             }
             if (insert)
-                lmp->forward_orders.insert(fact);
+                forward_orders[lmp].insert(fact);
         }
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     for (auto &node : lm_graph->get_nodes()) {
-        for (const auto &node2_pair : node->forward_orders) {
+        for (const auto &node2_pair : forward_orders[node.get()]) {
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
                 edge_add(*node, node2, EdgeType::natural);
             }
         }
-        node->forward_orders.clear();
+        forward_orders[node.get()].clear();
     }
 }
 

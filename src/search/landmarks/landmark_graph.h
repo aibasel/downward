@@ -48,8 +48,6 @@ public:
 
     bool is_derived;
 
-// What does this mean?
-    utils::HashSet<FactPair> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
