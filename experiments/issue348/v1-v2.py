@@ -30,7 +30,18 @@ CONFIGS = [
 	"lazy_greedy([hff, hcea], preferred=[hff, hcea])"]),
 ]
 
-SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
+ADL_DOMAINS = [
+    "assembly",
+    "miconic-fulladl",
+    "openstacks",
+    "openstacks-opt08-adl",
+    "optical-telegraphs",
+    "philosophers",
+    "psr-large",
+    "psr-middle",
+    "trucks",
+]
+SUITE = common_setup.DEFAULT_OPTIMAL_SUITE + ADL_DOMAINS
 #ENVIRONMENT = BaselSlurmEnvironment(
 #    partition="infai_2",
 #    email="florian.pommerening@unibas.ch",
