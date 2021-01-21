@@ -46,7 +46,6 @@ public:
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
 
-// What does this mean?
     bool is_derived;
 
 // What does this mean?
@@ -175,7 +174,6 @@ private:
     // Do we need this (here)?
     void generate_operators_lookups(const TaskProxy &task_proxy);
     void remove_node_occurrences(LandmarkNode *node);
-    // Not clear, same for disjunctive and simple?
     int conj_lms, disj_lms;
 
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
