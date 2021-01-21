@@ -572,6 +572,13 @@ public:
         return registry;
     }
 
+    /*
+      Generate unpacked data from packed data if it the unpacked data was not
+      given with the constructor or was generated from a previous call to
+      unpack.
+      This follows our current assumption that each state contains either
+      unpacked data or packed data or both.
+    */
     void unpack() const;
     const std::vector<int> &get_values() const;
 
@@ -754,13 +761,6 @@ inline bool does_fire(const EffectProxy &effect, const State &state) {
 }
 
 inline void StateData::unpack() const {
-    if (!buffer) {
-        std::cerr << "Tried to unpack an unregistered state. These states "
-                     "are not packed, so this is likely an error."
-                  << std::endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-    }
-    assert(state_packer);
     if (values.empty()) {
         int num_variables = size();
         values.reserve(num_variables);

@@ -14,8 +14,6 @@ from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import ComparativeReport
 from downward.reports.scatter import ScatterPlotReport
 
-from relativescatter import RelativeScatterPlotReport
-
 
 def parse_args():
     ARGPARSER.add_argument(
@@ -126,12 +124,12 @@ def get_repo_base():
     """Get base directory of the repository, as an absolute path.
 
     Search upwards in the directory tree from the main script until a
-    directory with a subdirectory named ".hg" is found.
+    directory with a subdirectory named ".git" is found.
 
     Abort if the repo base cannot be found."""
     path = os.path.abspath(get_script_dir())
     while os.path.dirname(path) != path:
-        if os.path.exists(os.path.join(path, ".hg")):
+        if os.path.exists(os.path.join(path, ".git")):
             return path
         path = os.path.dirname(path)
     sys.exit("repo base could not be found")
@@ -347,7 +345,7 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(
             "publish-comparison-tables", publish_comparison_tables)
 
-    def add_scatter_plot_step(self, relative=False, attributes=None, suffix="", **kwargs):
+    def add_scatter_plot_step(self, relative=False, attributes=None, additional=[]):
         """Add step creating (relative) scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
@@ -360,29 +358,29 @@ class IssueExperiment(FastDownwardExperiment):
 
         """
         if relative:
-            report_class = RelativeScatterPlotReport
             scatter_dir = os.path.join(self.eval_dir, "scatter-relative")
             step_name = "make-relative-scatter-plots"
         else:
-            report_class = ScatterPlotReport
             scatter_dir = os.path.join(self.eval_dir, "scatter-absolute")
             step_name = "make-absolute-scatter-plots"
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
 
-        def make_scatter_plot(config_nick, rev1, rev2, attribute):
+        def make_scatter_plot(config_nick, rev1, rev2, attribute, config_nick2=None):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
-            print "Make scatter plot for", name
+            if config_nick2 is not None:
+                name += "-" + config_nick2
+            print("Make scatter plot for", name)
             algo1 = get_algo_nick(rev1, config_nick)
-            algo2 = get_algo_nick(rev2, config_nick)
-            report = report_class(
+            algo2 = get_algo_nick(rev2, config_nick if config_nick2 is None else config_nick2)
+            report = ScatterPlotReport(
                 filter_algorithm=[algo1, algo2],
                 attributes=[attribute],
-                get_category=lambda run1, run2: run1["domain"],
-                **kwargs)
+                relative=relative,
+                get_category=lambda run1, run2: run1["domain"])
             report(
                 self.eval_dir,
-                os.path.join(scatter_dir, rev1 + "-" + rev2, name + suffix))
+                os.path.join(scatter_dir, rev1 + "-" + rev2, name))
 
         def make_scatter_plots():
             for config in self._configs:
@@ -390,5 +388,7 @@ class IssueExperiment(FastDownwardExperiment):
                     for attribute in self.get_supported_attributes(
                             config.nick, attributes):
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
+            for nick1, nick2, rev1, rev2, attribute in additional:
+                make_scatter_plot(nick1, rev1, rev2, attribute, config_nick2=nick2)
 
-        self.add_step(step_name + suffix, make_scatter_plots)
+        self.add_step(step_name, make_scatter_plots)
