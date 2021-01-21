@@ -143,10 +143,6 @@ public:
         assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
         return *(disj_lms_to_nodes.find(a)->second);
     }
-    // Does not belong here
-    inline const std::vector<int> &get_operators_including_eff(const FactPair &eff) const {
-        return operators_eff_lookup[eff.var][eff.value];
-    }
 
     int number_of_disj_landmarks() const {
         return disj_lms;
@@ -172,7 +168,6 @@ public:
     void dump() const;
 private:
     // Do we need this (here)?
-    void generate_operators_lookups(const TaskProxy &task_proxy);
     void remove_node_occurrences(LandmarkNode *node);
     int conj_lms, disj_lms;
 

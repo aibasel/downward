@@ -146,7 +146,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
     // For each proposition in bp...
     for (const FactPair &lm_fact : bp->facts) {
         // ...look at all achieving operators
-        const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact);
+        const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact);
         for (int op_or_axiom_id : op_or_axiom_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
             // and calculate the minimum cost of those that can make
@@ -270,7 +270,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
     for (const FactPair &lm_fact : bp->facts) {
-        const vector<int> &op_ids = lm_graph->get_operators_including_eff(lm_fact);
+        const vector<int> &op_ids = get_operators_including_eff(lm_fact);
 
         for (int op_or_axiom_id : op_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
@@ -367,7 +367,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
 
     vector<int> op_or_axiom_ids;
     for (const FactPair &lm_fact : bp->facts) {
-        const vector<int> &tmp_op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact);
+        const vector<int> &tmp_op_or_axiom_ids = get_operators_including_eff(lm_fact);
         for (int op_or_axiom_id : tmp_op_or_axiom_ids)
             op_or_axiom_ids.push_back(op_or_axiom_id);
     }
@@ -558,9 +558,9 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
                     const vector<int> &reach_fact =
-                        lm_graph->get_operators_including_eff(fact);
+                        get_operators_including_eff(fact);
                     const vector<int> &reach_lm =
-                        lm_graph->get_operators_including_eff(lm_fact);
+                        get_operators_including_eff(lm_fact);
                     for (size_t j = 0; j < reach_fact.size() && intersection_empty; ++j)
                         for (size_t k = 0; k < reach_lm.size()
                              && intersection_empty; ++k)

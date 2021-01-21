@@ -597,8 +597,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration 
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &lm_fact : lmn->facts) {
-            const vector<int> &ops =
-                lm_graph->get_operators_including_eff(lm_fact);
+            const vector<int> &ops = get_operators_including_eff(lm_fact);
             candidates.insert(ops.begin(), ops.end());
         }
 

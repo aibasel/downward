@@ -19,35 +19,6 @@ using namespace std;
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
     : conj_lms(0), disj_lms(0), task_proxy(task_proxy) {
-    generate_operators_lookups(task_proxy);
-}
-
-void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
-    /* Build datastructures for efficient landmark computation. Map propositions
-    to the operators that achieve them or have them as preconditions */
-
-    VariablesProxy variables = task_proxy.get_variables();
-    operators_eff_lookup.resize(variables.size());
-    for (VariableProxy var : variables) {
-        operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
-    }
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (OperatorProxy op : operators) {
-        const EffectsProxy effects = op.get_effects();
-        for (EffectProxy effect : effects) {
-            const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
-                get_operator_or_axiom_id(op));
-        }
-    }
-    for (OperatorProxy axiom : task_proxy.get_axioms()) {
-        const EffectsProxy effects = axiom.get_effects();
-        for (EffectProxy effect : effects) {
-            const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
-                get_operator_or_axiom_id(axiom));
-        }
-    }
 }
 
 LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
