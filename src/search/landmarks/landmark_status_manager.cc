@@ -126,10 +126,7 @@ bool LandmarkStatusManager::update_reached_lms(
 }
 
 bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    const BitsetView reached = get_reached_landmarks(global_state);
-
     const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
-
     bool dead_end_found = false;
 
     // mark reached and find needed again landmarks
