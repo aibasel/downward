@@ -132,9 +132,7 @@ void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
         if (reached_lms[global_state].test(id)
             && !node->is_true_in_state(global_state)) {
 
-            if (node->is_goal() || check_lost_landmark_children_needed_again(
-                global_state, *node)) {
-
+            if (landmark_needed_again(id, global_state)) {
                 needed_again_lms[global_state].set(id);
             }
         }
@@ -192,5 +190,12 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
         }
     }
     return true;
+}
+
+bool
+LandmarkStatusManager::landmark_needed_again(int id, const GlobalState &state) {
+    LandmarkNode *node = lm_graph.get_lm_for_index(id);
+    return node->is_goal() || check_lost_landmark_children_needed_again(
+        state, *node);
 }
 }
