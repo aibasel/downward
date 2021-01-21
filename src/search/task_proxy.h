@@ -556,51 +556,29 @@ class StateData {
     mutable StateID id;
     mutable const PackedStateBin *buffer;
     mutable std::vector<int> values;
+    const int_packer::IntPacker *state_packer;
+    std::size_t num_variables;
 public:
     StateData(const StateRegistry *registry, const StateID &id,
               const PackedStateBin *buffer, std::vector<int> &&values);
 
-    void unpack() const;
-    std::size_t size() const;
-    int operator[](std::size_t var_id) const;
-
-    bool operator==(const StateData &other) const {
-        if (registry != other.registry) {
-            std::cerr << "Comparing registered states with unregistered states "
-                         "or registered states from different registries is "
-                         "treated as an error because it is likely not "
-                         "intentional." << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-        if (registry) {
-            // Both states are registered and from the same registry.
-            return id == other.id;
-        }
-        // Both states are unregistered.
-        assert(!values.empty());
-        return values == other.values;
+    std::size_t size() const  {
+        return num_variables;
     }
-
-    bool operator!=(const StateData &other) const {
-        return !(*this == other);
-    }
-
     StateID get_id() const {
         return id;
     }
-
-    const std::vector<int> &get_values() const {
-        if (values.empty()) {
-            std::cerr << "Accessing the unpacked values of a state without "
-                         "unpacking them first is treated as an error. Please "
-                         "use State::unpack first." << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-        return values;
-    }
-
     const StateRegistry *get_registry() const {
         return registry;
+    }
+
+    void unpack() const;
+    const std::vector<int> &get_values() const;
+
+    int operator[](std::size_t var_id) const;
+    bool operator==(const StateData &other) const;
+    bool operator!=(const StateData &other) const {
+        return !(*this == other);
     }
 };
 
@@ -773,6 +751,61 @@ inline bool does_fire(const EffectProxy &effect, const State &state) {
             return false;
     }
     return true;
+}
+
+inline void StateData::unpack() const {
+    if (!buffer) {
+        std::cerr << "Tried to unpack an unregistered state. These states "
+                     "are not packed, so this is likely an error."
+                  << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    assert(state_packer);
+    if (values.empty()) {
+        int num_variables = size();
+        values.reserve(num_variables);
+        for (int var = 0; var < num_variables; ++var) {
+            values.push_back(state_packer->get(buffer, var));
+        }
+    }
+}
+
+inline const std::vector<int> &StateData::get_values() const {
+    if (values.empty()) {
+        std::cerr << "Accessing the unpacked values of a state without "
+                     "unpacking them first is treated as an error. Please "
+                     "use State::unpack first." << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    return values;
+}
+
+inline int StateData::operator[](std::size_t var_id) const {
+    assert(var_id < size());
+    if (values.empty()) {
+        assert(buffer);
+        assert(state_packer);
+        return state_packer->get(buffer, var_id);
+    } else {
+        return values[var_id];
+    }
+}
+
+inline bool StateData::operator==(const StateData &other) const {
+    if (registry != other.registry) {
+        std::cerr << "Comparing registered states with unregistered states "
+                     "or registered states from different registries is "
+                     "treated as an error because it is likely not "
+                     "intentional." << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    if (registry) {
+        // Both states are registered and from the same registry.
+        return id == other.id;
+    }
+    // Both states are unregistered.
+    assert(!values.empty());
+    return values == other.values;
 }
 
 #endif
