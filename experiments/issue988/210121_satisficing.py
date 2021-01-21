@@ -14,8 +14,6 @@ REVISIONS = [
 CONFIGS = [
     common_setup.IssueConfig("lama-first", [],
                              driver_options=["--alias", "lama-first"]),
-    common_setup.IssueConfig("seq-opt-bjolp", [],
-                             driver_options=["--alias", "seq-opt-bjolp"]),
 ]
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
