@@ -178,9 +178,16 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
 }
 
 bool
-LandmarkStatusManager::landmark_needed_again(int id, const GlobalState &state) {
+LandmarkStatusManager::landmark_needed_again(
+    int id, const GlobalState &state) {
+
     LandmarkNode* node = lm_graph.get_lm_for_index(id);
-    return !node->is_true_in_state(state) && (node->is_goal()
-        || check_lost_landmark_children_needed_again(state, *node));
+    if (node->is_true_in_state(state)) {
+        return false;
+    } else if (node->is_goal()) {
+        return true;
+    } else {
+        return check_lost_landmark_children_needed_again(state, *node);
+    }
 }
 }
