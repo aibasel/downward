@@ -13,7 +13,6 @@ namespace landmarks {
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
-      needed_again_lms(vector<bool>(graph.number_of_landmarks(), false)),
       lm_graph(graph) {
 }
 
@@ -23,7 +22,7 @@ landmark_status LandmarkStatusManager::get_landmark_status(
     assert(0 <= id && id < lm_graph.number_of_landmarks());
 
     if (reached_lms[state].test(id)) {
-        if (needed_again_lms[state].test(id)) {
+        if (landmark_needed_again(id, state)) {
             return landmark_status::lm_needed_again;
         } else {
             return landmark_status::lm_reached;
@@ -125,20 +124,6 @@ bool LandmarkStatusManager::update_reached_lms(
     return true;
 }
 
-void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    // mark reached and find needed again landmarks
-    for (auto &node : lm_graph.get_nodes()) {
-        int id = node->get_id();
-        if (reached_lms[global_state].test(id)
-            && !node->is_true_in_state(global_state)) {
-
-            if (landmark_needed_again(id, global_state)) {
-                needed_again_lms[global_state].set(id);
-            }
-        }
-    }
-}
-
 bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
@@ -194,8 +179,8 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
 
 bool
 LandmarkStatusManager::landmark_needed_again(int id, const GlobalState &state) {
-    LandmarkNode *node = lm_graph.get_lm_for_index(id);
-    return node->is_goal() || check_lost_landmark_children_needed_again(
-        state, *node);
+    LandmarkNode* node = lm_graph.get_lm_for_index(id);
+    return !node->is_true_in_state(state) && (node->is_goal()
+        || check_lost_landmark_children_needed_again(state, *node));
 }
 }

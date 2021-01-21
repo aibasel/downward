@@ -11,7 +11,6 @@ enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
 
 class LandmarkStatusManager {
     PerStateBitset reached_lms;
-    PerStateBitset needed_again_lms;
 
     LandmarkGraph &lm_graph;
 
@@ -24,7 +23,6 @@ public:
 
     BitsetView get_reached_landmarks(const GlobalState &state);
 
-    void update_lm_status(const GlobalState &global_state);
     bool dead_end_exists(const GlobalState &global_state);
 
     void set_landmarks_for_initial_state(const GlobalState &initial_state);
