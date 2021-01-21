@@ -129,7 +129,7 @@ int AdditiveHeuristic::compute_add_and_ff(const State &state) {
 }
 
 int AdditiveHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+    const State &state = convert_ancestor_state(ancestor_state);
     int h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (PropID goal_id : goal_propositions)

@@ -68,7 +68,7 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+    const State &state = convert_ancestor_state(ancestor_state);
     int h = canonical_pdbs.get_value(state);
     if (h == numeric_limits<int>::max()) {
         return DEAD_END;

@@ -15,7 +15,7 @@ PotentialMaxHeuristic::PotentialMaxHeuristic(
 }
 
 int PotentialMaxHeuristic::compute_heuristic(const State &ancestor_state) {
-    const State state = convert_ancestor_state(ancestor_state);
+    const State &state = convert_ancestor_state(ancestor_state);
     int value = 0;
     for (auto &function : functions) {
         value = max(value, function->get_value(state));
