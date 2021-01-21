@@ -298,8 +298,8 @@ class IssueExperiment(FastDownwardExperiment):
             self.eval_dir,
             get_experiment_name() + "." + report.output_format)
         self.add_report(report, outfile=outfile)
-        self.add_step(
-            'publish-absolute-report', subprocess.call, ['publish', outfile])
+        #self.add_step(
+        #    'publish-absolute-report', subprocess.call, ['publish', outfile])
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -342,8 +342,8 @@ class IssueExperiment(FastDownwardExperiment):
                 subprocess.call(["publish", outfile])
 
         self.add_step("make-comparison-tables", make_comparison_tables)
-        self.add_step(
-            "publish-comparison-tables", publish_comparison_tables)
+        #self.add_step(
+        #    "publish-comparison-tables", publish_comparison_tables)
 
     def add_scatter_plot_step(self, relative=False, attributes=None, additional=[]):
         """Add step creating (relative) scatter plots for all revision pairs.

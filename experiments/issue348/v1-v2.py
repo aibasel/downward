@@ -14,7 +14,7 @@ from common_setup import IssueConfig, IssueExperiment
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue348-base", "issue348-v21", "issue348-v22"]
+REVISIONS = ["issue348-base", "issue348-version1-v1", "issue348-version2-v1"]
 CONFIGS = [
     IssueConfig("lama", [], driver_options=["--alias", "lama-first"]),
     IssueConfig("ehc-ff", ["--search", "ehc(ff())"]),
@@ -22,11 +22,11 @@ CONFIGS = [
     IssueConfig("lmcut", ["--search", "astar(lmcut())"]),
     IssueConfig("blind", ["--search", "astar(blind())"]),
     IssueConfig("lazy", [
-	"--evaluator", 
-	"hff=ff()", 
-	"--evaluator", 
-	"hcea=cea()", 
-	"--search", 
+	"--evaluator",
+	"hff=ff()",
+	"--evaluator",
+	"hcea=cea()",
+	"--search",
 	"lazy_greedy([hff, hcea], preferred=[hff, hcea])"]),
 ]
 
