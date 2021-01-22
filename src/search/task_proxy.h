@@ -581,6 +581,7 @@ public:
     */
     void unpack() const;
     const std::vector<int> &get_values() const;
+    const PackedStateBin *get_buffer() const;
 
     int operator[](std::size_t var_id) const;
     bool operator==(const StateData &other) const;
@@ -647,6 +648,11 @@ public:
     const std::vector<int> &get_values() const {
         assert(data);
         return data->get_values();
+    }
+
+    const PackedStateBin *get_buffer() const {
+        assert(data);
+        return data->get_buffer();
     }
 
     State get_successor(const OperatorProxy &op) const;
@@ -778,6 +784,15 @@ inline const std::vector<int> &StateData::get_values() const {
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return values;
+}
+
+inline const PackedStateBin *StateData::get_buffer() const {
+    if (!buffer) {
+        std::cerr << "Accessing the packed values of an unregistered state is "
+                     "treated as an error." << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    return buffer;
 }
 
 inline int StateData::operator[](std::size_t var_id) const {
