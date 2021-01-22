@@ -48,7 +48,7 @@ for exp_dir in EXPERIMENTS_DIRS:
     first = False
 
 report = AbsoluteReport(attributes=ATTRIBUTES)
-outfile = os.path.join(exp.eval_dir, "report-optimal")
+outfile = os.path.join(exp.eval_dir, "issue988-optimal")
 exp.add_report(report, outfile)
 
 exp.add_step(f"publish-{outfile}", subprocess.call, 
