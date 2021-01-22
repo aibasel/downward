@@ -758,19 +758,6 @@ int LandmarkFactory::calculate_lms_cost() const {
     return result;
 }
 
-void LandmarkFactory::compute_predecessor_information(
-    const TaskProxy &task_proxy,
-    Exploration &exploration,
-    LandmarkNode *bp,
-    vector<vector<int>> &lvl_var,
-    vector<utils::HashMap<FactPair, int>> &lvl_op) {
-    /* Collect information at what time step propositions can be reached
-    (in lvl_var) in a relaxed plan that excludes bp, and similarly
-    when operators can be applied (in lvl_op).  */
-
-    relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, true, bp);
-}
-
 void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lmn : lm_graph->get_nodes()) {
@@ -784,7 +771,7 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
 
         vector<vector<int>> lvl_var;
         vector<utils::HashMap<FactPair, int>> lvl_op;
-        compute_predecessor_information(task_proxy, exploration, lmn.get(), lvl_var, lvl_op);
+        relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, true, lmn.get());
 
         for (int op_or_axom_id : lmn->possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);

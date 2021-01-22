@@ -40,11 +40,6 @@ protected:
     bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
-    void compute_predecessor_information(const TaskProxy &task_proxy,
-                                         Exploration &exploration,
-                                         LandmarkNode *bp,
-                                         std::vector<std::vector<int>> &lvl_var,
-                                         std::vector<utils::HashMap<FactPair, int>> &lvl_op);
     inline bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                       bool level_out,
                                       const LandmarkNode *exclude,
@@ -53,6 +48,12 @@ protected:
         std::vector<utils::HashMap<FactPair, int>> lvl_op;
         return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
+    bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
+                               std::vector<std::vector<int>> &lvl_var,
+                               std::vector<utils::HashMap<FactPair, int>> &lvl_op,
+                               bool level_out,
+                               const LandmarkNode *exclude,
+                               bool compute_lvl_op = false) const;
 
 private:
     AbstractTask *lm_graph_task;
@@ -90,12 +91,6 @@ private:
     int calculate_lms_cost() const;
     void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
-    bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
-                               std::vector<std::vector<int>> &lvl_var,
-                               std::vector<utils::HashMap<FactPair, int>> &lvl_op,
-                               bool level_out,
-                               const LandmarkNode *exclude,
-                               bool compute_lvl_op = false) const;
     void add_operator_and_propositions_to_list(const OperatorProxy &op,
                                                std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
     bool is_causal_landmark(const TaskProxy &task_proxy, Exploration &exploration, const LandmarkNode &landmark) const;
