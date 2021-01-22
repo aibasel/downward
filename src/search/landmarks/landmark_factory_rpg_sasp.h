@@ -1,14 +1,14 @@
 #ifndef LANDMARKS_LANDMARK_FACTORY_RPG_SASP_H
 #define LANDMARKS_LANDMARK_FACTORY_RPG_SASP_H
 
-#include "landmark_factory.h"
+#include "landmark_factory_relaxation.h"
 
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 namespace landmarks {
-class LandmarkFactoryRpgSasp : public LandmarkFactory {
+class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 

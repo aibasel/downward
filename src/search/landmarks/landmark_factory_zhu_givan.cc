@@ -18,7 +18,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : LandmarkFactory(opts) {
+    : LandmarkFactoryRelaxation(opts) {
 }
 
 void LandmarkFactoryZhuGivan::generate_landmarks(
