@@ -6,9 +6,6 @@
 #include <vector>
 
 namespace landmarks {
-class LandmarkGraph;
-class LandmarkNode;
-
 class LandmarkFactoryMerged : public LandmarkFactory {
     std::vector<std::shared_ptr<LandmarkGraph>> lm_graphs;
     std::vector<std::shared_ptr<LandmarkFactory>> lm_factories;

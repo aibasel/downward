@@ -20,9 +20,6 @@ class Options;
 
 namespace landmarks {
 class Exploration;
-class LandmarkGraph;
-class LandmarkNode;
-enum class EdgeType;
 
 class LandmarkFactory {
 public:
@@ -30,7 +27,7 @@ public:
     virtual ~LandmarkFactory() = default;
 
     LandmarkFactory(const LandmarkFactory &) = delete;
-
+    
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks;}
