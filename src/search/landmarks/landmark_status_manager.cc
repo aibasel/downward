@@ -13,6 +13,7 @@ namespace landmarks {
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
+      lm_status(graph.number_of_landmarks(), lm_not_reached),
       lm_graph(graph) {
 }
 
@@ -20,16 +21,7 @@ landmark_status LandmarkStatusManager::get_landmark_status(
     size_t id, const GlobalState &state) {
 
     assert(0 <= id && id < lm_graph.number_of_landmarks());
-
-    if (reached_lms[state].test(id)) {
-        if (landmark_needed_again(id, state)) {
-            return landmark_status::lm_needed_again;
-        } else {
-            return landmark_status::lm_reached;
-        }
-    } else {
-        return landmark_status::lm_not_reached;
-    }
+    return lm_status[id];
 }
 
 BitsetView
@@ -124,6 +116,23 @@ bool LandmarkStatusManager::update_reached_lms(
     return true;
 }
 
+void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
+    const BitsetView reached = get_reached_landmarks(global_state);
+
+    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
+    for (auto &node : nodes) {
+        if (reached.test(node->get_id())) {
+            if (landmark_needed_again(node->get_id(), global_state)) {
+                lm_status[node->get_id()] = lm_needed_again;
+            } else {
+                lm_status[node->get_id()] = lm_reached;
+            }
+        } else {
+            lm_status[node->get_id()] = lm_not_reached;
+        }
+    }
+}
+
 bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
@@ -138,11 +147,11 @@ bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
         // from the current state.
 
         if (!node->is_derived) {
-            if ((get_landmark_status(id, global_state) == lm_not_reached) &&
+            if ((lm_status[id] == lm_not_reached) &&
                 node->first_achievers.empty()) {
                 return true;
             }
-            if ((get_landmark_status(id, global_state) == lm_needed_again) &&
+            if ((lm_status[id] == lm_needed_again) &&
                 node->possible_achievers.empty()) {
                 return true;
             }
