@@ -63,10 +63,11 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     TaskProxy task_proxy(*task);
 
     lm_graph = make_shared<LandmarkGraph>(task_proxy);
-    Exploration exploration(task_proxy);
-    generate_landmarks(task, exploration);
+
+    generate_landmarks(task);
 
     // the following replaces the old "build_lm_graph"
+    Exploration exploration(task_proxy);
     generate(task_proxy, exploration);
     utils::g_log << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
@@ -107,7 +108,7 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
 bool LandmarkFactory::achieves_non_conditional(const OperatorProxy &o,
                                                const LandmarkNode *lmp) const {
     /* Test whether the landmark is achieved by the operator unconditionally.
-    A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
+    A disjunctive landmark is achieved if one of its disjuncts is achieved. */
     assert(lmp);
     for (EffectProxy effect: o.get_effects()) {
         for (const FactPair &lm_fact : lmp->facts) {
@@ -199,7 +200,7 @@ void LandmarkFactory::add_operator_and_propositions_to_list(const OperatorProxy 
 bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploration &exploration,
                                          const LandmarkNode &landmark) const {
     /* Test whether the relaxed planning task is unsolvable without using any operator
-       that has "landmark" has a precondition.
+       that has "landmark" as a precondition.
        Similar to "relaxed_task_solvable" above.
      */
 

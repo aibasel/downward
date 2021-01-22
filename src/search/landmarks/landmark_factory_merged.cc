@@ -42,9 +42,11 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &l
 }
 
 void LandmarkFactoryMerged::generate_landmarks(
-    const shared_ptr<AbstractTask> &task, Exploration &) {
+    const shared_ptr<AbstractTask> &task) {
     utils::g_log << "Merging " << lm_factories.size() << " landmark graphs" << endl;
 
+    std::vector<std::shared_ptr<LandmarkGraph>> lm_graphs;
+    lm_graphs.reserve(lm_factories.size());
     for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
         lm_graphs.push_back(lm_factory->compute_lm_graph(task));
     }

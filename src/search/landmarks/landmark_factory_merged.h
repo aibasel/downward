@@ -7,10 +7,9 @@
 
 namespace landmarks {
 class LandmarkFactoryMerged : public LandmarkFactory {
-    std::vector<std::shared_ptr<LandmarkGraph>> lm_graphs;
     std::vector<std::shared_ptr<LandmarkFactory>> lm_factories;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task, Exploration &exploration) override;
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
     explicit LandmarkFactoryMerged(const options::Options &opts);

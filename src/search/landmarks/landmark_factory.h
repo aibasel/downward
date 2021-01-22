@@ -23,11 +23,9 @@ class Exploration;
 
 class LandmarkFactory {
 public:
-    explicit LandmarkFactory(const options::Options &opts);
     virtual ~LandmarkFactory() = default;
-
     LandmarkFactory(const LandmarkFactory &) = delete;
-    
+
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks;}
@@ -35,17 +33,18 @@ public:
     virtual bool supports_conditional_effects() const = 0;
 
 protected:
+    explicit LandmarkFactory(const options::Options &opts);
+
     std::shared_ptr<LandmarkGraph> lm_graph;
-    AbstractTask *lm_graph_task;
 
     bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task, Exploration &exploration) = 0;
-    void generate(const TaskProxy &task_proxy, Exploration &exploration);
-    void discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration);
-    void discard_disjunctive_landmarks();
-    void discard_conjunctive_landmarks();
-    void discard_all_orderings();
+    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
+    void compute_predecessor_information(const TaskProxy &task_proxy,
+                                         Exploration &exploration,
+                                         LandmarkNode *bp,
+                                         std::vector<std::vector<int>> &lvl_var,
+                                         std::vector<utils::HashMap<FactPair, int>> &lvl_op);
     inline bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                       bool level_out,
                                       const LandmarkNode *exclude,
@@ -54,24 +53,26 @@ protected:
         std::vector<utils::HashMap<FactPair, int>> lvl_op;
         return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
-    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
-    void compute_predecessor_information(const TaskProxy &task_proxy,
-                                         Exploration &exploration,
-                                         LandmarkNode *bp,
-                                         std::vector<std::vector<int>> &lvl_var,
-                                         std::vector<utils::HashMap<FactPair, int>> &lvl_op);
-
-    // protected not private for LandmarkFactoryRpgSearch
-    bool achieves_non_conditional(const OperatorProxy &o, const LandmarkNode *lmp) const;
-    bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
 private:
+    AbstractTask *lm_graph_task;
+
     const bool reasonable_orders;
     const bool only_causal_landmarks;
     const bool disjunctive_landmarks;
     const bool conjunctive_landmarks;
     const bool no_orders;
 
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
+    void discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration);
+    void discard_disjunctive_landmarks();
+    void discard_conjunctive_landmarks();
+    void discard_all_orderings();
+
+    bool achieves_non_conditional(const OperatorProxy &o, const LandmarkNode *lmp) const;
+    bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
+
+    void generate(const TaskProxy &task_proxy, Exploration &exploration);
     bool interferes(const TaskProxy &task_proxy,
                     const LandmarkNode *node_a,
                     const LandmarkNode *node_b) const;

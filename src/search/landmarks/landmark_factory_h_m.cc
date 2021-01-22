@@ -899,7 +899,7 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
 }
 
 void LandmarkFactoryHM::generate_landmarks(
-    const shared_ptr<AbstractTask> &task, Exploration &) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     initialize(task_proxy);
     compute_h_m_landmarks(task_proxy);

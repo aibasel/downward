@@ -17,7 +17,7 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
-    : LandmarkFactory(opts) {
+    : LandmarkFactoryRelaxation(opts) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_landmarks(
