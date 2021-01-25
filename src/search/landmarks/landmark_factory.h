@@ -42,7 +42,7 @@ protected:
     const bool conjunctive_landmarks;
     const bool no_orders;
 
-    // TODO: directly use no_orders in LandmarkFactoryHM
+    // TODO: Directly use no_orders in LandmarkFactoryHM and remove this
     bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
     // TODO: Move to the landmark graph
@@ -50,9 +50,7 @@ protected:
 
     // TODO: All of these do some sort of postprocessing of the landmark graph,
     //  and it appears reasonable that all can be combined with any landmark
-    //  factory. I don't think LandmarkFactory is the right place for this. For
-    //  the last one (calculate_lms_cost), I'm not even sure why it is needed
-    //  at all.
+    //  factory. I don't think LandmarkFactory is the right place for this.
     void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
