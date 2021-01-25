@@ -17,10 +17,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostAssignment::LandmarkCostAssignment(
-    const vector<int> &operator_costs, const LandmarkGraph &graph,
-    LandmarkStatusManager &lm_status_manager)
-    : empty(), lm_graph(graph), lm_status_manager(lm_status_manager),
-      operator_costs(operator_costs) {
+    const vector<int> &operator_costs, const LandmarkGraph &graph)
+    : empty(), lm_graph(graph), operator_costs(operator_costs) {
 }
 
 const set<int> &LandmarkCostAssignment::get_achievers(
@@ -38,13 +36,15 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 // Uniform cost partioning
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
     const vector<int> &operator_costs, const LandmarkGraph &graph,
-    bool use_action_landmarks, LandmarkStatusManager &lm_status_manager)
-    : LandmarkCostAssignment(operator_costs, graph, lm_status_manager),
+    bool use_action_landmarks)
+    : LandmarkCostAssignment(operator_costs, graph),
       use_action_landmarks(use_action_landmarks) {
 }
 
 
-double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
+double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
+    const LandmarkStatusManager &lm_status_manager) {
+
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
     vector<bool> action_landmarks(operator_costs.size(), false);
 
@@ -131,8 +131,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
     const vector<int> &operator_costs, const LandmarkGraph &graph,
-    lp::LPSolverType solver_type, LandmarkStatusManager &lm_status_manager)
-    : LandmarkCostAssignment(operator_costs, graph, lm_status_manager),
+    lp::LPSolverType solver_type)
+    : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type),
       lp(build_initial_lp()) {
 }
@@ -163,7 +163,8 @@ lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::build_initial_lp
     return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables), named_vector::NamedVector<lp::LPConstraint>());
 }
 
-double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
+double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
+    const LandmarkStatusManager &lm_status_manager) {
     /* TODO: We could also do the same thing with action landmarks we
              do in the uniform cost partitioning case. */
 

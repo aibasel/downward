@@ -73,14 +73,11 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
-                *lgraph,
-                opts.get<lp::LPSolverType>("lpsolver"),
-                    *lm_status_manager);
+                *lgraph,opts.get<lp::LPSolverType>("lpsolver"));
         } else {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
-                *lgraph, opts.get<bool>("alm"),
-                    *lm_status_manager);
+                *lgraph, opts.get<bool>("alm"));
         }
     } else {
         lm_cost_assignment = nullptr;
@@ -108,7 +105,8 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     }
 
     if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value();
+        double h_val = lm_cost_assignment->cost_sharing_h_value(
+            *lm_status_manager);
         return static_cast<int>(ceil(h_val - epsilon));
     } else {
         int h = 0;

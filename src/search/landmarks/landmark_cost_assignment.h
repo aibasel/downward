@@ -19,18 +19,17 @@ class LandmarkCostAssignment {
     const std::set<int> empty;
 protected:
     const LandmarkGraph &lm_graph;
-    LandmarkStatusManager &lm_status_manager;
     const std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(int lmn_status,
                                        const LandmarkNode &lmn) const;
 public:
     LandmarkCostAssignment(const std::vector<int> &operator_costs,
-                           const LandmarkGraph &graph,
-                           LandmarkStatusManager &lm_status_manager);
+                           const LandmarkGraph &graph);
     virtual ~LandmarkCostAssignment() = default;
 
-    virtual double cost_sharing_h_value() = 0;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
@@ -38,10 +37,10 @@ class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
 public:
     LandmarkUniformSharedCostAssignment(const std::vector<int> &operator_costs,
                                         const LandmarkGraph &graph,
-                                        bool use_action_landmarks,
-                                        LandmarkStatusManager &landmark_status_manager);
+                                        bool use_action_landmarks);
 
-    virtual double cost_sharing_h_value() override;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
@@ -61,10 +60,10 @@ public:
     LandmarkEfficientOptimalSharedCostAssignment(
         const std::vector<int> &operator_costs,
         const LandmarkGraph &graph,
-        lp::LPSolverType solver_type,
-        landmarks::LandmarkStatusManager &lm_status_manager);
+        lp::LPSolverType solver_type);
 
-    virtual double cost_sharing_h_value() override;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) override;
 };
 }
 

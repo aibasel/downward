@@ -30,7 +30,7 @@ public:
                             OperatorID op_id,
                             const GlobalState &global_state);
 
-    landmark_status get_landmark_status(size_t id);
+    landmark_status get_landmark_status(size_t id) const;
 };
 }
 
