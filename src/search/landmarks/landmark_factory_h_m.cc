@@ -1043,6 +1043,8 @@ void LandmarkFactoryHM::generate_landmarks(
         }
     }
     free_unneeded_memory();
+
+    generate(task_proxy);
 }
 
 bool LandmarkFactoryHM::supports_conditional_effects() const {
