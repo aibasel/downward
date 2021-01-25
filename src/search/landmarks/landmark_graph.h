@@ -51,8 +51,6 @@ public:
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
-    // No implementations in header
-
     int get_id() const {
         return id;
     }
