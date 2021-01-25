@@ -16,10 +16,10 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkCostAssignment::LandmarkCostAssignment(const vector<int> &operator_costs,
-                                               const LandmarkGraph &graph,
-                                               LandmarkStatusManager &lm_status_manager)
-    : empty(), lm_status_manager(lm_status_manager), lm_graph(graph),
+LandmarkCostAssignment::LandmarkCostAssignment(
+    const vector<int> &operator_costs, const LandmarkGraph &graph,
+    LandmarkStatusManager &lm_status_manager)
+    : empty(), lm_graph(graph), lm_status_manager(lm_status_manager),
       operator_costs(operator_costs) {
 }
 

@@ -18,8 +18,8 @@ class LandmarkStatusManager;
 class LandmarkCostAssignment {
     const std::set<int> empty;
 protected:
-    LandmarkStatusManager &lm_status_manager;
     const LandmarkGraph &lm_graph;
+    LandmarkStatusManager &lm_status_manager;
     const std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(int lmn_status,

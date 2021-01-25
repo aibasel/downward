@@ -22,8 +22,9 @@ landmark_status LandmarkStatusManager::get_landmark_status(size_t id) {
     return lm_status[id];
 }
 
-BitsetView
-LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
+BitsetView LandmarkStatusManager::get_reached_landmarks(
+    const GlobalState &state) {
+
     return reached_lms[state];
 }
 
@@ -102,7 +103,7 @@ bool LandmarkStatusManager::update_reached_lms(
     // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
-            LandmarkNode* node = lm_graph.get_lm_for_index(id);
+            LandmarkNode *node = lm_graph.get_lm_for_index(id);
             if (node->is_true_in_state(global_state)) {
                 if (landmark_is_leaf(*node, reached)) {
                     reached.set(id);
@@ -128,7 +129,8 @@ void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
         int id = node->get_id();
         if (lm_status[id] == lm_reached
             && landmark_needed_again(id, global_state)) {
-                lm_status[id] = lm_needed_again;
+
+            lm_status[id] = lm_needed_again;
         }
     }
 }
@@ -137,14 +139,16 @@ bool LandmarkStatusManager::dead_end_exists() {
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
 
-        // This dead-end detection works for the following case:
-        // X is a goal, it is true in the initial state, and has no achievers.
-        // Some action A has X as a delete effect. Then using this,
-        // we can detect that applying A leads to a dead-end.
-        //
-        // Note: this only tests for reachability of the landmark from the initial state.
-        // A (possibly) more effective option would be to test reachability of the landmark
-        // from the current state.
+        /*
+          This dead-end detection works for the following case:
+          X is a goal, it is true in the initial state, and has no achievers.
+          Some action A has X as a delete effect. Then using this,
+          we can detect that applying A leads to a dead-end.
+
+          Note: this only tests for reachability of the landmark from the initial state.
+          A (possibly) more effective option would be to test reachability of the landmark
+          from the current state.
+        */
 
         if (!node->is_derived) {
             if ((lm_status[id] == lm_not_reached) &&
@@ -163,7 +167,7 @@ bool LandmarkStatusManager::dead_end_exists() {
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const GlobalState &state) {
 
-    LandmarkNode* node = lm_graph.get_lm_for_index(id);
+    LandmarkNode *node = lm_graph.get_lm_for_index(id);
     if (node->is_true_in_state(state)) {
         return false;
     } else if (node->is_goal()) {
@@ -187,7 +191,7 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
                                              const BitsetView &reached) const {
     //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
-        LandmarkNode* parent_node = parent.first;
+        LandmarkNode *parent_node = parent.first;
         // Note: no condition on edge type here
         if (!reached.test(parent_node->get_id())) {
             return false;

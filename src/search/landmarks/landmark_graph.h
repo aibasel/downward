@@ -163,7 +163,8 @@ public:
     void dump() const;
 private:
     void remove_node_occurrences(LandmarkNode *node);
-    int conj_lms, disj_lms;
+    int conj_lms;
+    int disj_lms;
 
     void dump_node(const std::unique_ptr<LandmarkNode> &node) const;
     void dump_edge(int from, int to, EdgeType edge) const;
