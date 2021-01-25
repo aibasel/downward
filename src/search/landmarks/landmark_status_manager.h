@@ -16,8 +16,6 @@ class LandmarkStatusManager {
     LandmarkGraph &lm_graph;
 
     bool landmark_is_leaf(const LandmarkNode &node, const BitsetView &reached) const;
-    bool check_lost_landmark_children_needed_again(
-        const GlobalState &state, const LandmarkNode &node);
     bool landmark_needed_again(int id, const GlobalState &state);
 public:
     explicit LandmarkStatusManager(LandmarkGraph &graph);
@@ -25,15 +23,14 @@ public:
     BitsetView get_reached_landmarks(const GlobalState &state);
 
     void update_lm_status(const GlobalState &global_state);
-    bool dead_end_exists(const GlobalState &global_state);
+    bool dead_end_exists();
 
     void set_landmarks_for_initial_state(const GlobalState &initial_state);
     bool update_reached_lms(const GlobalState &parent_global_state,
                             OperatorID op_id,
                             const GlobalState &global_state);
 
-    landmark_status get_landmark_status(
-        size_t id, const GlobalState &state);
+    landmark_status get_landmark_status(size_t id);
 };
 }
 

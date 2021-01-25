@@ -30,7 +30,7 @@ public:
                            LandmarkStatusManager &lm_status_manager);
     virtual ~LandmarkCostAssignment() = default;
 
-    virtual double cost_sharing_h_value(const GlobalState &state) = 0;
+    virtual double cost_sharing_h_value() = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
@@ -41,7 +41,7 @@ public:
                                         bool use_action_landmarks,
                                         LandmarkStatusManager &landmark_status_manager);
 
-    virtual double cost_sharing_h_value(const GlobalState &state) override;
+    virtual double cost_sharing_h_value() override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
@@ -64,7 +64,7 @@ public:
         lp::LPSolverType solver_type,
         landmarks::LandmarkStatusManager &lm_status_manager);
 
-    virtual double cost_sharing_h_value(const GlobalState &state) override;
+    virtual double cost_sharing_h_value() override;
 };
 }
 

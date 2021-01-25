@@ -17,9 +17,7 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
       lm_graph(graph) {
 }
 
-landmark_status LandmarkStatusManager::get_landmark_status(
-    size_t id, const GlobalState &state) {
-
+landmark_status LandmarkStatusManager::get_landmark_status(size_t id) {
     assert(0 <= id && id < lm_graph.number_of_landmarks());
     return lm_status[id];
 }
@@ -120,20 +118,22 @@ void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     const BitsetView reached = get_reached_landmarks(global_state);
 
     const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
+
+    /* This first loop is necessary as setup for the *needed again*
+       check in the second loop. */
+    for (int id = 0; id < lm_graph.number_of_landmarks(); ++id) {
+        lm_status[id] = reached.test(id) ? lm_reached : lm_not_reached;
+    }
     for (auto &node : nodes) {
-        if (reached.test(node->get_id())) {
-            if (landmark_needed_again(node->get_id(), global_state)) {
-                lm_status[node->get_id()] = lm_needed_again;
-            } else {
-                lm_status[node->get_id()] = lm_reached;
-            }
-        } else {
-            lm_status[node->get_id()] = lm_not_reached;
+        int id = node->get_id();
+        if (lm_status[id] == lm_reached
+            && landmark_needed_again(id, global_state)) {
+                lm_status[id] = lm_needed_again;
         }
     }
 }
 
-bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
+bool LandmarkStatusManager::dead_end_exists() {
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
 
@@ -160,17 +160,27 @@ bool LandmarkStatusManager::dead_end_exists(const GlobalState &global_state) {
     return false;
 }
 
-bool LandmarkStatusManager::check_lost_landmark_children_needed_again(
-    const GlobalState &state, const LandmarkNode &node) {
+bool LandmarkStatusManager::landmark_needed_again(
+    int id, const GlobalState &state) {
 
-    for (const auto &child : node.children) {
-        LandmarkNode* child_node = child.first;
-        if (child.second >= EdgeType::greedy_necessary
-            && get_landmark_status(child_node->get_id(), state)
-                == lm_not_reached)
-            return true;
+    LandmarkNode* node = lm_graph.get_lm_for_index(id);
+    if (node->is_true_in_state(state)) {
+        return false;
+    } else if (node->is_goal()) {
+        return true;
+    } else {
+        /* For all A ->_gn B, if B is not reached and A currently not
+           true, since A is a necessary precondition for actions
+           achieving B for the first time, it must become true again. */
+        for (const auto &child : node->children) {
+            if (child.second >= EdgeType::greedy_necessary
+                && lm_status[child.first->get_id()] == lm_not_reached) {
+
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
 }
 
 bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
@@ -186,17 +196,4 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
     return true;
 }
 
-bool
-LandmarkStatusManager::landmark_needed_again(
-    int id, const GlobalState &state) {
-
-    LandmarkNode* node = lm_graph.get_lm_for_index(id);
-    if (node->is_true_in_state(state)) {
-        return false;
-    } else if (node->is_goal()) {
-        return true;
-    } else {
-        return check_lost_landmark_children_needed_again(state, *node);
-    }
-}
 }

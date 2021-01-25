@@ -103,18 +103,18 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     // must return 0 for a goal state.
 
     lm_status_manager->update_lm_status(global_state);
-    if (lm_status_manager->dead_end_exists(global_state)) {
+    if (lm_status_manager->dead_end_exists()) {
         return DEAD_END;
     }
 
     if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value(global_state);
+        double h_val = lm_cost_assignment->cost_sharing_h_value();
         return static_cast<int>(ceil(h_val - epsilon));
     } else {
         int h = 0;
         for (auto &lm : lgraph->get_nodes()) {
             switch(lm_status_manager->get_landmark_status(
-                lm->get_id(), global_state)) {
+                lm->get_id())) {
             case lm_reached:
                 break;
             case lm_not_reached:
