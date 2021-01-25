@@ -30,6 +30,19 @@ public:
                             OperatorID op_id,
                             const GlobalState &global_state);
 
+    /*
+      The status of a landmark is actually dependent on the state. This
+      is not represented in the function below. Furthermore, the status
+      manager only stores the status for one particular state at a time.
+
+      At the day of writing this comment, this works as
+      *update_reached_lms()* is always called before the status
+      information is used (by calling *get_landmark_status()*).
+
+      It would be a good idea to ensure that the status for the
+      desired state is returned at all times, or an error is thrown
+      if the desired information does not exist.
+     */
     landmark_status get_landmark_status(size_t id) const;
 };
 }
