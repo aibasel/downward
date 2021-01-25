@@ -171,7 +171,7 @@ private:
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
     Nodes nodes;
-    const TaskProxy &task_proxy;
+    const std::shared_ptr<TaskProxy> task_proxy;
 };
 }
 

@@ -13,7 +13,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : conj_lms(0), disj_lms(0), task_proxy(task_proxy) {
+    : conj_lms(0), disj_lms(0),
+      task_proxy(make_shared<TaskProxy>(task_proxy)) {
 }
 
 LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
@@ -194,8 +195,9 @@ void LandmarkGraph::dump() const {
 
 void LandmarkGraph::dump_node(const unique_ptr<LandmarkNode> &node) const {
     cout << "  lm" << node->get_id() << " [label=\"";
+
     FactPair &fact = node->facts[0];
-    VariableProxy var = task_proxy.get_variables()[fact.var];
+    VariableProxy var = task_proxy->get_variables()[fact.var];
     cout << var.get_fact(fact.value).get_name();
     for (size_t i = 1; i < node->facts.size(); ++i) {
         if (node->disjunctive) {
@@ -204,11 +206,11 @@ void LandmarkGraph::dump_node(const unique_ptr<LandmarkNode> &node) const {
             cout << " & ";
         }
         fact = node->facts[i];
-        var = task_proxy.get_variables()[fact.var];
+        var = task_proxy->get_variables()[fact.var];
         cout << var.get_fact(fact.value).get_name();
     }
     cout << "\"";
-    if (node->is_true_in_state(task_proxy.get_initial_state())) {
+    if (node->is_true_in_state(task_proxy->get_initial_state())) {
         cout << ", style=bold";
     }
     if (node->is_goal()) {
