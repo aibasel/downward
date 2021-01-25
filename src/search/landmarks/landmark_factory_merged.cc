@@ -1,12 +1,12 @@
 #include "landmark_factory_merged.h"
 
+#include "exploration.h"
 #include "landmark_graph.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 
 #include "../utils/logging.h"
-#include "../utils/system.h"
 
 #include <set>
 
@@ -64,6 +64,11 @@ void LandmarkFactoryMerged::generate_landmarks(
         }
     }
 
+    // TODO: It seems that disjunctive landmarks are only added if none of its
+    //  facts is also there as a simple landmark. This should either be more
+    //  general (no subset is there as a disjunctive landmark) or be removed at
+    //  all (if orders are not considered, these can be removed).
+
     utils::g_log << "Adding disjunctive landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
@@ -110,6 +115,138 @@ void LandmarkFactoryMerged::generate_landmarks(
                 utils::g_log << "Discarded from ordering" << endl;
             }
         }
+    }
+
+    TaskProxy task_proxy(*task);
+    generate(task_proxy);
+}
+
+void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
+    lm_graph->set_landmark_ids();
+
+    // TODO: causal, disjunctive and/or conjunctive landmarks as well as orders
+    //  have been removed in the individual landmark graphs. Since merging
+    //  landmark graphs doesn't introduce any of these, it should not be
+    //  necessary to do so again here, so these steps are omitted. For
+    //  reasonable orders, acyclicity of the landmark graph, the costs of
+    //  landmarks and the achievers we should also determine this.
+    if (reasonable_orders) {
+        utils::g_log << "approx. reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, false);
+        utils::g_log << "approx. obedient reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, true);
+    }
+    mk_acyclic_graph();
+    lm_graph->set_landmark_cost(calculate_lms_cost());
+
+    // TODO: We should copy the achievers of each landmark when the individual
+    //  landmark graphs are merged. That way, we do not have to recompute them
+    //  here and get rid of the Exploration object (as well as the the methods
+    //  calc_achievers, relaxed_task_solvable, achieves_non_conditional and
+    //  add_operator_and_propositions_to_list).
+    calc_achievers(task_proxy);
+}
+
+void LandmarkFactoryMerged::calc_achievers(const TaskProxy &task_proxy) {
+    Exploration exploration(task_proxy);
+    VariablesProxy variables = task_proxy.get_variables();
+    for (auto &lmn : lm_graph->get_nodes()) {
+        for (const FactPair &lm_fact : lmn->facts) {
+            const vector<int> &ops = lm_graph->get_operators_including_eff(lm_fact);
+            lmn->possible_achievers.insert(ops.begin(), ops.end());
+
+            if (variables[lm_fact.var].is_derived())
+                lmn->is_derived = true;
+        }
+
+        vector<vector<int>> lvl_var;
+        vector<utils::HashMap<FactPair, int>> lvl_op;
+        relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, true, lmn.get());
+
+        for (int op_or_axom_id : lmn->possible_achievers) {
+            OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
+
+            if (_possibly_reaches_lm(op, lvl_var, lmn.get())) {
+                lmn->first_achievers.insert(op_or_axom_id);
+            }
+        }
+    }
+}
+
+bool LandmarkFactoryMerged::relaxed_task_solvable(
+    const TaskProxy &task_proxy, Exploration &exploration,
+    vector<vector<int>> &lvl_var, vector<utils::HashMap<FactPair, int>> &lvl_op,
+    bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
+    /* Test whether the relaxed planning task is solvable without achieving the propositions in
+     "exclude" (do not apply operators that would add a proposition from "exclude").
+     As a side effect, collect in lvl_var and lvl_op the earliest possible point in time
+     when a proposition / operator can be achieved / become applicable in the relaxed task.
+     */
+
+    OperatorsProxy operators = task_proxy.get_operators();
+    AxiomsProxy axioms = task_proxy.get_axioms();
+    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
+    if (compute_lvl_op) {
+        lvl_op.resize(operators.size() + axioms.size());
+        for (OperatorProxy op : operators) {
+            add_operator_and_propositions_to_list(op, lvl_op);
+        }
+        for (OperatorProxy axiom : axioms) {
+            add_operator_and_propositions_to_list(axiom, lvl_op);
+        }
+    }
+    VariablesProxy variables = task_proxy.get_variables();
+    lvl_var.resize(variables.size());
+    for (VariableProxy var : variables) {
+        lvl_var[var.get_id()].resize(var.get_domain_size(),
+                                     numeric_limits<int>::max());
+    }
+    // Extract propositions from "exclude"
+    unordered_set<int> exclude_op_ids;
+    vector<FactPair> exclude_props;
+    if (exclude) {
+        for (OperatorProxy op : operators) {
+            if (achieves_non_conditional(op, exclude))
+                exclude_op_ids.insert(op.get_id());
+        }
+        exclude_props.insert(exclude_props.end(),
+                             exclude->facts.begin(), exclude->facts.end());
+    }
+    // Do relaxed exploration
+    exploration.compute_reachability_with_excludes(
+        lvl_var, lvl_op, level_out, exclude_props, exclude_op_ids, compute_lvl_op);
+
+    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
+    for (FactProxy goal : task_proxy.get_goals())
+        if (lvl_var[goal.get_variable().get_id()][goal.get_value()] ==
+            numeric_limits<int>::max())
+            return false;
+
+    return true;
+}
+
+bool LandmarkFactoryMerged::achieves_non_conditional(
+    const OperatorProxy &o, const LandmarkNode *lmp) const {
+    /* Test whether the landmark is achieved by the operator unconditionally.
+    A disjunctive landmark is achieved if one of its disjuncts is achieved. */
+    assert(lmp);
+    for (EffectProxy effect: o.get_effects()) {
+        for (const FactPair &lm_fact : lmp->facts) {
+            FactProxy effect_fact = effect.get_fact();
+            if (effect_fact.get_pair() == lm_fact) {
+                if (effect.get_conditions().empty())
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+void LandmarkFactoryMerged::add_operator_and_propositions_to_list(
+    const OperatorProxy &op, vector<utils::HashMap<FactPair, int>> &lvl_op) const {
+    int op_or_axiom_id = get_operator_or_axiom_id(op);
+    for (EffectProxy effect : op.get_effects()) {
+        lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
     }
 }
 

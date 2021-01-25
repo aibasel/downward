@@ -4,6 +4,8 @@
 #include "landmark_factory.h"
 
 namespace landmarks {
+class Exploration;
+
 using FluentSet = std::vector<FactPair>;
 
 std::ostream &
@@ -78,7 +80,16 @@ class LandmarkFactoryHM : public LandmarkFactory {
     bool interesting(const VariablesProxy &variables,
                      const FactPair &fact1,
                      const FactPair &fact2) const;
-    virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) override;
+
+    void generate(const TaskProxy &task_proxy);
+
+    void discard_noncausal_landmarks(const TaskProxy &task_proxy,
+                                     Exploration &exploration);
+    bool is_causal_landmark(const TaskProxy &task_proxy,
+                            Exploration &exploration,
+                            const LandmarkNode &landmark) const;
+
+    void calc_achievers(const TaskProxy &task_proxy);
 
     void add_lm_node(int set_index, bool goal = false);
 

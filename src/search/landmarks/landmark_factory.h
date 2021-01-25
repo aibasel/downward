@@ -19,8 +19,8 @@ class Options;
 }
 
 namespace landmarks {
-class Exploration;
-
+// TODO: Change order to private -> protected -> public
+//  (omitted so far to minimize diff)
 class LandmarkFactory {
 public:
     virtual ~LandmarkFactory() = default;
@@ -36,65 +36,52 @@ protected:
     explicit LandmarkFactory(const options::Options &opts);
 
     std::shared_ptr<LandmarkGraph> lm_graph;
-
-    bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
-
-    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
-    inline bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
-                                      bool level_out,
-                                      const LandmarkNode *exclude,
-                                      bool compute_lvl_op = false) const {
-        std::vector<std::vector<int>> lvl_var;
-        std::vector<utils::HashMap<FactPair, int>> lvl_op;
-        return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
-    }
-    bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
-                               std::vector<std::vector<int>> &lvl_var,
-                               std::vector<utils::HashMap<FactPair, int>> &lvl_op,
-                               bool level_out,
-                               const LandmarkNode *exclude,
-                               bool compute_lvl_op = false) const;
-
-private:
-    AbstractTask *lm_graph_task;
-
     const bool reasonable_orders;
     const bool only_causal_landmarks;
     const bool disjunctive_landmarks;
     const bool conjunctive_landmarks;
     const bool no_orders;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
-    void discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration);
+    // TODO: directly use no_orders in LandmarkFactoryHM
+    bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
+
+    // TODO: Move to the landmark graph
+    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
+
+    // TODO: All of these do some sort of postprocessing of the landmark graph,
+    //  and it appears reasonable that all can be combined with any landmark
+    //  factory. I don't think LandmarkFactory is the right place for this. For
+    //  the last one (calculate_lms_cost), I'm not even sure why it is needed
+    //  at all.
     void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
+    void approximate_reasonable_orders(
+        const TaskProxy &task_proxy, bool obedient_orders);
+    void mk_acyclic_graph();
+    int calculate_lms_cost() const;
 
-    bool achieves_non_conditional(const OperatorProxy &o, const LandmarkNode *lmp) const;
+    // TODO: Move to landmark node
     bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
-    void generate(const TaskProxy &task_proxy, Exploration &exploration);
+private:
+    AbstractTask *lm_graph_task;
+
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
+
     bool interferes(const TaskProxy &task_proxy,
                     const LandmarkNode *node_a,
                     const LandmarkNode *node_b) const;
     bool effect_always_happens(const VariablesProxy &variables,
                                const EffectsProxy &effects,
                                std::set<FactPair> &eff) const;
-    void approximate_reasonable_orders(
-        const TaskProxy &task_proxy, bool obedient_orders);
-    void mk_acyclic_graph();
     int loop_acyclic_graph(LandmarkNode &lmn,
                            std::unordered_set<LandmarkNode *> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
                                          std::list<std::pair<LandmarkNode *, EdgeType>> &path,
                                          std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
-    int calculate_lms_cost() const;
     void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
-    void add_operator_and_propositions_to_list(const OperatorProxy &op,
-                                               std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
-    bool is_causal_landmark(const TaskProxy &task_proxy, Exploration &exploration, const LandmarkNode &landmark) const;
-    virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration); // keep this virtual because HMLandmarks overrides it!
 };
 
 extern void _add_options_to_parser(options::OptionParser &parser);
