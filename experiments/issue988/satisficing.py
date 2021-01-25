@@ -34,7 +34,7 @@ ATTRIBUTES = [
 
 EXPERIMENTS_DIRS = [
     "data/issue988-210121_satisficing-eval",
-    "data/issue988-210122_satisficing-eval",
+    "data/issue988-210125_satisficing-eval",
 ]
 
 exp_name = "satisficing"

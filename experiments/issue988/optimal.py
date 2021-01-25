@@ -34,7 +34,7 @@ ATTRIBUTES = [
 
 EXPERIMENTS_DIRS = [
     "data/issue988-210121_optimal-eval",
-    "data/issue988-210122_optimal-eval",
+    "data/issue988-210125_optimal-eval",
 ]
 
 exp_name = "optimal"
