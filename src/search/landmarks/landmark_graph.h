@@ -160,17 +160,18 @@ public:
     void set_landmark_ids();
     void dump() const;
 private:
-    void remove_node_occurrences(LandmarkNode *node);
     int conj_lms;
     int disj_lms;
-
-    void dump_node(const std::unique_ptr<LandmarkNode> &node) const;
-    void dump_edge(int from, int to, EdgeType edge) const;
 
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
     Nodes nodes;
-    const std::shared_ptr<TaskProxy> task_proxy;
+    const TaskProxy &task_proxy;
+
+    void dump_node(const std::unique_ptr<LandmarkNode> &node) const;
+    void dump_edge(int from, int to, EdgeType edge) const;
+
+    void remove_node_occurrences(LandmarkNode *node);
 };
 }
 
