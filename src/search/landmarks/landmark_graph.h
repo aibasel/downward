@@ -55,7 +55,7 @@ public:
         return id;
     }
 
-    // Possibly should not be changable
+    // TODO: Should possibly not be changeable
     void assign_id(int new_id) {
         assert(id == -1 || new_id == id);
         id = new_id;

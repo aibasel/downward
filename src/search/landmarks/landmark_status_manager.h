@@ -31,6 +31,7 @@ public:
                             const GlobalState &global_state);
 
     /*
+      TODO:
       The status of a landmark is actually dependent on the state. This
       is not represented in the function below. Furthermore, the status
       manager only stores the status for one particular state at a time.
