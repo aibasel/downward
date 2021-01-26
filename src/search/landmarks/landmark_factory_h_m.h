@@ -83,8 +83,10 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     void generate(const TaskProxy &task_proxy);
 
+    // TODO: this is duplicated here and in LandmarkFactoryRelaxation
     void discard_noncausal_landmarks(const TaskProxy &task_proxy,
                                      Exploration &exploration);
+    // TODO: this is duplicated here and in LandmarkFactoryRelaxation
     bool is_causal_landmark(const TaskProxy &task_proxy,
                             Exploration &exploration,
                             const LandmarkNode &landmark) const;

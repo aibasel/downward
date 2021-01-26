@@ -25,12 +25,14 @@ protected:
 private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
-                                    Exploration &exploration) = 0;
+    virtual void generate_relaxed_landmarks(const std::shared_ptr<AbstractTask> &task,
+                                            Exploration &exploration) = 0;
     void generate(const TaskProxy &task_proxy, Exploration &exploration);
 
+    // TODO: this is duplicated here and in LandmarkFactoryHM
     void discard_noncausal_landmarks(const TaskProxy &task_proxy,
                                      Exploration &exploration);
+    // TODO: this is duplicated here and in LandmarkFactoryHM
     bool is_causal_landmark(const TaskProxy &task_proxy,
                             Exploration &exploration,
                             const LandmarkNode &landmark) const;
@@ -40,7 +42,6 @@ private:
                                   const LandmarkNode *lmp) const;
     void add_operator_and_propositions_to_list(
         const OperatorProxy &op, std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
-
 };
 }
 
