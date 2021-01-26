@@ -8,7 +8,7 @@ namespace landmarks {
 void LandmarkFactoryRelaxation::generate_landmarks(const std::shared_ptr<AbstractTask>& task) {
     TaskProxy task_proxy(*task);
     Exploration exploration(task_proxy);
-    generate_landmarks(task, exploration);
+    generate_relaxed_landmarks(task, exploration);
     generate(task_proxy, exploration);
 }
 

@@ -71,8 +71,9 @@ public:
     // Link operators to its propositions in trigger list.
     void add_operator_to_triggers(const OperatorProxy &op);
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
-                                    Exploration &exploration) override;
+    virtual void generate_relaxed_landmarks(
+        const std::shared_ptr<AbstractTask> &task,
+        Exploration &exploration) override;
 
 public:
     explicit LandmarkFactoryZhuGivan(const options::Options &opts);
