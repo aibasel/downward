@@ -175,9 +175,11 @@ bool LandmarkStatusManager::landmark_needed_again(
     } else if (node->is_goal()) {
         return true;
     } else {
-        /* For all A ->_gn B, if B is not reached and A currently not
-           true, since A is a necessary precondition for actions
-           achieving B for the first time, it must become true again. */
+        /*
+          For all A ->_gn B, if B is not reached and A currently not
+          true, since A is a necessary precondition for actions
+          achieving B for the first time, it must become true again.
+        */
         for (const auto &child : node->children) {
             if (child.second >= EdgeType::greedy_necessary
                 && lm_status[child.first->get_id()] == lm_not_reached) {
