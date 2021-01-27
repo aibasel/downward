@@ -71,8 +71,27 @@ using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:
+    /*
+      TODO: get rid of this by removing get_nodes() and instead offering
+      functions begin() and end() with an iterator class, so users of the
+      LandmarkGraph can do loops like this:
+        for (const LandmarkNode &n : graph) {...}
+     */
     using Nodes = std::vector<std::unique_ptr<LandmarkNode>>;
+private:
+    int conj_lms;
+    int disj_lms;
 
+    utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
+    utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
+    Nodes nodes;
+    const TaskProxy &task_proxy;
+
+    void dump_node(const std::unique_ptr<LandmarkNode> &node) const;
+    void dump_edge(int from, int to, EdgeType edge) const;
+
+    void remove_node_occurrences(LandmarkNode *node);
+public:
     /* The following methods are needed only by non-landmarkgraph-factories. */
     LandmarkNode *get_lm_for_index(int) const;
     LandmarkNode *get_landmark(const FactPair &fact) const;
@@ -126,19 +145,6 @@ public:
     LandmarkNode &make_disj_node_simple(const FactPair &lm);
     void set_landmark_ids();
     void dump() const;
-private:
-    int conj_lms;
-    int disj_lms;
-
-    utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
-    utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
-    Nodes nodes;
-    const TaskProxy &task_proxy;
-
-    void dump_node(const std::unique_ptr<LandmarkNode> &node) const;
-    void dump_edge(int from, int to, EdgeType edge) const;
-
-    void remove_node_occurrences(LandmarkNode *node);
 };
 }
 
