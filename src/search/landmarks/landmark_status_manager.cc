@@ -103,7 +103,7 @@ bool LandmarkStatusManager::update_reached_lms(
     // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
-            LandmarkNode *node = lm_graph.get_lm_for_index(id);
+            LandmarkNode *node = lm_graph.get_landmark(id);
             if (node->is_true_in_state(global_state)) {
                 if (landmark_is_leaf(*node, reached)) {
                     reached.set(id);
@@ -165,7 +165,7 @@ bool LandmarkStatusManager::dead_end_exists() {
 
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const GlobalState &state) {
-    LandmarkNode *node = lm_graph.get_lm_for_index(id);
+    LandmarkNode *node = lm_graph.get_landmark(id);
     if (node->is_true_in_state(state)) {
         return false;
     } else if (node->is_true_in_goal) {

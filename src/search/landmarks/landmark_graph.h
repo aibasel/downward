@@ -100,7 +100,6 @@ public:
     int get_num_landmarks() const {
         return nodes.size();
     }
-
     int get_num_disjunctive_landmarks() const {
         return num_disjunctive_landmarks;
     }
@@ -111,13 +110,13 @@ public:
 
 
     // only needed only by non-landmarkgraph-factories
-    LandmarkNode *get_lm_for_index(int index) const;
+    LandmarkNode *get_landmark(int index) const;
     // only needed only by non-landmarkgraph-factories
     LandmarkNode *get_landmark(const FactPair &fact) const;
     // needed only by landmarkgraph-factories.
-    LandmarkNode &get_simple_lm_node(const FactPair &a) const;
+    LandmarkNode &get_simple_landmark(const FactPair &fact) const;
     // needed only by landmarkgraph-factories.
-    LandmarkNode &get_disj_lm_node(const FactPair &a) const;
+    LandmarkNode &get_disjunctive_landmark(const FactPair &fact) const;
 
     // not needed by HMLandmark
     bool contains_simple_landmark(const FactPair &lm) const;

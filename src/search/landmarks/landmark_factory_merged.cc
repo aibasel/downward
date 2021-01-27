@@ -25,13 +25,13 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &l
     if (!lm.disjunctive && !lm.conjunctive) {
         const FactPair &lm_fact = lm.facts[0];
         if (lm_graph->contains_simple_landmark(lm_fact))
-            return &lm_graph->get_simple_lm_node(lm_fact);
+            return &lm_graph->get_simple_landmark(lm_fact);
         else
             return 0;
     } else if (lm.disjunctive) {
         set<FactPair> lm_facts(lm.facts.begin(), lm.facts.end());
         if (lm_graph->contains_identical_disjunctive_landmark(lm_facts))
-            return &lm_graph->get_disj_lm_node(lm.facts[0]);
+            return &lm_graph->get_disjunctive_landmark(lm.facts[0]);
         else
             return 0;
     } else if (lm.conjunctive) {

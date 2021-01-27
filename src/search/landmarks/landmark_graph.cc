@@ -64,13 +64,13 @@ int LandmarkGraph::get_num_edges() const {
     return total;
 }
 
-LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
+LandmarkNode *LandmarkGraph::get_landmark(int i) const {
     return nodes[i].get();
 }
 
 LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact,
-       or 0 if no such landmark exists. */
+       or nullptr if no such landmark exists. */
     LandmarkNode *node_p = nullptr;
     auto it = simple_landmarks_to_nodes.find(fact);
     if (it != simple_landmarks_to_nodes.end())
@@ -83,18 +83,18 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     return node_p;
 }
 
-LandmarkNode &LandmarkGraph::get_simple_lm_node(const FactPair &a) const {
-    assert(contains_simple_landmark(a));
-    return *(simple_landmarks_to_nodes.find(a)->second);
+LandmarkNode &LandmarkGraph::get_simple_landmark(const FactPair &fact) const {
+    assert(contains_simple_landmark(fact));
+    return *(simple_landmarks_to_nodes.find(fact)->second);
 }
 
 // needed only by landmarkgraph-factories.
-LandmarkNode &LandmarkGraph::get_disj_lm_node(const FactPair &a) const {
+LandmarkNode &LandmarkGraph::get_disjunctive_landmark(const FactPair &fact) const {
     /* Note: this only works because every proposition appears in only one
        disjunctive landmark. */
-    assert(!contains_simple_landmark(a));
-    assert(contains_disjunctive_landmark(a));
-    return *(disjunctive_landmarks_to_nodes.find(a)->second);
+    assert(!contains_simple_landmark(fact));
+    assert(contains_disjunctive_landmark(fact));
+    return *(disjunctive_landmarks_to_nodes.find(fact)->second);
 }
 
 
@@ -218,7 +218,7 @@ void LandmarkGraph::remove_node_if(
 }
 
 LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
-    LandmarkNode &node = get_disj_lm_node(lm);
+    LandmarkNode &node = get_disjunctive_landmark(lm);
     node.disjunctive = false;
     for (const FactPair &lm_fact : node.facts)
         disjunctive_landmarks_to_nodes.erase(lm_fact);

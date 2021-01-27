@@ -195,7 +195,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
         constraint.clear();
     }
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
+        const LandmarkNode *lm = lm_graph.get_landmark(lm_id);
         int lm_status = lm_status_manager.get_landmark_status(lm_id);
         if (lm_status != lm_reached) {
             const set<int> &achievers = get_achievers(lm_status, *lm);

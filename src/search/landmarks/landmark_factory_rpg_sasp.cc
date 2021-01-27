@@ -170,7 +170,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
                                                        LandmarkNode &b, EdgeType t) {
     LandmarkNode *new_lm;
     if (lm_graph->contains_simple_landmark(a)) {
-        new_lm = &lm_graph->get_simple_lm_node(a);
+        new_lm = &lm_graph->get_simple_landmark(a);
         edge_add(*new_lm, b, t);
         return;
     }
@@ -250,7 +250,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
     } else if (lm_graph->contains_overlapping_disjunctive_landmark(a)) {
         if (lm_graph->contains_identical_disjunctive_landmark(a)) {
             // LM already exists, just add order.
-            new_lm = &lm_graph->get_disj_lm_node(*a.begin());
+            new_lm = &lm_graph->get_disjunctive_landmark(*a.begin());
             edge_add(*new_lm, b, t);
             return;
         }
@@ -585,7 +585,7 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     for (auto &node : lm_graph->get_nodes()) {
         for (const auto &node2_pair : forward_orders[node.get()]) {
             if (lm_graph->contains_simple_landmark(node2_pair)) {
-                LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
+                LandmarkNode &node2 = lm_graph->get_simple_landmark(node2_pair);
                 edge_add(*node, node2, EdgeType::NATURAL);
             }
         }

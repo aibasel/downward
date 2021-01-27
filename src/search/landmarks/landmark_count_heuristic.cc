@@ -240,7 +240,7 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
     LandmarkSet landmark_set;
     for (int i = 0; i < landmark_bitset.size(); ++i)
         if (landmark_bitset.test(i))
-            landmark_set.insert(lgraph->get_lm_for_index(i));
+            landmark_set.insert(lgraph->get_landmark(i));
     return landmark_set;
 }
 

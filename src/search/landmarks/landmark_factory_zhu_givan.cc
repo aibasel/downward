@@ -58,7 +58,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         FactPair goal_lm = goal.get_pair();
         LandmarkNode *lmp;
         if (lm_graph->contains_simple_landmark(goal_lm)) {
-            lmp = &lm_graph->get_simple_lm_node(goal_lm);
+            lmp = &lm_graph->get_simple_landmark(goal_lm);
             lmp->is_true_in_goal = true;
         } else {
             lmp = &lm_graph->add_simple_landmark(goal_lm);
@@ -83,7 +83,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 assert(initial_state[lm.var].get_value() == lm.value ||
                        !relaxed_task_solvable(task_proxy, exploration, true, node));
             } else {
-                node = &lm_graph->get_simple_lm_node(lm);
+                node = &lm_graph->get_simple_landmark(lm);
             }
             // Add order: lm ->_{nat} lm
             assert(node->parents.find(lmp) == node->parents.end());
