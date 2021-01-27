@@ -12,7 +12,7 @@ from common_setup import IssueConfig, IssueExperiment
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["main", "issue988"]
+REVISIONS = ["issue988-base", "issue988-v1"]
 
 CONFIGS = [
     IssueConfig("lama-first", [],
@@ -47,6 +47,7 @@ exp.add_step("build", exp.build)
 exp.add_step("start", exp.start_runs)
 exp.add_fetcher(name="fetch")
 exp.add_comparison_table_step()
+exp.add_scatter_plot_step(relative=True, attributes=["total_time"])
 
 exp.run_steps()
 

@@ -12,7 +12,7 @@ from common_setup import IssueConfig, IssueExperiment
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["main", "issue988"]
+REVISIONS = ["issue988-base", "issue988-v1"]
 
 CONFIGS = [
     IssueConfig("seq-opt-bjolp", [],
