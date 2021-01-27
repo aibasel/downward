@@ -169,14 +169,14 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
 void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
                                                        LandmarkNode &b, EdgeType t) {
     LandmarkNode *new_lm;
-    if (lm_graph->simple_landmark_exists(a)) {
+    if (lm_graph->contains_simple_landmark(a)) {
         new_lm = &lm_graph->get_simple_lm_node(a);
         edge_add(*new_lm, b, t);
         return;
     }
     set<FactPair> a_set;
     a_set.insert(a);
-    if (lm_graph->disj_landmark_exists(a_set)) {
+    if (lm_graph->contains_overlapping_disjunctive_landmark(a_set)) {
         // Simple landmarks are more informative than disjunctive ones,
         // change disj. landmark into simple
 
@@ -236,7 +236,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
             //<< g_variable_name[it->first] << " -> " << it->second << endl;
             return;
         }
-        if (lm_graph->simple_landmark_exists(lm)) {
+        if (lm_graph->contains_simple_landmark(lm)) {
             // Propositions in this disj. LM exist already as simple LMs.
             simple_lm_exists = true;
             lm_prop = lm;
@@ -247,8 +247,8 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
     if (simple_lm_exists) {
         // Note: don't add orders as we can't be sure that they're correct
         return;
-    } else if (lm_graph->disj_landmark_exists(a)) {
-        if (lm_graph->exact_same_disj_landmark_exists(a)) {
+    } else if (lm_graph->contains_overlapping_disjunctive_landmark(a)) {
+        if (lm_graph->contains_identical_disjunctive_landmark(a)) {
             // LM already exists, just add order.
             new_lm = &lm_graph->get_disj_lm_node(*a.begin());
             edge_add(*new_lm, b, t);
@@ -393,7 +393,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
                 const FactPair pre_fact(pre.first, pre.second);
-                if (!lm_graph->simple_landmark_exists(pre_fact)) {
+                if (!lm_graph->contains_simple_landmark(pre_fact)) {
                     preconditions[disj_class].push_back(pre_fact);
                     used_operators[disj_class].insert(i);
                 }
@@ -584,7 +584,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     for (auto &node : lm_graph->get_nodes()) {
         for (const auto &node2_pair : forward_orders[node.get()]) {
-            if (lm_graph->simple_landmark_exists(node2_pair)) {
+            if (lm_graph->contains_simple_landmark(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
                 edge_add(*node, node2, EdgeType::NATURAL);
             }

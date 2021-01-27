@@ -35,7 +35,7 @@ void LandmarkFactoryRpgExhaust::generate_landmarks(
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const FactPair lm(var.get_id(), value);
-            if (!lm_graph->simple_landmark_exists(lm)) {
+            if (!lm_graph->contains_simple_landmark(lm)) {
                 vector<FactPair> facts = {lm};
                 LandmarkNode node(facts, false, false);
                 if (initial_state[lm.var].get_value() == lm.value ||

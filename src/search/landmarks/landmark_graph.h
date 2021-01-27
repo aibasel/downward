@@ -82,8 +82,8 @@ private:
     int num_conjunctive_landmarks;
     int num_disjunctive_landmarks;
 
-    utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
-    utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
+    utils::HashMap<FactPair, LandmarkNode *> simple_landmarks_to_nodes;
+    utils::HashMap<FactPair, LandmarkNode *> disjunctive_landmarks_to_nodes;
     Nodes nodes;
     const TaskProxy &task_proxy;
 
@@ -105,15 +105,15 @@ public:
     /* The following methods are needed only by landmarkgraph-factories. */
     explicit LandmarkGraph(const TaskProxy &task_proxy);
     inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
-        assert(simple_landmark_exists(a));
-        return *(simple_lms_to_nodes.find(a)->second);
+        assert(contains_simple_landmark(a));
+        return *(simple_landmarks_to_nodes.find(a)->second);
     }
     inline LandmarkNode &get_disj_lm_node(const FactPair &a) const {
         /* Note: this only works because every proposition appears in only one
            disjunctive landmark. */
-        assert(!simple_landmark_exists(a));
-        assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
-        return *(disj_lms_to_nodes.find(a)->second);
+        assert(!contains_simple_landmark(a));
+        assert(contains_disjunctive_landmark(a));
+        return *(disjunctive_landmarks_to_nodes.find(a)->second);
     }
 
     int number_of_disj_landmarks() const {
@@ -125,12 +125,13 @@ public:
     int number_of_edges() const;
 
     // not needed by HMLandmark
-    bool simple_landmark_exists(const FactPair &lm) const;
+    bool contains_simple_landmark(const FactPair &lm) const;
     // not needed by HMLandmark
-    bool disj_landmark_exists(const std::set<FactPair> &lm) const;
+    bool contains_disjunctive_landmark(const FactPair &lm) const;
+    bool contains_overlapping_disjunctive_landmark(const std::set<FactPair> &lm) const;
+    bool contains_identical_disjunctive_landmark(const std::set<FactPair> &lm) const;
     // not needed by HMLandmark
-    bool landmark_exists(const FactPair &lm) const;
-    bool exact_same_disj_landmark_exists(const std::set<FactPair> &lm) const;
+    bool contains_landmark(const FactPair &fact) const;
 
     LandmarkNode &landmark_add_simple(const FactPair &lm);
     LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);

@@ -57,7 +57,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     for (FactProxy goal : task_proxy.get_goals()) {
         FactPair goal_lm = goal.get_pair();
         LandmarkNode *lmp;
-        if (lm_graph->simple_landmark_exists(goal_lm)) {
+        if (lm_graph->contains_simple_landmark(goal_lm)) {
             lmp = &lm_graph->get_simple_lm_node(goal_lm);
             lmp->is_true_in_goal = true;
         } else {
@@ -75,7 +75,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 continue;
             LandmarkNode *node;
             // Add new landmarks
-            if (!lm_graph->simple_landmark_exists(lm)) {
+            if (!lm_graph->contains_simple_landmark(lm)) {
                 node = &lm_graph->landmark_add_simple(lm);
 
                 // if landmark is not in the initial state,
