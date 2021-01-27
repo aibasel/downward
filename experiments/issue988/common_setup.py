@@ -385,11 +385,14 @@ class IssueExperiment(FastDownwardExperiment):
 
         def make_scatter_plots():
             for config in self._configs:
+                print(config)
                 for rev1, rev2 in itertools.combinations(self._revisions, 2):
+                    print(rev1, rev2)
                     for attribute in self.get_supported_attributes(
                             config.nick, attributes):
+                        print(attribute)
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
             for nick1, nick2, rev1, rev2, attribute in additional:
                 make_scatter_plot(nick1, rev1, rev2, attribute, config_nick2=nick2)
 
-        self.add_step(step_name, lambda: make_scatter_plots)
+        self.add_step(step_name, make_scatter_plots)
