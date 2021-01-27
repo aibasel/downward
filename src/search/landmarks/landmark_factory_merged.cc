@@ -57,7 +57,7 @@ void LandmarkFactoryMerged::generate_landmarks(
             const FactPair &lm_fact = node.facts[0];
             if (!node.conjunctive && !node.disjunctive && !lm_graph->landmark_exists(lm_fact)) {
                 LandmarkNode &new_node = lm_graph->landmark_add_simple(lm_fact);
-                new_node.in_goal = node.in_goal;
+                new_node.is_true_in_goal = node.is_true_in_goal;
             }
         }
     }
@@ -79,7 +79,7 @@ void LandmarkFactoryMerged::generate_landmarks(
                 }
                 if (!exists) {
                     LandmarkNode &new_node = lm_graph->landmark_add_disjunctive(lm_facts);
-                    new_node.in_goal = node.in_goal;
+                    new_node.is_true_in_goal = node.is_true_in_goal;
                 }
             } else if (node.conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;

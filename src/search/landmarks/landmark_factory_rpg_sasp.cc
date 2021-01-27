@@ -420,7 +420,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
 
     for (FactProxy goal : task_proxy.get_goals()) {
         LandmarkNode &lmn = lm_graph->landmark_add_simple(goal.get_pair());
-        lmn.in_goal = true;
+        lmn.is_true_in_goal = true;
         open_landmarks.push_back(&lmn);
     }
 

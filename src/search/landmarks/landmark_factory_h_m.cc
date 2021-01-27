@@ -890,7 +890,7 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         } else { // simple landmark
             node = &lm_graph->landmark_add_simple(h_m_table_[set_index].fluents[0]);
         }
-        node->in_goal = goal;
+        node->is_true_in_goal = goal;
         node->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),
                                      h_m_table_[set_index].first_achievers.end());
         lm_node_table_[set_index] = node;

@@ -35,7 +35,7 @@ class LandmarkNode {
 public:
     LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
         : id(-1), facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
-          in_goal(false), min_cost(1), is_derived(false) {
+          is_true_in_goal(false), min_cost(1), is_derived(false) {
     }
 
     std::vector<FactPair> facts;
@@ -43,7 +43,7 @@ public:
     bool conjunctive;
     std::unordered_map<LandmarkNode *, EdgeType> parents;
     std::unordered_map<LandmarkNode *, EdgeType> children;
-    bool in_goal;
+    bool is_true_in_goal;
 
     // minimal cost of achieving operators
     int min_cost;
@@ -61,10 +61,6 @@ public:
     void set_id(int new_id) {
         assert(id == -1 || new_id == id);
         id = new_id;
-    }
-
-    bool is_goal() const {
-        return in_goal;
     }
 
     bool is_true_in_state(const GlobalState &global_state) const;

@@ -203,7 +203,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
        Similar to "relaxed_task_solvable" above.
      */
 
-    if (landmark.in_goal)
+    if (landmark.is_true_in_goal)
         return true;
     vector<vector<int>> lvl_var;
     vector<utils::HashMap<FactPair, int>> lvl_op;
@@ -482,7 +482,7 @@ void LandmarkFactory::approximate_reasonable_orders(
         if (node_p->is_true_in_state(initial_state))
             return;
 
-        if (!obedient_orders && node_p->is_goal()) {
+        if (!obedient_orders && node_p->is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;

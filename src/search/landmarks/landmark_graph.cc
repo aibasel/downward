@@ -257,7 +257,7 @@ void LandmarkGraph::dump_node(const unique_ptr<LandmarkNode> &node) const {
     if (node->is_true_in_state(task_proxy.get_initial_state())) {
         cout << ", style=bold";
     }
-    if (node->is_goal()) {
+    if (node->is_true_in_goal) {
         cout << ", style=filled";
     }
     cout << "];\n";

@@ -59,10 +59,10 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         LandmarkNode *lmp;
         if (lm_graph->simple_landmark_exists(goal_lm)) {
             lmp = &lm_graph->get_simple_lm_node(goal_lm);
-            lmp->in_goal = true;
+            lmp->is_true_in_goal = true;
         } else {
             lmp = &lm_graph->landmark_add_simple(goal_lm);
-            lmp->in_goal = true;
+            lmp->is_true_in_goal = true;
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =

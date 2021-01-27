@@ -37,7 +37,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
     int inserted = 0;
     int num_goal_lms = 0;
     for (auto &node_p : lm_graph.get_nodes()) {
-        if (node_p->in_goal) {
+        if (node_p->is_true_in_goal) {
             ++num_goal_lms;
         }
 
@@ -168,7 +168,7 @@ bool LandmarkStatusManager::landmark_needed_again(
     LandmarkNode *node = lm_graph.get_lm_for_index(id);
     if (node->is_true_in_state(state)) {
         return false;
-    } else if (node->is_goal()) {
+    } else if (node->is_true_in_goal) {
         return true;
     } else {
         /*

@@ -210,7 +210,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
         else
             return !check_node_orders_disobeyed(lm, reached);
     }
-    return lm.is_goal() && !lm.is_true_in_state(state);
+    return lm.is_true_in_goal && !lm.is_true_in_state(state);
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_state) {
