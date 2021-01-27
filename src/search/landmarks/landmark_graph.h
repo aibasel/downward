@@ -33,9 +33,9 @@ enum class EdgeType {
 class LandmarkNode {
     int id;
 public:
-    LandmarkNode(std::vector<FactPair> &facts, bool disj, bool conj = false)
-        : id(-1), facts(facts), disjunctive(disj), conjunctive(conj), in_goal(false),
-          min_cost(1), is_derived(false) {
+    LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
+        : id(-1), facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
+          in_goal(false), min_cost(1), is_derived(false) {
     }
 
     std::vector<FactPair> facts;

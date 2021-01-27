@@ -88,7 +88,7 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
     assert(!landmark_exists(lm));
     vector<FactPair> facts;
     facts.push_back(lm);
-    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false);
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false, false);
     LandmarkNode *new_node_p = new_node.get();
     nodes.push_back(move(new_node));
     simple_lms_to_nodes.emplace(lm, new_node_p);
@@ -101,7 +101,7 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
         facts.push_back(lm_fact);
         assert(!landmark_exists(lm_fact));
     }
-    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, true);
+    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, true, false);
     LandmarkNode *new_node_p = new_node.get();
     nodes.push_back(move(new_node));
     for (const FactPair &lm_fact : lm) {
