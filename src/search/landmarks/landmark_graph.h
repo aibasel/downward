@@ -79,8 +79,8 @@ public:
      */
     using Nodes = std::vector<std::unique_ptr<LandmarkNode>>;
 private:
-    int conj_lms;
-    int disj_lms;
+    int num_conjunctive_landmarks;
+    int num_disjunctive_landmarks;
 
     utils::HashMap<FactPair, LandmarkNode *> simple_lms_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disj_lms_to_nodes;
@@ -120,10 +120,10 @@ public:
     }
 
     int number_of_disj_landmarks() const {
-        return disj_lms;
+        return num_disjunctive_landmarks;
     }
     int number_of_conj_landmarks() const {
-        return conj_lms;
+        return num_conjunctive_landmarks;
     }
     int number_of_edges() const;
 

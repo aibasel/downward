@@ -54,7 +54,7 @@ bool LandmarkNode::is_true_in_state(const State &state) const {
 
 
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : conj_lms(0), disj_lms(0),
+    : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0),
       task_proxy(task_proxy) {
 }
 
@@ -150,7 +150,7 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
     for (const FactPair &lm_fact : lm) {
         disj_lms_to_nodes.emplace(lm_fact, new_node_p);
     }
-    ++disj_lms;
+    ++num_disjunctive_landmarks;
     return *new_node_p;
 }
 
@@ -164,7 +164,7 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
         utils::make_unique_ptr<LandmarkNode>(facts, false, true);
     LandmarkNode *new_node_p = new_node.get();
     nodes.push_back(move(new_node));
-    ++conj_lms;
+    ++num_conjunctive_landmarks;
     return *new_node_p;
 }
 
@@ -180,12 +180,12 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         assert(child_node.parents.find(node) == child_node.parents.end());
     }
     if (node->disjunctive) {
-        --disj_lms;
+        --num_disjunctive_landmarks;
         for (const FactPair &lm_fact : node->facts) {
             disj_lms_to_nodes.erase(lm_fact);
         }
     } else if (node->conjunctive) {
-        --conj_lms;
+        --num_conjunctive_landmarks;
     } else {
         simple_lms_to_nodes.erase(node->facts[0]);
     }
