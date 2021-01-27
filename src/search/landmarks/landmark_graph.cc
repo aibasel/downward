@@ -172,7 +172,7 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
 void LandmarkGraph::set_landmark_ids() {
     int id = 0;
     for (auto &lmn : nodes) {
-        lmn->assign_id(id);
+        lmn->set_id(id);
         ++id;
     }
 }
