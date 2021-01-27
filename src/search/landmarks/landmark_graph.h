@@ -35,7 +35,7 @@ class LandmarkNode {
 public:
     LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
         : id(-1), facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
-          is_true_in_goal(false), min_cost(1), is_derived(false) {
+          is_true_in_goal(false), cost(1), is_derived(false) {
     }
 
     std::vector<FactPair> facts;
@@ -45,8 +45,8 @@ public:
     std::unordered_map<LandmarkNode *, EdgeType> children;
     bool is_true_in_goal;
 
-    // minimal cost of achieving operators
-    int min_cost;
+    // Cost of achieving the landmark (as determined by the landmark factory)
+    int cost;
 
     bool is_derived;
 

@@ -450,7 +450,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(task_proxy, lvl_var, bp);
             // Use the information about possibly achieving operators of bp to set its min cost.
-            bp->min_cost = min_cost_for_landmark(task_proxy, bp, lvl_var);
+            bp->cost = min_cost_for_landmark(task_proxy, bp, lvl_var);
 
             // Process achieving operators again to find disj. LMs
             vector<set<FactPair>> disjunctive_pre;

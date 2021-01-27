@@ -117,7 +117,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
                 break;
             case lm_not_reached:
             case lm_needed_again:
-                h += lm->min_cost;
+                h += lm->cost;
                 break;
             }
         }
