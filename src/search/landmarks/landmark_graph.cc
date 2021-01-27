@@ -223,18 +223,17 @@ void LandmarkGraph::set_landmark_ids() {
 
 static void dump_node(const TaskProxy &task_proxy, const LandmarkNode &node) {
     cout << "  lm" << node.get_id() << " [label=\"";
-
-    FactPair fact = node.facts[0];
-    VariableProxy var = task_proxy.get_variables()[fact.var];
-    cout << var.get_fact(fact.value).get_name();
-    for (size_t i = 1; i < node.facts.size(); ++i) {
-        if (node.disjunctive) {
-            cout << " | ";
-        } else if (node.conjunctive) {
-            cout << " & ";
+    bool first = true;
+    for (FactPair fact : node.facts) {
+        if (!first) {
+            if (node.disjunctive) {
+                cout << " | ";
+            } else if (node.conjunctive) {
+                cout << " & ";
+            }
         }
-        fact = node.facts[i];
-        var = task_proxy.get_variables()[fact.var];
+        first = false;
+        VariableProxy var = task_proxy.get_variables()[fact.var];
         cout << var.get_fact(fact.value).get_name();
     }
     cout << "\"";
@@ -270,7 +269,7 @@ static void dump_edge(int from, int to, EdgeType edge) {
 }
 
 void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph) {
-    utils::g_log << "Dump landmark graph: " << endl;
+    utils::g_log << "Dumping landmark graph: " << endl;
 
     cout << "digraph G {\n";
     for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
