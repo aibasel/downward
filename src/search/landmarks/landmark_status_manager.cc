@@ -19,14 +19,12 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
 
 landmark_status LandmarkStatusManager::get_landmark_status(
     size_t id) const {
-
     assert(0 <= id && id < lm_graph.number_of_landmarks());
     return lm_status[id];
 }
 
 BitsetView LandmarkStatusManager::get_reached_landmarks(
     const GlobalState &state) {
-
     return reached_lms[state];
 }
 
@@ -131,7 +129,6 @@ void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
         int id = node->get_id();
         if (lm_status[id] == lm_reached
             && landmark_needed_again(id, global_state)) {
-
             lm_status[id] = lm_needed_again;
         }
     }
@@ -168,7 +165,6 @@ bool LandmarkStatusManager::dead_end_exists() {
 
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const GlobalState &state) {
-
     LandmarkNode *node = lm_graph.get_lm_for_index(id);
     if (node->is_true_in_state(state)) {
         return false;
@@ -183,7 +179,6 @@ bool LandmarkStatusManager::landmark_needed_again(
         for (const auto &child : node->children) {
             if (child.second >= EdgeType::greedy_necessary
                 && lm_status[child.first->get_id()] == lm_not_reached) {
-
                 return true;
             }
         }
@@ -203,5 +198,4 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
     }
     return true;
 }
-
 }

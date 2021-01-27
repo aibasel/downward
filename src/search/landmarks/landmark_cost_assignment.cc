@@ -44,7 +44,6 @@ LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
 
 double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
     const LandmarkStatusManager &lm_status_manager) {
-
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
     vector<bool> action_landmarks(operator_costs.size(), false);
 
