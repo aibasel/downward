@@ -73,8 +73,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
-                *lgraph,
-                opts.get<lp::LPSolverType>("lpsolver"));
+                *lgraph, opts.get<lp::LPSolverType>("lpsolver"));
         } else {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
@@ -100,29 +99,30 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
-    bool dead_end = lm_status_manager->update_lm_status(global_state);
-
-    if (dead_end) {
+    lm_status_manager->update_lm_status(global_state);
+    if (lm_status_manager->dead_end_exists()) {
         return DEAD_END;
     }
 
-    int h = -1;
-
     if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value();
-        h = static_cast<int>(ceil(h_val - epsilon));
+        double h_val = lm_cost_assignment->cost_sharing_h_value(
+            *lm_status_manager);
+        return static_cast<int>(ceil(h_val - epsilon));
     } else {
-        lgraph->count_costs();
-
-        int total_cost = lgraph->cost_of_landmarks();
-        int reached_cost = lgraph->get_reached_cost();
-        int needed_cost = lgraph->get_needed_cost();
-
-        h = total_cost - reached_cost + needed_cost;
+        int h = 0;
+        for (auto &lm : lgraph->get_nodes()) {
+            switch (lm_status_manager->get_landmark_status(
+                        lm->get_id())) {
+            case lm_reached:
+                break;
+            case lm_not_reached:
+            case lm_needed_again:
+                h += lm->min_cost;
+                break;
+            }
+        }
+        return h;
     }
-
-    assert(h >= 0);
-    return h;
 }
 
 int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {

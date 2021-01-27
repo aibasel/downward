@@ -1,6 +1,8 @@
 #ifndef LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
+#include "../global_state.h"
+
 #include "../lp/lp_solver.h"
 
 #include <set>
@@ -11,6 +13,7 @@ class OperatorsProxy;
 namespace landmarks {
 class LandmarkGraph;
 class LandmarkNode;
+class LandmarkStatusManager;
 
 class LandmarkCostAssignment {
     const std::set<int> empty;
@@ -25,7 +28,8 @@ public:
                            const LandmarkGraph &graph);
     virtual ~LandmarkCostAssignment() = default;
 
-    virtual double cost_sharing_h_value() = 0;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
@@ -35,7 +39,8 @@ public:
                                         const LandmarkGraph &graph,
                                         bool use_action_landmarks);
 
-    virtual double cost_sharing_h_value() override;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
@@ -52,11 +57,13 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
 
     lp::LinearProgram build_initial_lp();
 public:
-    LandmarkEfficientOptimalSharedCostAssignment(const std::vector<int> &operator_costs,
-                                                 const LandmarkGraph &graph,
-                                                 lp::LPSolverType solver_type);
+    LandmarkEfficientOptimalSharedCostAssignment(
+        const std::vector<int> &operator_costs,
+        const LandmarkGraph &graph,
+        lp::LPSolverType solver_type);
 
-    virtual double cost_sharing_h_value() override;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) override;
 };
 }
 
