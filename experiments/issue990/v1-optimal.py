@@ -8,20 +8,21 @@ import os
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 
 REVISIONS = [
-    "main",
-    "c802eb8d",
+    "issue990-base",
+    "issue990-v1",
 ]
 
 CONFIGS = [
-    common_setup.IssueConfig("lama-first", [],
-                             driver_options=["--alias", "lama-first"]),
+    common_setup.IssueConfig("seq-opt-bjolp", [],
+                             driver_options=["--alias", "seq-opt-bjolp"]),
+    common_setup.IssueConfig("lm-exhaust", ["--search", "astar(lmcount(lm_exhaust(), admissible=true))"]),
 ]
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REPO = os.environ["DOWNWARD_REPO"]
 
 if common_setup.is_running_on_cluster():
-    SUITE = common_setup.DEFAULT_SATISFICING_SUITE
+    SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
     ENVIRONMENT = BaselSlurmEnvironment(
         partition="infai_2",
         email="tho.keller@unibas.ch",
@@ -39,7 +40,6 @@ exp = common_setup.IssueExperiment(
 
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
-exp.add_parser(exp.ANYTIME_SEARCH_PARSER)
 exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 exp.add_parser(exp.SINGLE_SEARCH_PARSER)
