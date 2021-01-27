@@ -18,9 +18,8 @@ LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
 }
 
 LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
-    /* Return pointer to landmark node that corresponds to the given fact, or 0 if no such
-     landmark exists.
-     */
+    /* Return pointer to landmark node that corresponds to the given fact,
+       or 0 if no such landmark exists. */
     LandmarkNode *node_p = nullptr;
     auto it = simple_lms_to_nodes.find(fact);
     if (it != simple_lms_to_nodes.end())
@@ -51,8 +50,8 @@ bool LandmarkGraph::simple_landmark_exists(const FactPair &lm) const {
 }
 
 bool LandmarkGraph::landmark_exists(const FactPair &lm) const {
-    // Note: this only checks for one fact whether it's part of a landmark, hence only
-    // simple and disjunctive landmarks are checked.
+    /* Note: this only checks for one fact whether it's part of a landmark,
+       hence only simple and disjunctive landmarks are checked. */
     set<FactPair> lm_set;
     lm_set.insert(lm);
     return simple_landmark_exists(lm) || disj_landmark_exists(lm_set);
@@ -68,7 +67,8 @@ bool LandmarkGraph::disj_landmark_exists(const set<FactPair> &lm) const {
 }
 
 bool LandmarkGraph::exact_same_disj_landmark_exists(const set<FactPair> &lm) const {
-    // Test whether a disj. LM exists which consists EXACTLY of those facts in lm
+    /* Test whether a disjunctive landmark exists which consists EXACTLY of
+       the facts in lm. */
     LandmarkNode *lmn = nullptr;
     for (const FactPair &lm_fact : lm) {
         auto it2 = disj_lms_to_nodes.find(lm_fact);
@@ -88,7 +88,8 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
     assert(!landmark_exists(lm));
     vector<FactPair> facts;
     facts.push_back(lm);
-    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false, false);
+    unique_ptr<LandmarkNode> new_node =
+        utils::make_unique_ptr<LandmarkNode>(facts, false, false);
     LandmarkNode *new_node_p = new_node.get();
     nodes.push_back(move(new_node));
     simple_lms_to_nodes.emplace(lm, new_node_p);
@@ -101,7 +102,8 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
         facts.push_back(lm_fact);
         assert(!landmark_exists(lm_fact));
     }
-    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, true, false);
+    unique_ptr<LandmarkNode> new_node =
+        utils::make_unique_ptr<LandmarkNode>(facts, true, false);
     LandmarkNode *new_node_p = new_node.get();
     nodes.push_back(move(new_node));
     for (const FactPair &lm_fact : lm) {
@@ -117,7 +119,8 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
         facts.push_back(lm_fact);
         assert(!landmark_exists(lm_fact));
     }
-    unique_ptr<LandmarkNode> new_node = utils::make_unique_ptr<LandmarkNode>(facts, false, true);
+    unique_ptr<LandmarkNode> new_node =
+        utils::make_unique_ptr<LandmarkNode>(facts, false, true);
     LandmarkNode *new_node_p = new_node.get();
     nodes.push_back(move(new_node));
     ++conj_lms;

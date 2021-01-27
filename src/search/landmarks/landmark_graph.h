@@ -16,13 +16,13 @@
 
 namespace landmarks {
 enum class EdgeType {
-    /* NOTE: The code relies on the fact that larger numbers are
-       stronger in the sense that, e.g., every greedy-necessary
-       ordering is also natural and reasonable. (It is a sad fact of
-       terminology that necessary is indeed a special case of
-       greedy-necessary, i.e., every necessary ordering is
-       greedy-necessary, but not vice versa. */
-
+    /*
+      NOTE: The code relies on the fact that larger numbers are stronger in the
+      sense that, e.g., every greedy-necessary ordering is also natural and
+      reasonable. (It is a sad fact of terminology that necessary is indeed a
+      special case of greedy-necessary, i.e., every necessary ordering is
+      greedy-necessary, but not vice versa.
+    */
     NECESSARY = 4,
     GREEDY_NECESSARY = 3,
     NATURAL = 2,
@@ -44,7 +44,9 @@ public:
     std::unordered_map<LandmarkNode *, EdgeType> parents;
     std::unordered_map<LandmarkNode *, EdgeType> children;
     bool in_goal;
-    int min_cost; // minimal cost of achieving operators
+
+    // minimal cost of achieving operators
+    int min_cost;
 
     bool is_derived;
 
@@ -73,7 +75,8 @@ public:
                 }
             }
             return false;
-        } else { // conjunctive or simple
+        } else {
+            // conjunctive or simple
             for (const FactPair &fact : facts) {
                 if (global_state[fact.var] != fact.value) {
                     return false;
@@ -91,7 +94,8 @@ public:
                 }
             }
             return false;
-        } else { // conjunctive or simple
+        } else {
+            // conjunctive or simple
             for (const FactPair &fact : facts) {
                 if (state[fact.var].get_value() != fact.value) {
                     return false;
@@ -107,33 +111,29 @@ using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 class LandmarkGraph {
 public:
     using Nodes = std::vector<std::unique_ptr<LandmarkNode>>;
-    // ------------------------------------------------------------------------------
-    // methods needed only by non-landmarkgraph-factories
 
+    /* The following methods are needed only by non-landmarkgraph-factories. */
     LandmarkNode *get_lm_for_index(int) const;
     LandmarkNode *get_landmark(const FactPair &fact) const;
 
-    // ------------------------------------------------------------------------------
-    // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
-
+    /* The following methods are needed by both landmarkgraph-factories and
+       non-landmarkgraph-factories. */
     inline const Nodes &get_nodes() const {
         return nodes;
     }
-
     inline int number_of_landmarks() const {
         return nodes.size();
     }
 
-    // ------------------------------------------------------------------------------
-    // methods needed only by landmarkgraph-factories
+    /* The following methods are needed only by landmarkgraph-factories. */
     explicit LandmarkGraph(const TaskProxy &task_proxy);
-
     inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
         assert(simple_landmark_exists(a));
         return *(simple_lms_to_nodes.find(a)->second);
     }
     inline LandmarkNode &get_disj_lm_node(const FactPair &a) const {
-        // Note: this only works because every proposition appears in only one disj. LM
+        /* Note: this only works because every proposition appears in only one
+           disjunctive landmark. */
         assert(!simple_landmark_exists(a));
         assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
         return *(disj_lms_to_nodes.find(a)->second);
@@ -147,16 +147,22 @@ public:
     }
     int number_of_edges() const;
 
-    bool simple_landmark_exists(const FactPair &lm) const; // not needed by HMLandmark
-    bool disj_landmark_exists(const std::set<FactPair> &lm) const;  // not needed by HMLandmark
-    bool landmark_exists(const FactPair &lm) const; // not needed by HMLandmark
+    // not needed by HMLandmark
+    bool simple_landmark_exists(const FactPair &lm) const;
+    // not needed by HMLandmark
+    bool disj_landmark_exists(const std::set<FactPair> &lm) const;
+    // not needed by HMLandmark
+    bool landmark_exists(const FactPair &lm) const;
     bool exact_same_disj_landmark_exists(const std::set<FactPair> &lm) const;
 
     LandmarkNode &landmark_add_simple(const FactPair &lm);
     LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);
     LandmarkNode &landmark_add_conjunctive(const std::set<FactPair> &lm);
-    void remove_node_if(const std::function<bool (const LandmarkNode &)> &remove_node);
-    LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
+    void remove_node_if(
+        const std::function<bool (const LandmarkNode &)> &remove_node);
+
+    // only needed by LandmarkFactorySasp
+    LandmarkNode &make_disj_node_simple(const FactPair &lm);
     void set_landmark_ids();
     void dump() const;
 private:
