@@ -45,21 +45,15 @@ protected:
     // TODO: Directly use no_orders in LandmarkFactoryHM and remove this
     bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
-    // TODO: Move to the landmark graph
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
-    // TODO: All of these do some sort of postprocessing of the landmark graph,
-    //  and it appears reasonable that all can be combined with any landmark
-    //  factory. I don't think LandmarkFactory is the right place for this.
     void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
     void approximate_reasonable_orders(
         const TaskProxy &task_proxy, bool obedient_orders);
-    void mk_acyclic_graph();
     int calculate_lms_cost() const;
 
-    // TODO: Move to landmark node
     bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
 private:
@@ -73,11 +67,6 @@ private:
     bool effect_always_happens(const VariablesProxy &variables,
                                const EffectsProxy &effects,
                                std::set<FactPair> &eff) const;
-    int loop_acyclic_graph(LandmarkNode &lmn,
-                           std::unordered_set<LandmarkNode *> &acyclic_node_set);
-    bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                         std::list<std::pair<LandmarkNode *, EdgeType>> &path,
-                                         std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
     void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
 };

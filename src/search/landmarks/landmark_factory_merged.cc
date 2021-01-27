@@ -145,7 +145,6 @@ void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
         utils::g_log << "approx. obedient reasonable orders" << endl;
         approximate_reasonable_orders(task_proxy, true);
     }
-    mk_acyclic_graph();
     lm_graph->set_landmark_cost(calculate_lms_cost());
 }
 
