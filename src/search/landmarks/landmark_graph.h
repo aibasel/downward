@@ -67,43 +67,8 @@ public:
         return in_goal;
     }
 
-    bool is_true_in_state(const GlobalState &global_state) const {
-        if (disjunctive) {
-            for (const FactPair &fact : facts) {
-                if (global_state[fact.var] == fact.value) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            // conjunctive or simple
-            for (const FactPair &fact : facts) {
-                if (global_state[fact.var] != fact.value) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
-    bool is_true_in_state(const State &state) const {
-        if (disjunctive) {
-            for (const FactPair &fact : facts) {
-                if (state[fact.var].get_value() == fact.value) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            // conjunctive or simple
-            for (const FactPair &fact : facts) {
-                if (state[fact.var].get_value() != fact.value) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
+    bool is_true_in_state(const GlobalState &global_state) const;
+    bool is_true_in_state(const State &state) const;
 };
 
 using LandmarkSet = std::unordered_set<const LandmarkNode *>;

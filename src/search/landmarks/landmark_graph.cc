@@ -12,6 +12,47 @@
 using namespace std;
 
 namespace landmarks {
+
+
+bool LandmarkNode::is_true_in_state(const GlobalState &global_state) const {
+    if (disjunctive) {
+        for (const FactPair &fact : facts) {
+            if (global_state[fact.var] == fact.value) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        // conjunctive or simple
+        for (const FactPair &fact : facts) {
+            if (global_state[fact.var] != fact.value) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+bool LandmarkNode::is_true_in_state(const State &state) const {
+    if (disjunctive) {
+        for (const FactPair &fact : facts) {
+            if (state[fact.var].get_value() == fact.value) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        // conjunctive or simple
+        for (const FactPair &fact : facts) {
+            if (state[fact.var].get_value() != fact.value) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
     : conj_lms(0), disj_lms(0),
       task_proxy(task_proxy) {
