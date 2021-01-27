@@ -217,10 +217,11 @@ void LandmarkGraph::remove_node_if(
                           }), nodes.end());
 }
 
-LandmarkNode &LandmarkGraph::make_disj_node_simple(const FactPair &lm) {
+LandmarkNode &LandmarkGraph::replace_disjunctive_by_simple_landmark(const FactPair &lm) {
     LandmarkNode &node = get_disjunctive_landmark(lm);
     node.disjunctive = false;
     for (const FactPair &lm_fact : node.facts)
+        // TODO: shouldn't this decrease num_disjunctive_landmarks?
         disjunctive_landmarks_to_nodes.erase(lm_fact);
     simple_landmarks_to_nodes.emplace(lm, &node);
     return node;

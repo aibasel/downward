@@ -181,7 +181,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
         // change disj. landmark into simple
 
         // old: call to methode
-        LandmarkNode &node = lm_graph->make_disj_node_simple(a);
+        LandmarkNode &node = lm_graph->replace_disjunctive_by_simple_landmark(a);
 
         /* TODO: Problem: Schon diese jetzige Implementierung ist nicht mehr korrekt,
         da rm_landmark_node nicht nur bei allen children die parents-zeiger auf sich selbst

@@ -134,7 +134,7 @@ public:
         const std::function<bool (const LandmarkNode &)> &remove_node);
 
     // only needed by LandmarkFactorySasp
-    LandmarkNode &make_disj_node_simple(const FactPair &lm);
+    LandmarkNode &replace_disjunctive_by_simple_landmark(const FactPair &lm);
     void set_landmark_ids();
 };
 }
