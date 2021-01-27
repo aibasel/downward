@@ -87,12 +87,6 @@ bool LandmarkGraph::contains_simple_landmark(const FactPair &lm) const {
     return simple_landmarks_to_nodes.count(lm) != 0;
 }
 
-bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
-    /* Note: this only checks for one fact whether it's part of a landmark,
-       hence only simple and disjunctive landmarks are checked. */
-    return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
-}
-
 bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &lm) const {
     return disjunctive_landmarks_to_nodes.count(lm) != 0;
 }
@@ -124,6 +118,12 @@ bool LandmarkGraph::contains_identical_disjunctive_landmark(
         }
     }
     return true;
+}
+
+bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
+    /* Note: this only checks for one fact whether it's part of a landmark,
+       hence only simple and disjunctive landmarks are checked. */
+    return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
 }
 
 LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
