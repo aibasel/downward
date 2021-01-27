@@ -1,6 +1,5 @@
 #include "landmark_graph.h"
 
-#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -219,68 +218,5 @@ void LandmarkGraph::set_landmark_ids() {
         lmn->set_id(id);
         ++id;
     }
-}
-
-static void dump_node(const TaskProxy &task_proxy, const LandmarkNode &node) {
-    cout << "  lm" << node.get_id() << " [label=\"";
-    bool first = true;
-    for (FactPair fact : node.facts) {
-        if (!first) {
-            if (node.disjunctive) {
-                cout << " | ";
-            } else if (node.conjunctive) {
-                cout << " & ";
-            }
-        }
-        first = false;
-        VariableProxy var = task_proxy.get_variables()[fact.var];
-        cout << var.get_fact(fact.value).get_name();
-    }
-    cout << "\"";
-    if (node.is_true_in_state(task_proxy.get_initial_state())) {
-        cout << ", style=bold";
-    }
-    if (node.is_true_in_goal) {
-        cout << ", style=filled";
-    }
-    cout << "];\n";
-}
-
-static void dump_edge(int from, int to, EdgeType edge) {
-    cout << "      lm" << from << " -> lm" << to << " [label=";
-    switch (edge) {
-    case EdgeType::NECESSARY:
-        cout << "\"nec\"";
-        break;
-    case EdgeType::GREEDY_NECESSARY:
-        cout << "\"gn\"";
-        break;
-    case EdgeType::NATURAL:
-        cout << "\"n\"";
-        break;
-    case EdgeType::REASONABLE:
-        cout << "\"r\", style=dashed";
-        break;
-    case EdgeType::OBEDIENT_REASONABLE:
-        cout << "\"o_r\", style=dashed";
-        break;
-    }
-    cout << "];\n";
-}
-
-void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph) {
-    utils::g_log << "Dumping landmark graph: " << endl;
-
-    cout << "digraph G {\n";
-    for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
-        dump_node(task_proxy, *node);
-        for (const auto &child : node->children) {
-            const LandmarkNode *child_node = child.first;
-            const EdgeType &edge = child.second;
-            dump_edge(node->get_id(), child_node->get_id(), edge);
-        }
-    }
-    cout << "}" << endl;
-    utils::g_log << "Landmark graph end." << endl;
 }
 }

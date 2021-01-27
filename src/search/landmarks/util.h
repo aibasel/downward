@@ -9,6 +9,7 @@ class TaskProxy;
 
 namespace landmarks {
 class LandmarkNode;
+class LandmarkGraph;
 
 std::unordered_map<int, int> _intersect(
     const std::unordered_map<int, int> &a,
@@ -20,6 +21,8 @@ bool _possibly_reaches_lm(const OperatorProxy &op,
 
 OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id);
 int get_operator_or_axiom_id(const OperatorProxy &op);
+
+void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph);
 }
 
 #endif

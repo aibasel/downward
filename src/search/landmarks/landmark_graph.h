@@ -142,8 +142,6 @@ public:
     LandmarkNode &make_disj_node_simple(const FactPair &lm);
     void set_landmark_ids();
 };
-
-void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph);
 }
 
 #endif
