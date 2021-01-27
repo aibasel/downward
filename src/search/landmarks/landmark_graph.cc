@@ -222,19 +222,19 @@ void LandmarkGraph::dump_node(const unique_ptr<LandmarkNode> &node) const {
 void LandmarkGraph::dump_edge(int from, int to, EdgeType edge) const {
     cout << "      lm" << from << " -> lm" << to << " [label=";
     switch (edge) {
-    case EdgeType::necessary:
+    case EdgeType::NECESSARY:
         cout << "\"nec\"";
         break;
-    case EdgeType::greedy_necessary:
+    case EdgeType::GREEDY_NECESSARY:
         cout << "\"gn\"";
         break;
-    case EdgeType::natural:
+    case EdgeType::NATURAL:
         cout << "\"n\"";
         break;
-    case EdgeType::reasonable:
+    case EdgeType::REASONABLE:
         cout << "\"r\", style=dashed";
         break;
-    case EdgeType::obedient_reasonable:
+    case EdgeType::OBEDIENT_REASONABLE:
         cout << "\"o_r\", style=dashed";
         break;
     }

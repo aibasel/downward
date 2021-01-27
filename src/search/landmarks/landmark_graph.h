@@ -23,11 +23,11 @@ enum class EdgeType {
        greedy-necessary, i.e., every necessary ordering is
        greedy-necessary, but not vice versa. */
 
-    necessary = 4,
-    greedy_necessary = 3,
-    natural = 2,
-    reasonable = 1,
-    obedient_reasonable = 0
+    NECESSARY = 4,
+    GREEDY_NECESSARY = 3,
+    NATURAL = 2,
+    REASONABLE = 1,
+    OBEDIENT_REASONABLE = 0
 };
 
 class LandmarkNode {

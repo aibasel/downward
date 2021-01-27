@@ -445,7 +445,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
             compute_shared_preconditions(task_proxy, shared_pre, lvl_var, bp);
             // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
             for (const auto &pre : shared_pre) {
-                found_simple_lm_and_order(FactPair(pre.first, pre.second), *bp, EdgeType::greedy_necessary);
+                found_simple_lm_and_order(FactPair(pre.first, pre.second), *bp, EdgeType::GREEDY_NECESSARY);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(task_proxy, lvl_var, bp);
@@ -457,7 +457,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
             compute_disjunctive_preconditions(task_proxy, disjunctive_pre, lvl_var, bp);
             for (const auto &preconditions : disjunctive_pre)
                 if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
-                    found_disj_lm_and_order(task_proxy, preconditions, *bp, EdgeType::greedy_necessary);
+                    found_disj_lm_and_order(task_proxy, preconditions, *bp, EdgeType::GREEDY_NECESSARY);
                 }
         }
     }
@@ -499,7 +499,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
             if (!domain_connectivity(initial_state, lmk, exclude))
-                found_simple_lm_and_order(FactPair(lmk.var, value), *lmp, EdgeType::natural);
+                found_simple_lm_and_order(FactPair(lmk.var, value), *lmp, EdgeType::NATURAL);
         }
 }
 
@@ -586,7 +586,7 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
         for (const auto &node2_pair : forward_orders[node.get()]) {
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
-                edge_add(*node, node2, EdgeType::natural);
+                edge_add(*node, node2, EdgeType::NATURAL);
             }
         }
         forward_orders[node.get()].clear();
