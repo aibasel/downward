@@ -133,9 +133,9 @@ public:
     // not needed by HMLandmark
     bool contains_landmark(const FactPair &fact) const;
 
-    LandmarkNode &landmark_add_simple(const FactPair &lm);
-    LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);
-    LandmarkNode &landmark_add_conjunctive(const std::set<FactPair> &lm);
+    LandmarkNode &add_simple_landmark(const FactPair &lm);
+    LandmarkNode &add_disjunctive_landmark(const std::set<FactPair> &lm);
+    LandmarkNode &add_conjunctive_landmark(const std::set<FactPair> &lm);
     void remove_node_if(
         const std::function<bool (const LandmarkNode &)> &remove_node);
 

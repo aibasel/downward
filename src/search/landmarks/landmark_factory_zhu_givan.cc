@@ -61,7 +61,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             lmp = &lm_graph->get_simple_lm_node(goal_lm);
             lmp->is_true_in_goal = true;
         } else {
-            lmp = &lm_graph->landmark_add_simple(goal_lm);
+            lmp = &lm_graph->add_simple_landmark(goal_lm);
             lmp->is_true_in_goal = true;
         }
         // extract landmarks from goal labels
@@ -76,7 +76,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             LandmarkNode *node;
             // Add new landmarks
             if (!lm_graph->contains_simple_landmark(lm)) {
-                node = &lm_graph->landmark_add_simple(lm);
+                node = &lm_graph->add_simple_landmark(lm);
 
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false

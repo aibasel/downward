@@ -886,9 +886,9 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         }
         LandmarkNode *node;
         if (lm.size() > 1) { // conjunctive landmark
-            node = &lm_graph->landmark_add_conjunctive(lm);
+            node = &lm_graph->add_conjunctive_landmark(lm);
         } else { // simple landmark
-            node = &lm_graph->landmark_add_simple(h_m_table_[set_index].fluents[0]);
+            node = &lm_graph->add_simple_landmark(h_m_table_[set_index].fluents[0]);
         }
         node->is_true_in_goal = goal;
         node->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),

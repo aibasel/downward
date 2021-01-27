@@ -217,7 +217,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
                 return;
         open_landmarks.push_back(&node);
     } else {
-        new_lm = &lm_graph->landmark_add_simple(a);
+        new_lm = &lm_graph->add_simple_landmark(a);
         open_landmarks.push_back(new_lm);
         edge_add(*new_lm, b, t);
     }
@@ -258,7 +258,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
         return;
     }
     // This LM and no part of it exist, add the LM to the landmarks graph.
-    new_lm = &lm_graph->landmark_add_disjunctive(a);
+    new_lm = &lm_graph->add_disjunctive_landmark(a);
     open_landmarks.push_back(new_lm);
     edge_add(*new_lm, b, t);
 }
@@ -419,7 +419,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
     build_disjunction_classes(task_proxy);
 
     for (FactProxy goal : task_proxy.get_goals()) {
-        LandmarkNode &lmn = lm_graph->landmark_add_simple(goal.get_pair());
+        LandmarkNode &lmn = lm_graph->add_simple_landmark(goal.get_pair());
         lmn.is_true_in_goal = true;
         open_landmarks.push_back(&lmn);
     }

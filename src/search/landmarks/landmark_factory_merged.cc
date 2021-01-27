@@ -56,7 +56,7 @@ void LandmarkFactoryMerged::generate_landmarks(
             const LandmarkNode &node = *lm;
             const FactPair &lm_fact = node.facts[0];
             if (!node.conjunctive && !node.disjunctive && !lm_graph->contains_landmark(lm_fact)) {
-                LandmarkNode &new_node = lm_graph->landmark_add_simple(lm_fact);
+                LandmarkNode &new_node = lm_graph->add_simple_landmark(lm_fact);
                 new_node.is_true_in_goal = node.is_true_in_goal;
             }
         }
@@ -78,7 +78,7 @@ void LandmarkFactoryMerged::generate_landmarks(
                     lm_facts.insert(lm_fact);
                 }
                 if (!exists) {
-                    LandmarkNode &new_node = lm_graph->landmark_add_disjunctive(lm_facts);
+                    LandmarkNode &new_node = lm_graph->add_disjunctive_landmark(lm_facts);
                     new_node.is_true_in_goal = node.is_true_in_goal;
                 }
             } else if (node.conjunctive) {

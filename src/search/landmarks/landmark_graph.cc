@@ -126,7 +126,7 @@ bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
     return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
 }
 
-LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
+LandmarkNode &LandmarkGraph::add_simple_landmark(const FactPair &lm) {
     assert(!contains_landmark(lm));
     vector<FactPair> facts;
     facts.push_back(lm);
@@ -138,7 +138,7 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const FactPair &lm) {
     return *new_node_p;
 }
 
-LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
+LandmarkNode &LandmarkGraph::add_disjunctive_landmark(const set<FactPair> &lm) {
     vector<FactPair> facts;
     for (const FactPair &lm_fact : lm) {
         facts.push_back(lm_fact);
@@ -155,7 +155,7 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
     return *new_node_p;
 }
 
-LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<FactPair> &lm) {
+LandmarkNode &LandmarkGraph::add_conjunctive_landmark(const set<FactPair> &lm) {
     vector<FactPair> facts;
     for (const FactPair &lm_fact : lm) {
         facts.push_back(lm_fact);
