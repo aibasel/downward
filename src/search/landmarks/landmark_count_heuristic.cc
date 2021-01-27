@@ -204,7 +204,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
      reached before, the LM is a goal, and it's not true at moment */
 
     int num_reached = reached.size();
-    if (num_reached != lgraph->number_of_landmarks()) {
+    if (num_reached != lgraph->get_num_landmarks()) {
         if (reached.find(&lm) != reached.end())
             return false;
         else

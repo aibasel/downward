@@ -70,14 +70,14 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     // the following replaces the old "build_lm_graph"
     generate(task_proxy, exploration);
     utils::g_log << "Landmarks generation time: " << lm_generation_timer << endl;
-    if (lm_graph->number_of_landmarks() == 0)
+    if (lm_graph->get_num_landmarks() == 0)
         utils::g_log << "Warning! No landmarks found. Task unsolvable?" << endl;
     else {
-        utils::g_log << "Discovered " << lm_graph->number_of_landmarks()
-                     << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
+        utils::g_log << "Discovered " << lm_graph->get_num_landmarks()
+                     << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
                      << " are disjunctive and "
-                     << lm_graph->number_of_conj_landmarks() << " are conjunctive." << endl;
-        utils::g_log << lm_graph->number_of_edges() << " edges" << endl;
+                     << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
+        utils::g_log << lm_graph->get_num_edges() << " edges" << endl;
     }
     //lm_graph->dump();
     return lm_graph;
@@ -607,12 +607,12 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
 }
 
 void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration) {
-    int num_all_landmarks = lm_graph->number_of_landmarks();
+    int num_all_landmarks = lm_graph->get_num_landmarks();
     lm_graph->remove_node_if(
         [this, &task_proxy, &exploration](const LandmarkNode &node) {
             return !is_causal_landmark(task_proxy, exploration, node);
         });
-    int num_causal_landmarks = lm_graph->number_of_landmarks();
+    int num_causal_landmarks = lm_graph->get_num_landmarks();
     utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
                  << " non-causal landmarks" << endl;
 }
@@ -623,8 +623,8 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
       even if we don't want to use disjunctive landmarks during search. So we
       allow removing disjunctive landmarks after landmark generation.
     */
-    if (lm_graph->number_of_disj_landmarks() > 0) {
-        utils::g_log << "Discarding " << lm_graph->number_of_disj_landmarks()
+    if (lm_graph->get_num_disjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_disjunctive_landmarks()
                      << " disjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.disjunctive;});
@@ -632,8 +632,8 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
 }
 
 void LandmarkFactory::discard_conjunctive_landmarks() {
-    if (lm_graph->number_of_conj_landmarks() > 0) {
-        utils::g_log << "Discarding " << lm_graph->number_of_conj_landmarks()
+    if (lm_graph->get_num_conjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
                      << " conjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.conjunctive;});
@@ -649,7 +649,7 @@ void LandmarkFactory::discard_all_orderings() {
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
-    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->get_num_landmarks());
     int removed_edges = 0;
     for (auto &node : lm_graph->get_nodes()) {
         if (acyclic_node_set.find(node.get()) == acyclic_node_set.end())
@@ -698,7 +698,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, EdgeType>> path;
-    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->get_num_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());

@@ -12,14 +12,14 @@ namespace landmarks {
   computing new landmark information.
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    : reached_lms(vector<bool>(graph.number_of_landmarks(), true)),
-      lm_status(graph.number_of_landmarks(), lm_not_reached),
+    : reached_lms(vector<bool>(graph.get_num_landmarks(), true)),
+      lm_status(graph.get_num_landmarks(), lm_not_reached),
       lm_graph(graph) {
 }
 
 landmark_status LandmarkStatusManager::get_landmark_status(
     size_t id) const {
-    assert(0 <= id && id < lm_graph.number_of_landmarks());
+    assert(0 <= id && id < lm_graph.get_num_landmarks());
     return lm_status[id];
 }
 
@@ -83,7 +83,7 @@ bool LandmarkStatusManager::update_reached_lms(
         parent_global_state);
     BitsetView reached = get_reached_landmarks(global_state);
 
-    int num_landmarks = lm_graph.number_of_landmarks();
+    int num_landmarks = lm_graph.get_num_landmarks();
     assert(reached.size() == num_landmarks);
     assert(parent_reached.size() == num_landmarks);
 
@@ -122,7 +122,7 @@ void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
 
     /* This first loop is necessary as setup for the *needed again*
        check in the second loop. */
-    for (int id = 0; id < lm_graph.number_of_landmarks(); ++id) {
+    for (int id = 0; id < lm_graph.get_num_landmarks(); ++id) {
         lm_status[id] = reached.test(id) ? lm_reached : lm_not_reached;
     }
     for (auto &node : nodes) {

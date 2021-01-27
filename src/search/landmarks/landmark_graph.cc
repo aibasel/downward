@@ -76,7 +76,7 @@ LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
     return nodes[i].get();
 }
 
-int LandmarkGraph::number_of_edges() const {
+int LandmarkGraph::get_num_edges() const {
     int total = 0;
     for (auto &node : nodes)
         total += node->children.size();

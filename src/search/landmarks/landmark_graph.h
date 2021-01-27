@@ -98,7 +98,7 @@ public:
     inline const Nodes &get_nodes() const {
         return nodes;
     }
-    inline int number_of_landmarks() const {
+    inline int get_num_landmarks() const {
         return nodes.size();
     }
 
@@ -116,13 +116,13 @@ public:
         return *(disjunctive_landmarks_to_nodes.find(a)->second);
     }
 
-    int number_of_disj_landmarks() const {
+    int get_num_disjunctive_landmarks() const {
         return num_disjunctive_landmarks;
     }
-    int number_of_conj_landmarks() const {
+    int get_num_conjunctive_landmarks() const {
         return num_conjunctive_landmarks;
     }
-    int number_of_edges() const;
+    int get_num_edges() const;
 
     // not needed by HMLandmark
     bool contains_simple_landmark(const FactPair &lm) const;
