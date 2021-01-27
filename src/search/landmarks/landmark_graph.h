@@ -89,10 +89,8 @@ private:
 
     void remove_node_occurrences(LandmarkNode *node);
 public:
-    // only needed only by non-landmarkgraph-factories
-    LandmarkNode *get_lm_for_index(int) const;
-    // only needed only by non-landmarkgraph-factories
-    LandmarkNode *get_landmark(const FactPair &fact) const;
+    // needed only by landmarkgraph-factories.
+    explicit LandmarkGraph(const TaskProxy &task_proxy);
 
     // needed by both landmarkgraph-factories and non-landmarkgraph-factories
     inline const Nodes &get_nodes() const {
@@ -103,13 +101,26 @@ public:
         return nodes.size();
     }
 
-    // needed only by landmarkgraph-factories.
-    explicit LandmarkGraph(const TaskProxy &task_proxy);
+    int get_num_disjunctive_landmarks() const {
+        return num_disjunctive_landmarks;
+    }
+    int get_num_conjunctive_landmarks() const {
+        return num_conjunctive_landmarks;
+    }
+    int get_num_edges() const;
+
+
+    // only needed only by non-landmarkgraph-factories
+    LandmarkNode *get_lm_for_index(int) const;
+    // only needed only by non-landmarkgraph-factories
+    LandmarkNode *get_landmark(const FactPair &fact) const;
+
     // needed only by landmarkgraph-factories.
     inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
         assert(contains_simple_landmark(a));
         return *(simple_landmarks_to_nodes.find(a)->second);
     }
+
     // needed only by landmarkgraph-factories.
     inline LandmarkNode &get_disj_lm_node(const FactPair &a) const {
         /* Note: this only works because every proposition appears in only one
@@ -118,14 +129,6 @@ public:
         assert(contains_disjunctive_landmark(a));
         return *(disjunctive_landmarks_to_nodes.find(a)->second);
     }
-
-    int get_num_disjunctive_landmarks() const {
-        return num_disjunctive_landmarks;
-    }
-    int get_num_conjunctive_landmarks() const {
-        return num_conjunctive_landmarks;
-    }
-    int get_num_edges() const;
 
     // not needed by HMLandmark
     bool contains_simple_landmark(const FactPair &lm) const;

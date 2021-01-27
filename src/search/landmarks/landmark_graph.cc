@@ -57,6 +57,17 @@ LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
       task_proxy(task_proxy) {
 }
 
+int LandmarkGraph::get_num_edges() const {
+    int total = 0;
+    for (auto &node : nodes)
+        total += node->children.size();
+    return total;
+}
+
+LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
+    return nodes[i].get();
+}
+
 LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact,
        or 0 if no such landmark exists. */
@@ -70,17 +81,6 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
             node_p = it2->second;
     }
     return node_p;
-}
-
-LandmarkNode *LandmarkGraph::get_lm_for_index(int i) const {
-    return nodes[i].get();
-}
-
-int LandmarkGraph::get_num_edges() const {
-    int total = 0;
-    for (auto &node : nodes)
-        total += node->children.size();
-    return total;
 }
 
 bool LandmarkGraph::contains_simple_landmark(const FactPair &lm) const {
