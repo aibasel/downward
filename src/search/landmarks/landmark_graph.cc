@@ -221,22 +221,6 @@ void LandmarkGraph::set_landmark_ids() {
     }
 }
 
-void LandmarkGraph::dump() const {
-    utils::g_log << "Dump landmark graph: " << endl;
-
-    cout << "digraph G {\n";
-    for (const unique_ptr<LandmarkNode> &node : nodes) {
-        dump_node(node);
-        for (const auto &child : node->children) {
-            const LandmarkNode *child_node = child.first;
-            const EdgeType &edge = child.second;
-            dump_edge(node->get_id(), child_node->get_id(), edge);
-        }
-    }
-    cout << "}" << endl;
-    utils::g_log << "Landmark graph end." << endl;
-}
-
 void LandmarkGraph::dump_node(const unique_ptr<LandmarkNode> &node) const {
     cout << "  lm" << node->get_id() << " [label=\"";
 
@@ -283,5 +267,21 @@ void LandmarkGraph::dump_edge(int from, int to, EdgeType edge) const {
         break;
     }
     cout << "];\n";
+}
+
+void LandmarkGraph::dump() const {
+    utils::g_log << "Dump landmark graph: " << endl;
+
+    cout << "digraph G {\n";
+    for (const unique_ptr<LandmarkNode> &node : nodes) {
+        dump_node(node);
+        for (const auto &child : node->children) {
+            const LandmarkNode *child_node = child.first;
+            const EdgeType &edge = child.second;
+            dump_edge(node->get_id(), child_node->get_id(), edge);
+        }
+    }
+    cout << "}" << endl;
+    utils::g_log << "Landmark graph end." << endl;
 }
 }
