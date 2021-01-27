@@ -221,33 +221,33 @@ void LandmarkGraph::set_landmark_ids() {
     }
 }
 
-void LandmarkGraph::dump_node(const unique_ptr<LandmarkNode> &node) const {
-    cout << "  lm" << node->get_id() << " [label=\"";
+static void dump_node(const TaskProxy &task_proxy, const LandmarkNode &node) {
+    cout << "  lm" << node.get_id() << " [label=\"";
 
-    FactPair &fact = node->facts[0];
+    FactPair fact = node.facts[0];
     VariableProxy var = task_proxy.get_variables()[fact.var];
     cout << var.get_fact(fact.value).get_name();
-    for (size_t i = 1; i < node->facts.size(); ++i) {
-        if (node->disjunctive) {
+    for (size_t i = 1; i < node.facts.size(); ++i) {
+        if (node.disjunctive) {
             cout << " | ";
-        } else if (node->conjunctive) {
+        } else if (node.conjunctive) {
             cout << " & ";
         }
-        fact = node->facts[i];
+        fact = node.facts[i];
         var = task_proxy.get_variables()[fact.var];
         cout << var.get_fact(fact.value).get_name();
     }
     cout << "\"";
-    if (node->is_true_in_state(task_proxy.get_initial_state())) {
+    if (node.is_true_in_state(task_proxy.get_initial_state())) {
         cout << ", style=bold";
     }
-    if (node->is_true_in_goal) {
+    if (node.is_true_in_goal) {
         cout << ", style=filled";
     }
     cout << "];\n";
 }
 
-void LandmarkGraph::dump_edge(int from, int to, EdgeType edge) const {
+static void dump_edge(int from, int to, EdgeType edge) {
     cout << "      lm" << from << " -> lm" << to << " [label=";
     switch (edge) {
     case EdgeType::NECESSARY:
@@ -269,12 +269,12 @@ void LandmarkGraph::dump_edge(int from, int to, EdgeType edge) const {
     cout << "];\n";
 }
 
-void LandmarkGraph::dump() const {
+void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph) {
     utils::g_log << "Dump landmark graph: " << endl;
 
     cout << "digraph G {\n";
-    for (const unique_ptr<LandmarkNode> &node : nodes) {
-        dump_node(node);
+    for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
+        dump_node(task_proxy, *node);
         for (const auto &child : node->children) {
             const LandmarkNode *child_node = child.first;
             const EdgeType &edge = child.second;

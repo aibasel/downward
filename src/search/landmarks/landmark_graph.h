@@ -87,9 +87,6 @@ private:
     Nodes nodes;
     const TaskProxy &task_proxy;
 
-    void dump_node(const std::unique_ptr<LandmarkNode> &node) const;
-    void dump_edge(int from, int to, EdgeType edge) const;
-
     void remove_node_occurrences(LandmarkNode *node);
 public:
     /* The following methods are needed only by non-landmarkgraph-factories. */
@@ -144,8 +141,9 @@ public:
     // only needed by LandmarkFactorySasp
     LandmarkNode &make_disj_node_simple(const FactPair &lm);
     void set_landmark_ids();
-    void dump() const;
 };
+
+void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph);
 }
 
 #endif
