@@ -89,25 +89,28 @@ private:
 
     void remove_node_occurrences(LandmarkNode *node);
 public:
-    /* The following methods are needed only by non-landmarkgraph-factories. */
+    // only needed only by non-landmarkgraph-factories
     LandmarkNode *get_lm_for_index(int) const;
+    // only needed only by non-landmarkgraph-factories
     LandmarkNode *get_landmark(const FactPair &fact) const;
 
-    /* The following methods are needed by both landmarkgraph-factories and
-       non-landmarkgraph-factories. */
+    // needed by both landmarkgraph-factories and non-landmarkgraph-factories
     inline const Nodes &get_nodes() const {
         return nodes;
     }
+    // needed by both landmarkgraph-factories and non-landmarkgraph-factories
     inline int get_num_landmarks() const {
         return nodes.size();
     }
 
-    /* The following methods are needed only by landmarkgraph-factories. */
+    // needed only by landmarkgraph-factories.
     explicit LandmarkGraph(const TaskProxy &task_proxy);
+    // needed only by landmarkgraph-factories.
     inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
         assert(contains_simple_landmark(a));
         return *(simple_landmarks_to_nodes.find(a)->second);
     }
+    // needed only by landmarkgraph-factories.
     inline LandmarkNode &get_disj_lm_node(const FactPair &a) const {
         /* Note: this only works because every proposition appears in only one
            disjunctive landmark. */
