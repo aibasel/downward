@@ -83,6 +83,21 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     return node_p;
 }
 
+LandmarkNode &LandmarkGraph::get_simple_lm_node(const FactPair &a) const {
+    assert(contains_simple_landmark(a));
+    return *(simple_landmarks_to_nodes.find(a)->second);
+}
+
+// needed only by landmarkgraph-factories.
+LandmarkNode &LandmarkGraph::get_disj_lm_node(const FactPair &a) const {
+    /* Note: this only works because every proposition appears in only one
+       disjunctive landmark. */
+    assert(!contains_simple_landmark(a));
+    assert(contains_disjunctive_landmark(a));
+    return *(disjunctive_landmarks_to_nodes.find(a)->second);
+}
+
+
 bool LandmarkGraph::contains_simple_landmark(const FactPair &lm) const {
     return simple_landmarks_to_nodes.count(lm) != 0;
 }

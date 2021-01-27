@@ -93,11 +93,11 @@ public:
     explicit LandmarkGraph(const TaskProxy &task_proxy);
 
     // needed by both landmarkgraph-factories and non-landmarkgraph-factories
-    inline const Nodes &get_nodes() const {
+    const Nodes &get_nodes() const {
         return nodes;
     }
     // needed by both landmarkgraph-factories and non-landmarkgraph-factories
-    inline int get_num_landmarks() const {
+    int get_num_landmarks() const {
         return nodes.size();
     }
 
@@ -111,24 +111,13 @@ public:
 
 
     // only needed only by non-landmarkgraph-factories
-    LandmarkNode *get_lm_for_index(int) const;
+    LandmarkNode *get_lm_for_index(int index) const;
     // only needed only by non-landmarkgraph-factories
     LandmarkNode *get_landmark(const FactPair &fact) const;
-
     // needed only by landmarkgraph-factories.
-    inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
-        assert(contains_simple_landmark(a));
-        return *(simple_landmarks_to_nodes.find(a)->second);
-    }
-
+    LandmarkNode &get_simple_lm_node(const FactPair &a) const;
     // needed only by landmarkgraph-factories.
-    inline LandmarkNode &get_disj_lm_node(const FactPair &a) const {
-        /* Note: this only works because every proposition appears in only one
-           disjunctive landmark. */
-        assert(!contains_simple_landmark(a));
-        assert(contains_disjunctive_landmark(a));
-        return *(disjunctive_landmarks_to_nodes.find(a)->second);
-    }
+    LandmarkNode &get_disj_lm_node(const FactPair &a) const;
 
     // not needed by HMLandmark
     bool contains_simple_landmark(const FactPair &lm) const;
