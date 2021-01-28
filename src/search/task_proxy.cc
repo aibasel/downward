@@ -21,13 +21,13 @@ State::State(const AbstractTask &task, const StateRegistry &registry,
 
 State::State(const AbstractTask &task, const StateRegistry &registry,
              const StateID &id, const PackedStateBin *buffer,
-             std::vector<int> &&values)
+             vector<int> &&values)
     : State(task, registry, id, buffer) {
     assert(num_variables == values.size());
     this->values = make_shared<vector<int>>(move(values));
 }
 
-State::State(const AbstractTask &task, std::vector<int> &&values)
+State::State(const AbstractTask &task, vector<int> &&values)
     : task(&task), registry(nullptr), id(StateID::no_state), buffer(nullptr),
       values(make_shared<vector<int>>(move(values))),
       state_packer(nullptr), num_variables(this->values->size()) {
