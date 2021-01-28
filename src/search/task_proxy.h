@@ -63,16 +63,18 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 
   In addition to the lightweight proxy classes, the task interface
   consists of the State class, which is used to hold state information
-  for TaskProxy tasks. The State class contains unpacked state data and shares
-  the ownership with its copies, so it is cheap to copy but expensive to create.
+  for TaskProxy tasks. The State class contains packed or unpacked state data
+  and shares the ownership with its copies, so it is cheap to copy but
+  expensive to create. If performance is absolutely critical, the values of a
+  state can be unpacked and accessed as a vector<int>.
 
-  For now, only the heuristics work with the TaskProxy classes and
-  hence potentially on a transformed view of the original task. The
-  search algorithms keep working on the unmodified root task. We therefore need
-  to do two conversions between the search and the heuristics: converting
-  states of the root task to states of the task used in the heuristic
-  computation and converting operators of the task used by the heuristic to
-  operators of the task used by the search for reporting preferred operators.
+  For now, heuristics work with a TaskProxy that can represent a transformed
+  view of the original task. The search algorithms work on the unmodified root
+  task. We therefore need to do two conversions between the search and the
+  heuristics: converting states of the root task to states of the task used in
+  the heuristic computation and converting operators of the task used by the
+  heuristic to operators of the task used by the search for reporting preferred
+  operators.
   These conversions are done by the Heuristic base class with
   Heuristic::convert_ancestor_state() and Heuristic::set_preferred().
 
