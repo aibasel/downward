@@ -10,7 +10,7 @@
 using namespace std;
 
 State::State(const AbstractTask &task, const StateRegistry &registry,
-      const StateID &id, const PackedStateBin *buffer)
+             const StateID &id, const PackedStateBin *buffer)
     : task(&task), registry(&registry), id(id), buffer(buffer), values(nullptr),
       state_packer(&registry.get_state_packer()),
       num_variables(registry.get_num_variables()) {
@@ -20,8 +20,8 @@ State::State(const AbstractTask &task, const StateRegistry &registry,
 }
 
 State::State(const AbstractTask &task, const StateRegistry &registry,
-      const StateID &id, const PackedStateBin *buffer,
-      std::vector<int> &&values)
+             const StateID &id, const PackedStateBin *buffer,
+             std::vector<int> &&values)
     : State(task, registry, id, buffer) {
     assert(num_variables == values.size());
     this->values = make_shared<vector<int>>(move(values));

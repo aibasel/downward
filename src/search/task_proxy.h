@@ -655,12 +655,14 @@ public:
         return State(*task, std::move(state_values));
     }
 
-    State create_state(const StateRegistry &registry, const StateID id,
+    State create_state(
+        const StateRegistry &registry, const StateID id,
         const PackedStateBin *buffer) const {
         return State(*task, registry, id, buffer);
     }
 
-    State create_state(const StateRegistry &registry, const StateID id,
+    State create_state(
+        const StateRegistry &registry, const StateID id,
         const PackedStateBin *buffer, std::vector<int> &&state_values) const {
         return State(*task, registry, id, buffer, std::move(state_values));
     }
@@ -720,9 +722,10 @@ inline bool State::operator==(const State &other) const {
     assert(task == other.task);
     if (registry != other.registry) {
         std::cerr << "Comparing registered states with unregistered states "
-                     "or registered states from different registries is "
-                     "treated as an error because it is likely not "
-                     "intentional." << std::endl;
+                  << "or registered states from different registries is "
+                  << "treated as an error because it is likely not "
+                  << "intentional."
+                  << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     if (registry) {
@@ -784,7 +787,8 @@ inline StateID State::get_id() const {
 inline const PackedStateBin *State::get_buffer() const {
     if (!buffer) {
         std::cerr << "Accessing the packed values of an unregistered state is "
-                     "treated as an error." << std::endl;
+                  << "treated as an error."
+                  << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return buffer;
@@ -793,8 +797,9 @@ inline const PackedStateBin *State::get_buffer() const {
 inline const std::vector<int> &State::get_unpacked_values() const {
     if (!values) {
         std::cerr << "Accessing the unpacked values of a state without "
-                     "unpacking them first is treated as an error. Please "
-                     "use State::unpack first." << std::endl;
+                  << "unpacking them first is treated as an error. Please "
+                  << "use State::unpack first."
+                  << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return *values;
