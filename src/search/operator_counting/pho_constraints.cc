@@ -57,7 +57,7 @@ bool PhOConstraints::update_constraints(const State &state,
     for (size_t i = 0; i < pdbs->size(); ++i) {
         int constraint_id = constraint_offset + i;
         shared_ptr<pdbs::PatternDatabase> pdb = (*pdbs)[i];
-        int h = pdb->get_value(state.get_values());
+        int h = pdb->get_value(state.get_unpacked_values());
         if (h == numeric_limits<int>::max()) {
             return true;
         }

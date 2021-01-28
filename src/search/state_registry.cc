@@ -68,7 +68,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
     if (task_properties::has_axioms(task_proxy)) {
         predecessor.unpack();
-        vector<int> new_values = predecessor.get_values();
+        vector<int> new_values = predecessor.get_unpacked_values();
         for (EffectProxy effect : op.get_effects()) {
             if (does_fire(effect, predecessor)) {
                 FactPair effect_pair = effect.get_fact().get_pair();

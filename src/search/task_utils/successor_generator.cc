@@ -17,7 +17,7 @@ SuccessorGenerator::~SuccessorGenerator() = default;
 void SuccessorGenerator::generate_applicable_ops(
     const State &state, vector<OperatorID> &applicable_ops) const {
     state.unpack();
-    root->generate_applicable_ops(state.get_values(), applicable_ops);
+    root->generate_applicable_ops(state.get_unpacked_values(), applicable_ops);
 }
 
 PerTaskInformation<SuccessorGenerator> g_successor_generators;

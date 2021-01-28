@@ -606,7 +606,7 @@ public:
         return id;
     }
 
-    const std::vector<int> &get_values() const;
+    const std::vector<int> &get_unpacked_values() const;
     const PackedStateBin *get_buffer() const;
 
     State get_unregistered_successor(const OperatorProxy &op) const;
@@ -615,7 +615,7 @@ public:
 
 namespace utils {
 inline void feed(HashState &hash_state, const State &state) {
-    feed(hash_state, state.get_values());
+    feed(hash_state, state.get_unpacked_values());
 }
 }
 
@@ -684,7 +684,7 @@ public:
         TaskProxy ancestor_task_proxy = ancestor_state.get_task();
         // Create a copy of the state values for the new state.
         ancestor_state.unpack();
-        std::vector<int> state_values = ancestor_state.get_values();
+        std::vector<int> state_values = ancestor_state.get_unpacked_values();
         task->convert_state_values(state_values, ancestor_task_proxy.task);
         return create_state(std::move(state_values));
     }
@@ -730,7 +730,7 @@ inline void State::unpack() const {
     }
 }
 
-inline const std::vector<int> &State::get_values() const {
+inline const std::vector<int> &State::get_unpacked_values() const {
     if (!values) {
         std::cerr << "Accessing the unpacked values of a state without "
                      "unpacking them first is treated as an error. Please "

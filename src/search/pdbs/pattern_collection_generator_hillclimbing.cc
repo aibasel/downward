@@ -264,7 +264,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     const PatternDatabase &pdb, const State &sample, int h_collection,
     const PDBCollection &pdbs, const vector<PatternClique> &pattern_cliques) {
-    const vector<int> &sample_data = sample.get_values();
+    const vector<int> &sample_data = sample.get_unpacked_values();
     // h_pattern: h-value of the new pattern
     int h_pattern = pdb.get_value(sample_data);
 

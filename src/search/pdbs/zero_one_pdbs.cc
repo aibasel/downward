@@ -47,7 +47,7 @@ int ZeroOnePDBs::get_value(const State &state) const {
     state.unpack();
     int h_val = 0;
     for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
-        int pdb_value = pdb->get_value(state.get_values());
+        int pdb_value = pdb->get_value(state.get_unpacked_values());
         if (pdb_value == numeric_limits<int>::max())
             return numeric_limits<int>::max();
         h_val += pdb_value;

@@ -39,7 +39,7 @@ State State::get_unregistered_successor(const OperatorProxy &op) const {
     //assert(is_applicable(op, state));
 
     unpack();
-    vector<int> new_values = get_values();
+    vector<int> new_values = get_unpacked_values();
 
     for (EffectProxy effect : op.get_effects()) {
         if (does_fire(effect, *this)) {
