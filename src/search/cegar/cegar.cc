@@ -233,7 +233,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             if (debug)
                 utils::g_log << "  Move to " << *next_abstract_state << " with "
                              << op.get_name() << endl;
-            State next_concrete_state = concrete_state.get_successor(op);
+            State next_concrete_state = concrete_state.get_unregistered_successor(op);
             if (!next_abstract_state->includes(next_concrete_state)) {
                 if (debug)
                     utils::g_log << "  Paths deviate." << endl;

@@ -34,7 +34,7 @@ State::State(const AbstractTask &task, std::vector<int> &&values)
     assert(num_variables == task.get_num_variables());
 }
 
-State State::get_successor(const OperatorProxy &op) const {
+State State::get_unregistered_successor(const OperatorProxy &op) const {
     assert(!op.is_axiom());
     //assert(is_applicable(op, state));
 

@@ -609,7 +609,7 @@ public:
     const std::vector<int> &get_values() const;
     const PackedStateBin *get_buffer() const;
 
-    State get_successor(const OperatorProxy &op) const;
+    State get_unregistered_successor(const OperatorProxy &op) const;
 };
 
 
