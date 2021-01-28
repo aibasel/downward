@@ -104,7 +104,7 @@ void SearchNode::mark_as_dead_end() {
 
 void SearchNode::dump(const TaskProxy &task_proxy) const {
     utils::g_log << state.get_id() << ": ";
-    task_properties::dump_fdr(get_state());
+    task_properties::dump_fdr(state);
     if (info.creating_operator != OperatorID::no_operator) {
         OperatorsProxy operators = task_proxy.get_operators();
         OperatorProxy op = operators[info.creating_operator.get_index()];
