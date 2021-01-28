@@ -264,8 +264,9 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     const PatternDatabase &pdb, const State &sample, int h_collection,
     const PDBCollection &pdbs, const vector<PatternClique> &pattern_cliques) {
+    const vector<int> &sample_data = sample.get_values();
     // h_pattern: h-value of the new pattern
-    int h_pattern = pdb.get_value(sample);
+    int h_pattern = pdb.get_value(sample_data);
 
     if (h_pattern == numeric_limits<int>::max()) {
         return true;
@@ -278,7 +279,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     vector<int> h_values;
     h_values.reserve(pdbs.size());
     for (const shared_ptr<PatternDatabase> &p : pdbs) {
-        int h = p->get_value(sample);
+        int h = p->get_value(sample_data);
         if (h == numeric_limits<int>::max())
             return false;
         h_values.push_back(h);

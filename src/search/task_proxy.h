@@ -551,49 +551,14 @@ public:
 bool does_fire(const EffectProxy &effect, const State &state);
 
 
-class StateData {
+class State {
+    const AbstractTask *task;
     mutable const StateRegistry *registry;
     mutable StateID id;
     mutable const PackedStateBin *buffer;
-    mutable std::vector<int> values;
+    mutable std::shared_ptr<std::vector<int>> values;
     const int_packer::IntPacker *state_packer;
-    std::size_t num_variables;
-public:
-    StateData(const StateRegistry *registry, const StateID &id,
-              const PackedStateBin *buffer, std::vector<int> &&values);
-
-    std::size_t size() const  {
-        return num_variables;
-    }
-    StateID get_id() const {
-        return id;
-    }
-    const StateRegistry *get_registry() const {
-        return registry;
-    }
-
-    /*
-      Generate unpacked data from packed data if it the unpacked data was not
-      given with the constructor or was generated from a previous call to
-      unpack.
-      This follows our current assumption that each state contains either
-      unpacked data or packed data or both.
-    */
-    void unpack() const;
-    const std::vector<int> &get_values() const;
-    const PackedStateBin *get_buffer() const;
-
-    int operator[](std::size_t var_id) const;
-    bool operator==(const StateData &other) const;
-    bool operator!=(const StateData &other) const {
-        return !(*this == other);
-    }
-};
-
-
-class State {
-    const AbstractTask *task;
-    std::shared_ptr<StateData> data;
+    int num_variables;
 public:
     using ItemType = FactProxy;
 
@@ -604,31 +569,26 @@ public:
         : State(task, nullptr, StateID::no_state, nullptr, move(values)) {
     }
 
-    bool operator==(const State &other) const {
-        assert(task == other.task);
-        assert(data);
-        assert(other.data);
-        return *data == *other.data;
-    }
+    bool operator==(const State &other) const;
 
     bool operator!=(const State &other) const {
         return !(*this == other);
     }
 
-    void unpack() const {
-        assert(data);
-        data->unpack();
-    }
+    /*
+      Generate unpacked data from packed data if it the unpacked data was not
+      given with the constructor or was generated from a previous call to
+      unpack.
+      This follows our current assumption that each state contains either
+      unpacked data or packed data or both.
+    */
+    void unpack() const;
 
     std::size_t size() const {
-        assert(data);
-        return data->size();
+        return num_variables;
     }
 
-    FactProxy operator[](std::size_t var_id) const {
-        assert(data);
-        return FactProxy(*task, var_id, (*data)[var_id]);
-    }
+    FactProxy operator[](std::size_t var_id) const;
 
     FactProxy operator[](VariableProxy var) const {
         return (*this)[var.get_id()];
@@ -636,24 +596,15 @@ public:
 
     inline TaskProxy get_task() const;
     const StateRegistry *get_registry() const {
-        assert(data);
-        return data->get_registry();
+        return registry;
     }
 
     StateID get_id() const {
-        assert(data);
-        return data->get_id();
+        return id;
     }
 
-    const std::vector<int> &get_values() const {
-        assert(data);
-        return data->get_values();
-    }
-
-    const PackedStateBin *get_buffer() const {
-        assert(data);
-        return data->get_buffer();
-    }
+    const std::vector<int> &get_values() const;
+    const PackedStateBin *get_buffer() const;
 
     State get_successor(const OperatorProxy &op) const;
 };
@@ -766,27 +717,27 @@ inline bool does_fire(const EffectProxy &effect, const State &state) {
     return true;
 }
 
-inline void StateData::unpack() const {
-    if (values.empty()) {
+inline void State::unpack() const {
+    if (!values) {
         int num_variables = size();
-        values.reserve(num_variables);
+        values = std::make_shared<std::vector<int>>(num_variables);
         for (int var = 0; var < num_variables; ++var) {
-            values.push_back(state_packer->get(buffer, var));
+            (*values)[var] = state_packer->get(buffer, var);
         }
     }
 }
 
-inline const std::vector<int> &StateData::get_values() const {
-    if (values.empty()) {
+inline const std::vector<int> &State::get_values() const {
+    if (!values) {
         std::cerr << "Accessing the unpacked values of a state without "
                      "unpacking them first is treated as an error. Please "
                      "use State::unpack first." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    return values;
+    return *values;
 }
 
-inline const PackedStateBin *StateData::get_buffer() const {
+inline const PackedStateBin *State::get_buffer() const {
     if (!buffer) {
         std::cerr << "Accessing the packed values of an unregistered state is "
                      "treated as an error." << std::endl;
@@ -795,18 +746,19 @@ inline const PackedStateBin *StateData::get_buffer() const {
     return buffer;
 }
 
-inline int StateData::operator[](std::size_t var_id) const {
+inline FactProxy State::operator[](std::size_t var_id) const {
     assert(var_id < size());
-    if (values.empty()) {
+    if (values) {
+        return FactProxy(*task, var_id, (*values)[var_id]);
+    } else {
         assert(buffer);
         assert(state_packer);
-        return state_packer->get(buffer, var_id);
-    } else {
-        return values[var_id];
+        return FactProxy(*task, var_id, state_packer->get(buffer, var_id));
     }
 }
 
-inline bool StateData::operator==(const StateData &other) const {
+inline bool State::operator==(const State &other) const {
+    assert(task == other.task);
     if (registry != other.registry) {
         std::cerr << "Comparing registered states with unregistered states "
                      "or registered states from different registries is "
@@ -819,8 +771,10 @@ inline bool StateData::operator==(const StateData &other) const {
         return id == other.id;
     }
     // Both states are unregistered.
-    assert(!values.empty());
-    return values == other.values;
+    assert(values);
+    assert(other.values);
+    assert(!values->empty());
+    return *values == *other.values;
 }
 
 #endif

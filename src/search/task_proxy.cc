@@ -9,10 +9,9 @@
 
 using namespace std;
 
-StateData::StateData(
-    const StateRegistry *registry, const StateID &id,
-    const PackedStateBin *buffer, vector<int> &&values)
-    : registry(registry), id(id), buffer(buffer), values(move(values)),
+State::State(const AbstractTask &task, const StateRegistry *registry,
+             const StateID &id, const PackedStateBin *buffer, vector<int> &&values)
+    : task(&task), registry(registry), id(id), buffer(buffer), values(nullptr),
       state_packer(nullptr) {
     /*
       Either this is a registered state and all three of {registry, id, buffer}
@@ -20,20 +19,20 @@ StateData::StateData(
     */
     assert((registry && id != StateID::no_state && buffer) ||
            (!registry && id == StateID::no_state && !buffer));
+
+    if (!values.empty()) {
+        this->values = make_shared<vector<int>>(move(values));
+    }
+
     if (registry) {
         state_packer = &registry->get_state_packer();
         num_variables = registry->get_num_variables();
     } else {
         // If the state has no packed data, it has to have unpacked data.
-        assert(!this->values.empty());
-        num_variables = this->values.size();
+        assert(this->values);
+        num_variables = this->values->size();
     }
-}
-
-State::State(const AbstractTask &task, const StateRegistry *registry,
-             const StateID &id, const PackedStateBin *buffer, vector<int> &&values)
-    : task(&task), data(make_shared<StateData>(registry, id, buffer, move(values))) {
-    assert(static_cast<int>(size()) == this->task->get_num_variables());
+    assert(num_variables == this->task->get_num_variables());
 }
 
 State State::get_successor(const OperatorProxy &op) const {
@@ -60,4 +59,3 @@ State State::get_successor(const OperatorProxy &op) const {
 const causal_graph::CausalGraph &TaskProxy::get_causal_graph() const {
     return causal_graph::get_causal_graph(task);
 }
-

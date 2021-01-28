@@ -53,10 +53,11 @@ void PhOConstraints::initialize_constraints(
 
 bool PhOConstraints::update_constraints(const State &state,
                                         lp::LPSolver &lp_solver) {
+    state.unpack();
     for (size_t i = 0; i < pdbs->size(); ++i) {
         int constraint_id = constraint_offset + i;
         shared_ptr<pdbs::PatternDatabase> pdb = (*pdbs)[i];
-        int h = pdb->get_value(state);
+        int h = pdb->get_value(state.get_values());
         if (h == numeric_limits<int>::max()) {
             return true;
         }
