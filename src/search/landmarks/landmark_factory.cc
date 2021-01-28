@@ -79,7 +79,6 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
                      << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
         utils::g_log << lm_graph->get_num_edges() << " edges" << endl;
     }
-    //lm_graph->dump();
     return lm_graph;
 }
 
