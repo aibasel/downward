@@ -573,42 +573,40 @@ public:
     State(const AbstractTask &task, std::vector<int> &&values);
 
     bool operator==(const State &other) const;
+    bool operator!=(const State &other) const;
 
-    bool operator!=(const State &other) const {
-        return !(*this == other);
-    }
-
-    /*
-      Generate unpacked data from packed data if it the unpacked data was not
-      given with the constructor or was generated from a previous call to
-      unpack.
-      This follows our current assumption that each state contains either
-      unpacked data or packed data or both.
-    */
+    /* Generate unpacked data if none is available yet. Calling the function
+       on a state that already has unpacked has no effect. */
     void unpack() const;
 
-    std::size_t size() const {
-        return num_variables;
-    }
-
+    std::size_t size() const;
     FactProxy operator[](std::size_t var_id) const;
-
-    FactProxy operator[](VariableProxy var) const {
-        return (*this)[var.get_id()];
-    }
+    FactProxy operator[](VariableProxy var) const;
 
     inline TaskProxy get_task() const;
-    const StateRegistry *get_registry() const {
-        return registry;
-    }
 
-    StateID get_id() const {
-        return id;
-    }
+    /* Return a pointer to the registry in which this state is registered.
+       If the state is not registered, return nullptr. */
+    const StateRegistry *get_registry() const;
+    /* Return the ID of the state within its registry. If the state is not
+       registered, return StateID::no_state. */
+    StateID get_id() const;
 
+    /* Access the unpacked values. Accessing the unpacked values in a state
+       that that doesn't have them is an error. Use unpack() to ensure the
+       data exists. */
     const std::vector<int> &get_unpacked_values() const;
+
+    /* Access the packed values. Accessing packed values on states that do
+       not have them (unregistered states) is an error. */
     const PackedStateBin *get_buffer() const;
 
+    /*
+      Create a successor state with the given operator. The operator is assumed
+      to be applicable and the precondition is not checked. This will create an
+      unpacked, unregistered successor. If you need registered successors, use
+      the methods of StateRegistry.
+    */
     State get_unregistered_successor(const OperatorProxy &op) const;
 };
 
@@ -708,56 +706,12 @@ inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, fact.var);
 }
 
-inline TaskProxy State::get_task() const {
-    return TaskProxy(*task);
-}
-
 inline bool does_fire(const EffectProxy &effect, const State &state) {
     for (FactProxy condition : effect.get_conditions()) {
         if (state[condition.get_variable()] != condition)
             return false;
     }
     return true;
-}
-
-inline void State::unpack() const {
-    if (!values) {
-        int num_variables = size();
-        values = std::make_shared<std::vector<int>>(num_variables);
-        for (int var = 0; var < num_variables; ++var) {
-            (*values)[var] = state_packer->get(buffer, var);
-        }
-    }
-}
-
-inline const std::vector<int> &State::get_unpacked_values() const {
-    if (!values) {
-        std::cerr << "Accessing the unpacked values of a state without "
-                     "unpacking them first is treated as an error. Please "
-                     "use State::unpack first." << std::endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-    }
-    return *values;
-}
-
-inline const PackedStateBin *State::get_buffer() const {
-    if (!buffer) {
-        std::cerr << "Accessing the packed values of an unregistered state is "
-                     "treated as an error." << std::endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-    }
-    return buffer;
-}
-
-inline FactProxy State::operator[](std::size_t var_id) const {
-    assert(var_id < size());
-    if (values) {
-        return FactProxy(*task, var_id, (*values)[var_id]);
-    } else {
-        assert(buffer);
-        assert(state_packer);
-        return FactProxy(*task, var_id, state_packer->get(buffer, var_id));
-    }
 }
 
 inline bool State::operator==(const State &other) const {
@@ -780,4 +734,67 @@ inline bool State::operator==(const State &other) const {
     return *values == *other.values;
 }
 
+inline bool State::operator!=(const State &other) const {
+    return !(*this == other);
+}
+
+inline void State::unpack() const {
+    if (!values) {
+        int num_variables = size();
+        values = std::make_shared<std::vector<int>>(num_variables);
+        for (int var = 0; var < num_variables; ++var) {
+            (*values)[var] = state_packer->get(buffer, var);
+        }
+    }
+}
+
+inline std::size_t State::size() const {
+    return num_variables;
+}
+
+inline FactProxy State::operator[](std::size_t var_id) const {
+    assert(var_id < size());
+    if (values) {
+        return FactProxy(*task, var_id, (*values)[var_id]);
+    } else {
+        assert(buffer);
+        assert(state_packer);
+        return FactProxy(*task, var_id, state_packer->get(buffer, var_id));
+    }
+}
+
+inline FactProxy State::operator[](VariableProxy var) const {
+    return (*this)[var.get_id()];
+}
+
+inline TaskProxy State::get_task() const {
+    return TaskProxy(*task);
+}
+
+inline const StateRegistry *State::get_registry() const {
+    return registry;
+}
+
+inline StateID State::get_id() const {
+    return id;
+}
+
+inline const PackedStateBin *State::get_buffer() const {
+    if (!buffer) {
+        std::cerr << "Accessing the packed values of an unregistered state is "
+                     "treated as an error." << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    return buffer;
+}
+
+inline const std::vector<int> &State::get_unpacked_values() const {
+    if (!values) {
+        std::cerr << "Accessing the unpacked values of a state without "
+                     "unpacking them first is treated as an error. Please "
+                     "use State::unpack first." << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    return *values;
+}
 #endif
