@@ -14,8 +14,8 @@
 /*
   PerStateInformation is used to associate information with states.
   PerStateInformation<Entry> logically behaves somewhat like an unordered map
-  from state handles to objects of class Entry. However, lookup of unknown
-  states is supported and leads to insertion of a default value (similar to the
+  from states to objects of class Entry. However, lookup of unknown states is
+  supported and leads to insertion of a default value (similar to the
   defaultdict class in Python).
 
   For example, search algorithms can use it to associate g values or create
