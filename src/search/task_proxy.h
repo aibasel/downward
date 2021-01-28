@@ -571,7 +571,7 @@ public:
     State(const AbstractTask &task, const StateRegistry &registry,
           const StateID &id, const PackedStateBin *buffer,
           std::vector<int> &&values);
-    // Construct a state only unpacked data.
+    // Construct a state with only unpacked data.
     State(const AbstractTask &task, std::vector<int> &&values);
 
     bool operator==(const State &other) const;
