@@ -38,7 +38,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
 
 State StateRegistry::lookup_state(StateID id) const {
     const PackedStateBin *buffer = state_data_pool[id.value];
-    return task_proxy.create_state(this, id, buffer);
+    return task_proxy.create_state(*this, id, buffer);
 }
 
 const State &StateRegistry::get_initial_state() {
@@ -80,7 +80,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
             state_packer.set(buffer, i, new_values[i]);
         }
         StateID id = insert_id_or_pop_state();
-        return task_proxy.create_state(this, id, buffer, move(new_values));
+        return task_proxy.create_state(*this, id, buffer, move(new_values));
     } else {
         for (EffectProxy effect : op.get_effects()) {
             if (does_fire(effect, predecessor)) {
@@ -89,7 +89,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
             }
         }
         StateID id = insert_id_or_pop_state();
-        return task_proxy.create_state(this, id, buffer);
+        return task_proxy.create_state(*this, id, buffer);
     }
 }
 

@@ -562,12 +562,15 @@ class State {
 public:
     using ItemType = FactProxy;
 
-    State(const AbstractTask &task, const StateRegistry *registry,
+    // Construct a state without unpacked data.
+    State(const AbstractTask &task, const StateRegistry &registry,
+          const StateID &id, const PackedStateBin *buffer);
+    // Construct a state with packed and unpacked data.
+    State(const AbstractTask &task, const StateRegistry &registry,
           const StateID &id, const PackedStateBin *buffer,
           std::vector<int> &&values);
-    State(const AbstractTask &task, std::vector<int> &&values)
-        : State(task, nullptr, StateID::no_state, nullptr, move(values)) {
-    }
+    // Construct a state only unpacked data.
+    State(const AbstractTask &task, std::vector<int> &&values);
 
     bool operator==(const State &other) const;
 
@@ -652,12 +655,12 @@ public:
         return State(*task, std::move(state_values));
     }
 
-    State create_state(const StateRegistry *registry, const StateID id,
+    State create_state(const StateRegistry &registry, const StateID id,
         const PackedStateBin *buffer) const {
-        return State(*task, registry, id, buffer, {});
+        return State(*task, registry, id, buffer);
     }
 
-    State create_state(const StateRegistry *registry, const StateID id,
+    State create_state(const StateRegistry &registry, const StateID id,
         const PackedStateBin *buffer, std::vector<int> &&state_values) const {
         return State(*task, registry, id, buffer, std::move(state_values));
     }
