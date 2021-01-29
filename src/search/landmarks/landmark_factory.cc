@@ -63,6 +63,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     TaskProxy task_proxy(*task);
 
     lm_graph = make_shared<LandmarkGraph>(task_proxy);
+    generate_operators_lookups(task_proxy);
     Exploration exploration(task_proxy);
     generate_landmarks(task, exploration);
 
@@ -100,7 +101,6 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
         approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
-    lm_graph->set_landmark_cost(calculate_lms_cost());
     calc_achievers(task_proxy, exploration);
 }
 
@@ -387,7 +387,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
             unordered_map<int, int> shared_eff;
             bool init = true;
-            const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact_a);
+            const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact_a);
             // Intersect operators that achieve a one by one
             for (int op_or_axiom_id : op_or_axiom_ids) {
                 // If no shared effect among previous operators, break
@@ -749,14 +749,6 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
     return nr_removed;
 }
 
-int LandmarkFactory::calculate_lms_cost() const {
-    int result = 0;
-    for (auto &lmn : lm_graph->get_nodes())
-        result += lmn->min_cost;
-
-    return result;
-}
-
 void LandmarkFactory::compute_predecessor_information(
     const TaskProxy &task_proxy,
     Exploration &exploration,
@@ -774,7 +766,7 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lmn : lm_graph->get_nodes()) {
         for (const FactPair &lm_fact : lmn->facts) {
-            const vector<int> &ops = lm_graph->get_operators_including_eff(lm_fact);
+            const vector<int> &ops = get_operators_including_eff(lm_fact);
             lmn->possible_achievers.insert(ops.begin(), ops.end());
 
             if (variables[lm_fact.var].is_derived())
@@ -794,6 +786,35 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
         }
     }
 }
+
+void LandmarkFactory::generate_operators_lookups(const TaskProxy &task_proxy) {
+    /* Build datastructures for efficient landmark computation. Map propositions
+    to the operators that achieve them or have them as preconditions */
+
+    VariablesProxy variables = task_proxy.get_variables();
+    operators_eff_lookup.resize(variables.size());
+    for (VariableProxy var : variables) {
+        operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
+    }
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
+        const EffectsProxy effects = op.get_effects();
+        for (EffectProxy effect : effects) {
+            const FactProxy effect_fact = effect.get_fact();
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(op));
+        }
+    }
+    for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        const EffectsProxy effects = axiom.get_effects();
+        for (EffectProxy effect : effects) {
+            const FactProxy effect_fact = effect.get_fact();
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(axiom));
+        }
+    }
+}
+
 
 void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("reasonable_orders",

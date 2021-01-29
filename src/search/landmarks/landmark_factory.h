@@ -68,12 +68,18 @@ protected:
     bool achieves_non_conditional(const OperatorProxy &o, const LandmarkNode *lmp) const;
     bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
+    const std::vector<int> &get_operators_including_eff(const FactPair &eff) const {
+        return operators_eff_lookup[eff.var][eff.value];
+    }
+
 private:
     const bool reasonable_orders;
     const bool only_causal_landmarks;
     const bool disjunctive_landmarks;
     const bool conjunctive_landmarks;
     const bool no_orders;
+
+    std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 
     bool interferes(const TaskProxy &task_proxy,
                     const LandmarkNode *node_a,
@@ -89,7 +95,6 @@ private:
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
                                          std::list<std::pair<LandmarkNode *, EdgeType>> &path,
                                          std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
-    int calculate_lms_cost() const;
     void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
@@ -102,6 +107,7 @@ private:
                                                std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
     bool is_causal_landmark(const TaskProxy &task_proxy, Exploration &exploration, const LandmarkNode &landmark) const;
     virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration); // keep this virtual because HMLandmarks overrides it!
+    void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 
 extern void _add_options_to_parser(options::OptionParser &parser);
