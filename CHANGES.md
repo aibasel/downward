@@ -25,6 +25,9 @@ after the corresponding tracker issues.
   forcing operator counts to take integer values. Solving a MIP is NP-hard
   and usually takes much longer than solving the corresponding LP.
 
+- For developers: move functionality used during search away from
+  LandmarkGraph, making it constant after creation.
+  <http://issues.fast-downward.org/issue988>
 
 ## Fast Downward 20.06
 
