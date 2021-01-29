@@ -16,22 +16,21 @@
 /*
   Overview of classes relevant to storing and working with registered states.
 
-  GlobalState
-    This class is used for registered, packed states.
-    It contains a pointer to the (compressed) variable values and can be copied
-    cheaply. For fast access by the heuristic the state should be unpacked to a
-    State first.
-    A GlobalState is always registered in a StateRegistry and has a valid ID.
-    It can (only) be constructed from a StateRegistry by factory methods for
-    the initial state and successor states. It never owns the actual state data
-    which is borrowed from the StateRegistry that created it.
-
   State
-    This class is used for fast access to state data. It contains and owns all
-    state data, so it is expensive to copy.
-    State objects can be created by unpacking a GlobalState or from given
-    variable values and a task. States are not registered, so they are not
-    guaranteed to be reachable and use no form of duplicate detection.
+    Objects of this class can represent registered or unregistered states.
+    Registered states contain a pointer to the StateRegistry that created them
+    and the ID they have there. Using this data, states can be used to index
+    PerStateInformation objects.
+    In addition, registered states have a pointer to the packed data of a state
+    that is stored in their registry. Values of the state can be accessed
+    through this pointer. For situations where a state's values have to be
+    accessed a lot, the state's data can be unpacked. The unpacked data is
+    stored in a vector<int> to which the state maintains a shared pointer.
+    Unregistered states contain only this unpacked data. Compared to registered
+    states, they are not guaranteed to be reachable and use no form of duplicate
+    detection.
+    Copying states is relatively cheap because the actual data does not have to
+    be copied.
 
   StateID
     StateIDs identify states within a state registry.
@@ -62,7 +61,7 @@
 
   PerStateInformation<T>
     Associates a value of type T with every state in a given StateRegistry.
-    Can be thought of as a very compactly implemented map from GlobalState to T.
+    Can be thought of as a very compactly implemented map from State to T.
     References stay valid as long as the state registry exists. Memory usage is
     essentially the same as a vector<T> whose size is the number of states in
     the registry.
