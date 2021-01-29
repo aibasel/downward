@@ -105,9 +105,8 @@ public:
     ArrayView<Element> operator[](const State &state) {
         const StateRegistry *registry = state.get_registry();
         if (!registry) {
-            std::cerr << "Tried to access per state array with an "
-                      << "unregistered state."
-                      << std::endl;
+            std::cerr << "Tried to access per-state array with an unregistered "
+                      << "state." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         segmented_vector::SegmentedArrayVector<Element> *entries = get_entries(registry);

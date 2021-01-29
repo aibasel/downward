@@ -113,9 +113,8 @@ public:
     Entry &operator[](const State &state) {
         const StateRegistry *registry = state.get_registry();
         if (!registry) {
-            std::cerr << "Tried to access per state information with an "
-                      << "unregistered state."
-                      << std::endl;
+            std::cerr << "Tried to access per-state information with an "
+                      << "unregistered state." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
@@ -132,9 +131,8 @@ public:
     const Entry &operator[](const State &state) const {
         const StateRegistry *registry = state.get_registry();
         if (!registry) {
-            std::cerr << "Tried to access per state information with an "
-                      << "unregistered state."
-                      << std::endl;
+            std::cerr << "Tried to access per-state information with an "
+                      << "unregistered state." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         const segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);

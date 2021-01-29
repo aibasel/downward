@@ -554,38 +554,57 @@ bool does_fire(const EffectProxy &effect, const State &state);
 
 
 class State {
+    /*
+      TODO: We want to try out two things:
+        1. having StateID and num_variables next to each other, so that they
+           can fit into one 8-byte-aligned block.
+        2. removing num_variables altogether, getting it on demand.
+           It is not used in (very) performance-critical code.
+      Perhaps 2) has no positive influence after 1) because we would just have
+      a 4-byte gap at the end of the object. But it would probably be nice to
+      have fewer attributes regardless.
+    */
     const AbstractTask *task;
-    mutable const StateRegistry *registry;
-    mutable StateID id;
-    mutable const PackedStateBin *buffer;
+    const StateRegistry *registry;
+    StateID id;
+    const PackedStateBin *buffer;
+    /*
+      values is mutable because we think of it as a redundant representation
+      of the state's contents, a kind of cache. One could argue for doing this
+      differently (for example because some methods require unpacked data, so
+      in some sense its presence changes the "logical state" from the program
+      perspective. It is a bit weird to have a const function like unpack that
+      is only called for its side effect on the object. But we decided to use
+      const here to mean "const from the perspective of the state space
+      semantics of the state".
+    */
     mutable std::shared_ptr<std::vector<int>> values;
     const int_packer::IntPacker *state_packer;
     int num_variables;
 public:
     using ItemType = FactProxy;
 
-    // Construct a state without unpacked data.
-    State(const AbstractTask &task, const StateRegistry &registry,
-          const StateID &id, const PackedStateBin *buffer);
-    // Construct a state with packed and unpacked data.
-    State(const AbstractTask &task, const StateRegistry &registry,
-          const StateID &id, const PackedStateBin *buffer,
-          std::vector<int> &&values);
+    // Construct a registered state with only packed data.
+    State(const AbstractTask &task, const StateRegistry &registry, StateID id,
+          const PackedStateBin *buffer);
+    // Construct a registered state with packed and unpacked data.
+    State(const AbstractTask &task, const StateRegistry &registry, StateID id,
+          const PackedStateBin *buffer, std::vector<int> &&values);
     // Construct a state with only unpacked data.
     State(const AbstractTask &task, std::vector<int> &&values);
 
     bool operator==(const State &other) const;
     bool operator!=(const State &other) const;
 
-    /* Generate unpacked data if none is available yet. Calling the function
-       on a state that already has unpacked has no effect. */
+    /* Generate unpacked data if it is not available yet. Calling the function
+       on a state that already has unpacked data has no effect. */
     void unpack() const;
 
     std::size_t size() const;
     FactProxy operator[](std::size_t var_id) const;
     FactProxy operator[](VariableProxy var) const;
 
-    inline TaskProxy get_task() const;
+    TaskProxy get_task() const;
 
     /* Return a pointer to the registry in which this state is registered.
        If the state is not registered, return nullptr. */
@@ -608,6 +627,8 @@ public:
       to be applicable and the precondition is not checked. This will create an
       unpacked, unregistered successor. If you need registered successors, use
       the methods of StateRegistry.
+      Using this method on states without unpacked values is an error. Use
+      unpack() to ensure the data exists.
     */
     State get_unregistered_successor(const OperatorProxy &op) const;
 };
@@ -615,6 +636,15 @@ public:
 
 namespace utils {
 inline void feed(HashState &hash_state, const State &state) {
+    /*
+      Hashing a state without unpacked data will result in an error.
+      We don't want to unpack states implicitly, so this rules out the option
+      of unpacking the states here on demand. Mixing hashes from packed and
+      unpacked states would lead to logically equal states with different
+      hashes. Hashing packed (and therefore registered) states also seems like
+      a performance error because it's much cheaper to hash the state IDs
+      instead.
+    */
     feed(hash_state, state.get_unpacked_values());
 }
 }
@@ -655,14 +685,16 @@ public:
         return State(*task, std::move(state_values));
     }
 
+    // This method is meant to be called only by the state registry.
     State create_state(
-        const StateRegistry &registry, const StateID id,
+        const StateRegistry &registry, StateID id,
         const PackedStateBin *buffer) const {
         return State(*task, registry, id, buffer);
     }
 
+    // This method is meant to be called only by the state registry.
     State create_state(
-        const StateRegistry &registry, const StateID id,
+        const StateRegistry &registry, StateID id,
         const PackedStateBin *buffer, std::vector<int> &&state_values) const {
         return State(*task, registry, id, buffer, std::move(state_values));
     }
@@ -731,12 +763,12 @@ inline bool State::operator==(const State &other) const {
     if (registry) {
         // Both states are registered and from the same registry.
         return id == other.id;
+    } else {
+        // Both states are unregistered.
+        assert(values);
+        assert(other.values);
+        return *values == *other.values;
     }
-    // Both states are unregistered.
-    assert(values);
-    assert(other.values);
-    assert(!values->empty());
-    return *values == *other.values;
 }
 
 inline bool State::operator!=(const State &other) const {
@@ -746,6 +778,17 @@ inline bool State::operator!=(const State &other) const {
 inline void State::unpack() const {
     if (!values) {
         int num_variables = size();
+        /*
+          A micro-benchmark in issue348 showed that constructing the vector
+          in the required size and then assigning values was faster than the
+          more obvious reserve/push_back. Although, the benchmark did not
+          profile this specific code.
+
+          We might consider a bulk-unpack method in state_packer that could be
+          more efficient. (One can imagine state packer to have extra data
+          structures that exploit sequentially unpacking each entry, by doing
+          things bin by bin.)
+        */
         values = std::make_shared<std::vector<int>>(num_variables);
         for (int var = 0; var < num_variables; ++var) {
             (*values)[var] = state_packer->get(buffer, var);
@@ -785,6 +828,11 @@ inline StateID State::get_id() const {
 }
 
 inline const PackedStateBin *State::get_buffer() const {
+    /*
+      TODO: we should profile what happens if we #ifndef NDEBUG this test here
+      and in other places (e.g. the next method). The 'if' itself is probably
+      not costly, but the 'cerr <<' stuff might prevent inlining.
+    */
     if (!buffer) {
         std::cerr << "Accessing the packed values of an unregistered state is "
                   << "treated as an error."

@@ -42,7 +42,7 @@ State StateRegistry::lookup_state(StateID id) const {
 }
 
 const State &StateRegistry::get_initial_state() {
-    if (cached_initial_state == nullptr) {
+    if (!cached_initial_state) {
         int num_bins = get_bins_per_state();
         unique_ptr<PackedStateBin[]> buffer(new PackedStateBin[num_bins]);
         // Avoid garbage values in half-full bins.
@@ -66,6 +66,8 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     assert(!op.is_axiom());
     state_data_pool.push_back(predecessor.get_buffer());
     PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
+    /* Experiments for issue348 showed that for tasks with axioms it's faster
+       to compute successor states using unpacked data. */
     if (task_properties::has_axioms(task_proxy)) {
         predecessor.unpack();
         vector<int> new_values = predecessor.get_unpacked_values();

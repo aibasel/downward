@@ -136,7 +136,7 @@ void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     const State &state = eval_context.get_state();
     EdgeOpenListEntry entry = make_pair(state.get_id(), op_id);
     EvaluationContext new_eval_context(
-        eval_context.get_cache(), state, succ_g, preferred, &statistics);
+        eval_context, succ_g, preferred, &statistics);
     open_list->insert(new_eval_context, entry);
     statistics.inc_generated_ops();
 }

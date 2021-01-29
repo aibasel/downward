@@ -50,6 +50,10 @@ class EvaluationContext {
 
     static const int INVALID = -1;
 
+    EvaluationContext(
+        const EvaluatorCache &cache, const State &state, int g_value,
+        bool is_preferred, SearchStatistics *statistics,
+        bool calculate_preferred);
 public:
     /*
       Copy existing heuristic cache and use it to look up heuristic values.
@@ -58,7 +62,7 @@ public:
       TODO: Can we reuse caches? Can we move them instead of copying them?
     */
     EvaluationContext(
-        const EvaluatorCache &cache, const State &state,
+        const EvaluationContext &other,
         int g_value, bool is_preferred, SearchStatistics *statistics,
         bool calculate_preferred = false);
     /*
