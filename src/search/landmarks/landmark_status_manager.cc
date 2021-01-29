@@ -19,7 +19,7 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
 
 landmark_status LandmarkStatusManager::get_landmark_status(
     size_t id) const {
-    assert(0 <= id && id < lm_graph.number_of_landmarks());
+    assert(static_cast<int>(id) < lm_graph.number_of_landmarks());
     return lm_status[id];
 }
 
