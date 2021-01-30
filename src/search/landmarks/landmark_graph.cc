@@ -11,27 +11,6 @@
 using namespace std;
 
 namespace landmarks {
-
-
-bool LandmarkNode::is_true_in_state(const GlobalState &global_state) const {
-    if (disjunctive) {
-        for (const FactPair &fact : facts) {
-            if (global_state[fact.var] == fact.value) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-        // conjunctive or simple
-        for (const FactPair &fact : facts) {
-            if (global_state[fact.var] != fact.value) {
-                return false;
-            }
-        }
-        return true;
-    }
-}
-
 bool LandmarkNode::is_true_in_state(const State &state) const {
     if (disjunctive) {
         for (const FactPair &fact : facts) {
@@ -50,7 +29,6 @@ bool LandmarkNode::is_true_in_state(const State &state) const {
         return true;
     }
 }
-
 
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
     : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0),
@@ -153,9 +131,9 @@ LandmarkNode &LandmarkGraph::add_simple_landmark(const FactPair &lm) {
 }
 
 LandmarkNode &LandmarkGraph::add_disjunctive_landmark(const set<FactPair> &lm) {
-    for (const FactPair &lm_fact : lm) {
-        assert(!contains_landmark(lm_fact));
-    }
+    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact){
+        return !contains_landmark(lm_fact);
+    }));
     vector<FactPair> facts(lm.begin(), lm.end());
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(facts, true, false);
@@ -169,9 +147,9 @@ LandmarkNode &LandmarkGraph::add_disjunctive_landmark(const set<FactPair> &lm) {
 }
 
 LandmarkNode &LandmarkGraph::add_conjunctive_landmark(const set<FactPair> &lm) {
-    for (const FactPair &lm_fact : lm) {
-        assert(!contains_landmark(lm_fact));
-    }
+    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact){
+        return !contains_landmark(lm_fact);
+    }));
     vector<FactPair> facts(lm.begin(), lm.end());
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(facts, false, true);
