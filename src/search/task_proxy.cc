@@ -24,7 +24,7 @@ State::State(const AbstractTask &task, const StateRegistry &registry,
              StateID id, const PackedStateBin *buffer,
              vector<int> &&values)
     : State(task, registry, id, buffer) {
-    assert(num_variables == values.size());
+    assert(num_variables == static_cast<int>(values.size()));
     this->values = make_shared<vector<int>>(move(values));
 }
 
