@@ -45,7 +45,7 @@ protected:
 public:
     explicit CGHeuristic(const options::Options &opts);
     ~CGHeuristic();
-    virtual bool dead_ends_are_reliable() const;
+    virtual bool dead_ends_are_reliable() const override;
 };
 }
 

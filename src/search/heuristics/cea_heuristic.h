@@ -52,7 +52,7 @@ protected:
 public:
     explicit ContextEnhancedAdditiveHeuristic(const options::Options &opts);
     ~ContextEnhancedAdditiveHeuristic();
-    virtual bool dead_ends_are_reliable() const;
+    virtual bool dead_ends_are_reliable() const override;
 };
 }
 
