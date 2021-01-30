@@ -113,8 +113,8 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     }
 }
 
-int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
+int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
+    State state = convert_ancestor_state(ancestor_state);
     int heuristic = 0;
     for (const unique_ptr<MergeAndShrinkRepresentation> &mas_representation : mas_representations) {
         int cost = mas_representation->get_value(state);

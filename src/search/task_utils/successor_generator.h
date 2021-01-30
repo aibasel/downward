@@ -6,7 +6,6 @@
 #include <memory>
 #include <vector>
 
-class GlobalState;
 class OperatorID;
 class State;
 class TaskProxy;
@@ -28,9 +27,6 @@ public:
 
     void generate_applicable_ops(
         const State &state, std::vector<OperatorID> &applicable_ops) const;
-    // Transitional method, used until the search is switched to the new task interface.
-    void generate_applicable_ops(
-        const GlobalState &state, std::vector<OperatorID> &applicable_ops) const;
 };
 
 extern PerTaskInformation<SuccessorGenerator> g_successor_generators;

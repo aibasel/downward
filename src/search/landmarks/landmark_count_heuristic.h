@@ -26,7 +26,7 @@ class LandmarkCountHeuristic : public Heuristic {
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
-    int get_heuristic_value(const GlobalState &global_state);
+    int get_heuristic_value(const State &ancestor_state);
 
     bool check_node_orders_disobeyed(
         const LandmarkNode &node, const LandmarkSet &reached) const;
@@ -40,7 +40,7 @@ class LandmarkCountHeuristic : public Heuristic {
 
     LandmarkSet convert_to_landmark_set(const BitsetView &landmark_bitset);
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state) override;
+    virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
 
@@ -49,10 +49,10 @@ public:
         evals.insert(this);
     }
 
-    virtual void notify_initial_state(const GlobalState &initial_state) override;
-    virtual void notify_state_transition(const GlobalState &parent_state,
+    virtual void notify_initial_state(const State &initial_state) override;
+    virtual void notify_state_transition(const State &parent_state,
                                          OperatorID op_id,
-                                         const GlobalState &state) override;
+                                         const State &state) override;
     virtual bool dead_ends_are_reliable() const override;
 };
 }

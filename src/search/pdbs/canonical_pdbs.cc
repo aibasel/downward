@@ -24,8 +24,9 @@ int CanonicalPDBs::get_value(const State &state) const {
     int max_h = 0;
     vector<int> h_values;
     h_values.reserve(pdbs->size());
+    state.unpack();
     for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
-        int h = pdb->get_value(state);
+        int h = pdb->get_value(state.get_unpacked_values());
         if (h == numeric_limits<int>::max()) {
             return numeric_limits<int>::max();
         }

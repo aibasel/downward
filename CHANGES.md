@@ -29,6 +29,13 @@ after the corresponding tracker issues.
   LandmarkGraph, making it constant after creation.
   <http://issues.fast-downward.org/issue988>
 
+- For developers: new state class
+  <http://issues.fast-downward.org/issue348>
+  We unified the classes GlobalState and State into a new class also called
+  State. This removed a lot of code duplication and hacks from the code.
+  A description of the new class can be found in the wiki:
+  <http://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.

@@ -15,10 +15,8 @@ class CartesianHeuristicFunction;
 class AdditiveCartesianHeuristic : public Heuristic {
     const std::vector<CartesianHeuristicFunction> heuristic_functions;
 
-    int compute_heuristic(const State &state);
-
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state) override;
+    virtual int compute_heuristic(const State &ancestor_state) override;
 
 public:
     explicit AdditiveCartesianHeuristic(const options::Options &opts);

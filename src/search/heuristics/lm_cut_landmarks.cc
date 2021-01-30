@@ -274,7 +274,7 @@ void LandmarkCutLandmarks::validate_h_max() const {
 }
 
 bool LandmarkCutLandmarks::compute_landmarks(
-    State state, CostCallback cost_callback,
+    const State &state, CostCallback cost_callback,
     LandmarkCallback landmark_callback) {
     for (RelaxedOperator &op : relaxed_operators) {
         op.cost = op.base_cost;

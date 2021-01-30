@@ -76,7 +76,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     }
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
-    const GlobalState &initial_state = state_registry.get_initial_state();
+    State initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
@@ -92,7 +92,7 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 
 void EnforcedHillClimbingSearch::reach_state(
-    const GlobalState &parent, OperatorID op_id, const GlobalState &state) {
+    const State &parent, OperatorID op_id, const State &state) {
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_state_transition(parent, op_id, state);
     }
@@ -133,10 +133,10 @@ void EnforcedHillClimbingSearch::insert_successor_into_open_list(
     bool preferred) {
     OperatorProxy op = task_proxy.get_operators()[op_id];
     int succ_g = parent_g + get_adjusted_cost(op);
-    EdgeOpenListEntry entry = make_pair(
-        eval_context.get_state().get_id(), op_id);
+    const State &state = eval_context.get_state();
+    EdgeOpenListEntry entry = make_pair(state.get_id(), op_id);
     EvaluationContext new_eval_context(
-        eval_context.get_cache(), succ_g, preferred, &statistics);
+        eval_context, succ_g, preferred, &statistics);
     open_list->insert(new_eval_context, entry);
     statistics.inc_generated_ops();
 }
@@ -196,7 +196,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         OperatorID last_op_id = entry.second;
         OperatorProxy last_op = task_proxy.get_operators()[last_op_id];
 
-        GlobalState parent_state = state_registry.lookup_state(parent_state_id);
+        State parent_state = state_registry.lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         // d: distance from initial node in this EHC phase
@@ -206,7 +206,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
 
-        GlobalState state = state_registry.get_successor_state(parent_state, last_op);
+        State state = state_registry.get_successor_state(parent_state, last_op);
         statistics.inc_generated();
 
         SearchNode node = search_space.get_node(state);
@@ -234,7 +234,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
                 d_pair.first += 1;
                 d_pair.second += statistics.get_expanded() - last_num_expanded;
 
-                current_eval_context = eval_context;
+                current_eval_context = move(eval_context);
                 open_list->clear();
                 current_phase_start_g = node.get_g();
                 return IN_PROGRESS;
