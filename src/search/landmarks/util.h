@@ -22,7 +22,7 @@ extern bool _possibly_reaches_lm(
 extern OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id);
 extern int get_operator_or_axiom_id(const OperatorProxy &op);
 
-extern void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph);
+extern void dump_landmark_graph(const TaskProxy &task_proxy, const LandmarkGraph &graph);
 }
 
 #endif

@@ -123,7 +123,7 @@ static void dump_edge(int from, int to, EdgeType edge) {
     cout << "];\n";
 }
 
-void dump(const TaskProxy &task_proxy, const LandmarkGraph &graph) {
+void dump_landmark_graph(const TaskProxy &task_proxy, const LandmarkGraph &graph) {
     utils::g_log << "Dumping landmark graph: " << endl;
 
     cout << "digraph G {\n";
