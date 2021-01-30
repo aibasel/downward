@@ -19,17 +19,16 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
 
 landmark_status LandmarkStatusManager::get_landmark_status(
     size_t id) const {
-    assert(0 <= id && id < lm_graph.get_num_landmarks());
+    assert(static_cast<int>(id) < lm_graph.number_of_landmarks());
     return lm_status[id];
 }
 
-BitsetView LandmarkStatusManager::get_reached_landmarks(
-    const GlobalState &state) {
+BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {
     return reached_lms[state];
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
-    const GlobalState &initial_state) {
+    const State &initial_state) {
     BitsetView reached = get_reached_landmarks(initial_state);
     // This is necessary since the default is "true for all" (see comment above).
     reached.reset();
@@ -47,7 +46,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
         if (node_p->conjunctive) {
             bool lm_true = true;
             for (const FactPair &fact : node_p->facts) {
-                if (initial_state[fact.var] != fact.value) {
+                if (initial_state[fact.var].get_value() != fact.value) {
                     lm_true = false;
                     break;
                 }
@@ -58,7 +57,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
             }
         } else {
             for (const FactPair &fact : node_p->facts) {
-                if (initial_state[fact.var] == fact.value) {
+                if (initial_state[fact.var].get_value() == fact.value) {
                     reached.set(node_p->get_id());
                     ++inserted;
                     break;
@@ -70,18 +69,16 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                  << num_goal_lms << " goal landmarks" << endl;
 }
 
-bool LandmarkStatusManager::update_reached_lms(
-    const GlobalState &parent_global_state,
-    OperatorID,
-    const GlobalState &global_state) {
-    if (global_state.get_id() == parent_global_state.get_id()) {
+bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_state,
+                                               OperatorID,
+                                               const State &ancestor_state) {
+    if (ancestor_state == parent_ancestor_state) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }
 
-    const BitsetView parent_reached = get_reached_landmarks(
-        parent_global_state);
-    BitsetView reached = get_reached_landmarks(global_state);
+    const BitsetView parent_reached = get_reached_landmarks(parent_ancestor_state);
+    BitsetView reached = get_reached_landmarks(ancestor_state);
 
     int num_landmarks = lm_graph.get_num_landmarks();
     assert(reached.size() == num_landmarks);
@@ -104,7 +101,7 @@ bool LandmarkStatusManager::update_reached_lms(
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
             LandmarkNode *node = lm_graph.get_landmark(id);
-            if (node->is_true_in_state(global_state)) {
+            if (node->is_true_in_state(ancestor_state)) {
                 if (landmark_is_leaf(*node, reached)) {
                     reached.set(id);
                 }
@@ -115,8 +112,8 @@ bool LandmarkStatusManager::update_reached_lms(
     return true;
 }
 
-void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
-    const BitsetView reached = get_reached_landmarks(global_state);
+void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
+    const BitsetView reached = get_reached_landmarks(ancestor_state);
 
     const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
 
@@ -128,7 +125,7 @@ void LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
     for (auto &node : nodes) {
         int id = node->get_id();
         if (lm_status[id] == lm_reached
-            && landmark_needed_again(id, global_state)) {
+            && landmark_needed_again(id, ancestor_state)) {
             lm_status[id] = lm_needed_again;
         }
     }
@@ -164,7 +161,7 @@ bool LandmarkStatusManager::dead_end_exists() {
 }
 
 bool LandmarkStatusManager::landmark_needed_again(
-    int id, const GlobalState &state) {
+    int id, const State &state) {
     LandmarkNode *node = lm_graph.get_landmark(id);
     if (node->is_true_in_state(state)) {
         return false;

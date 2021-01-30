@@ -140,7 +140,7 @@ class PatternDatabase {
       according abstract state. This is only used for table lookup
       (distances) during search.
     */
-    std::size_t hash_index(const State &state) const;
+    std::size_t hash_index(const std::vector<int> &state) const;
 public:
     /*
       Important: It is assumed that the pattern (passed via Options) is
@@ -159,7 +159,7 @@ public:
         const std::vector<int> &operator_costs = std::vector<int>());
     ~PatternDatabase() = default;
 
-    int get_value(const State &state) const;
+    int get_value(const std::vector<int> &state) const;
 
     // Returns the pattern (i.e. all variables used) of the PDB
     const Pattern &get_pattern() const {

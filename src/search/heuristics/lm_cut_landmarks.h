@@ -101,7 +101,7 @@ public:
 
       Returns true iff state is detected as a dead end.
     */
-    bool compute_landmarks(State state, CostCallback cost_callback,
+    bool compute_landmarks(const State &state, CostCallback cost_callback,
                            LandmarkCallback landmark_callback);
 };
 

@@ -1,8 +1,6 @@
 #ifndef LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
-#include "../global_state.h"
-
 #include "../lp/lp_solver.h"
 
 #include <set>

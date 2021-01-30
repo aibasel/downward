@@ -72,7 +72,7 @@ void EagerSearch::initialize() {
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
 
-    const GlobalState &initial_state = state_registry.get_initial_state();
+    State initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
@@ -116,11 +116,7 @@ SearchStatus EagerSearch::step() {
             return FAILED;
         }
         StateID id = open_list->remove_min();
-        // TODO is there a way we can avoid creating the state here and then
-        //      recreate it outside of this function with node.get_state()?
-        //      One way would be to store GlobalState objects inside SearchNodes
-        //      instead of StateIDs
-        GlobalState s = state_registry.lookup_state(id);
+        State s = state_registry.lookup_state(id);
         node.emplace(search_space.get_node(s));
 
         if (node->is_closed())
@@ -172,7 +168,7 @@ SearchStatus EagerSearch::step() {
         break;
     }
 
-    GlobalState s = node->get_state();
+    const State &s = node->get_state();
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
@@ -199,7 +195,7 @@ SearchStatus EagerSearch::step() {
         if ((node->get_real_g() + op.get_cost()) >= bound)
             continue;
 
-        GlobalState succ_state = state_registry.get_successor_state(s, op);
+        State succ_state = state_registry.get_successor_state(s, op);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
