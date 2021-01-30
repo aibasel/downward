@@ -63,7 +63,7 @@ protected:
 public:
     explicit HMHeuristic(const options::Options &opts);
 
-    virtual bool dead_ends_are_reliable() const;
+    virtual bool dead_ends_are_reliable() const override;
 };
 }
 
