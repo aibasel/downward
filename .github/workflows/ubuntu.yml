@@ -48,6 +48,7 @@ jobs:
             echo "Unknown compiler version";
             exit 1;
           fi
+          mkdir /home/runner/work/downward/lib
 
       # We only want to setup osi if both LP solvers are set, hence
       # we execute the following three steps only if both secrets
