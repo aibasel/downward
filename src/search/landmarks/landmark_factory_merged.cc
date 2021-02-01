@@ -68,11 +68,13 @@ void LandmarkFactoryMerged::generate_landmarks(
         }
     }
 
-    // TODO: It seems that disjunctive landmarks are only added if none of the
-    //  facts it is made of is also there as a simple landmark. This should
-    //  either be more general (add only if none of its subset is already there)
-    //  or it should be done only upon request (e.g., heuristics that consider
-    //  orders might want to keep all landmarks).
+    /*
+      TODO: It seems that disjunctive landmarks are only added if none of the
+       facts it is made of is also there as a simple landmark. This should
+       either be more general (add only if none of its subset is already there)
+       or it should be done only upon request (e.g., heuristics that consider
+       orders might want to keep all landmarks).
+    */
     utils::g_log << "Adding disjunctive landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
@@ -133,12 +135,14 @@ void LandmarkFactoryMerged::generate_landmarks(
 void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
     lm_graph->set_landmark_ids();
 
-    // TODO: causal, disjunctive and/or conjunctive landmarks as well as orders
-    //  have been removed in the individual landmark graphs. Since merging
-    //  landmark graphs doesn't introduce any of these, it should not be
-    //  necessary to do so again here, so these steps are omitted. For
-    //  reasonable orders, acyclicity of the landmark graph and the costs of
-    //  landmarks we should also determine this.
+    /*
+      TODO: causal, disjunctive and/or conjunctive landmarks as well as orders
+       have been removed in the individual landmark graphs. Since merging
+       landmark graphs doesn't introduce any of these, it should not be
+       necessary to do so again here, so these steps are omitted. For
+       reasonable orders, acyclicity of the landmark graph and the costs of
+       landmarks we should also determine this.
+    */
     if (reasonable_orders) {
         utils::g_log << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(task_proxy, false);

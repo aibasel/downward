@@ -19,8 +19,10 @@ class Options;
 }
 
 namespace landmarks {
-// TODO: Change order to private -> protected -> public
-//  (omitted so far to minimize diff)
+/*
+  TODO: Change order to private -> protected -> public
+   (omitted so far to minimize diff)
+*/
 class LandmarkFactory {
 public:
     virtual ~LandmarkFactory() = default;
@@ -42,15 +44,15 @@ protected:
     const bool conjunctive_landmarks;
     const bool no_orders;
 
-    // TODO: Directly use no_orders in LandmarkFactoryHM and remove this
+    /*
+      TODO: Make access of member variables of this class consistent (currently,
+       no_orders is the only member variable that is accessed via a method, 
+       while all other are accessed directly.
+    */
     bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
-    // TODO: Move to the landmark graph
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
-    // TODO: All of these do some sort of postprocessing of the landmark graph,
-    //  and it appears reasonable that all can be combined with any landmark
-    //  factory. I don't think LandmarkFactory is the right place for this.
     void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
@@ -59,7 +61,6 @@ protected:
     void mk_acyclic_graph();
     int calculate_lms_cost() const;
 
-    // TODO: Move to landmark node
     bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
 private:
