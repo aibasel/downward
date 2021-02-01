@@ -48,11 +48,17 @@ jobs:
             echo "Unknown compiler version";
             exit 1;
           fi
+          mkdir /home/runner/work/downward/lib
 
+      # We only want to setup osi if both LP solvers are set, hence
+      # we execute the following three steps only if both secrets
+      # are set.
       - name: setup-cplex
         env:
           CPLEX_URL: ${{ secrets.CPLEX_URL }}
+          SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
           DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
           wget $CPLEX_URL &> /dev/null
@@ -63,8 +69,10 @@ jobs:
 
       - name: setup-soplex
         env:
+          CPLEX_URL: ${{ secrets.CPLEX_URL }}
           SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
           DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
           wget $SOPLEX_URL &> /dev/null
@@ -80,9 +88,12 @@ jobs:
 
       - name: setup-osi
         env:
+          CPLEX_URL: ${{ secrets.CPLEX_URL }}
+          SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
           DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
           DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
           DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           wget http://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz
           tar xzf Osi-0.107.9.tgz
