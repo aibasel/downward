@@ -146,7 +146,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
     // For each proposition in bp...
     for (const FactPair &lm_fact : bp->facts) {
         // ...look at all achieving operators
-        const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact);
+        const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact);
         for (int op_or_axiom_id : op_or_axiom_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
             // and calculate the minimum cost of those that can make
@@ -207,7 +207,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
             child.first->parents.erase(&node);
         }
         node.children.clear();
-        node.forward_orders.clear();
+        forward_orders[&node].clear();
 
         edge_add(node, b, t);
         // Node has changed, reexamine it again. This also fixes min_cost.
@@ -270,7 +270,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
     for (const FactPair &lm_fact : bp->facts) {
-        const vector<int> &op_ids = lm_graph->get_operators_including_eff(lm_fact);
+        const vector<int> &op_ids = get_operators_including_eff(lm_fact);
 
         for (int op_or_axiom_id : op_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
@@ -367,7 +367,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
 
     vector<int> op_or_axiom_ids;
     for (const FactPair &lm_fact : bp->facts) {
-        const vector<int> &tmp_op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact);
+        const vector<int> &tmp_op_or_axiom_ids = get_operators_including_eff(lm_fact);
         for (int op_or_axiom_id : tmp_op_or_axiom_ids)
             op_or_axiom_ids.push_back(op_or_axiom_id);
     }
@@ -428,7 +428,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     while (!open_landmarks.empty()) {
         LandmarkNode *bp = open_landmarks.front();
         open_landmarks.pop_front();
-        assert(bp->forward_orders.empty());
+        assert(forward_orders[bp].empty());
 
         if (!bp->is_true_in_state(initial_state)) {
             // Backchain from landmark bp and compute greedy necessary predecessors.
@@ -558,9 +558,9 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
                     const vector<int> &reach_fact =
-                        lm_graph->get_operators_including_eff(fact);
+                        get_operators_including_eff(fact);
                     const vector<int> &reach_lm =
-                        lm_graph->get_operators_including_eff(lm_fact);
+                        get_operators_including_eff(lm_fact);
                     for (size_t j = 0; j < reach_fact.size() && intersection_empty; ++j)
                         for (size_t k = 0; k < reach_lm.size()
                              && intersection_empty; ++k)
@@ -577,19 +577,19 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
                 }
             }
             if (insert)
-                lmp->forward_orders.insert(fact);
+                forward_orders[lmp].insert(fact);
         }
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     for (auto &node : lm_graph->get_nodes()) {
-        for (const auto &node2_pair : node->forward_orders) {
+        for (const auto &node2_pair : forward_orders[node.get()]) {
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
                 edge_add(*node, node2, EdgeType::natural);
             }
         }
-        node->forward_orders.clear();
+        forward_orders[node.get()].clear();
     }
 }
 

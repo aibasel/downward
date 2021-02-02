@@ -1,15 +1,10 @@
 #include "landmark_graph.h"
 
-#include "util.h"
-
-#include "../task_proxy.h"
-
 #include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <cassert>
 #include <list>
-#include <map>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -18,36 +13,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : conj_lms(0) {
-    generate_operators_lookups(task_proxy);
-}
-
-void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
-    /* Build datastructures for efficient landmark computation. Map propositions
-    to the operators that achieve them or have them as preconditions */
-
-    VariablesProxy variables = task_proxy.get_variables();
-    operators_eff_lookup.resize(variables.size());
-    for (VariableProxy var : variables) {
-        operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
-    }
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (OperatorProxy op : operators) {
-        const EffectsProxy effects = op.get_effects();
-        for (EffectProxy effect : effects) {
-            const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
-                get_operator_or_axiom_id(op));
-        }
-    }
-    for (OperatorProxy axiom : task_proxy.get_axioms()) {
-        const EffectsProxy effects = axiom.get_effects();
-        for (EffectProxy effect : effects) {
-            const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
-                get_operator_or_axiom_id(axiom));
-        }
-    }
+    : conj_lms(0), disj_lms(0),
+      task_proxy(task_proxy) {
 }
 
 LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
@@ -75,27 +42,6 @@ int LandmarkGraph::number_of_edges() const {
     for (auto &node : nodes)
         total += node->children.size();
     return total;
-}
-
-void LandmarkGraph::count_costs() {
-    reached_cost = 0;
-    needed_cost = 0;
-
-    for (auto &lm : nodes) {
-        LandmarkNode &node = *lm;
-
-        switch (node.status) {
-        case lm_reached:
-            reached_cost += node.min_cost;
-            break;
-        case lm_needed_again:
-            reached_cost += node.min_cost;
-            needed_cost += node.min_cost;
-            break;
-        case lm_not_reached:
-            break;
-        }
-    }
 }
 
 bool LandmarkGraph::simple_landmark_exists(const FactPair &lm) const {
@@ -161,6 +107,7 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<FactPair> &lm) {
     for (const FactPair &lm_fact : lm) {
         disj_lms_to_nodes.emplace(lm_fact, new_node_p);
     }
+    ++disj_lms;
     return *new_node_p;
 }
 
@@ -189,6 +136,7 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         assert(child_node.parents.find(node) == child_node.parents.end());
     }
     if (node->disjunctive) {
+        --disj_lms;
         for (const FactPair &lm_fact : node->facts) {
             disj_lms_to_nodes.erase(lm_fact);
         }
@@ -229,86 +177,67 @@ void LandmarkGraph::set_landmark_ids() {
     }
 }
 
-void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const {
-    utils::g_log << "LM " << node_p->get_id() << " ";
-    if (node_p->disjunctive)
-        utils::g_log << "disj {";
-    else if (node_p->conjunctive)
-        utils::g_log << "conj {";
-    size_t i = 0;
-    for (const FactPair &lm_fact : node_p->facts) {
-        VariableProxy var = variables[lm_fact.var];
-        utils::g_log << var.get_fact(lm_fact.value).get_name() << " ("
-                     << var.get_name() << "(" << lm_fact.var << ")"
-                     << "->" << lm_fact.value << ")";
-        if (i++ < node_p->facts.size() - 1)
-            utils::g_log << ", ";
-    }
-    if (node_p->disjunctive || node_p->conjunctive)
-        utils::g_log << "}";
-    if (node_p->in_goal)
-        utils::g_log << "(goal)";
-    utils::g_log << " Achievers (" << node_p->possible_achievers.size() << ", " << node_p->first_achievers.size() << ")";
-    utils::g_log << endl;
-}
+void LandmarkGraph::dump() const {
+    utils::g_log << "Dump landmark graph: " << endl;
 
-void LandmarkGraph::dump(const VariablesProxy &variables) const {
-    utils::g_log << "Landmark graph: " << endl;
-    set<LandmarkNode *, LandmarkNodeComparer> nodes2;
-    for (auto &node: nodes) {
-        nodes2.insert(node.get());
-    }
-
-    for (const LandmarkNode *node_p : nodes2) {
-        dump_node(variables, node_p);
-        for (const auto &parent : node_p->parents) {
-            const LandmarkNode *parent_node = parent.first;
-            const EdgeType &edge = parent.second;
-            utils::g_log << "\t\t<-_";
-            switch (edge) {
-            case EdgeType::necessary:
-                utils::g_log << "nec ";
-                break;
-            case EdgeType::greedy_necessary:
-                utils::g_log << "gn  ";
-                break;
-            case EdgeType::natural:
-                utils::g_log << "nat ";
-                break;
-            case EdgeType::reasonable:
-                utils::g_log << "r   ";
-                break;
-            case EdgeType::obedient_reasonable:
-                utils::g_log << "o_r ";
-                break;
-            }
-            dump_node(variables, parent_node);
-        }
-        for (const auto &child : node_p->children) {
+    cout << "digraph G {\n";
+    for (const unique_ptr<LandmarkNode> &node : nodes) {
+        dump_node(node);
+        for (const auto &child : node->children) {
             const LandmarkNode *child_node = child.first;
             const EdgeType &edge = child.second;
-            utils::g_log << "\t\t->_";
-            switch (edge) {
-            case EdgeType::necessary:
-                utils::g_log << "nec ";
-                break;
-            case EdgeType::greedy_necessary:
-                utils::g_log << "gn  ";
-                break;
-            case EdgeType::natural:
-                utils::g_log << "nat ";
-                break;
-            case EdgeType::reasonable:
-                utils::g_log << "r   ";
-                break;
-            case EdgeType::obedient_reasonable:
-                utils::g_log << "o_r ";
-                break;
-            }
-            dump_node(variables, child_node);
+            dump_edge(node->get_id(), child_node->get_id(), edge);
         }
-        utils::g_log << endl;
     }
+    cout << "}" << endl;
     utils::g_log << "Landmark graph end." << endl;
+}
+
+void LandmarkGraph::dump_node(const unique_ptr<LandmarkNode> &node) const {
+    cout << "  lm" << node->get_id() << " [label=\"";
+
+    FactPair &fact = node->facts[0];
+    VariableProxy var = task_proxy.get_variables()[fact.var];
+    cout << var.get_fact(fact.value).get_name();
+    for (size_t i = 1; i < node->facts.size(); ++i) {
+        if (node->disjunctive) {
+            cout << " | ";
+        } else if (node->conjunctive) {
+            cout << " & ";
+        }
+        fact = node->facts[i];
+        var = task_proxy.get_variables()[fact.var];
+        cout << var.get_fact(fact.value).get_name();
+    }
+    cout << "\"";
+    if (node->is_true_in_state(task_proxy.get_initial_state())) {
+        cout << ", style=bold";
+    }
+    if (node->is_goal()) {
+        cout << ", style=filled";
+    }
+    cout << "];\n";
+}
+
+void LandmarkGraph::dump_edge(int from, int to, EdgeType edge) const {
+    cout << "      lm" << from << " -> lm" << to << " [label=";
+    switch (edge) {
+    case EdgeType::necessary:
+        cout << "\"nec\"";
+        break;
+    case EdgeType::greedy_necessary:
+        cout << "\"gn\"";
+        break;
+    case EdgeType::natural:
+        cout << "\"n\"";
+        break;
+    case EdgeType::reasonable:
+        cout << "\"r\", style=dashed";
+        break;
+    case EdgeType::obedient_reasonable:
+        cout << "\"o_r\", style=dashed";
+        break;
+    }
+    cout << "];\n";
 }
 }

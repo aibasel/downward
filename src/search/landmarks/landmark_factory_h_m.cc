@@ -608,7 +608,6 @@ void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
         approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
-    lm_graph->set_landmark_cost(calculate_lms_cost());
     calc_achievers(task_proxy);
 }
 
@@ -674,8 +673,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &lm_fact : lmn->facts) {
-            const vector<int> &ops =
-                lm_graph->get_operators_including_eff(lm_fact);
+            const vector<int> &ops = get_operators_including_eff(lm_fact);
             candidates.insert(ops.begin(), ops.end());
         }
 

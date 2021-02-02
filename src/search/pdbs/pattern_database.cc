@@ -280,15 +280,15 @@ bool PatternDatabase::is_goal_state(
     return true;
 }
 
-size_t PatternDatabase::hash_index(const State &state) const {
+size_t PatternDatabase::hash_index(const vector<int> &state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
-        index += hash_multipliers[i] * state[pattern[i]].get_value();
+        index += hash_multipliers[i] * state[pattern[i]];
     }
     return index;
 }
 
-int PatternDatabase::get_value(const State &state) const {
+int PatternDatabase::get_value(const vector<int> &state) const {
     return distances[hash_index(state)];
 }
 

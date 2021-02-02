@@ -1,6 +1,5 @@
 #include "pruning_method.h"
 
-#include "global_state.h"
 #include "plugin.h"
 
 #include <cassert>
@@ -14,17 +13,6 @@ PruningMethod::PruningMethod()
 void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
     assert(!task);
     task = task_;
-}
-
-// TODO remove this overload once the search uses the task interface.
-void PruningMethod::prune_operators(const GlobalState &global_state,
-                                    vector<OperatorID> &op_ids) {
-    assert(task);
-    /* Note that if the pruning method would use a different task than
-       the search, we would have to convert the state before using it. */
-    State state = global_state.unpack();
-
-    prune_operators(state, op_ids);
 }
 
 static PluginTypePlugin<PruningMethod> _type_plugin(

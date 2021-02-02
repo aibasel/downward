@@ -30,7 +30,6 @@ void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploratio
         approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
-    lm_graph->set_landmark_cost(calculate_lms_cost());
     calc_achievers(task_proxy, exploration);
 }
 
@@ -89,7 +88,7 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lmn : lm_graph->get_nodes()) {
         for (const FactPair &lm_fact : lmn->facts) {
-            const vector<int> &ops = lm_graph->get_operators_including_eff(lm_fact);
+            const vector<int> &ops = get_operators_including_eff(lm_fact);
             lmn->possible_achievers.insert(ops.begin(), ops.end());
 
             if (variables[lm_fact.var].is_derived())

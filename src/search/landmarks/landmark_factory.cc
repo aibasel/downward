@@ -63,6 +63,8 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 
     TaskProxy task_proxy(*task);
     lm_graph = make_shared<LandmarkGraph>(task_proxy);
+
+    generate_operators_lookups(task_proxy);
     generate_landmarks(task);
 
     utils::g_log << "Landmarks generation time: " << lm_generation_timer << endl;
@@ -246,7 +248,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
             unordered_map<int, int> shared_eff;
             bool init = true;
-            const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact_a);
+            const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact_a);
             // Intersect operators that achieve a one by one
             for (int op_or_axiom_id : op_or_axiom_ids) {
                 // If no shared effect among previous operators, break
@@ -597,12 +599,32 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
     return nr_removed;
 }
 
-int LandmarkFactory::calculate_lms_cost() const {
-    int result = 0;
-    for (auto &lmn : lm_graph->get_nodes())
-        result += lmn->min_cost;
+void LandmarkFactory::generate_operators_lookups(const TaskProxy &task_proxy) {
+    /* Build datastructures for efficient landmark computation. Map propositions
+    to the operators that achieve them or have them as preconditions */
 
-    return result;
+    VariablesProxy variables = task_proxy.get_variables();
+    operators_eff_lookup.resize(variables.size());
+    for (VariableProxy var : variables) {
+        operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
+    }
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
+        const EffectsProxy effects = op.get_effects();
+        for (EffectProxy effect : effects) {
+            const FactProxy effect_fact = effect.get_fact();
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(op));
+        }
+    }
+    for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        const EffectsProxy effects = axiom.get_effects();
+        for (EffectProxy effect : effects) {
+            const FactProxy effect_fact = effect.get_fact();
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(axiom));
+        }
+    }
 }
 
 void _add_options_to_parser(OptionParser &parser) {

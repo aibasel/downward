@@ -12,6 +12,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
+    std::map<LandmarkNode *, utils::HashSet<FactPair>> forward_orders;
+
     // dtg_successors[var_id][val] contains all successor values of val in the
     // domain transition graph for the variable
     std::vector<std::vector<std::unordered_set<int>>> dtg_successors;

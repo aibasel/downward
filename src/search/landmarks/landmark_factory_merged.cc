@@ -150,7 +150,6 @@ void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
         approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
-    lm_graph->set_landmark_cost(calculate_lms_cost());
 }
 
 bool LandmarkFactoryMerged::supports_conditional_effects() const {

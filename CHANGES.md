@@ -25,11 +25,21 @@ after the corresponding tracker issues.
   forcing operator counts to take integer values. Solving a MIP is NP-hard
   and usually takes much longer than solving the corresponding LP.
 
+- For developers: move functionality used during search away from
+  LandmarkGraph, making it constant after creation.
+  <http://issues.fast-downward.org/issue988>
+
+- For developers: new state class
+  <http://issues.fast-downward.org/issue348>
+  We unified the classes GlobalState and State into a new class also called
+  State. This removed a lot of code duplication and hacks from the code.
+  A description of the new class can be found in the wiki:
+  <http://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
+  
 - For developers: introduce class for delete-relaxation based landmark
   factories and move usage of exploration object to subclasses of
   (abstract) landmark factory class.
-  http://issues.fast-downward.org/issue990
-
+  http://issues.fast-downward.org/issue990  
 
 ## Fast Downward 20.06
 
