@@ -87,7 +87,8 @@ private:
 
     void remove_node_occurrences(LandmarkNode *node);
 public:
-    // needed only by landmarkgraph-factories.
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     explicit LandmarkGraph(const TaskProxy &task_proxy);
 
     // needed by both landmarkgraph-factories and non-landmarkgraph-factories
@@ -98,12 +99,18 @@ public:
     int get_num_landmarks() const {
         return nodes.size();
     }
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     int get_num_disjunctive_landmarks() const {
         return num_disjunctive_landmarks;
     }
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     int get_num_conjunctive_landmarks() const {
         return num_conjunctive_landmarks;
     }
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     int get_num_edges() const;
 
 
@@ -111,28 +118,51 @@ public:
     LandmarkNode *get_landmark(int index) const;
     // only needed only by non-landmarkgraph-factories
     LandmarkNode *get_landmark(const FactPair &fact) const;
-    // needed only by landmarkgraph-factories.
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     LandmarkNode &get_simple_landmark(const FactPair &fact) const;
-    // needed only by landmarkgraph-factories.
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     LandmarkNode &get_disjunctive_landmark(const FactPair &fact) const;
 
-    // not needed by HMLandmark
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there.  It is not needed by
+       HMLandmarkFactory*/
     bool contains_simple_landmark(const FactPair &lm) const;
-    // not needed by HMLandmark
+    /* Only used internally. */
     bool contains_disjunctive_landmark(const FactPair &lm) const;
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there.  It is not needed by
+       HMLandmarkFactory*/
     bool contains_overlapping_disjunctive_landmark(const std::set<FactPair> &lm) const;
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     bool contains_identical_disjunctive_landmark(const std::set<FactPair> &lm) const;
-    // not needed by HMLandmark
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there.  It is not needed by
+       HMLandmarkFactory*/
     bool contains_landmark(const FactPair &fact) const;
 
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     LandmarkNode &add_simple_landmark(const FactPair &lm);
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     LandmarkNode &add_disjunctive_landmark(const std::set<FactPair> &lm);
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     LandmarkNode &add_conjunctive_landmark(const std::set<FactPair> &lm);
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     void remove_node_if(
         const std::function<bool (const LandmarkNode &)> &remove_node);
 
-    // only needed by LandmarkFactorySasp
+    /* This is needed only by landmark graph factories (in particular, only
+       LandmarkFactorySasp) and will disappear when moving landmark graph
+       creation there. */
     LandmarkNode &replace_disjunctive_by_simple_landmark(const FactPair &lm);
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
     void set_landmark_ids();
 };
 }
