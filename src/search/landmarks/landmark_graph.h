@@ -83,13 +83,12 @@ private:
     utils::HashMap<FactPair, LandmarkNode *> simple_landmarks_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disjunctive_landmarks_to_nodes;
     Nodes nodes;
-    const TaskProxy &task_proxy;
 
     void remove_node_occurrences(LandmarkNode *node);
 public:
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    explicit LandmarkGraph(const TaskProxy &task_proxy);
+    LandmarkGraph();
 
     // needed by both landmarkgraph-factories and non-landmarkgraph-factories
     const Nodes &get_nodes() const {

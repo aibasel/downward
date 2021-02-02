@@ -30,9 +30,8 @@ bool LandmarkNode::is_true_in_state(const State &state) const {
     }
 }
 
-LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
-    : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0),
-      task_proxy(task_proxy) {
+LandmarkGraph::LandmarkGraph()
+    : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0) {
 }
 
 int LandmarkGraph::get_num_edges() const {
