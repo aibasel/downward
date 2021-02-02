@@ -5,7 +5,7 @@
 using namespace std;
 
 namespace landmarks {
-void LandmarkFactoryRelaxation::generate_landmarks(const std::shared_ptr<AbstractTask>& task) {
+void LandmarkFactoryRelaxation::generate_landmarks(const std::shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     Exploration exploration(task_proxy);
     generate_relaxed_landmarks(task, exploration);
@@ -193,5 +193,4 @@ void LandmarkFactoryRelaxation::add_operator_and_propositions_to_list(
         lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
     }
 }
-
 }

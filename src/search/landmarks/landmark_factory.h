@@ -46,7 +46,7 @@ protected:
 
     /*
       TODO: Make access of member variables of this class consistent (currently,
-       no_orders is the only member variable that is accessed via a method, 
+       no_orders is the only member variable that is accessed via a method,
        while all other are accessed directly.
     */
     bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
