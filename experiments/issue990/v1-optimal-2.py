@@ -17,7 +17,7 @@ CONFIGS = [
                              driver_options=["--alias", "seq-opt-bjolp"]),
     common_setup.IssueConfig("lm-hm2", ["--evaluator", "lmc=lmcount(lm_hm(m=2),admissible=true)", "--search", "astar(lmc,lazy_evaluator=lmc)"]),
     common_setup.IssueConfig("seq-opt-bjolp-opt", ["--evaluator", "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true, optimal=true)", "--search", "astar(lmc,lazy_evaluator=lmc)"]),
-    common_setup.IssueConfig("lm-exhaust", ["--search", "astar(lmcount(lm_exhaust(), admissible=true))"]),
+    common_setup.IssueConfig("lm-exhaust", ["--evaluator", "lmc=lmcount(lm_exhaust(),admissible=true)", "--search", "astar(lmc,lazy_evaluator=lmc)"]),
 ]
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
