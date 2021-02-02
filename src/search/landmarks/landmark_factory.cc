@@ -62,7 +62,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 
     TaskProxy task_proxy(*task);
 
-    lm_graph = make_shared<LandmarkGraph>(task_proxy);
+    lm_graph = make_shared<LandmarkGraph>();
     generate_operators_lookups(task_proxy);
     Exploration exploration(task_proxy);
     generate_landmarks(task, exploration);
