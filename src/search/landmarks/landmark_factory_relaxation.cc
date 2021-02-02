@@ -5,7 +5,7 @@
 using namespace std;
 
 namespace landmarks {
-void LandmarkFactoryRelaxation::generate_landmarks(const std::shared_ptr<AbstractTask> &task) {
+void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     Exploration exploration(task_proxy);
     generate_relaxed_landmarks(task, exploration);
@@ -112,8 +112,8 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration, bool level_out,
     const LandmarkNode *exclude, bool compute_lvl_op) const {
-    std::vector<std::vector<int>> lvl_var;
-    std::vector<utils::HashMap<FactPair, int>> lvl_op;
+    vector<vector<int>> lvl_var;
+    vector<utils::HashMap<FactPair, int>> lvl_op;
     return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
 }
 
