@@ -25,6 +25,11 @@ after the corresponding tracker issues.
   forcing operator counts to take integer values. Solving a MIP is NP-hard
   and usually takes much longer than solving the corresponding LP.
 
+- For developers: introduce class for delete-relaxation based landmark
+  factories and move usage of exploration object to subclasses of
+  (abstract) landmark factory class.
+  http://issues.fast-downward.org/issue990
+
 
 ## Fast Downward 20.06
 
