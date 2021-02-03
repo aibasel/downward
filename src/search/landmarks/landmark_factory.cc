@@ -479,18 +479,18 @@ void LandmarkFactory::approximate_reasonable_orders(
         if (node_p->disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(initial_state))
-            return;
-
         if (!obedient_orders && node_p->is_goal()) {
             for (auto &node2_p : lm_graph->get_nodes()) {
                 if (node2_p == node_p || node2_p->disjunctive)
+                    continue;
+                if (node_p->is_true_in_state(initial_state)
+                    && node2_p->is_true_in_state(initial_state))
                     continue;
                 if (interferes(task_proxy, node2_p.get(), node_p.get())) {
                     edge_add(*node2_p, *node_p, EdgeType::reasonable);
                 }
             }
-        } else {
+        } else if (!node_p->is_true_in_state(initial_state)) {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
             unordered_set<LandmarkNode *> interesting_nodes(variables_size);
