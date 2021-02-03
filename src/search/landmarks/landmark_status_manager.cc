@@ -102,9 +102,7 @@ bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_stat
         if (!reached.test(id)) {
             LandmarkNode *node = lm_graph.get_lm_for_index(id);
             if (node->is_true_in_state(ancestor_state)) {
-                if (landmark_is_leaf(*node, reached)) {
-                    reached.set(id);
-                }
+                reached.set(id);
             }
         }
     }
@@ -181,18 +179,5 @@ bool LandmarkStatusManager::landmark_needed_again(
         }
         return false;
     }
-}
-
-bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
-                                             const BitsetView &reached) const {
-    //Note: this is the same as !check_node_orders_disobeyed
-    for (const auto &parent : node.parents) {
-        LandmarkNode *parent_node = parent.first;
-        // Note: no condition on edge type here
-        if (!reached.test(parent_node->get_id())) {
-            return false;
-        }
-    }
-    return true;
 }
 }
