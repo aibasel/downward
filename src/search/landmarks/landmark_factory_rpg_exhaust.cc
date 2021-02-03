@@ -17,10 +17,10 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
-    : LandmarkFactory(opts) {
+    : LandmarkFactoryRelaxation(opts) {
 }
 
-void LandmarkFactoryRpgExhaust::generate_landmarks(
+void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
     utils::g_log << "Generating landmarks by testing all facts with RPG method" << endl;

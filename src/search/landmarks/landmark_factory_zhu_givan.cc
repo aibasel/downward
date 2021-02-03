@@ -18,10 +18,10 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : LandmarkFactory(opts) {
+    : LandmarkFactoryRelaxation(opts) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks(
+void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
     utils::g_log << "Generating landmarks using Zhu/Givan label propagation\n";

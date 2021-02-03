@@ -691,6 +691,7 @@ fast_downward_plugin(
         landmarks/landmark_factory
         landmarks/landmark_factory_h_m
         landmarks/landmark_factory_merged
+        landmarks/landmark_factory_relaxation
         landmarks/landmark_factory_rpg_exhaust
         landmarks/landmark_factory_rpg_sasp
         landmarks/landmark_factory_zhu_givan
