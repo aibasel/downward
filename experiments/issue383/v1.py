@@ -25,7 +25,7 @@ CONFIGS = [
     ]),
 ]
 
-if common_setup.is_test_run() or common_setup.is_running_on_cluster():
+if common_setup.is_test_run() or not common_setup.is_running_on_cluster():
     SUITE = IssueExperiment.DEFAULT_TEST_SUITE
     ENVIRONMENT = LocalEnvironment(processes=2)
 else:
