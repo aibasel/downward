@@ -130,9 +130,9 @@ LandmarkNode &LandmarkGraph::add_simple_landmark(const FactPair &lm) {
 }
 
 LandmarkNode &LandmarkGraph::add_disjunctive_landmark(const set<FactPair> &lm) {
-    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact){
-        return !contains_landmark(lm_fact);
-    }));
+    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact) {
+                      return !contains_landmark(lm_fact);
+                  }));
     vector<FactPair> facts(lm.begin(), lm.end());
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(facts, true, false);
@@ -146,9 +146,9 @@ LandmarkNode &LandmarkGraph::add_disjunctive_landmark(const set<FactPair> &lm) {
 }
 
 LandmarkNode &LandmarkGraph::add_conjunctive_landmark(const set<FactPair> &lm) {
-    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact){
-        return !contains_landmark(lm_fact);
-    }));
+    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact) {
+                      return !contains_landmark(lm_fact);
+                  }));
     vector<FactPair> facts(lm.begin(), lm.end());
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(facts, false, true);
