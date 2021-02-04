@@ -69,15 +69,17 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                  << num_goal_lms << " goal landmarks" << endl;
 }
 
-bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_state,
-                                               OperatorID,
-                                               const State &ancestor_state) {
+bool
+LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_state,
+                                          OperatorID,
+                                          const State &ancestor_state) {
     if (ancestor_state == parent_ancestor_state) {
         // This can happen, e.g., in Satellite-01.
         return false;
     }
 
-    const BitsetView parent_reached = get_reached_landmarks(parent_ancestor_state);
+    const BitsetView parent_reached = get_reached_landmarks(
+        parent_ancestor_state);
     BitsetView reached = get_reached_landmarks(ancestor_state);
 
     int num_landmarks = lm_graph.number_of_landmarks();
@@ -113,15 +115,12 @@ bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_stat
 void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
     const BitsetView reached = get_reached_landmarks(ancestor_state);
 
-    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
-
     /* This first loop is necessary as setup for the *needed again*
        check in the second loop. */
     for (int id = 0; id < lm_graph.number_of_landmarks(); ++id) {
         lm_status[id] = reached.test(id) ? lm_reached : lm_not_reached;
     }
-    for (auto &node : nodes) {
-        int id = node->get_id();
+    for (int id = 0; id < lm_graph.number_of_landmarks(); ++id) {
         if (lm_status[id] == lm_reached
             && landmark_needed_again(id, ancestor_state)) {
             lm_status[id] = lm_needed_again;
@@ -172,7 +171,7 @@ bool LandmarkStatusManager::landmark_needed_again(
           achieving B for the first time, it must become true again.
         */
         for (const auto &child : node->children) {
-            if (child.second >= EdgeType::greedy_necessary
+            if (child.second >= EdgeType::reasonable
                 && lm_status[child.first->get_id()] == lm_not_reached) {
                 return true;
             }
