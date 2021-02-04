@@ -35,12 +35,12 @@ void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploratio
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration) {
-    int num_all_landmarks = lm_graph->number_of_landmarks();
+    int num_all_landmarks = lm_graph->get_num_landmarks();
     lm_graph->remove_node_if(
         [this, &task_proxy, &exploration](const LandmarkNode &node) {
             return !is_causal_landmark(task_proxy, exploration, node);
         });
-    int num_causal_landmarks = lm_graph->number_of_landmarks();
+    int num_causal_landmarks = lm_graph->get_num_landmarks();
     utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
                  << " non-causal landmarks" << endl;
 }
@@ -53,7 +53,7 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
        Similar to "relaxed_task_solvable" above.
      */
 
-    if (landmark.in_goal)
+    if (landmark.is_true_in_goal)
         return true;
     vector<vector<int>> lvl_var;
     vector<utils::HashMap<FactPair, int>> lvl_op;

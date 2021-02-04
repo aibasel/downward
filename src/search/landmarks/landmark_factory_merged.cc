@@ -23,14 +23,14 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &lm) const {
     if (!lm.disjunctive && !lm.conjunctive) {
         const FactPair &lm_fact = lm.facts[0];
-        if (lm_graph->simple_landmark_exists(lm_fact))
-            return &lm_graph->get_simple_lm_node(lm_fact);
+        if (lm_graph->contains_simple_landmark(lm_fact))
+            return &lm_graph->get_simple_landmark(lm_fact);
         else
             return 0;
     } else if (lm.disjunctive) {
         set<FactPair> lm_facts(lm.facts.begin(), lm.facts.end());
-        if (lm_graph->exact_same_disj_landmark_exists(lm_facts))
-            return &lm_graph->get_disj_lm_node(lm.facts[0]);
+        if (lm_graph->contains_identical_disjunctive_landmark(lm_facts))
+            return &lm_graph->get_disjunctive_landmark(lm.facts[0]);
         else
             return 0;
     } else if (lm.conjunctive) {
@@ -56,9 +56,9 @@ void LandmarkFactoryMerged::generate_landmarks(
         for (auto &lm : nodes) {
             const LandmarkNode &node = *lm;
             const FactPair &lm_fact = node.facts[0];
-            if (!node.conjunctive && !node.disjunctive && !lm_graph->landmark_exists(lm_fact)) {
-                LandmarkNode &new_node = lm_graph->landmark_add_simple(lm_fact);
-                new_node.in_goal = node.in_goal;
+            if (!node.conjunctive && !node.disjunctive && !lm_graph->contains_landmark(lm_fact)) {
+                LandmarkNode &new_node = lm_graph->add_simple_landmark(lm_fact);
+                new_node.is_true_in_goal = node.is_true_in_goal;
                 new_node.possible_achievers.insert(
                     node.possible_achievers.begin(), node.possible_achievers.end());
                 new_node.first_achievers.insert(
@@ -84,15 +84,15 @@ void LandmarkFactoryMerged::generate_landmarks(
                 set<FactPair> lm_facts;
                 bool exists = false;
                 for (const FactPair &lm_fact: node.facts) {
-                    if (lm_graph->landmark_exists(lm_fact)) {
+                    if (lm_graph->contains_landmark(lm_fact)) {
                         exists = true;
                         break;
                     }
                     lm_facts.insert(lm_fact);
                 }
                 if (!exists) {
-                    LandmarkNode &new_node = lm_graph->landmark_add_disjunctive(lm_facts);
-                    new_node.in_goal = node.in_goal;
+                    LandmarkNode &new_node = lm_graph->add_disjunctive_landmark(lm_facts);
+                    new_node.is_true_in_goal = node.is_true_in_goal;
                     new_node.possible_achievers.insert(
                         node.possible_achievers.begin(), node.possible_achievers.end());
                     new_node.first_achievers.insert(

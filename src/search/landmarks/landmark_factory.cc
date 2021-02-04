@@ -61,23 +61,22 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     lm_graph_task = task.get();
     utils::Timer lm_generation_timer;
 
-    TaskProxy task_proxy(*task);
-    lm_graph = make_shared<LandmarkGraph>(task_proxy);
+    lm_graph = make_shared<LandmarkGraph>();
 
+    TaskProxy task_proxy(*task);
     generate_operators_lookups(task_proxy);
     generate_landmarks(task);
 
     utils::g_log << "Landmarks generation time: " << lm_generation_timer << endl;
-    if (lm_graph->number_of_landmarks() == 0)
+    if (lm_graph->get_num_landmarks() == 0)
         utils::g_log << "Warning! No landmarks found. Task unsolvable?" << endl;
     else {
-        utils::g_log << "Discovered " << lm_graph->number_of_landmarks()
-                     << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
+        utils::g_log << "Discovered " << lm_graph->get_num_landmarks()
+                     << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
                      << " are disjunctive and "
-                     << lm_graph->number_of_conj_landmarks() << " are conjunctive." << endl;
-        utils::g_log << lm_graph->number_of_edges() << " edges" << endl;
+                     << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
+        utils::g_log << lm_graph->get_num_edges() << " edges" << endl;
     }
-    //lm_graph->dump();
     return lm_graph;
 }
 
@@ -343,12 +342,12 @@ void LandmarkFactory::approximate_reasonable_orders(
         if (node_p->is_true_in_state(initial_state))
             return;
 
-        if (!obedient_orders && node_p->is_goal()) {
+        if (!obedient_orders && node_p->is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;
                 if (interferes(task_proxy, node2_p.get(), node_p.get())) {
-                    edge_add(*node2_p, *node_p, EdgeType::reasonable);
+                    edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
                 }
             }
         } else {
@@ -358,13 +357,13 @@ void LandmarkFactory::approximate_reasonable_orders(
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2 = *child.first;
                 const EdgeType &edge2 = child.second;
-                if (edge2 >= EdgeType::greedy_necessary) { // found node2: node_p ->_gn node2
+                if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2: node_p ->_gn node2
                     for (const auto &p : node2.parents) {   // find parent
                         LandmarkNode &parent = *(p.first);
                         const EdgeType &edge = p.second;
                         if (parent.disjunctive)
                             continue;
-                        if ((edge >= EdgeType::natural || (obedient_orders && edge == EdgeType::reasonable)) &&
+                        if ((edge >= EdgeType::NATURAL || (obedient_orders && edge == EdgeType::REASONABLE)) &&
                             &parent != node_p.get()) {  // find predecessors or parent and collect in
                             // "interesting nodes"
                             interesting_nodes.insert(&parent);
@@ -381,9 +380,9 @@ void LandmarkFactory::approximate_reasonable_orders(
                     continue;
                 if (interferes(task_proxy, node, node_p.get())) {
                     if (!obedient_orders)
-                        edge_add(*node, *node_p, EdgeType::reasonable);
+                        edge_add(*node, *node_p, EdgeType::REASONABLE);
                     else
-                        edge_add(*node, *node_p, EdgeType::obedient_reasonable);
+                        edge_add(*node, *node_p, EdgeType::OBEDIENT_REASONABLE);
                 }
             }
         }
@@ -402,7 +401,7 @@ void LandmarkFactory::collect_ancestors(
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
         const EdgeType &edge = p.second;
-        if (edge >= EdgeType::natural || (use_reasonable && edge == EdgeType::reasonable))
+        if (edge >= EdgeType::NATURAL || (use_reasonable && edge == EdgeType::REASONABLE))
             if (closed_nodes.count(&parent) == 0) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
@@ -414,7 +413,7 @@ void LandmarkFactory::collect_ancestors(
         for (const auto &p : node2.parents) {
             LandmarkNode &parent = *(p.first);
             const EdgeType &edge = p.second;
-            if (edge >= EdgeType::natural || (use_reasonable && edge == EdgeType::reasonable)) {
+            if (edge >= EdgeType::NATURAL || (use_reasonable && edge == EdgeType::REASONABLE)) {
                 if (closed_nodes.count(&parent) == 0) {
                     open_nodes.push_back(&parent);
                     closed_nodes.insert(&parent);
@@ -432,10 +431,10 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     reduce cycles. If the edge is already present, the stronger edge type wins.
     */
     assert(&from != &to);
-    assert(from.parents.find(&to) == from.parents.end() || type <= EdgeType::reasonable);
-    assert(to.children.find(&from) == to.children.end() || type <= EdgeType::reasonable);
+    assert(from.parents.find(&to) == from.parents.end() || type <= EdgeType::REASONABLE);
+    assert(to.children.find(&from) == to.children.end() || type <= EdgeType::REASONABLE);
 
-    if (type == EdgeType::reasonable || type == EdgeType::obedient_reasonable) { // simple cycle test
+    if (type == EdgeType::REASONABLE || type == EdgeType::OBEDIENT_REASONABLE) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
             //utils::g_log << "edge in opposite direction exists" << endl;
             if (from.parents.find(&to)->second > type) // Stronger order present, return
@@ -473,8 +472,8 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
       even if we don't want to use disjunctive landmarks during search. So we
       allow removing disjunctive landmarks after landmark generation.
     */
-    if (lm_graph->number_of_disj_landmarks() > 0) {
-        utils::g_log << "Discarding " << lm_graph->number_of_disj_landmarks()
+    if (lm_graph->get_num_disjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_disjunctive_landmarks()
                      << " disjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.disjunctive;});
@@ -482,8 +481,8 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
 }
 
 void LandmarkFactory::discard_conjunctive_landmarks() {
-    if (lm_graph->number_of_conj_landmarks() > 0) {
-        utils::g_log << "Discarding " << lm_graph->number_of_conj_landmarks()
+    if (lm_graph->get_num_conjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
                      << " conjunctive landmarks" << endl;
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.conjunctive;});
@@ -499,7 +498,7 @@ void LandmarkFactory::discard_all_orderings() {
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
-    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->get_num_landmarks());
     int removed_edges = 0;
     for (auto &node : lm_graph->get_nodes()) {
         if (acyclic_node_set.find(node.get()) == acyclic_node_set.end())
@@ -520,7 +519,7 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it; it2
          != path.end(); ++it2) {
         EdgeType edge = it2->second;
-        if (edge == EdgeType::reasonable || edge == EdgeType::obedient_reasonable) {
+        if (edge == EdgeType::REASONABLE || edge == EdgeType::OBEDIENT_REASONABLE) {
             parent_p = it2->first;
             if (*it2 == path.back()) {
                 child_p = cur;
@@ -530,7 +529,7 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
                 ++child_it;
                 child_p = child_it->first;
             }
-            if (edge == EdgeType::obedient_reasonable)
+            if (edge == EdgeType::OBEDIENT_REASONABLE)
                 break;
             // else no break since o_r order could still appear in list
         }
@@ -548,7 +547,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, EdgeType>> path;
-    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->get_num_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());

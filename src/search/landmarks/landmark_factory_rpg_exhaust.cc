@@ -27,20 +27,20 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
 
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
-        LandmarkNode &lmp = lm_graph->landmark_add_simple(goal.get_pair());
-        lmp.in_goal = true;
+        LandmarkNode &lmp = lm_graph->add_simple_landmark(goal.get_pair());
+        lmp.is_true_in_goal = true;
     }
     // test all other possible facts
     State initial_state = task_proxy.get_initial_state();
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const FactPair lm(var.get_id(), value);
-            if (!lm_graph->simple_landmark_exists(lm)) {
+            if (!lm_graph->contains_simple_landmark(lm)) {
                 vector<FactPair> facts = {lm};
-                LandmarkNode node(facts, false);
+                LandmarkNode node(facts, false, false);
                 if (initial_state[lm.var].get_value() == lm.value ||
                     !relaxed_task_solvable(task_proxy, exploration, true, &node)) {
-                    lm_graph->landmark_add_simple(lm);
+                    lm_graph->add_simple_landmark(lm);
                 }
             }
         }

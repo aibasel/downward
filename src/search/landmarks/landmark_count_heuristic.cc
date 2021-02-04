@@ -116,7 +116,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
                 break;
             case lm_not_reached:
             case lm_needed_again:
-                h += lm->min_cost;
+                h += lm->cost;
                 break;
             }
         }
@@ -203,13 +203,13 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
      reached before, the LM is a goal, and it's not true at moment */
 
     int num_reached = reached.size();
-    if (num_reached != lgraph->number_of_landmarks()) {
+    if (num_reached != lgraph->get_num_landmarks()) {
         if (reached.find(&lm) != reached.end())
             return false;
         else
             return !check_node_orders_disobeyed(lm, reached);
     }
-    return lm.is_goal() && !lm.is_true_in_state(state);
+    return lm.is_true_in_goal && !lm.is_true_in_state(state);
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
@@ -238,7 +238,7 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
     LandmarkSet landmark_set;
     for (int i = 0; i < landmark_bitset.size(); ++i)
         if (landmark_bitset.test(i))
-            landmark_set.insert(lgraph->get_lm_for_index(i));
+            landmark_set.insert(lgraph->get_landmark(i));
     return landmark_set;
 }
 

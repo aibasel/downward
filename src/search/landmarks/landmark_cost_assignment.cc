@@ -139,7 +139,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
 lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::build_initial_lp() {
     /* The LP has one variable (column) per landmark and one
        inequality (row) per operator. */
-    int num_cols = lm_graph.number_of_landmarks();
+    int num_cols = lm_graph.get_num_landmarks();
     int num_rows = operator_costs.size();
 
     named_vector::NamedVector<lp::LPVariable> lp_variables;
@@ -173,7 +173,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
       reached; otherwise it is [0, infinity].
       The lower bounds are set to 0 in the constructor and never change.
     */
-    int num_cols = lm_graph.number_of_landmarks();
+    int num_cols = lm_graph.get_num_landmarks();
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         if (lm_status_manager.get_landmark_status(lm_id) == lm_reached) {
             lp.get_variables()[lm_id].upper_bound = 0;
@@ -195,7 +195,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
         constraint.clear();
     }
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
+        const LandmarkNode *lm = lm_graph.get_landmark(lm_id);
         int lm_status = lm_status_manager.get_landmark_status(lm_id);
         if (lm_status != lm_reached) {
             const set<int> &achievers = get_achievers(lm_status, *lm);
