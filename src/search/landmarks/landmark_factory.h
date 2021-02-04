@@ -30,7 +30,6 @@ public:
 
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
-    bool use_disjunctive_landmarks() const {return disjunctive_landmarks;}
     bool use_reasonable_orders() const {return reasonable_orders;}
     virtual bool supports_conditional_effects() const = 0;
 
@@ -40,7 +39,6 @@ protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool reasonable_orders;
     const bool only_causal_landmarks;
-    const bool disjunctive_landmarks;
     const bool conjunctive_landmarks;
     const bool no_orders;
 
@@ -53,7 +51,6 @@ protected:
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
-    void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
     void approximate_reasonable_orders(

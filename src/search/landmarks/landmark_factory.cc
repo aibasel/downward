@@ -21,7 +21,6 @@ namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
     : reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
-      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
       no_orders(opts.get<bool>("no_orders")),
       lm_graph_task(nullptr) {
@@ -466,20 +465,6 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(to.parents.find(&from) != to.parents.end());
 }
 
-void LandmarkFactory::discard_disjunctive_landmarks() {
-    /*
-      Using disjunctive landmarks during landmark generation can be beneficial
-      even if we don't want to use disjunctive landmarks during search. So we
-      allow removing disjunctive landmarks after landmark generation.
-    */
-    if (lm_graph->get_num_disjunctive_landmarks() > 0) {
-        utils::g_log << "Discarding " << lm_graph->get_num_disjunctive_landmarks()
-                     << " disjunctive landmarks" << endl;
-        lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.disjunctive;});
-    }
-}
-
 void LandmarkFactory::discard_conjunctive_landmarks() {
     if (lm_graph->get_num_conjunctive_landmarks() > 0) {
         utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
@@ -633,9 +618,6 @@ void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("only_causal_landmarks",
                             "keep only causal landmarks",
                             "false");
-    parser.add_option<bool>("disjunctive_landmarks",
-                            "keep disjunctive landmarks",
-                            "true");
     parser.add_option<bool>("conjunctive_landmarks",
                             "keep conjunctive landmarks",
                             "true");

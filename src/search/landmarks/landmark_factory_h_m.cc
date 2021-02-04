@@ -593,8 +593,6 @@ void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
         Exploration exploration(task_proxy);
         discard_noncausal_landmarks(task_proxy, exploration);
     }
-    if (!disjunctive_landmarks)
-        discard_disjunctive_landmarks();
     if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();

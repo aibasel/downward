@@ -9,6 +9,7 @@
 
 namespace landmarks {
 class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
+    bool disjunctive_landmarks;
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
@@ -58,6 +59,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
                              const std::unordered_set<int> &exclude);
 
     void build_disjunction_classes(const TaskProxy &task_proxy);
+
+    void discard_disjunctive_landmarks();
 public:
     explicit LandmarkFactoryRpgSasp(const options::Options &opts);
 
