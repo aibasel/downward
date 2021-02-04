@@ -1,7 +1,7 @@
 #ifndef LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
 #define LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
 
-#include "landmark_factory.h"
+#include "landmark_factory_relaxation.h"
 
 #include "../utils/hash.h"
 
@@ -12,7 +12,7 @@
 namespace landmarks {
 using lm_set = utils::HashSet<FactPair>;
 
-class LandmarkFactoryZhuGivan : public LandmarkFactory {
+class LandmarkFactoryZhuGivan : public LandmarkFactoryRelaxation {
     class plan_graph_node {
 public:
         lm_set labels;
@@ -71,8 +71,9 @@ public:
     // Link operators to its propositions in trigger list.
     void add_operator_to_triggers(const OperatorProxy &op);
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
-                                    Exploration &exploration) override;
+    virtual void generate_relaxed_landmarks(
+        const std::shared_ptr<AbstractTask> &task,
+        Exploration &exploration) override;
 
 public:
     explicit LandmarkFactoryZhuGivan(const options::Options &opts);
