@@ -79,7 +79,7 @@ ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgra
             stream << " + ";
         int variable = variables[i];
         string variable_name;
-        if (program && program->get_variables().has_names() && program->get_variables().get_name(variable) != "") {
+        if (program && program->get_variables().has_names() && !program->get_variables().get_name(variable).empty()) {
             variable_name = program->get_variables().get_name(variable);
         } else {
             variable_name = "v" + to_string(variable);
