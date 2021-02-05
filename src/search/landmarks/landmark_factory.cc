@@ -97,8 +97,8 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
     else if (reasonable_orders) {
         utils::g_log << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(task_proxy, false);
-//        utils::g_log << "approx. obedient reasonable orders" << endl;
-//        approximate_reasonable_orders(task_proxy, true);
+        utils::g_log << "approx. obedient reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
     calc_achievers(task_proxy, exploration);
@@ -479,6 +479,9 @@ void LandmarkFactory::approximate_reasonable_orders(
         if (node_p->disjunctive)
             continue;
 
+        if (obedient_orders && node_p->is_true_in_state(initial_state))
+            continue;
+
         if (!obedient_orders && node_p->is_goal()) {
             for (auto &node2_p : lm_graph->get_nodes()) {
                 if (node2_p == node_p || node2_p->disjunctive)
@@ -536,7 +539,6 @@ void LandmarkFactory::approximate_reasonable_orders(
 
 bool LandmarkFactory::have_common_achiever(
     const LandmarkNode *node_a, const LandmarkNode *node_b) const {
-
     set<int> achievers_a = node_a->possible_achievers;
     set<int> achievers_b = node_b->possible_achievers;
 
