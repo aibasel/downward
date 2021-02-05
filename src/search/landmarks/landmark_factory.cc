@@ -97,8 +97,8 @@ void LandmarkFactory::generate(const TaskProxy &task_proxy, Exploration &explora
     else if (reasonable_orders) {
         utils::g_log << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(task_proxy, false);
-        utils::g_log << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, true);
+//        utils::g_log << "approx. obedient reasonable orders" << endl;
+//        approximate_reasonable_orders(task_proxy, true);
     }
     mk_acyclic_graph();
     calc_achievers(task_proxy, exploration);
