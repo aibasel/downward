@@ -160,7 +160,7 @@ bool LandmarkStatusManager::landmark_needed_again(
     int id, const State &state) {
     LandmarkNode *node = lm_graph.get_lm_for_index(id);
     if (node->is_true_in_state(state)) {
-        return false;
+        return has_unreached_parent(node);
     } else if (node->is_goal()) {
         return true;
     } else {
@@ -175,13 +175,19 @@ bool LandmarkStatusManager::landmark_needed_again(
                 return true;
             }
         }
-        for (const auto &parent : node->parents) {
-            if (parent.second == EdgeType::reasonable
-                && lm_status[parent.first->get_id()] == lm_not_reached) {
-                return true;
-            }
-        }
-        return false;
+        return has_unreached_parent(node);
     }
+}
+
+bool LandmarkStatusManager::has_unreached_parent(
+    const LandmarkNode *node) const {
+    for (const auto &parent : node->parents) {
+        if (lm_status[parent.first->get_id()] == lm_not_reached) {
+            // This cannot occur for natural orderings by definition.
+            assert(parent.second < EdgeType::natural);
+            return true;
+        }
+    }
+    return false;
 }
 }
