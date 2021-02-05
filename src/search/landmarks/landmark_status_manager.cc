@@ -171,8 +171,14 @@ bool LandmarkStatusManager::landmark_needed_again(
           achieving B for the first time, it must become true again.
         */
         for (const auto &child : node->children) {
-            if (child.second >= EdgeType::reasonable
+            if (child.second >= EdgeType::greedy_necessary
                 && lm_status[child.first->get_id()] == lm_not_reached) {
+                return true;
+            }
+        }
+        for (const auto &parent : node->parents) {
+            if (parent.second == EdgeType::reasonable
+                && lm_status[parent.first->get_id()] == lm_not_reached) {
                 return true;
             }
         }
