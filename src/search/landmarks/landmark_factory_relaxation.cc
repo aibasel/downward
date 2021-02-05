@@ -17,9 +17,7 @@ void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploratio
         discard_noncausal_landmarks(task_proxy, exploration);
     lm_graph->set_landmark_ids();
 
-    if (no_orders)
-        discard_all_orderings();
-    else if (reasonable_orders) {
+    if (reasonable_orders) {
         utils::g_log << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(task_proxy, false);
         utils::g_log << "approx. obedient reasonable orders" << endl;

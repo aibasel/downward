@@ -60,7 +60,6 @@ using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
 
 class LandmarkFactoryHM : public LandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::set<int>>;
-    bool conjunctive_landmarks;
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
@@ -104,7 +103,10 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void print_fluentset(const VariablesProxy &variables, const FluentSet &fs);
     void print_pm_op(const VariablesProxy &variables, const PMOp &op);
 
+    // TODO: should these be const?
     const int m_;
+    bool conjunctive_landmarks;
+    bool use_orders;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 

@@ -10,6 +10,7 @@
 namespace landmarks {
 class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     bool disjunctive_landmarks;
+    bool use_orders;
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 

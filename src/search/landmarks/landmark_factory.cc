@@ -21,7 +21,6 @@ namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
     : reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
-      no_orders(opts.get<bool>("no_orders")),
       lm_graph_task(nullptr) {
 }
 /*
@@ -601,15 +600,18 @@ void LandmarkFactory::generate_operators_lookups(const TaskProxy &task_proxy) {
     }
 }
 
+void _add_use_orders_option_to_parser(OptionParser &parser) {
+    parser.add_option<bool>("use_orders",
+                            "use orders between landmarks",
+                            "true");
+}
+
 void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("reasonable_orders",
                             "generate reasonable orders",
                             "false");
     parser.add_option<bool>("only_causal_landmarks",
                             "keep only causal landmarks",
-                            "false");
-    parser.add_option<bool>("no_orders",
-                            "discard all orderings",
                             "false");
 }
 

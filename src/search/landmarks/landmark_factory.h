@@ -39,14 +39,6 @@ protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool reasonable_orders;
     const bool only_causal_landmarks;
-    const bool no_orders;
-
-    /*
-      TODO: Make access of member variables of this class consistent (currently,
-       no_orders is the only member variable that is accessed via a method,
-       while all other are accessed directly.
-    */
-    bool use_orders() const {return !no_orders;}   // only needed by HMLandmark
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
@@ -85,6 +77,7 @@ private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 
+extern void _add_use_orders_option_to_parser(options::OptionParser &parser);
 extern void _add_options_to_parser(options::OptionParser &parser);
 }
 

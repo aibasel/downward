@@ -19,7 +19,8 @@ using utils::ExitCode;
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
     : LandmarkFactoryRelaxation(opts),
-      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")) {
+      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+      use_orders(opts.get<bool>("use_orders")) {
 }
 
 void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
@@ -467,6 +468,11 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     if (!disjunctive_landmarks) {
         discard_disjunctive_landmarks();
     }
+    if (!use_orders) {
+        discard_all_orderings();
+    }
+    // TODO: else if for reasonable orders
+
 }
 
 void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
@@ -629,6 +635,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.add_option<bool>("disjunctive_landmarks",
                             "keep disjunctive landmarks",
                             "true");
+    _add_use_orders_option_to_parser(parser);
     _add_options_to_parser(parser);
 
     Options opts = parser.parse();

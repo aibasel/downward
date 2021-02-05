@@ -564,8 +564,9 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 
 LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
     : LandmarkFactory(opts),
+      m_(opts.get<int>("m")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
-      m_(opts.get<int>("m")) {
+      use_orders(opts.get<bool>("use_orders")) {
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
@@ -598,7 +599,7 @@ void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
 
-    if (no_orders)
+    if (!use_orders)
         discard_all_orderings();
     else if (reasonable_orders) {
         utils::g_log << "approx. reasonable orders" << endl;
@@ -822,7 +823,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                 union_with(local_landmarks, h_m_table_[*it].landmarks);
                 insert_into(local_landmarks, *it);
 
-                if (use_orders()) {
+                if (use_orders) {
                     insert_into(local_necessary, *it);
                 }
             }
@@ -838,7 +839,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                     // or add op to first achievers
                     if (!contains(local_landmarks, *it)) {
                         insert_into(h_m_table_[*it].first_achievers, op_index);
-                        if (use_orders()) {
+                        if (use_orders) {
                             intersect_with(h_m_table_[*it].necessary, local_necessary);
                         }
                     }
@@ -848,7 +849,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                 } else {
                     h_m_table_[*it].level = level;
                     h_m_table_[*it].landmarks = local_landmarks;
-                    if (use_orders()) {
+                    if (use_orders) {
                         h_m_table_[*it].necessary = local_necessary;
                     }
                     insert_into(h_m_table_[*it].first_achievers, op_index);
@@ -910,7 +911,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
 
     cn_landmarks = local_landmarks;
 
-    if (use_orders()) {
+    if (use_orders) {
         cn_necessary.clear();
         cn_necessary = local_necessary;
     }
@@ -920,7 +921,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
         union_with(cn_landmarks, h_m_table_[pm_fluent].landmarks);
         insert_into(cn_landmarks, pm_fluent);
 
-        if (use_orders()) {
+        if (use_orders) {
             insert_into(cn_necessary, pm_fluent);
         }
     }
@@ -940,7 +941,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
             // or add op to first achievers
             if (!contains(cn_landmarks, pm_fluent)) {
                 insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
-                if (use_orders()) {
+                if (use_orders) {
                     intersect_with(h_m_table_[pm_fluent].necessary, cn_necessary);
                 }
             }
@@ -950,7 +951,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
         } else {
             h_m_table_[pm_fluent].level = level;
             h_m_table_[pm_fluent].landmarks = cn_landmarks;
-            if (use_orders()) {
+            if (use_orders) {
                 h_m_table_[pm_fluent].necessary = cn_necessary;
             }
             insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
@@ -1017,7 +1018,7 @@ void LandmarkFactoryHM::generate_landmarks(
     for (int lm : all_lms) {
         add_lm_node(lm, false);
     }
-    if (use_orders()) {
+    if (use_orders) {
         // do reduction of graph
         // if f2 is landmark for f1, subtract landmark set of f2 from that of f1
         for (int f1 : all_lms) {
@@ -1028,7 +1029,7 @@ void LandmarkFactoryHM::generate_landmarks(
             set_minus(h_m_table_[f1].landmarks, everything_to_remove);
             // remove necessaries here, otherwise they will be overwritten
             // since we are writing them as greedy nec. orderings.
-            if (use_orders())
+            if (use_orders)
                 set_minus(h_m_table_[f1].landmarks, h_m_table_[f1].necessary);
         }
 
@@ -1041,7 +1042,7 @@ void LandmarkFactoryHM::generate_landmarks(
 
                 edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::NATURAL);
             }
-            if (use_orders()) {
+            if (use_orders) {
                 for (int gn : h_m_table_[set_index].necessary) {
                     edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
                 }
@@ -1065,12 +1066,13 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_note(
         "Relevant options",
         "m, reasonable_orders, conjunctive_landmarks, no_orders");
+    parser.add_option<int>(
+        "m", "subset size (if unsure, use the default of 2)", "2");
     parser.add_option<bool>(
         "conjunctive_landmarks",
         "keep conjunctive landmarks",
         "true");
-    parser.add_option<int>(
-        "m", "subset size (if unsure, use the default of 2)", "2");
+    _add_use_orders_option_to_parser(parser);
     _add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
