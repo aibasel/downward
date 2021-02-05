@@ -69,10 +69,9 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                  << num_goal_lms << " goal landmarks" << endl;
 }
 
-bool
-LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_state,
-                                          OperatorID,
-                                          const State &ancestor_state) {
+bool LandmarkStatusManager::update_reached_lms(
+    const State &parent_ancestor_state,OperatorID,
+    const State &ancestor_state) {
     if (ancestor_state == parent_ancestor_state) {
         // This can happen, e.g., in Satellite-01.
         return false;
