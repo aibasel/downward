@@ -84,6 +84,8 @@ private:
     bool interferes(const TaskProxy &task_proxy,
                     const LandmarkNode *node_a,
                     const LandmarkNode *node_b) const;
+    bool have_common_achiever(const LandmarkNode *node_a,
+                              const LandmarkNode *node_b) const;
     bool effect_always_happens(const VariablesProxy &variables,
                                const EffectsProxy &effects,
                                std::set<FactPair> &eff) const;
