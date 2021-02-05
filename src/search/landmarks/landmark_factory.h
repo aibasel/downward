@@ -39,7 +39,6 @@ protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool reasonable_orders;
     const bool only_causal_landmarks;
-    const bool conjunctive_landmarks;
     const bool no_orders;
 
     /*
@@ -51,7 +50,6 @@ protected:
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
-    void discard_conjunctive_landmarks();
     void discard_all_orderings();
     void approximate_reasonable_orders(
         const TaskProxy &task_proxy, bool obedient_orders);

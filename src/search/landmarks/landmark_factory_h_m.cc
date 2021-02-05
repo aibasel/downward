@@ -564,6 +564,7 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 
 LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
     : LandmarkFactory(opts),
+      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
       m_(opts.get<int>("m")) {
 }
 
@@ -607,6 +608,15 @@ void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
     }
     mk_acyclic_graph();
     calc_achievers(task_proxy);
+}
+
+void LandmarkFactoryHM::discard_conjunctive_landmarks() {
+    if (lm_graph->get_num_conjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
+                     << " conjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.conjunctive;});
+    }
 }
 
 void LandmarkFactoryHM::discard_noncausal_landmarks(
@@ -1055,6 +1065,10 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_note(
         "Relevant options",
         "m, reasonable_orders, conjunctive_landmarks, no_orders");
+    parser.add_option<bool>(
+        "conjunctive_landmarks",
+        "keep conjunctive landmarks",
+        "true");
     parser.add_option<int>(
         "m", "subset size (if unsure, use the default of 2)", "2");
     _add_options_to_parser(parser);

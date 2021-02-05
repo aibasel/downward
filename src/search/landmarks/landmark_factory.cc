@@ -21,7 +21,6 @@ namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
     : reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
-      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
       no_orders(opts.get<bool>("no_orders")),
       lm_graph_task(nullptr) {
 }
@@ -465,15 +464,6 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(to.parents.find(&from) != to.parents.end());
 }
 
-void LandmarkFactory::discard_conjunctive_landmarks() {
-    if (lm_graph->get_num_conjunctive_landmarks() > 0) {
-        utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
-                     << " conjunctive landmarks" << endl;
-        lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.conjunctive;});
-    }
-}
-
 void LandmarkFactory::discard_all_orderings() {
     utils::g_log << "Removing all orderings." << endl;
     for (auto &node : lm_graph->get_nodes()) {
@@ -618,9 +608,6 @@ void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("only_causal_landmarks",
                             "keep only causal landmarks",
                             "false");
-    parser.add_option<bool>("conjunctive_landmarks",
-                            "keep conjunctive landmarks",
-                            "true");
     parser.add_option<bool>("no_orders",
                             "discard all orderings",
                             "false");

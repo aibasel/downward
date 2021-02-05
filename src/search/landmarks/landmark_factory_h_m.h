@@ -60,6 +60,7 @@ using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
 
 class LandmarkFactoryHM : public LandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::set<int>>;
+    bool conjunctive_landmarks;
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
@@ -82,6 +83,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
                      const FactPair &fact2) const;
 
     void generate(const TaskProxy &task_proxy);
+
+    void discard_conjunctive_landmarks();
 
     // TODO: this is duplicated here and in LandmarkFactoryRelaxation
     void discard_noncausal_landmarks(const TaskProxy &task_proxy,

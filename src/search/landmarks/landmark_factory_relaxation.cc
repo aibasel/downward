@@ -15,8 +15,6 @@ void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask
 void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploration &exploration) {
     if (only_causal_landmarks)
         discard_noncausal_landmarks(task_proxy, exploration);
-    if (!conjunctive_landmarks)
-        discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
 
     if (no_orders)
