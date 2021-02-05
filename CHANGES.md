@@ -44,6 +44,10 @@ after the corresponding tracker issues.
 - For developers: add support for Github actions
   <http://issues.fast-downward.org/issue940>
 
+- For developers: We cleaned up the code of LandmarkGraph. Some of the public
+  methods were renamed. This class will undergo further changes in the future.
+  http://issues.fast-downward.org/issue989  
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
