@@ -35,6 +35,17 @@ after the corresponding tracker issues.
   State. This removed a lot of code duplication and hacks from the code.
   A description of the new class can be found in the wiki:
   <http://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
+  
+- Make approximation of reasonable orders between landmarks deterministic.
+  <http://www.fast-downward.org/issue383>
+  We removed an arbitrary return statement when the first landmark that 
+  holds in the initial state is evaluated during the approximation of 
+  reasonable orders. Also, the logic of `reached` landmarks is changed
+  to what is suggested by the name: a landmark is reached if its fact 
+  (or formula) holds in the current state or it is reached in all 
+  previously expanded predecessor states.
+  Furthermore, reasonable orders are now only created when the involved 
+  landmarks cannot be reached simultaneously.
 
 ## Fast Downward 20.06
 
