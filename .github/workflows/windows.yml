@@ -24,6 +24,9 @@ jobs:
 
       - name: compile
         shell: cmd
+        env:
+          CC: cl
+          CXX: cl
         run: |
           "${{ env.VC }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
 
