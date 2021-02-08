@@ -1,5 +1,5 @@
 ---
-name: ubuntu-20.04
+name: ubuntu
 
 on: [push, pull_request]
 
@@ -32,7 +32,6 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: x64
 
       - name: setup-dependencies
         run: |
@@ -187,7 +186,6 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: x64
 
       - name: download-files
         uses: actions/download-artifact@v1
