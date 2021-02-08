@@ -92,12 +92,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
 int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     double epsilon = 0.01;
 
-    // Need explicit test to see if state is a goal state. The landmark
-    // heuristic may compute h != 0 for a goal state if landmarks are
-    // achieved before their parents in the landmarks graph (because
-    // they do not get counted as reached in that case). However, we
-    // must return 0 for a goal state.
-
     lm_status_manager->update_lm_status(ancestor_state);
     if (lm_status_manager->dead_end_exists()) {
         return DEAD_END;
