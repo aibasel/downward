@@ -28,10 +28,10 @@ CONFIGS = [
                         ], repeat_last=true, continue_on_fail=true)""",
         "--if-non-unit-cost",
         "--evaluator",
-        f"hlm1=lmcount(lm_rhw(reasonable_orders=true), transform=adapt_cost(one), preferred_operators={pref})",
+        f"hlm1=lmcount(lm_rhw(reasonable_orders=true), transform=adapt_costs(one), pref={pref})",
         "--evaluator", "hff1=ff(transform=adapt_costs(one))",
         "--evaluator",
-        f"hlm2=lmcount(lm_rhw(reasonable_orders=true), transform=adapt_costs(plusone), preferred_operators={pref})",
+        f"hlm2=lmcount(lm_rhw(reasonable_orders=true), transform=adapt_costs(plusone), pref={pref})",
         "--evaluator", "hff2=ff(transform=adapt_costs(plusone))",
         "--search", """iterated([
                         lazy_greedy([hff1,hlm1], preferred=[hff1,hlm1],
@@ -40,8 +40,8 @@ CONFIGS = [
                                     reopen_closed=false),
                         lazy_wastar([hff2,hlm2], preferred=[hff2,hlm2], w=5),
                         lazy_wastar([hff2,hlm2], preferred=[hff2,hlm2], w=3),
-                        layz_wastar([hff2,hlm2], preferred=[hff2,hlm2], w=2),
-                        layz_wastar([hff2,hlm2], preferred=[hff2,hlm2], w=1)
+                        lazy_wastar([hff2,hlm2], preferred=[hff2,hlm2], w=2),
+                        lazy_wastar([hff2,hlm2], preferred=[hff2,hlm2], w=1)
                         ], repeat_last=true, continue_on_fail=true)""",
         "--always"])
     for pref in ["true", "false"]
