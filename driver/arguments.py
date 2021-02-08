@@ -471,7 +471,7 @@ def parse_args():
             parser, "--portfolio-bound must not be negative.")
     if args.portfolio_single_plan and not args.portfolio:
         print_usage_and_exit_with_driver_input_error(
-            parser, "--portfolio-single_plan may only be used for portfolios.")
+            parser, "--portfolio-single-plan may only be used for portfolios.")
 
     if not args.version and not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
