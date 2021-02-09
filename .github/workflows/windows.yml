@@ -1,18 +1,22 @@
 ---
-name: windows-latest
+name: windows
 
 on: [push, pull_request]
+
 env:
   ARCH: "x64"
-  VC: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+  VC2019: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+  VC2016: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+
 jobs:
   compile: # name of the job. Jobs run in parallel unless specified otherwise.
     name: compile
-    runs-on: windows-latest
+    runs-on: ${{ matrix.windows-version }}
     strategy:
       matrix:
-        python-version: ['3.6']
-        build-version: ["release", "debug"]
+        windows-version: [windows-2016, windows-2019]
+        python-version: [3.6]
+        build-version: [release, debug]
     steps: # each - is a new sequentially run step
       - uses: actions/checkout@master
 
@@ -20,7 +24,6 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.ARCH }}
 
       - name: compile
         shell: cmd
@@ -28,22 +31,28 @@ jobs:
           CC: cl
           CXX: cl
         run: |
-          "${{ env.VC }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+          IF "${{ matrix.windows-version }}" == "windows-2016" (
+            "${{ env.VC2016 }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+          )
+          IF "${{ matrix.windows-version }}" == "windows-2019" (
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+          )
 
       - name: upload-planner
         uses: actions/upload-artifact@master
         with:
-          name: ${{ matrix.build-version }}
-          path: builds/${{ matrix.build-version }}
+          name: compiled-planner-${{ matrix.windows-version }}-${{ matrix.build-version }}
+          path: builds/
 
 
   tests: # name of the job. Jobs run in parallel unless specified otherwise.
     name: test
-    runs-on: windows-latest
+    runs-on: ${{ matrix.windows-version }}
     needs: compile
     strategy:
       matrix:
-        python-version: ['3.6']
+        windows-version: [windows-2016, windows-2019]
+        python-version: [3.6]
     steps: # each - is a new sequentially run step
       - uses: actions/checkout@master
 
@@ -51,24 +60,36 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.ARCH }}
 
       - name: setup
         run: |
           pip3 install pytest tox
           mkdir builds
 
-      - name: download-planner
+      - name: download-debug
         uses: actions/download-artifact@master
         with:
-          # without 'name' attribute all artifacts are downloaded and the
-          # artifact name is used as directory name.
+          name: compiled-planner-${{ matrix.windows-version }}-debug
+          path: builds/
+
+      - name: download-release
+        uses: actions/download-artifact@master
+        with:
+          name: compiled-planner-${{ matrix.windows-version }}-release
           path: builds/
 
       - name: test
         shell: cmd
+        env:
+          CC: cl
+          CXX: cl
         run: |
           cd misc/
-          "${{ env.VC }}" ${{ env.ARCH }} & tox -e search,translator
+          IF "${{ matrix.windows-version }}" == "windows-2016" (
+            "${{ env.VC2016 }}" ${{ env.ARCH }} & tox -e search,translator
+          )
+          IF "${{ matrix.windows-version }}" == "windows-2019" (
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e search,translator
+          )
 
 ...

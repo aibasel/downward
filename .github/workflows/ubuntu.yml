@@ -3,13 +3,6 @@ name: ubuntu
 
 on: [push, pull_request]
 
-## Unfortunately, we didn't manage to use something like "variables"
-## globally. Github actions can set environment variables globally,
-## but they can only be single values, not lists, and ideally we would
-## like to have something like COMPILER_VERSIONS = [gcc, ..].
-## Now, whenever we change versions, we have to remember to do this
-## *everywhere* in this file.
-
 jobs:
   compile: # identifier of the job. Jobs run in parallel unless specified otherwise.
     name: compile
