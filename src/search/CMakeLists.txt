@@ -59,9 +59,8 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
         if(USE_GLIBCXX_DEBUG)
             message(
                 FATAL_ERROR
-                "The option USE_GLIBCXX_DEBUG is not supported when an LP "
-                "solver is used to prevent binary incompatibilities (see "
-                "issue982 for details).")
+                "To prevent incompatibilities, the option USE_GLIBCXX_DEBUG is "
+                "not supported when an LP solver is used. See issue982 for details.")
         endif()
         foreach(SOLVER Cpx Clp Grb Spx)
             if(OSI_${SOLVER}_FOUND)
