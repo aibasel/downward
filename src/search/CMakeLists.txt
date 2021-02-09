@@ -59,14 +59,9 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
         if(USE_GLIBCXX_DEBUG)
             message(
                 FATAL_ERROR
-                "Your build includes an LP solver and builds with the flag "
-                "GLIBCXX_DEBUG. This makes the planner binary incompatible "
-                "with the OSI library and leads to subtle errors. Set one of "
-                "the options USE_LP or USE_GLIBCXX_DEBUG to false. You can "
-                "also use the build configuration 'debuglp' for building with "
-                "LP solvers but without GLIBCXX_DEBUG or the configuration "
-                "'debugnolp' for building with GLIBCXX_DEBUG but without LP "
-                "solvers.")
+                "The option USE_GLIBCXX_DEBUG is not supported when an LP "
+                "solver is used to prevent binary incompatibilities (see "
+                "issue982 for details).")
         endif()
         foreach(SOLVER Cpx Clp Grb Spx)
             if(OSI_${SOLVER}_FOUND)
