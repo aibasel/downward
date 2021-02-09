@@ -1,5 +1,7 @@
 #include "landmark_factory_relaxation.h"
 
+#include "../task_utils/task_properties.h"
+
 #include "exploration.h"
 
 using namespace std;
@@ -13,8 +15,6 @@ void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask
 }
 
 void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploration &exploration) {
-    if (only_causal_landmarks)
-        discard_noncausal_landmarks(task_proxy, exploration);
     lm_graph->set_landmark_ids();
 
     if (reasonable_orders) {
@@ -29,6 +29,9 @@ void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploratio
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration) {
+    // TODO: correct handling? also axioms?
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
     int num_all_landmarks = lm_graph->get_num_landmarks();
     lm_graph->remove_node_if(
         [this, &task_proxy, &exploration](const LandmarkNode &node) {

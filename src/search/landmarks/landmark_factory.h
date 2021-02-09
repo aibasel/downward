@@ -38,7 +38,6 @@ protected:
 
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool reasonable_orders;
-    const bool only_causal_landmarks;
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
@@ -78,6 +77,7 @@ private:
 };
 
 extern void _add_use_orders_option_to_parser(options::OptionParser &parser);
+extern void _add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
 extern void _add_options_to_parser(options::OptionParser &parser);
 }
 
