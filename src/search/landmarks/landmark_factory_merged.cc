@@ -16,8 +16,9 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
-    : LandmarkFactory(opts),
-      lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
+    : LandmarkFactory(),
+      lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")),
+      reasonable_orders(opts.get<bool>("reasonable_orders")) {
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &lm) const {
@@ -142,6 +143,8 @@ void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
        necessary to do so again here, so these steps are omitted. For
        reasonable orders, acyclicity of the landmark graph and the costs of
        landmarks we should also determine this.
+
+       Do we still need this comment?
     */
     if (reasonable_orders) {
         utils::g_log << "approx. reasonable orders" << endl;
@@ -161,6 +164,15 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
     return true;
 }
 
+bool LandmarkFactoryMerged::use_reasonable_orders() const {
+    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
+        if (lm_factory->use_reasonable_orders()) {
+            return true;
+        }
+    }
+    return reasonable_orders;
+}
+
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merged Landmarks",
@@ -177,7 +189,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Note",
         "Does not currently support conjunctive landmarks");
     parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
-    _add_options_to_parser(parser);
+    _add_reasonable_orders_option_to_parser(parser);
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");

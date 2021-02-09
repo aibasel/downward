@@ -12,6 +12,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     bool disjunctive_landmarks;
     bool use_orders;
     bool only_causal_landmarks;
+    bool reasonable_orders;
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
@@ -67,6 +68,7 @@ public:
     explicit LandmarkFactoryRpgSasp(const options::Options &opts);
 
     virtual bool supports_conditional_effects() const override;
+    virtual bool use_reasonable_orders() const override;
 };
 }
 

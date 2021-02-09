@@ -18,10 +18,11 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
-    : LandmarkFactoryRelaxation(opts),
+    : LandmarkFactoryRelaxation(),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       use_orders(opts.get<bool>("use_orders")),
-      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
+      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
+      reasonable_orders(opts.get<bool>("reasonable_orders")) {
 }
 
 void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
@@ -469,10 +470,16 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     if (!disjunctive_landmarks) {
         discard_disjunctive_landmarks();
     }
+
     if (!use_orders) {
         discard_all_orderings();
+    } else if (reasonable_orders) {
+        utils::g_log << "approx. reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, false);
+        utils::g_log << "approx. obedient reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, true);
     }
-    // TODO: else if for reasonable orders
+
     if (only_causal_landmarks) {
         discard_noncausal_landmarks(task_proxy, exploration);
     }
@@ -626,6 +633,10 @@ bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
     return true;
 }
 
+bool LandmarkFactoryRpgSasp::use_reasonable_orders() const {
+    return reasonable_orders;
+}
+
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "RHW Landmarks",
@@ -641,7 +652,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
                             "true");
     _add_use_orders_option_to_parser(parser);
     _add_only_causal_landmarks_option_to_parser(parser);
-    _add_options_to_parser(parser);
+    _add_reasonable_orders_option_to_parser(parser);
 
     Options opts = parser.parse();
 

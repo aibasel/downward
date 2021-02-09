@@ -18,8 +18,9 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : LandmarkFactoryRelaxation(opts),
-      use_orders(opts.get<bool>("use_orders")) {
+    : LandmarkFactoryRelaxation(),
+      use_orders(opts.get<bool>("use_orders")),
+      reasonable_orders(opts.get<bool>("reasonable_orders")) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
@@ -40,6 +41,11 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
 
     if (!use_orders) {
         discard_all_orderings();
+    } else if (reasonable_orders) {
+        utils::g_log << "approx. reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, false);
+        utils::g_log << "approx. obedient reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, true);
     }
 }
 
@@ -307,6 +313,10 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
 
+bool LandmarkFactoryZhuGivan::use_reasonable_orders() const {
+    return reasonable_orders;
+}
+
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Zhu/Givan Landmarks",
@@ -314,7 +324,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
     parser.document_note("Relevant options", "reasonable_orders, no_orders");
     _add_use_orders_option_to_parser(parser);
-    _add_options_to_parser(parser);
+    _add_reasonable_orders_option_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: Make sure that conditional effects are indeed supported.

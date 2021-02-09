@@ -8,8 +8,8 @@ class Exploration;
 
 class LandmarkFactoryRelaxation : public LandmarkFactory {
 protected:
-    explicit LandmarkFactoryRelaxation(const options::Options &opts)
-        : LandmarkFactory(opts) {}
+    explicit LandmarkFactoryRelaxation()
+        : LandmarkFactory() {}
 
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                bool level_out,

@@ -18,9 +18,8 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory(const options::Options &opts)
-    : reasonable_orders(opts.get<bool>("reasonable_orders")),
-      lm_graph_task(nullptr) {
+LandmarkFactory::LandmarkFactory()
+    : lm_graph_task(nullptr) {
 }
 /*
   TODO: Update this comment
@@ -611,7 +610,7 @@ void _add_only_causal_landmarks_option_to_parser(OptionParser &parser) {
                             "false");
 }
 
-void _add_options_to_parser(OptionParser &parser) {
+void _add_reasonable_orders_option_to_parser(OptionParser &parser) {
     parser.add_option<bool>("reasonable_orders",
                             "generate reasonable orders",
                             "false");

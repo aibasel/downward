@@ -30,14 +30,13 @@ public:
 
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
-    bool use_reasonable_orders() const {return reasonable_orders;}
+    virtual bool use_reasonable_orders() const = 0;
     virtual bool supports_conditional_effects() const = 0;
 
 protected:
-    explicit LandmarkFactory(const options::Options &opts);
+    explicit LandmarkFactory();
 
     std::shared_ptr<LandmarkGraph> lm_graph;
-    const bool reasonable_orders;
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
@@ -78,7 +77,7 @@ private:
 
 extern void _add_use_orders_option_to_parser(options::OptionParser &parser);
 extern void _add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
-extern void _add_options_to_parser(options::OptionParser &parser);
+extern void _add_reasonable_orders_option_to_parser(options::OptionParser &parser);
 }
 
 #endif
