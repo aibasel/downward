@@ -17,7 +17,7 @@ project(downward)
 # https://stackoverflow.com/questions/7637539/how-to-split-strings-across-multiple-lines-in-cmake
 option(
   USE_GLIBCXX_DEBUG
-  "When compiling with g++ enable the libstdc++ debug mode that does additional safety checks. The checks come at a performance cost and should only be enabled in debug mode. Additionally, enabling them will make the binary incompatible with libraries that are not compiled with this flag which can lead to hard-to-debug errors."
+  "Enable the libstdc++ debug mode that does additional safety checks. (On Linux systems, g++ and clang++ usually use libstdc++ for the C++ library.) The checks come at a significant performance cost and should only be enabled in debug mode. Enabling them makes the binary incompatible with libraries that are not compiled with this flag, which can lead to hard-to-debug errors."
   FALSE)
 
 fast_downward_set_compiler_flags()

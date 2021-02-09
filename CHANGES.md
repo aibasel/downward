@@ -48,12 +48,15 @@ after the corresponding tracker issues.
   methods were renamed. This class will undergo further changes in the future.
   <http://issues.fast-downward.org/issue989>
 
-- Debug builds with LP solvers
+- Debug builds with LP solvers vs. the _GLIBCXX_DEBUG flag
   <http://issues.fast-downward.org/issue982>
   Previously, we used the flag _GLIBCXX_DEBUG in debug builds for additional
   checks. This makes the binary incompatible with external libraries such as
-  LP solvers. The flag is now disabled by default and can be enabled with the
-  CMake option USE_GLIBCXX_DEBUG.
+  LP solvers. The flag is now disabled by default. If no LP solvers are present
+  or LP solvers are disabled, it can be enabled by setting the CMake option
+  USE_GLIBCXX_DEBUG. The build configurations debugnolp and releasenolp have
+  been removed, and the build configuration glibcxx_debug has been added.
+
   
 
 ## Fast Downward 20.06
