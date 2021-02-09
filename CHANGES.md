@@ -46,7 +46,15 @@ after the corresponding tracker issues.
 
 - For developers: We cleaned up the code of LandmarkGraph. Some of the public
   methods were renamed. This class will undergo further changes in the future.
-  http://issues.fast-downward.org/issue989  
+  <http://issues.fast-downward.org/issue989>
+
+- Debug builds with LP solvers
+  <http://issues.fast-downward.org/issue982>
+  Previously, we used the flag _GLIBCXX_DEBUG in debug builds for additional
+  checks. This makes the binary incompatible with external libraries such as
+  LP solvers. The flag is now disabled by default and can be enabled with the
+  CMake option USE_GLIBCXX_DEBUG.
+  
 
 ## Fast Downward 20.06
 
