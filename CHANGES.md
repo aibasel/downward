@@ -47,6 +47,14 @@ after the corresponding tracker issues.
   Furthermore, reasonable orders are now only created when the involved 
   landmarks cannot be reached simultaneously.
 
+- For developers: introduce class for delete-relaxation based landmark
+  factories and move usage of exploration object to subclasses of
+  (abstract) landmark factory class.
+  <http://issues.fast-downward.org/issue990>
+
+- For developers: add support for Github actions
+  <http://issues.fast-downward.org/issue940>
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.

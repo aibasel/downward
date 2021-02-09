@@ -18,10 +18,10 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : LandmarkFactory(opts) {
+    : LandmarkFactoryRelaxation(opts) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks(
+void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
     utils::g_log << "Generating landmarks using Zhu/Givan label propagation\n";
@@ -57,12 +57,12 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     for (FactProxy goal : task_proxy.get_goals()) {
         FactPair goal_lm = goal.get_pair();
         LandmarkNode *lmp;
-        if (lm_graph->simple_landmark_exists(goal_lm)) {
-            lmp = &lm_graph->get_simple_lm_node(goal_lm);
-            lmp->in_goal = true;
+        if (lm_graph->contains_simple_landmark(goal_lm)) {
+            lmp = &lm_graph->get_simple_landmark(goal_lm);
+            lmp->is_true_in_goal = true;
         } else {
-            lmp = &lm_graph->landmark_add_simple(goal_lm);
-            lmp->in_goal = true;
+            lmp = &lm_graph->add_simple_landmark(goal_lm);
+            lmp->is_true_in_goal = true;
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -75,20 +75,20 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 continue;
             LandmarkNode *node;
             // Add new landmarks
-            if (!lm_graph->simple_landmark_exists(lm)) {
-                node = &lm_graph->landmark_add_simple(lm);
+            if (!lm_graph->contains_simple_landmark(lm)) {
+                node = &lm_graph->add_simple_landmark(lm);
 
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
                 assert(initial_state[lm.var].get_value() == lm.value ||
                        !relaxed_task_solvable(task_proxy, exploration, true, node));
             } else {
-                node = &lm_graph->get_simple_lm_node(lm);
+                node = &lm_graph->get_simple_landmark(lm);
             }
             // Add order: lm ->_{nat} lm
             assert(node->parents.find(lmp) == node->parents.end());
             assert(lmp->children.find(node) == lmp->children.end());
-            edge_add(*node, *lmp, EdgeType::natural);
+            edge_add(*node, *lmp, EdgeType::NATURAL);
         }
     }
 }
