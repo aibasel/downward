@@ -3,7 +3,7 @@
 
 #include "pattern_database.h"
 
-#include "../tasks/pdb_abstracted_task.h"
+#include "../tasks/projected_task.h"
 
 #include <set>
 #include <utility>
@@ -22,7 +22,7 @@ struct SearchNode;
 
 class AbstractSolutionData {
     std::shared_ptr<PatternDatabase> pdb;
-    tasks::PDBAbstractedTask abstracted_task;
+    tasks::ProjectedTask abstracted_task;
     TaskProxy abs_task_proxy;
     std::set<int> blacklist;
     std::vector<std::vector<OperatorID>> wildcard_plan;

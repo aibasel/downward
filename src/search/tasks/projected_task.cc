@@ -1,11 +1,12 @@
-#include "pdb_abstracted_task.h"
+#include "projected_task.h"
+
 #include "../task_proxy.h"
 #include "../task_utils/task_properties.h"
 #include <algorithm>
 
 namespace tasks {
 
-PDBAbstractedTask::PDBAbstractedTask(
+ProjectedTask::ProjectedTask(
         const std::shared_ptr<AbstractTask> &parent,
         const pdbs::Pattern& pattern)
     : DelegatingTask(parent),
@@ -71,133 +72,133 @@ PDBAbstractedTask::PDBAbstractedTask(
     assert((unsigned)parent->get_num_goals() >= goals.size());
 }
 
-int PDBAbstractedTask::get_original_variable_index(int index_in_pattern) const {
+int ProjectedTask::get_original_variable_index(int index_in_pattern) const {
     assert(index_in_pattern >= 0 &&
                    static_cast<unsigned>(index_in_pattern) < pattern.size());
     return pattern[index_in_pattern];
 }
 
-int PDBAbstractedTask::get_pattern_variable_index(int index_in_original) const {
+int ProjectedTask::get_pattern_variable_index(int index_in_original) const {
     auto it = var_to_index.find(index_in_original);
     if (it != var_to_index.end()) {
         return it->second;
     } else {
-        std::cout << "PDBAbstractedTask: "
+        std::cout << "ProjectedTask: "
                   << "A function tried to access a variable that is not part of the pattern."
                   << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
 
-FactPair PDBAbstractedTask::convert_from_pattern_fact(const FactPair &fact) const {
+FactPair ProjectedTask::convert_from_pattern_fact(const FactPair &fact) const {
     return {get_original_variable_index(fact.var), fact.value};
 }
 
-FactPair PDBAbstractedTask::convert_from_original_fact(const FactPair &fact) const {
+FactPair ProjectedTask::convert_from_original_fact(const FactPair &fact) const {
     return {get_pattern_variable_index(fact.var), fact.value};
 }
 
-int PDBAbstractedTask::get_num_variables() const {
+int ProjectedTask::get_num_variables() const {
     return pattern.size();
 }
 
-std::string PDBAbstractedTask::get_variable_name(int var) const {
+std::string ProjectedTask::get_variable_name(int var) const {
     int index = get_original_variable_index(var);
     return parent->get_variable_name(index);
 }
 
-int PDBAbstractedTask::get_variable_domain_size(int var) const {
+int ProjectedTask::get_variable_domain_size(int var) const {
     int index = get_original_variable_index(var);
     return parent->get_variable_domain_size(index);
 }
 
-int PDBAbstractedTask::get_variable_axiom_layer(int var) const {
+int ProjectedTask::get_variable_axiom_layer(int var) const {
     int index = get_original_variable_index(var);
     return parent->get_variable_axiom_layer(index);
 }
 
-int PDBAbstractedTask::get_variable_default_axiom_value(int var) const {
+int ProjectedTask::get_variable_default_axiom_value(int var) const {
     int index = get_original_variable_index(var);
     return parent->get_variable_default_axiom_value(index);
 }
 
-std::string PDBAbstractedTask::get_fact_name(const FactPair &fact) const {
+std::string ProjectedTask::get_fact_name(const FactPair &fact) const {
     return parent->get_fact_name(convert_from_pattern_fact(fact));
 }
 
-bool PDBAbstractedTask::are_facts_mutex(
+bool ProjectedTask::are_facts_mutex(
         const FactPair &fact1, const FactPair &fact2) const {
     return parent->are_facts_mutex(convert_from_pattern_fact(fact1),
                                    convert_from_pattern_fact(fact2));
 }
 
-int PDBAbstractedTask::get_operator_cost(int index, bool is_axiom) const {
+int ProjectedTask::get_operator_cost(int index, bool is_axiom) const {
     assert(!is_axiom);
     index = convert_operator_index_to_parent(index);
     return parent->get_operator_cost(index, is_axiom);
 }
 
-std::string PDBAbstractedTask::get_operator_name(int index, bool is_axiom) const {
+std::string ProjectedTask::get_operator_name(int index, bool is_axiom) const {
     assert(!is_axiom);
     index = convert_operator_index_to_parent(index);
     return parent->get_operator_name(index, is_axiom);
 }
 
-int PDBAbstractedTask::get_num_operators() const {
+int ProjectedTask::get_num_operators() const {
     return operator_indices.size();
 }
 
-int PDBAbstractedTask::get_num_operator_preconditions(
+int ProjectedTask::get_num_operator_preconditions(
         int index, bool) const {
     return operator_preconditions[index].size();
 }
 
-FactPair PDBAbstractedTask::get_operator_precondition(
+FactPair ProjectedTask::get_operator_precondition(
         int op_index, int fact_index, bool) const {
     return operator_preconditions[op_index][fact_index];
 }
 
-int PDBAbstractedTask::get_num_operator_effects(
+int ProjectedTask::get_num_operator_effects(
         int op_index, bool) const {
     return operator_effects[op_index].size();
 }
 
-int PDBAbstractedTask::get_num_operator_effect_conditions(
+int ProjectedTask::get_num_operator_effect_conditions(
         int, int, bool) const {
     return 0;
 }
 
-FactPair PDBAbstractedTask::get_operator_effect_condition(
+FactPair ProjectedTask::get_operator_effect_condition(
         int, int, int, bool ) const {
     std::cerr << "get_operator_effect_condition is not supported yet." << std::endl;
     utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
 }
 
-FactPair PDBAbstractedTask::get_operator_effect(
+FactPair ProjectedTask::get_operator_effect(
         int op_index, int eff_index, bool ) const {
     return operator_effects[op_index][eff_index];
 }
 
-int PDBAbstractedTask::convert_operator_index_to_parent(int index) const {
+int ProjectedTask::convert_operator_index_to_parent(int index) const {
     assert(index >= 0 && static_cast<unsigned>(index) < operator_indices.size());
     return operator_indices[index];
 }
 
-int PDBAbstractedTask::get_num_goals() const {
+int ProjectedTask::get_num_goals() const {
     return goals.size();
 }
 
-FactPair PDBAbstractedTask::get_goal_fact(int index) const {
+FactPair ProjectedTask::get_goal_fact(int index) const {
     return goals[index];
 }
 
-std::vector<int> PDBAbstractedTask::get_initial_state_values() const {
+std::vector<int> ProjectedTask::get_initial_state_values() const {
     std::vector<int> values = parent->get_initial_state_values();
     convert_parent_state_values(values);
     return values;
 }
 
-void PDBAbstractedTask::convert_parent_state_values(
+void ProjectedTask::convert_parent_state_values(
         std::vector<int> &values) const {
     std::vector<int> converted;
     for(int index : pattern) {

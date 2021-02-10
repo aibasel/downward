@@ -1,5 +1,5 @@
-#ifndef TASKS_PDB_ABSTRACTED_TASK_H
-#define TASKS_PDB_ABSTRACTED_TASK_H
+#ifndef TASKS_PROJECTED_TASK_H
+#define TASKS_PROJECTED_TASK_H
 
 #include "delegating_task.h"
 #include "../pdbs/types.h"
@@ -7,7 +7,7 @@
 
 namespace tasks {
 
-class PDBAbstractedTask : public DelegatingTask {
+class ProjectedTask : public DelegatingTask {
     const pdbs::Pattern& pattern;
     std::unordered_map<int,int> var_to_index; // where to find variable in pattern
     std::vector<int> operator_indices;
@@ -34,7 +34,7 @@ class PDBAbstractedTask : public DelegatingTask {
     FactPair convert_from_pattern_fact(const FactPair &fact) const;
     FactPair convert_from_original_fact(const FactPair &fact) const;
 public:
-    explicit PDBAbstractedTask(
+    explicit ProjectedTask(
             const std::shared_ptr<AbstractTask>& parent,
             const pdbs::Pattern& pattern);
 

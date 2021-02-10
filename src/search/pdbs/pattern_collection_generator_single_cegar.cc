@@ -6,7 +6,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../tasks/pdb_abstracted_task.h"
+#include "../tasks/projected_task.h"
 
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
