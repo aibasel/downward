@@ -18,7 +18,10 @@ macro(fast_downward_set_compiler_flags)
 
         ## Configuration-specific flags
         set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
-        set(CMAKE_CXX_FLAGS_DEBUG "-O3 -D_GLIBCXX_DEBUG")
+        set(CMAKE_CXX_FLAGS_DEBUG "-O3")
+        if(USE_GLIBCXX_DEBUG)
+            set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+        endif()
         set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
     elseif(MSVC)
         # We force linking to be static on Windows because this makes compiling OSI simpler
