@@ -6,7 +6,7 @@ on: [push, pull_request]
 env:
   ARCH: "x64"
   VC2019: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-  VC2016: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+  VC2017: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
 
 jobs:
   compile: # name of the job. Jobs run in parallel unless specified otherwise.
@@ -32,7 +32,7 @@ jobs:
           CXX: cl
         run: |
           IF "${{ matrix.windows-version }}" == "windows-2016" (
-            "${{ env.VC2016 }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
           )
           IF "${{ matrix.windows-version }}" == "windows-2019" (
             "${{ env.VC2019 }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
@@ -86,7 +86,7 @@ jobs:
         run: |
           cd misc/
           IF "${{ matrix.windows-version }}" == "windows-2016" (
-            "${{ env.VC2016 }}" ${{ env.ARCH }} & tox -e search,translator
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e search,translator
           )
           IF "${{ matrix.windows-version }}" == "windows-2019" (
             "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e search,translator

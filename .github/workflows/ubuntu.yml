@@ -4,7 +4,7 @@ name: ubuntu
 on: [push, pull_request]
 
 jobs:
-  compile: # identifier of the job. Jobs run in parallel unless specified otherwise.
+  compile: # Identifier of the job. Jobs run in parallel unless specified otherwise.
     name: compile
     runs-on: ${{ matrix.ubuntu-version }}
     strategy:
@@ -16,12 +16,14 @@ jobs:
           - {cc: clang, cxx: clang++}
           - {cc: clang-11, cxx: clang++-11}
         python-version: [3.6]
+        # Unfortunately, we couldn't figure out if there is a way to
+        # name the compiler versions so that we don't have to copy them here.
         exclude:
           - ubuntu-version: ubuntu-18.04
             compiler-version: {cc: gcc-10, cxx: g++-10}
           - ubuntu-version: ubuntu-18.04
             compiler-version: {cc: clang-11, cxx: clang++-11}
-    steps: # each - is a new sequentially run step
+    steps: # Eeach - is a new sequentially run step
       - name: clone-repo
         uses: actions/checkout@v1
 

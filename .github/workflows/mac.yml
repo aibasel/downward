@@ -1,5 +1,5 @@
 ---
-name: macos-latest
+name: macos
 
 on: [push, pull_request]
 
@@ -45,12 +45,10 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: x64
 
       - name: setup
         run: |
           pip3 install pytest tox
-          #brew install valgrind # TODO: does not work
           mkdir builds
 
       - name: download-planner
