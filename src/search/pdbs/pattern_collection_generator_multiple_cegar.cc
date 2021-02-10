@@ -1,6 +1,6 @@
 #include "pattern_collection_generator_multiple_cegar.h"
 
-#include "pattern_collection_generator_single_cegar.h"
+#include "cegar.h"
 
 #include "pattern_database.h"
 
@@ -80,21 +80,20 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 
         int remaining_collection_size = total_collection_max_size - collection_size;
         double remaining_time = total_time_limit - timer.get_elapsed_time();
-        PatternCollectionGeneratorSingleCegar generator(
-                make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
-                single_generator_max_refinements,
-                single_generator_max_pdb_size,
-                min(remaining_collection_size, single_generator_max_collection_size),
-                single_generator_wildcard_plans,
-                single_generator_ignore_goal_violations,
-                blacklist_size,
-                single_generator_initial,
-                goals[goal_index],
-                single_generator_verbosity,
-                min(remaining_time, single_generator_max_time)
+        auto collection_info = cegar(
+            task,
+            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
+            single_generator_max_refinements,
+            single_generator_max_pdb_size,
+            min(remaining_collection_size, single_generator_max_collection_size),
+            single_generator_wildcard_plans,
+            single_generator_ignore_goal_violations,
+            blacklist_size,
+            single_generator_initial,
+            goals[goal_index],
+            single_generator_verbosity,
+            min(remaining_time, single_generator_max_time)
         );
-
-        auto collection_info = generator.generate(task);
         auto pattern_collection = collection_info.get_patterns();
         auto pdb_collection = collection_info.get_pdbs();
         if (pdb_collection->size() > 1) {

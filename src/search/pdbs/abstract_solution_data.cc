@@ -1,7 +1,5 @@
 #include "abstract_solution_data.h"
 
-#include "pattern_collection_generator_single_cegar.h" // TODO: only for utils::Verbosity
-
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 
