@@ -4,7 +4,6 @@
 #include "landmark_factory.h"
 
 namespace landmarks {
-
 using FluentSet = std::vector<FactPair>;
 
 std::ostream &

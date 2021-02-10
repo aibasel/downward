@@ -482,7 +482,6 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     if (only_causal_landmarks) {
         discard_noncausal_landmarks(task_proxy, exploration);
     }
-
 }
 
 void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
