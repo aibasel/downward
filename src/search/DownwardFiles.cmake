@@ -566,6 +566,7 @@ fast_downward_plugin(
         tasks/domain_abstracted_task_factory
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
+        tasks/pdb_abstracted_task
     DEPENDS TASK_PROPERTIES
     DEPENDENCY_ONLY
 )
@@ -717,6 +718,7 @@ fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES
+        pdbs/abstract_solution_data
         pdbs/canonical_pdbs
         pdbs/canonical_pdbs_heuristic
         pdbs/dominance_pruning
@@ -729,6 +731,8 @@ fast_downward_plugin(
         pdbs/pattern_collection_generator_genetic
         pdbs/pattern_collection_generator_hillclimbing
         pdbs/pattern_collection_generator_manual
+        pdbs/pattern_collection_generator_multiple_cegar
+        pdbs/pattern_collection_generator_single_cegar
         pdbs/pattern_collection_generator_systematic
         pdbs/pattern_database
         pdbs/pattern_generator_greedy
@@ -742,7 +746,7 @@ fast_downward_plugin(
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
-    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES VARIABLE_ORDER_FINDER
+    DEPENDS CAUSAL_GRAPH EXTRA_TASKS MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES VARIABLE_ORDER_FINDER
 )
 
 fast_downward_plugin(
