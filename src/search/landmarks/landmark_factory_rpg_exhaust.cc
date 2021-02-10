@@ -72,9 +72,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Exhaustive Landmarks",
         "Exhaustively checks for each fact if it is a landmark."
         "This check is done using relaxed planning.");
-    parser.document_note(
-        "Relevant options",
-        "reasonable_orders, only_causal_landmarks");
 
     _add_only_causal_landmarks_option_to_parser(parser);
     _add_reasonable_orders_option_to_parser(parser);

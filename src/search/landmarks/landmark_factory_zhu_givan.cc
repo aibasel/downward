@@ -322,7 +322,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
-    parser.document_note("Relevant options", "reasonable_orders, no_orders");
     _add_use_orders_option_to_parser(parser);
     _add_reasonable_orders_option_to_parser(parser);
     Options opts = parser.parse();

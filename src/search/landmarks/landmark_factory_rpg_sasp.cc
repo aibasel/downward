@@ -642,10 +642,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "RHW Landmarks",
         "The landmark generation method introduced by "
         "Richter, Helmert and Westphal (AAAI 2008).");
-    parser.document_note(
-        "Relevant Options",
-        "reasonable_orders, only_causal_landmarks, "
-        "disjunctive_landmarks, no_orders");
 
     parser.add_option<bool>("disjunctive_landmarks",
                             "keep disjunctive landmarks",

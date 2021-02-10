@@ -183,9 +183,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "orderings take precedence in the usual manner "
         "(gn > nat > reas > o_reas). ");
     parser.document_note(
-        "Relevant options",
-        "Depends on landmarks");
-    parser.document_note(
         "Note",
         "Does not currently support conjunctive landmarks");
     parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
