@@ -18,8 +18,7 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
-    : LandmarkFactoryRelaxation(),
-      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+    : disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       use_orders(opts.get<bool>("use_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       reasonable_orders(opts.get<bool>("reasonable_orders")) {

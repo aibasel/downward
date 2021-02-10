@@ -563,8 +563,7 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 }
 
 LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
-    : LandmarkFactory(),
-      m_(opts.get<int>("m")),
+    : m_(opts.get<int>("m")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
       use_orders(opts.get<bool>("use_orders")),
       reasonable_orders(opts.get<bool>("reasonable_orders")) {

@@ -17,8 +17,7 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
-    : LandmarkFactoryRelaxation(),
-      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
+    : only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       reasonable_orders(opts.get<bool>("reasonable_orders")) {
 }
 

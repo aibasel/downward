@@ -16,8 +16,7 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
-    : LandmarkFactory(),
-      lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")),
+    : lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")),
       reasonable_orders(opts.get<bool>("reasonable_orders")) {
 }
 

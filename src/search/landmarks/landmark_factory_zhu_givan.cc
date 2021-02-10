@@ -18,8 +18,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : LandmarkFactoryRelaxation(),
-      use_orders(opts.get<bool>("use_orders")),
+    : use_orders(opts.get<bool>("use_orders")),
       reasonable_orders(opts.get<bool>("reasonable_orders")) {
 }
 
