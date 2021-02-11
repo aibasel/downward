@@ -4,20 +4,21 @@ name: macos
 on: [push, pull_request]
 
 jobs:
-  compile: # name of the job. Jobs run in parallel unless specified otherwise.
+  compile:
     name: compile
-    runs-on: macos-latest
+    runs-on: macos-10.15
     strategy:
       matrix:
         python-version: ['3.6']
         build-version: ["release", "debug"]
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
-      - name: Setup python
-        uses: actions/setup-python@v1
+    steps:
+      - name: clone-repo
+        uses: actions/checkout@master
+
+      - name: setup-python
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: x64
 
       - name: compile
         run: |
@@ -31,24 +32,22 @@ jobs:
           path: builds/${{ matrix.build-version }}
 
 
-  test: # name of the job. Jobs run in parallel unless specified otherwise.
+  test:
     name: test
-    runs-on: macos-latest
+    runs-on: macos-10.15
     needs: compile
     strategy:
       matrix:
         python-version: ['3.6']
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
-
-      - name: Setup python
-        uses: actions/setup-python@v1
+    steps:
+      - name: setup-python
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: setup
+      - name: setup-dependencies
         run: |
-          pip3 install pytest tox
+          pip3 install tox
           mkdir builds
 
       - name: download-planner
@@ -63,6 +62,6 @@ jobs:
           chmod +x builds/debug/bin/downward
           chmod +x builds/release/bin/downward
           cd misc/
-          tox -e search,translator
+          tox -e translator,search
 
 ...

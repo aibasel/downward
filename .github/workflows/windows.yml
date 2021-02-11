@@ -18,10 +18,11 @@ jobs:
         python-version: [3.6]
         build-version: [release, debug]
     steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
+      - name: clone-repo
+        uses: actions/checkout@master
 
-      - name: Setup python
-        uses: actions/setup-python@v1
+      - name: setup-python
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -45,7 +46,7 @@ jobs:
           path: builds/
 
 
-  tests: # name of the job. Jobs run in parallel unless specified otherwise.
+  tests:
     name: test
     runs-on: ${{ matrix.windows-version }}
     needs: compile
@@ -53,17 +54,15 @@ jobs:
       matrix:
         windows-version: [windows-2016, windows-2019]
         python-version: [3.6]
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
-
-      - name: Setup python
-        uses: actions/setup-python@v1
+    steps:
+      - name: setup-python
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: setup
+      - name: setup-dependencies
         run: |
-          pip3 install pytest tox
+          pip3 install tox
           mkdir builds
 
       - name: download-debug
@@ -86,10 +85,10 @@ jobs:
         run: |
           cd misc/
           IF "${{ matrix.windows-version }}" == "windows-2016" (
-            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e search,translator
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e translator,search
           )
           IF "${{ matrix.windows-version }}" == "windows-2019" (
-            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e search,translator
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e translator,search
           )
 
 ...
