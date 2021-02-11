@@ -589,7 +589,7 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     build_pm_ops(task_proxy);
 }
 
-void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
+void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
     if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
@@ -990,7 +990,7 @@ void LandmarkFactoryHM::generate_landmarks(
     }
     free_unneeded_memory();
 
-    generate(task_proxy);
+    postprocess(task_proxy);
 }
 
 bool LandmarkFactoryHM::supports_conditional_effects() const {

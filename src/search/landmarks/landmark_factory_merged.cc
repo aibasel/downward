@@ -126,10 +126,10 @@ void LandmarkFactoryMerged::generate_landmarks(
             }
         }
     }
-    generate();
+    postprocess();
 }
 
-void LandmarkFactoryMerged::generate() {
+void LandmarkFactoryMerged::postprocess() {
     lm_graph->set_landmark_ids();
 
     /*

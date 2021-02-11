@@ -79,7 +79,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
                      const FactPair &fact1,
                      const FactPair &fact2) const;
 
-    void generate(const TaskProxy &task_proxy);
+    void postprocess(const TaskProxy &task_proxy);
 
     void discard_conjunctive_landmarks();
 

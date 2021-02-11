@@ -26,7 +26,7 @@ private:
 
     virtual void generate_relaxed_landmarks(const std::shared_ptr<AbstractTask> &task,
                                             Exploration &exploration) = 0;
-    void generate(const TaskProxy &task_proxy, Exploration &exploration);
+    void postprocess(const TaskProxy &task_proxy, Exploration &exploration);
 
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
     bool achieves_non_conditional(const OperatorProxy &o,

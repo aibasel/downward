@@ -11,10 +11,10 @@ void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask
     TaskProxy task_proxy(*task);
     Exploration exploration(task_proxy);
     generate_relaxed_landmarks(task, exploration);
-    generate(task_proxy, exploration);
+    postprocess(task_proxy, exploration);
 }
 
-void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploration &exploration) {
+void LandmarkFactoryRelaxation::postprocess(const TaskProxy &task_proxy, Exploration &exploration) {
     lm_graph->set_landmark_ids();
     mk_acyclic_graph();
     calc_achievers(task_proxy, exploration);
