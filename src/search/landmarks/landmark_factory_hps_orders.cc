@@ -16,7 +16,7 @@ LandmarkFactoryHPSOrders::LandmarkFactoryHPSOrders(const Options &opts)
     : lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
 }
 
-void LandmarkFactoryHPSOrders::generate_landmarks(const std::shared_ptr<AbstractTask> &task) {
+void LandmarkFactoryHPSOrders::generate_landmarks(const shared_ptr<AbstractTask> &task) {
     utils::g_log << "Building a landmark graph with reasonable orders." << endl;
 
     lm_graph = lm_factory->compute_lm_graph(task);
