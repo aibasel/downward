@@ -40,6 +40,9 @@ jobs:
       matrix:
         python-version: ['3.6']
     steps:
+      - name: clone-repo
+        uses: actions/checkout@master
+
       - name: setup-python
         uses: actions/setup-python@master
         with:
@@ -61,7 +64,7 @@ jobs:
         run: |
           chmod +x builds/debug/bin/downward
           chmod +x builds/release/bin/downward
-          cd misc/
-          tox -e translator,search
+          cd misc
+          tox -e py,translator,search
 
 ...

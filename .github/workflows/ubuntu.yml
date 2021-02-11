@@ -185,6 +185,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: setup-dependencies
+        # We install the right compiler so that CMake doesn't complain
+        # when asked to compile as part of the tox search tests, even
+        # though the planner is already built.
         run: |
           pip3 install tox
           sudo apt-get -y install clang-tidy-8 valgrind zlib1g-dev libgmp3-dev
@@ -210,6 +213,8 @@ jobs:
 
       - name: test
         env:
+          CC: ${{ matrix.compiler-version.cc }}
+          CXX: ${{ matrix.compiler-version.cxx }}
           DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
           DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
           DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin

@@ -55,6 +55,9 @@ jobs:
         windows-version: [windows-2016, windows-2019]
         python-version: [3.6]
     steps:
+      - name: clone-repo
+        uses: actions/checkout@master
+
       - name: setup-python
         uses: actions/setup-python@master
         with:
@@ -85,10 +88,10 @@ jobs:
         run: |
           cd misc/
           IF "${{ matrix.windows-version }}" == "windows-2016" (
-            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e translator,search
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e py,translator,search
           )
           IF "${{ matrix.windows-version }}" == "windows-2019" (
-            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e translator,search
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e py,translator,search
           )
 
 ...
