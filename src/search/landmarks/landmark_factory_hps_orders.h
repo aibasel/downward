@@ -15,11 +15,11 @@ class LandmarkFactoryHPSOrders : public LandmarkFactory {
         const TaskProxy &task_proxy, const LandmarkNode *node_a,
         const LandmarkNode *node_b) const;
     void collect_ancestors(
-       std::unordered_set<LandmarkNode *> &result,
-       LandmarkNode &node, bool use_reasonable);
+        std::unordered_set<LandmarkNode *> &result,
+        LandmarkNode &node, bool use_reasonable);
     bool effect_always_happens(
-       const VariablesProxy &variables, const EffectsProxy &effects,
-       std::set<FactPair> &eff) const;
+        const VariablesProxy &variables, const EffectsProxy &effects,
+        std::set<FactPair> &eff) const;
 public:
     LandmarkFactoryHPSOrders(const options::Options &opts);
 

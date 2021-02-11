@@ -12,7 +12,6 @@
 
 using namespace std;
 namespace landmarks {
-
 LandmarkFactoryHPSOrders::LandmarkFactoryHPSOrders(const Options &opts)
     : lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
 }
@@ -249,8 +248,8 @@ void LandmarkFactoryHPSOrders::collect_ancestors(
 }
 
 bool LandmarkFactoryHPSOrders::effect_always_happens(
-        const VariablesProxy &variables, const EffectsProxy &effects,
-        set<FactPair> &eff) const {
+    const VariablesProxy &variables, const EffectsProxy &effects,
+    set<FactPair> &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
      a set of conditions of which one will always be true. This is e.g. the case in
