@@ -79,6 +79,7 @@ public:
 private:
     int num_conjunctive_landmarks;
     int num_disjunctive_landmarks;
+    bool reasonable_orders;
 
     utils::HashMap<FactPair, LandmarkNode *> simple_landmarks_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disjunctive_landmarks_to_nodes;
@@ -112,7 +113,8 @@ public:
        when moving landmark graph creation there. */
     int get_num_edges() const;
 
-
+    // only needed only by non-landmarkgraph-factories
+    bool uses_reasonable_orders();
     // only needed only by non-landmarkgraph-factories
     LandmarkNode *get_landmark(int index) const;
     // only needed only by non-landmarkgraph-factories
@@ -163,6 +165,11 @@ public:
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     void set_landmark_ids();
+
+    /* This is needed only by landmark graph factories and will disappear
+       when moving landmark graph creation there. */
+    void set_reasonable_orders();
+
 };
 }
 

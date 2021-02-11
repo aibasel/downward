@@ -30,7 +30,6 @@ public:
 
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
-    virtual bool use_reasonable_orders() const = 0;
     virtual bool supports_conditional_effects() const = 0;
 
 protected:
@@ -41,10 +40,7 @@ protected:
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
     void discard_all_orderings();
-    void approximate_reasonable_orders(
-        const TaskProxy &task_proxy, bool obedient_orders);
     void mk_acyclic_graph();
-    int calculate_lms_cost() const;
 
     bool is_landmark_precondition(const OperatorProxy &op, const LandmarkNode *lmp) const;
 
@@ -59,25 +55,16 @@ private:
 
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 
-    bool interferes(const TaskProxy &task_proxy,
-                    const LandmarkNode *node_a,
-                    const LandmarkNode *node_b) const;
-    bool effect_always_happens(const VariablesProxy &variables,
-                               const EffectsProxy &effects,
-                               std::set<FactPair> &eff) const;
     int loop_acyclic_graph(LandmarkNode &lmn,
                            std::unordered_set<LandmarkNode *> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
                                          std::list<std::pair<LandmarkNode *, EdgeType>> &path,
                                          std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
-    void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
-                           bool use_reasonable);
     void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 
 extern void _add_use_orders_option_to_parser(options::OptionParser &parser);
 extern void _add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
-extern void _add_reasonable_orders_option_to_parser(options::OptionParser &parser);
 }
 
 #endif

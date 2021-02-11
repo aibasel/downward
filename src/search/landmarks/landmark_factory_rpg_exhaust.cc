@@ -17,8 +17,7 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
-    : only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
-      reasonable_orders(opts.get<bool>("reasonable_orders")) {
+    : only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
@@ -50,20 +49,10 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
     if (only_causal_landmarks) {
         discard_noncausal_landmarks(task_proxy, exploration);
     }
-    if (reasonable_orders) {
-        utils::g_log << "approx. reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, false);
-        utils::g_log << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, true);
-    }
 }
 
 bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
     return false;
-}
-
-bool LandmarkFactoryRpgExhaust::use_reasonable_orders() const {
-    return reasonable_orders;
 }
 
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
@@ -73,7 +62,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "This check is done using relaxed planning.");
 
     _add_only_causal_landmarks_option_to_parser(parser);
-    _add_reasonable_orders_option_to_parser(parser);
 
     Options opts = parser.parse();
 

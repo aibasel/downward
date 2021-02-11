@@ -26,7 +26,6 @@ public:
     using PropositionLayer = std::vector<std::vector<plan_graph_node>>;
 
     bool use_orders;
-    bool reasonable_orders;
 
     // triggers[i][j] is a list of operators that could reach/change
     // labels on some proposition, after proposition (i,j) has changed
@@ -82,7 +81,6 @@ public:
     explicit LandmarkFactoryZhuGivan(const options::Options &opts);
 
     virtual bool supports_conditional_effects() const override;
-    virtual bool use_reasonable_orders() const override;
 };
 }
 

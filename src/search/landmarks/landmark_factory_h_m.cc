@@ -565,8 +565,7 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
     : m_(opts.get<int>("m")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
-      use_orders(opts.get<bool>("use_orders")),
-      reasonable_orders(opts.get<bool>("reasonable_orders")) {
+      use_orders(opts.get<bool>("use_orders")) {
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
@@ -597,12 +596,7 @@ void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
 
     if (!use_orders)
         discard_all_orderings();
-    else if (reasonable_orders) {
-        utils::g_log << "approx. reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, false);
-        utils::g_log << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, true);
-    }
+
     mk_acyclic_graph();
     calc_achievers(task_proxy);
 }
@@ -1003,10 +997,6 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }
 
-bool LandmarkFactoryHM::use_reasonable_orders() const {
-    return reasonable_orders;
-}
-
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "h^m Landmarks",
@@ -1019,7 +1009,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "keep conjunctive landmarks",
         "true");
     _add_use_orders_option_to_parser(parser);
-    _add_reasonable_orders_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;

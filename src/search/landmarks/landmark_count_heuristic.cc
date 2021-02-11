@@ -54,11 +54,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
 
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task);
-    bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (admissible) {
-        if (reasonable_orders) {
+        if (lgraph->uses_reasonable_orders()) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         } else if (task_properties::has_axioms(task_proxy)) {

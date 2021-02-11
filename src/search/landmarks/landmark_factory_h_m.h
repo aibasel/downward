@@ -97,7 +97,6 @@ class LandmarkFactoryHM : public LandmarkFactory {
     const int m_;
     bool conjunctive_landmarks;
     bool use_orders;
-    bool reasonable_orders;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 
@@ -143,7 +142,6 @@ public:
     explicit LandmarkFactoryHM(const options::Options &opts);
 
     virtual bool supports_conditional_effects() const override;
-    virtual bool use_reasonable_orders() const override;
 };
 }
 

@@ -108,13 +108,13 @@ def configs_satisficing_core():
         # LAMA first
         "lama-first": [
             "--evaluator",
-            "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
+            "hlm=lmcount(lm_factory=lm_hps_orders(lm_rhw()),transform=adapt_costs(one),pref=false)",
             "--evaluator", "hff=ff(transform=adapt_costs(one))",
             "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                        cost_type=one,reopen_closed=false)"""],
         "lama-first-typed": [
             "--evaluator",
-            "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
+            "hlm=lmcount(lm_factory=lm_hps_orders(lm_rhw()),transform=adapt_costs(one),pref=false)",
             "--evaluator", "hff=ff(transform=adapt_costs(one))",
             "--search",
                 "lazy(alt([single(hff), single(hff, pref_only=true),"

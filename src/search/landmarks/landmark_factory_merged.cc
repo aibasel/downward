@@ -16,8 +16,7 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
-    : lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")),
-      reasonable_orders(opts.get<bool>("reasonable_orders")) {
+    : lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &lm) const {
@@ -127,12 +126,10 @@ void LandmarkFactoryMerged::generate_landmarks(
             }
         }
     }
-
-    TaskProxy task_proxy(*task);
-    generate(task_proxy);
+    generate();
 }
 
-void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
+void LandmarkFactoryMerged::generate() {
     lm_graph->set_landmark_ids();
 
     /*
@@ -145,12 +142,6 @@ void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
 
        Do we still need this comment?
     */
-    if (reasonable_orders) {
-        utils::g_log << "approx. reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, false);
-        utils::g_log << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, true);
-    }
     mk_acyclic_graph();
 }
 
@@ -161,15 +152,6 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
         }
     }
     return true;
-}
-
-bool LandmarkFactoryMerged::use_reasonable_orders() const {
-    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
-        if (lm_factory->use_reasonable_orders()) {
-            return true;
-        }
-    }
-    return reasonable_orders;
 }
 
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
@@ -185,7 +167,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Note",
         "Does not currently support conjunctive landmarks");
     parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
-    _add_reasonable_orders_option_to_parser(parser);
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");
