@@ -88,10 +88,10 @@ jobs:
         run: |
           cd misc/
           IF "${{ matrix.windows-version }}" == "windows-2016" (
-            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e py,translator,search
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e translator,search
           )
           IF "${{ matrix.windows-version }}" == "windows-2019" (
-            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e py,translator,search
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e translator,search
           )
 
 ...
