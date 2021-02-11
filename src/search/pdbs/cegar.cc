@@ -698,7 +698,7 @@ PatternCollectionInformation cegar(
     return cegar.generate();
 }
 
-void add_pattern_collection_generator_cegar_options_to_parser(options::OptionParser &parser) {
+void add_cegar_options_to_parser(options::OptionParser &parser) {
     parser.add_option<int>(
             "max_refinements",
             "maximum allowed number of refinements",

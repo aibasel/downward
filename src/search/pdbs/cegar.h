@@ -51,7 +51,7 @@ extern PatternCollectionInformation cegar(
     utils::Verbosity verbosity,
     double max_time);
 
-extern void add_pattern_collection_generator_cegar_options_to_parser(
+extern void add_cegar_options_to_parser(
     options::OptionParser &parser);
 }
 

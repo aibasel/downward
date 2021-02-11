@@ -221,7 +221,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
             "true"
     );
 
-    add_pattern_collection_generator_cegar_options_to_parser(parser);
+    add_cegar_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run()) {
