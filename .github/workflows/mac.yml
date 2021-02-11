@@ -56,11 +56,13 @@ jobs:
       - name: download-planner
         uses: actions/download-artifact@master
         with:
-          # without 'name' attribute all artifacts are downloaded and the
+          # Without 'name' attribute all artifacts are downloaded and the
           # artifact name is used as directory name.
           path: builds/
 
       - name: test
+        # We do not run py tests here because that would require VAL
+        # to be installed.
         run: |
           chmod +x builds/debug/bin/downward
           chmod +x builds/release/bin/downward

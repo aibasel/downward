@@ -85,6 +85,8 @@ jobs:
         env:
           CC: cl
           CXX: cl
+        # We do not run py tests here because that would require VAL
+        # to be installed.
         run: |
           cd misc/
           IF "${{ matrix.windows-version }}" == "windows-2016" (
