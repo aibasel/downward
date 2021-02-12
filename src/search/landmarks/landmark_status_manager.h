@@ -17,15 +17,16 @@ class LandmarkStatusManager {
 
     LandmarkGraph &lm_graph;
 
-    bool landmark_is_leaf(const LandmarkNode &node, const BitsetView &reached) const;
-    bool landmark_needed_again(int id, const State &state);
+    bool landmark_is_leaf(const LandmarkNode &node,
+                          const BitsetView &reached) const;
+    bool landmark_needed_again(const LandmarkNode &node,
+                               const State &state);
 public:
     explicit LandmarkStatusManager(LandmarkGraph &graph);
 
     BitsetView get_reached_landmarks(const State &state);
 
-    void update_lm_status(const State &ancestor_state);
-    bool dead_end_exists();
+    bool update_lm_status(const State &ancestor_state);
 
     void set_landmarks_for_initial_state(const State &initial_state);
     bool update_reached_lms(const State &parent_ancestor_state,

@@ -104,7 +104,7 @@ bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_stat
     return true;
 }
 
-void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
+bool LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
     const BitsetView reached = get_reached_landmarks(ancestor_state);
 
     /* This first loop is necessary as setup for the *needed again*
@@ -112,17 +112,14 @@ void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
     for (int id = 0; id < lm_graph.get_num_landmarks(); ++id) {
         lm_status[id] = reached.test(id) ? lm_reached : lm_not_reached;
     }
-    for (int id = 0; id < lm_graph.get_num_landmarks(); ++id) {
-        if (lm_status[id] == lm_reached
-            && landmark_needed_again(id, ancestor_state)) {
-            lm_status[id] = lm_needed_again;
-        }
-    }
-}
 
-bool LandmarkStatusManager::dead_end_exists() {
+    bool dead_end_exists = false;
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
+        if (lm_status[id] == lm_reached
+            && landmark_needed_again(*node, ancestor_state)) {
+            lm_status[id] = lm_needed_again;
+        }
 
         /*
           This dead-end detection works for the following case:
@@ -138,23 +135,22 @@ bool LandmarkStatusManager::dead_end_exists() {
         if (!node->is_derived) {
             if ((lm_status[id] == lm_not_reached) &&
                 node->first_achievers.empty()) {
-                return true;
+                dead_end_exists = true;
             }
             if ((lm_status[id] == lm_needed_again) &&
                 node->possible_achievers.empty()) {
-                return true;
+                dead_end_exists = true;
             }
         }
     }
-    return false;
+    return dead_end_exists;
 }
 
 bool LandmarkStatusManager::landmark_needed_again(
-    int id, const State &state) {
-    LandmarkNode *node = lm_graph.get_landmark(id);
-    if (node->is_true_in_state(state)) {
+    const LandmarkNode &node, const State &state) {
+    if (node.is_true_in_state(state)) {
         return false;
-    } else if (node->is_true_in_goal) {
+    } else if (node.is_true_in_goal) {
         return true;
     } else {
         /*
@@ -162,7 +158,7 @@ bool LandmarkStatusManager::landmark_needed_again(
           true, since A is a necessary precondition for actions
           achieving B for the first time, it must become true again.
         */
-        for (const auto &child : node->children) {
+        for (const auto &child : node.children) {
             if (child.second >= EdgeType::GREEDY_NECESSARY
                 && lm_status[child.first->get_id()] == lm_not_reached) {
                 return true;
