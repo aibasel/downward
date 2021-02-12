@@ -1,7 +1,5 @@
 #include "landmark_status_manager.h"
 
-#include "landmark_graph.h"
-
 #include "../utils/logging.h"
 
 using namespace std;
@@ -15,12 +13,6 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.get_num_landmarks(), true)),
       lm_status(graph.get_num_landmarks(), lm_not_reached),
       lm_graph(graph) {
-}
-
-landmark_status LandmarkStatusManager::get_landmark_status(
-    size_t id) const {
-    assert(static_cast<int>(id) < lm_graph.get_num_landmarks());
-    return lm_status[id];
 }
 
 BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {

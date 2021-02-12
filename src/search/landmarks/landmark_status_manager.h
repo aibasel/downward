@@ -1,6 +1,8 @@
 #ifndef LANDMARKS_LANDMARK_STATUS_MANAGER_H
 #define LANDMARKS_LANDMARK_STATUS_MANAGER_H
 
+#include "landmark_graph.h"
+
 #include "../per_state_bitset.h"
 
 namespace landmarks {
@@ -44,7 +46,10 @@ public:
       desired state is returned at all times, or an error is thrown
       if the desired information does not exist.
      */
-    landmark_status get_landmark_status(size_t id) const;
+    landmark_status get_landmark_status(size_t id) const {
+        assert(static_cast<int>(id) < lm_graph.get_num_landmarks());
+        return lm_status[id];
+    }
 };
 }
 
