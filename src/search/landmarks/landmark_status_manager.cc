@@ -114,12 +114,15 @@ bool LandmarkStatusManager::update_reached_lms(
 void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
     const BitsetView reached = get_reached_landmarks(ancestor_state);
 
+    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
+
     /* This first loop is necessary as setup for the *needed again*
        check in the second loop. */
     for (int id = 0; id < lm_graph.get_num_landmarks(); ++id) {
         lm_status[id] = reached.test(id) ? lm_reached : lm_not_reached;
     }
-    for (int id = 0; id < lm_graph.get_num_landmarks(); ++id) {
+    for (auto &node : nodes) {
+        int id = node->get_id();
         if (lm_status[id] == lm_reached
             && landmark_needed_again(id, ancestor_state)) {
             lm_status[id] = lm_needed_again;
@@ -160,7 +163,7 @@ bool LandmarkStatusManager::landmark_needed_again(
     int id, const State &state) {
     LandmarkNode *node = lm_graph.get_landmark(id);
     if (node->is_true_in_state(state)) {
-        return has_unreached_parent(node);
+        return has_unreached_parent(*node);
     } else if (node->is_true_in_goal) {
         return true;
     } else {
@@ -175,13 +178,13 @@ bool LandmarkStatusManager::landmark_needed_again(
                 return true;
             }
         }
-        return has_unreached_parent(node);
+        return has_unreached_parent(*node);
     }
 }
 
 bool LandmarkStatusManager::has_unreached_parent(
-    const LandmarkNode *node) const {
-    for (const auto &parent : node->parents) {
+    const LandmarkNode &node) const {
+    for (const auto &parent : node.parents) {
         if (lm_status[parent.first->get_id()] == lm_not_reached) {
             // This cannot occur for natural orderings by definition.
             assert(parent.second < EdgeType::NATURAL);

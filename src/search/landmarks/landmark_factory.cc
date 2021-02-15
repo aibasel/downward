@@ -336,18 +336,14 @@ void LandmarkFactory::approximate_reasonable_orders(
         if (node_p->disjunctive)
             continue;
 
-        if (obedient_orders && node_p->is_true_in_state(initial_state))
-            continue;
+        if (node_p->is_true_in_state(initial_state))
+            return;
 
         if (!obedient_orders && node_p->is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;
-                if (node_p->is_true_in_state(initial_state)
-                    && node2_p->is_true_in_state(initial_state))
-                    continue;
-                if (interferes(task_proxy, node2_p.get(), node_p.get())
-                    && !have_common_achiever(node2_p.get(), node_p.get())) {
+                if (interferes(task_proxy, node2_p.get(), node_p.get())) {
                     edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
                 }
             }
@@ -379,11 +375,7 @@ void LandmarkFactory::approximate_reasonable_orders(
             for (LandmarkNode *node : interesting_nodes) {
                 if (node == node_p.get() || node->disjunctive)
                     continue;
-                if (node->is_true_in_state(initial_state)
-                    && node_p->is_true_in_state(initial_state))
-                    continue;
-                if (interferes(task_proxy, node, node_p.get())
-                    && !have_common_achiever(node, node_p.get())) {
+                if (interferes(task_proxy, node, node_p.get())) {
                     if (!obedient_orders)
                         edge_add(*node, *node_p, EdgeType::REASONABLE);
                     else
@@ -392,18 +384,6 @@ void LandmarkFactory::approximate_reasonable_orders(
             }
         }
     }
-}
-
-bool LandmarkFactory::have_common_achiever(
-    const LandmarkNode *node_a, const LandmarkNode *node_b) const {
-    set<int> achievers_a = node_a->possible_achievers;
-    set<int> achievers_b = node_b->possible_achievers;
-
-    vector<int> intersection;
-    set_intersection(achievers_a.begin(), achievers_a.end(),
-                     achievers_b.begin(), achievers_b.end(),
-                     back_inserter(intersection));
-    return !intersection.empty();
 }
 
 void LandmarkFactory::collect_ancestors(
