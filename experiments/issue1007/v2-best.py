@@ -17,7 +17,7 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue1007-v1", "issue1007-v2"]
 CONFIGS = []
 for random_seed in range(2018, 2028):
-    CONFIGS.append(IssueConfig('cpdbs-multiple-cegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{}'.format(random_seed), ['--search', "astar(cpdbs(multiple_cegar(max_refinements=infinity,wildcard_plans=true,max_time=100,max_pdb_size=1000000,max_collection_size=10000000,initial_random_seed={},total_collection_max_size=10000000,total_time_limit=2,stagnation_limit=20,blacklist_trigger_time=0.75,blacklist_on_stagnation=true,verbosity=silent)))".format(random_seed)]))
+    CONFIGS.append(IssueConfig('cpdbs-multiple-cegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{}'.format(random_seed), ['--search', "astar(cpdbs(multiple_cegar(max_refinements=infinity,wildcard_plans=true,max_time=100,max_pdb_size=1000000,max_collection_size=10000000,initial_random_seed={},total_collection_max_size=10000000,total_time_limit=100,stagnation_limit=20,blacklist_trigger_time=0.75,blacklist_on_stagnation=true,verbosity=silent)))".format(random_seed)]))
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
