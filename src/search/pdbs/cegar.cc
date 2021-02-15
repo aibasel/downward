@@ -24,13 +24,12 @@ class Cegar {
     const int max_collection_size;
     const bool wildcard_plans; // this is passed to AbstractSolutionData constructors, to set what kind of plan should be generated
     const bool ignore_goal_violations; // set this to true if you want to generate only one pattern
-    const int global_blacklist_size;
     const utils::Verbosity verbosity;
     const double max_time;
 
     const string token = "CEGAR_PDBs: ";
 
-    unordered_set<int> global_blacklist;
+    unordered_set<int> blacklisted_variables;
 
     // the pattern collection in form of their pdbs plus stored plans.
     vector<unique_ptr<AbstractSolutionData>> solutions;
@@ -88,9 +87,9 @@ public:
         int max_collection_size,
         bool wildcard_plans,
         bool ignore_goal_violations,
-        int global_blacklist_size,
         utils::Verbosity verbosity,
-        double max_time);
+        double max_time,
+        unordered_set<int> &&blacklisted_variables);
 
     PatternCollectionInformation generate();
 };
@@ -199,7 +198,7 @@ FlawList Cegar::apply_wildcard_plan(
                 int var = precondition.get_variable().get_id();
 
                 // we ignore blacklisted variables
-                if (global_blacklist.count(var)) {
+                if (blacklisted_variables.count(var)) {
                     continue;
                 }
 
@@ -243,7 +242,7 @@ FlawList Cegar::apply_wildcard_plan(
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << " and resulted in a concrete goal state: ";
             }
-            if (global_blacklist.empty()) {
+            if (blacklisted_variables.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "since there are no blacklisted variables, "
                                     "the concrete task is solved." << endl;
@@ -269,7 +268,7 @@ FlawList Cegar::apply_wildcard_plan(
                 for (FactProxy goal : task_proxy.get_goals()) {
                     VariableProxy goal_var = goal.get_variable();
                     int goal_var_id = goal_var.get_id();
-                    if (current[goal_var] != goal && !global_blacklist.count(goal_var_id) &&
+                    if (current[goal_var] != goal && !blacklisted_variables.count(goal_var_id) &&
                         find(remaining_goals.begin(), remaining_goals.end(),
                              goal_var_id)
                         != remaining_goals.end()) {
@@ -485,7 +484,7 @@ void Cegar::handle_flaw(
             utils::g_log << token << "Could not add var/merge patterns due to size "
                                      "limits. Blacklisting." << endl;
         }
-        global_blacklist.insert(var);
+        blacklisted_variables.insert(var);
     }
 }
 
@@ -523,31 +522,6 @@ PatternCollectionInformation Cegar::generate() {
         }
     }
 #endif
-    rng->shuffle(remaining_goals);
-
-    if (global_blacklist_size) {
-        int num_vars = task_proxy.get_variables().size();
-        vector<int> nongoals;
-        nongoals.reserve(num_vars - remaining_goals.size());
-        for (int var_id = 0; var_id < num_vars; ++var_id) {
-            if (find(remaining_goals.begin(), remaining_goals.end(), var_id)
-                == remaining_goals.end()) {
-                nongoals.push_back(var_id);
-            }
-        }
-        rng->shuffle(nongoals);
-
-        // Select a random subset of non goals.
-        for (size_t i = 0;
-             i < min(static_cast<size_t>(global_blacklist_size),nongoals.size());
-             ++i) {
-            int var_id = nongoals[i];
-            if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << token << "blacklisting var" << var_id << endl;
-            }
-            global_blacklist.insert(var_id);
-        }
-    }
 
     // Start with a solution of the trivial abstraction
     generate_trivial_solution_collection(task);
@@ -564,7 +538,7 @@ PatternCollectionInformation Cegar::generate() {
 
         if (flaws.empty()) {
             if (concrete_solution_index != -1) {
-                assert(global_blacklist.empty());
+                assert(blacklisted_variables.empty());
                 if (verbosity >= utils::Verbosity::NORMAL) {
                     utils::g_log << token
                                  << "task solved during computation of abstract solutions"
@@ -646,9 +620,9 @@ Cegar::Cegar(
     int max_collection_size,
     bool wildcard_plans,
     bool ignore_goal_violations,
-    int global_blacklist_size,
     utils::Verbosity verbosity,
-    double max_time)
+    double max_time,
+    unordered_set<int> &&blacklisted_variables)
     : task(task),
       remaining_goals(move(goal_variables)),
       rng(rng),
@@ -657,9 +631,9 @@ Cegar::Cegar(
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
       ignore_goal_violations(ignore_goal_violations),
-      global_blacklist_size(global_blacklist_size),
       verbosity(verbosity),
       max_time(max_time),
+      blacklisted_variables(move(blacklisted_variables)),
       collection_size(0),
       concrete_solution_index(-1) {
 }
@@ -673,9 +647,9 @@ PatternCollectionInformation cegar(
     int max_collection_size,
     bool wildcard_plans,
     bool ignore_goal_violations,
-    int global_blacklist_size,
     utils::Verbosity verbosity,
-    double max_time) {
+    double max_time,
+    unordered_set<int> &&blacklisted_variables) {
     Cegar cegar(
         task,
         move(goal_variables),
@@ -685,9 +659,9 @@ PatternCollectionInformation cegar(
         max_collection_size,
         wildcard_plans,
         ignore_goal_violations,
-        global_blacklist_size,
         verbosity,
-        max_time);
+        max_time,
+        move(blacklisted_variables));
     return cegar.generate();
 }
 
@@ -720,15 +694,6 @@ void add_cegar_options_to_parser(options::OptionParser &parser) {
             "ignore_goal_violations",
             "ignore goal violations and consequently generate a single pattern",
             "false");
-    parser.add_option<int>(
-            "global_blacklist_size",
-            "Number of randomly selected non-goal variables that are globally "
-            "blacklisted, which means excluded from being added to the pattern "
-            "collection. 0 means no global blacklisting happens, infinity means "
-            "to always exclude all non-goal variables.",
-            "0",
-            Bounds("0", "infinity")
-    );
     parser.add_option<double>(
             "max_time",
             "maximum time in seconds for CEGAR pattern generation. "

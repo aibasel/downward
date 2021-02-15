@@ -8,6 +8,8 @@
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 
+#include <unordered_set>
+
 namespace options {
 class OptionParser;
 }
@@ -40,9 +42,9 @@ extern PatternCollectionInformation cegar(
     int max_collection_size,
     bool wildcard_plans,
     bool ignore_goal_violations,
-    int global_blacklist_size,
     utils::Verbosity verbosity,
-    double max_time);
+    double max_time,
+    std::unordered_set<int> &&blacklisted_variables);
 
 extern void add_cegar_options_to_parser(
     options::OptionParser &parser);

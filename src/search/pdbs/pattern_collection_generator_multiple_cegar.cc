@@ -58,6 +58,16 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     }
     rng.shuffle(goals);
 
+    int num_vars = task_proxy.get_variables().size();
+    vector<int> nongoals;
+    nongoals.reserve(num_vars - goals.size());
+    for (int var_id = 0; var_id < num_vars; ++var_id) {
+        if (find(goals.begin(), goals.end(), var_id)
+            == goals.end()) {
+            nongoals.push_back(var_id);
+        }
+    }
+
     bool can_generate = true;
     bool stagnation = false;
     // blacklisting can be forced after a period of stagnation (see stagnation_limit)
@@ -77,6 +87,19 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             force_blacklisting = true;
         }
 
+        rng.shuffle(nongoals);
+        unordered_set<int> blacklisted_variables;
+        // Select a random subset of non goals.
+        for (size_t i = 0;
+             i < min(static_cast<size_t>(blacklist_size),nongoals.size());
+             ++i) {
+            int var_id = nongoals[i];
+//            if (verbosity >= utils::Verbosity::VERBOSE) {
+//                utils::g_log << "Fast CEGAR: blacklisting var" << var_id << endl;
+//            }
+            blacklisted_variables.insert(var_id);
+        }
+
         int remaining_collection_size = total_collection_max_size - collection_size;
         double remaining_time = total_time_limit - timer.get_elapsed_time();
         auto collection_info = cegar(
@@ -88,9 +111,9 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             min(remaining_collection_size, single_generator_max_collection_size),
             single_generator_wildcard_plans,
             single_generator_ignore_goal_violations,
-            blacklist_size,
             single_generator_verbosity,
-            min(remaining_time, single_generator_max_time)
+            min(remaining_time, single_generator_max_time),
+            move(blacklisted_variables)
         );
         auto pattern_collection = collection_info.get_patterns();
         auto pdb_collection = collection_info.get_pdbs();

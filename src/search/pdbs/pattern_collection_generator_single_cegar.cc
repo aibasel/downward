@@ -65,6 +65,32 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     for (const FactProxy &goal : task_proxy.get_goals()) {
         goal_variables.push_back(goal.get_variable().get_id());
     }
+    rng->shuffle(goal_variables);
+
+    unordered_set<int> blacklisted_variables;
+    if (global_blacklist_size) {
+        int num_vars = task_proxy.get_variables().size();
+        vector<int> nongoals;
+        nongoals.reserve(num_vars - goal_variables.size());
+        for (int var_id = 0; var_id < num_vars; ++var_id) {
+            if (find(goal_variables.begin(), goal_variables.end(), var_id)
+                == goal_variables.end()) {
+                nongoals.push_back(var_id);
+            }
+        }
+        rng->shuffle(nongoals);
+
+        // Select a random subset of non goals.
+        for (int i = 0;
+            i < min(global_blacklist_size, static_cast<int>(nongoals.size()));
+            ++i) {
+            int var_id = nongoals[i];
+            if (verbosity >= utils::Verbosity::VERBOSE) {
+                utils::g_log << token << "blacklisting var" << var_id << endl;
+            }
+            blacklisted_variables.insert(var_id);
+        }
+    }
 
     return cegar(
         task,
@@ -75,13 +101,22 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         max_collection_size,
         wildcard_plans,
         ignore_goal_violations,
-        global_blacklist_size,
         verbosity,
-        max_time);
+        max_time,
+        move(blacklisted_variables));
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(
         options::OptionParser& parser) {
+    parser.add_option<int>(
+        "global_blacklist_size",
+        "Number of randomly selected non-goal variables that are globally "
+        "blacklisted, which means excluded from being added to the pattern "
+        "collection. 0 means no global blacklisting happens, infinity means "
+        "to always exclude all non-goal variables.",
+        "0",
+        Bounds("0", "infinity")
+    );
     add_cegar_options_to_parser(parser);
     utils::add_rng_options(parser);
 
