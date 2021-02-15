@@ -16,31 +16,29 @@ using namespace std;
 
 namespace pdbs {
 class Cegar {
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
+    const shared_ptr<AbstractTask> &task;
+    vector<int> remaining_goals;
+    shared_ptr<utils::RandomNumberGenerator> rng;
     const int max_refinements;
     const int max_pdb_size;
     const int max_collection_size;
     const bool wildcard_plans; // this is passed to AbstractSolutionData constructors, to set what kind of plan should be generated
     const bool ignore_goal_violations; // set this to true if you want to generate only one pattern
     const int global_blacklist_size;
-    const InitialCollectionType initial;
-    const int given_goal;
     const utils::Verbosity verbosity;
     const double max_time;
-    const std::shared_ptr<AbstractTask> &task;
 
-    const std::string token = "CEGAR_PDBs: ";
+    const string token = "CEGAR_PDBs: ";
 
-    std::vector<int> remaining_goals;
-    std::unordered_set<int> global_blacklist;
+    unordered_set<int> global_blacklist;
 
     // the pattern collection in form of their pdbs plus stored plans.
-    std::vector<std::unique_ptr<AbstractSolutionData>> solutions;
+    vector<unique_ptr<AbstractSolutionData>> solutions;
     // Takes a variable as key and returns the index of the solutions-entry
     // whose pattern contains said variable. Used for checking if a variable
     // is already included in some pattern as well as for quickly finding
     // the other partner for merging.
-    std::unordered_map<int, int> solution_lookup;
+    unordered_map<int, int> solution_lookup;
     int collection_size;
 
     // If the algorithm finds a single solution instance that solves
@@ -49,7 +47,7 @@ class Cegar {
     int concrete_solution_index;
 
     void print_collection() const;
-    void generate_trivial_solution_collection(const std::shared_ptr<AbstractTask> &task);
+    void generate_trivial_solution_collection(const shared_ptr<AbstractTask> &task);
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
     bool termination_conditions_met(
             const utils::CountdownTimer &timer, int refinement_counter) const;
@@ -64,36 +62,35 @@ class Cegar {
       that caused the solution to fail.
      */
     FlawList apply_wildcard_plan(
-            const std::shared_ptr<AbstractTask> &task, int solution_index, const State &init);
-    FlawList get_flaws(const std::shared_ptr<AbstractTask> &task);
+            const shared_ptr<AbstractTask> &task, int solution_index, const State &init);
+    FlawList get_flaws(const shared_ptr<AbstractTask> &task);
 
     // Methods related to refining (and adding patterns to the collection generally).
     void update_goals(int added_var);
-    void add_pattern_for_var(const std::shared_ptr<AbstractTask> &task, int var);
+    void add_pattern_for_var(const shared_ptr<AbstractTask> &task, int var);
     bool can_merge_patterns(int index1, int index2) const;
     void merge_patterns(
-            const std::shared_ptr<AbstractTask> &task, int index1, int index2);
+            const shared_ptr<AbstractTask> &task, int index1, int index2);
     bool can_add_variable_to_pattern(
             const TaskProxy &task_proxy, int index, int var) const;
     void add_variable_to_pattern(
-            const std::shared_ptr<AbstractTask> &task, int index, int var);
+            const shared_ptr<AbstractTask> &task, int index, int var);
     void handle_flaw(
-            const std::shared_ptr<AbstractTask> &task, const Flaw &flaw);
-    void refine(const std::shared_ptr<AbstractTask> &task, const FlawList& flaws);
+            const shared_ptr<AbstractTask> &task, const Flaw &flaw);
+    void refine(const shared_ptr<AbstractTask> &task, const FlawList& flaws);
 public:
     Cegar(
-        const std::shared_ptr<utils::RandomNumberGenerator> &rng,
+        const shared_ptr<AbstractTask> &task,
+        vector<int> &&goal_variables,
+        const shared_ptr<utils::RandomNumberGenerator> &rng,
         int max_refinements,
         int max_pdb_size,
         int max_collection_size,
         bool wildcard_plans,
         bool ignore_goal_violations,
         int global_blacklist_size,
-        InitialCollectionType initial,
-        int given_goal,
         utils::Verbosity verbosity,
-        double max_time,
-        const std::shared_ptr<AbstractTask> &task);
+        double max_time);
 
     PatternCollectionInformation generate();
 };
@@ -115,28 +112,10 @@ void Cegar::print_collection() const {
 void Cegar::generate_trivial_solution_collection(
         const shared_ptr<AbstractTask> &task) {
     assert(!remaining_goals.empty());
-
-    switch (initial) {
-        case InitialCollectionType::GIVEN_GOAL: {
-            assert(given_goal != -1);
-            update_goals(given_goal);
-            add_pattern_for_var(task, given_goal);
-            break;
-        }
-        case InitialCollectionType::RANDOM_GOAL: {
-            int var = remaining_goals.back();
-            remaining_goals.pop_back();
-            add_pattern_for_var(task, var);
-            break;
-        }
-        case InitialCollectionType::ALL_GOALS: {
-            while (!remaining_goals.empty()) {
-                int var = remaining_goals.back();
-                remaining_goals.pop_back();
-                add_pattern_for_var(task, var);
-            }
-            break;
-        }
+    while (!remaining_goals.empty()) {
+        int var = remaining_goals.back();
+        remaining_goals.pop_back();
+        add_pattern_for_var(task, var);
     }
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -421,7 +400,7 @@ void Cegar::merge_patterns(
     collection_size += merged->get_pdb()->get_size();
 
     // clean-up
-    solutions[index1] = std::move(merged);
+    solutions[index1] = move(merged);
     solutions[index2] = nullptr;
 }
 
@@ -529,26 +508,21 @@ void Cegar::refine(
 PatternCollectionInformation Cegar::generate() {
     utils::CountdownTimer timer(max_time);
     TaskProxy task_proxy(*task);
-
-    if (given_goal != -1 &&
-        given_goal >= static_cast<int>(task_proxy.get_variables().size())) {
-        cerr << "Goal variable out of range of task's variables" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    }
-
-    // save all goals in random order for refinement later
-    bool found_given_goal = false;
-    for (auto goal : task_proxy.get_goals()) {
-        int goal_var = goal.get_variable().get_id();
-        remaining_goals.push_back(goal_var);
-        if (given_goal != -1 && goal_var == given_goal) {
-            found_given_goal = true;
+#ifndef NDEBUG
+    for (int goal_var : remaining_goals) {
+        bool is_goal = false;
+        for (const FactProxy &goal : task_proxy.get_goals()) {
+            if (goal.get_variable().get_id() == goal_var) {
+                is_goal = true;
+                break;
+            }
+        }
+        if (!is_goal) {
+            cerr << " Given goal variable is not a goal variable" << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
     }
-    if (given_goal != -1 && !found_given_goal) {
-        cerr << " Given goal variable is not a goal variable" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    }
+#endif
     rng->shuffle(remaining_goals);
 
     if (global_blacklist_size) {
@@ -632,8 +606,8 @@ PatternCollectionInformation Cegar::generate() {
         utils::g_log << endl;
     }
 
-    std::shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
-    std::shared_ptr<PDBCollection> pdbs = make_shared<PDBCollection>();
+    shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
+    shared_ptr<PDBCollection> pdbs = make_shared<PDBCollection>();
     if (concrete_solution_index != -1) {
         const shared_ptr<PatternDatabase> &pdb =
                 solutions[concrete_solution_index]->get_pdb();
@@ -664,6 +638,8 @@ PatternCollectionInformation Cegar::generate() {
 }
 
 Cegar::Cegar(
+    const shared_ptr<AbstractTask> &task,
+    vector<int> &&goal_variables,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
@@ -671,41 +647,38 @@ Cegar::Cegar(
     bool wildcard_plans,
     bool ignore_goal_violations,
     int global_blacklist_size,
-    InitialCollectionType initial,
-    int given_goal,
     utils::Verbosity verbosity,
-    double max_time,
-    const std::shared_ptr<AbstractTask> &task)
-    : rng(rng),
+    double max_time)
+    : task(task),
+      remaining_goals(move(goal_variables)),
+      rng(rng),
       max_refinements(max_refinements),
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
       ignore_goal_violations(ignore_goal_violations),
       global_blacklist_size(global_blacklist_size),
-      initial(initial),
-      given_goal(given_goal),
       verbosity(verbosity),
       max_time(max_time),
-      task(task),
       collection_size(0),
       concrete_solution_index(-1) {
 }
 
 PatternCollectionInformation cegar(
-    const std::shared_ptr<AbstractTask> &task,
-    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
+    const shared_ptr<AbstractTask> &task,
+    vector<int> &&goal_variables,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
     bool ignore_goal_violations,
     int global_blacklist_size,
-    InitialCollectionType initial,
-    int given_goal,
     utils::Verbosity verbosity,
     double max_time) {
     Cegar cegar(
+        task,
+        move(goal_variables),
         rng,
         max_refinements,
         max_pdb_size,
@@ -713,11 +686,8 @@ PatternCollectionInformation cegar(
         wildcard_plans,
         ignore_goal_violations,
         global_blacklist_size,
-        initial,
-        given_goal,
         verbosity,
-        max_time,
-        task);
+        max_time);
     return cegar.generate();
 }
 
@@ -759,19 +729,6 @@ void add_cegar_options_to_parser(options::OptionParser &parser) {
             "0",
             Bounds("0", "infinity")
     );
-    std::vector<std::string> initial_collection_options;
-    initial_collection_options.emplace_back("GIVEN_GOAL");
-    initial_collection_options.emplace_back("RANDOM_GOAL");
-    initial_collection_options.emplace_back("ALL_GOALS");
-    parser.add_enum_option<InitialCollectionType>(
-            "initial",
-            initial_collection_options,
-            "initial collection for refinement",
-            "ALL_GOALS");
-    parser.add_option<int>(
-            "given_goal",
-            "a goal variable to be used as the initial collection",
-            "-1");
     parser.add_option<double>(
             "max_time",
             "maximum time in seconds for CEGAR pattern generation. "

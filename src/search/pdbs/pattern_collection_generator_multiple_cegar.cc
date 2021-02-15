@@ -66,7 +66,6 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     int num_iterations = 0;
     int goal_index = 0;
     const bool single_generator_ignore_goal_violations = true;
-    const InitialCollectionType single_generator_initial = InitialCollectionType::GIVEN_GOAL;
     int collection_size = 0;
     while (can_generate) {
         // we start blacklisting once a certain amount of time has passed
@@ -82,6 +81,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         double remaining_time = total_time_limit - timer.get_elapsed_time();
         auto collection_info = cegar(
             task,
+            {goals[goal_index]},
             make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
             single_generator_max_refinements,
             single_generator_max_pdb_size,
@@ -89,8 +89,6 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             single_generator_wildcard_plans,
             single_generator_ignore_goal_violations,
             blacklist_size,
-            single_generator_initial,
-            goals[goal_index],
             single_generator_verbosity,
             min(remaining_time, single_generator_max_time)
         );

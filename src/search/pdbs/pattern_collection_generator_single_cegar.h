@@ -12,8 +12,6 @@ enum class Verbosity;
 }
 
 namespace pdbs {
-enum class InitialCollectionType;
-
 class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator {
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     const int max_refinements;
@@ -22,8 +20,6 @@ class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator 
     const bool wildcard_plans; // this is passed to AbstractSolutionData constructors, to set what kind of plan should be generated
     const bool ignore_goal_violations; // set this to true if you want to generate only one pattern
     const int global_blacklist_size;
-    const InitialCollectionType initial;
-    const int given_goal;
     const utils::Verbosity verbosity;
     const double max_time;
     const std::string token = "CEGAR_PDBs: ";

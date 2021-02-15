@@ -24,21 +24,16 @@ struct Flaw {
     int variable;
 
     Flaw(int solution_index, int variable)
-            : solution_index(solution_index),
-              variable(variable) {
+        : solution_index(solution_index),
+          variable(variable) {
     }
 };
 
 using FlawList = std::vector<Flaw>;
 
-enum class InitialCollectionType {
-    GIVEN_GOAL,
-    RANDOM_GOAL,
-    ALL_GOALS
-};
-
 extern PatternCollectionInformation cegar(
     const std::shared_ptr<AbstractTask> &task,
+    std::vector<int> &&goal_variables,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
@@ -46,8 +41,6 @@ extern PatternCollectionInformation cegar(
     bool wildcard_plans,
     bool ignore_goal_violations,
     int global_blacklist_size,
-    InitialCollectionType initial,
-    int given_goal,
     utils::Verbosity verbosity,
     double max_time);
 

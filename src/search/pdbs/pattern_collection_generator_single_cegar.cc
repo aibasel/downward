@@ -21,20 +21,8 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
       wildcard_plans(opts.get<bool>("wildcard_plans")),
       ignore_goal_violations(opts.get<bool>("ignore_goal_violations")),
       global_blacklist_size(opts.get<int>("global_blacklist_size")),
-      initial(opts.get<InitialCollectionType>("initial")),
-      given_goal(opts.get<int>("given_goal")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       max_time(opts.get<double>("max_time")) {
-    if (initial == InitialCollectionType::GIVEN_GOAL && given_goal == -1) {
-        cerr << "Initial collection type 'given goal', but no goal specified" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    }
-
-    if (initial != InitialCollectionType::GIVEN_GOAL && given_goal != -1) {
-        cerr << "Goal given, but initial collection type is not set to use it" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    }
-
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << token << "options: " << endl;
         utils::g_log << token << "max refinements: " << max_refinements << endl;
@@ -44,18 +32,6 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
         utils::g_log << token << "ignore goal violations: " << ignore_goal_violations << endl;
         utils::g_log << token << "global blacklist size: " << global_blacklist_size << endl;
         utils::g_log << token << "initial collection type: ";
-        switch (initial) {
-        case InitialCollectionType::GIVEN_GOAL:
-            utils::g_log << "given goal" << endl;
-            break;
-        case InitialCollectionType::RANDOM_GOAL:
-            utils::g_log << "random goal" << endl;
-            break;
-        case InitialCollectionType::ALL_GOALS:
-            utils::g_log << "all goals" << endl;
-            break;
-        }
-        utils::g_log << token << "given goal: " << given_goal << endl;
         utils::g_log << token << "Verbosity: ";
         switch (verbosity) {
         case utils::Verbosity::SILENT:
@@ -84,8 +60,15 @@ PatternCollectionGeneratorSingleCegar::~PatternCollectionGeneratorSingleCegar() 
 
 PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     const std::shared_ptr<AbstractTask> &task) {
+    TaskProxy task_proxy(*task);
+    vector<int> goal_variables;
+    for (const FactProxy &goal : task_proxy.get_goals()) {
+        goal_variables.push_back(goal.get_variable().get_id());
+    }
+
     return cegar(
         task,
+        move(goal_variables),
         rng,
         max_refinements,
         max_pdb_size,
@@ -93,8 +76,6 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         wildcard_plans,
         ignore_goal_violations,
         global_blacklist_size,
-        initial,
-        given_goal,
         verbosity,
         max_time);
 }
