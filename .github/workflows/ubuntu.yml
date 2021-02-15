@@ -23,6 +23,14 @@ jobs:
             compiler-version: {cc: gcc-10, cxx: g++-10}
           - ubuntu-version: ubuntu-18.04
             compiler-version: {cc: clang-11, cxx: clang++-11}
+    env:
+      CC: ${{ matrix.compiler-version.cc }}
+      CXX: ${{ matrix.compiler-version.cxx }}
+      CPLEX_URL: ${{ secrets.CPLEX_URL }}
+      SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
+      DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
+      DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
+      DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
     steps: # Eeach "-" is a new sequentially run step
       - name: clone-repo
         uses: actions/checkout@v1
@@ -34,20 +42,13 @@ jobs:
 
       - name: setup-dependencies
         run: |
-          sudo apt-get -y install zlib1g-dev libgmp3-dev
-          sudo apt-get -y install ${{ matrix.compiler-version.cc }}
+          sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
           mkdir /home/runner/work/downward/lib
 
       # We only want to setup osi if both LP solvers are set, hence
       # we execute the following three steps only if both secrets
       # are set.
       - name: setup-cplex
-        env:
-          CC: ${{ matrix.compiler-version.cc }}
-          CXX: ${{ matrix.compiler-version.cxx }}
-          CPLEX_URL: ${{ secrets.CPLEX_URL }}
-          SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
-          DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
@@ -58,12 +59,6 @@ jobs:
           rm $CPLEX_INSTALLER
 
       - name: setup-soplex
-        env:
-          CC: ${{ matrix.compiler-version.cc }}
-          CXX: ${{ matrix.compiler-version.cxx }}
-          CPLEX_URL: ${{ secrets.CPLEX_URL }}
-          SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
-          DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
@@ -79,14 +74,6 @@ jobs:
           rm -r soplex-3.1.1
 
       - name: setup-osi
-        env:
-          CC: ${{ matrix.compiler-version.cc }}
-          CXX: ${{ matrix.compiler-version.cxx }}
-          CPLEX_URL: ${{ secrets.CPLEX_URL }}
-          SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
-          DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
-          DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
-          DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           wget http://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz
@@ -110,12 +97,6 @@ jobs:
           rm -r Osi-0.107.9.tgz Osi-0.107.9
 
       - name: compile
-        env:
-          CC: ${{ matrix.compiler-version.cc }}
-          CXX: ${{ matrix.compiler-version.cxx }}
-          DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
-          DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
-          DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
         run: |
           export CXXFLAGS="-Werror"  # Treat compilation warnings as errors.
           ./build.py --debug
@@ -172,11 +153,18 @@ jobs:
     strategy:
       matrix:
         ubuntu-version: [ubuntu-18.04, ubuntu-20.04]
-        compiler-version: [gcc]
+        compiler-version:
+          - {cc: gcc, cxx: g++}
         python-version: [3.6, 3.8]
         exclude:
           - ubuntu-version: ubuntu-18.04
             python-version: 3.8
+    env:
+      CC: ${{ matrix.compiler-version.cc }}
+      CXX: ${{ matrix.compiler-version.cxx }}
+      DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
+      DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
+      DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
     steps:
       - name: setup-python
         uses: actions/setup-python@v1
@@ -189,8 +177,7 @@ jobs:
         # though the planner is already built.
         run: |
           pip3 install tox
-          sudo apt-get -y install clang-tidy-8 valgrind zlib1g-dev libgmp3-dev
-          sudo apt-get -y install ${{ matrix.compiler-version }}
+          sudo apt-get -y install clang-tidy-8 valgrind zlib1g-dev libgmp3-dev ${{ matrix.compiler-version }}
 
       - name: download-files
         uses: actions/download-artifact@v1
@@ -211,12 +198,6 @@ jobs:
           rm -r compiled-planner-${{ matrix.ubuntu-version }}
 
       - name: test
-        env:
-          CC: ${{ matrix.compiler-version.cc }}
-          CXX: ${{ matrix.compiler-version.cxx }}
-          DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
-          DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
-          DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
         run: |
           export PATH="$(pwd):$PATH"  # Add uncrustify and VAL to PATH.
           cd misc/
