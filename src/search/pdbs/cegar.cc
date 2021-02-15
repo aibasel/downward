@@ -17,7 +17,7 @@ using namespace std;
 namespace pdbs {
 class Cegar {
     const shared_ptr<AbstractTask> &task;
-    vector<int> remaining_goals;
+    const vector<int> goal_variables;
     shared_ptr<utils::RandomNumberGenerator> rng;
     const int max_refinements;
     const int max_pdb_size;
@@ -65,7 +65,6 @@ class Cegar {
     FlawList get_flaws(const shared_ptr<AbstractTask> &task);
 
     // Methods related to refining (and adding patterns to the collection generally).
-    void update_goals(int added_var);
     void add_pattern_for_var(const shared_ptr<AbstractTask> &task, int var);
     bool can_merge_patterns(int index1, int index2) const;
     void merge_patterns(
@@ -110,10 +109,13 @@ void Cegar::print_collection() const {
 
 void Cegar::generate_trivial_solution_collection(
         const shared_ptr<AbstractTask> &task) {
-    assert(!remaining_goals.empty());
-    while (!remaining_goals.empty()) {
-        int var = remaining_goals.back();
-        remaining_goals.pop_back();
+    assert(!goal_variables.empty());
+    /*
+      TODO: change to range-based for loop after testing the impact of
+      no longer removing "used" goal variables.
+    */
+    for (int i = static_cast<int>(goal_variables.size()) - 1; i >= 0; --i) {
+        int var = goal_variables[i];
         add_pattern_for_var(task, var);
     }
 
@@ -269,9 +271,9 @@ FlawList Cegar::apply_wildcard_plan(
                     VariableProxy goal_var = goal.get_variable();
                     int goal_var_id = goal_var.get_id();
                     if (current[goal_var] != goal && !blacklisted_variables.count(goal_var_id) &&
-                        find(remaining_goals.begin(), remaining_goals.end(),
+                        find(goal_variables.begin(), goal_variables.end(),
                              goal_var_id)
-                        != remaining_goals.end()) {
+                        != goal_variables.end()) {
                         flaws.emplace_back(solution_index, goal_var_id);
                     }
                 }
@@ -301,12 +303,14 @@ FlawList Cegar::get_flaws(
     FlawList flaws;
     State concrete_init = TaskProxy(*task).get_initial_state();
 
-    for (size_t solution_index = 0; solution_index < solutions.size(); ++solution_index) {
-        if (!solutions[solution_index] || solutions[solution_index]->is_solved()) {
+    for (size_t solution_index = 0;
+         solution_index < solutions.size(); ++solution_index) {
+        if (!solutions[solution_index] ||
+            solutions[solution_index]->is_solved()) {
             continue;
         }
 
-        AbstractSolutionData& solution = *solutions[solution_index];
+        AbstractSolutionData &solution = *solutions[solution_index];
 
         // abort here if no abstract solution could be found
         if (!solution.solution_exists()) {
@@ -332,19 +336,6 @@ FlawList Cegar::get_flaws(
         }
     }
     return flaws;
-}
-
-void Cegar::update_goals(int added_var) {
-    /*
-      Only call this method if added_var is definitely added to some
-      pattern. It removes the variable from remaining_goals if it is
-      contained there.
-    */
-    vector<int>::iterator result = find(
-            remaining_goals.begin(), remaining_goals.end(), added_var);
-    if (result != remaining_goals.end()) {
-        remaining_goals.erase(result);
-    }
 }
 
 void Cegar::add_pattern_for_var(
@@ -432,9 +423,8 @@ void Cegar::add_variable_to_pattern(
     collection_size -= solution.get_pdb()->get_size();
     collection_size += new_solution->get_pdb()->get_size();
 
-    // update look-up table and possibly remaining_goals, clean-up
+    // update look-up table
     solution_lookup[var] = index;
-    update_goals(var);
     solutions[index] = move(new_solution);
 }
 
@@ -508,7 +498,7 @@ PatternCollectionInformation Cegar::generate() {
     utils::CountdownTimer timer(max_time);
     TaskProxy task_proxy(*task);
 #ifndef NDEBUG
-    for (int goal_var : remaining_goals) {
+    for (int goal_var : goal_variables) {
         bool is_goal = false;
         for (const FactProxy &goal : task_proxy.get_goals()) {
             if (goal.get_variable().get_id() == goal_var) {
@@ -624,7 +614,7 @@ Cegar::Cegar(
     double max_time,
     unordered_set<int> &&blacklisted_variables)
     : task(task),
-      remaining_goals(move(goal_variables)),
+      goal_variables(move(goal_variables)),
       rng(rng),
       max_refinements(max_refinements),
       max_pdb_size(max_pdb_size),
