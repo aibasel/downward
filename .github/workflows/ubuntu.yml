@@ -34,7 +34,6 @@ jobs:
 
       - name: setup-dependencies
         run: |
-          sudo apt-get update
           sudo apt-get -y install zlib1g-dev libgmp3-dev
           sudo apt-get -y install ${{ matrix.compiler-version.cc }}
           mkdir /home/runner/work/downward/lib
@@ -105,7 +104,7 @@ jobs:
                       --with-soplex-lib="-lsoplex" \
                       --with-cplex-incdir=$DOWNWARD_CPLEX_ROOT/include/ilcplex \
                       --with-cplex-lib="-lcplex -lm -ldl" # -ldl is only needed for CPLEX >= 12.8
-          make
+          make -j2
           make install
           cd ../
           rm -r Osi-0.107.9.tgz Osi-0.107.9
@@ -131,7 +130,7 @@ jobs:
           mkdir build
           cd build
           cmake ../
-          make -j8
+          make -j2
           mv uncrustify ../../
           cd ../../
           rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
@@ -145,7 +144,7 @@ jobs:
           git checkout a5565396007eee73ac36527fbf904142b3077c74
           make clean  # Remove old build artifacts and binaries.
           sed -i 's/-Werror //g' Makefile  # Ignore warnings.
-          make -j8
+          make -j2
           mv validate ../
           cd ../
           rm -rf VAL
