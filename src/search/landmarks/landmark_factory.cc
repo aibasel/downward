@@ -71,11 +71,8 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
     if (lm_graph->get_num_landmarks() == 0)
         utils::g_log << "Warning! No landmarks found. Task unsolvable?" << endl;
     else {
-        utils::g_log << "Discovered " << lm_graph->get_num_landmarks()
-                     << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
-                     << " are disjunctive and "
-                     << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
-        utils::g_log << lm_graph->get_num_edges() << " edges" << endl;
+        lm_graph->log_num_landmarks();
+        lm_graph->log_num_edges();
     }
     return lm_graph;
 }

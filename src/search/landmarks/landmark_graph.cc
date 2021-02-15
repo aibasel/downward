@@ -1,5 +1,6 @@
 #include "landmark_graph.h"
 
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -34,11 +35,48 @@ LandmarkGraph::LandmarkGraph()
     : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0) {
 }
 
-int LandmarkGraph::get_num_edges() const {
+void LandmarkGraph::log_num_landmarks() const {
+    int num_total = nodes.size();
+    int num_simple =
+        num_total - num_conjunctive_landmarks - num_disjunctive_landmarks;
+    utils::g_log << "Discovered " << num_total << " landmarks, of which "
+                 << num_simple << " are simple, "
+                 << num_disjunctive_landmarks << " are disjunctive, and "
+                 << num_conjunctive_landmarks << " are conjunctive."
+                 << endl;
+}
+
+void LandmarkGraph::log_num_edges() const {
+    unordered_map<EdgeType, int> num_edges;
     int total = 0;
-    for (auto &node : nodes)
+    for (auto &node : nodes) {
         total += node->children.size();
-    return total;
+        for (auto &child : node->children) {
+            num_edges[child.second] += 1;
+        }
+    }
+    utils::g_log << "Discovered " << total << " landmark orderings." << endl;
+    for (pair<EdgeType, int> entry : num_edges) {
+        utils::g_log << "Found " << entry.second << " ";
+        switch (entry.first) {
+        case EdgeType::NATURAL:
+            utils::g_log << "natural";
+            break;
+        case EdgeType::GREEDY_NECESSARY:
+            utils::g_log << "greedy-necessary";
+            break;
+        case EdgeType::NECESSARY:
+            utils::g_log << "necessary";
+            break;
+        case EdgeType::OBEDIENT_REASONABLE:
+            utils::g_log << "obedient-reasonable";
+            break;
+        case EdgeType::REASONABLE:
+            utils::g_log << "reasonable";
+            break;
+        }
+        utils::g_log << " landmark orderings." << endl;
+    }
 }
 
 LandmarkNode *LandmarkGraph::get_landmark(int i) const {

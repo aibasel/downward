@@ -110,7 +110,8 @@ public:
     }
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    int get_num_edges() const;
+    void log_num_landmarks() const;
+    void log_num_edges() const;
 
 
     // only needed only by non-landmarkgraph-factories
