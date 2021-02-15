@@ -173,6 +173,29 @@ bool Cegar::termination_conditions_met(
     return false;
 }
 
+/*
+  TODO: this is a duplicate of State::get_unregistered_successor.
+  The reason is that we may apply operators even though they are not
+  applicable due to ignoring blacklisted violated preconditions.
+*/
+State get_unregistered_successor(
+    const shared_ptr<AbstractTask> &task,
+    const State &state,
+    const OperatorProxy &op) {
+    assert(!op.is_axiom());
+    vector<int> new_values = state.get_unpacked_values();
+
+    for (EffectProxy effect : op.get_effects()) {
+        if (does_fire(effect, state)) {
+            FactPair effect_fact = effect.get_fact().get_pair();
+            new_values[effect_fact.var] = effect_fact.value;
+        }
+    }
+
+    assert(task->get_num_axioms() == 0);
+    return State(*task, move(new_values));
+}
+
 FlawList Cegar::apply_wildcard_plan(
         const shared_ptr<AbstractTask> &task, int solution_index, const State &init) {
     TaskProxy task_proxy(*task);
@@ -212,7 +235,7 @@ FlawList Cegar::apply_wildcard_plan(
             if (!flaw_detected) {
                 step_failed = false;
                 flaws.clear();
-                current = current.get_unregistered_successor(op);
+                current = get_unregistered_successor(task, current, op);
                 break;
             }
         }
