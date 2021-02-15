@@ -158,7 +158,7 @@ LandmarkNode &LandmarkGraph::add_conjunctive_landmark(const set<FactPair> &lm) {
     return *new_node_p;
 }
 
-void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
+void LandmarkGraph::remove_node(LandmarkNode *node) {
     for (const auto &parent : node->parents) {
         LandmarkNode &parent_node = *(parent.first);
         parent_node.children.erase(node);
@@ -179,29 +179,29 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
     } else {
         simple_landmarks_to_nodes.erase(node->facts[0]);
     }
+
+    for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+        // IDs are not yet set, so we determine equality based on facts
+        if ((*it)->facts == node->facts) {
+            nodes.erase(it);
+            break;
+        }
+    }
 }
 
 void LandmarkGraph::remove_node_if(
-    const function<bool (const LandmarkNode &)> &remove_node) {
+    const function<bool (const LandmarkNode &)> &remove_node_condition) {
     for (auto &node : nodes) {
-        if (remove_node(*node)) {
-            remove_node_occurrences(node.get());
+        if (remove_node_condition(*node)) {
+            remove_node(node.get());
         }
     }
-    nodes.erase(remove_if(nodes.begin(), nodes.end(),
-                          [&remove_node](const unique_ptr<LandmarkNode> &node) {
-                              return remove_node(*node);
-                          }), nodes.end());
 }
 
 LandmarkNode &LandmarkGraph::replace_disjunctive_by_simple_landmark(const FactPair &lm) {
     LandmarkNode &node = get_disjunctive_landmark(lm);
-    node.disjunctive = false;
-    for (const FactPair &lm_fact : node.facts)
-        // TODO: shouldn't this decrease num_disjunctive_landmarks?
-        disjunctive_landmarks_to_nodes.erase(lm_fact);
-    simple_landmarks_to_nodes.emplace(lm, &node);
-    return node;
+    remove_node(&node);
+    return add_simple_landmark(lm);
 }
 
 void LandmarkGraph::set_landmark_ids() {
