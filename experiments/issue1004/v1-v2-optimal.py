@@ -10,6 +10,7 @@ from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 REVISIONS = [
     "issue1004-base",
     "issue1004-v1",
+    "issue1004-v2",
 ]
 
 CONFIGS = [

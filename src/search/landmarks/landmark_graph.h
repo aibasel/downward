@@ -84,7 +84,6 @@ private:
     utils::HashMap<FactPair, LandmarkNode *> disjunctive_landmarks_to_nodes;
     Nodes nodes;
 
-    void remove_node(LandmarkNode *node);
 public:
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
@@ -153,13 +152,10 @@ public:
     LandmarkNode &add_conjunctive_landmark(const std::set<FactPair> &lm);
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
+    void remove_node(LandmarkNode *node);
     void remove_node_if(
         const std::function<bool (const LandmarkNode &)> &remove_node_condition);
 
-    /* This is needed only by landmark graph factories (in particular, only
-       LandmarkFactorySasp) and will disappear when moving landmark graph
-       creation there. */
-    LandmarkNode &replace_disjunctive_by_simple_landmark(const FactPair &lm);
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     void set_landmark_ids();

@@ -198,12 +198,6 @@ void LandmarkGraph::remove_node_if(
     }
 }
 
-LandmarkNode &LandmarkGraph::replace_disjunctive_by_simple_landmark(const FactPair &lm) {
-    LandmarkNode &node = get_disjunctive_landmark(lm);
-    remove_node(&node);
-    return add_simple_landmark(lm);
-}
-
 void LandmarkGraph::set_landmark_ids() {
     int id = 0;
     for (auto &lmn : nodes) {
