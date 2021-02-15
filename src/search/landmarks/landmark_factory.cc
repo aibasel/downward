@@ -337,7 +337,7 @@ void LandmarkFactory::approximate_reasonable_orders(
             continue;
 
         if (node_p->is_true_in_state(initial_state))
-            return;
+            continue;
 
         if (!obedient_orders && node_p->is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
