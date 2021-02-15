@@ -177,7 +177,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
     if (lm_graph->contains_disjunctive_landmark(a)) {
         // Simple landmarks are more informative than disjunctive ones,
         // remove disj. landmark and add simple one
-        LandmarkNode& disj_lm = lm_graph->get_disjunctive_landmark(a);
+        LandmarkNode &disj_lm = lm_graph->get_disjunctive_landmark(a);
 
         // Remove all pointers to disj_lm from internal data structures (i.e.,
         // the list of open landmarks and forward orders)
