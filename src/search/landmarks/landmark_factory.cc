@@ -336,12 +336,14 @@ void LandmarkFactory::approximate_reasonable_orders(
         if (node_p->disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(initial_state))
+        if (obedient_orders && node_p->is_true_in_state(initial_state))
             continue;
 
         if (!obedient_orders && node_p->is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
-                if (node2_p == node_p || node2_p->disjunctive)
+                if (node2_p == node_p || node2_p->disjunctive ||
+                    (node_p->is_true_in_state(initial_state)
+                        && node2_p->is_true_in_state(initial_state)))
                     continue;
                 if (interferes(task_proxy, node2_p.get(), node_p.get())) {
                     edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
@@ -373,7 +375,9 @@ void LandmarkFactory::approximate_reasonable_orders(
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
             for (LandmarkNode *node : interesting_nodes) {
-                if (node == node_p.get() || node->disjunctive)
+                if (node == node_p.get() || node->disjunctive
+                    || (node->is_true_in_state(initial_state)
+                        && node_p->is_true_in_state(initial_state)))
                     continue;
                 if (interferes(task_proxy, node, node_p.get())) {
                     if (!obedient_orders)
