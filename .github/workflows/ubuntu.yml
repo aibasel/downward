@@ -28,7 +28,7 @@ jobs:
       CXX: ${{ matrix.compiler-version.cxx }}
       CPLEX_URL: ${{ secrets.CPLEX_URL }}
       SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
-      DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
+      DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
       DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
       DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
     steps: # Eeach "-" is a new sequentially run step
@@ -50,12 +50,14 @@ jobs:
       # are set.
       - name: setup-cplex
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        env:
+          CPLEX_STUDIO: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
         run: |
           # We redirect output of wget to hide the secret URLs.
           wget $CPLEX_URL &> /dev/null
           export CPLEX_INSTALLER=cplex_studio129.linux-x86-64.bin
           chmod +x $CPLEX_INSTALLER
-          ./$CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=${DOWNWARD_CPLEX_ROOT} -i silent
+          ./$CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=${CPLEX_STUDIO} -i silent
           rm $CPLEX_INSTALLER
 
       - name: setup-soplex
@@ -117,6 +119,10 @@ jobs:
           rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
 
       - name: setup-val
+        # VAL does not compile with clang-11.
+        env:
+          CC: gcc
+          CXX: g++
         run: |
           # Set up VAL.
           sudo apt-get -y install flex bison
