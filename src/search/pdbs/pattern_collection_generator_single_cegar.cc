@@ -20,50 +20,9 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
       max_collection_size(opts.get<int>("max_collection_size")),
       wildcard_plans(opts.get<bool>("wildcard_plans")),
       allow_merging(opts.get<AllowMerging>("allow_merging")),
-      global_blacklist_size(opts.get<int>("global_blacklist_size")),
+      blacklist_size(opts.get<int>("blacklist_size")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       max_time(opts.get<double>("max_time")) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << token << "options: " << endl;
-        utils::g_log << token << "max refinements: " << max_refinements << endl;
-        utils::g_log << token << "max pdb size: " << max_pdb_size << endl;
-        utils::g_log << token << "max collection size: " << max_collection_size << endl;
-        utils::g_log << token << "wildcard plans: " << wildcard_plans << endl;
-        utils::g_log << token << "allow merging: ";
-        switch (allow_merging) {
-            case AllowMerging::Never:
-                utils::g_log << "never";
-                break;
-            case AllowMerging::PreconditionFlaws:
-                utils::g_log << "normal";
-                break;
-            case AllowMerging::AllFlaws:
-                utils::g_log << "verbose";
-                break;
-        }
-        utils::g_log << token << "global blacklist size: " << global_blacklist_size << endl;
-        utils::g_log << token << "initial collection type: ";
-        utils::g_log << token << "Verbosity: ";
-        switch (verbosity) {
-        case utils::Verbosity::SILENT:
-            utils::g_log << "silent";
-            break;
-        case utils::Verbosity::NORMAL:
-            utils::g_log << "normal";
-            break;
-        case utils::Verbosity::VERBOSE:
-            utils::g_log << "verbose";
-            break;
-        case utils::Verbosity::DEBUG:
-            utils::g_log << "debug";
-            break;
-        }
-        utils::g_log << endl;
-        utils::g_log << token << "max time: " << max_time << endl;
-    }
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << endl;
-    }
 }
 
 PatternCollectionGeneratorSingleCegar::~PatternCollectionGeneratorSingleCegar() {
@@ -79,7 +38,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     rng->shuffle(goals);
 
     unordered_set<int> blacklisted_variables;
-    if (global_blacklist_size) {
+    if (blacklist_size) {
         int num_vars = task_proxy.get_variables().size();
         vector<int> non_goal_variables;
         non_goal_variables.reserve(num_vars - goals.size());
@@ -99,41 +58,43 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
 
         // Select a random subset of non goals.
         for (int i = 0;
-            i < min(global_blacklist_size, static_cast<int>(non_goal_variables.size()));
+            i < min(blacklist_size, static_cast<int>(non_goal_variables.size()));
             ++i) {
             int var_id = non_goal_variables[i];
-            if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << token << "blacklisting var" << var_id << endl;
-            }
             blacklisted_variables.insert(var_id);
         }
     }
 
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Single CEGAR pattern collection generator options: " << endl;
+        utils::g_log << "blacklist size: " << blacklist_size << endl;
+    }
     return cegar(
-        task,
-        move(goals),
-        rng,
         max_refinements,
         max_pdb_size,
         max_collection_size,
         wildcard_plans,
         allow_merging,
-        verbosity,
         max_time,
-        move(blacklisted_variables));
+        task,
+        move(goals),
+        move(blacklisted_variables),
+        rng,
+        verbosity);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(
         options::OptionParser& parser) {
     parser.add_option<int>(
-        "global_blacklist_size",
-        "Number of randomly selected non-goal variables that are globally "
+        "blacklist_size",
+        "Number of randomly selected non-goal variables that are "
         "blacklisted, which means excluded from being added to the pattern "
-        "collection. 0 means no global blacklisting happens, infinity means "
+        "collection. 0 means no blacklisting happens, infinity means "
         "to always exclude all non-goal variables.",
         "0",
         Bounds("0", "infinity")
     );
+    utils::add_verbosity_option_to_parser(parser);
     add_cegar_options_to_parser(parser);
     utils::add_rng_options(parser);
 

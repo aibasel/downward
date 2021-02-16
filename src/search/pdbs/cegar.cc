@@ -25,23 +25,21 @@ struct Flaw {
     }
 };
 
-using FlawList = std::vector<Flaw>;
+using FlawList = vector<Flaw>;
 
 class Cegar {
-    const shared_ptr<AbstractTask> &task;
-    const vector<FactPair> goals;
-    shared_ptr<utils::RandomNumberGenerator> rng;
     const int max_refinements;
     const int max_pdb_size;
     const int max_collection_size;
-    const bool wildcard_plans; // this is passed to AbstractSolutionData constructors, to set what kind of plan should be generated
+    const bool wildcard_plans;
     const AllowMerging allow_merging;
-    const utils::Verbosity verbosity;
     const double max_time;
-
-    const string token = "CEGAR_PDBs: ";
-
+    const shared_ptr<AbstractTask> &task;
+    const vector<FactPair> goals;
     unordered_set<int> blacklisted_variables;
+    shared_ptr<utils::RandomNumberGenerator> rng;
+    const utils::Verbosity verbosity;
+    const string token = "CEGAR: ";
 
     // the pattern collection in form of their pdbs plus stored plans.
     vector<unique_ptr<AbstractSolutionData>> solutions;
@@ -58,7 +56,7 @@ class Cegar {
     int concrete_solution_index;
 
     void print_collection() const;
-    void generate_trivial_solution_collection(const shared_ptr<AbstractTask> &task);
+    void compute_initial_collection();
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
     bool termination_conditions_met(
             const utils::CountdownTimer &timer, int refinement_counter) const;
@@ -90,19 +88,19 @@ class Cegar {
     void refine(const shared_ptr<AbstractTask> &task, const FlawList& flaws);
 public:
     Cegar(
-        const shared_ptr<AbstractTask> &task,
-        vector<FactPair> &&goals,
-        const shared_ptr<utils::RandomNumberGenerator> &rng,
         int max_refinements,
         int max_pdb_size,
         int max_collection_size,
         bool wildcard_plans,
-        const AllowMerging allow_merging,
-        utils::Verbosity verbosity,
+        AllowMerging allow_merging,
         double max_time,
-        unordered_set<int> &&blacklisted_variables);
+        const shared_ptr<AbstractTask> &task,
+        vector<FactPair> &&goals,
+        unordered_set<int> &&blacklisted_variables,
+        const shared_ptr<utils::RandomNumberGenerator> &rng,
+        utils::Verbosity verbosity);
 
-    PatternCollectionInformation generate();
+    PatternCollectionInformation run();
 };
 
 void Cegar::print_collection() const {
@@ -119,8 +117,7 @@ void Cegar::print_collection() const {
     utils::g_log << "]" << endl;
 }
 
-void Cegar::generate_trivial_solution_collection(
-        const shared_ptr<AbstractTask> &task) {
+void Cegar::compute_initial_collection() {
     assert(!goals.empty());
     for (const FactPair &goal : goals) {
         add_pattern_for_var(task, goal.var);
@@ -249,17 +246,17 @@ FlawList Cegar::apply_wildcard_plan(
               for empty blacklists.
             */
             if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << " and resulted in a concrete goal state: ";
+                utils::g_log << "and resulted in a concrete goal state." << endl;
             }
             if (blacklisted_variables.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "since there are no blacklisted variables, "
+                    utils::g_log << token << "since there are no blacklisted variables, "
                                     "the concrete task is solved." << endl;
                 }
                 concrete_solution_index = solution_index;
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "since there are blacklisted variables, the plan "
+                    utils::g_log << token << "since there are blacklisted variables, the plan "
                                     "is not guaranteed to work in the concrete state "
                                     "space. Marking this solution as solved." << endl;
                 }
@@ -273,7 +270,7 @@ FlawList Cegar::apply_wildcard_plan(
               flaws depending on the option allow_merging.
             */
             if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << "but did not lead to a goal state. " << endl;
+                utils::g_log << "but did not lead to a goal state." << endl;
             }
             if (allow_merging == AllowMerging::AllFlaws) {
                 for (const FactPair &goal : goals) {
@@ -339,6 +336,7 @@ FlawList Cegar::get_flaws(
             // We solved the concrete task. Return empty flaws to signal terminating.
             assert(concrete_solution_index == static_cast<int>(solution_index));
             assert(new_flaws.empty());
+            assert(blacklisted_variables.empty());
             flaws.clear();
             return flaws;
         }
@@ -505,31 +503,11 @@ void Cegar::refine(
     handle_flaw(task, flaw);
 }
 
-PatternCollectionInformation Cegar::generate() {
+PatternCollectionInformation Cegar::run() {
     utils::CountdownTimer timer(max_time);
-    TaskProxy task_proxy(*task);
-#ifndef NDEBUG
-    for (const FactPair goal : goals) {
-        bool is_goal = false;
-        for (const FactProxy &task_goal : task_proxy.get_goals()) {
-            if (goal == task_goal.get_pair()) {
-                is_goal = true;
-                break;
-            }
-        }
-        if (!is_goal) {
-            cerr << " Given goal is not a goal of the task" << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-        }
-    }
-#endif
-
-    // Start with a solution of the trivial abstraction
-    generate_trivial_solution_collection(task);
-
-    // main loop of the algorithm
+    compute_initial_collection();
     int refinement_counter = 0;
-    while (not termination_conditions_met(timer, refinement_counter)) {
+    while (!termination_conditions_met(timer, refinement_counter)) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "iteration #" << refinement_counter + 1 << endl;
         }
@@ -538,22 +516,15 @@ PatternCollectionInformation Cegar::generate() {
         FlawList flaws = get_flaws(task);
 
         if (flaws.empty()) {
-            if (concrete_solution_index != -1) {
-                assert(blacklisted_variables.empty());
-                if (verbosity >= utils::Verbosity::NORMAL) {
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                if (concrete_solution_index != -1) {
                     utils::g_log << token
                                  << "task solved during computation of abstract solutions"
                                  << endl;
-                    solutions[concrete_solution_index]->print_plan();
-                    utils::g_log << token << "length of plan: "
-                                 << solutions[concrete_solution_index]->get_plan().size()
-                                 << " step(s)." << endl;
-                    utils::g_log << token << "cost of plan: "
-                                 << solutions[concrete_solution_index]->compute_plan_cost() << endl;
-                }
-            } else {
-                if (verbosity >= utils::Verbosity::NORMAL) {
-                    utils::g_log << token << "Flaw list empty. No further refinements possible." << endl;
+                } else {
+                    utils::g_log << token
+                                 << "Flaw list empty. No further refinements possible."
+                                 << endl;
                 }
             }
             break;
@@ -577,7 +548,7 @@ PatternCollectionInformation Cegar::generate() {
             utils::g_log << endl;
         }
     }
-    if (verbosity >= utils::Verbosity::NORMAL) {
+    if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << endl;
     }
 
@@ -601,69 +572,133 @@ PatternCollectionInformation Cegar::generate() {
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << token << "computation time: " << timer.get_elapsed_time() << endl;
         utils::g_log << token << "number of iterations: " << refinement_counter << endl;
-        utils::g_log << token << "final collection: " << *patterns << endl << endl;
+        utils::g_log << token << "final collection: " << *patterns << endl;
         utils::g_log << token << "final collection number of patterns: " << patterns->size() << endl;
         utils::g_log << token << "final collection summed PDB sizes: " << collection_size << endl;
     }
 
+    TaskProxy task_proxy(*task);
     PatternCollectionInformation pattern_collection_information(
-            task_proxy, patterns);
+        task_proxy, patterns);
     pattern_collection_information.set_pdbs(pdbs);
     return pattern_collection_information;
 }
 
 Cegar::Cegar(
-    const shared_ptr<AbstractTask> &task,
-    vector<FactPair> &&goals,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
-    const AllowMerging allow_merging,
-    utils::Verbosity verbosity,
+    AllowMerging allow_merging,
     double max_time,
-    unordered_set<int> &&blacklisted_variables)
-    : task(task),
-      goals(move(goals)),
-      rng(rng),
-      max_refinements(max_refinements),
+    const shared_ptr<AbstractTask> &task,
+    vector<FactPair> &&goals,
+    unordered_set<int> &&blacklisted_variables,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    utils::Verbosity verbosity)
+    : max_refinements(max_refinements),
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
       allow_merging(allow_merging),
-      verbosity(verbosity),
       max_time(max_time),
+      task(task),
+      goals(move(goals)),
       blacklisted_variables(move(blacklisted_variables)),
+      rng(rng),
+      verbosity(verbosity),
       collection_size(0),
       concrete_solution_index(-1) {
 }
 
 PatternCollectionInformation cegar(
-    const shared_ptr<AbstractTask> &task,
-    vector<FactPair> &&goals,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
-    const AllowMerging allow_merging,
-    utils::Verbosity verbosity,
+    AllowMerging allow_merging,
     double max_time,
-    unordered_set<int> &&blacklisted_variables) {
+    const shared_ptr<AbstractTask> &task,
+    vector<FactPair> &&goals,
+    unordered_set<int> &&blacklisted_variables,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    utils::Verbosity verbosity) {
+#ifndef NDEBUG
+    TaskProxy task_proxy(*task);
+    for (const FactPair goal : goals) {
+        bool is_goal = false;
+        for (const FactProxy &task_goal : task_proxy.get_goals()) {
+            if (goal == task_goal.get_pair()) {
+                is_goal = true;
+                break;
+            }
+        }
+        if (!is_goal) {
+            cerr << " Given goal is not a goal of the task" << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+        }
+    }
+#endif
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Options of the CEGAR algorithm for computing a pattern collection: " << endl;
+        utils::g_log << "max refinements: " << max_refinements << endl;
+        utils::g_log << "max pdb size: " << max_pdb_size << endl;
+        utils::g_log << "max collection size: " << max_collection_size << endl;
+        utils::g_log << "wildcard plans: " << wildcard_plans << endl;
+        utils::g_log << "allow merging: ";
+        switch (allow_merging) {
+            case AllowMerging::Never:
+                utils::g_log << "never";
+                break;
+            case AllowMerging::PreconditionFlaws:
+                utils::g_log << "normal";
+                break;
+            case AllowMerging::AllFlaws:
+                utils::g_log << "verbose";
+                break;
+        }
+        utils::g_log << endl;
+        utils::g_log << "Verbosity: ";
+        switch (verbosity) {
+            case utils::Verbosity::SILENT:
+                utils::g_log << "silent";
+                break;
+            case utils::Verbosity::NORMAL:
+                utils::g_log << "normal";
+                break;
+            case utils::Verbosity::VERBOSE:
+                utils::g_log << "verbose";
+                break;
+            case utils::Verbosity::DEBUG:
+                utils::g_log << "debug";
+                break;
+        }
+        utils::g_log << endl;
+        utils::g_log << "max time: " << max_time << endl;
+        utils::g_log << "blacklisted variables: ";
+        if (blacklisted_variables.empty()) {
+            utils::g_log << "none";
+        } else {
+            for (int var : blacklisted_variables) {
+                utils::g_log << var << ", ";
+            }
+        }
+        utils::g_log << endl;
+    }
+
     Cegar cegar(
-        task,
-        move(goals),
-        rng,
         max_refinements,
         max_pdb_size,
         max_collection_size,
         wildcard_plans,
         allow_merging,
-        verbosity,
         max_time,
-        move(blacklisted_variables));
-    return cegar.generate();
+        task,
+        move(goals),
+        move(blacklisted_variables),
+        rng,
+        verbosity);
+    return cegar.run();
 }
 
 void add_cegar_options_to_parser(options::OptionParser &parser) {
@@ -709,7 +744,5 @@ void add_cegar_options_to_parser(options::OptionParser &parser) {
         " as well as the creation of the correlation matrix.",
         "infinity",
         Bounds("0.0", "infinity"));
-
-    utils::add_verbosity_option_to_parser(parser);
 }
 }

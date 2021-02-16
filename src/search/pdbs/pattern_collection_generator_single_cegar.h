@@ -20,10 +20,9 @@ class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator 
     const int max_collection_size;
     const bool wildcard_plans;
     const AllowMerging allow_merging;
-    const int global_blacklist_size;
+    const int blacklist_size;
     const utils::Verbosity verbosity;
     const double max_time;
-    const std::string token = "CEGAR_PDBs: ";
 public:
     explicit PatternCollectionGeneratorSingleCegar(const options::Options &opts);
     virtual ~PatternCollectionGeneratorSingleCegar();

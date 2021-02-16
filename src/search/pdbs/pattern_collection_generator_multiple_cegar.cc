@@ -24,12 +24,12 @@ namespace pdbs {
 
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     options::Options& opts)
-    : single_generator_max_refinements(opts.get<int>("max_refinements")),
-      single_generator_max_pdb_size(opts.get<int>("max_pdb_size")),
-      single_generator_max_collection_size(opts.get<int>("max_collection_size")),
-      single_generator_wildcard_plans(opts.get<bool>("wildcard_plans")),
-      single_generator_max_time(opts.get<double>("max_time")),
-      single_generator_verbosity(opts.get<utils::Verbosity>("verbosity")),
+    : cegar_max_refinements(opts.get<int>("max_refinements")),
+      cegar_max_pdb_size(opts.get<int>("max_pdb_size")),
+      cegar_max_collection_size(opts.get<int>("max_collection_size")),
+      cegar_wildcard_plans(opts.get<bool>("wildcard_plans")),
+      cegar_max_time(opts.get<double>("max_time")),
+      verbosity(opts.get<utils::Verbosity>("verbosity")),
       initial_random_seed(opts.get<int>("initial_random_seed")),
       total_collection_max_size(opts.get<int>("total_collection_max_size")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
@@ -40,7 +40,9 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
 
 PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         const std::shared_ptr<AbstractTask> &task) {
-    utils::g_log << "Fast CEGAR: generating patterns" << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Multiple CEGAR: generating patterns" << endl;
+    }
     TaskProxy task_proxy(*task);
 
     utils::CountdownTimer timer(total_time_limit);
@@ -78,8 +80,9 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     double stagnation_start = 0;
     int num_iterations = 0;
     int goal_index = 0;
-    const AllowMerging single_generator_allow_merging = AllowMerging::Never;
     int collection_size = 0;
+    const AllowMerging single_generator_allow_merging = AllowMerging::Never;
+    const utils::Verbosity cegar_verbosity(utils::Verbosity::SILENT);
     while (can_generate) {
         // we start blacklisting once a certain amount of time has passed
         // or if blacklisting was forced due to stagnation
@@ -98,7 +101,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
              ++i) {
             int var_id = non_goal_variables[i];
 //            if (verbosity >= utils::Verbosity::VERBOSE) {
-//                utils::g_log << "Fast CEGAR: blacklisting var" << var_id << endl;
+//                utils::g_log << "Multiple CEGAR: blacklisting var" << var_id << endl;
 //            }
             blacklisted_variables.insert(var_id);
         }
@@ -106,17 +109,17 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         int remaining_collection_size = total_collection_max_size - collection_size;
         double remaining_time = total_time_limit - timer.get_elapsed_time();
         auto collection_info = cegar(
-            task,
-            {goals[goal_index]},
-            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
-            single_generator_max_refinements,
-            single_generator_max_pdb_size,
-            min(remaining_collection_size, single_generator_max_collection_size),
-            single_generator_wildcard_plans,
-            single_generator_allow_merging,
-            single_generator_verbosity,
-            min(remaining_time, single_generator_max_time),
-            move(blacklisted_variables)
+                cegar_max_refinements,
+                cegar_max_pdb_size,
+                min(remaining_collection_size, cegar_max_collection_size),
+                cegar_wildcard_plans,
+                single_generator_allow_merging,
+                min(remaining_time, cegar_max_time),
+                task,
+                {goals[goal_index]},
+                move(blacklisted_variables),
+                make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
+                cegar_verbosity
         );
         auto pattern_collection = collection_info.get_patterns();
         auto pdb_collection = collection_info.get_pdbs();
@@ -140,7 +143,10 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 // This happens because a single CEGAR run can violate the
                 // imposed size limit if already the given goal variable is
                 // too large.
-                utils::g_log << "Fast CEGAR: Total collection size limit reached." << endl;
+                if (verbosity >= utils::Verbosity::NORMAL) {
+                    utils::g_log << "Multiple CEGAR: Total collection size "
+                                    "limit reached." << endl;
+                }
                 can_generate = false;
             }
 
@@ -164,26 +170,35 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 if (!blacklist_on_stagnation) {
                     // stagnation has been going on for too long and we are not
                     // allowed to force blacklisting, so nothing can be done.
-                    utils::g_log << "Fast CEGAR: Stagnation limit reached. Stopping generation."
-                         << endl;
+                    if (verbosity >= utils::Verbosity::NORMAL) {
+                        utils::g_log << "Multiple CEGAR: Stagnation limit "
+                                        "reached. Stopping generation." << endl;
+                        }
                 } else {
                     // stagnation in spite of blacklisting
-                    utils::g_log << "Fast CEGAR: Stagnation limit reached again. Stopping generation."
-                         << endl;
+                    if (verbosity >= utils::Verbosity::NORMAL) {
+                        utils::g_log << "Multiple CEGAR: Stagnation limit "
+                                        "reached again. Stopping generation."
+                                     << endl;
+                    }
                 }
                 can_generate = false;
             } else {
                 // We want to blacklist on stagnation but have not started
                 // doing so yet.
-                utils::g_log << "Fast CEGAR: Stagnation limit reached. Forcing global blacklisting."
-                     << endl;
+                if (verbosity >= utils::Verbosity::NORMAL) {
+                    utils::g_log << "Multiple CEGAR: Stagnation limit reached. "
+                                    "Forcing global blacklisting." << endl;
+                }
                 force_blacklisting = true;
                 stagnation = false;
             }
         }
 
         if (timer.is_expired()) {
-            utils::g_log << "Fast CEGAR: time limit reached" << endl;
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                utils::g_log << "Multiple CEGAR: time limit reached" << endl;
+            }
             can_generate = false;
         }
         ++num_iterations;
@@ -192,14 +207,22 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         assert(utils::in_bounds(goal_index, goals));
     }
 
-    utils::g_log << "Fast CEGAR: computation time: " << timer.get_elapsed_time() << endl;
-    utils::g_log << "Fast CEGAR: number of iterations: " << num_iterations << endl;
-    utils::g_log << "Fast CEGAR: average time per generator: "
-         << timer.get_elapsed_time() / static_cast<double>(num_iterations + 1)
-         << endl;
-    utils::g_log << "Fast CEGAR: final collection: " << *union_patterns << endl;
-    utils::g_log << "Fast CEGAR: final collection number of patterns: " << union_patterns->size() << endl;
-    utils::g_log << "Fast CEGAR: final collection summed PDB size: " << collection_size << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Multiple CEGAR: computation time: "
+                     << timer.get_elapsed_time() << endl;
+        utils::g_log << "Multiple CEGAR: number of iterations: "
+                     << num_iterations << endl;
+        utils::g_log << "Multiple CEGAR: average time per generator: "
+                     << timer.get_elapsed_time() /
+                        static_cast<double>(num_iterations + 1)
+                     << endl;
+        utils::g_log << "Multiple CEGAR: final collection: " << *union_patterns
+                     << endl;
+        utils::g_log << "Multiple CEGAR: final collection number of patterns: "
+                     << union_patterns->size() << endl;
+        utils::g_log << "Multiple CEGAR: final collection summed PDB size: "
+                     << collection_size << endl;
+    }
 
     PatternCollectionInformation result(task_proxy,union_patterns);
     result.set_pdbs(union_pdbs);
@@ -208,43 +231,44 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 
 static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {
     parser.add_option<int>(
-            "initial_random_seed",
-            "seed for the random number generator(s) of the cegar generators","10");
+        "initial_random_seed",
+        "seed for the random number generator(s) of the cegar generators","10");
     parser.add_option<int>(
-            "total_collection_max_size",
-            "max. number of entries in the final collection",
-            "infinity"
+        "total_collection_max_size",
+        "max. number of entries in the final collection",
+        "infinity"
     );
     parser.add_option<double>(
-            "total_time_limit",
-            "time budget for PDB collection generation",
-            "25.0"
+        "total_time_limit",
+        "time budget for PDB collection generation",
+        "25.0"
     );
     parser.add_option<double>(
-            "stagnation_limit",
-            "max. time the algorithm waits for the introduction of a new pattern."
-                    " Execution finishes prematurely if no new, unique pattern"
-                    " could be added to the collection during this time.",
-            "5.0"
+        "stagnation_limit",
+        "max. time the algorithm waits for the introduction of a new pattern."
+                " Execution finishes prematurely if no new, unique pattern"
+                " could be added to the collection during this time.",
+        "5.0"
     );
     parser.add_option<double>(
-            "blacklist_trigger_time",
-            "time given as percentage of overall time_limit,"
-                    " after which blacklisting (for diversification) is enabled."
-                    " E.g. blacklist_trigger_time=0.5 will trigger blacklisting"
-                    " once half of the total time has passed.",
-            "1.0",
-            Bounds("0.0","1.0")
+        "blacklist_trigger_time",
+        "time given as percentage of overall time_limit,"
+                " after which blacklisting (for diversification) is enabled."
+                " E.g. blacklist_trigger_time=0.5 will trigger blacklisting"
+                " once half of the total time has passed.",
+        "1.0",
+        Bounds("0.0","1.0")
     );
     parser.add_option<bool>(
-            "blacklist_on_stagnation",
-            "whether the algorithm forces blacklisting to start early if"
-                    " stagnation_limit is crossed (instead of aborting)."
-                    " The algorithm still aborts if stagnation_limit is"
-                    " reached for the second time.",
-            "true"
+        "blacklist_on_stagnation",
+        "whether the algorithm forces blacklisting to start early if"
+                " stagnation_limit is crossed (instead of aborting)."
+                " The algorithm still aborts if stagnation_limit is"
+                " reached for the second time.",
+        "true"
     );
 
+    utils::add_verbosity_option_to_parser(parser);
     add_cegar_options_to_parser(parser);
 
     Options opts = parser.parse();

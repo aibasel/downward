@@ -22,17 +22,17 @@ enum class AllowMerging {
 };
 
 extern PatternCollectionInformation cegar(
-    const std::shared_ptr<AbstractTask> &task,
-    std::vector<FactPair> &&goals,
-    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
     AllowMerging allow_merging,
-    utils::Verbosity verbosity,
     double max_time,
-    std::unordered_set<int> &&blacklisted_variables);
+    const std::shared_ptr<AbstractTask> &task,
+    std::vector<FactPair> &&goals,
+    std::unordered_set<int> &&blacklisted_variables,
+    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
+    utils::Verbosity verbosity);
 
 extern void add_cegar_options_to_parser(
     options::OptionParser &parser);

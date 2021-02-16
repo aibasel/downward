@@ -5,7 +5,6 @@
 
 #include "../tasks/projected_task.h"
 
-#include <set>
 #include <utility>
 
 namespace successor_generator {
@@ -24,7 +23,6 @@ class AbstractSolutionData {
     std::shared_ptr<PatternDatabase> pdb;
     tasks::ProjectedTask abstracted_task;
     TaskProxy abs_task_proxy;
-    std::set<int> blacklist;
     std::vector<std::vector<OperatorID>> wildcard_plan;
     bool wildcard_plans;
     bool is_solvable;
@@ -80,8 +78,6 @@ public:
 
     OperatorID get_concrete_op_id_for_abs_op_id(
         OperatorID abs_op_id, const std::shared_ptr<AbstractTask> &parent_task) const;
-
-    int compute_plan_cost() const;
 
     void print_plan() const;
 };

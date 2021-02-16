@@ -259,15 +259,6 @@ OperatorID AbstractSolutionData::get_concrete_op_id_for_abs_op_id(
     return abs_op.get_ancestor_operator_id(parent_task.get());
 }
 
-int AbstractSolutionData::compute_plan_cost() const {
-    int sum_cost = 0;
-    for (auto step : wildcard_plan) {
-        // all equivalent ops have the same cost, so we just take the first op
-        sum_cost += abs_task_proxy.get_operators()[step[0]].get_cost();
-    }
-    return sum_cost;
-}
-
 void AbstractSolutionData::print_plan() const {
     utils::g_log << "##### Plan for pattern " << get_pattern() << " #####" << endl;
     int i = 1;
