@@ -122,13 +122,8 @@ void Cegar::print_collection() const {
 void Cegar::generate_trivial_solution_collection(
         const shared_ptr<AbstractTask> &task) {
     assert(!goals.empty());
-    /*
-      TODO: change to range-based for loop after testing the impact of
-      no longer removing "used" goal variables.
-    */
-    for (int i = static_cast<int>(goals.size()) - 1; i >= 0; --i) {
-        int var = goals[i].var;
-        add_pattern_for_var(task, var);
+    for (const FactPair &goal : goals) {
+        add_pattern_for_var(task, goal.var);
     }
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
