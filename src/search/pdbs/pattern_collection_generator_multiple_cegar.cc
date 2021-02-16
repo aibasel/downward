@@ -78,7 +78,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     double stagnation_start = 0;
     int num_iterations = 0;
     int goal_index = 0;
-    const bool single_generator_ignore_goal_violations = true;
+    const AllowMerging single_generator_allow_merging = AllowMerging::Never;
     int collection_size = 0;
     while (can_generate) {
         // we start blacklisting once a certain amount of time has passed
@@ -113,7 +113,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             single_generator_max_pdb_size,
             min(remaining_collection_size, single_generator_max_collection_size),
             single_generator_wildcard_plans,
-            single_generator_ignore_goal_violations,
+            single_generator_allow_merging,
             single_generator_verbosity,
             min(remaining_time, single_generator_max_time),
             move(blacklisted_variables)

@@ -19,7 +19,7 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
       max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
       wildcard_plans(opts.get<bool>("wildcard_plans")),
-      ignore_goal_violations(opts.get<bool>("ignore_goal_violations")),
+      allow_merging(opts.get<AllowMerging>("allow_merging")),
       global_blacklist_size(opts.get<int>("global_blacklist_size")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       max_time(opts.get<double>("max_time")) {
@@ -29,7 +29,18 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
         utils::g_log << token << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << token << "max collection size: " << max_collection_size << endl;
         utils::g_log << token << "wildcard plans: " << wildcard_plans << endl;
-        utils::g_log << token << "ignore goal violations: " << ignore_goal_violations << endl;
+        utils::g_log << token << "allow merging: ";
+        switch (allow_merging) {
+            case AllowMerging::Never:
+                utils::g_log << "never";
+                break;
+            case AllowMerging::PreconditionFlaws:
+                utils::g_log << "normal";
+                break;
+            case AllowMerging::AllFlaws:
+                utils::g_log << "verbose";
+                break;
+        }
         utils::g_log << token << "global blacklist size: " << global_blacklist_size << endl;
         utils::g_log << token << "initial collection type: ";
         utils::g_log << token << "Verbosity: ";
@@ -106,7 +117,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         max_pdb_size,
         max_collection_size,
         wildcard_plans,
-        ignore_goal_violations,
+        allow_merging,
         verbosity,
         max_time,
         move(blacklisted_variables));

@@ -35,7 +35,7 @@ class Cegar {
     const int max_pdb_size;
     const int max_collection_size;
     const bool wildcard_plans; // this is passed to AbstractSolutionData constructors, to set what kind of plan should be generated
-    const bool ignore_goal_violations; // set this to true if you want to generate only one pattern
+    const AllowMerging allow_merging;
     const utils::Verbosity verbosity;
     const double max_time;
 
@@ -97,7 +97,7 @@ public:
         int max_pdb_size,
         int max_collection_size,
         bool wildcard_plans,
-        bool ignore_goal_violations,
+        const AllowMerging allow_merging,
         utils::Verbosity verbosity,
         double max_time,
         unordered_set<int> &&blacklisted_variables);
@@ -271,28 +271,36 @@ FlawList Cegar::apply_wildcard_plan(
                 solution.mark_as_solved();
             }
         } else {
+            /*
+              The pattern is missing at least one goal variable. Since all
+              goal variables are in the collection from the start on, this
+              flaw can only be fixed by merging patterns. Hence we raise
+              flaws depending on the option allow_merging.
+            */
             if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << "but did not lead to a goal state: ";
+                utils::g_log << "but did not lead to a goal state. " << endl;
             }
-            if (!ignore_goal_violations) {
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "potentially raising goal violation flaw(s)" << endl;
-                }
-                // Collect all non-satisfied goal variables that are still available.
+            if (allow_merging == AllowMerging::AllFlaws) {
                 for (const FactPair &goal : goals) {
                     int goal_var_id = goal.var;
                     if (current[goal_var_id].get_pair() != goal && !blacklisted_variables.count(goal_var_id)) {
                         flaws.emplace_back(solution_index, goal_var_id);
                     }
                 }
+                if (flaws.empty()) {
+                    utils::g_log << token
+                                 << "no non-blacklisted goal variables left, "
+                                    "marking this pattern as solved." << endl;
+                    solution.mark_as_solved();
+                } else {
+                    if (verbosity >= utils::Verbosity::VERBOSE) {
+                        utils::g_log << token << "raising goal violation flaw(s)." << endl;
+                    }
+                }
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
-                    if (ignore_goal_violations) {
-                        utils::g_log << "we ignore goal violations";
-                    } else {
-                        utils::g_log << "no more goals that could be added to the collection";
-                    }
-                    utils::g_log << ", thus marking this pattern as solved." << endl;
+                    utils::g_log << "we do not allow merging due to goal violation flaws, ";
+                    utils::g_log << "thus marking this pattern as solved." << endl;
                 }
                 solution.mark_as_solved();
             }
@@ -451,7 +459,7 @@ void Cegar::handle_flaw(
             utils::g_log << token << "var" << var << " is already in pattern "
                          << solutions[other_index]->get_pattern() << endl;
         }
-        if (can_merge_patterns(sol_index, other_index)) {
+        if (allow_merging >= AllowMerging::PreconditionFlaws && can_merge_patterns(sol_index, other_index)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << token << "merge the two patterns" << endl;
             }
@@ -617,7 +625,7 @@ Cegar::Cegar(
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
-    bool ignore_goal_violations,
+    const AllowMerging allow_merging,
     utils::Verbosity verbosity,
     double max_time,
     unordered_set<int> &&blacklisted_variables)
@@ -628,7 +636,7 @@ Cegar::Cegar(
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
-      ignore_goal_violations(ignore_goal_violations),
+      allow_merging(allow_merging),
       verbosity(verbosity),
       max_time(max_time),
       blacklisted_variables(move(blacklisted_variables)),
@@ -644,7 +652,7 @@ PatternCollectionInformation cegar(
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
-    bool ignore_goal_violations,
+    const AllowMerging allow_merging,
     utils::Verbosity verbosity,
     double max_time,
     unordered_set<int> &&blacklisted_variables) {
@@ -656,7 +664,7 @@ PatternCollectionInformation cegar(
         max_pdb_size,
         max_collection_size,
         wildcard_plans,
-        ignore_goal_violations,
+        allow_merging,
         verbosity,
         max_time,
         move(blacklisted_variables));
@@ -665,40 +673,47 @@ PatternCollectionInformation cegar(
 
 void add_cegar_options_to_parser(options::OptionParser &parser) {
     parser.add_option<int>(
-            "max_refinements",
-            "maximum allowed number of refinements",
-            "infinity",
-            Bounds("0", "infinity"));
+        "max_refinements",
+        "maximum allowed number of refinements",
+        "infinity",
+        Bounds("0", "infinity"));
     parser.add_option<int>(
-            "max_pdb_size",
-            "maximum allowed number of states in a pdb (not applied to initial "
-            "goal variable pattern(s))",
-            "1000000",
-            Bounds("1", "infinity")
-    );
+        "max_pdb_size",
+        "maximum allowed number of states in a pdb (not applied to initial "
+        "goal variable pattern(s))",
+        "1000000",
+        Bounds("1", "infinity"));
     parser.add_option<int>(
-            "max_collection_size",
-            "limit for the total number of PDB entries across all PDBs (not "
-            "applied to initial goal variable pattern(s))",
-            "infinity",
-            Bounds("1","infinity")
-    );
+        "max_collection_size",
+        "limit for the total number of PDB entries across all PDBs (not "
+        "applied to initial goal variable pattern(s))",
+        "infinity",
+        Bounds("1","infinity"));
     parser.add_option<bool>(
-            "wildcard_plans",
-            "Make the algorithm work with wildcard rather than regular plans.",
-            "true"
-    );
-    parser.add_option<bool>(
-            "ignore_goal_violations",
-            "ignore goal violations and consequently generate a single pattern",
-            "false");
+        "wildcard_plans",
+        "Make the algorithm work with wildcard rather than regular plans.",
+        "true");
+    vector<string> allow_merging_options;
+    vector<string> allow_merging_doc;
+    allow_merging_options.push_back("never");
+    allow_merging_doc.push_back("never merge patterns");
+    allow_merging_options.push_back("precondition_flaws");
+    allow_merging_doc.push_back("only allow merging after precondition flaws");
+    allow_merging_options.push_back("all_flaws");
+    allow_merging_doc.push_back("allow merging for both goal and precondition flaws");
+    parser.add_enum_option<AllowMerging>(
+        "allow_merging",
+        allow_merging_options,
+        "ignore goal violations and consequently generate a single pattern",
+        "all_flaws",
+        allow_merging_doc);
     parser.add_option<double>(
-            "max_time",
-            "maximum time in seconds for CEGAR pattern generation. "
-            "This includes the creation of the initial PDB collection"
-            " as well as the creation of the correlation matrix.",
-            "infinity",
-            Bounds("0.0", "infinity"));
+        "max_time",
+        "maximum time in seconds for CEGAR pattern generation. "
+        "This includes the creation of the initial PDB collection"
+        " as well as the creation of the correlation matrix.",
+        "infinity",
+        Bounds("0.0", "infinity"));
 
     utils::add_verbosity_option_to_parser(parser);
 }

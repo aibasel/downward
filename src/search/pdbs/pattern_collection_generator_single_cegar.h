@@ -3,6 +3,7 @@
 
 #include "pattern_generator.h"
 
+#include "cegar.h"
 #include "types.h"
 
 #include "../utils/rng.h"
@@ -17,8 +18,8 @@ class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator 
     const int max_refinements;
     const int max_pdb_size;
     const int max_collection_size;
-    const bool wildcard_plans; // this is passed to AbstractSolutionData constructors, to set what kind of plan should be generated
-    const bool ignore_goal_violations; // set this to true if you want to generate only one pattern
+    const bool wildcard_plans;
+    const AllowMerging allow_merging;
     const int global_blacklist_size;
     const utils::Verbosity verbosity;
     const double max_time;
