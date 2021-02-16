@@ -718,7 +718,6 @@ fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES
-        pdbs/abstract_solution_data
         pdbs/canonical_pdbs
         pdbs/canonical_pdbs_heuristic
         pdbs/cegar
