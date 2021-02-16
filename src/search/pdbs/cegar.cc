@@ -15,9 +15,21 @@
 using namespace std;
 
 namespace pdbs {
+struct Flaw {
+    int solution_index;
+    int variable;
+
+    Flaw(int solution_index, int variable)
+            : solution_index(solution_index),
+              variable(variable) {
+    }
+};
+
+using FlawList = std::vector<Flaw>;
+
 class Cegar {
     const shared_ptr<AbstractTask> &task;
-    const vector<int> goal_variables;
+    const vector<FactPair> goals;
     shared_ptr<utils::RandomNumberGenerator> rng;
     const int max_refinements;
     const int max_pdb_size;
@@ -79,7 +91,7 @@ class Cegar {
 public:
     Cegar(
         const shared_ptr<AbstractTask> &task,
-        vector<int> &&goal_variables,
+        vector<FactPair> &&goals,
         const shared_ptr<utils::RandomNumberGenerator> &rng,
         int max_refinements,
         int max_pdb_size,
@@ -109,13 +121,13 @@ void Cegar::print_collection() const {
 
 void Cegar::generate_trivial_solution_collection(
         const shared_ptr<AbstractTask> &task) {
-    assert(!goal_variables.empty());
+    assert(!goals.empty());
     /*
       TODO: change to range-based for loop after testing the impact of
       no longer removing "used" goal variables.
     */
-    for (int i = static_cast<int>(goal_variables.size()) - 1; i >= 0; --i) {
-        int var = goal_variables[i];
+    for (int i = static_cast<int>(goals.size()) - 1; i >= 0; --i) {
+        int var = goals[i].var;
         add_pattern_for_var(task, var);
     }
 
@@ -267,13 +279,9 @@ FlawList Cegar::apply_wildcard_plan(
                     utils::g_log << "potentially raising goal violation flaw(s)" << endl;
                 }
                 // Collect all non-satisfied goal variables that are still available.
-                for (FactProxy goal : task_proxy.get_goals()) {
-                    VariableProxy goal_var = goal.get_variable();
-                    int goal_var_id = goal_var.get_id();
-                    if (current[goal_var] != goal && !blacklisted_variables.count(goal_var_id) &&
-                        find(goal_variables.begin(), goal_variables.end(),
-                             goal_var_id)
-                        != goal_variables.end()) {
+                for (const FactPair &goal : goals) {
+                    int goal_var_id = goal.var;
+                    if (current[goal_var_id].get_pair() != goal && !blacklisted_variables.count(goal_var_id)) {
                         flaws.emplace_back(solution_index, goal_var_id);
                     }
                 }
@@ -498,16 +506,16 @@ PatternCollectionInformation Cegar::generate() {
     utils::CountdownTimer timer(max_time);
     TaskProxy task_proxy(*task);
 #ifndef NDEBUG
-    for (int goal_var : goal_variables) {
+    for (const FactPair goal : goals) {
         bool is_goal = false;
-        for (const FactProxy &goal : task_proxy.get_goals()) {
-            if (goal.get_variable().get_id() == goal_var) {
+        for (const FactProxy &task_goal : task_proxy.get_goals()) {
+            if (goal == task_goal.get_pair()) {
                 is_goal = true;
                 break;
             }
         }
         if (!is_goal) {
-            cerr << " Given goal variable is not a goal variable" << endl;
+            cerr << " Given goal is not a goal of the task" << endl;
             utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
     }
@@ -603,7 +611,7 @@ PatternCollectionInformation Cegar::generate() {
 
 Cegar::Cegar(
     const shared_ptr<AbstractTask> &task,
-    vector<int> &&goal_variables,
+    vector<FactPair> &&goals,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
@@ -614,7 +622,7 @@ Cegar::Cegar(
     double max_time,
     unordered_set<int> &&blacklisted_variables)
     : task(task),
-      goal_variables(move(goal_variables)),
+      goals(move(goals)),
       rng(rng),
       max_refinements(max_refinements),
       max_pdb_size(max_pdb_size),
@@ -630,7 +638,7 @@ Cegar::Cegar(
 
 PatternCollectionInformation cegar(
     const shared_ptr<AbstractTask> &task,
-    vector<int> &&goal_variables,
+    vector<FactPair> &&goals,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,
@@ -642,7 +650,7 @@ PatternCollectionInformation cegar(
     unordered_set<int> &&blacklisted_variables) {
     Cegar cegar(
         task,
-        move(goal_variables),
+        move(goals),
         rng,
         max_refinements,
         max_pdb_size,

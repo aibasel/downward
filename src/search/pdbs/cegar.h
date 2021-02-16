@@ -14,28 +14,10 @@ namespace options {
 class OptionParser;
 }
 
-namespace utils {
-class CountdownTimer;
-}
-
 namespace pdbs {
-class AbstractSolutionData;
-
-struct Flaw {
-    int solution_index;
-    int variable;
-
-    Flaw(int solution_index, int variable)
-        : solution_index(solution_index),
-          variable(variable) {
-    }
-};
-
-using FlawList = std::vector<Flaw>;
-
 extern PatternCollectionInformation cegar(
     const std::shared_ptr<AbstractTask> &task,
-    std::vector<int> &&goal_variables,
+    std::vector<FactPair> &&goals,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     int max_refinements,
     int max_pdb_size,

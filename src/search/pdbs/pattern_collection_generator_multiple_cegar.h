@@ -32,7 +32,7 @@ public:
     virtual ~PatternCollectionGeneratorMultipleCegar() = default;
 
     virtual PatternCollectionInformation generate(
-            const std::shared_ptr<AbstractTask> &task) override;
+        const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 

@@ -47,24 +47,27 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     shared_ptr<PatternCollection> union_patterns = make_shared<PatternCollection>();
     shared_ptr<PDBCollection> union_pdbs = make_shared<PDBCollection>();
     utils::HashSet<Pattern> pattern_set; // for checking if a pattern is already in collection
-
-    size_t nvars = task_proxy.get_variables().size();
     utils::RandomNumberGenerator rng(initial_random_seed);
 
-    vector<int> goals;
-    for (auto goal : task_proxy.get_goals()) {
-        int goal_var = goal.get_variable().get_id();
-        goals.push_back(goal_var);
+    vector<FactPair> goals;
+    for (FactProxy goal : task_proxy.get_goals()) {
+        goals.push_back(goal.get_pair());
     }
     rng.shuffle(goals);
 
     int num_vars = task_proxy.get_variables().size();
-    vector<int> nongoals;
-    nongoals.reserve(num_vars - goals.size());
+    vector<int> non_goal_variables;
+    non_goal_variables.reserve(num_vars - goals.size());
     for (int var_id = 0; var_id < num_vars; ++var_id) {
-        if (find(goals.begin(), goals.end(), var_id)
-            == goals.end()) {
-            nongoals.push_back(var_id);
+        bool is_goal_var = false;
+        for (const FactPair &goal : goals) {
+            if (var_id == goal.var) {
+                is_goal_var = true;
+                break;
+            }
+        }
+        if (!is_goal_var) {
+            non_goal_variables.push_back(var_id);
         }
     }
 
@@ -83,17 +86,17 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         int blacklist_size = 0;
         if (force_blacklisting ||
                 timer.get_elapsed_time() / total_time_limit > blacklist_trigger_time) {
-            blacklist_size = static_cast<int>(nvars * rng());
+            blacklist_size = static_cast<int>(num_vars * rng());
             force_blacklisting = true;
         }
 
-        rng.shuffle(nongoals);
+        rng.shuffle(non_goal_variables);
         unordered_set<int> blacklisted_variables;
         // Select a random subset of non goals.
         for (size_t i = 0;
-             i < min(static_cast<size_t>(blacklist_size),nongoals.size());
+             i < min(static_cast<size_t>(blacklist_size),non_goal_variables.size());
              ++i) {
-            int var_id = nongoals[i];
+            int var_id = non_goal_variables[i];
 //            if (verbosity >= utils::Verbosity::VERBOSE) {
 //                utils::g_log << "Fast CEGAR: blacklisting var" << var_id << endl;
 //            }

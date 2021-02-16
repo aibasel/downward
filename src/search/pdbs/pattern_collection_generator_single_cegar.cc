@@ -61,30 +61,36 @@ PatternCollectionGeneratorSingleCegar::~PatternCollectionGeneratorSingleCegar() 
 PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     const std::shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
-    vector<int> goal_variables;
-    for (const FactProxy &goal : task_proxy.get_goals()) {
-        goal_variables.push_back(goal.get_variable().get_id());
+    vector<FactPair> goals;
+    for (FactProxy goal : task_proxy.get_goals()) {
+        goals.push_back(goal.get_pair());
     }
-    rng->shuffle(goal_variables);
+    rng->shuffle(goals);
 
     unordered_set<int> blacklisted_variables;
     if (global_blacklist_size) {
         int num_vars = task_proxy.get_variables().size();
-        vector<int> nongoals;
-        nongoals.reserve(num_vars - goal_variables.size());
+        vector<int> non_goal_variables;
+        non_goal_variables.reserve(num_vars - goals.size());
         for (int var_id = 0; var_id < num_vars; ++var_id) {
-            if (find(goal_variables.begin(), goal_variables.end(), var_id)
-                == goal_variables.end()) {
-                nongoals.push_back(var_id);
+            bool is_goal_var = false;
+            for (const FactPair &goal : goals) {
+                if (var_id == goal.var) {
+                    is_goal_var = true;
+                    break;
+                }
+            }
+            if (!is_goal_var) {
+                non_goal_variables.push_back(var_id);
             }
         }
-        rng->shuffle(nongoals);
+        rng->shuffle(non_goal_variables);
 
         // Select a random subset of non goals.
         for (int i = 0;
-            i < min(global_blacklist_size, static_cast<int>(nongoals.size()));
+            i < min(global_blacklist_size, static_cast<int>(non_goal_variables.size()));
             ++i) {
-            int var_id = nongoals[i];
+            int var_id = non_goal_variables[i];
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << token << "blacklisting var" << var_id << endl;
             }
@@ -94,7 +100,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
 
     return cegar(
         task,
-        move(goal_variables),
+        move(goals),
         rng,
         max_refinements,
         max_pdb_size,
