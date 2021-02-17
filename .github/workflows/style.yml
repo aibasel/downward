@@ -1,0 +1,44 @@
+---
+name: style
+
+on: [push, pull_request]
+
+jobs:
+  style:
+    name: code-style
+    runs-on: ubuntu-18.04
+    steps:
+      - name: clone-repo
+        uses: actions/checkout@v1
+
+      - name: setup-python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+
+      - name: setup-dependencies
+        run: |
+          pip3 install tox
+          sudo apt-get -y install clang-tidy-8
+
+      - name: setup-uncrustify
+        run: |
+          # Set up uncrustify.
+          wget https://github.com/uncrustify/uncrustify/archive/uncrustify-0.67.tar.gz
+          tar xzf uncrustify-0.67.tar.gz
+          cd uncrustify-uncrustify-0.67
+          mkdir build
+          cd build
+          cmake ../
+          make -j2
+          mv uncrustify ../../
+          cd ../../
+          rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
+
+      - name: run-style-tests
+        run: |
+          export PATH="$(pwd):$PATH" # Add uncrustify to path.
+          cd misc/
+          tox -e style,clang-tidy
+
+...

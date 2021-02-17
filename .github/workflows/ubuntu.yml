@@ -42,32 +42,8 @@ jobs:
 
       - name: setup-dependencies
         run: |
-          pip3 install tox
-          sudo apt-get -y install clang-tidy-8 zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
+          sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
           mkdir /home/runner/work/downward/lib
-
-      - name: setup-uncrustify
-        run: |
-          # Set up uncrustify.
-          wget https://github.com/uncrustify/uncrustify/archive/uncrustify-0.67.tar.gz
-          tar xzf uncrustify-0.67.tar.gz
-          cd uncrustify-uncrustify-0.67
-          mkdir build
-          cd build
-          cmake ../
-          make -j2
-          mv uncrustify ../../
-          cd ../../
-          rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
-
-      - name: test-style
-        if: ${{ matrix.compiler-version.cc == 'gcc' && matrix.ubuntu-version == '18.04' }}
-        run: |
-          export PATH="$(pwd):$PATH" # Add uncrustify to path.
-          cd misc/
-          tox -e style,clang-tidy
-          cd ../
-          rm uncrustify
 
       # We only want to set up osi if both LP solvers are set, hence
       # we execute the following three steps only if both secrets
@@ -193,12 +169,16 @@ jobs:
         # though the planner is already built.
         run: |
           pip3 install tox
-          sudo apt-get update
-          sudo add-apt-repository main
-          sudo add-apt-repository universe
-          sudo add-apt-repository restricted
-          sudo add-apt-repository multiverse
-          sudo apt-get -y install valgrind zlib1g-dev libgmp3-dev ${{ matrix.compiler-version }}
+          echo "install clang-tidy-8"
+          sudo apt-get -y install clang-tidy-8
+          echo "install valgrind"
+          sudo apt-get -y install valgrind
+          echo "install zlib1g-dev"
+          sudo apt-get -y install zlib1g-dev
+          echo "install libgmp3-dev"
+          sudo apt-get -y install libgmp3-dev
+          echo "install compiler"
+          sudo apt-get -y install ${{ matrix.compiler-version }}
 
       - name: download-files
         uses: actions/download-artifact@v1
@@ -222,6 +202,6 @@ jobs:
         run: |
           export PATH="$(pwd):$PATH" # Add VAL to path.
           cd misc/
-          tox -e py,translator,search
+          tox -e py,translator,search,valgrind
 
 ...
