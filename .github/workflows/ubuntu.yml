@@ -17,8 +17,8 @@ jobs:
           - {cc: clang, cxx: clang++}
           - {cc: clang-11, cxx: clang++-11}
         python-version: [3.6]
-        # Unfortunately, we couldn't figure out if there is a way to
-        # name the compiler versions so that we don't have to copy them here.
+        # Unfortunately, we couldn't figure out a way to name the
+        # compiler versions so that we don't have to copy them here.
         exclude:
           - ubuntu-version: ubuntu-18.04
             compiler-version: {cc: gcc-10, cxx: g++-10}
