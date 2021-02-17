@@ -103,6 +103,8 @@ jobs:
           export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
           ./build.py --debug
           ./build.py
+          ldd builds/debug/bin/downward
+          ldd builds/release/bin/downward
 
       - name: archive-files
         # We only run tests on the version compiled with gcc, so we
@@ -113,6 +115,7 @@ jobs:
         # is linked dynamically.
         run: |
           cd ../
+          ls lib/coin/
           tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/Osi-0.107.9/lib
 
       - name: upload-files

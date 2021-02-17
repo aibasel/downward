@@ -1,71 +1,34 @@
 ---
-name: macos
+name: macOS
 
 on: [push, pull_request]
 
 jobs:
-  compile:
-    name: compile
-    runs-on: macos-10.15
-    strategy:
-      matrix:
-        python-version: ['3.6']
-        build-version: ["release", "debug"]
-    steps:
-      - name: clone-repo
-        uses: actions/checkout@master
-
-      - name: setup-python
-        uses: actions/setup-python@master
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: compile
-        run: |
-          export CXXFLAGS="-Werror"  # Treat compilation warnings as errors.
-          ./build.py ${{ matrix.build-version }}
-
-      - name: upload-planner
-        uses: actions/upload-artifact@master
-        with:
-          name: ${{ matrix.build-version }}
-          path: builds/${{ matrix.build-version }}
-
-
   test:
-    name: test
+    name: Test macOS
+    timeout-minutes: 60
     runs-on: macos-10.15
-    needs: compile
-    strategy:
-      matrix:
-        python-version: ['3.6']
     steps:
-      - name: clone-repo
+      - name: Clone repository
         uses: actions/checkout@master
 
-      - name: setup-python
+      - name: Set up Python
         uses: actions/setup-python@master
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.6
 
-      - name: setup-dependencies
+      - name: Compile planner
+        run: |
+          export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
+          ./build.py
+          ./build.py --debug
+
+      - name: Set up tox
         run: |
           pip3 install tox
-          mkdir builds
 
-      - name: download-planner
-        uses: actions/download-artifact@master
-        with:
-          # Without 'name' attribute all artifacts are downloaded and the
-          # artifact name is used as directory name.
-          path: builds/
-
-      - name: test
-        # We do not run py tests here because that would require VAL
-        # to be installed.
+      - name: Run tox tests
         run: |
-          chmod +x builds/debug/bin/downward
-          chmod +x builds/release/bin/downward
           cd misc
           tox -e translator,search
 
