@@ -197,10 +197,10 @@ def configs_satisficing_extended():
     }
 
 
-def configs_optimal_lp():
+def configs_optimal_lp(lp_solver="CPLEX"):
     return {
-        "divpot": ["--search", "astar(diverse_potentials())"],
-        "seq+lmcut": ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))"],
+        "divpot": ["--search", f"astar(diverse_potentials(lpsolver={lp_solver}))"],
+        "seq+lmcut": ["--search", f"astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver={lp_solver}))"],
     }
 
 
