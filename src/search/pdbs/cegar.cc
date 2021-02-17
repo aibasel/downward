@@ -26,9 +26,9 @@ class AbstractSolutionData {
 
 public:
     AbstractSolutionData(
-        const shared_ptr<PatternDatabase> _pdb,
-        const vector<vector<OperatorID>> &_plan,
-        const vector<OperatorID> &_concrete_operator_ids,
+        const shared_ptr<PatternDatabase> &&_pdb,
+        const vector<vector<OperatorID>> &&_plan,
+        const vector<OperatorID> &&_concrete_operator_ids,
         bool _is_solvable)
         : pdb(move(_pdb)),
           plan(move(_plan)),
@@ -103,7 +103,7 @@ static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
     }
 
     return utils::make_unique_ptr<AbstractSolutionData>(
-        pdb, plan, concrete_operator_ids, is_solvable);
+        move(pdb), move(plan), move(concrete_operator_ids), is_solvable);
 }
 
 /*

@@ -16,7 +16,7 @@ namespace pdbs {
 class PatternDatabase;
 
 extern std::vector<std::vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
-    TaskProxy abs_task_proxy,
+    const TaskProxy &abs_task_proxy,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     std::shared_ptr<PatternDatabase> pdb,
     bool compute_wildcard_plan,

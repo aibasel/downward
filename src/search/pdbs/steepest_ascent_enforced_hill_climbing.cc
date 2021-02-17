@@ -56,7 +56,7 @@ static vector<State> extract_state_sequence(
 }
 
 static vector<State> bfs_for_improving_state(
-    TaskProxy abs_task_proxy,
+    const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator& succ_gen,
     const shared_ptr<utils::RandomNumberGenerator>& rng,
     shared_ptr<PatternDatabase> pdb,
@@ -128,7 +128,7 @@ static void dump_state_sequence(const vector<State>& state_sequence) {
 }
 
 static vector<vector<OperatorID>> turn_state_sequence_into_plan(
-    TaskProxy abs_task_proxy,
+    const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator& succ_gen,
     const shared_ptr<utils::RandomNumberGenerator>& rng,
     const vector<State>& state_sequence,
@@ -180,7 +180,7 @@ static vector<vector<OperatorID>> turn_state_sequence_into_plan(
     return plan;
 }
 
-static void print_plan(TaskProxy abs_task_proxy,
+static void print_plan(const TaskProxy &abs_task_proxy,
                        shared_ptr<PatternDatabase> pdb,
                        const vector<vector<OperatorID>> &plan) {
     utils::g_log << "##### Plan for pattern " << pdb.get() << " #####" << endl;
@@ -197,7 +197,7 @@ static void print_plan(TaskProxy abs_task_proxy,
 }
 
 vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
-    TaskProxy abs_task_proxy,
+    const TaskProxy &abs_task_proxy,
     const shared_ptr<utils::RandomNumberGenerator>& rng,
     shared_ptr<PatternDatabase> pdb,
     bool compute_wildcard_plan,
