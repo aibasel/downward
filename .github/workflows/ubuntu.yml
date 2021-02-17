@@ -104,31 +104,16 @@ jobs:
           ./build.py --debug
           ./build.py
 
-      - name: setup-val
-        # VAL does not compile with clang-11.
-        env:
-          CC: gcc
-          CXX: g++
-        run: |
-          # Set up VAL.
-          sudo apt-get -y install flex bison
-          git clone https://github.com/KCL-Planning/VAL.git
-          cd VAL
-          git checkout a5565396007eee73ac36527fbf904142b3077c74
-          make clean  # Remove old build artifacts and binaries.
-          sed -i 's/-Werror //g' Makefile  # Ignore warnings.
-          make -j2
-          mv validate ../
-          cd ../
-          rm -rf VAL
-
       - name: archive-files
         # We only run tests on the version compiled with gcc, so we
         # only need to archive that one.
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
+        # We assume that CPLEX and Soplex are linked statically, even
+        # though we don't enforce it. Hence we only archive Osi, which
+        # is linked dynamically.
         run: |
           cd ../
-          tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ downward/validate lib
+          tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/Osi-0.107.9/lib
 
       - name: upload-files
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
@@ -154,9 +139,6 @@ jobs:
     env:
       CC: ${{ matrix.compiler-version.cc }}
       CXX: ${{ matrix.compiler-version.cxx }}
-      DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
-      DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
-      DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
     steps:
       - name: setup-python
         uses: actions/setup-python@v1
@@ -169,16 +151,20 @@ jobs:
         # though the planner is already built.
         run: |
           pip3 install tox
-          echo "install clang-tidy-8"
-          sudo apt-get -y install clang-tidy-8
-          echo "install valgrind"
-          sudo apt-get -y install valgrind
-          echo "install zlib1g-dev"
-          sudo apt-get -y install zlib1g-dev
-          echo "install libgmp3-dev"
-          sudo apt-get -y install libgmp3-dev
-          echo "install compiler"
-          sudo apt-get -y install ${{ matrix.compiler-version }}
+          sudo apt-get -y install valgrind zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }} flex bison
+
+        # NOTE: VAL does not compile with clang-11.
+      - name: setup-val
+        run: |
+          git clone https://github.com/KCL-Planning/VAL.git
+          cd VAL
+          git checkout a5565396007eee73ac36527fbf904142b3077c74
+          make clean  # Remove old build artifacts and binaries.
+          sed -i 's/-Werror //g' Makefile  # Ignore warnings.
+          make -j2
+          mv validate ../
+          cd ../
+          rm -rf VAL
 
       - name: download-files
         uses: actions/download-artifact@v1
