@@ -61,15 +61,15 @@ jobs:
           rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
 
       - name: test-style
-        if: ${{ matrix.compiler-version.cc == 'gcc' && matrix.ubuntu-version == 18.04 }}
+        if: ${{ matrix.compiler-version.cc == 'gcc' && matrix.ubuntu-version == '18.04' }}
         run: |
-          export PATH="$(pwd):$PATH"  # Add uncrustify
+          export PATH="$(pwd):$PATH" # Add uncrustify to path.
           cd misc/
           tox -e style,clang-tidy
           cd ../
           rm uncrustify
 
-      # We only want to setup osi if both LP solvers are set, hence
+      # We only want to set up osi if both LP solvers are set, hence
       # we execute the following three steps only if both secrets
       # are set.
       - name: setup-cplex
@@ -124,7 +124,7 @@ jobs:
 
       - name: compile
         run: |
-          export CXXFLAGS="-Werror"  # Treat compilation warnings as errors.
+          export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
           ./build.py --debug
           ./build.py
 
@@ -194,7 +194,11 @@ jobs:
         run: |
           pip3 install tox
           sudo apt-get update
-          sudo apt-get -y install clang-tidy-8 valgrind zlib1g-dev libgmp3-dev ${{ matrix.compiler-version }}
+          sudo add-apt-repository main
+          sudo add-apt-repository universe
+          sudo add-apt-repository restricted
+          sudo add-apt-repository multiverse
+          sudo apt-get -y install valgrind zlib1g-dev libgmp3-dev ${{ matrix.compiler-version }}
 
       - name: download-files
         uses: actions/download-artifact@v1
@@ -216,7 +220,7 @@ jobs:
 
       - name: test
         run: |
-          export PATH="$(pwd):$PATH" # add VAL to PATH.
+          export PATH="$(pwd):$PATH" # Add VAL to path.
           cd misc/
           tox -e py,translator,search
 
