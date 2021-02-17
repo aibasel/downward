@@ -42,8 +42,32 @@ jobs:
 
       - name: setup-dependencies
         run: |
-          sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
+          pip3 install tox
+          sudo apt-get -y install clang-tidy-8 zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
           mkdir /home/runner/work/downward/lib
+
+      - name: setup-uncrustify
+        run: |
+          # Set up uncrustify.
+          wget https://github.com/uncrustify/uncrustify/archive/uncrustify-0.67.tar.gz
+          tar xzf uncrustify-0.67.tar.gz
+          cd uncrustify-uncrustify-0.67
+          mkdir build
+          cd build
+          cmake ../
+          make -j2
+          mv uncrustify ../../
+          cd ../../
+          rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
+
+      - name: test-style
+        if: ${{ matrix.compiler-version.cc == 'gcc' && matrix.ubuntu-version == 18.04 }}
+        run: |
+          export PATH="$(pwd):$PATH"  # Add uncrustify
+          cd misc/
+          tox -e style,clang-tidy
+          cd ../
+          rm uncrustify
 
       # We only want to setup osi if both LP solvers are set, hence
       # we execute the following three steps only if both secrets
@@ -104,20 +128,6 @@ jobs:
           ./build.py --debug
           ./build.py
 
-      - name: setup-uncrustify
-        run: |
-          # Set up uncrustify.
-          wget https://github.com/uncrustify/uncrustify/archive/uncrustify-0.67.tar.gz
-          tar xzf uncrustify-0.67.tar.gz
-          cd uncrustify-uncrustify-0.67
-          mkdir build
-          cd build
-          cmake ../
-          make -j2
-          mv uncrustify ../../
-          cd ../../
-          rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
-
       - name: setup-val
         # VAL does not compile with clang-11.
         env:
@@ -142,7 +152,7 @@ jobs:
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
         run: |
           cd ../
-          tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward lib
+          tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ downward/validate lib
 
       - name: upload-files
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
@@ -183,6 +193,7 @@ jobs:
         # though the planner is already built.
         run: |
           pip3 install tox
+          sudo apt-get update
           sudo apt-get -y install clang-tidy-8 valgrind zlib1g-dev libgmp3-dev ${{ matrix.compiler-version }}
 
       - name: download-files
@@ -205,8 +216,8 @@ jobs:
 
       - name: test
         run: |
-          export PATH="$(pwd):$PATH"  # Add uncrustify and VAL to PATH.
+          export PATH="$(pwd):$PATH" # add VAL to PATH.
           cd misc/
-          tox -e py,translator,search,style
+          tox -e py,translator,search
 
 ...
