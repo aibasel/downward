@@ -169,14 +169,12 @@ jobs:
         # tests. Alternatively, we could change the tests so that they
         # don't build.
         run: |
-          cd /home/runner/work/downward/downward/compiled-planner-${{ matrix.ubuntu-version }}
           ls
+          pwd
           tar xfz archive.tar.gz
           shopt -s dotglob
-          mv downward/* ../
-          mv lib/ ../../
-          cd ../
-          rm -r compiled-planner-${{ matrix.ubuntu-version }}
+          mv downward/* .
+          mv lib/ ../
 
       - name: Test driver, translator and standard search configurations
         run: |
