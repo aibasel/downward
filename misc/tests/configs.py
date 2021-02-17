@@ -126,11 +126,6 @@ def configs_satisficing_core():
 
 def configs_optimal_extended():
     return {
-        "astar_lmcount_lm_merged_rhw_hm_no_order": [
-            "--evaluator",
-            "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
-            "--search",
-            "astar(lmc,lazy_evaluator=lmc)"],
         "astar_cegar": [
             "--search",
             "astar(cegar())"],
