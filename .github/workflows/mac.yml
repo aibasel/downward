@@ -5,14 +5,14 @@ on: [push, pull_request]
 
 jobs:
   test:
-    name: Test macOS
+    name: Compile and test planner
     timeout-minutes: 60
     runs-on: macos-10.15
     steps:
       - name: Clone repository
         uses: actions/checkout@master
 
-      - name: Set up Python
+      - name: Install Python
         uses: actions/setup-python@master
         with:
           python-version: 3.6
@@ -23,13 +23,13 @@ jobs:
           ./build.py
           ./build.py --debug
 
-      - name: Set up tox
+      - name: Install tox
         run: |
           pip3 install tox
 
       - name: Run tox tests
         run: |
           cd misc
-          tox -e translator,search
+          tox -e driver,translator,search
 
 ...

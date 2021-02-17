@@ -1,27 +1,27 @@
 ---
-name: style
+name: Code style tests
 
 on: [push, pull_request]
 
 jobs:
   style:
-    name: code-style
+    name: Test code style
     runs-on: ubuntu-18.04
     steps:
-      - name: clone-repo
-        uses: actions/checkout@v1
+      - name: Clone repository
+        uses: actions/checkout@master
 
-      - name: setup-python
-        uses: actions/setup-python@v1
+      - name: Install Python
+        uses: actions/setup-python@master
         with:
           python-version: 3.6
 
-      - name: setup-dependencies
+      - name: Install dependencies
         run: |
           pip3 install tox
           sudo apt-get -y install clang-tidy-8
 
-      - name: setup-uncrustify
+      - name: Install uncrustify
         run: |
           # Set up uncrustify.
           wget https://github.com/uncrustify/uncrustify/archive/uncrustify-0.67.tar.gz
@@ -35,7 +35,7 @@ jobs:
           cd ../../
           rm -rf uncrustify-0.67.tar.gz uncrustify-uncrustify-0.67
 
-      - name: run-style-tests
+      - name: Run code style tests
         run: |
           export PATH="$(pwd):$PATH" # Add uncrustify to path.
           cd misc/

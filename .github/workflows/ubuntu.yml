@@ -1,11 +1,12 @@
 ---
-name: ubuntu
+name: Ubuntu
 
 on: [push, pull_request]
 
 jobs:
   compile: # Identifier of the job. Jobs run in parallel unless specified otherwise.
-    name: compile
+    name: Compile planner
+    timeout-minutes: 60
     runs-on: ${{ matrix.ubuntu-version }}
     strategy:
       matrix:
@@ -32,15 +33,15 @@ jobs:
       DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
       DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
     steps: # Eeach "-" is a new sequentially run step
-      - name: clone-repo
-        uses: actions/checkout@v1
+      - name: Clone repository
+        uses: actions/checkout@master
 
-      - name: setup-python
-        uses: actions/setup-python@v1
+      - name: Install Python
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: setup-dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
           mkdir /home/runner/work/downward/lib
@@ -48,7 +49,7 @@ jobs:
       # We only want to set up osi if both LP solvers are set, hence
       # we execute the following three steps only if both secrets
       # are set.
-      - name: setup-cplex
+      - name: Install CPLEX
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         env:
           CPLEX_STUDIO: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129
@@ -60,7 +61,7 @@ jobs:
           ./$CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=${CPLEX_STUDIO} -i silent
           rm $CPLEX_INSTALLER
 
-      - name: setup-soplex
+      - name: Install SoPlex
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
@@ -75,7 +76,7 @@ jobs:
           cd ../../
           rm -r soplex-3.1.1
 
-      - name: setup-osi
+      - name: Install Osi
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           wget http://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz
@@ -98,27 +99,23 @@ jobs:
           cd ../
           rm -r Osi-0.107.9.tgz Osi-0.107.9
 
-      - name: compile
+      - name: Compile planner
         run: |
           export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
           ./build.py --debug
           ./build.py
-          ldd builds/debug/bin/downward
-          ldd builds/release/bin/downward
 
-      - name: archive-files
+      - name: Archive required files
         # We only run tests on the version compiled with gcc, so we
         # only need to archive that one.
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
-        # We assume that CPLEX and Soplex are linked statically, even
-        # though we don't enforce it. Hence we only archive Osi, which
-        # is linked dynamically.
+        # We determined the dynamically linked libraries using ldd.
         run: |
           cd ../
           ls lib/coin/
-          tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/Osi-0.107.9/lib
+          tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ /home/runner/work/downward/lib/coin/lib/libOsiCpx.so.1 /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so /home/runner/work/downward/lib/coin/lib/libOsiSpx.so.1 /home/runner/work/downward/lib/coin/lib/libOsi.so.1 /home/runner/work/downward/lib/coin/lib/libCoinUtils.so.3
 
-      - name: upload-files
+      - name: Upload archive
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
         uses: actions/upload-artifact@v1
         with:
@@ -127,37 +124,29 @@ jobs:
 
 
   test:
-    name: test
+    name: Test planner
     runs-on: ${{ matrix.ubuntu-version }}
     needs: compile # TODO: this only depends on the compile step with gcc
     strategy:
       matrix:
         ubuntu-version: [ubuntu-18.04, ubuntu-20.04]
-        compiler-version:
-          - {cc: gcc, cxx: g++}
         python-version: [3.6, 3.8]
         exclude:
           - ubuntu-version: ubuntu-18.04
             python-version: 3.8
-    env:
-      CC: ${{ matrix.compiler-version.cc }}
-      CXX: ${{ matrix.compiler-version.cxx }}
     steps:
-      - name: setup-python
+      - name: Install Python
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: setup-dependencies
-        # We install the right compiler so that CMake doesn't complain
-        # when asked to compile as part of the tox search tests, even
-        # though the planner is already built.
+      - name: Install dependencies
         run: |
           pip3 install tox
-          sudo apt-get -y install valgrind zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }} flex bison
+          sudo apt-get -y install zlib1g-dev libgmp3-dev gcc flex bison
 
         # NOTE: VAL does not compile with clang-11.
-      - name: setup-val
+      - name: Install VAL
         run: |
           git clone https://github.com/KCL-Planning/VAL.git
           cd VAL
@@ -169,12 +158,12 @@ jobs:
           cd ../
           rm -rf VAL
 
-      - name: download-files
+      - name: Download archive
         uses: actions/download-artifact@v1
         with:
           name: compiled-planner-${{ matrix.ubuntu-version }}
 
-      - name: extract-files
+      - name: Extract archive
         # We need to make sure that paths are the same as in the first job,
         # otherwise cmake exits with an error when called during tests.
         # Alternatively, we could change the tests so that they don't build.
@@ -187,10 +176,21 @@ jobs:
           cd ../
           rm -r compiled-planner-${{ matrix.ubuntu-version }}
 
-      - name: test
+      - name: Test driver, translator and standard search configurations
         run: |
           export PATH="$(pwd):$PATH" # Add VAL to path.
           cd misc/
-          tox -e py,translator,search,valgrind
+          tox -e driver,translator,search
+
+      - name: Test CPLEX configurations
+        run: |
+          export PATH="$(pwd):$PATH" # Add VAL to path.
+          cd misc/
+          tox -e cplex
+      - name: Test SoPlex configurations
+        run: |
+          export PATH="$(pwd):$PATH" # Add VAL to path.
+          cd misc/
+          tox -e soplex
 
 ...
