@@ -132,6 +132,7 @@ class Cegar {
     const AllowMerging allow_merging;
     const double max_time;
     const shared_ptr<AbstractTask> &task;
+    const TaskProxy task_proxy;
     const vector<FactPair> goals;
     unordered_set<int> blacklisted_variables;
     shared_ptr<utils::RandomNumberGenerator> rng;
@@ -167,22 +168,17 @@ class Cegar {
       The second element of the returned pair is a list of variables
       that caused the solution to fail.
      */
-    FlawList apply_wildcard_plan(
-            const shared_ptr<AbstractTask> &task, int solution_index, const State &init);
-    FlawList get_flaws(const shared_ptr<AbstractTask> &task);
+    FlawList apply_wildcard_plan(int solution_index, const State &init);
+    FlawList get_flaws();
 
     // Methods related to refining (and adding patterns to the collection generally).
-    void add_pattern_for_var(const shared_ptr<AbstractTask> &task, int var);
+    void add_pattern_for_var(int var);
     bool can_merge_patterns(int index1, int index2) const;
-    void merge_patterns(
-            const shared_ptr<AbstractTask> &task, int index1, int index2);
-    bool can_add_variable_to_pattern(
-            const TaskProxy &task_proxy, int index, int var) const;
-    void add_variable_to_pattern(
-            const shared_ptr<AbstractTask> &task, int index, int var);
-    void handle_flaw(
-            const shared_ptr<AbstractTask> &task, const Flaw &flaw);
-    void refine(const shared_ptr<AbstractTask> &task, const FlawList& flaws);
+    void merge_patterns(int index1, int index2);
+    bool can_add_variable_to_pattern(int index, int var) const;
+    void add_variable_to_pattern(int index, int var);
+    void handle_flaw(const Flaw &flaw);
+    void refine(const FlawList& flaws);
 public:
     Cegar(
         int max_refinements,
@@ -217,7 +213,7 @@ void Cegar::print_collection() const {
 void Cegar::compute_initial_collection() {
     assert(!goals.empty());
     for (const FactPair &goal : goals) {
-        add_pattern_for_var(task, goal.var);
+        add_pattern_for_var(goal.var);
     }
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -278,8 +274,7 @@ State get_unregistered_successor(
 }
 
 FlawList Cegar::apply_wildcard_plan(
-        const shared_ptr<AbstractTask> &task, int solution_index, const State &init) {
-    TaskProxy task_proxy(*task);
+    int solution_index, const State &init) {
     FlawList flaws;
     State current(init);
     current.unpack();
@@ -403,10 +398,9 @@ FlawList Cegar::apply_wildcard_plan(
     return flaws;
 }
 
-FlawList Cegar::get_flaws(
-        const shared_ptr<AbstractTask> &task) {
+FlawList Cegar::get_flaws() {
     FlawList flaws;
-    State concrete_init = TaskProxy(*task).get_initial_state();
+    State concrete_init = task_proxy.get_initial_state();
 
     for (size_t solution_index = 0;
          solution_index < solutions.size(); ++solution_index) {
@@ -426,8 +420,7 @@ FlawList Cegar::get_flaws(
         // find out if and why the abstract solution
         // would not work for the concrete task.
         // We always start with the initial state.
-        FlawList new_flaws = apply_wildcard_plan(
-                task, solution_index, concrete_init);
+        FlawList new_flaws = apply_wildcard_plan(solution_index, concrete_init);
 
         if (concrete_solution_index != -1) {
             // We solved the concrete task. Return empty flaws to signal terminating.
@@ -444,8 +437,7 @@ FlawList Cegar::get_flaws(
     return flaws;
 }
 
-void Cegar::add_pattern_for_var(
-        const shared_ptr<AbstractTask> &task, int var) {
+void Cegar::add_pattern_for_var(int var) {
     solutions.push_back(
         generate_abstract_solution_data(
             task, {var}, rng, wildcard_plans, verbosity));
@@ -464,8 +456,7 @@ bool Cegar::can_merge_patterns(
     return collection_size + added_size <= max_collection_size;
 }
 
-void Cegar::merge_patterns(
-        const shared_ptr<AbstractTask> &task, int index1, int index2) {
+void Cegar::merge_patterns(int index1, int index2) {
     // Merge pattern at index2 into pattern at index2
     AbstractSolutionData &solution1 = *solutions[index1];
     AbstractSolutionData &solution2 = *solutions[index2];
@@ -501,8 +492,7 @@ void Cegar::merge_patterns(
     solutions[index2] = nullptr;
 }
 
-bool Cegar::can_add_variable_to_pattern(
-        const TaskProxy &task_proxy, int index, int var) const {
+bool Cegar::can_add_variable_to_pattern(int index, int var) const {
     int pdb_size = solutions[index]->get_pdb()->get_size();
     int domain_size = task_proxy.get_variables()[var].get_domain_size();
     if (!utils::is_product_within_limit(pdb_size, domain_size, max_pdb_size)) {
@@ -512,8 +502,7 @@ bool Cegar::can_add_variable_to_pattern(
     return collection_size + added_size <= max_collection_size;
 }
 
-void Cegar::add_variable_to_pattern(
-        const shared_ptr<AbstractTask> &task, int index, int var) {
+void Cegar::add_variable_to_pattern(int index, int var) {
     AbstractSolutionData &solution = *solutions[index];
 
     // compute new pattern
@@ -535,8 +524,7 @@ void Cegar::add_variable_to_pattern(
     solutions[index] = move(new_solution);
 }
 
-void Cegar::handle_flaw(
-        const shared_ptr<AbstractTask> &task, const Flaw &flaw) {
+void Cegar::handle_flaw(const Flaw &flaw) {
     int sol_index = flaw.solution_index;
     int var = flaw.variable;
     bool added_var = false;
@@ -554,7 +542,7 @@ void Cegar::handle_flaw(
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << token << "merge the two patterns" << endl;
             }
-            merge_patterns(task, sol_index, other_index);
+            merge_patterns(sol_index, other_index);
             added_var = true;
         }
     } else {
@@ -566,12 +554,11 @@ void Cegar::handle_flaw(
             utils::g_log << token << "var" << var
                          << " is not in the collection yet" << endl;
         }
-        TaskProxy task_proxy(*task);
-        if (can_add_variable_to_pattern(task_proxy, sol_index, var)) {
+        if (can_add_variable_to_pattern(sol_index, var)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << token << "add it to the pattern" << endl;
             }
-            add_variable_to_pattern(task, sol_index, var);
+            add_variable_to_pattern(sol_index, var);
             added_var = true;
         }
     }
@@ -585,8 +572,7 @@ void Cegar::handle_flaw(
     }
 }
 
-void Cegar::refine(
-        const shared_ptr<AbstractTask> &task, const FlawList &flaws) {
+void Cegar::refine(const FlawList &flaws) {
     assert(!flaws.empty());
 
     // pick a random flaw
@@ -598,7 +584,7 @@ void Cegar::refine(
                      << solutions[flaw.solution_index]->get_pattern()
                      << " with a flaw on " << flaw.variable << endl;
     }
-    handle_flaw(task, flaw);
+    handle_flaw(flaw);
 }
 
 PatternCollectionInformation Cegar::run() {
@@ -611,7 +597,7 @@ PatternCollectionInformation Cegar::run() {
         }
 
         // vector of solution indices and flaws associated with said solutions
-        FlawList flaws = get_flaws(task);
+        FlawList flaws = get_flaws();
 
         if (flaws.empty()) {
             if (verbosity >= utils::Verbosity::NORMAL) {
@@ -634,7 +620,7 @@ PatternCollectionInformation Cegar::run() {
 
         // if there was a flaw, then refine the abstraction
         // such that said flaw does not occur again
-        refine(task, flaws);
+        refine(flaws);
 
         ++refinement_counter;
         if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -675,7 +661,6 @@ PatternCollectionInformation Cegar::run() {
         utils::g_log << token << "final collection summed PDB sizes: " << collection_size << endl;
     }
 
-    TaskProxy task_proxy(*task);
     PatternCollectionInformation pattern_collection_information(
         task_proxy, patterns);
     pattern_collection_information.set_pdbs(pdbs);
@@ -701,6 +686,7 @@ Cegar::Cegar(
       allow_merging(allow_merging),
       max_time(max_time),
       task(task),
+      task_proxy(*task),
       goals(move(goals)),
       blacklisted_variables(move(blacklisted_variables)),
       rng(rng),
