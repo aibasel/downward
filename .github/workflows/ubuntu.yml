@@ -32,7 +32,7 @@ jobs:
       DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
       DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
       DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
-    steps: # Eeach "-" is a new sequentially run step
+    steps: # Each "-" is a new sequentially run step
       - name: Clone repository
         uses: actions/checkout@master
 
@@ -112,7 +112,7 @@ jobs:
         # We determined the dynamically linked libraries using ldd.
         run: |
           cd ../
-          tar cfz archive.tar.gz downward/driver downward/misc downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/lib/libOsiCpx.so.1 lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so lib/coin/lib/libOsiSpx.so.1 lib/coin/lib/libOsi.so.1 lib/coin/lib/libCoinUtils.so.3
+          tar cfz archive.tar.gz downward/fast-downward.py downward/driver downward/misc downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/lib/libOsiCpx.so.1 lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so lib/coin/lib/libOsiSpx.so.1 lib/coin/lib/libOsi.so.1 lib/coin/lib/libCoinUtils.so.3
 
       - name: Upload archive
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
