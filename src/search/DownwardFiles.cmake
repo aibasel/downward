@@ -741,6 +741,7 @@ fast_downward_plugin(
         pdbs/pattern_information
         pdbs/pdb_heuristic
         pdbs/plugin_group
+        pdbs/steepest_ascent_enforced_hill_climbing
         pdbs/types
         pdbs/utils
         pdbs/validation
