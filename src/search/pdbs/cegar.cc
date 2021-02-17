@@ -19,19 +19,22 @@ using namespace std;
 namespace pdbs {
 class AbstractSolutionData {
     shared_ptr<PatternDatabase> pdb;
-    tasks::ProjectedTask abstracted_task;
-    TaskProxy abs_task_proxy;
-    vector<vector<OperatorID>> wildcard_plan;
+    vector<vector<OperatorID>> plan;
+    vector<OperatorID> concrete_operator_ids;
     bool is_solvable;
     bool solved;
 
 public:
     AbstractSolutionData(
-            const shared_ptr<AbstractTask> &concrete_task,
-            const Pattern &pattern,
-            const shared_ptr<utils::RandomNumberGenerator> &rng,
-            bool wildcard_plans,
-            utils::Verbosity verbosity);
+        const shared_ptr<PatternDatabase> _pdb,
+        const vector<vector<OperatorID>> &_plan,
+        const vector<OperatorID> &_concrete_operator_ids,
+        bool _is_solvable)
+        : pdb(move(_pdb)),
+          plan(move(_plan)),
+          concrete_operator_ids(move(_concrete_operator_ids)),
+          is_solvable(_is_solvable),
+          solved(false) {}
 
     const Pattern &get_pattern() const {
         return pdb->get_pattern();
@@ -54,47 +57,53 @@ public:
     }
 
     const vector<vector<OperatorID>> &get_plan() const {
-        return wildcard_plan;
+        return plan;
     }
 
-    OperatorID get_concrete_op_id_for_abs_op_id(
-            OperatorID abs_op_id, const shared_ptr<AbstractTask> &parent_task) const;
+    OperatorID get_concrete_op_id_for_abs_op_id(OperatorID abs_op_id) const {
+        return concrete_operator_ids[abs_op_id.get_index()];
+    }
 };
 
-AbstractSolutionData::AbstractSolutionData(
-        const shared_ptr<AbstractTask> &concrete_task,
-        const Pattern &pattern,
-        const shared_ptr<utils::RandomNumberGenerator> &rng,
-        bool compute_wildcard_plan,
-        utils::Verbosity verbosity)
-        : pdb(new PatternDatabase(TaskProxy(*concrete_task), pattern)),
-          abstracted_task(concrete_task, pattern),
-          abs_task_proxy(abstracted_task),
-          is_solvable(true),
-          solved(false) {
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "Computing plan for PDB with pattern "
-                     << get_pattern() << endl;
-    }
+static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
+    const shared_ptr<AbstractTask> &concrete_task, const Pattern &pattern,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    bool compute_wildcard_plan, utils::Verbosity verbosity) {
+    TaskProxy concrete_task_proxy(*concrete_task);
+    shared_ptr<PatternDatabase> pdb =
+        make_shared<PatternDatabase>(concrete_task_proxy, pattern);
+    tasks::ProjectedTask abstract_task(concrete_task, pattern);
+    TaskProxy abstract_task_proxy(abstract_task);
 
-    if (pdb->get_value_abstracted(abs_task_proxy.get_initial_state())
-        == numeric_limits<int>::max()) {
+    bool is_solvable = true;
+    vector<vector<OperatorID>> plan;
+    int init_goal_dist =
+        pdb->get_value_abstracted(abstract_task_proxy.get_initial_state());
+    if (init_goal_dist == numeric_limits<int>::max()) {
         is_solvable = false;
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "PDB with pattern " << get_pattern()
+            utils::g_log << "PDB with pattern " << pattern
                          << " is unsolvable" << endl;
         }
-        return;
+    } else {
+        if (verbosity >= utils::Verbosity::VERBOSE) {
+            utils::g_log << "Computing plan for PDB with pattern "
+                         << pattern << endl;
+        }
+
+        plan = steepest_ascent_enforced_hillclimbing(
+            abstract_task_proxy, rng, pdb, compute_wildcard_plan, verbosity);
     }
 
-    wildcard_plan =
-        steepest_ascent_enforced_hillclimbing(abs_task_proxy, rng, pdb, compute_wildcard_plan, verbosity);
-}
+    vector<OperatorID> concrete_operator_ids;
+    concrete_operator_ids.reserve(abstract_task_proxy.get_operators().size());
+    for (OperatorProxy abs_op : abstract_task_proxy.get_operators()) {
+        concrete_operator_ids.push_back(
+            abs_op.get_ancestor_operator_id(concrete_task.get()));
+    }
 
-OperatorID AbstractSolutionData::get_concrete_op_id_for_abs_op_id(
-        OperatorID abs_op_id, const shared_ptr<AbstractTask> &parent_task) const {
-    OperatorProxy abs_op = abs_task_proxy.get_operators()[abs_op_id];
-    return abs_op.get_ancestor_operator_id(parent_task.get());
+    return utils::make_unique_ptr<AbstractSolutionData>(
+        pdb, plan, concrete_operator_ids, is_solvable);
 }
 
 /*
@@ -280,7 +289,7 @@ FlawList Cegar::apply_wildcard_plan(
         bool step_failed = true;
         for (OperatorID abs_op_id : equivalent_ops) {
             // retrieve the concrete operator that corresponds to the abstracted one
-            OperatorID op_id = solution.get_concrete_op_id_for_abs_op_id(abs_op_id, task);
+            OperatorID op_id = solution.get_concrete_op_id_for_abs_op_id(abs_op_id);
             OperatorProxy op = task_proxy.get_operators()[op_id];
 
             // we do not use task_properties::is_applicable here because
@@ -437,8 +446,9 @@ FlawList Cegar::get_flaws(
 
 void Cegar::add_pattern_for_var(
         const shared_ptr<AbstractTask> &task, int var) {
-    solutions.emplace_back(
-            new AbstractSolutionData(task, {var}, rng, wildcard_plans, verbosity));
+    solutions.push_back(
+        generate_abstract_solution_data(
+            task, {var}, rng, wildcard_plans, verbosity));
     solution_lookup[var] = solutions.size() - 1;
     collection_size += solutions.back()->get_pdb()->get_size();
 }
@@ -478,8 +488,8 @@ void Cegar::merge_patterns(
 
     // compute merge solution
     unique_ptr<AbstractSolutionData> merged =
-            utils::make_unique_ptr<AbstractSolutionData>(
-                    task, new_pattern, rng, wildcard_plans, verbosity);
+        generate_abstract_solution_data(
+            task, new_pattern, rng, wildcard_plans, verbosity);
 
     // update collection size
     collection_size -= pdb_size1;
@@ -513,8 +523,8 @@ void Cegar::add_variable_to_pattern(
 
     // compute new solution
     unique_ptr<AbstractSolutionData> new_solution =
-            utils::make_unique_ptr<AbstractSolutionData>(
-                    task, new_pattern, rng, wildcard_plans, verbosity);
+        generate_abstract_solution_data(
+            task, new_pattern, rng, wildcard_plans, verbosity);
 
     // update collection size
     collection_size -= solution.get_pdb()->get_size();
