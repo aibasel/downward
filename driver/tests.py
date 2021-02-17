@@ -6,6 +6,7 @@ Test module for Fast Downward driver script. Run with
 
 import os
 import subprocess
+import sys
 
 import pytest
 
@@ -18,13 +19,13 @@ from .util import REPO_ROOT_DIR, find_domain_filename
 
 def translate():
     """Create translated task."""
-    cmd = ["./fast-downward.py", "--translate",
+    cmd = [sys.executable, "fast-downward.py", "--translate",
            "misc/tests/benchmarks/gripper/prob01.pddl"]
     subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
 def cleanup():
-    subprocess.check_call(["./fast-downward.py", "--cleanup"],
+    subprocess.check_call([sys.executable, "fast-downward.py", "--cleanup"],
                           cwd=REPO_ROOT_DIR)
 
 
@@ -42,17 +43,17 @@ def test_commandline_args():
 
 def test_aliases():
     for alias, config in ALIASES.items():
-        cmd = ["./fast-downward.py", "--alias", alias, "output.sas"]
+        cmd = [sys.executable, "fast-downward.py", "--alias", alias, "output.sas"]
         run_driver(cmd)
 
 
 def test_show_aliases():
-    run_driver(["./fast-downward.py", "--show-aliases"])
+    run_driver([sys.executable, "fast-downward.py", "--show-aliases"])
 
 
 def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
-        cmd = ["./fast-downward.py", "--portfolio", portfolio,
+        cmd = [sys.executable, "fast-downward.py", "--portfolio", portfolio,
                "--search-time-limit", "30m", "output.sas"]
         run_driver(cmd)
 
@@ -62,12 +63,12 @@ def test_hard_time_limit():
         limits.set_time_limit(10)
 
     cmd = [
-        "./fast-downward.py", "--translate", "--translate-time-limit",
+        sys.executable, "fast-downward.py", "--translate", "--translate-time-limit",
         "10s", "misc/tests/benchmarks/gripper/prob01.pddl"]
     subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
 
     cmd = [
-        "./fast-downward.py", "--translate", "--translate-time-limit",
+        sys.executable, "fast-downward.py", "--translate", "--translate-time-limit",
         "20s", "misc/tests/benchmarks/gripper/prob01.pddl"]
     with pytest.raises(subprocess.CalledProcessError) as exception_info:
         subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
