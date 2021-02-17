@@ -27,6 +27,18 @@ jobs:
         run: |
           pip3 install tox
 
+      - name: Install VAL
+        run: |
+          git clone https://github.com/KCL-Planning/VAL.git
+          cd VAL
+          git checkout a5565396007eee73ac36527fbf904142b3077c74
+          make clean  # Remove old build artifacts and binaries.
+          sed -i 's/-Werror //g' Makefile  # Ignore warnings.
+          make -j2
+          mv validate ../
+          cd ../
+          rm -rf VAL
+
       - name: Run tox tests
         run: |
           cd misc
