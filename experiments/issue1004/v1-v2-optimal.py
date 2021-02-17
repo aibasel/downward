@@ -2,10 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import common_setup
+from common_setup import IssueConfig, IssueExperiment
 
 import os
 
+from lab.reports import Attribute
+
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
+
+def make_comparison_table():
+    report = common_setup.ComparativeReport(
+        algorithm_pairs=[
+            ("issue1004-base-seq-opt-bjolp", "issue1004-v2-seq-opt-bjolp"),
+            ("issue1004-base-seq-opt-bjolp-opt", "issue1004-v2-seq-opt-bjolp-opt"),
+        ], attributes=ATTRIBUTES,
+    )
+    outfile = os.path.join(
+        exp.eval_dir, "%s-compare.%s" % (exp.name, report.output_format)
+    )
+    report(exp.eval_dir, outfile)
+
+    exp.add_report(report)
+
 
 REVISIONS = [
     "issue1004-base",
@@ -27,7 +45,7 @@ REPO = os.environ["DOWNWARD_REPO"]
 if common_setup.is_running_on_cluster():
     SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
     ENVIRONMENT = BaselSlurmEnvironment(
-        partition="infai_2",
+        partition="infai_1",
         email="tho.keller@unibas.ch",
         export=["PATH", "DOWNWARD_BENCHMARKS"],
     )
@@ -46,12 +64,19 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 exp.add_parser(exp.SINGLE_SEARCH_PARSER)
+exp.add_parser("landmark_parser.py")
+
+ATTRIBUTES = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [
+    Attribute("landmarks", min_wins=False),
+    Attribute("disjunctive_landmarks", min_wins=False),
+    Attribute("conjunctive_landmarks", min_wins=False),
+    Attribute("orderings", min_wins=False),
+]
 
 exp.add_step("build", exp.build)
 exp.add_step("start", exp.start_runs)
 exp.add_fetcher(name="fetch")
-exp.add_absolute_report_step()
-exp.add_comparison_table_step()
+exp.add_step("comparison table", make_comparison_table)
 exp.add_parse_again_step()
 
 exp.run_steps()
