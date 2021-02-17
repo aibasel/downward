@@ -59,6 +59,11 @@ def test_portfolios():
 
 
 def test_hard_time_limit():
+    # We cannot test this on systems like Windows where we cannot
+    # enforce time limits.
+    if not limits.can_set_time_limit():
+        return
+
     def preexec_fn():
         limits.set_time_limit(10)
 
