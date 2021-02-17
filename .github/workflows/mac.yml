@@ -42,6 +42,7 @@ jobs:
 
       - name: Run tox tests
         run: |
+          export PATH="$(pwd):$PATH" # Add VAL to path.
           cd misc
           tox -e driver,translator,search
 
