@@ -113,14 +113,14 @@ jobs:
         run: |
           cd ../
           ls lib/coin/
-          tar cfz ${{ matrix.compiler-version.cc }}.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ /home/runner/work/downward/lib/coin/lib/libOsiCpx.so.1 /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so /home/runner/work/downward/lib/coin/lib/libOsiSpx.so.1 /home/runner/work/downward/lib/coin/lib/libOsi.so.1 /home/runner/work/downward/lib/coin/lib/libCoinUtils.so.3
+          tar cfz archive.tar.gz downward/builds/debug/bin/ downward/builds/release/bin/ /home/runner/work/downward/lib/coin/lib/libOsiCpx.so.1 /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so /home/runner/work/downward/lib/coin/lib/libOsiSpx.so.1 /home/runner/work/downward/lib/coin/lib/libOsi.so.1 /home/runner/work/downward/lib/coin/lib/libCoinUtils.so.3
 
       - name: Upload archive
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@master
         with:
           name: compiled-planner-${{ matrix.ubuntu-version }}
-          path: /home/runner/work/downward/${{ matrix.compiler-version.cc }}.tar.gz
+          path: /home/runner/work/downward/archive.tar.gz
 
 
   test:
@@ -136,7 +136,7 @@ jobs:
             python-version: 3.8
     steps:
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -159,17 +159,19 @@ jobs:
           rm -rf VAL
 
       - name: Download archive
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@master
         with:
           name: compiled-planner-${{ matrix.ubuntu-version }}
 
       - name: Extract archive
-        # We need to make sure that paths are the same as in the first job,
-        # otherwise cmake exits with an error when called during tests.
-        # Alternatively, we could change the tests so that they don't build.
+        # We need to make sure that paths are the same as in the first
+        # job, otherwise cmake exits with an error when called during
+        # tests. Alternatively, we could change the tests so that they
+        # don't build.
         run: |
           cd /home/runner/work/downward/downward/compiled-planner-${{ matrix.ubuntu-version }}
-          tar xfz ${{ matrix.compiler-version }}.tar.gz
+          ls
+          tar xfz archive.tar.gz
           shopt -s dotglob
           mv downward/* ../
           mv lib/ ../../

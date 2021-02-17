@@ -86,15 +86,18 @@ jobs:
         env:
           CC: cl
           CXX: cl
-        # We do not run py tests here because that would require VAL
-        # to be installed.
+        # We do not run driver tests here because that would require
+        # VAL to be installed, which currently cannot be easily done
+        # on Windows for the version of VAL we use. When the maintainers
+        # of VAL fix the latest version to accept plans without time
+        # steps, we hope to be able to install VAL natively on Windows.
         run: |
           cd misc/
           IF "${{ matrix.windows-version }}" == "windows-2016" (
-            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e driver,translator,search
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e translator,search
           )
           IF "${{ matrix.windows-version }}" == "windows-2019" (
-            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e driver,translator,search
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e translator,search
           )
 
 ...
