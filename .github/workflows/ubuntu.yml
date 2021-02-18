@@ -177,7 +177,7 @@ jobs:
           mv downward/* .
           mv lib/ ../
 
-      - name: Test driver, translator and standard search configurations
+      - name: Run driver, translator and search tests
         run: |
           pwd
           ls
@@ -195,11 +195,11 @@ jobs:
           cd misc/
           tox -e driver,translator,search
 
-      - name: Test CPLEX configurations
+      - name: Run CPLEX tests
         run: |
           cd misc/
           tox -e cplex
-      - name: Test SoPlex configurations
+      - name: Run SoPlex tests
         run: |
           cd misc/
           tox -e soplex

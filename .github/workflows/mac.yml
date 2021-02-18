@@ -40,7 +40,7 @@ jobs:
           cd ../
           rm -rf VAL
 
-      - name: Run tox tests
+      - name: Run driver, translator and search tests
         run: |
           export PATH="$(pwd):$PATH" # Add VAL to path.
           cd misc
