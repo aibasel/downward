@@ -5,7 +5,7 @@
 
 namespace landmarks {
 class LandmarkFactoryRpgExhaust : public LandmarkFactoryRelaxation {
-    bool only_causal_landmarks;
+    const bool only_causal_landmarks;
     virtual void generate_relaxed_landmarks(const std::shared_ptr<AbstractTask> &task,
                                             Exploration &exploration) override;
 

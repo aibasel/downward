@@ -1,10 +1,10 @@
-#ifndef LANDMARKS_LANDMARK_FACTORY_HPS_ORDERS_H
-#define LANDMARKS_LANDMARK_FACTORY_HPS_ORDERS_H
+#ifndef LANDMARKS_LANDMARK_FACTORY_REASONABLE_ORDERS_HPS_H
+#define LANDMARKS_LANDMARK_FACTORY_REASONABLE_ORDERS_HPS_H
 
 #include "landmark_factory.h"
 
 namespace landmarks {
-class LandmarkFactoryHPSOrders : public LandmarkFactory {
+class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
     std::shared_ptr<LandmarkFactory> lm_factory;
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
@@ -21,7 +21,7 @@ class LandmarkFactoryHPSOrders : public LandmarkFactory {
         const VariablesProxy &variables, const EffectsProxy &effects,
         std::set<FactPair> &eff) const;
 public:
-    LandmarkFactoryHPSOrders(const options::Options &opts);
+    LandmarkFactoryReasonableOrdersHPS(const options::Options &opts);
 
     virtual bool supports_conditional_effects() const override;
 };

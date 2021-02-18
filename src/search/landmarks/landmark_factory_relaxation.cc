@@ -22,7 +22,7 @@ void LandmarkFactoryRelaxation::postprocess(const TaskProxy &task_proxy, Explora
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration) {
-    // TODO: correct handling? also axioms?
+    // TODO: can this code handle axioms correctly? If so, remove verify_no_axioms
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
     int num_all_landmarks = lm_graph->get_num_landmarks();
@@ -42,6 +42,8 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
        that has "landmark" as a precondition.
        Similar to "relaxed_task_solvable" above.
      */
+
+    assert (!landmark.conjunctive);
 
     if (landmark.is_true_in_goal)
         return true;

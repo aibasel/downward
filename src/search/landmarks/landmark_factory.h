@@ -33,8 +33,7 @@ public:
     virtual bool supports_conditional_effects() const = 0;
 
 protected:
-    explicit LandmarkFactory();
-
+    LandmarkFactory() = default;
     std::shared_ptr<LandmarkGraph> lm_graph;
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);

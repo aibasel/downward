@@ -113,11 +113,11 @@ public:
        when moving landmark graph creation there. */
     int get_num_edges() const;
 
-    // only needed only by non-landmarkgraph-factories
+    // only needed by non-landmarkgraph-factories
     bool uses_reasonable_orders();
-    // only needed only by non-landmarkgraph-factories
+    // only needed by non-landmarkgraph-factories
     LandmarkNode *get_landmark(int index) const;
-    // only needed only by non-landmarkgraph-factories
+    // only needed by non-landmarkgraph-factories
     LandmarkNode *get_landmark(const FactPair &fact) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */

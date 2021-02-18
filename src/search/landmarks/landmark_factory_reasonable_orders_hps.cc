@@ -1,4 +1,4 @@
-#include "landmark_factory_hps_orders.h"
+#include "landmark_factory_reasonable_orders_hps.h"
 
 #include "landmark_graph.h"
 
@@ -12,11 +12,11 @@
 
 using namespace std;
 namespace landmarks {
-LandmarkFactoryHPSOrders::LandmarkFactoryHPSOrders(const Options &opts)
+LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(const Options &opts)
     : lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
 }
 
-void LandmarkFactoryHPSOrders::generate_landmarks(const shared_ptr<AbstractTask> &task) {
+void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<AbstractTask> &task) {
     utils::g_log << "Building a landmark graph with reasonable orders." << endl;
 
     lm_graph = lm_factory->compute_lm_graph(task);
@@ -31,7 +31,7 @@ void LandmarkFactoryHPSOrders::generate_landmarks(const shared_ptr<AbstractTask>
     mk_acyclic_graph();
 }
 
-void LandmarkFactoryHPSOrders::approximate_reasonable_orders(
+void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     const TaskProxy &task_proxy, bool obedient_orders) {
     /*
       Approximate reasonable and obedient reasonable orders according
@@ -102,7 +102,7 @@ void LandmarkFactoryHPSOrders::approximate_reasonable_orders(
     }
 }
 
-bool LandmarkFactoryHPSOrders::interferes(
+bool LandmarkFactoryReasonableOrdersHPS::interferes(
     const TaskProxy &task_proxy, const LandmarkNode *node_a,
     const LandmarkNode *node_b) const {
     /* Facts a and b interfere (i.e., achieving b before a would mean having to delete b
@@ -212,7 +212,7 @@ bool LandmarkFactoryHPSOrders::interferes(
     return false;
 }
 
-void LandmarkFactoryHPSOrders::collect_ancestors(
+void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
     unordered_set<LandmarkNode *> &result,
     LandmarkNode &node, bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
@@ -247,7 +247,7 @@ void LandmarkFactoryHPSOrders::collect_ancestors(
     }
 }
 
-bool LandmarkFactoryHPSOrders::effect_always_happens(
+bool LandmarkFactoryReasonableOrdersHPS::effect_always_happens(
     const VariablesProxy &variables, const EffectsProxy &effects,
     set<FactPair> &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
@@ -362,7 +362,7 @@ bool LandmarkFactoryHPSOrders::effect_always_happens(
 }
 
 
-bool LandmarkFactoryHPSOrders::supports_conditional_effects() const {
+bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
     return lm_factory->supports_conditional_effects();
 }
 
@@ -374,9 +374,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "described in the following paper" +
         utils::format_journal_reference(
             {"Jörg Hoffman", "JuliePorteous", "LauraSebastia"},
-            "OrderedLandmarksinPlanning",
-            // TODO: How do we deal with papers that are not from us?
-            "TODO",
+            "Ordered Landmarks in Planning",
+            "https://jair.org/index.php/jair/article/view/10390/24882",
             "Journal of Artificial Intelligence Research",
             "22",
             "215-278",
@@ -391,8 +390,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return make_shared<LandmarkFactoryHPSOrders>(opts);
+        return make_shared<LandmarkFactoryReasonableOrdersHPS>(opts);
 }
 
-static Plugin<LandmarkFactory> _plugin("lm_hps_orders", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_reasonable_orders_hps", _parse);
 }

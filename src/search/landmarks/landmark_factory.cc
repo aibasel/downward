@@ -18,9 +18,7 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory()
-    : lm_graph_task(nullptr) {
-}
+
 /*
   TODO: Update this comment
 

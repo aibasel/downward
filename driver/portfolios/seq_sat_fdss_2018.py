@@ -12,7 +12,7 @@ OPTIMAL = False
 CONFIGS = [
     (26, [
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--evaluator",
         "hff=ff(transform=adapt_costs(one))",
         "--search",
@@ -28,7 +28,7 @@ CONFIGS = [
         "lazy(alt([type_based([g()]),single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true)],boost=0),preferred=[hlm],reopen_closed=false,cost_type=plusone,bound=BOUND)"]),
     (135, [
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--evaluator",
         "hff=ff(transform=adapt_costs(one))",
         "--search",
@@ -37,12 +37,12 @@ CONFIGS = [
         "--evaluator",
         "hff=ff(transform=adapt_costs(one))",
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--search",
         "eager_greedy([hff,hlm],preferred=[hff,hlm],cost_type=one,bound=BOUND)"]),
     (23, [
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--evaluator",
         "hff=ff(transform=adapt_costs(one))",
         "--search",
@@ -62,14 +62,14 @@ CONFIGS = [
         "--evaluator",
         "hcea=cea(transform=adapt_costs(one))",
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--search",
         "lazy_greedy([hcea,hlm],preferred=[hcea,hlm],cost_type=one,bound=BOUND)"]),
     (12, [
         "--evaluator",
         "hadd=add(transform=adapt_costs(one))",
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--search",
         "lazy(alt([type_based([g()]),single(hadd),single(hadd,pref_only=true),single(hlm),single(hlm,pref_only=true)]),preferred=[hadd,hlm],cost_type=one,bound=BOUND)"]),
     (26, [
@@ -81,7 +81,7 @@ CONFIGS = [
         "--evaluator",
         "hcg=cg(transform=adapt_costs(one))",
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--search",
         "eager(alt([type_based([g()]),single(hcg),single(hcg,pref_only=true),single(hlm),single(hlm,pref_only=true)]),preferred=[hcg,hlm],cost_type=one,bound=BOUND)"]),
     (29, [
@@ -99,7 +99,7 @@ CONFIGS = [
         "--evaluator",
         "hcea=cea(transform=adapt_costs(one))",
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--search",
         "lazy_wastar([hcea,hlm],w=3,preferred=[hcea,hlm],cost_type=one,bound=BOUND)"]),
     (8, [
@@ -120,7 +120,7 @@ CONFIGS = [
         "--evaluator",
         "hff=ff(transform=adapt_costs(one))",
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--search",
         "eager(alt([type_based([g()]),single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hff,hlm],cost_type=one,bound=BOUND)"]),
     (29, [
@@ -148,7 +148,7 @@ CONFIGS = [
         "--evaluator",
         "hcg=cg(transform=adapt_costs(one))",
         "--evaluator",
-        "hlm=lmcount(lm_hps_orders(lm_rhw()),transform=adapt_costs(one))",
+        "hlm=lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one))",
         "--search",
         "lazy(alt([type_based([g()]),single(sum([g(),weight(hcg,3)])),single(sum([g(),weight(hcg,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hcg,hlm],cost_type=one,bound=BOUND)"]),
     (26, [
@@ -204,7 +204,7 @@ CONFIGS = [
         "eager(alt([single(sum([g(),weight(hcg,3)])),single(sum([g(),weight(hcg,3)]),pref_only=true)]),preferred=[hcg],cost_type=one,bound=BOUND)"]),
     (24, [
         "--landmarks",
-        "lmg=lm_hps_orders(lm_rhw(only_causal_landmarks=true,disjunctive_landmarks=true,use_orders=true))",
+        "lmg=lm_reasonable_orders_hps(lm_rhw(only_causal_landmarks=true,disjunctive_landmarks=true,use_orders=true))",
         "--evaluator",
         "hblind=blind()",
         "--evaluator",
@@ -301,7 +301,7 @@ CONFIGS = [
         "lazy(alt([tiebreaking([sum([g(),hff]),hff]),tiebreaking([sum([g(),hff]),hff],pref_only=true)],boost=432),preferred=[hff],reopen_closed=true,cost_type=one,bound=BOUND)"]),
     (19, [
         "--landmarks",
-        "lmg=lm_merged([lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=false,use_orders=true),lm_hm(m=1)])",
+        "lmg=lm_merged([lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=false,use_orders=true),lm_hm(m=1,conjunctive_landmarks=true,use_orders=true)])",
         "--evaluator",
         "hff=ff()",
         "--evaluator",

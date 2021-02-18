@@ -93,10 +93,9 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void print_fluentset(const VariablesProxy &variables, const FluentSet &fs);
     void print_pm_op(const VariablesProxy &variables, const PMOp &op);
 
-    // TODO: should these be const?
     const int m_;
-    bool conjunctive_landmarks;
-    bool use_orders;
+    const bool conjunctive_landmarks;
+    const bool use_orders;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 
