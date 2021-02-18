@@ -1,5 +1,5 @@
 ---
-name: windows
+name: Windows
 
 on: [push, pull_request]
 
@@ -9,79 +9,43 @@ env:
   VC2017: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
 
 jobs:
-  compile: # name of the job. Jobs run in parallel unless specified otherwise.
-    name: compile
+  test:
+    name: Compile and test planner
     timeout-minutes: 60
     runs-on: ${{ matrix.windows-version }}
     strategy:
       matrix:
         windows-version: [windows-2016, windows-2019]
         python-version: [3.6]
-        build-version: [release, debug]
-    steps: # each - is a new sequentially run step
-      - name: clone-repo
+    steps:
+      - name: Clone repository
         uses: actions/checkout@master
 
-      - name: setup-python
+      - name: Install python
         uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: compile
+      - name: Compile planner
         shell: cmd
         env:
           CC: cl
           CXX: cl
         run: |
           IF "${{ matrix.windows-version }}" == "windows-2016" (
-            "${{ env.VC2017 }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & python build.py debug
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & python build.py release
           )
           IF "${{ matrix.windows-version }}" == "windows-2019" (
-            "${{ env.VC2019 }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & python build.py debug
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & python build.py release
           )
 
-      - name: upload-planner
-        uses: actions/upload-artifact@master
-        with:
-          name: compiled-planner-${{ matrix.windows-version }}-${{ matrix.build-version }}
-          path: builds/
-
-
-  tests:
-    name: test
-    runs-on: ${{ matrix.windows-version }}
-    needs: compile
-    strategy:
-      matrix:
-        windows-version: [windows-2016, windows-2019]
-        python-version: [3.6]
-    steps:
-      - name: clone-repo
-        uses: actions/checkout@master
-
-      - name: setup-python
-        uses: actions/setup-python@master
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: setup-dependencies
+      - name: Install tox
         run: |
           pip3 install tox
-          mkdir builds
 
-      - name: download-debug
-        uses: actions/download-artifact@master
-        with:
-          name: compiled-planner-${{ matrix.windows-version }}-debug
-          path: builds/
-
-      - name: download-release
-        uses: actions/download-artifact@master
-        with:
-          name: compiled-planner-${{ matrix.windows-version }}-release
-          path: builds/
-
-      - name: test
+      - name: Run translator and search tests
         shell: cmd
         env:
           CC: cl
