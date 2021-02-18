@@ -104,19 +104,17 @@ jobs:
           export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
           ./build.py --debug
           ./build.py
-          ldd builds/debug/bin/downward
-          ldd builds/release/bin/downward
-          echo "separator"
-          ls -la ../lib/coin/lib
 
       - name: Archive required files
         # We only run tests on the version compiled with gcc, so we
         # only need to archive that one.
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
-        # We determined the dynamically-linked libraries using ldd.
+        # We determined the dynamically-linked libraries using ldd. We
+        # archive the entire lib directory of Osi because we need all
+        # 4 large library files and several file links to these.
         run: |
           cd ../
-          tar cfz archive.tar.gz downward/fast-downward.py downward/driver downward/misc downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/lib/libOsiCpx.so.1 lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so lib/coin/lib/libOsiSpx.so.1 lib/coin/lib/libOsi.so.1 lib/coin/lib/libCoinUtils.so.3
+          tar cfz archive.tar.gz downward/fast-downward.py downward/driver downward/misc downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/lib/ lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so
 
       - name: Upload archive
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
@@ -138,6 +136,9 @@ jobs:
         exclude:
           - ubuntu-version: ubuntu-18.04
             python-version: 3.8
+    env:
+      CPLEX_URL: ${{ secrets.CPLEX_URL }}
+      SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
     steps:
       - name: Install Python
         uses: actions/setup-python@master
@@ -161,7 +162,7 @@ jobs:
           mv validate ../
           cd ../
           rm -rf VAL
-          echo `pwd` >> $GITHUB_PATH
+          echo `pwd` >> $GITHUB_PATH # Add VAL to path ob subsequent steps.
 
       - name: Download archive
         uses: actions/download-artifact@master
@@ -176,9 +177,6 @@ jobs:
           shopt -s dotglob
           mv downward/* .
           mv lib/ ../
-
-      - name: Run driver, translator and search tests
-        run: |
           pwd
           ls
           echo "separator"
@@ -191,15 +189,19 @@ jobs:
           ls ../lib/coin/lib
           ldd builds/debug/bin/downward
           ldd builds/release/bin/downward
-          echo $PATH
+
+      - name: Run driver, translator and search tests
+        run: |
           cd misc/
           tox -e driver,translator,search
 
       - name: Run CPLEX tests
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           cd misc/
           tox -e cplex
       - name: Run SoPlex tests
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           cd misc/
           tox -e soplex
