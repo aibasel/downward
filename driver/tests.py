@@ -69,7 +69,7 @@ def test_hard_time_limit():
     parameters = [
         "--translate", "--translate-time-limit",
         "10s", "misc/tests/benchmarks/gripper/prob01.pddl"]
-    subprocess.check_call(driver+parameters, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+    subprocess.check_call(driver + parameters, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
 
     parameters = [
         "--translate", "--translate-time-limit",
