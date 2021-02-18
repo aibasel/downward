@@ -13,20 +13,17 @@ For further information:
 
 ## Tested software versions
 
-This version of Fast Downward has been tested with the following systems,
-compilers and tools:
+This version of Fast Downward has been tested with the following software versions:
 
-- Ubuntu: multiple versions of Python, GCC and Clang (see below) on Ubuntu 18.04 and 20.04
-- macOS: Catalina 10.15 with AppleClang 12.0.0.12000032
-- Windows: Visual Studio Enterprise 2017 (MSVC 19.16.27045.0) and
-  2019 (MSVC 19.28.29336.0)
-- Python: 3.6, 3.8
-- GCC: 7, 9, 10
-- Clang: 6, 10, 11
-- CPLEX: 12.9
-- SoPlex: 3.1.1
-- OSI: 0.107.9
-- CMake: 3.10, 3.16, 3.19
+| OS           | Python | C++ compiler                                                     | CMake |
+| ------------ | ------ | ---------------------------------------------------------------- | ----- |
+| Ubuntu 20.04 | 3.8    | GCC 9, GCC 10, Clang 10, Clang 11                                | 3.16  |
+| Ubuntu 18.04 | 3.6    | GCC 7, Clang 6                                                   | 3.10  |
+| macOS 10.15  | 3.6    | AppleClang 12                                                    | 3.19  |
+| Windows 10   | 3.6    | Visual Studio Enterprise 2017 (MSVC 19.16) and 2019 (MSVC 19.28) | 3.19  |
+
+On Ubuntu and Windows we compile with LP support using CPLEX 12.9, SoPlex
+3.1.1 and Osi 0.107.9.
 
 
 ## Contributors
