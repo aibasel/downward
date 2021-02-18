@@ -15,28 +15,32 @@
 using namespace std;
 
 namespace pdbs {
-class AbstractSolutionData {
+class Projection {
     shared_ptr<PatternDatabase> pdb;
     vector<vector<OperatorID>> plan;
     bool unsolvable;
     bool solved;
 
 public:
-    AbstractSolutionData(
-        const shared_ptr<PatternDatabase> &&_pdb,
-        const vector<vector<OperatorID>> &&_plan,
+    Projection(
+        const shared_ptr<PatternDatabase> &&pdb,
+        const vector<vector<OperatorID>> &&plan,
         bool unsolvable)
-        : pdb(move(_pdb)),
-          plan(move(_plan)),
+        : pdb(move(pdb)),
+          plan(move(plan)),
           unsolvable(unsolvable),
           solved(false) {}
+
+    const shared_ptr<PatternDatabase> &get_pdb() const {
+        return pdb;
+    }
 
     const Pattern &get_pattern() const {
         return pdb->get_pattern();
     }
 
-    const shared_ptr<PatternDatabase> &get_pdb() {
-        return pdb;
+    const vector<vector<OperatorID>> &get_plan() const {
+        return plan;
     }
 
     bool is_unsolvable() const {
@@ -50,26 +54,24 @@ public:
     bool is_solved() {
         return solved;
     }
-
-    const vector<vector<OperatorID>> &get_plan() const {
-        return plan;
-    }
 };
 
-static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
-    const shared_ptr<AbstractTask> &concrete_task, const Pattern &pattern,
+static unique_ptr<Projection> compute_projection(
+    const shared_ptr<AbstractTask> &concrete_task,
+    const Pattern &pattern,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
-    bool compute_wildcard_plan, utils::Verbosity verbosity) {
+    bool compute_wildcard_plan,
+    utils::Verbosity verbosity) {
     TaskProxy concrete_task_proxy(*concrete_task);
     shared_ptr<PatternDatabase> pdb =
         make_shared<PatternDatabase>(concrete_task_proxy, pattern);
-    tasks::ProjectedTask abstract_task(concrete_task, pattern);
-    TaskProxy abstract_task_proxy(abstract_task);
+    tasks::ProjectedTask projected_task(concrete_task, pattern);
+    TaskProxy projected_task_proxy(projected_task);
 
     bool unsolvable = false;
     vector<vector<OperatorID>> plan;
     int init_goal_dist =
-        pdb->get_value_abstracted(abstract_task_proxy.get_initial_state());
+        pdb->get_value_abstracted(projected_task_proxy.get_initial_state());
     if (init_goal_dist == numeric_limits<int>::max()) {
         unsolvable = true;
         if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -83,7 +85,7 @@ static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
         }
 
         plan = steepest_ascent_enforced_hillclimbing(
-            abstract_task_proxy, rng, pdb, compute_wildcard_plan, verbosity);
+            projected_task_proxy, rng, pdb, compute_wildcard_plan, verbosity);
 
         // Convert operator IDs of the abstract in the concrete task.
         for (vector<OperatorID> &plan_step : plan) {
@@ -91,29 +93,23 @@ static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
             concrete_plan_step.reserve(plan_step.size());
             for (OperatorID abs_op_id : plan_step) {
                 concrete_plan_step.push_back(
-                    abstract_task_proxy.get_operators()[abs_op_id].get_ancestor_operator_id(concrete_task.get()));
+                    projected_task_proxy.get_operators()[abs_op_id].get_ancestor_operator_id(concrete_task.get()));
             }
             plan_step.swap(concrete_plan_step);
         }
     }
 
-    return utils::make_unique_ptr<AbstractSolutionData>(
-            move(pdb), move(plan), unsolvable);
+    return utils::make_unique_ptr<Projection>(
+        move(pdb), move(plan), unsolvable);
 }
 
-/*
-  ======================================================================
-  separation between old "abstract solution data" class and cegar.
-  ======================================================================
-*/
-
 struct Flaw {
-    int solution_index;
+    int collection_index;
     int variable;
 
-    Flaw(int solution_index, int variable)
-            : solution_index(solution_index),
-              variable(variable) {
+    Flaw(int collection_index, int variable)
+        : collection_index(collection_index),
+          variable(variable) {
     }
 };
 
@@ -134,18 +130,15 @@ class Cegar {
     const utils::Verbosity verbosity;
     const string token = "CEGAR: ";
 
-    // the pattern collection in form of their pdbs plus stored plans.
-    vector<unique_ptr<AbstractSolutionData>> solutions;
-    // Takes a variable as key and returns the index of the solutions-entry
-    // whose pattern contains said variable. Used for checking if a variable
-    // is already included in some pattern as well as for quickly finding
-    // the other partner for merging.
-    unordered_map<int, int> solution_lookup;
+    vector<unique_ptr<Projection>> projection_collection;
+    /*
+      Map each variable of the task which is contained in the collection to the
+      projection which it is part of.
+    */
+    unordered_map<int, int> variable_to_projection;
     int collection_size;
 
-    // If the algorithm finds a single solution instance that solves
-    // the concrete problem, then it will store its index here.
-    // This enables simpler plan extraction later on.
+    // Store the index of a projection if it solves the concrete task.
     int concrete_solution_index;
 
     void print_collection() const;
@@ -163,7 +156,7 @@ class Cegar {
       The second element of the returned pair is a list of variables
       that caused the solution to fail.
      */
-    FlawList apply_wildcard_plan(int solution_index, const State &init);
+    FlawList apply_wildcard_plan(int collection_index, const State &init);
     FlawList get_flaws();
 
     // Methods related to refining (and adding patterns to the collection generally).
@@ -171,7 +164,7 @@ class Cegar {
     bool can_merge_patterns(int index1, int index2) const;
     void merge_patterns(int index1, int index2);
     bool can_add_variable_to_pattern(int index, int var) const;
-    void add_variable_to_pattern(int index, int var);
+    void add_variable_to_pattern(int collection_index, int var);
     void handle_flaw(const Flaw &flaw);
     void refine(const FlawList& flaws);
 public:
@@ -193,11 +186,11 @@ public:
 
 void Cegar::print_collection() const {
     utils::g_log << "[";
-    for(size_t i = 0; i < solutions.size(); ++i) {
-        const auto &sol = solutions[i];
-        if (sol) {
-            utils::g_log << sol->get_pattern();
-            if (i != solutions.size() - 1) {
+    for(size_t i = 0; i < projection_collection.size(); ++i) {
+        const unique_ptr<Projection> &projection = projection_collection[i];
+        if (projection) {
+            utils::g_log << projection->get_pattern();
+            if (i != projection_collection.size() - 1) {
                 utils::g_log << ", ";
             }
         }
@@ -269,12 +262,12 @@ State get_unregistered_successor(
 }
 
 FlawList Cegar::apply_wildcard_plan(
-    int solution_index, const State &init) {
+        int collection_index, const State &init) {
     FlawList flaws;
     State current(init);
     current.unpack();
-    AbstractSolutionData &solution = *solutions[solution_index];
-    const vector<vector<OperatorID>> &plan = solution.get_plan();
+    Projection &projection = *projection_collection[collection_index];
+    const vector<vector<OperatorID>> &plan = projection.get_plan();
     for (const vector<OperatorID> &equivalent_ops : plan) {
         bool step_failed = true;
         for (OperatorID op_id : equivalent_ops) {
@@ -295,7 +288,7 @@ FlawList Cegar::apply_wildcard_plan(
 
                 if (current[precondition.get_variable()] != precondition) {
                     flaw_detected = true;
-                    flaws.emplace_back(solution_index, var);
+                    flaws.emplace_back(collection_index, var);
                 }
             }
 
@@ -317,7 +310,7 @@ FlawList Cegar::apply_wildcard_plan(
     }
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << token << "plan of pattern " << solution.get_pattern();
+        utils::g_log << token << "plan of pattern " << projection.get_pattern();
     }
     if (flaws.empty()) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -338,14 +331,14 @@ FlawList Cegar::apply_wildcard_plan(
                     utils::g_log << token << "since there are no blacklisted variables, "
                                     "the concrete task is solved." << endl;
                 }
-                concrete_solution_index = solution_index;
+                concrete_solution_index = collection_index;
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << token << "since there are blacklisted variables, the plan "
                                     "is not guaranteed to work in the concrete state "
-                                    "space. Marking this solution as solved." << endl;
+                                    "space. Marking this projection as solved." << endl;
                 }
-                solution.mark_as_solved();
+                projection.mark_as_solved();
             }
         } else {
             /*
@@ -361,14 +354,14 @@ FlawList Cegar::apply_wildcard_plan(
                 for (const FactPair &goal : goals) {
                     int goal_var_id = goal.var;
                     if (current[goal_var_id].get_pair() != goal && !blacklisted_variables.count(goal_var_id)) {
-                        flaws.emplace_back(solution_index, goal_var_id);
+                        flaws.emplace_back(collection_index, goal_var_id);
                     }
                 }
                 if (flaws.empty()) {
                     utils::g_log << token
                                  << "no non-blacklisted goal variables left, "
                                     "marking this pattern as solved." << endl;
-                    solution.mark_as_solved();
+                    projection.mark_as_solved();
                 } else {
                     if (verbosity >= utils::Verbosity::VERBOSE) {
                         utils::g_log << token << "raising goal violation flaw(s)." << endl;
@@ -379,7 +372,7 @@ FlawList Cegar::apply_wildcard_plan(
                     utils::g_log << "we do not allow merging due to goal violation flaws, ";
                     utils::g_log << "thus marking this pattern as solved." << endl;
                 }
-                solution.mark_as_solved();
+                projection.mark_as_solved();
             }
         }
     } else {
@@ -395,29 +388,29 @@ FlawList Cegar::get_flaws() {
     FlawList flaws;
     State concrete_init = task_proxy.get_initial_state();
 
-    for (size_t solution_index = 0;
-         solution_index < solutions.size(); ++solution_index) {
-        if (!solutions[solution_index] ||
-            solutions[solution_index]->is_solved()) {
+    for (size_t collection_index = 0;
+         collection_index < projection_collection.size(); ++collection_index) {
+        if (!projection_collection[collection_index] ||
+            projection_collection[collection_index]->is_solved()) {
             continue;
         }
 
-        AbstractSolutionData &solution = *solutions[solution_index];
+        Projection &projection = *projection_collection[collection_index];
 
-        // abort here if no abstract solution could be found
-        if (solution.is_unsolvable()) {
+        // abort here if no abstract projection could be found
+        if (projection.is_unsolvable()) {
             utils::g_log << token << "Problem unsolvable" << endl;
             utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
         }
 
-        // find out if and why the abstract solution
+        // find out if and why the abstract projection
         // would not work for the concrete task.
         // We always start with the initial state.
-        FlawList new_flaws = apply_wildcard_plan(solution_index, concrete_init);
+        FlawList new_flaws = apply_wildcard_plan(collection_index, concrete_init);
 
         if (concrete_solution_index != -1) {
             // We solved the concrete task. Return empty flaws to signal terminating.
-            assert(concrete_solution_index == static_cast<int>(solution_index));
+            assert(concrete_solution_index == static_cast<int>(collection_index));
             assert(new_flaws.empty());
             assert(blacklisted_variables.empty());
             flaws.clear();
@@ -431,17 +424,17 @@ FlawList Cegar::get_flaws() {
 }
 
 void Cegar::add_pattern_for_var(int var) {
-    solutions.push_back(
-        generate_abstract_solution_data(
-            task, {var}, rng, wildcard_plans, verbosity));
-    solution_lookup[var] = solutions.size() - 1;
-    collection_size += solutions.back()->get_pdb()->get_size();
+    projection_collection.push_back(
+            compute_projection(
+                    task, {var}, rng, wildcard_plans, verbosity));
+    variable_to_projection[var] = projection_collection.size() - 1;
+    collection_size += projection_collection.back()->get_pdb()->get_size();
 }
 
 bool Cegar::can_merge_patterns(
         int index1, int index2) const {
-    int pdb_size1 = solutions[index1]->get_pdb()->get_size();
-    int pdb_size2 = solutions[index2]->get_pdb()->get_size();
+    int pdb_size1 = projection_collection[index1]->get_pdb()->get_size();
+    int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
     if (!utils::is_product_within_limit(pdb_size1, pdb_size2, max_pdb_size)) {
         return false;
     }
@@ -450,29 +443,27 @@ bool Cegar::can_merge_patterns(
 }
 
 void Cegar::merge_patterns(int index1, int index2) {
-    // Merge pattern at index2 into pattern at index2
-    AbstractSolutionData &solution1 = *solutions[index1];
-    AbstractSolutionData &solution2 = *solutions[index2];
+    // Merge projection at index2 into projection at index2
+    Projection &projection1 = *projection_collection[index1];
+    Projection &projection2 = *projection_collection[index2];
 
-    const Pattern& pattern2 = solution2.get_pattern();
-
-    // update look-up table
+    const Pattern& pattern2 = projection2.get_pattern();
     for (int var : pattern2) {
-        solution_lookup[var] = index1;
+        variable_to_projection[var] = index1;
     }
 
     // compute merged pattern
-    Pattern new_pattern = solution1.get_pattern();
+    Pattern new_pattern = projection1.get_pattern();
     new_pattern.insert(new_pattern.end(), pattern2.begin(), pattern2.end());
     sort(new_pattern.begin(), new_pattern.end());
 
     // store old pdb sizes
-    int pdb_size1 = solutions[index1]->get_pdb()->get_size();
-    int pdb_size2 = solutions[index2]->get_pdb()->get_size();
+    int pdb_size1 = projection_collection[index1]->get_pdb()->get_size();
+    int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
 
-    // compute merge solution
-    unique_ptr<AbstractSolutionData> merged =
-        generate_abstract_solution_data(
+    // compute merged projection
+    unique_ptr<Projection> merged =
+        compute_projection(
             task, new_pattern, rng, wildcard_plans, verbosity);
 
     // update collection size
@@ -481,12 +472,12 @@ void Cegar::merge_patterns(int index1, int index2) {
     collection_size += merged->get_pdb()->get_size();
 
     // clean-up
-    solutions[index1] = move(merged);
-    solutions[index2] = nullptr;
+    projection_collection[index1] = move(merged);
+    projection_collection[index2] = nullptr;
 }
 
 bool Cegar::can_add_variable_to_pattern(int index, int var) const {
-    int pdb_size = solutions[index]->get_pdb()->get_size();
+    int pdb_size = projection_collection[index]->get_pdb()->get_size();
     int domain_size = task_proxy.get_variables()[var].get_domain_size();
     if (!utils::is_product_within_limit(pdb_size, domain_size, max_pdb_size)) {
         return false;
@@ -495,47 +486,42 @@ bool Cegar::can_add_variable_to_pattern(int index, int var) const {
     return collection_size + added_size <= max_collection_size;
 }
 
-void Cegar::add_variable_to_pattern(int index, int var) {
-    AbstractSolutionData &solution = *solutions[index];
+void Cegar::add_variable_to_pattern(int collection_index, int var) {
+    const Projection &projection = *projection_collection[collection_index];
 
-    // compute new pattern
-    Pattern new_pattern(solution.get_pattern());
+    Pattern new_pattern(projection.get_pattern());
     new_pattern.push_back(var);
     sort(new_pattern.begin(), new_pattern.end());
 
-    // compute new solution
-    unique_ptr<AbstractSolutionData> new_solution =
-        generate_abstract_solution_data(
-            task, new_pattern, rng, wildcard_plans, verbosity);
+    unique_ptr<Projection> new_projection =
+        compute_projection(task, new_pattern, rng, wildcard_plans, verbosity);
 
-    // update collection size
-    collection_size -= solution.get_pdb()->get_size();
-    collection_size += new_solution->get_pdb()->get_size();
+    collection_size -= projection.get_pdb()->get_size();
+    collection_size += new_projection->get_pdb()->get_size();
 
-    // update look-up table
-    solution_lookup[var] = index;
-    solutions[index] = move(new_solution);
+    variable_to_projection[var] = collection_index;
+    projection_collection[collection_index] = move(new_projection);
 }
 
 void Cegar::handle_flaw(const Flaw &flaw) {
-    int sol_index = flaw.solution_index;
+    int collection_index = flaw.collection_index;
     int var = flaw.variable;
     bool added_var = false;
-    auto it = solution_lookup.find(var);
-    if (it != solution_lookup.end()) {
+    auto it = variable_to_projection.find(var);
+    if (it != variable_to_projection.end()) {
         // var is already in another pattern of the collection
         int other_index = it->second;
-        assert(other_index != sol_index);
-        assert(solutions[other_index] != nullptr);
+        assert(other_index != collection_index);
+        assert(projection_collection[other_index] != nullptr);
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << token << "var" << var << " is already in pattern "
-                         << solutions[other_index]->get_pattern() << endl;
+                         << projection_collection[other_index]->get_pattern() << endl;
         }
-        if (allow_merging >= AllowMerging::PreconditionFlaws && can_merge_patterns(sol_index, other_index)) {
+        if (allow_merging >= AllowMerging::PreconditionFlaws && can_merge_patterns(collection_index, other_index)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << token << "merge the two patterns" << endl;
             }
-            merge_patterns(sol_index, other_index);
+            merge_patterns(collection_index, other_index);
             added_var = true;
         }
     } else {
@@ -547,11 +533,11 @@ void Cegar::handle_flaw(const Flaw &flaw) {
             utils::g_log << token << "var" << var
                          << " is not in the collection yet" << endl;
         }
-        if (can_add_variable_to_pattern(sol_index, var)) {
+        if (can_add_variable_to_pattern(collection_index, var)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << token << "add it to the pattern" << endl;
             }
-            add_variable_to_pattern(sol_index, var);
+            add_variable_to_pattern(collection_index, var);
             added_var = true;
         }
     }
@@ -574,7 +560,7 @@ void Cegar::refine(const FlawList &flaws) {
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << token << "chosen flaw: pattern "
-                     << solutions[flaw.solution_index]->get_pattern()
+                     << projection_collection[flaw.collection_index]->get_pattern()
                      << " with a flaw on " << flaw.variable << endl;
     }
     handle_flaw(flaw);
@@ -589,14 +575,13 @@ PatternCollectionInformation Cegar::run() {
             utils::g_log << "iteration #" << refinement_counter + 1 << endl;
         }
 
-        // vector of solution indices and flaws associated with said solutions
         FlawList flaws = get_flaws();
 
         if (flaws.empty()) {
             if (verbosity >= utils::Verbosity::NORMAL) {
                 if (concrete_solution_index != -1) {
                     utils::g_log << token
-                                 << "task solved during computation of abstract solutions"
+                                 << "task solved during computation of abstract projection_collection"
                                  << endl;
                 } else {
                     utils::g_log << token
@@ -611,17 +596,13 @@ PatternCollectionInformation Cegar::run() {
             break;
         }
 
-        // if there was a flaw, then refine the abstraction
-        // such that said flaw does not occur again
         refine(flaws);
-
         ++refinement_counter;
+
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << token << "current collection size: " << collection_size << endl;
             utils::g_log << token << "current collection: ";
             print_collection();
-        }
-        if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << endl;
         }
     }
@@ -633,13 +614,13 @@ PatternCollectionInformation Cegar::run() {
     shared_ptr<PDBCollection> pdbs = make_shared<PDBCollection>();
     if (concrete_solution_index != -1) {
         const shared_ptr<PatternDatabase> &pdb =
-                solutions[concrete_solution_index]->get_pdb();
+            projection_collection[concrete_solution_index]->get_pdb();
         pdbs->push_back(pdb);
         patterns->push_back(pdb->get_pattern());
     } else {
-        for (const auto &sol : solutions) {
-            if (sol) {
-                const shared_ptr<PatternDatabase> &pdb = sol->get_pdb();
+        for (const unique_ptr<Projection> &projection : projection_collection) {
+            if (projection) {
+                const shared_ptr<PatternDatabase> &pdb = projection->get_pdb();
                 pdbs->push_back(pdb);
                 patterns->push_back(pdb->get_pattern());
             }
