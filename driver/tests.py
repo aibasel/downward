@@ -30,10 +30,9 @@ def cleanup():
 
 
 def run_driver(parameters):
-    cmd = [sys.executable, "fast-downward.py"]
-    cmd.extend(parameters)
     cleanup()
     translate()
+    cmd = [sys.executable, "fast-downward.py"] + parameters
     return subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
@@ -75,7 +74,7 @@ def test_hard_time_limit():
         "--translate", "--translate-time-limit",
         "20s", "misc/tests/benchmarks/gripper/prob01.pddl"]
     with pytest.raises(subprocess.CalledProcessError) as exception_info:
-        subprocess.check_call(driver+parameters, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+        subprocess.check_call(driver + parameters, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
     assert exception_info.value.returncode == returncodes.DRIVER_INPUT_ERROR
 
 
