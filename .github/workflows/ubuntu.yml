@@ -104,6 +104,10 @@ jobs:
           export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
           ./build.py --debug
           ./build.py
+          ldd builds/debug/bin/downward
+          ldd builds/release/bin/downward
+          echo "separator"
+          ls -la ../lib/coin/lib
 
       - name: Archive required files
         # We only run tests on the version compiled with gcc, so we
@@ -177,7 +181,14 @@ jobs:
         run: |
           pwd
           ls
+          echo "separator"
           ls ../
+          echo "separator"
+          ls ../lib/
+          echo "separator"
+          ls ../lib/coin/
+          echo "separator"
+          ls ../lib/coin/lib
           ldd builds/debug/bin/downward
           ldd builds/release/bin/downward
           echo $PATH
