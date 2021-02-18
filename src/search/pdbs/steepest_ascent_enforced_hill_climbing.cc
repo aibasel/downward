@@ -37,34 +37,59 @@ inline void feed(HashState &hash_state, const pdbs::SearchNode &search_node) {
 }
 
 namespace pdbs {
-static vector<State> extract_state_sequence(
-    const SearchNode &goal_node) {
-    vector<State> state_sequence;
-    // Handle first state outside the loop because we need to copy.
-    state_sequence.push_back(goal_node.state);
-    shared_ptr<SearchNode> current_node = goal_node.predecessor;
-    while (true) {
-        state_sequence.push_back(move(current_node->state));
-        if (current_node->predecessor) {
-            assert(current_node->cost != -1);
-            current_node = current_node->predecessor;
-        } else {
-            reverse(state_sequence.begin(), state_sequence.end());
-            return state_sequence;
+static vector<OperatorID> get_cheapest_operators(
+    const TaskProxy &abs_task_proxy,
+    const successor_generator::SuccessorGenerator& succ_gen,
+    const State &from, const State &to) {
+    vector<OperatorID> applicable_ops;
+    succ_gen.generate_applicable_ops(from, applicable_ops);
+    int best_cost = numeric_limits<int>::max();
+    vector<OperatorID> result;
+    for (OperatorID op_id : applicable_ops) {
+        OperatorProxy op = abs_task_proxy.get_operators()[op_id];
+        int op_cost = op.get_cost();
+        if (op_cost > best_cost) {
+            continue;
+        }
+
+        State succ = from.get_unregistered_successor(op);
+        if (succ == to) {
+            if (op_cost < best_cost) {
+                result.clear();
+                best_cost = op_cost;
+            }
+            assert(op_cost == best_cost);
+            result.push_back(op_id);
         }
     }
+    return result;
 }
 
-static vector<State> bfs_for_improving_state(
+static vector<vector<OperatorID>> extract_plan(
+    const TaskProxy &abs_task_proxy,
+    const successor_generator::SuccessorGenerator& succ_gen,
+    shared_ptr<SearchNode> &goal_node) {
+    vector<vector<OperatorID>> plan;
+    shared_ptr<SearchNode> current_node = goal_node;
+    while(current_node->predecessor) {
+        plan.push_back(get_cheapest_operators(
+            abs_task_proxy, succ_gen, current_node->predecessor->state, current_node->state));
+        current_node = current_node->predecessor;
+    }
+    return plan;
+}
+
+static vector<vector<OperatorID>> bfs_for_improving_state(
     const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator &succ_gen,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const PatternDatabase &pdb,
     int f_star,
     shared_ptr<SearchNode> &start_node) {
+    // Start node may have been used in earlier iteration, so we reset it here
+    start_node->cost = -1;
+    start_node->predecessor = nullptr;
 //    utils::g_log << "Running BFS with start state " << start_node->state.get_values() << endl;
-    assert(start_node->cost == -1);
-    assert(start_node->predecessor == nullptr);
     queue <shared_ptr<SearchNode>> open;
     utils::HashSet<size_t> closed;
     closed.insert(start_node->hash);
@@ -113,71 +138,9 @@ static vector<State> bfs_for_improving_state(
         }
         if (best_improving_succ_node) {
             start_node = best_improving_succ_node;
-            return extract_state_sequence(*best_improving_succ_node);
+            return extract_plan(abs_task_proxy, succ_gen, best_improving_succ_node);
         }
     }
-}
-
-static void dump_state_sequence(const vector<State>& state_sequence) {
-    string prefix = "";
-    for (const State& state : state_sequence) {
-        utils::g_log << prefix << state.get_unpacked_values();
-        prefix = ", ";
-    }
-    utils::g_log << endl;
-}
-
-static vector<vector<OperatorID>> turn_state_sequence_into_plan(
-    const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator &succ_gen,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    const vector<State> &state_sequence,
-    bool compute_wildcard_plan,
-    utils::Verbosity verbosity) {
-    vector<vector<OperatorID>> plan;
-    plan.reserve(state_sequence.size() - 1);
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "Turning state seqeuence into plan..." << endl;
-    }
-    for (size_t i = 0; i < state_sequence.size() - 1; ++i) {
-        const State& state = state_sequence[i];
-        const State& successor = state_sequence[i + 1];
-//        utils::g_log << "transition from " << state.get_values() << "to " << successor.get_values() << endl;
-        assert(successor != state);
-        int best_cost = numeric_limits<int>::max();
-        vector<OperatorID> applicable_ops;
-        succ_gen.generate_applicable_ops(state, applicable_ops);
-        vector<OperatorID> equivalent_ops;
-        for (OperatorID op_id : applicable_ops) {
-            OperatorProxy op = abs_task_proxy.get_operators()[op_id];
-//            utils::g_log << "consider op " << op.get_name() << endl;
-            int op_cost = op.get_cost();
-            if (op_cost > best_cost) {
-//                utils::g_log << "too expensive" << endl;
-                continue;
-            }
-
-            State succ = state.get_unregistered_successor(op);
-            if (succ == successor) {
-//                utils::g_log << "leads to right successor" << endl;
-                if (op_cost < best_cost) {
-//                    utils::g_log << "new best cost, updating" << endl;
-                    equivalent_ops.clear();
-                    best_cost = op_cost;
-                }
-                assert(op_cost == best_cost);
-                equivalent_ops.push_back(op_id);
-            }
-        }
-        if (compute_wildcard_plan) {
-            plan.push_back(equivalent_ops);
-        } else {
-            OperatorID random_op_id = *rng->choose(equivalent_ops);
-            plan.emplace_back();
-            plan.back().push_back(random_op_id);
-        }
-    }
-    return plan;
 }
 
 static void print_plan(const TaskProxy &abs_task_proxy,
@@ -202,12 +165,11 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
     const PatternDatabase &pdb,
     bool compute_wildcard_plan,
     utils::Verbosity verbosity) {
+    vector<vector<OperatorID>> plan;
     State start = abs_task_proxy.get_initial_state();
     start.unpack();
     size_t start_index = pdb.get_abstract_state_index(start);
     const int f_star = pdb.get_value_for_index(start_index);
-    vector<State> state_sequence;
-    state_sequence.push_back(start);
     if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << "Running EHC with start state " << start.get_unpacked_values() << endl;
     }
@@ -219,33 +181,24 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "Current start state of iteration: " << start_node->state.get_unpacked_values() << endl;
         }
-        // Reset start node to start a new BFS in this iteration.
-        start_node->cost = -1;
-        start_node->predecessor = nullptr;
         // start_node will be set to the last node of the BFS, thus containing
         // the improving state for the next iteration, and the updated g-value.
-        vector<State> bfs_state_sequence =
+        vector<vector<OperatorID>> plateau_plan =
             bfs_for_improving_state(abs_task_proxy, succ_gen, rng, pdb, f_star, start_node);
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "BFS state sequence to next improving state (adding all except first one): ";
-            dump_state_sequence(bfs_state_sequence);
+            print_plan(abs_task_proxy, pdb, plateau_plan);
         }
-        /* We do not add the first state since this equals the last state of
-           the previous call to BFS, or the initial state, which we add
-           manually. */
-        for (size_t i = 1; i < bfs_state_sequence.size(); ++i) {
-            State& state = bfs_state_sequence[i];
-            state_sequence.push_back(move(state));
-        }
-    }
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "EHC terminated. State sequence: ";
-        dump_state_sequence(state_sequence);
+        plan.insert(plan.end(), plateau_plan.begin(), plateau_plan.end());
     }
 
-    vector<vector<OperatorID>> plan =
-        turn_state_sequence_into_plan(abs_task_proxy, succ_gen, rng, state_sequence, compute_wildcard_plan, verbosity);
-
+    if (!compute_wildcard_plan) {
+        for (vector<OperatorID> &plan_step : plan) {
+            OperatorID random_op_id = *rng->choose(plan_step);
+            plan_step.clear();
+            plan_step.push_back(random_op_id);
+        }
+    }
     if (verbosity >= utils::Verbosity::VERBOSE) {
         print_plan(abs_task_proxy, pdb, plan);
     }
