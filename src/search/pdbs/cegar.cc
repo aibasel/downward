@@ -20,7 +20,6 @@ namespace pdbs {
 class AbstractSolutionData {
     shared_ptr<PatternDatabase> pdb;
     vector<vector<OperatorID>> plan;
-    vector<OperatorID> concrete_operator_ids;
     bool is_solvable;
     bool solved;
 
@@ -28,11 +27,9 @@ public:
     AbstractSolutionData(
         const shared_ptr<PatternDatabase> &&_pdb,
         const vector<vector<OperatorID>> &&_plan,
-        const vector<OperatorID> &&_concrete_operator_ids,
         bool _is_solvable)
         : pdb(move(_pdb)),
           plan(move(_plan)),
-          concrete_operator_ids(move(_concrete_operator_ids)),
           is_solvable(_is_solvable),
           solved(false) {}
 
@@ -58,10 +55,6 @@ public:
 
     const vector<vector<OperatorID>> &get_plan() const {
         return plan;
-    }
-
-    OperatorID get_concrete_op_id_for_abs_op_id(OperatorID abs_op_id) const {
-        return concrete_operator_ids[abs_op_id.get_index()];
     }
 };
 
@@ -93,17 +86,21 @@ static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
 
         plan = steepest_ascent_enforced_hillclimbing(
             abstract_task_proxy, rng, pdb, compute_wildcard_plan, verbosity);
-    }
 
-    vector<OperatorID> concrete_operator_ids;
-    concrete_operator_ids.reserve(abstract_task_proxy.get_operators().size());
-    for (OperatorProxy abs_op : abstract_task_proxy.get_operators()) {
-        concrete_operator_ids.push_back(
-            abs_op.get_ancestor_operator_id(concrete_task.get()));
+        // Convert operator IDs of the abstract in the concrete task.
+        for (vector<OperatorID> &plan_step : plan) {
+            vector<OperatorID> concrete_plan_step;
+            concrete_plan_step.reserve(plan_step.size());
+            for (OperatorID abs_op_id : plan_step) {
+                concrete_plan_step.push_back(
+                    abstract_task_proxy.get_operators()[abs_op_id].get_ancestor_operator_id(concrete_task.get()));
+            }
+            plan_step.swap(concrete_plan_step);
+        }
     }
 
     return utils::make_unique_ptr<AbstractSolutionData>(
-        move(pdb), move(plan), move(concrete_operator_ids), is_solvable);
+        move(pdb), move(plan), is_solvable);
 }
 
 /*
@@ -282,9 +279,7 @@ FlawList Cegar::apply_wildcard_plan(
     const vector<vector<OperatorID>> &plan = solution.get_plan();
     for (const vector<OperatorID> &equivalent_ops : plan) {
         bool step_failed = true;
-        for (OperatorID abs_op_id : equivalent_ops) {
-            // retrieve the concrete operator that corresponds to the abstracted one
-            OperatorID op_id = solution.get_concrete_op_id_for_abs_op_id(abs_op_id);
+        for (OperatorID op_id : equivalent_ops) {
             OperatorProxy op = task_proxy.get_operators()[op_id];
 
             // we do not use task_properties::is_applicable here because
