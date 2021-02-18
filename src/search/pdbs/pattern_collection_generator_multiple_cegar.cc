@@ -81,7 +81,6 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     int num_iterations = 0;
     int goal_index = 0;
     int collection_size = 0;
-    const AllowMerging single_generator_allow_merging = AllowMerging::Never;
     const utils::Verbosity cegar_verbosity(utils::Verbosity::SILENT);
     while (can_generate) {
         // we start blacklisting once a certain amount of time has passed
@@ -113,7 +112,6 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 cegar_max_pdb_size,
                 min(remaining_collection_size, cegar_max_collection_size),
                 cegar_wildcard_plans,
-                single_generator_allow_merging,
                 min(remaining_time, cegar_max_time),
                 task,
                 {goals[goal_index]},

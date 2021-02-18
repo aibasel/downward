@@ -120,7 +120,6 @@ class Cegar {
     const int max_pdb_size;
     const int max_collection_size;
     const bool wildcard_plans;
-    const AllowMerging allow_merging;
     const double max_time;
     const shared_ptr<AbstractTask> &task;
     const TaskProxy task_proxy;
@@ -173,7 +172,6 @@ public:
         int max_pdb_size,
         int max_collection_size,
         bool wildcard_plans,
-        AllowMerging allow_merging,
         double max_time,
         const shared_ptr<AbstractTask> &task,
         vector<FactPair> &&goals,
@@ -341,38 +339,26 @@ FlawList Cegar::apply_wildcard_plan(
                 projection.mark_as_solved();
             }
         } else {
-            /*
-              The pattern is missing at least one goal variable. Since all
-              goal variables are in the collection from the start on, this
-              flaw can only be fixed by merging patterns. Hence we raise
-              flaws depending on the option allow_merging.
-            */
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << "but did not lead to a goal state." << endl;
             }
-            if (allow_merging == AllowMerging::AllFlaws) {
-                for (const FactPair &goal : goals) {
-                    int goal_var_id = goal.var;
-                    if (current[goal_var_id].get_pair() != goal && !blacklisted_variables.count(goal_var_id)) {
-                        flaws.emplace_back(collection_index, goal_var_id);
-                    }
+            for (const FactPair &goal : goals) {
+                int goal_var_id = goal.var;
+                if (current[goal_var_id].get_pair() != goal && !blacklisted_variables.count(goal_var_id)) {
+                    flaws.emplace_back(collection_index, goal_var_id);
                 }
-                if (flaws.empty()) {
+            }
+            if (flaws.empty()) {
+                if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << token
                                  << "no non-blacklisted goal variables left, "
                                     "marking this pattern as solved." << endl;
-                    projection.mark_as_solved();
-                } else {
-                    if (verbosity >= utils::Verbosity::VERBOSE) {
-                        utils::g_log << token << "raising goal violation flaw(s)." << endl;
-                    }
-                }
-            } else {
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "we do not allow merging due to goal violation flaws, ";
-                    utils::g_log << "thus marking this pattern as solved." << endl;
                 }
                 projection.mark_as_solved();
+            } else {
+                if (verbosity >= utils::Verbosity::VERBOSE) {
+                    utils::g_log << token << "raising goal violation flaw(s)." << endl;
+                }
             }
         }
     } else {
@@ -517,7 +503,7 @@ void Cegar::handle_flaw(const Flaw &flaw) {
             utils::g_log << token << "var" << var << " is already in pattern "
                          << projection_collection[other_index]->get_pattern() << endl;
         }
-        if (allow_merging >= AllowMerging::PreconditionFlaws && can_merge_patterns(collection_index, other_index)) {
+        if (can_merge_patterns(collection_index, other_index)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << token << "merge the two patterns" << endl;
             }
@@ -646,7 +632,6 @@ Cegar::Cegar(
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
-    AllowMerging allow_merging,
     double max_time,
     const shared_ptr<AbstractTask> &task,
     vector<FactPair> &&goals,
@@ -657,7 +642,6 @@ Cegar::Cegar(
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
-      allow_merging(allow_merging),
       max_time(max_time),
       task(task),
       task_proxy(*task),
@@ -674,7 +658,6 @@ PatternCollectionInformation cegar(
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
-    AllowMerging allow_merging,
     double max_time,
     const shared_ptr<AbstractTask> &task,
     vector<FactPair> &&goals,
@@ -703,19 +686,6 @@ PatternCollectionInformation cegar(
         utils::g_log << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << "max collection size: " << max_collection_size << endl;
         utils::g_log << "wildcard plans: " << wildcard_plans << endl;
-        utils::g_log << "allow merging: ";
-        switch (allow_merging) {
-            case AllowMerging::Never:
-                utils::g_log << "never";
-                break;
-            case AllowMerging::PreconditionFlaws:
-                utils::g_log << "normal";
-                break;
-            case AllowMerging::AllFlaws:
-                utils::g_log << "verbose";
-                break;
-        }
-        utils::g_log << endl;
         utils::g_log << "Verbosity: ";
         switch (verbosity) {
             case utils::Verbosity::SILENT:
@@ -749,7 +719,6 @@ PatternCollectionInformation cegar(
         max_pdb_size,
         max_collection_size,
         wildcard_plans,
-        allow_merging,
         max_time,
         task,
         move(goals),
@@ -781,20 +750,6 @@ void add_cegar_options_to_parser(options::OptionParser &parser) {
         "wildcard_plans",
         "Make the algorithm work with wildcard rather than regular plans.",
         "true");
-    vector<string> allow_merging_options;
-    vector<string> allow_merging_doc;
-    allow_merging_options.push_back("never");
-    allow_merging_doc.push_back("never merge patterns");
-    allow_merging_options.push_back("precondition_flaws");
-    allow_merging_doc.push_back("only allow merging after precondition flaws");
-    allow_merging_options.push_back("all_flaws");
-    allow_merging_doc.push_back("allow merging for both goal and precondition flaws");
-    parser.add_enum_option<AllowMerging>(
-        "allow_merging",
-        allow_merging_options,
-        "ignore goal violations and consequently generate a single pattern",
-        "all_flaws",
-        allow_merging_doc);
     parser.add_option<double>(
         "max_time",
         "maximum time in seconds for CEGAR pattern generation. "

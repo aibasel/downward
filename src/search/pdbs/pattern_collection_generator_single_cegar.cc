@@ -5,8 +5,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-//#include "../utils/logging.h"
-//#include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
 using namespace std;
@@ -19,7 +17,6 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
       max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
       wildcard_plans(opts.get<bool>("wildcard_plans")),
-      allow_merging(opts.get<AllowMerging>("allow_merging")),
       blacklist_size(opts.get<int>("blacklist_size")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       max_time(opts.get<double>("max_time")) {
@@ -74,7 +71,6 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         max_pdb_size,
         max_collection_size,
         wildcard_plans,
-        allow_merging,
         max_time,
         task,
         move(goals),

@@ -15,18 +15,11 @@ class OptionParser;
 }
 
 namespace pdbs {
-enum class AllowMerging {
-    Never,
-    PreconditionFlaws,
-    AllFlaws
-};
-
 extern PatternCollectionInformation cegar(
     int max_refinements,
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
-    AllowMerging allow_merging,
     double max_time,
     const std::shared_ptr<AbstractTask> &task,
     std::vector<FactPair> &&goals,
