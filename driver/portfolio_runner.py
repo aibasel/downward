@@ -15,8 +15,8 @@ the process is started.
 
 __all__ = ["run"]
 
-import os
 import subprocess
+import sys
 
 from . import call
 from . import limits
@@ -219,8 +219,8 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
             "Please pass a time limit to fast-downward.py.")
 
     if time is None:
-        if os.name == "nt":
-            returncodes.exit_with_driver_unsupported_error(limits.RESOURCE_MODULE_MISSING_MSG)
+        if sys.platform == "win32":
+            returncodes.exit_with_driver_unsupported_error(limits.CANNOT_LIMIT_TIME_MSG)
         else:
             returncodes.exit_with_driver_input_error(
                 "Portfolios need a time limit. Please pass --search-time-limit "
@@ -235,4 +235,4 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
         exitcodes = run_sat(
             configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory)
-    return returncodes.generate_portfolio_exitcode(exitcodes)
+    return returncodes.generate_portfolio_exitcode(list(exitcodes))
