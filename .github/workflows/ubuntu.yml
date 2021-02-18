@@ -27,8 +27,8 @@ jobs:
     env:
       CC: ${{ matrix.compiler-version.cc }}
       CXX: ${{ matrix.compiler-version.cxx }}
-      CPLEX_URL: ${{ secrets.CPLEX_URL }}
-      SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
+      CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
+      SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
       DOWNWARD_CPLEX_ROOT: /home/runner/work/downward/lib/ibm/ILOG/CPLEX_Studio129/cplex
       DOWNWARD_SOPLEX_ROOT: /home/runner/work/downward/lib/soplex-3.1.1
       DOWNWARD_COIN_ROOT: /home/runner/work/downward/lib/coin
@@ -53,17 +53,16 @@ jobs:
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
-          wget $CPLEX_URL &> /dev/null
-          export CPLEX_INSTALLER=cplex_studio129.linux-x86-64.bin
-          chmod +x $CPLEX_INSTALLER
-          ./$CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${DOWNWARD_CPLEX_ROOT}")" -i silent
-          rm $CPLEX_INSTALLER
+          wget -O cplex_installer $CPLEX_URL &> /dev/null
+          chmod +x cplex_installer
+          ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${DOWNWARD_CPLEX_ROOT}")" -i silent
+          rm cplex_installer
 
       - name: Install SoPlex
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
-          wget $SOPLEX_URL &> /dev/null
+          wget -O soplex-3.1.1.tgz $SOPLEX_URL &> /dev/null
           tar xvzf soplex-3.1.1.tgz
           cd soplex-3.1.1
           mkdir build
@@ -133,8 +132,8 @@ jobs:
           - {ubuntu: ubuntu-18.04, python: 3.6}
           - {ubuntu: ubuntu-20.04, python: 3.8}
     env:
-      CPLEX_URL: ${{ secrets.CPLEX_URL }}
-      SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
+      CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
+      SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
     steps:
       - name: Download archive
         uses: actions/download-artifact@master
