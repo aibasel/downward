@@ -39,8 +39,27 @@ after the corresponding tracker issues.
 - For developers: introduce class for delete-relaxation based landmark
   factories and move usage of exploration object to subclasses of
   (abstract) landmark factory class.
-  http://issues.fast-downward.org/issue990  
+  http://issues.fast-downward.org/issue990
 
+- For users: We removed options from LandmarkFactories that were not relevant,
+  renamed the option "no_orders" to "use_orders" and changed the
+  reasonable_orders option to a Factory.
+  <http://issues.fast-downward.org/issue995>
+  Removed options:
+  lm_exhaust: disjunctive_landmarks, conjunctive_landmarks, no_orders, reasonable_orders
+  lm_hm: disjunctive_landmarks, only_causal_landmarks, no_orders, reasonable_orders
+  lm_rhw: conjunctive_landmarks, no_orders, reasonable_orders
+  lm_zg: disjunctive_landmarks, conjunctive_landmarks, only_causal_landmarks, reasonable_orders
+  Added options:
+  lm_hm/lm_rhw/lm_zg: use_orders (negation of deprecated "no_orders"
+  New Factory "lm_reasonable_orders_hps": This factory approximates reasonable
+  orders according to Hoffman, Porteus and Sebastia ("Ordered Landmarks in
+  Planning", JAIR 2004) and is equivalent to the deprecated option
+  "reasonable_orders", i.e. the command line argument
+  --evaluator hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()))
+  is equivalent to the deprecated
+  --evaluator hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true))
+  
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
