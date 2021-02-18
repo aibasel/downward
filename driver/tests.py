@@ -29,7 +29,9 @@ def cleanup():
                           cwd=REPO_ROOT_DIR)
 
 
-def run_driver(cmd):
+def run_driver(parameters):
+    cmd = [sys.executable, "fast-downward.py"]
+    cmd.extend(parameters)
     cleanup()
     translate()
     return subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
@@ -37,46 +39,43 @@ def run_driver(cmd):
 
 def test_commandline_args():
     for description, cmd in EXAMPLES:
-        cmd = [x.strip('"') for x in cmd]
-        run_driver(cmd)
+        parameters = [x.strip('"') for x in cmd]
+        run_driver(parameters)
 
 
 def test_aliases():
     for alias, config in ALIASES.items():
-        cmd = [sys.executable, "fast-downward.py", "--alias", alias, "output.sas"]
-        run_driver(cmd)
+        parameters = ["--alias", alias, "output.sas"]
+        run_driver(parameters)
 
 
 def test_show_aliases():
-    run_driver([sys.executable, "fast-downward.py", "--show-aliases"])
+    run_driver(["--show-aliases"])
 
 
 def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
-        cmd = [sys.executable, "fast-downward.py", "--portfolio", portfolio,
-               "--search-time-limit", "30m", "output.sas"]
-        run_driver(cmd)
+        parameters = ["--portfolio", portfolio,
+                      "--search-time-limit", "30m", "output.sas"]
+        run_driver(parameters)
 
 
+@pytest.mark.skipif(not limits.can_set_time_limit(), reason="Cannot set time limits on this system")
 def test_hard_time_limit():
-    # We cannot test this on systems like Windows where we cannot
-    # enforce time limits.
-    if not limits.can_set_time_limit():
-        return
-
     def preexec_fn():
         limits.set_time_limit(10)
 
-    cmd = [
-        sys.executable, "fast-downward.py", "--translate", "--translate-time-limit",
+    driver = [sys.executable, "fast-downward.py"]
+    parameters = [
+        "--translate", "--translate-time-limit",
         "10s", "misc/tests/benchmarks/gripper/prob01.pddl"]
-    subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+    subprocess.check_call(driver+parameters, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
 
-    cmd = [
-        sys.executable, "fast-downward.py", "--translate", "--translate-time-limit",
+    parameters = [
+        "--translate", "--translate-time-limit",
         "20s", "misc/tests/benchmarks/gripper/prob01.pddl"]
     with pytest.raises(subprocess.CalledProcessError) as exception_info:
-        subprocess.check_call(cmd, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
+        subprocess.check_call(driver+parameters, preexec_fn=preexec_fn, cwd=REPO_ROOT_DIR)
     assert exception_info.value.returncode == returncodes.DRIVER_INPUT_ERROR
 
 
