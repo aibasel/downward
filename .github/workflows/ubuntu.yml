@@ -111,7 +111,15 @@ jobs:
         # 4 large library files and several file links to these.
         run: |
           cd ../
-          tar cfz archive.tar.gz downward/fast-downward.py downward/driver downward/misc downward/builds/debug/bin/ downward/builds/release/bin/ lib/coin/lib/ lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so
+          libs=""
+          if [[ ! -z "${CPLEX_URL}" || ! -z "${SOPLEX_URL}" ]]; then
+            libs="${libs} lib/coin/lib/"
+          fi
+          if [[ ! -z "${CPLEX_URL}" ]]; then
+            libs="${libs} lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so"
+          fi
+
+          tar cfz archive.tar.gz downward/fast-downward.py downward/driver downward/misc downward/builds/debug/bin/ downward/builds/release/bin/ ${libs}
 
       - name: Upload archive
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
@@ -176,7 +184,9 @@ jobs:
           tar xfz archive.tar.gz
           shopt -s dotglob
           mv downward/* .
-          mv lib/ ../
+          if [[ ! -z "${CPLEX_URL}" || ! -z "${SOPLEX_URL}" ]]; then
+            mv lib/ ../
+          fi
 
       - name: Run driver, translator and search tests
         run: |
