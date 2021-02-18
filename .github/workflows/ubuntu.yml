@@ -168,7 +168,7 @@ jobs:
           mv validate ../
           cd ../
           rm -rf VAL
-          echo `pwd` >> $GITHUB_PATH # Add VAL to path ob subsequent steps.
+          echo `pwd` >> $GITHUB_PATH # Add VAL to path of subsequent steps.
 
       - name: Extract archive
         # We need to make sure that library paths are the same as
