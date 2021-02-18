@@ -44,7 +44,7 @@ static vector<OperatorID> get_cheapest_operators(
     vector<OperatorID> applicable_ops;
     succ_gen.generate_applicable_ops(from, applicable_ops);
     int best_cost = numeric_limits<int>::max();
-    vector<OperatorID> result;
+    vector<OperatorID> cheapest_ops;
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = abs_task_proxy.get_operators()[op_id];
         int op_cost = op.get_cost();
@@ -55,20 +55,20 @@ static vector<OperatorID> get_cheapest_operators(
         State succ = from.get_unregistered_successor(op);
         if (succ == to) {
             if (op_cost < best_cost) {
-                result.clear();
+                cheapest_ops.clear();
                 best_cost = op_cost;
             }
             assert(op_cost == best_cost);
-            result.push_back(op_id);
+            cheapest_ops.push_back(op_id);
         }
     }
-    return result;
+    return cheapest_ops;
 }
 
 static vector<vector<OperatorID>> extract_plan(
     const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator& succ_gen,
-    shared_ptr<SearchNode> &goal_node) {
+    shared_ptr<SearchNode> goal_node) {
     vector<vector<OperatorID>> plan;
     shared_ptr<SearchNode> current_node = goal_node;
     while(current_node->predecessor) {
@@ -186,7 +186,7 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
         vector<vector<OperatorID>> plateau_plan =
             bfs_for_improving_state(abs_task_proxy, succ_gen, rng, pdb, f_star, start_node);
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "BFS state sequence to next improving state (adding all except first one): ";
+            utils::g_log << "BFS wildcard plan to next improving state: ";
             print_plan(abs_task_proxy, pdb, plateau_plan);
         }
         plan.insert(plan.end(), plateau_plan.begin(), plateau_plan.end());
