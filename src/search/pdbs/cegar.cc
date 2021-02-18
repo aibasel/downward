@@ -18,17 +18,17 @@ namespace pdbs {
 class AbstractSolutionData {
     shared_ptr<PatternDatabase> pdb;
     vector<vector<OperatorID>> plan;
-    bool is_solvable;
+    bool unsolvable;
     bool solved;
 
 public:
     AbstractSolutionData(
         const shared_ptr<PatternDatabase> &&_pdb,
         const vector<vector<OperatorID>> &&_plan,
-        bool _is_solvable)
+        bool unsolvable)
         : pdb(move(_pdb)),
           plan(move(_plan)),
-          is_solvable(_is_solvable),
+          unsolvable(unsolvable),
           solved(false) {}
 
     const Pattern &get_pattern() const {
@@ -39,8 +39,8 @@ public:
         return pdb;
     }
 
-    bool solution_exists() const {
-        return is_solvable;
+    bool is_unsolvable() const {
+        return unsolvable;
     }
 
     void mark_as_solved() {
@@ -66,12 +66,12 @@ static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
     tasks::ProjectedTask abstract_task(concrete_task, pattern);
     TaskProxy abstract_task_proxy(abstract_task);
 
-    bool is_solvable = true;
+    bool unsolvable = false;
     vector<vector<OperatorID>> plan;
     int init_goal_dist =
         pdb->get_value_abstracted(abstract_task_proxy.get_initial_state());
     if (init_goal_dist == numeric_limits<int>::max()) {
-        is_solvable = false;
+        unsolvable = true;
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "PDB with pattern " << pattern
                          << " is unsolvable" << endl;
@@ -98,7 +98,7 @@ static unique_ptr<AbstractSolutionData> generate_abstract_solution_data(
     }
 
     return utils::make_unique_ptr<AbstractSolutionData>(
-        move(pdb), move(plan), is_solvable);
+            move(pdb), move(plan), unsolvable);
 }
 
 /*
@@ -405,7 +405,7 @@ FlawList Cegar::get_flaws() {
         AbstractSolutionData &solution = *solutions[solution_index];
 
         // abort here if no abstract solution could be found
-        if (!solution.solution_exists()) {
+        if (solution.is_unsolvable()) {
             utils::g_log << token << "Problem unsolvable" << endl;
             utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
         }
