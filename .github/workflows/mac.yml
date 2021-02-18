@@ -1,70 +1,49 @@
 ---
-name: macos-latest
+name: macOS
 
 on: [push, pull_request]
 
 jobs:
-  compile: # name of the job. Jobs run in parallel unless specified otherwise.
-    name: compile
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ['3.6']
-        build-version: ["release", "debug"]
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
-      - name: Setup python
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
+  test:
+    name: Compile and test planner
+    timeout-minutes: 60
+    runs-on: macos-10.15
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@master
 
-      - name: compile
+      - name: Install Python
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.6
+
+      - name: Compile planner
         run: |
-          export CXXFLAGS="-Werror"  # Treat compilation warnings as errors.
-          ./build.py ${{ matrix.build-version }}
+          export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
+          ./build.py
+          ./build.py --debug
 
-      - name: upload-planner
-        uses: actions/upload-artifact@master
-        with:
-          name: ${{ matrix.build-version }}
-          path: builds/${{ matrix.build-version }}
-
-
-  test: # name of the job. Jobs run in parallel unless specified otherwise.
-    name: test
-    runs-on: macos-latest
-    needs: compile
-    strategy:
-      matrix:
-        python-version: ['3.6']
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
-
-      - name: Setup python
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-
-      - name: setup
+      - name: Install tox
         run: |
-          pip3 install pytest tox
-          #brew install valgrind # TODO: does not work
-          mkdir builds
+          pip3 install tox
 
-      - name: download-planner
-        uses: actions/download-artifact@master
-        with:
-          # without 'name' attribute all artifacts are downloaded and the
-          # artifact name is used as directory name.
-          path: builds/
-
-      - name: test
+      - name: Install VAL
         run: |
-          chmod +x builds/debug/bin/downward
-          chmod +x builds/release/bin/downward
-          cd misc/
-          tox -e search,translator
+          brew install gnu-sed
+          git clone https://github.com/KCL-Planning/VAL.git
+          cd VAL
+          git checkout a5565396007eee73ac36527fbf904142b3077c74
+          make clean  # Remove old build artifacts and binaries.
+          gsed -i 's/-Werror //g' Makefile  # Ignore warnings.
+          make -j2
+          mv validate ../
+          cd ../
+          rm -rf VAL
+
+      - name: Run driver, translator and search tests
+        run: |
+          export PATH="$(pwd):$PATH" # Add VAL to path.
+          cd misc
+          tox -e driver,translator,search
 
 ...

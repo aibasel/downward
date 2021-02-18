@@ -1,71 +1,67 @@
 ---
-name: windows-latest
+name: Windows
 
 on: [push, pull_request]
+
 env:
   ARCH: "x64"
-  VC: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+  VC2019: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+  VC2017: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+
 jobs:
-  compile: # name of the job. Jobs run in parallel unless specified otherwise.
-    name: compile
-    runs-on: windows-latest
+  test:
+    name: Compile and test planner
+    timeout-minutes: 60
+    runs-on: ${{ matrix.windows-version }}
     strategy:
       matrix:
-        python-version: ['3.6']
-        build-version: ["release", "debug"]
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
+        windows-version: [windows-2016, windows-2019]
+        python-version: [3.6]
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@master
 
-      - name: Setup python
-        uses: actions/setup-python@v1
+      - name: Install python
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.ARCH }}
 
-      - name: compile
+      - name: Compile planner
         shell: cmd
+        env:
+          CC: cl
+          CXX: cl
         run: |
-          "${{ env.VC }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+          IF "${{ matrix.windows-version }}" == "windows-2016" (
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & python build.py debug
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & python build.py release
+          )
+          IF "${{ matrix.windows-version }}" == "windows-2019" (
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & python build.py debug
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & python build.py release
+          )
 
-      - name: upload-planner
-        uses: actions/upload-artifact@master
-        with:
-          name: ${{ matrix.build-version }}
-          path: builds/${{ matrix.build-version }}
-
-
-  tests: # name of the job. Jobs run in parallel unless specified otherwise.
-    name: test
-    runs-on: windows-latest
-    needs: compile
-    strategy:
-      matrix:
-        python-version: ['3.6']
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
-
-      - name: Setup python
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.ARCH }}
-
-      - name: setup
+      - name: Install tox
         run: |
-          pip3 install pytest tox
-          mkdir builds
+          pip3 install tox
 
-      - name: download-planner
-        uses: actions/download-artifact@master
-        with:
-          # without 'name' attribute all artifacts are downloaded and the
-          # artifact name is used as directory name.
-          path: builds/
-
-      - name: test
+      - name: Run translator and search tests
         shell: cmd
+        env:
+          CC: cl
+          CXX: cl
+        # We do not run driver tests here because that would require
+        # VAL to be installed, which currently cannot be easily done
+        # on Windows for the version of VAL we use. When the maintainers
+        # of VAL fix the latest version to accept plans without time
+        # steps, we hope to be able to install VAL natively on Windows.
         run: |
           cd misc/
-          "${{ env.VC }}" ${{ env.ARCH }} & tox -e search,translator
+          IF "${{ matrix.windows-version }}" == "windows-2016" (
+            "${{ env.VC2017 }}" ${{ env.ARCH }} & tox -e translator,search
+          )
+          IF "${{ matrix.windows-version }}" == "windows-2019" (
+            "${{ env.VC2019 }}" ${{ env.ARCH }} & tox -e translator,search
+          )
 
 ...

@@ -11,6 +11,21 @@ For further information:
 - Fast Downward main repository: <https://github.com/aibasel/downward>
 
 
+## Tested software versions
+
+This version of Fast Downward has been tested with the following software versions:
+
+| OS           | Python | C++ compiler                                                     | CMake |
+| ------------ | ------ | ---------------------------------------------------------------- | ----- |
+| Ubuntu 20.04 | 3.8    | GCC 9, GCC 10, Clang 10, Clang 11                                | 3.16  |
+| Ubuntu 18.04 | 3.6    | GCC 7, Clang 6                                                   | 3.10  |
+| macOS 10.15  | 3.6    | AppleClang 12                                                    | 3.19  |
+| Windows 10   | 3.6    | Visual Studio Enterprise 2017 (MSVC 19.16) and 2019 (MSVC 19.28) | 3.19  |
+
+On Ubuntu and Windows we compile with LP support using CPLEX 12.9, SoPlex
+3.1.1 and Osi 0.107.9.
+
+
 ## Contributors
 
 The following list includes all people that actively contributed to
