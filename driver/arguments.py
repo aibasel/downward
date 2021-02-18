@@ -84,7 +84,7 @@ EPILOG = """component options:
 Examples:
 
 %s
-""" % "\n\n".join("%s\n%s" % (desc, " ".join(["./fast-downward.py"] + parameters)) for desc, parameters in EXAMPLES)
+""" % "\n\n".join("%s\n%s" % (desc, " ".join([os.path.basename(sys.argv[0])] + parameters)) for desc, parameters in EXAMPLES)
 
 COMPONENTS_PLUS_OVERALL = ["translate", "search", "validate", "overall"]
 DEFAULT_SAS_FILE = "output.sas"
