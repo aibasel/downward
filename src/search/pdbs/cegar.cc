@@ -8,11 +8,9 @@
 
 #include "../tasks/projected_task.h"
 
-#include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 
 #include "../utils/countdown_timer.h"
-#include "../utils/math.h"
 
 using namespace std;
 
