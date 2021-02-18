@@ -124,6 +124,9 @@ def insert_wiki_links(text, titles):
         text = re.sub(re_link % key, make_link, text)
     return text
 
+def build_planner(build):
+    subprocess.check_call([sys.executable, "build.py", build, "downward"], cwd=REPO_ROOT_DIR)
+
 def get_pages_from_planner(build):
     out = subprocess.check_output(
         ["./fast-downward.py", "--build", build, "--search", "--", "--help", "--txt2tags"],
@@ -161,6 +164,8 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
 
 if __name__ == '__main__':
     args = parse_args()
+    logging.info("building planner...")
+    build_planner(args.build)
     logging.info("getting new pages from planner...")
     new_doc_pages = get_pages_from_planner(args.build)
     if args.dry_run:
