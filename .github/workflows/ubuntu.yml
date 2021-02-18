@@ -125,23 +125,31 @@ jobs:
 
   test:
     name: Test planner
-    runs-on: ${{ matrix.ubuntu-version }}
+    runs-on: ${{ matrix.version.ubuntu }}
     needs: compile # TODO: this only depends on the compile step with gcc
     strategy:
       matrix:
-        ubuntu-version: [ubuntu-18.04, ubuntu-20.04]
-        python-version: [3.6, 3.8]
-        exclude:
-          - ubuntu-version: ubuntu-18.04
-            python-version: 3.8
+        version:
+          - {ubuntu: ubuntu-18.04, python: 3.6}
+          - {ubuntu: ubuntu-20.04, python: 3.8}
     env:
       CPLEX_URL: ${{ secrets.CPLEX_URL }}
       SOPLEX_URL: ${{ secrets.SOPLEX_URL }}
     steps:
+      - name: Download archive
+        uses: actions/download-artifact@master
+        with:
+          name: compiled-planner-${{ matrix.version.ubuntu }}
+
+      - name: Delete artifact
+        uses: geekyeggo/delete-artifact@master
+        with:
+          name: compiled-planner-${{ matrix.version.ubuntu }}
+
       - name: Install Python
         uses: actions/setup-python@master
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.version.python }}
 
       - name: Install dependencies
         run: |
@@ -162,11 +170,6 @@ jobs:
           rm -rf VAL
           echo `pwd` >> $GITHUB_PATH # Add VAL to path ob subsequent steps.
 
-      - name: Download archive
-        uses: actions/download-artifact@master
-        with:
-          name: compiled-planner-${{ matrix.ubuntu-version }}
-
       - name: Extract archive
         # We need to make sure that library paths are the same as
         # during compilation.
@@ -175,18 +178,6 @@ jobs:
           shopt -s dotglob
           mv downward/* .
           mv lib/ ../
-          pwd
-          ls
-          echo "separator"
-          ls ../
-          echo "separator"
-          ls ../lib/
-          echo "separator"
-          ls ../lib/coin/
-          echo "separator"
-          ls ../lib/coin/lib
-          ldd builds/debug/bin/downward
-          ldd builds/release/bin/downward
 
       - name: Run driver, translator and search tests
         run: |
@@ -198,6 +189,7 @@ jobs:
         run: |
           cd misc/
           tox -e cplex
+
       - name: Run SoPlex tests
         if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
