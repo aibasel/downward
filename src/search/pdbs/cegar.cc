@@ -85,7 +85,7 @@ static unique_ptr<Projection> compute_projection(
         }
 
         plan = steepest_ascent_enforced_hillclimbing(
-            projected_task_proxy, rng, pdb, compute_wildcard_plan, verbosity);
+            projected_task_proxy, rng, *pdb, compute_wildcard_plan, verbosity);
 
         // Convert operator IDs of the abstract in the concrete task.
         for (vector<OperatorID> &plan_step : plan) {

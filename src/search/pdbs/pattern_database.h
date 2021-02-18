@@ -171,7 +171,7 @@ public:
     int get_value_for_index(std::size_t index) const;
 
     // used for astar search in cegar pdbs
-    size_t get_abstract_state_index(const State& abstracted_state) {
+    std::size_t get_abstract_state_index(const State& abstracted_state) const {
         return hash_index_abstracted(abstracted_state);
     }
 

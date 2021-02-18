@@ -38,7 +38,7 @@ inline void feed(HashState &hash_state, const pdbs::SearchNode &search_node) {
 
 namespace pdbs {
 static vector<State> extract_state_sequence(
-    const SearchNode& goal_node) {
+    const SearchNode &goal_node) {
     vector<State> state_sequence;
     // Handle first state outside the loop because we need to copy.
     state_sequence.push_back(goal_node.state);
@@ -57,18 +57,18 @@ static vector<State> extract_state_sequence(
 
 static vector<State> bfs_for_improving_state(
     const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator& succ_gen,
-    const shared_ptr<utils::RandomNumberGenerator>& rng,
-    shared_ptr<PatternDatabase> pdb,
-    const int f_star,
-    shared_ptr<SearchNode>& start_node) {
+    const successor_generator::SuccessorGenerator &succ_gen,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    const PatternDatabase &pdb,
+    int f_star,
+    shared_ptr<SearchNode> &start_node) {
 //    utils::g_log << "Running BFS with start state " << start_node->state.get_values() << endl;
     assert(start_node->cost == -1);
     assert(start_node->predecessor == nullptr);
     queue <shared_ptr<SearchNode>> open;
     utils::HashSet<size_t> closed;
     closed.insert(start_node->hash);
-    int h_start = pdb->get_value_for_index(start_node->hash);
+    int h_start = pdb.get_value_for_index(start_node->hash);
     open.push(move(start_node));
     while (true) {
         shared_ptr<SearchNode> current_node = open.front();
@@ -85,9 +85,9 @@ static vector<State> bfs_for_improving_state(
             OperatorProxy op = abs_task_proxy.get_operators()[op_id];
 //            utils::g_log << "applying op " << op.get_name() << endl;
             State successor = current_node->state.get_unregistered_successor(op);
-            size_t successor_index = pdb->get_abstract_state_index(successor);
+            size_t successor_index = pdb.get_abstract_state_index(successor);
             if (!closed.count(successor_index)) {
-                int h_succ = pdb->get_value_for_index(successor_index);
+                int h_succ = pdb.get_value_for_index(successor_index);
                 int op_cost = op.get_cost();
                 int g_succ = current_node->g + op_cost;
                 int f_succ = g_succ + h_succ;
@@ -129,9 +129,9 @@ static void dump_state_sequence(const vector<State>& state_sequence) {
 
 static vector<vector<OperatorID>> turn_state_sequence_into_plan(
     const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator& succ_gen,
-    const shared_ptr<utils::RandomNumberGenerator>& rng,
-    const vector<State>& state_sequence,
+    const successor_generator::SuccessorGenerator &succ_gen,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    const vector<State> &state_sequence,
     bool compute_wildcard_plan,
     utils::Verbosity verbosity) {
     vector<vector<OperatorID>> plan;
@@ -181,9 +181,9 @@ static vector<vector<OperatorID>> turn_state_sequence_into_plan(
 }
 
 static void print_plan(const TaskProxy &abs_task_proxy,
-                       shared_ptr<PatternDatabase> pdb,
+                       const PatternDatabase &pdb,
                        const vector<vector<OperatorID>> &plan) {
-    utils::g_log << "##### Plan for pattern " << pdb.get() << " #####" << endl;
+    utils::g_log << "##### Plan for pattern " << pdb.get_pattern() << " #####" << endl;
     int i = 1;
     for (const auto &eqv_ops : plan) {
         utils::g_log << "step #" << i << endl;
@@ -198,14 +198,14 @@ static void print_plan(const TaskProxy &abs_task_proxy,
 
 vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
     const TaskProxy &abs_task_proxy,
-    const shared_ptr<utils::RandomNumberGenerator>& rng,
-    shared_ptr<PatternDatabase> pdb,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    const PatternDatabase &pdb,
     bool compute_wildcard_plan,
     utils::Verbosity verbosity) {
     State start = abs_task_proxy.get_initial_state();
     start.unpack();
-    size_t start_index = pdb->get_abstract_state_index(start);
-    const int f_star = pdb->get_value_for_index(start_index);
+    size_t start_index = pdb.get_abstract_state_index(start);
+    const int f_star = pdb.get_value_for_index(start_index);
     vector<State> state_sequence;
     state_sequence.push_back(start);
     if (verbosity >= utils::Verbosity::VERBOSE) {

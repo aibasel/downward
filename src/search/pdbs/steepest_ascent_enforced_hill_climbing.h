@@ -18,7 +18,7 @@ class PatternDatabase;
 extern std::vector<std::vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
     const TaskProxy &abs_task_proxy,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
-    std::shared_ptr<PatternDatabase> pdb,
+    const PatternDatabase &pdb,
     bool compute_wildcard_plan,
     utils::Verbosity verbosity);
 }
