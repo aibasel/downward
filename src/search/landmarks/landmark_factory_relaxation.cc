@@ -43,7 +43,7 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
        Similar to "relaxed_task_solvable" above.
      */
 
-    assert (!landmark.conjunctive);
+    assert(!landmark.conjunctive);
 
     if (landmark.is_true_in_goal)
         return true;

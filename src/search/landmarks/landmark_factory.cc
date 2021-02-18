@@ -18,7 +18,6 @@
 using namespace std;
 
 namespace landmarks {
-
 /*
   TODO: Update this comment
 
