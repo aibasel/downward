@@ -60,7 +60,10 @@ after the corresponding tracker issues.
 - For developers: decide on rules regarding software support and
   improve Github actions accordingly
   <http://issues.fast-downward.org/issue1003>  
-
+  
+- For developers: add CPLEX support to our GitHub Actions for Windows
+  <http://issues.fast-downward.org/issue1005>
+  
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
