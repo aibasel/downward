@@ -50,10 +50,9 @@ def translate_task(task_file):
     sys.stdout.flush()
     cmd = [sys.executable, DRIVER, "--translate", task_file]
     try:
-        output = subprocess.check_output(cmd)
+        output = subprocess.check_output(cmd, encoding=sys.getfilesystemencoding())
     except OSError as err:
         sys.exit(f"Call failed: {' '.join(cmd)}\n{err}")
-    output = str(output)
     # Remove information that may differ between calls.
     for pattern in [
             r"\[.+s CPU, .+s wall-clock\]",
