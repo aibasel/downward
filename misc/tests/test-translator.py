@@ -79,7 +79,7 @@ def _get_all_tasks_by_domain(benchmarks_dir):
     domains = [
         domain_dir for domain_dir in benchmarks_dir.iterdir()
         if domain_dir.is_dir() and
-        not str(domain_dir.name).startswith((".", "_")) and
+        not str(domain_dir.name).startswith((".", "_", "unofficial")) and
         str(domain_dir.name) not in blacklisted_domains]
     for domain in domains:
         path = benchmarks_dir / domain
