@@ -69,8 +69,8 @@ def _get_all_tasks_by_domain(benchmarks_dir):
     # seems to be detrimental on some other domains.
     blacklisted_domains = [
         "agricola-sat18-strips",
-        "citycar-opt14-adl", # cf. issue875
-        "citycar-sat14-adl", # cf. issue875
+        "citycar-opt14-adl",  # cf. issue879
+        "citycar-sat14-adl",  # cf. issue879
         "organic-synthesis-sat18-strips",
         "organic-synthesis-split-opt18-strips",
         "organic-synthesis-split-sat18-strips"]
