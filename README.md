@@ -23,7 +23,8 @@ This version of Fast Downward has been tested with the following software versio
 | Windows 10   | 3.6    | Visual Studio Enterprise 2017 (MSVC 19.16) and 2019 (MSVC 19.28) | 3.19  |
 
 We test LP support with CPLEX 12.9, SoPlex 3.1.1 and Osi 0.107.9.
-On Ubuntu both CPLEX and SoPlex, on Windows only CPLEX is tested.
+On Ubuntu, we test both CPLEX and SoPlex. On Windows, we currently 
+only test CPLEX, and on macOS, we do not test LP solvers (yet).
 
 
 ## Contributors

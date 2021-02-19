@@ -165,7 +165,6 @@ jobs:
           cd misc/
           tox -e translator,search
 
-
       - name: Run CPLEX tests
         shell: cmd
         if: ${{ env.CPLEX_URL != 0 }}
