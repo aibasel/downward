@@ -15,7 +15,7 @@ enum class Verbosity;
 namespace pdbs {
 class PatternDatabase;
 
-extern std::vector<std::vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
+extern std::vector<std::vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
     const TaskProxy &abs_task_proxy,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     const PatternDatabase &pdb,

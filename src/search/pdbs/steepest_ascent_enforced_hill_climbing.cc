@@ -172,7 +172,7 @@ static void print_plan(const TaskProxy &abs_task_proxy,
     utils::g_log << "##### End of plan #####" << endl;
 }
 
-vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
+vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
     const TaskProxy &abs_task_proxy,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const PatternDatabase &pdb,
