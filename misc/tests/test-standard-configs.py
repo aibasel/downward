@@ -15,9 +15,9 @@ SAS_FILE = os.path.join(REPO, "test.sas")
 PLAN_FILE = os.path.join(REPO, "test.plan")
 TASK = os.path.join(BENCHMARKS_DIR, "miconic/s1-0.pddl")
 
-CONFIGS = {}
-CONFIGS.update(configs.default_configs_optimal(core=True, extended=True))
-CONFIGS.update(configs.default_configs_satisficing(core=True, extended=True))
+CONFIGS_NOLP = {}
+CONFIGS_NOLP.update(configs.default_configs_optimal(core=True, extended=True))
+CONFIGS_NOLP.update(configs.default_configs_satisficing(core=True, extended=True))
 
 
 def escape_list(l):
@@ -52,9 +52,21 @@ def setup_module(module):
     translate(TASK)
 
 
-@pytest.mark.parametrize("config", sorted(CONFIGS.values()))
+@pytest.mark.parametrize("config", sorted(CONFIGS_NOLP.values()))
 @pytest.mark.parametrize("debug", [False, True])
-def test_configs(config, debug):
+def test_configs_nolp(config, debug):
+    run_plan_script(SAS_FILE, config, debug)
+
+
+@pytest.mark.parametrize("config", sorted(configs.configs_optimal_lp(lp_solver="CPLEX").values()))
+@pytest.mark.parametrize("debug", [False, True])
+def test_configs_cplex(config, debug):
+    run_plan_script(SAS_FILE, config, debug)
+
+
+@pytest.mark.parametrize("config", sorted(configs.configs_optimal_lp(lp_solver="SOPLEX").values()))
+@pytest.mark.parametrize("debug", [False, True])
+def test_configs_soplex(config, debug):
     run_plan_script(SAS_FILE, config, debug)
 
 

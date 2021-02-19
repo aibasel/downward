@@ -57,7 +57,12 @@ after the corresponding tracker issues.
   USE_GLIBCXX_DEBUG. The build configurations debugnolp and releasenolp have
   been removed, and the build configuration glibcxx_debug has been added.
 
+- For developers: decide on rules regarding software support and
+  improve Github actions accordingly
+  <http://issues.fast-downward.org/issue1003>
   
+- For developers: add CPLEX support to our GitHub Actions for Windows
+  <http://issues.fast-downward.org/issue1005>
 
 ## Fast Downward 20.06
 
