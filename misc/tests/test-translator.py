@@ -10,7 +10,6 @@ different runs might lead to the same nondeterministic results.
 
 import argparse
 from collections import defaultdict
-from distutils.spawn import find_executable
 import itertools
 import os
 import re
@@ -43,10 +42,9 @@ def get_task_name(path):
 
 
 def translate_task(task_file):
-    python = sys.executable
-    print("Translate {} with {}".format(get_task_name(task_file), python))
+    print(f"Translate {get_task_name(task_file)}", flush=True)
     sys.stdout.flush()
-    cmd = [python, DRIVER, "--translate", task_file]
+    cmd = [sys.executable, DRIVER, "--translate", task_file]
     try:
         output = subprocess.check_output(cmd)
     except OSError as err:
@@ -131,8 +129,7 @@ def main():
             try:
                 subprocess.check_call(["diff", "-q"] + files)
             except subprocess.CalledProcessError:
-                sys.exit(
-                    "Error: Translator is nondeterministic for {task}.".format(**locals()))
+                sys.exit(f"Error: Translator is nondeterministic for {task}.")
             print(flush=True)
     cleanup()
 
