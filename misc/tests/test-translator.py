@@ -52,7 +52,7 @@ def translate_task(task_file):
     try:
         output = subprocess.check_output(cmd)
     except OSError as err:
-        sys.exit("Call failed: {}\n{}".format(" ".join(cmd), err))
+        sys.exit(f"Call failed: {' '.join(cmd)}\n{err}")
     output = str(output)
     # Remove information that may differ between calls.
     for pattern in [
@@ -127,14 +127,13 @@ def main():
     for task in get_tasks(args):
         write_combined_output("base.sas", task)
         for iteration in range(args.runs_per_task - 1):
-            write_combined_output("output{}.sas".format(iteration), task)
-            print("Compare translator output", flush=True)
-            files = ["base.sas", "output{}.sas".format(iteration)]
+            write_combined_output(f"output{iteration}.sas", task)
+            files = ["base.sas", f"output{iteration}.sas"]
             try:
                 subprocess.check_call(["diff", "-q"] + files)
             except subprocess.CalledProcessError:
                 sys.exit(f"Error: Translator is nondeterministic for {task}.")
-            print(flush=True)
+        print("Outputs match\n", flush=True)
     cleanup()
 
 
