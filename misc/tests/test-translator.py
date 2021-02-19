@@ -77,10 +77,10 @@ def _get_all_tasks_by_domain(benchmarks_dir):
     benchmarks_dir = Path(benchmarks_dir)
     tasks = defaultdict(list)
     domains = [
-        name for name in benchmarks_dir.iterdir()
-        if name.is_dir() and
-        not str(name).startswith((".", "_")) and
-        str(name) not in blacklisted_domains]
+        domain_dir for domain_dir in benchmarks_dir.iterdir()
+        if domain_dir.is_dir() and
+        not str(domain_dir.name).startswith((".", "_")) and
+        str(domain_dir.name) not in blacklisted_domains]
     for domain in domains:
         path = benchmarks_dir / domain
         tasks[domain] = [
