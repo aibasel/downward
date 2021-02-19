@@ -175,22 +175,27 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
     }
 
     if (lm_graph->contains_disjunctive_landmark(a)) {
+        // In issue1004, we fixed a bug in this part of the code. It now removes
+        // the disjunctive landmark along with all its orderings from the
+        // landmark graph and adds a new simple landmark node. Before this
+        // change, incoming orderings were maintained, which is not always
+        // correct for greedy necessary orderings. Note however that it would be
+        // correct to replace incoming orderings with natural orderings, though.
+
         // Simple landmarks are more informative than disjunctive ones,
         // remove disj. landmark and add simple one
-        LandmarkNode &disj_lm = lm_graph->get_disjunctive_landmark(a);
+        LandmarkNode *disj_lm = &lm_graph->get_disjunctive_landmark(a);
 
         // Remove all pointers to disj_lm from internal data structures (i.e.,
         // the list of open landmarks and forward orders)
-        for (auto it = open_landmarks.begin(); it != open_landmarks.end(); ++it) {
-            if (*it == &disj_lm) {
-                it = open_landmarks.erase(it);
-                --it;
-            }
+        auto it = find(open_landmarks.begin(), open_landmarks.end(), disj_lm);
+        if (it != open_landmarks.end()) {
+            open_landmarks.erase(it);
         }
-        forward_orders.erase(&disj_lm);
+        forward_orders.erase(disj_lm);
 
         // Remove disj_lm from landmark graph
-        lm_graph->remove_node(&disj_lm);
+        lm_graph->remove_node(disj_lm);
     }
 
     LandmarkNode &simple_lm = lm_graph->add_simple_landmark(a);

@@ -84,6 +84,8 @@ private:
     utils::HashMap<FactPair, LandmarkNode *> disjunctive_landmarks_to_nodes;
     Nodes nodes;
 
+    void remove_node_occurrences(LandmarkNode *node);
+
 public:
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
