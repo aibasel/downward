@@ -67,13 +67,13 @@ static vector<OperatorID> get_cheapest_operators(
 
 static vector<vector<OperatorID>> extract_plan(
     const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator& succ_gen,
+    const successor_generator::SuccessorGenerator &succ_gen,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan,
     const shared_ptr<SearchNode> &goal_node) {
     vector<vector<OperatorID>> plan;
     shared_ptr<SearchNode> current_node = goal_node;
-    while(current_node->predecessor) {
+    while (current_node->predecessor) {
         vector<OperatorID> cheapest_operators =
             get_cheapest_operators(
                 abs_task_proxy, succ_gen, current_node->predecessor->state, current_node->state);
