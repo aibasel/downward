@@ -290,7 +290,7 @@ size_t PatternDatabase::hash_index(const vector<int> &state) const {
 
 size_t PatternDatabase::hash_index_abstracted(const State &abs_state) const {
     size_t index = 0;
-    for(size_t i = 0; i < pattern.size(); ++i) {
+    for (size_t i = 0; i < pattern.size(); ++i) {
         index += hash_multipliers[i] * abs_state[i].get_value();
     }
     return index;

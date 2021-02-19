@@ -5,10 +5,9 @@
 #include <algorithm>
 
 namespace tasks {
-
 ProjectedTask::ProjectedTask(
-        const std::shared_ptr<AbstractTask> &parent,
-        const pdbs::Pattern& pattern)
+    const std::shared_ptr<AbstractTask> &parent,
+    const pdbs::Pattern &pattern)
     : DelegatingTask(parent),
       pattern(pattern) {
     TaskProxy parent_proxy(*parent);
@@ -26,9 +25,9 @@ ProjectedTask::ProjectedTask(
         std::vector<FactPair> effects;
 
         for (int effi = 0;
-            effi < parent->get_num_operator_effects(opi,false); ++effi) {
+             effi < parent->get_num_operator_effects(opi, false); ++effi) {
             FactPair effect =
-                    parent->get_operator_effect(opi, effi, false);
+                parent->get_operator_effect(opi, effi, false);
             int var = effect.var;
 
             if (var_to_index.count(var) != 0) {
@@ -45,9 +44,9 @@ ProjectedTask::ProjectedTask(
 
         std::vector<FactPair> preconditions;
         for (int condi = 0;
-            condi < parent->get_num_operator_preconditions(opi, false); ++condi) {
+             condi < parent->get_num_operator_preconditions(opi, false); ++condi) {
             FactPair precondition =
-                    parent->get_operator_precondition(opi, condi, false);
+                parent->get_operator_precondition(opi, condi, false);
             int var = precondition.var;
 
             // check if the precondition variable appears in the pattern
@@ -59,9 +58,9 @@ ProjectedTask::ProjectedTask(
     }
 
     for (int goali = 0;
-        goali < parent->get_num_goals(); ++goali) {
+         goali < parent->get_num_goals(); ++goali) {
         FactPair goal =
-                parent->get_goal_fact(goali);
+            parent->get_goal_fact(goali);
         int var = goal.var;
 
         auto res = std::find(std::begin(pattern), std::end(pattern), var);
@@ -74,7 +73,7 @@ ProjectedTask::ProjectedTask(
 
 int ProjectedTask::get_original_variable_index(int index_in_pattern) const {
     assert(index_in_pattern >= 0 &&
-                   static_cast<unsigned>(index_in_pattern) < pattern.size());
+           static_cast<unsigned>(index_in_pattern) < pattern.size());
     return pattern[index_in_pattern];
 }
 
@@ -91,11 +90,15 @@ int ProjectedTask::get_pattern_variable_index(int index_in_original) const {
 }
 
 FactPair ProjectedTask::convert_from_pattern_fact(const FactPair &fact) const {
-    return {get_original_variable_index(fact.var), fact.value};
+    return {
+               get_original_variable_index(fact.var), fact.value
+    };
 }
 
 FactPair ProjectedTask::convert_from_original_fact(const FactPair &fact) const {
-    return {get_pattern_variable_index(fact.var), fact.value};
+    return {
+               get_pattern_variable_index(fact.var), fact.value
+    };
 }
 
 int ProjectedTask::get_num_variables() const {
@@ -127,7 +130,7 @@ std::string ProjectedTask::get_fact_name(const FactPair &fact) const {
 }
 
 bool ProjectedTask::are_facts_mutex(
-        const FactPair &fact1, const FactPair &fact2) const {
+    const FactPair &fact1, const FactPair &fact2) const {
     return parent->are_facts_mutex(convert_from_pattern_fact(fact1),
                                    convert_from_pattern_fact(fact2));
 }
@@ -149,33 +152,33 @@ int ProjectedTask::get_num_operators() const {
 }
 
 int ProjectedTask::get_num_operator_preconditions(
-        int index, bool) const {
+    int index, bool) const {
     return operator_preconditions[index].size();
 }
 
 FactPair ProjectedTask::get_operator_precondition(
-        int op_index, int fact_index, bool) const {
+    int op_index, int fact_index, bool) const {
     return operator_preconditions[op_index][fact_index];
 }
 
 int ProjectedTask::get_num_operator_effects(
-        int op_index, bool) const {
+    int op_index, bool) const {
     return operator_effects[op_index].size();
 }
 
 int ProjectedTask::get_num_operator_effect_conditions(
-        int, int, bool) const {
+    int, int, bool) const {
     return 0;
 }
 
 FactPair ProjectedTask::get_operator_effect_condition(
-        int, int, int, bool ) const {
+    int, int, int, bool) const {
     std::cerr << "get_operator_effect_condition is not supported yet." << std::endl;
     utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
 }
 
 FactPair ProjectedTask::get_operator_effect(
-        int op_index, int eff_index, bool ) const {
+    int op_index, int eff_index, bool) const {
     return operator_effects[op_index][eff_index];
 }
 
@@ -199,12 +202,11 @@ std::vector<int> ProjectedTask::get_initial_state_values() const {
 }
 
 void ProjectedTask::convert_parent_state_values(
-        std::vector<int> &values) const {
+    std::vector<int> &values) const {
     std::vector<int> converted;
-    for(int index : pattern) {
+    for (int index : pattern) {
         converted.push_back(values[index]);
     }
     values.swap(converted);
 }
-
 }

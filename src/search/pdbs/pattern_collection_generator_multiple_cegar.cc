@@ -21,9 +21,8 @@
 using namespace std;
 
 namespace pdbs {
-
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
-    options::Options& opts)
+    options::Options &opts)
     : cegar_max_refinements(opts.get<int>("max_refinements")),
       cegar_max_pdb_size(opts.get<int>("max_pdb_size")),
       cegar_max_collection_size(opts.get<int>("max_collection_size")),
@@ -39,7 +38,7 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
 }
 
 PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
-        const std::shared_ptr<AbstractTask> &task) {
+    const std::shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Multiple CEGAR: generating patterns" << endl;
     }
@@ -87,7 +86,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         // or if blacklisting was forced due to stagnation
         int blacklist_size = 0;
         if (force_blacklisting ||
-                timer.get_elapsed_time() / total_time_limit > blacklist_trigger_time) {
+            timer.get_elapsed_time() / total_time_limit > blacklist_trigger_time) {
             blacklist_size = static_cast<int>(num_vars * rng());
             force_blacklisting = true;
         }
@@ -96,7 +95,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         unordered_set<int> blacklisted_variables;
         // Select a random subset of non goals.
         for (size_t i = 0;
-             i < min(static_cast<size_t>(blacklist_size),non_goal_variables.size());
+             i < min(static_cast<size_t>(blacklist_size), non_goal_variables.size());
              ++i) {
             int var_id = non_goal_variables[i];
 //            if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -108,17 +107,17 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         int remaining_collection_size = total_collection_max_size - collection_size;
         double remaining_time = total_time_limit - timer.get_elapsed_time();
         auto collection_info = cegar(
-                cegar_max_refinements,
-                cegar_max_pdb_size,
-                min(remaining_collection_size, cegar_max_collection_size),
-                cegar_wildcard_plans,
-                min(remaining_time, cegar_max_time),
-                task,
-                {goals[goal_index]},
-                move(blacklisted_variables),
-                make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
-                cegar_verbosity
-        );
+            cegar_max_refinements,
+            cegar_max_pdb_size,
+            min(remaining_collection_size, cegar_max_collection_size),
+            cegar_wildcard_plans,
+            min(remaining_time, cegar_max_time),
+            task,
+            {goals[goal_index]},
+            move(blacklisted_variables),
+            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
+            cegar_verbosity
+            );
         auto pattern_collection = collection_info.get_patterns();
         auto pdb_collection = collection_info.get_pdbs();
         if (pdb_collection->size() > 1) {
@@ -143,7 +142,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 // too large.
                 if (verbosity >= utils::Verbosity::NORMAL) {
                     utils::g_log << "Multiple CEGAR: Total collection size "
-                                    "limit reached." << endl;
+                        "limit reached." << endl;
                 }
                 can_generate = false;
             }
@@ -163,20 +162,20 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         // if stagnation has been going on for too long, then the
         // further behavior depends on the value of blacklist_on_stagnation
         if (stagnation &&
-                timer.get_elapsed_time() - stagnation_start > stagnation_limit) {
+            timer.get_elapsed_time() - stagnation_start > stagnation_limit) {
             if (!blacklist_on_stagnation || force_blacklisting) {
                 if (!blacklist_on_stagnation) {
                     // stagnation has been going on for too long and we are not
                     // allowed to force blacklisting, so nothing can be done.
                     if (verbosity >= utils::Verbosity::NORMAL) {
                         utils::g_log << "Multiple CEGAR: Stagnation limit "
-                                        "reached. Stopping generation." << endl;
-                        }
+                            "reached. Stopping generation." << endl;
+                    }
                 } else {
                     // stagnation in spite of blacklisting
                     if (verbosity >= utils::Verbosity::NORMAL) {
                         utils::g_log << "Multiple CEGAR: Stagnation limit "
-                                        "reached again. Stopping generation."
+                            "reached again. Stopping generation."
                                      << endl;
                     }
                 }
@@ -186,7 +185,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 // doing so yet.
                 if (verbosity >= utils::Verbosity::NORMAL) {
                     utils::g_log << "Multiple CEGAR: Stagnation limit reached. "
-                                    "Forcing global blacklisting." << endl;
+                        "Forcing global blacklisting." << endl;
                 }
                 force_blacklisting = true;
                 stagnation = false;
@@ -212,7 +211,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                      << num_iterations << endl;
         utils::g_log << "Multiple CEGAR: average time per generator: "
                      << timer.get_elapsed_time() /
-                        static_cast<double>(num_iterations + 1)
+            static_cast<double>(num_iterations + 1)
                      << endl;
         utils::g_log << "Multiple CEGAR: final collection: " << *union_patterns
                      << endl;
@@ -222,7 +221,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                      << collection_size << endl;
     }
 
-    PatternCollectionInformation result(task_proxy,union_patterns);
+    PatternCollectionInformation result(task_proxy, union_patterns);
     result.set_pdbs(union_pdbs);
     return result;
 }
@@ -230,41 +229,41 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {
     parser.add_option<int>(
         "initial_random_seed",
-        "seed for the random number generator(s) of the cegar generators","10");
+        "seed for the random number generator(s) of the cegar generators", "10");
     parser.add_option<int>(
         "total_collection_max_size",
         "max. number of entries in the final collection",
         "infinity"
-    );
+        );
     parser.add_option<double>(
         "total_time_limit",
         "time budget for PDB collection generation",
         "25.0"
-    );
+        );
     parser.add_option<double>(
         "stagnation_limit",
         "max. time the algorithm waits for the introduction of a new pattern."
-                " Execution finishes prematurely if no new, unique pattern"
-                " could be added to the collection during this time.",
+        " Execution finishes prematurely if no new, unique pattern"
+        " could be added to the collection during this time.",
         "5.0"
-    );
+        );
     parser.add_option<double>(
         "blacklist_trigger_time",
         "time given as percentage of overall time_limit,"
-                " after which blacklisting (for diversification) is enabled."
-                " E.g. blacklist_trigger_time=0.5 will trigger blacklisting"
-                " once half of the total time has passed.",
+        " after which blacklisting (for diversification) is enabled."
+        " E.g. blacklist_trigger_time=0.5 will trigger blacklisting"
+        " once half of the total time has passed.",
         "1.0",
-        Bounds("0.0","1.0")
-    );
+        Bounds("0.0", "1.0")
+        );
     parser.add_option<bool>(
         "blacklist_on_stagnation",
         "whether the algorithm forces blacklisting to start early if"
-                " stagnation_limit is crossed (instead of aborting)."
-                " The algorithm still aborts if stagnation_limit is"
-                " reached for the second time.",
+        " stagnation_limit is crossed (instead of aborting)."
+        " The algorithm still aborts if stagnation_limit is"
+        " reached for the second time.",
         "true"
-    );
+        );
 
     utils::add_verbosity_option_to_parser(parser);
     add_cegar_options_to_parser(parser);

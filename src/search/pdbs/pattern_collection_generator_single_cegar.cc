@@ -55,8 +55,8 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
 
         // Select a random subset of non goals.
         for (int i = 0;
-            i < min(blacklist_size, static_cast<int>(non_goal_variables.size()));
-            ++i) {
+             i < min(blacklist_size, static_cast<int>(non_goal_variables.size()));
+             ++i) {
             int var_id = non_goal_variables[i];
             blacklisted_variables.insert(var_id);
         }
@@ -80,7 +80,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(
-        options::OptionParser& parser) {
+    options::OptionParser &parser) {
     parser.add_option<int>(
         "blacklist_size",
         "Number of randomly selected non-goal variables that are "
@@ -89,7 +89,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(
         "to always exclude all non-goal variables.",
         "0",
         Bounds("0", "infinity")
-    );
+        );
     utils::add_verbosity_option_to_parser(parser);
     add_cegar_options_to_parser(parser);
     utils::add_rng_options(parser);

@@ -39,7 +39,7 @@ inline void feed(HashState &hash_state, const pdbs::SearchNode &search_node) {
 namespace pdbs {
 static vector<OperatorID> get_cheapest_operators(
     const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator& succ_gen,
+    const successor_generator::SuccessorGenerator &succ_gen,
     const State &from, const State &to) {
     vector<OperatorID> applicable_ops;
     succ_gen.generate_applicable_ops(from, applicable_ops);
@@ -85,7 +85,6 @@ static vector<vector<OperatorID>> extract_plan(
             plan.emplace_back();
             plan.back().push_back(random_op_id);
         }
-
         current_node = current_node->predecessor;
     }
     reverse(plan.begin(), plan.end());
@@ -189,8 +188,8 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
     }
 
     successor_generator::SuccessorGenerator succ_gen(abs_task_proxy);
-    shared_ptr<SearchNode> start_node
-        = make_shared<SearchNode>(move(start), start_index, 0, -1, nullptr);
+    shared_ptr<SearchNode> start_node =
+        make_shared<SearchNode>(move(start), start_index, 0, -1, nullptr);
     while (!task_properties::is_goal_state(abs_task_proxy, start_node->state)) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "Current start state of iteration: " << start_node->state.get_unpacked_values() << endl;

@@ -165,7 +165,7 @@ class Cegar {
     bool can_add_variable_to_pattern(int index, int var) const;
     void add_variable_to_pattern(int collection_index, int var);
     void handle_flaw(const Flaw &flaw);
-    void refine(const FlawList& flaws);
+    void refine(const FlawList &flaws);
 public:
     Cegar(
         int max_refinements,
@@ -184,7 +184,7 @@ public:
 
 void Cegar::print_collection() const {
     utils::g_log << "[";
-    for(size_t i = 0; i < projection_collection.size(); ++i) {
+    for (size_t i = 0; i < projection_collection.size(); ++i) {
         const unique_ptr<Projection> &projection = projection_collection[i];
         if (projection) {
             utils::g_log << projection->get_pattern();
@@ -326,14 +326,14 @@ FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
             if (blacklisted_variables.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << token << "since there are no blacklisted variables, "
-                                    "the concrete task is solved." << endl;
+                        "the concrete task is solved." << endl;
                 }
                 concrete_solution_index = collection_index;
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << token << "since there are blacklisted variables, the plan "
-                                    "is not guaranteed to work in the concrete state "
-                                    "space. Marking this projection as solved." << endl;
+                        "is not guaranteed to work in the concrete state "
+                        "space. Marking this projection as solved." << endl;
                 }
                 projection.mark_as_solved();
             }
@@ -351,7 +351,7 @@ FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << token
                                  << "no non-blacklisted goal variables left, "
-                                    "marking this pattern as solved." << endl;
+                        "marking this pattern as solved." << endl;
                 }
                 projection.mark_as_solved();
             } else {
@@ -410,8 +410,8 @@ FlawList Cegar::get_flaws() {
 
 void Cegar::add_pattern_for_var(int var) {
     projection_collection.push_back(
-            compute_projection(
-                    task, {var}, rng, wildcard_plans, verbosity));
+        compute_projection(
+            task, {var}, rng, wildcard_plans, verbosity));
     variable_to_projection[var] = projection_collection.size() - 1;
     collection_size += projection_collection.back()->get_pdb()->get_size();
 }
@@ -431,7 +431,7 @@ void Cegar::merge_patterns(int index1, int index2) {
     Projection &projection1 = *projection_collection[index1];
     Projection &projection2 = *projection_collection[index2];
 
-    const Pattern& pattern2 = projection2.get_pattern();
+    const Pattern &pattern2 = projection2.get_pattern();
     for (int var : pattern2) {
         variable_to_projection[var] = index1;
     }
@@ -529,7 +529,7 @@ void Cegar::handle_flaw(const Flaw &flaw) {
     if (!added_var) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << token << "Could not add var/merge patterns due to size "
-                                     "limits. Blacklisting." << endl;
+                "limits. Blacklisting." << endl;
         }
         blacklisted_variables.insert(var);
     }
@@ -684,18 +684,18 @@ PatternCollectionInformation cegar(
         utils::g_log << "wildcard plans: " << wildcard_plans << endl;
         utils::g_log << "Verbosity: ";
         switch (verbosity) {
-            case utils::Verbosity::SILENT:
-                utils::g_log << "silent";
-                break;
-            case utils::Verbosity::NORMAL:
-                utils::g_log << "normal";
-                break;
-            case utils::Verbosity::VERBOSE:
-                utils::g_log << "verbose";
-                break;
-            case utils::Verbosity::DEBUG:
-                utils::g_log << "debug";
-                break;
+        case utils::Verbosity::SILENT:
+            utils::g_log << "silent";
+            break;
+        case utils::Verbosity::NORMAL:
+            utils::g_log << "normal";
+            break;
+        case utils::Verbosity::VERBOSE:
+            utils::g_log << "verbose";
+            break;
+        case utils::Verbosity::DEBUG:
+            utils::g_log << "debug";
+            break;
         }
         utils::g_log << endl;
         utils::g_log << "max time: " << max_time << endl;
@@ -741,7 +741,7 @@ void add_cegar_options_to_parser(options::OptionParser &parser) {
         "limit for the total number of PDB entries across all PDBs (not "
         "applied to initial goal variable pattern(s))",
         "infinity",
-        Bounds("1","infinity"));
+        Bounds("1", "infinity"));
     parser.add_option<bool>(
         "wildcard_plans",
         "Make the algorithm work with wildcard rather than regular plans.",
