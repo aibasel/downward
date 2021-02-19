@@ -2,6 +2,8 @@
 name: Daily tests
 
 on:
+  push:
+  pull_request:
   schedule:
     # Run workflow every morning at 04:00.
     - cron: '0 4 * * *'
