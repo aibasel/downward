@@ -55,10 +55,9 @@ exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
-exp.add_fetcher('data/issue1007-v4-eval')
-
 exp.add_absolute_report_step()
 
+exp.add_fetcher('data/issue1007-v4-eval')
 exp._revisions = ["issue1007-v4", "issue1007-v5"]
 exp.add_comparison_table_step()
 
