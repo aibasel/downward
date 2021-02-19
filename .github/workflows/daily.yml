@@ -27,6 +27,7 @@ jobs:
 
       - name: Run translator tests
         run: |
+          ./build.py translate
           ./misc/tests/test-translator.py downward-benchmarks first
 
 ...
