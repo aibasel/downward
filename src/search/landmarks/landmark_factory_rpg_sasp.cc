@@ -179,8 +179,8 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
         // the disjunctive landmark along with all its orderings from the
         // landmark graph and adds a new simple landmark node. Before this
         // change, incoming orderings were maintained, which is not always
-        // correct for greedy necessary orderings. Note however that it would be
-        // correct to replace incoming orderings with natural orderings, though.
+        // correct for greedy necessary orderings. We now replace those
+        // incoming orderings with natural orderings.
 
         // Simple landmarks are more informative than disjunctive ones,
         // remove disj. landmark and add simple one
@@ -194,13 +194,30 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
         }
         forward_orders.erase(disj_lm);
 
+        // Retrieve incoming edges from disj_lm
+        vector<LandmarkNode *> predecessors;
+        for (auto &pred : disj_lm->parents) {
+            predecessors.push_back(pred.first);
+        }
+
         // Remove disj_lm from landmark graph
         lm_graph->remove_node(disj_lm);
-    }
 
-    LandmarkNode &simple_lm = lm_graph->add_simple_landmark(a);
-    open_landmarks.push_back(&simple_lm);
-    edge_add(simple_lm, b, t);
+        // Add simple landmark node
+        LandmarkNode &simple_lm = lm_graph->add_simple_landmark(a);
+        open_landmarks.push_back(&simple_lm);
+        edge_add(simple_lm, b, t);
+
+        // Add incoming orderings of replaced disj_lm as natural orderings to
+        // simple_lm
+        for (LandmarkNode *pred : predecessors) {
+            edge_add(*pred, simple_lm, EdgeType::NATURAL);
+        }
+    } else {
+        LandmarkNode &simple_lm = lm_graph->add_simple_landmark(a);
+        open_landmarks.push_back(&simple_lm);
+        edge_add(simple_lm, b, t);
+    }
 }
 
 void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
