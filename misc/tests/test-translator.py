@@ -49,7 +49,7 @@ def get_task_name(path):
 def translate_task(task_file):
     print(f"Translate {get_task_name(task_file)}", flush=True)
     sys.stdout.flush()
-    cmd = [sys.executable, DRIVER, "--translate", task_file]
+    cmd = [sys.executable, str(DRIVER), "--translate", task_file]
     try:
         output = subprocess.check_output(cmd, encoding=sys.getfilesystemencoding())
     except OSError as err:
