@@ -2,12 +2,10 @@
 #define TASKS_PROJECTED_TASK_H
 
 #include "delegating_task.h"
-#include "../pdbs/types.h"
-#include "../task_proxy.h"
 
-namespace tasks {
-class ProjectedTask : public DelegatingTask {
-    const pdbs::Pattern &pattern;
+namespace extra_tasks {
+class ProjectedTask : public tasks::DelegatingTask {
+    const std::vector<int> &pattern;
     std::unordered_map<int, int> var_to_index; // where to find variable in pattern
     std::vector<int> operator_indices;
     std::vector<std::vector<FactPair>> operator_preconditions;
@@ -33,41 +31,42 @@ class ProjectedTask : public DelegatingTask {
     FactPair convert_from_pattern_fact(const FactPair &fact) const;
     FactPair convert_from_original_fact(const FactPair &fact) const;
 public:
-    explicit ProjectedTask(
+    ProjectedTask(
         const std::shared_ptr<AbstractTask> &parent,
-        const pdbs::Pattern &pattern);
+        const std::vector<int> &pattern);
+    virtual ~ProjectedTask() override = default;
 
-    int get_num_variables() const override;
-    std::string get_variable_name(int var) const override;
-    int get_variable_domain_size(int var) const override;
-    int get_variable_axiom_layer(int var) const override;
-    int get_variable_default_axiom_value(int var) const override;
-    std::string get_fact_name(const FactPair &fact) const override;
-    bool are_facts_mutex(
+    virtual int get_num_variables() const override;
+    virtual std::string get_variable_name(int var) const override;
+    virtual int get_variable_domain_size(int var) const override;
+    virtual int get_variable_axiom_layer(int var) const override;
+    virtual int get_variable_default_axiom_value(int var) const override;
+    virtual std::string get_fact_name(const FactPair &fact) const override;
+    virtual bool are_facts_mutex(
         const FactPair &fact1, const FactPair &fact2) const override;
 
-    int get_operator_cost(int index, bool is_axiom) const override;
-    std::string get_operator_name(int index, bool is_axiom) const override;
-    int get_num_operators() const override;
-    int get_num_operator_preconditions(int index, bool is_axiom) const override;
-    FactPair get_operator_precondition(
+    virtual int get_operator_cost(int index, bool is_axiom) const override;
+    virtual std::string get_operator_name(int index, bool is_axiom) const override;
+    virtual int get_num_operators() const override;
+    virtual int get_num_operator_preconditions(int index, bool is_axiom) const override;
+    virtual FactPair get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;
-    int get_num_operator_effects(int op_index, bool is_axiom) const override;
-    int get_num_operator_effect_conditions(
+    virtual int get_num_operator_effects(int op_index, bool is_axiom) const override;
+    virtual int get_num_operator_effect_conditions(
         int op_index, int eff_index, bool is_axiom) const override;
-    FactPair get_operator_effect_condition(
+    virtual FactPair get_operator_effect_condition(
         int op_index, int eff_index, int cond_index, bool is_axiom) const override;
-    FactPair get_operator_effect(
+    virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
     virtual int convert_operator_index_to_parent(int index) const override;
 
-    int get_num_goals() const override;
-    FactPair get_goal_fact(int index) const override;
+    virtual int get_num_goals() const override;
+    virtual FactPair get_goal_fact(int index) const override;
 
-    std::vector<int> get_initial_state_values() const override;
+    virtual std::vector<int> get_initial_state_values() const override;
 
     void convert_parent_state_values(std::vector<int> &values) const;
 };
 }
 
-#endif // TASKS_PDB_ABSTRACTED_TASK_H
+#endif

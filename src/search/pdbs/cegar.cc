@@ -65,7 +65,7 @@ static unique_ptr<Projection> compute_projection(
     TaskProxy concrete_task_proxy(*concrete_task);
     shared_ptr<PatternDatabase> pdb =
         make_shared<PatternDatabase>(concrete_task_proxy, pattern);
-    tasks::ProjectedTask projected_task(concrete_task, pattern);
+    extra_tasks::ProjectedTask projected_task(concrete_task, pattern);
     TaskProxy projected_task_proxy(projected_task);
 
     bool unsolvable = false;

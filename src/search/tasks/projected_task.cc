@@ -6,10 +6,10 @@
 
 using namespace std;
 
-namespace tasks {
+namespace extra_tasks {
 ProjectedTask::ProjectedTask(
     const shared_ptr<AbstractTask> &parent,
-    const pdbs::Pattern &pattern)
+    const vector<int> &pattern)
     : DelegatingTask(parent),
       pattern(pattern) {
     TaskProxy parent_proxy(*parent);
@@ -206,8 +206,8 @@ vector<int> ProjectedTask::get_initial_state_values() const {
 void ProjectedTask::convert_parent_state_values(
     vector<int> &values) const {
     vector<int> converted;
-    for (int index : pattern) {
-        converted.push_back(values[index]);
+    for (int var : pattern) {
+        converted.push_back(values[var]);
     }
     values.swap(converted);
 }
