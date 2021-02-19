@@ -27,7 +27,6 @@ jobs:
 
       - name: Run translator tests
         run: |
-          cd misc/tests
-          ./test-translator.py downward-benchmarks first
+          ./misc/tests/test-translator.py downward-benchmarks first
 
 ...
