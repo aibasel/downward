@@ -4,9 +4,11 @@
 #include "../task_utils/task_properties.h"
 #include <algorithm>
 
+using namespace std;
+
 namespace tasks {
 ProjectedTask::ProjectedTask(
-    const std::shared_ptr<AbstractTask> &parent,
+    const shared_ptr<AbstractTask> &parent,
     const pdbs::Pattern &pattern)
     : DelegatingTask(parent),
       pattern(pattern) {
@@ -22,7 +24,7 @@ ProjectedTask::ProjectedTask(
     // make a list of operator indices for operators which are
     // relevant to at least one variable in the pattern
     for (int opi = 0; opi < parent->get_num_operators(); ++opi) {
-        std::vector<FactPair> effects;
+        vector<FactPair> effects;
 
         for (int effi = 0;
              effi < parent->get_num_operator_effects(opi, false); ++effi) {
@@ -42,7 +44,7 @@ ProjectedTask::ProjectedTask(
             operator_effects.push_back(effects);
         }
 
-        std::vector<FactPair> preconditions;
+        vector<FactPair> preconditions;
         for (int condi = 0;
              condi < parent->get_num_operator_preconditions(opi, false); ++condi) {
             FactPair precondition =
@@ -63,8 +65,8 @@ ProjectedTask::ProjectedTask(
             parent->get_goal_fact(goali);
         int var = goal.var;
 
-        auto res = std::find(std::begin(pattern), std::end(pattern), var);
-        if (res != std::end(pattern)) {
+        auto res = find(begin(pattern), end(pattern), var);
+        if (res != end(pattern)) {
             goals.push_back(convert_from_original_fact(goal));
         }
     }
@@ -82,9 +84,9 @@ int ProjectedTask::get_pattern_variable_index(int index_in_original) const {
     if (it != var_to_index.end()) {
         return it->second;
     } else {
-        std::cout << "ProjectedTask: "
+        cout << "ProjectedTask: "
                   << "A function tried to access a variable that is not part of the pattern."
-                  << std::endl;
+                  << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
@@ -105,7 +107,7 @@ int ProjectedTask::get_num_variables() const {
     return pattern.size();
 }
 
-std::string ProjectedTask::get_variable_name(int var) const {
+string ProjectedTask::get_variable_name(int var) const {
     int index = get_original_variable_index(var);
     return parent->get_variable_name(index);
 }
@@ -125,7 +127,7 @@ int ProjectedTask::get_variable_default_axiom_value(int var) const {
     return parent->get_variable_default_axiom_value(index);
 }
 
-std::string ProjectedTask::get_fact_name(const FactPair &fact) const {
+string ProjectedTask::get_fact_name(const FactPair &fact) const {
     return parent->get_fact_name(convert_from_pattern_fact(fact));
 }
 
@@ -141,7 +143,7 @@ int ProjectedTask::get_operator_cost(int index, bool is_axiom) const {
     return parent->get_operator_cost(index, is_axiom);
 }
 
-std::string ProjectedTask::get_operator_name(int index, bool is_axiom) const {
+string ProjectedTask::get_operator_name(int index, bool is_axiom) const {
     assert(!is_axiom);
     index = convert_operator_index_to_parent(index);
     return parent->get_operator_name(index, is_axiom);
@@ -173,7 +175,7 @@ int ProjectedTask::get_num_operator_effect_conditions(
 
 FactPair ProjectedTask::get_operator_effect_condition(
     int, int, int, bool) const {
-    std::cerr << "get_operator_effect_condition is not supported yet." << std::endl;
+    cerr << "get_operator_effect_condition is not supported yet." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
 }
 
@@ -195,15 +197,15 @@ FactPair ProjectedTask::get_goal_fact(int index) const {
     return goals[index];
 }
 
-std::vector<int> ProjectedTask::get_initial_state_values() const {
-    std::vector<int> values = parent->get_initial_state_values();
+vector<int> ProjectedTask::get_initial_state_values() const {
+    vector<int> values = parent->get_initial_state_values();
     convert_parent_state_values(values);
     return values;
 }
 
 void ProjectedTask::convert_parent_state_values(
-    std::vector<int> &values) const {
-    std::vector<int> converted;
+    vector<int> &values) const {
+    vector<int> converted;
     for (int index : pattern) {
         converted.push_back(values[index]);
     }

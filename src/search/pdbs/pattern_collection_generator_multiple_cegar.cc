@@ -38,7 +38,7 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
 }
 
 PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
-    const std::shared_ptr<AbstractTask> &task) {
+    const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Multiple CEGAR: generating patterns" << endl;
     }
@@ -147,8 +147,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 can_generate = false;
             }
 
-            union_patterns->push_back(std::move(pattern));
-            union_pdbs->push_back(std::move(pdb));
+            union_patterns->push_back(move(pattern));
+            union_pdbs->push_back(move(pdb));
         } else {
             // no new pattern could be generated during this iteration
             // --> stagnation

@@ -26,7 +26,7 @@ PatternCollectionGeneratorSingleCegar::~PatternCollectionGeneratorSingleCegar() 
 }
 
 PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
-    const std::shared_ptr<AbstractTask> &task) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     vector<FactPair> goals;
     for (FactProxy goal : task_proxy.get_goals()) {
