@@ -68,12 +68,24 @@ static vector<OperatorID> get_cheapest_operators(
 static vector<vector<OperatorID>> extract_plan(
     const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator& succ_gen,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    bool compute_wildcard_plan,
     const shared_ptr<SearchNode> &goal_node) {
     vector<vector<OperatorID>> plan;
     shared_ptr<SearchNode> current_node = goal_node;
     while(current_node->predecessor) {
-        plan.push_back(get_cheapest_operators(
-            abs_task_proxy, succ_gen, current_node->predecessor->state, current_node->state));
+        vector<OperatorID> cheapest_operators =
+            get_cheapest_operators(
+                abs_task_proxy, succ_gen, current_node->predecessor->state, current_node->state);
+
+        if (compute_wildcard_plan) {
+            plan.push_back(move(cheapest_operators));
+        } else {
+            OperatorID random_op_id = *rng->choose(cheapest_operators);
+            plan.emplace_back();
+            plan.back().push_back(random_op_id);
+        }
+
         current_node = current_node->predecessor;
     }
     reverse(plan.begin(), plan.end());
@@ -84,6 +96,7 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
     const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator &succ_gen,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
+    bool compute_wildcard_plan,
     const PatternDatabase &pdb,
     int f_star,
     shared_ptr<SearchNode> &start_node) {
@@ -139,7 +152,7 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
         }
         if (best_improving_succ_node) {
             start_node = best_improving_succ_node;
-            return extract_plan(abs_task_proxy, succ_gen, best_improving_succ_node);
+            return extract_plan(abs_task_proxy, succ_gen, rng, compute_wildcard_plan, best_improving_succ_node);
         }
     }
 }
@@ -185,7 +198,7 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
         // start_node will be set to the last node of the BFS, thus containing
         // the improving state for the next iteration, and the updated g-value.
         vector<vector<OperatorID>> plateau_plan =
-            bfs_for_improving_state(abs_task_proxy, succ_gen, rng, pdb, f_star, start_node);
+            bfs_for_improving_state(abs_task_proxy, succ_gen, rng, compute_wildcard_plan, pdb, f_star, start_node);
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "BFS wildcard plan to next improving state: ";
             print_plan(abs_task_proxy, pdb, plateau_plan);
@@ -193,13 +206,6 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hillclimbing(
         plan.insert(plan.end(), plateau_plan.begin(), plateau_plan.end());
     }
 
-    if (!compute_wildcard_plan) {
-        for (vector<OperatorID> &plan_step : plan) {
-            OperatorID random_op_id = *rng->choose(plan_step);
-            plan_step.clear();
-            plan_step.push_back(random_op_id);
-        }
-    }
     if (verbosity >= utils::Verbosity::VERBOSE) {
         print_plan(abs_task_proxy, pdb, plan);
     }
