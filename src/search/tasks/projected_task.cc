@@ -85,8 +85,8 @@ int ProjectedTask::get_pattern_variable_index(int index_in_original) const {
         return it->second;
     } else {
         cout << "ProjectedTask: "
-                  << "A function tried to access a variable that is not part of the pattern."
-                  << endl;
+             << "A function tried to access a variable that is not part of the pattern."
+             << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
