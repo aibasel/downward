@@ -147,18 +147,18 @@ class Cegar {
         const utils::CountdownTimer &timer, int refinement_counter) const;
 
     /*
-      Try to apply the specified abstract solution
-      in concrete space by starting with the specified state.
-      Return the last state that could be reached before the
-      solution failed (if the solution did not fail, then the
-      returned state is a goal state of the concrete task).
-      The second element of the returned pair is a list of variables
-      that caused the solution to fail.
+      Try to apply the plan of the projection at the given index in the
+      concrete task starting at the given state. During application,
+      blacklisted variables are ignored. If plan application succeeds,
+      return an empty flaw list and set concrete_solution_index if there
+      are no blacklisted variables (in this case, the plan is a valid plan
+      for the concrete task). Otherwise, return all precondition variables
+      of all operators of the failing plan step.
      */
     FlawList apply_wildcard_plan(int collection_index, const State &init);
     FlawList get_flaws();
 
-    // Methods related to refining (and adding patterns to the collection generally).
+    // Methods related to refining.
     void add_pattern_for_var(int var);
     bool can_merge_patterns(int index1, int index2) const;
     void merge_patterns(int index1, int index2);
@@ -270,15 +270,15 @@ FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
         for (OperatorID op_id : equivalent_ops) {
             OperatorProxy op = task_proxy.get_operators()[op_id];
 
-            // we do not use task_properties::is_applicable here because
-            // checking for applicability manually allows us to directly
-            // access the precondition that precludes the operator from
-            // being applicable
+            /*
+              Check if the operator is applicable. If not, add its violated
+              preconditions to the list of flaws.
+            */
             bool flaw_detected = false;
             for (FactProxy precondition : op.get_preconditions()) {
                 int var = precondition.get_variable().get_id();
 
-                // we ignore blacklisted variables
+                // Ignore blacklisted variables
                 if (blacklisted_variables.count(var)) {
                     continue;
                 }
@@ -289,8 +289,10 @@ FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
                 }
             }
 
-            // If there is an operator that is applicable, clear collected
-            // flaws, apply it, and continue with the next plan step.
+            /*
+              If the operator is applicable, clear flaws and proceed with
+              the next operator.
+            */
             if (!flaw_detected) {
                 step_failed = false;
                 flaws.clear();
@@ -299,8 +301,7 @@ FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
             }
         }
 
-        // If all equivalent operators cannot be applied, we have to stop
-        // plan execution.
+        // If all equivalent operators are inapplicable, stop plan execution.
         if (step_failed) {
             break;
         }
@@ -380,21 +381,18 @@ FlawList Cegar::get_flaws() {
             continue;
         }
 
-        Projection &projection = *projection_collection[collection_index];
-
-        // abort here if no abstract projection could be found
+        const Projection &projection = *projection_collection[collection_index];
         if (projection.is_unsolvable()) {
             utils::g_log << token << "Problem unsolvable" << endl;
             utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
         }
 
-        // find out if and why the abstract projection
-        // would not work for the concrete task.
-        // We always start with the initial state.
         FlawList new_flaws = apply_wildcard_plan(collection_index, concrete_init);
-
         if (concrete_solution_index != -1) {
-            // We solved the concrete task. Return empty flaws to signal terminating.
+            /*
+              The plan of the projection at collection_index is valid in the
+              concrete task. Return empty flaws to signal terminating.
+            */
             assert(concrete_solution_index == static_cast<int>(collection_index));
             assert(new_flaws.empty());
             assert(blacklisted_variables.empty());
@@ -427,7 +425,7 @@ bool Cegar::can_merge_patterns(int index1, int index2) const {
 }
 
 void Cegar::merge_patterns(int index1, int index2) {
-    // Merge projection at index2 into projection at index2
+    // Merge projection at index2 into projection at index2.
     Projection &projection1 = *projection_collection[index1];
     Projection &projection2 = *projection_collection[index2];
 
@@ -436,26 +434,26 @@ void Cegar::merge_patterns(int index1, int index2) {
         variable_to_projection[var] = index1;
     }
 
-    // compute merged pattern
+    // Compute merged pattern.
     Pattern new_pattern = projection1.get_pattern();
     new_pattern.insert(new_pattern.end(), pattern2.begin(), pattern2.end());
     sort(new_pattern.begin(), new_pattern.end());
 
-    // store old pdb sizes
+    // Store old pdb sizes.
     int pdb_size1 = projection_collection[index1]->get_pdb()->get_size();
     int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
 
-    // compute merged projection
+    // Compute merged projection.
     unique_ptr<Projection> merged =
         compute_projection(
             task, new_pattern, rng, wildcard_plans, verbosity);
 
-    // update collection size
+    // Update collection size.
     collection_size -= pdb_size1;
     collection_size -= pdb_size2;
     collection_size += merged->get_pdb()->get_size();
 
-    // clean-up
+    // Clean up.
     projection_collection[index1] = move(merged);
     projection_collection[index2] = nullptr;
 }
@@ -493,7 +491,7 @@ void Cegar::handle_flaw(const Flaw &flaw) {
     bool added_var = false;
     auto it = variable_to_projection.find(var);
     if (it != variable_to_projection.end()) {
-        // var is already in another pattern of the collection
+        // Variable is contained in another pattern of the collection.
         int other_index = it->second;
         assert(other_index != collection_index);
         assert(projection_collection[other_index] != nullptr);
@@ -509,10 +507,7 @@ void Cegar::handle_flaw(const Flaw &flaw) {
             added_var = true;
         }
     } else {
-        // var is not yet in the collection
-        // Note on precondition violations: var may be a goal variable but
-        // nevertheless is added to the pattern causing the flaw and not to
-        // a single new pattern.
+        // Variable is not yet in the collection.
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << token << "var" << var
                          << " is not in the collection yet" << endl;
