@@ -32,6 +32,10 @@ def parse_args():
         help='Use "all" to test all benchmarks, '
              '"first" to test the first task of each domain (default), '
              'or "<domain>:<problem>" to test individual tasks')
+    parser.add_argument(
+        "--runs-per-task",
+        help="translate each task this many times and compare the outputs",
+        type=int, default=3)
     args = parser.parse_args()
     args.benchmarks_dir = os.path.abspath(args.benchmarks_dir)
     return args
@@ -122,7 +126,7 @@ def main():
     cleanup()
     for task in get_tasks(args):
         write_combined_output("base.sas", task)
-        for iteration in range(2):
+        for iteration in range(args.runs_per_task - 1):
             write_combined_output("output{}.sas".format(iteration), task)
             print("Compare translator output", flush=True)
             files = ["base.sas", "output{}.sas".format(iteration)]
