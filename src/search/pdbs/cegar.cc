@@ -144,7 +144,7 @@ class Cegar {
     void compute_initial_collection();
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
     bool termination_conditions_met(
-            const utils::CountdownTimer &timer, int refinement_counter) const;
+        const utils::CountdownTimer &timer, int refinement_counter) const;
 
     /*
       Try to apply the specified abstract solution
@@ -210,7 +210,7 @@ void Cegar::compute_initial_collection() {
 }
 
 bool Cegar::time_limit_reached(
-        const utils::CountdownTimer &timer) const {
+    const utils::CountdownTimer &timer) const {
     if (timer.is_expired()) {
         if (verbosity >= utils::Verbosity::NORMAL) {
             utils::g_log << token << "time limit reached" << endl;
@@ -221,7 +221,7 @@ bool Cegar::time_limit_reached(
 }
 
 bool Cegar::termination_conditions_met(
-        const utils::CountdownTimer &timer, int refinement_counter) const {
+    const utils::CountdownTimer &timer, int refinement_counter) const {
     if (time_limit_reached(timer)) {
         return true;
     }
@@ -259,8 +259,7 @@ State get_unregistered_successor(
     return State(*task, move(new_values));
 }
 
-FlawList Cegar::apply_wildcard_plan(
-        int collection_index, const State &init) {
+FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
     FlawList flaws;
     State current(init);
     current.unpack();
@@ -417,8 +416,7 @@ void Cegar::add_pattern_for_var(int var) {
     collection_size += projection_collection.back()->get_pdb()->get_size();
 }
 
-bool Cegar::can_merge_patterns(
-        int index1, int index2) const {
+bool Cegar::can_merge_patterns(int index1, int index2) const {
     int pdb_size1 = projection_collection[index1]->get_pdb()->get_size();
     int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
     if (!utils::is_product_within_limit(pdb_size1, pdb_size2, max_pdb_size)) {
@@ -539,8 +537,6 @@ void Cegar::handle_flaw(const Flaw &flaw) {
 
 void Cegar::refine(const FlawList &flaws) {
     assert(!flaws.empty());
-
-    // pick a random flaw
     int random_flaw_index = (*rng)(flaws.size());
     const Flaw &flaw = flaws[random_flaw_index];
 
