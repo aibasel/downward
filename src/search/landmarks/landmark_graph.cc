@@ -185,7 +185,8 @@ void LandmarkGraph::remove_node(LandmarkNode *node) {
     remove_node_occurrences(node);
     auto it = find_if(nodes.begin(), nodes.end(),
                       [&node](unique_ptr<LandmarkNode> &n) {
-                          return n.get() == node;});
+                          return n.get() == node;
+                      });
     assert(it != nodes.end());
     nodes.erase(it);
 }
