@@ -28,6 +28,7 @@ after the corresponding tracker issues.
 - For developers: move functionality used during search away from
   LandmarkGraph, making it constant after creation.
   <http://issues.fast-downward.org/issue988>
+  <http://issues.fast-downward.org/issue1000>
 
 - For developers: new state class
   <http://issues.fast-downward.org/issue348>
