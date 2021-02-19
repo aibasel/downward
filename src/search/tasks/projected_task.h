@@ -33,7 +33,7 @@ class ProjectedTask : public tasks::DelegatingTask {
 public:
     ProjectedTask(
         const std::shared_ptr<AbstractTask> &parent,
-        const std::vector<int> &pattern);
+        std::vector<int> &&pattern);
     virtual ~ProjectedTask() override = default;
 
     virtual int get_num_variables() const override;

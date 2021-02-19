@@ -9,9 +9,9 @@ using namespace std;
 namespace extra_tasks {
 ProjectedTask::ProjectedTask(
     const shared_ptr<AbstractTask> &parent,
-    const vector<int> &pattern)
+    vector<int> &&pattern)
     : DelegatingTask(parent),
-      pattern(pattern) {
+      pattern(move(pattern)) {
     TaskProxy parent_proxy(*parent);
     assert(!task_properties::has_axioms(parent_proxy));
 
@@ -65,8 +65,8 @@ ProjectedTask::ProjectedTask(
             parent->get_goal_fact(goali);
         int var = goal.var;
 
-        auto res = find(begin(pattern), end(pattern), var);
-        if (res != end(pattern)) {
+        auto res = find(pattern.begin(), pattern.end(), var);
+        if (res != pattern.end()) {
             goals.push_back(convert_from_original_fact(goal));
         }
     }

@@ -58,14 +58,14 @@ public:
 
 static unique_ptr<Projection> compute_projection(
     const shared_ptr<AbstractTask> &concrete_task,
-    const Pattern &pattern,
+    Pattern &&pattern,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan,
     utils::Verbosity verbosity) {
     TaskProxy concrete_task_proxy(*concrete_task);
     shared_ptr<PatternDatabase> pdb =
         make_shared<PatternDatabase>(concrete_task_proxy, pattern);
-    extra_tasks::ProjectedTask projected_task(concrete_task, pattern);
+    extra_tasks::ProjectedTask projected_task(concrete_task, move(pattern));
     TaskProxy projected_task_proxy(projected_task);
 
     bool unsolvable = false;
@@ -75,7 +75,7 @@ static unique_ptr<Projection> compute_projection(
     if (init_goal_dist == numeric_limits<int>::max()) {
         unsolvable = true;
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "PDB with pattern " << pattern
+            utils::g_log << "PDB with pattern " << pdb->get_pattern()
                          << " is unsolvable" << endl;
         }
     } else {
@@ -446,7 +446,7 @@ void Cegar::merge_patterns(int index1, int index2) {
     // Compute merged projection.
     unique_ptr<Projection> merged =
         compute_projection(
-            task, new_pattern, rng, wildcard_plans, verbosity);
+            task, move(new_pattern), rng, wildcard_plans, verbosity);
 
     // Update collection size.
     collection_size -= pdb_size1;
@@ -476,7 +476,7 @@ void Cegar::add_variable_to_pattern(int collection_index, int var) {
     sort(new_pattern.begin(), new_pattern.end());
 
     unique_ptr<Projection> new_projection =
-        compute_projection(task, new_pattern, rng, wildcard_plans, verbosity);
+        compute_projection(task, move(new_pattern), rng, wildcard_plans, verbosity);
 
     collection_size -= projection.get_pdb()->get_size();
     collection_size += new_projection->get_pdb()->get_size();
