@@ -76,6 +76,7 @@ static vector<vector<OperatorID>> extract_plan(
             abs_task_proxy, succ_gen, current_node->predecessor->state, current_node->state));
         current_node = current_node->predecessor;
     }
+    reverse(plan.begin(), plan.end());
     return plan;
 }
 
