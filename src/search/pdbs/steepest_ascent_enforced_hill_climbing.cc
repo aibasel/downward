@@ -68,7 +68,7 @@ static vector<OperatorID> get_cheapest_operators(
 static vector<vector<OperatorID>> extract_plan(
     const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator& succ_gen,
-    shared_ptr<SearchNode> goal_node) {
+    const shared_ptr<SearchNode> &goal_node) {
     vector<vector<OperatorID>> plan;
     shared_ptr<SearchNode> current_node = goal_node;
     while(current_node->predecessor) {
