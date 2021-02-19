@@ -1,0 +1,31 @@
+---
+name: Daily tests
+
+on:
+  schedule:
+    # Run workflow every morning at 04:00.
+    - cron: '0 4 * * *'
+
+jobs:
+  style:
+    name: Run daily tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@master
+
+      - name: Install Python
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.8
+
+      - name: Download benchmarks
+        run: |
+          git clone https://github.com/aibasel/downward-benchmarks.git
+
+      - name: Run translator tests
+        run: |
+          cd misc/tests
+          ./test-exitcodes.py downward-benchmarks first
+
+...
