@@ -567,6 +567,7 @@ fast_downward_plugin(
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
         tasks/projected_task
+        tasks/projected_task_factory
     DEPENDS TASK_PROPERTIES
     DEPENDENCY_ONLY
 )

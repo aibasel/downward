@@ -6,7 +6,6 @@
 namespace extra_tasks {
 class ProjectedTask : public tasks::DelegatingTask {
     const std::vector<int> &pattern;
-    std::unordered_map<int, int> var_to_index; // where to find variable in pattern
     std::vector<int> operator_indices;
     std::vector<std::vector<FactPair>> operator_preconditions;
     std::vector<std::vector<FactPair>> operator_effects;
@@ -17,23 +16,20 @@ class ProjectedTask : public tasks::DelegatingTask {
       the index of the same variable in the original task.
      */
     int get_original_variable_index(int index_in_pattern) const;
-    /*
-      Convert index with which the variable is accessed in
-      the original task to an index under which the variable
-      resides in the pattern.
-     */
-    int get_pattern_variable_index(int index_in_original) const;
     //int get_abstracted_operator_index(int index_in_original) const;
     /*
       Convenience functions for changing the context of a
       given fact between the original and abstracted tasks.
      */
     FactPair convert_from_pattern_fact(const FactPair &fact) const;
-    FactPair convert_from_original_fact(const FactPair &fact) const;
 public:
     ProjectedTask(
         const std::shared_ptr<AbstractTask> &parent,
-        std::vector<int> &&pattern);
+        std::vector<int> &&pattern,
+        std::vector<int> &&operator_indices,
+        std::vector<std::vector<FactPair>> &&operator_preconditions,
+        std::vector<std::vector<FactPair>> &&operator_effects,
+        std::vector<FactPair> &&goals);
     virtual ~ProjectedTask() override = default;
 
     virtual int get_num_variables() const override;

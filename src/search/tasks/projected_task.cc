@@ -1,7 +1,7 @@
 #include "projected_task.h"
 
-#include "../task_proxy.h"
-#include "../task_utils/task_properties.h"
+#include "../utils/system.h"
+
 #include <algorithm>
 
 using namespace std;
@@ -9,68 +9,17 @@ using namespace std;
 namespace extra_tasks {
 ProjectedTask::ProjectedTask(
     const shared_ptr<AbstractTask> &parent,
-    vector<int> &&pattern)
+    vector<int> &&pattern,
+    vector<int> &&operator_indices,
+    vector<std::vector<FactPair>> &&operator_preconditions,
+    vector<std::vector<FactPair>> &&operator_effects,
+    vector<FactPair> &&goals)
     : DelegatingTask(parent),
-      pattern(move(pattern)) {
-    TaskProxy parent_proxy(*parent);
-    assert(!task_properties::has_axioms(parent_proxy));
-
-    // remember where in the pattern each variable is stored
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        int var = pattern[i];
-        var_to_index[var] = i;
-    }
-
-    // make a list of operator indices for operators which are
-    // relevant to at least one variable in the pattern
-    for (int opi = 0; opi < parent->get_num_operators(); ++opi) {
-        vector<FactPair> effects;
-
-        for (int effi = 0;
-             effi < parent->get_num_operator_effects(opi, false); ++effi) {
-            FactPair effect =
-                parent->get_operator_effect(opi, effi, false);
-            int var = effect.var;
-
-            if (var_to_index.count(var) != 0) {
-                effects.push_back(convert_from_original_fact(effect));
-            }
-        }
-
-        if (effects.empty()) {
-            continue;
-        } else {
-            operator_indices.push_back(opi);
-            operator_effects.push_back(effects);
-        }
-
-        vector<FactPair> preconditions;
-        for (int condi = 0;
-             condi < parent->get_num_operator_preconditions(opi, false); ++condi) {
-            FactPair precondition =
-                parent->get_operator_precondition(opi, condi, false);
-            int var = precondition.var;
-
-            // check if the precondition variable appears in the pattern
-            if (var_to_index.count(var) != 0) {
-                preconditions.push_back(convert_from_original_fact(precondition));
-            }
-        }
-        operator_preconditions.push_back(preconditions);
-    }
-
-    for (int goali = 0;
-         goali < parent->get_num_goals(); ++goali) {
-        FactPair goal =
-            parent->get_goal_fact(goali);
-        int var = goal.var;
-
-        auto res = find(pattern.begin(), pattern.end(), var);
-        if (res != pattern.end()) {
-            goals.push_back(convert_from_original_fact(goal));
-        }
-    }
-    assert((unsigned)parent->get_num_goals() >= goals.size());
+      pattern(move(pattern)),
+      operator_indices(move(operator_indices)),
+      operator_preconditions(move(operator_preconditions)),
+      operator_effects(move(operator_effects)),
+      goals(move(goals)) {
 }
 
 int ProjectedTask::get_original_variable_index(int index_in_pattern) const {
@@ -79,27 +28,9 @@ int ProjectedTask::get_original_variable_index(int index_in_pattern) const {
     return pattern[index_in_pattern];
 }
 
-int ProjectedTask::get_pattern_variable_index(int index_in_original) const {
-    auto it = var_to_index.find(index_in_original);
-    if (it != var_to_index.end()) {
-        return it->second;
-    } else {
-        cout << "ProjectedTask: "
-             << "A function tried to access a variable that is not part of the pattern."
-             << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-    }
-}
-
 FactPair ProjectedTask::convert_from_pattern_fact(const FactPair &fact) const {
     return {
-               get_original_variable_index(fact.var), fact.value
-    };
-}
-
-FactPair ProjectedTask::convert_from_original_fact(const FactPair &fact) const {
-    return {
-               get_pattern_variable_index(fact.var), fact.value
+       get_original_variable_index(fact.var), fact.value
     };
 }
 

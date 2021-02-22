@@ -7,6 +7,7 @@
 #include "../option_parser.h"
 
 #include "../tasks/projected_task.h"
+#include "../tasks/projected_task_factory.h"
 
 #include "../task_utils/task_properties.h"
 
@@ -65,8 +66,8 @@ static unique_ptr<Projection> compute_projection(
     TaskProxy concrete_task_proxy(*concrete_task);
     shared_ptr<PatternDatabase> pdb =
         make_shared<PatternDatabase>(concrete_task_proxy, pattern);
-    extra_tasks::ProjectedTask projected_task(concrete_task, move(pattern));
-    TaskProxy projected_task_proxy(projected_task);
+    shared_ptr<AbstractTask> projected_task = extra_tasks::build_projected_task(concrete_task, move(pattern));
+    TaskProxy projected_task_proxy(*projected_task);
 
     bool unsolvable = false;
     vector<vector<OperatorID>> plan;
