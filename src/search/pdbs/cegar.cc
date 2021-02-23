@@ -339,13 +339,13 @@ FlawList Cegar::get_flaws_for_projection(
             if (blacklisted_variables.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are no blacklisted variables, "
-                                    "task solved." << endl;
+                        "task solved." << endl;
                 }
                 concrete_solution_index = collection_index;
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are blacklisted variables, "
-                                    "marking projection as solved." << endl;
+                        "marking projection as solved." << endl;
                 }
                 projection_collection[collection_index]->mark_as_solved();
             }
@@ -362,7 +362,7 @@ FlawList Cegar::get_flaws_for_projection(
             if (flaws.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are no non-blacklisted goal variables "
-                                    "left, marking projection as solved." << endl;
+                        "left, marking projection as solved." << endl;
                 }
                 projection_collection[collection_index]->mark_as_solved();
             } else {
@@ -379,7 +379,7 @@ FlawList Cegar::get_flaws() {
     FlawList flaws;
     State concrete_init = task_proxy.get_initial_state();
     for (size_t collection_index = 0;
-        collection_index < projection_collection.size(); ++collection_index) {
+         collection_index < projection_collection.size(); ++collection_index) {
         if (projection_collection[collection_index] &&
             !projection_collection[collection_index]->is_solved()) {
             FlawList new_flaws =
