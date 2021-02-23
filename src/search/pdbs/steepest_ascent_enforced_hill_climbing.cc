@@ -93,7 +93,7 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
     start_node->cost = -1;
     start_node->predecessor = nullptr;
 //    utils::g_log << "Running BFS with start state " << start_node->state.get_values() << endl;
-    queue <shared_ptr<SearchNode>> open;
+    queue<shared_ptr<SearchNode>> open;
     utils::HashSet<size_t> closed;
     closed.insert(start_node->hash);
     int h_start = pdb.get_value_for_index(start_node->hash);
