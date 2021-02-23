@@ -30,14 +30,14 @@ ProjectedTask::ProjectedTask(
     }
 }
 
-int ProjectedTask::convert_to_parent_variable(int var) const {
+int ProjectedTask::convert_variable_to_parent(int var) const {
     assert(utils::in_bounds(var, variables));
     return variables[var];
 }
 
-FactPair ProjectedTask::convert_to_parent_fact(const FactPair &fact) const {
+FactPair ProjectedTask::convert_fact_to_parent(const FactPair &fact) const {
     return {
-               convert_to_parent_variable(fact.var), fact.value
+               convert_variable_to_parent(fact.var), fact.value
     };
 }
 
@@ -46,34 +46,34 @@ int ProjectedTask::get_num_variables() const {
 }
 
 string ProjectedTask::get_variable_name(int var) const {
-    int index = convert_to_parent_variable(var);
+    int index = convert_variable_to_parent(var);
     return parent->get_variable_name(index);
 }
 
 int ProjectedTask::get_variable_domain_size(int var) const {
-    int index = convert_to_parent_variable(var);
+    int index = convert_variable_to_parent(var);
     return parent->get_variable_domain_size(index);
 }
 
 int ProjectedTask::get_variable_axiom_layer(int var) const {
-    int index = convert_to_parent_variable(var);
+    int index = convert_variable_to_parent(var);
     return parent->get_variable_axiom_layer(index);
 }
 
 int ProjectedTask::get_variable_default_axiom_value(int var) const {
-    int index = convert_to_parent_variable(var);
+    int index = convert_variable_to_parent(var);
     return parent->get_variable_default_axiom_value(index);
 }
 
 string ProjectedTask::get_fact_name(const FactPair &fact) const {
-    return parent->get_fact_name(convert_to_parent_fact(fact));
+    return parent->get_fact_name(convert_fact_to_parent(fact));
 }
 
 bool ProjectedTask::are_facts_mutex(
     const FactPair &fact1, const FactPair &fact2) const {
     return parent->are_facts_mutex(
-        convert_to_parent_fact(fact1),
-        convert_to_parent_fact(fact2));
+        convert_fact_to_parent(fact1),
+        convert_fact_to_parent(fact2));
 }
 
 int ProjectedTask::get_operator_cost(int index, bool is_axiom) const {

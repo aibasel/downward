@@ -21,8 +21,8 @@ class ProjectedTask : public tasks::DelegatingTask {
 
     std::vector<FactPair> goals;
 
-    int convert_to_parent_variable(int var) const;
-    FactPair convert_to_parent_fact(const FactPair &fact) const;
+    int convert_variable_to_parent(int var) const;
+    FactPair convert_fact_to_parent(const FactPair &fact) const;
 public:
     ProjectedTask(
         const std::shared_ptr<AbstractTask> &parent,
