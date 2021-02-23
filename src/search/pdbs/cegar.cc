@@ -6,7 +6,6 @@
 
 #include "../option_parser.h"
 
-#include "../tasks/projected_task.h"
 #include "../tasks/projected_task_factory.h"
 
 #include "../task_utils/task_properties.h"
@@ -659,9 +658,9 @@ PatternCollectionInformation cegar(
     utils::Verbosity verbosity) {
 #ifndef NDEBUG
     TaskProxy task_proxy(*task);
-    for (const FactPair goal : goals) {
+    for (const FactPair &goal : goals) {
         bool is_goal = false;
-        for (const FactProxy &task_goal : task_proxy.get_goals()) {
+        for (FactProxy task_goal : task_proxy.get_goals()) {
             if (goal == task_goal.get_pair()) {
                 is_goal = true;
                 break;
