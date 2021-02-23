@@ -2,8 +2,6 @@
 
 #include "pattern_database.h"
 
-#include "../task_proxy.h"
-
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 
@@ -28,15 +26,7 @@ struct SearchNode {
           predecessor(predecessor) {
     }
 };
-}
 
-namespace utils {
-inline void feed(HashState &hash_state, const pdbs::SearchNode &search_node) {
-    feed(hash_state, search_node.state);
-}
-}
-
-namespace pdbs {
 static vector<OperatorID> get_cheapest_operators(
     const TaskProxy &abs_task_proxy,
     const successor_generator::SuccessorGenerator &succ_gen,
