@@ -13,8 +13,8 @@ ProjectedTask::ProjectedTask(
     const shared_ptr<AbstractTask> &parent,
     vector<int> &&variables,
     vector<int> &&operator_indices,
-    vector<std::vector<FactPair>> &&operator_preconditions,
-    vector<std::vector<FactPair>> &&operator_effects,
+    vector<vector<FactPair>> &&operator_preconditions,
+    vector<vector<FactPair>> &&operator_effects,
     vector<FactPair> &&goals)
     : DelegatingTask(parent),
       variables(move(variables)),

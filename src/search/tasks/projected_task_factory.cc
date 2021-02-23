@@ -22,8 +22,8 @@ shared_ptr<AbstractTask> build_projected_task(
 
     unordered_map<int, int> var_to_index;
     vector<int> operator_indices;
-    vector<std::vector<FactPair>> operator_preconditions;
-    vector<std::vector<FactPair>> operator_effects;
+    vector<vector<FactPair>> operator_preconditions;
+    vector<vector<FactPair>> operator_effects;
     vector<FactPair> goals;
 
     // remember where in the pattern each variable is stored
