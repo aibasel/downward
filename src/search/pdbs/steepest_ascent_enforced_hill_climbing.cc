@@ -176,7 +176,7 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
     size_t start_index = pdb.hash_index_of_projected_state(start);
     const int f_star = pdb.get_value_for_hash_index(start_index);
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "Running EHC with start state " << start.get_unpacked_values() << endl;
+        utils::g_log << "Running steepest ascent EHC with start state " << start.get_unpacked_values() << endl;
     }
 
     successor_generator::SuccessorGenerator succ_gen(abs_task_proxy);
@@ -191,7 +191,7 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
         vector<vector<OperatorID>> plateau_plan =
             bfs_for_improving_state(abs_task_proxy, succ_gen, rng, compute_wildcard_plan, pdb, f_star, start_node);
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "BFS wildcard plan to next improving state: ";
+            utils::g_log << "BFS wildcard plan to next improving state: " << endl;
             print_plan(abs_task_proxy, pdb, plateau_plan);
         }
         plan.insert(plan.end(), plateau_plan.begin(), plateau_plan.end());

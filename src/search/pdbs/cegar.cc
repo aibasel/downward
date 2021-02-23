@@ -129,7 +129,6 @@ class Cegar {
     unordered_set<int> blacklisted_variables;
     shared_ptr<utils::RandomNumberGenerator> rng;
     const utils::Verbosity verbosity;
-    const string token = "CEGAR: ";
 
     vector<unique_ptr<Projection>> projection_collection;
     /*
@@ -152,12 +151,13 @@ class Cegar {
       Try to apply the plan of the projection at the given index in the
       concrete task starting at the given state. During application,
       blacklisted variables are ignored. If plan application succeeds,
-      return an empty flaw list and set concrete_solution_index if there
-      are no blacklisted variables (in this case, the plan is a valid plan
-      for the concrete task). Otherwise, return all precondition variables
-      of all operators of the failing plan step.
+      return an empty flaw list. Otherwise, return all precondition variables
+      of all operators of the failing plan step. When the method returns,
+      current is the last state reached when executing the plan.
      */
-    FlawList apply_wildcard_plan(int collection_index, const State &init);
+    FlawList apply_plan(int collection_index, State &current) const;
+    FlawList get_flaws_for_projection(
+        int collection_index, const State &concrete_init);
     FlawList get_flaws();
 
     // Methods related to refining.
@@ -205,7 +205,7 @@ void Cegar::compute_initial_collection() {
     }
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << token << "initial collection: ";
+        utils::g_log << "initial collection: ";
         print_collection();
         utils::g_log << endl;
     }
@@ -215,7 +215,7 @@ bool Cegar::time_limit_reached(
     const utils::CountdownTimer &timer) const {
     if (timer.is_expired()) {
         if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << token << "time limit reached" << endl;
+            utils::g_log << "time limit reached." << endl;
         }
         return true;
     }
@@ -230,7 +230,7 @@ bool Cegar::termination_conditions_met(
 
     if (refinement_counter == max_refinements) {
         if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << token << "maximum allowed number of refinements reached." << endl;
+            utils::g_log << "maximum allowed number of refinements reached." << endl;
         }
         return true;
     }
@@ -261,12 +261,14 @@ State get_unregistered_successor(
     return State(*task, move(new_values));
 }
 
-FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
+FlawList Cegar::apply_plan(int collection_index, State &current) const {
     FlawList flaws;
-    State current(init);
-    current.unpack();
     Projection &projection = *projection_collection[collection_index];
     const vector<vector<OperatorID>> &plan = projection.get_plan();
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        utils::g_log << "executing plan for pattern "
+                     << projection.get_pattern() << ": ";
+    }
     for (const vector<OperatorID> &equivalent_ops : plan) {
         bool step_failed = true;
         for (OperatorID op_id : equivalent_ops) {
@@ -308,41 +310,48 @@ FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
             break;
         }
     }
-
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << token << "plan of pattern " << projection.get_pattern();
-    }
-    if (flaws.empty()) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << " successfully executed ";
+        if (flaws.empty()) {
+            utils::g_log << "success." << endl;
+        } else {
+            utils::g_log << "failure." << endl;
         }
+    }
+    return flaws;
+}
+
+FlawList Cegar::get_flaws_for_projection(
+    int collection_index, const State &concrete_init) {
+    const Projection &projection = *projection_collection[collection_index];
+    if (projection.is_unsolvable()) {
+        utils::g_log << "task is unsolvable." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
+    }
+
+    State current(concrete_init);
+    current.unpack();
+    FlawList flaws = apply_plan(collection_index, current);
+    if (flaws.empty()) {
         if (task_properties::is_goal_state(task_proxy, current)) {
-            /*
-              If there are no flaws, this does not guarantee that the plan
-              is valid in the concrete state space because we might have
-              ignored variables that have been blacklisted. Hence the tests
-              for empty blacklists.
-            */
             if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << "and resulted in a concrete goal state." << endl;
+                utils::g_log << "plan led to a concrete goal state: ";
             }
             if (blacklisted_variables.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << token << "since there are no blacklisted variables, "
-                        "the concrete task is solved." << endl;
+                    utils::g_log << "there are no blacklisted variables, "
+                                    "task solved." << endl;
                 }
                 concrete_solution_index = collection_index;
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << token << "since there are blacklisted variables, the plan "
-                        "is not guaranteed to work in the concrete state "
-                        "space. Marking this projection as solved." << endl;
+                    utils::g_log << "there are blacklisted variables, "
+                                    "marking projection as solved." << endl;
                 }
-                projection.mark_as_solved();
+                projection_collection[collection_index]->mark_as_solved();
             }
         } else {
             if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << "but did not lead to a goal state." << endl;
+                utils::g_log << "plan did not lead to a goal state: ";
             }
             for (const FactPair &goal : goals) {
                 int goal_var_id = goal.var;
@@ -352,57 +361,39 @@ FlawList Cegar::apply_wildcard_plan(int collection_index, const State &init) {
             }
             if (flaws.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << token
-                                 << "no non-blacklisted goal variables left, "
-                        "marking this pattern as solved." << endl;
+                    utils::g_log << "there are no non-blacklisted goal variables "
+                                    "left, marking projection as solved." << endl;
                 }
-                projection.mark_as_solved();
+                projection_collection[collection_index]->mark_as_solved();
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << token << "raising goal violation flaw(s)." << endl;
+                    utils::g_log << "raising goal violation flaw(s)." << endl;
                 }
             }
         }
-    } else {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << " failed." << endl;
-        }
     }
-
     return flaws;
 }
 
 FlawList Cegar::get_flaws() {
     FlawList flaws;
     State concrete_init = task_proxy.get_initial_state();
-
     for (size_t collection_index = 0;
-         collection_index < projection_collection.size(); ++collection_index) {
-        if (!projection_collection[collection_index] ||
-            projection_collection[collection_index]->is_solved()) {
-            continue;
-        }
-
-        const Projection &projection = *projection_collection[collection_index];
-        if (projection.is_unsolvable()) {
-            utils::g_log << token << "Problem unsolvable" << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
-        }
-
-        FlawList new_flaws = apply_wildcard_plan(collection_index, concrete_init);
-        if (concrete_solution_index != -1) {
-            /*
-              The plan of the projection at collection_index is valid in the
-              concrete task. Return empty flaws to signal terminating.
-            */
-            assert(concrete_solution_index == static_cast<int>(collection_index));
-            assert(new_flaws.empty());
-            assert(blacklisted_variables.empty());
-            flaws.clear();
-            return flaws;
-        }
-        for (Flaw &flaw : new_flaws) {
-            flaws.push_back(move(flaw));
+        collection_index < projection_collection.size(); ++collection_index) {
+        if (projection_collection[collection_index] &&
+            !projection_collection[collection_index]->is_solved()) {
+            FlawList new_flaws =
+                get_flaws_for_projection(collection_index, concrete_init);
+            if (concrete_solution_index != -1) {
+                assert(concrete_solution_index == static_cast<int>(collection_index));
+                assert(new_flaws.empty());
+                // Return empty flaws to terminating the algorithm.
+                flaws.clear();
+                return flaws;
+            }
+            for (Flaw &flaw : new_flaws) {
+                flaws.push_back(move(flaw));
+            }
         }
     }
     return flaws;
@@ -498,12 +489,12 @@ void Cegar::handle_flaw(const Flaw &flaw) {
         assert(other_index != collection_index);
         assert(projection_collection[other_index] != nullptr);
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << token << "var" << var << " is already in pattern "
+            utils::g_log << "var" << var << " is already in pattern "
                          << projection_collection[other_index]->get_pattern() << endl;
         }
         if (can_merge_patterns(collection_index, other_index)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << token << "merge the two patterns" << endl;
+                utils::g_log << "merge the two patterns" << endl;
             }
             merge_patterns(collection_index, other_index);
             added_var = true;
@@ -511,12 +502,12 @@ void Cegar::handle_flaw(const Flaw &flaw) {
     } else {
         // Variable is not yet in the collection.
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << token << "var" << var
+            utils::g_log << "var" << var
                          << " is not in the collection yet" << endl;
         }
         if (can_add_variable_to_pattern(collection_index, var)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << token << "add it to the pattern" << endl;
+                utils::g_log << "add it to the pattern" << endl;
             }
             add_variable_to_pattern(collection_index, var);
             added_var = true;
@@ -525,7 +516,7 @@ void Cegar::handle_flaw(const Flaw &flaw) {
 
     if (!added_var) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << token << "Could not add var/merge patterns due to size "
+            utils::g_log << "could not add var/merge patterns due to size "
                 "limits. Blacklisting." << endl;
         }
         blacklisted_variables.insert(var);
@@ -538,7 +529,7 @@ void Cegar::refine(const FlawList &flaws) {
     const Flaw &flaw = flaws[random_flaw_index];
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << token << "chosen flaw: pattern "
+        utils::g_log << "chosen flaw: pattern "
                      << projection_collection[flaw.collection_index]->get_pattern()
                      << " with a flaw on " << flaw.variable << endl;
     }
@@ -559,12 +550,10 @@ PatternCollectionInformation Cegar::run() {
         if (flaws.empty()) {
             if (verbosity >= utils::Verbosity::NORMAL) {
                 if (concrete_solution_index != -1) {
-                    utils::g_log << token
-                                 << "task solved during computation of abstract projection_collection"
+                    utils::g_log << "task solved during computation of abstraction."
                                  << endl;
                 } else {
-                    utils::g_log << token
-                                 << "Flaw list empty. No further refinements possible."
+                    utils::g_log << "flaw list empty. No further refinements possible."
                                  << endl;
                 }
             }
@@ -579,8 +568,8 @@ PatternCollectionInformation Cegar::run() {
         ++refinement_counter;
 
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << token << "current collection size: " << collection_size << endl;
-            utils::g_log << token << "current collection: ";
+            utils::g_log << "current collection size: " << collection_size << endl;
+            utils::g_log << "current collection: ";
             print_collection();
             utils::g_log << endl;
         }
@@ -607,11 +596,11 @@ PatternCollectionInformation Cegar::run() {
     }
 
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << token << "computation time: " << timer.get_elapsed_time() << endl;
-        utils::g_log << token << "number of iterations: " << refinement_counter << endl;
-        utils::g_log << token << "final collection: " << *patterns << endl;
-        utils::g_log << token << "final collection number of patterns: " << patterns->size() << endl;
-        utils::g_log << token << "final collection summed PDB sizes: " << collection_size << endl;
+        utils::g_log << "CEGAR computation time: " << timer.get_elapsed_time() << endl;
+        utils::g_log << "CEGAR number of iterations: " << refinement_counter << endl;
+        utils::g_log << "CEGAR final collection: " << *patterns << endl;
+        utils::g_log << "CEGAR final collection number of patterns: " << patterns->size() << endl;
+        utils::g_log << "CEGAR final collection summed PDB sizes: " << collection_size << endl;
     }
 
     PatternCollectionInformation pattern_collection_information(
@@ -668,13 +657,13 @@ PatternCollectionInformation cegar(
             }
         }
         if (!is_goal) {
-            cerr << " Given goal is not a goal of the task" << endl;
+            cerr << "given goal is not a goal of the task." << endl;
             utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
     }
 #endif
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Options of the CEGAR algorithm for computing a pattern collection: " << endl;
+        utils::g_log << "options of the CEGAR algorithm for computing a pattern collection: " << endl;
         utils::g_log << "max refinements: " << max_refinements << endl;
         utils::g_log << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << "max collection size: " << max_collection_size << endl;
