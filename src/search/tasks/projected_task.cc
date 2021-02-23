@@ -37,7 +37,7 @@ int ProjectedTask::convert_to_parent_variable(int var) const {
 
 FactPair ProjectedTask::convert_to_parent_fact(const FactPair &fact) const {
     return {
-        convert_to_parent_variable(fact.var), fact.value
+               convert_to_parent_variable(fact.var), fact.value
     };
 }
 
