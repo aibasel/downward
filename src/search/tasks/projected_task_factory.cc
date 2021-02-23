@@ -14,10 +14,10 @@ shared_ptr<AbstractTask> build_projected_task(
     vector<int> &&variables) {
     TaskProxy parent_proxy(*parent);
     if (task_properties::has_axioms(parent_proxy)) {
-        ABORT("DomainAbstractedTask doesn't support axioms.");
+        ABORT("ProjectedTask doesn't support axioms.");
     }
     if (task_properties::has_conditional_effects(parent_proxy)) {
-        ABORT("DomainAbstractedTask doesn't support conditional effects.");
+        ABORT("ProjectedTask doesn't support conditional effects.");
     }
 
     unordered_map<int, int> var_to_index;
