@@ -280,7 +280,7 @@ bool PatternDatabase::is_goal_state(
     return true;
 }
 
-size_t PatternDatabase::hash_index(const vector<int> &state) const {
+size_t PatternDatabase::hash_index_of_concrete_state(const vector<int> &state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
         index += hash_multipliers[i] * state[pattern[i]];
@@ -288,23 +288,19 @@ size_t PatternDatabase::hash_index(const vector<int> &state) const {
     return index;
 }
 
-size_t PatternDatabase::hash_index_abstracted(const State &abs_state) const {
+size_t PatternDatabase::hash_index_of_projected_state(const State &projected_state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
-        index += hash_multipliers[i] * abs_state[i].get_value();
+        index += hash_multipliers[i] * projected_state[i].get_value();
     }
     return index;
 }
 
 int PatternDatabase::get_value(const vector<int> &state) const {
-    return distances[hash_index(state)];
+    return distances[hash_index_of_concrete_state(state)];
 }
 
-int PatternDatabase::get_value_abstracted(const State &abstracted_state) const {
-    return distances[hash_index_abstracted(abstracted_state)];
-}
-
-int PatternDatabase::get_value_for_index(size_t index) const {
+int PatternDatabase::get_value_for_hash_index(size_t index) const {
     return distances[index];
 }
 

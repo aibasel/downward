@@ -97,7 +97,7 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
     // See feed for T=vector in utils/hash.h why we cannot use size_t here.
     utils::HashSet<uint64_t> closed;
     closed.insert(static_cast<uint64_t>(start_node->hash));
-    int h_start = pdb.get_value_for_index(start_node->hash);
+    int h_start = pdb.get_value_for_hash_index(start_node->hash);
     open.push(move(start_node));
     while (true) {
         shared_ptr<SearchNode> current_node = open.front();
@@ -114,9 +114,10 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
             OperatorProxy op = abs_task_proxy.get_operators()[op_id];
 //            utils::g_log << "applying op " << op.get_name() << endl;
             State successor = current_node->state.get_unregistered_successor(op);
-            size_t successor_index = pdb.get_abstract_state_index(successor);
+            size_t successor_index =
+                pdb.hash_index_of_projected_state(successor);
             if (!closed.count(static_cast<uint64_t>(successor_index))) {
-                int h_succ = pdb.get_value_for_index(successor_index);
+                int h_succ = pdb.get_value_for_hash_index(successor_index);
                 int op_cost = op.get_cost();
                 int g_succ = current_node->g + op_cost;
                 int f_succ = g_succ + h_succ;
@@ -172,8 +173,8 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
     vector<vector<OperatorID>> plan;
     State start = abs_task_proxy.get_initial_state();
     start.unpack();
-    size_t start_index = pdb.get_abstract_state_index(start);
-    const int f_star = pdb.get_value_for_index(start_index);
+    size_t start_index = pdb.hash_index_of_projected_state(start);
+    const int f_star = pdb.get_value_for_hash_index(start_index);
     if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << "Running EHC with start state " << start.get_unpacked_values() << endl;
     }

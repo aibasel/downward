@@ -140,12 +140,7 @@ class PatternDatabase {
       according abstract state. This is only used for table lookup
       (distances) during search.
     */
-    std::size_t hash_index(const std::vector<int> &state) const;
-    /*
-      The given state from the abstract state-space induced by the pattern
-      is used to calculate the state's index in the distances lookup-table.
-     */
-    std::size_t hash_index_abstracted(const State &abs_state) const;
+    std::size_t hash_index_of_concrete_state(const std::vector<int> &state) const;
 public:
     /*
       Important: It is assumed that the pattern (passed via Options) is
@@ -164,16 +159,18 @@ public:
         const std::vector<int> &operator_costs = std::vector<int>());
     ~PatternDatabase() = default;
 
+    /*
+      Like hash_index_of_concrete_state, compute the hash index of the
+      given state. However, the given state must be a State of a ProjectedTask
+      using pattern for the projected variables.
+    */
+    std::size_t hash_index_of_projected_state(const State &projected_state) const;
+
+    // Return the PDB value of the given concrete state.
     int get_value(const std::vector<int> &state) const;
 
-    int get_value_abstracted(const State &abstracted_state) const;
-
-    int get_value_for_index(std::size_t index) const;
-
-    // used for astar search in cegar pdbs
-    std::size_t get_abstract_state_index(const State &abstracted_state) const {
-        return hash_index_abstracted(abstracted_state);
-    }
+    // Return the PDB value of a state with the given hash index.
+    int get_value_for_hash_index(std::size_t index) const;
 
     // Returns the pattern (i.e. all variables used) of the PDB
     const Pattern &get_pattern() const {

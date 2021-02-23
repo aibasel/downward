@@ -71,8 +71,9 @@ static unique_ptr<Projection> compute_projection(
 
     bool unsolvable = false;
     vector<vector<OperatorID>> plan;
-    int init_goal_dist =
-        pdb->get_value_abstracted(projected_task_proxy.get_initial_state());
+    size_t initial_state_index = pdb->hash_index_of_projected_state(
+        projected_task_proxy.get_initial_state());
+    int init_goal_dist = pdb->get_value_for_hash_index(initial_state_index);
     if (init_goal_dist == numeric_limits<int>::max()) {
         unsolvable = true;
         if (verbosity >= utils::Verbosity::VERBOSE) {
