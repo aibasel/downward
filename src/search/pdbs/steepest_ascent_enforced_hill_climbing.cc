@@ -94,8 +94,9 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
     start_node->predecessor = nullptr;
 //    utils::g_log << "Running BFS with start state " << start_node->state.get_values() << endl;
     queue<shared_ptr<SearchNode>> open;
-    utils::HashSet<size_t> closed;
-    closed.insert(start_node->hash);
+    // See feed for T=vector in utils/hash.h why we cannot use size_t here.
+    utils::HashSet<uint64_t> closed;
+    closed.insert(static_cast<uint64_t>(start_node->hash));
     int h_start = pdb.get_value_for_index(start_node->hash);
     open.push(move(start_node));
     while (true) {
@@ -114,7 +115,7 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
 //            utils::g_log << "applying op " << op.get_name() << endl;
             State successor = current_node->state.get_unregistered_successor(op);
             size_t successor_index = pdb.get_abstract_state_index(successor);
-            if (!closed.count(successor_index)) {
+            if (!closed.count(static_cast<uint64_t>(successor_index))) {
                 int h_succ = pdb.get_value_for_index(successor_index);
                 int op_cost = op.get_cost();
                 int g_succ = current_node->g + op_cost;
@@ -124,7 +125,7 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
                     shared_ptr<SearchNode> succ_node =
                         make_shared<SearchNode>(
                             move(successor), successor_index, g_succ, op_cost, current_node);
-                    assert(!closed.count(successor_index));
+                    assert(!closed.count(static_cast<uint64_t>(successor_index)));
 
                     if (task_properties::is_goal_state(abs_task_proxy, succ_node->state)) {
                         h_succ = -1;
@@ -134,7 +135,7 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
                         best_improving_succ_node = succ_node;
                     }
 
-                    closed.insert(successor_index);
+                    closed.insert(static_cast<uint64_t>(successor_index));
                     open.push(succ_node);
                 }
             }
