@@ -4,28 +4,29 @@
 #include "delegating_task.h"
 
 namespace extra_tasks {
+/*
+  Task transformation for performing a projection.
+
+  We recommend using the factory function in
+  projected_task_factory.h for creating ProjectedTasks.
+*/
 class ProjectedTask : public tasks::DelegatingTask {
-    const std::vector<int> &pattern;
+    // Variable IDs and operator indices of the parent task.
+    std::vector<int> variables;
     std::vector<int> operator_indices;
+
+    // For each operator index, store the operator's preconditions and effects.
     std::vector<std::vector<FactPair>> operator_preconditions;
     std::vector<std::vector<FactPair>> operator_effects;
+
     std::vector<FactPair> goals;
 
-    /*
-      Convert variable index of the abstracted task to
-      the index of the same variable in the original task.
-     */
-    int get_original_variable_index(int index_in_pattern) const;
-    //int get_abstracted_operator_index(int index_in_original) const;
-    /*
-      Convenience functions for changing the context of a
-      given fact between the original and abstracted tasks.
-     */
-    FactPair convert_from_pattern_fact(const FactPair &fact) const;
+    int convert_to_parent_variable(int var) const;
+    FactPair convert_to_parent_fact(const FactPair &fact) const;
 public:
     ProjectedTask(
         const std::shared_ptr<AbstractTask> &parent,
-        std::vector<int> &&pattern,
+        std::vector<int> &&variables,
         std::vector<int> &&operator_indices,
         std::vector<std::vector<FactPair>> &&operator_preconditions,
         std::vector<std::vector<FactPair>> &&operator_effects,
@@ -56,11 +57,14 @@ public:
         int op_index, int eff_index, bool is_axiom) const override;
     virtual int convert_operator_index_to_parent(int index) const override;
 
+    virtual int get_num_axioms() const override;
+
     virtual int get_num_goals() const override;
     virtual FactPair get_goal_fact(int index) const override;
 
     virtual std::vector<int> get_initial_state_values() const override;
 
+    // TODO: should this rather override convert_state_values_from_parent?
     void convert_parent_state_values(std::vector<int> &values) const;
 };
 }

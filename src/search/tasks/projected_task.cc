@@ -1,71 +1,73 @@
 #include "projected_task.h"
 
+#include "../utils/collections.h"
 #include "../utils/system.h"
 
 #include <algorithm>
+#include <cassert>
 
 using namespace std;
 
 namespace extra_tasks {
 ProjectedTask::ProjectedTask(
     const shared_ptr<AbstractTask> &parent,
-    vector<int> &&pattern,
+    vector<int> &&variables,
     vector<int> &&operator_indices,
     vector<std::vector<FactPair>> &&operator_preconditions,
     vector<std::vector<FactPair>> &&operator_effects,
     vector<FactPair> &&goals)
     : DelegatingTask(parent),
-      pattern(move(pattern)),
+      variables(move(variables)),
       operator_indices(move(operator_indices)),
       operator_preconditions(move(operator_preconditions)),
       operator_effects(move(operator_effects)),
       goals(move(goals)) {
 }
 
-int ProjectedTask::get_original_variable_index(int index_in_pattern) const {
-    assert(index_in_pattern >= 0 &&
-           static_cast<unsigned>(index_in_pattern) < pattern.size());
-    return pattern[index_in_pattern];
+int ProjectedTask::convert_to_parent_variable(int var) const {
+    assert(utils::in_bounds(var, variables));
+    return variables[var];
 }
 
-FactPair ProjectedTask::convert_from_pattern_fact(const FactPair &fact) const {
+FactPair ProjectedTask::convert_to_parent_fact(const FactPair &fact) const {
     return {
-       get_original_variable_index(fact.var), fact.value
+        convert_to_parent_variable(fact.var), fact.value
     };
 }
 
 int ProjectedTask::get_num_variables() const {
-    return pattern.size();
+    return variables.size();
 }
 
 string ProjectedTask::get_variable_name(int var) const {
-    int index = get_original_variable_index(var);
+    int index = convert_to_parent_variable(var);
     return parent->get_variable_name(index);
 }
 
 int ProjectedTask::get_variable_domain_size(int var) const {
-    int index = get_original_variable_index(var);
+    int index = convert_to_parent_variable(var);
     return parent->get_variable_domain_size(index);
 }
 
 int ProjectedTask::get_variable_axiom_layer(int var) const {
-    int index = get_original_variable_index(var);
+    int index = convert_to_parent_variable(var);
     return parent->get_variable_axiom_layer(index);
 }
 
 int ProjectedTask::get_variable_default_axiom_value(int var) const {
-    int index = get_original_variable_index(var);
+    int index = convert_to_parent_variable(var);
     return parent->get_variable_default_axiom_value(index);
 }
 
 string ProjectedTask::get_fact_name(const FactPair &fact) const {
-    return parent->get_fact_name(convert_from_pattern_fact(fact));
+    return parent->get_fact_name(convert_to_parent_fact(fact));
 }
 
 bool ProjectedTask::are_facts_mutex(
     const FactPair &fact1, const FactPair &fact2) const {
-    return parent->are_facts_mutex(convert_from_pattern_fact(fact1),
-                                   convert_from_pattern_fact(fact2));
+    return parent->are_facts_mutex(
+        convert_to_parent_fact(fact1),
+        convert_to_parent_fact(fact2));
 }
 
 int ProjectedTask::get_operator_cost(int index, bool is_axiom) const {
@@ -99,8 +101,7 @@ int ProjectedTask::get_num_operator_effects(
     return operator_effects[op_index].size();
 }
 
-int ProjectedTask::get_num_operator_effect_conditions(
-    int, int, bool) const {
+int ProjectedTask::get_num_operator_effect_conditions(int, int, bool) const {
     return 0;
 }
 
@@ -116,8 +117,13 @@ FactPair ProjectedTask::get_operator_effect(
 }
 
 int ProjectedTask::convert_operator_index_to_parent(int index) const {
-    assert(index >= 0 && static_cast<unsigned>(index) < operator_indices.size());
+    assert(utils::in_bounds(index, operator_indices));
     return operator_indices[index];
+}
+
+int ProjectedTask::get_num_axioms() const {
+    assert(parent->get_num_axioms() == 0);
+    return 0;
 }
 
 int ProjectedTask::get_num_goals() const {
@@ -137,7 +143,8 @@ vector<int> ProjectedTask::get_initial_state_values() const {
 void ProjectedTask::convert_parent_state_values(
     vector<int> &values) const {
     vector<int> converted;
-    for (int var : pattern) {
+    converted.reserve(values.size());
+    for (int var : variables) {
         converted.push_back(values[var]);
     }
     values.swap(converted);
