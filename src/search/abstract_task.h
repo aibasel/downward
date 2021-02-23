@@ -52,7 +52,6 @@ inline void feed(HashState &hash_state, const FactPair &fact) {
 }
 }
 
-
 class AbstractTask : public subscriber::SubscriberService<AbstractTask> {
 public:
     AbstractTask() = default;
@@ -107,5 +106,12 @@ public:
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const = 0;
 };
+
+/*
+  This method is only supposed to be used from within AbstractTasks.
+  If a user of a task needs this functionality, they should use
+  has_conditional_effects(TaskProxy) from task_tools.h instead.
+*/
+extern bool has_conditional_effects(const AbstractTask &task);
 
 #endif

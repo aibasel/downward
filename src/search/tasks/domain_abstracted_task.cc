@@ -5,27 +5,6 @@
 using namespace std;
 
 namespace extra_tasks {
-/*
-  If we need the same functionality again in another task, we can move this to
-  actract_task.h. We should then document that this method is only supposed to
-  be used from within AbstractTasks. More high-level users should use
-  has_conditional_effects(TaskProxy) from task_tools.h instead.
-*/
-static bool has_conditional_effects(const AbstractTask &task) {
-    int num_ops = task.get_num_operators();
-    for (int op_index = 0; op_index < num_ops; ++op_index) {
-        int num_effs = task.get_num_operator_effects(op_index, false);
-        for (int eff_index = 0; eff_index < num_effs; ++eff_index) {
-            int num_conditions = task.get_num_operator_effect_conditions(
-                op_index, eff_index, false);
-            if (num_conditions > 0) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 DomainAbstractedTask::DomainAbstractedTask(
     const shared_ptr<AbstractTask> &parent,
     vector<int> &&domain_size,

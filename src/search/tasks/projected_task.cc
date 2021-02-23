@@ -22,6 +22,12 @@ ProjectedTask::ProjectedTask(
       operator_preconditions(move(operator_preconditions)),
       operator_effects(move(operator_effects)),
       goals(move(goals)) {
+    if (parent->get_num_axioms() > 0) {
+        ABORT("ProjectedTask doesn't support axioms.");
+    }
+    if (has_conditional_effects(*parent)) {
+        ABORT("ProjectedTask doesn't support conditional effects.");
+    }
 }
 
 int ProjectedTask::convert_to_parent_variable(int var) const {
@@ -107,8 +113,7 @@ int ProjectedTask::get_num_operator_effect_conditions(int, int, bool) const {
 
 FactPair ProjectedTask::get_operator_effect_condition(
     int, int, int, bool) const {
-    cerr << "get_operator_effect_condition is not supported yet." << endl;
-    utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    ABORT("ProjectedTask doesn't support conditional effects.");
 }
 
 FactPair ProjectedTask::get_operator_effect(
