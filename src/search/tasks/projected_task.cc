@@ -3,7 +3,6 @@
 #include "../utils/collections.h"
 #include "../utils/system.h"
 
-#include <algorithm>
 #include <cassert>
 
 using namespace std;
@@ -141,11 +140,11 @@ FactPair ProjectedTask::get_goal_fact(int index) const {
 
 vector<int> ProjectedTask::get_initial_state_values() const {
     vector<int> values = parent->get_initial_state_values();
-    convert_parent_state_values(values);
+    convert_state_values_from_parent(values);
     return values;
 }
 
-void ProjectedTask::convert_parent_state_values(
+void ProjectedTask::convert_state_values_from_parent(
     vector<int> &values) const {
     vector<int> converted;
     converted.reserve(values.size());

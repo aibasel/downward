@@ -102,7 +102,7 @@ public:
       it should create the new vector in a local variable and then swap it with
       the parameter.
     */
-    virtual void convert_state_values(
+    virtual void convert_ancestor_state_values(
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const = 0;
 };

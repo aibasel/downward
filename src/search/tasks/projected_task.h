@@ -64,8 +64,7 @@ public:
 
     virtual std::vector<int> get_initial_state_values() const override;
 
-    // TODO: should this rather override convert_state_values_from_parent?
-    void convert_parent_state_values(std::vector<int> &values) const;
+    virtual void convert_state_values_from_parent(std::vector<int> &values) const override;
 };
 }
 
