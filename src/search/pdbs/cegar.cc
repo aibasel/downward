@@ -83,7 +83,7 @@ static unique_ptr<Projection> compute_projection(
     } else {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "Computing plan for PDB with pattern "
-                         << pattern << endl;
+                         << pdb->get_pattern() << endl;
         }
 
         plan = steepest_ascent_enforced_hill_climbing(
@@ -685,6 +685,11 @@ PatternCollectionInformation cegar(
         }
         utils::g_log << endl;
         utils::g_log << "max time: " << max_time << endl;
+        utils::g_log << "goal variables: ";
+        for (const FactPair &goal : goals) {
+            utils::g_log << goal.var << ", ";
+        }
+        utils::g_log << endl;
         utils::g_log << "blacklisted variables: ";
         if (blacklisted_variables.empty()) {
             utils::g_log << "none";
