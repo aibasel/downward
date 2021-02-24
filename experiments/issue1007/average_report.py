@@ -10,12 +10,13 @@ class AverageAlgorithmReport(PlanningReport):
     """
     This currently only works for some hard-coded attributes.
     """
-    def __init__(self, algo_name_suffixes, directory, **kwargs):
+    def __init__(self, algo_name_suffixes, **kwargs):
         PlanningReport.__init__(self, **kwargs)
         self.algo_name_suffixes=algo_name_suffixes
-        self.directory=directory
 
     def get_text(self):
+        if not self.outfile.endswith("properties"):
+            raise ValueError("outfile must be a path to a properties file")
         algo_infixes = set()
         for algo in self.algorithms:
             for suffix in self.algo_name_suffixes:
@@ -25,7 +26,7 @@ class AverageAlgorithmReport(PlanningReport):
         # print algo_infixes
         # print self.algo_name_suffixes
         # print os.path.join(self.directory, 'properties')
-        props = tools.Properties(os.path.join(self.directory, 'properties'))
+        props = tools.Properties(self.outfile)
         for domain, problem in self.problem_runs.keys():
             for algo in algo_infixes:
                 # print "Consider ", algo
@@ -58,5 +59,4 @@ class AverageAlgorithmReport(PlanningReport):
                         exit(1)
                     average_algo_dict[attribute] = average_value
                 props[properties_key] = average_algo_dict
-        props.write()
-        return ''
+        return str(props)
