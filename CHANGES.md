@@ -57,7 +57,8 @@ after the corresponding tracker issues.
   USE_GLIBCXX_DEBUG. The build configurations debugnolp and releasenolp have
   been removed, and the build configuration glibcxx_debug has been added.
 
-  
+- Fix a bug in the computation of RHW landmarks
+  <http://issues.fast-downward.org/issue1004>
 
 ## Fast Downward 20.06
 
