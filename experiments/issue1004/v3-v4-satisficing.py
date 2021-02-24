@@ -72,7 +72,7 @@ exp.add_parser("landmark_parser.py")
 ATTRIBUTES = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [
     Attribute("landmarks", min_wins=False),
     Attribute("landmarks_disjunctive", min_wins=False),
-    Attribute("landmarks_conjunctiv", min_wins=False),
+    Attribute("landmarks_conjunctive", min_wins=False),
     Attribute("orderings", min_wins=False),
     Attribute("lmgraph_generation_time"),
 ]
