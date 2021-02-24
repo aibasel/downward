@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
+# For Windows we require CMake 3.12, but this is currently not
+# available for Ubuntu 18.04.
 
 if(NOT FAST_DOWNWARD_MAIN_CMAKELISTS_READ)
     message(
@@ -40,6 +42,7 @@ endif()
 
 # On Windows, find the psapi library for determining peak memory.
 if(WIN32)
+    cmake_policy(SET CMP0074 NEW)
     target_link_libraries(downward psapi)
 endif()
 

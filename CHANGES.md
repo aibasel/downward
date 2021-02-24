@@ -28,6 +28,7 @@ after the corresponding tracker issues.
 - For developers: move functionality used during search away from
   LandmarkGraph, making it constant after creation.
   <http://issues.fast-downward.org/issue988>
+  <http://issues.fast-downward.org/issue1000>
 
 - For developers: new state class
   <http://issues.fast-downward.org/issue348>
@@ -56,6 +57,13 @@ after the corresponding tracker issues.
   or LP solvers are disabled, it can be enabled by setting the CMake option
   USE_GLIBCXX_DEBUG. The build configurations debugnolp and releasenolp have
   been removed, and the build configuration glibcxx_debug has been added.
+
+- For developers: decide on rules regarding software support and
+  improve Github actions accordingly
+  <http://issues.fast-downward.org/issue1003>
+  
+- For developers: add CPLEX support to our GitHub Actions for Windows
+  <http://issues.fast-downward.org/issue1005>
 
 - Fix a bug in the computation of RHW landmarks
   <http://issues.fast-downward.org/issue1004>

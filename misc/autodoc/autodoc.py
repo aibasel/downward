@@ -125,7 +125,7 @@ def insert_wiki_links(text, titles):
     return text
 
 def build_planner(build):
-    subprocess.check_call(["./build.py", build, "downward"], cwd=REPO_ROOT_DIR)
+    subprocess.check_call([sys.executable, "build.py", build, "downward"], cwd=REPO_ROOT_DIR)
 
 def get_pages_from_planner(build):
     out = subprocess.check_output(

@@ -1,7 +1,5 @@
 #include "landmark_status_manager.h"
 
-#include "landmark_graph.h"
-
 #include "../utils/logging.h"
 
 using namespace std;
@@ -15,12 +13,6 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : reached_lms(vector<bool>(graph.get_num_landmarks(), true)),
       lm_status(graph.get_num_landmarks(), lm_not_reached),
       lm_graph(graph) {
-}
-
-landmark_status LandmarkStatusManager::get_landmark_status(
-    size_t id) const {
-    assert(static_cast<int>(id) < lm_graph.get_num_landmarks());
-    return lm_status[id];
 }
 
 BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {
@@ -115,15 +107,13 @@ bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_stat
 void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
     const BitsetView reached = get_reached_landmarks(ancestor_state);
 
-    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
-
+    const int num_landmarks = lm_graph.get_num_landmarks();
     /* This first loop is necessary as setup for the *needed again*
        check in the second loop. */
-    for (int id = 0; id < lm_graph.get_num_landmarks(); ++id) {
+    for (int id = 0; id < num_landmarks; ++id) {
         lm_status[id] = reached.test(id) ? lm_reached : lm_not_reached;
     }
-    for (auto &node : nodes) {
-        int id = node->get_id();
+    for (int id = 0; id < num_landmarks; ++id) {
         if (lm_status[id] == lm_reached
             && landmark_needed_again(id, ancestor_state)) {
             lm_status[id] = lm_needed_again;
