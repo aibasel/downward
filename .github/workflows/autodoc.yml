@@ -6,7 +6,7 @@ on: [push]
 jobs:
   autodoc:
     name: Autodoc
-    if: github.repository == 'PatrickFerber/downward'
+    if: github.repository == 'aibasel/downward'
     timeout-minutes: 60
     runs-on: ubuntu-20.04
     env:
