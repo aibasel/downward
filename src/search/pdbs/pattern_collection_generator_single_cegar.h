@@ -14,19 +14,18 @@ enum class Verbosity;
 
 namespace pdbs {
 class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator {
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
     const int max_refinements;
     const int max_pdb_size;
     const int max_collection_size;
     const bool wildcard_plans;
-    const int blacklist_size;
-    const utils::Verbosity verbosity;
     const double max_time;
+    const utils::Verbosity verbosity;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 public:
     explicit PatternCollectionGeneratorSingleCegar(const options::Options &opts);
-    virtual ~PatternCollectionGeneratorSingleCegar();
+    virtual ~PatternCollectionGeneratorSingleCegar() = default;
 
-    PatternCollectionInformation generate(
+    virtual PatternCollectionInformation generate(
         const std::shared_ptr<AbstractTask> &task) override;
 };
 }
