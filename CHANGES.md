@@ -65,6 +65,9 @@ after the corresponding tracker issues.
 - For developers: add CPLEX support to our GitHub Actions for Windows
   <http://issues.fast-downward.org/issue1005>
 
+- Fix a bug in the computation of RHW landmarks
+  <http://issues.fast-downward.org/issue1004>
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
