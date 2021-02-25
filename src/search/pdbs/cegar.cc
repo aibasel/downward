@@ -64,7 +64,7 @@ static unique_ptr<Projection> compute_projection(
         move(pdb), move(plan), unsolvable);
 }
 
-void Cegar::print_collection() const {
+void CEGAR::print_collection() const {
     utils::g_log << "[";
     for (size_t i = 0; i < projection_collection.size(); ++i) {
         const unique_ptr<Projection> &projection = projection_collection[i];
@@ -78,7 +78,7 @@ void Cegar::print_collection() const {
     utils::g_log << "]" << endl;
 }
 
-void Cegar::compute_initial_collection() {
+void CEGAR::compute_initial_collection() {
     assert(!goals.empty());
     for (const FactPair &goal : goals) {
         add_pattern_for_var(goal.var);
@@ -91,7 +91,7 @@ void Cegar::compute_initial_collection() {
     }
 }
 
-bool Cegar::time_limit_reached(
+bool CEGAR::time_limit_reached(
     const utils::CountdownTimer &timer) const {
     if (timer.is_expired()) {
         if (verbosity >= utils::Verbosity::NORMAL) {
@@ -102,7 +102,7 @@ bool Cegar::time_limit_reached(
     return false;
 }
 
-bool Cegar::termination_conditions_met(
+bool CEGAR::termination_conditions_met(
     const utils::CountdownTimer &timer, int refinement_counter) const {
     if (time_limit_reached(timer)) {
         return true;
@@ -141,7 +141,7 @@ State get_unregistered_successor(
     return State(*task, move(new_values));
 }
 
-FlawList Cegar::apply_plan(int collection_index, State &current) const {
+FlawList CEGAR::apply_plan(int collection_index, State &current) const {
     FlawList flaws;
     Projection &projection = *projection_collection[collection_index];
     const vector<vector<OperatorID>> &plan = projection.get_plan();
@@ -200,7 +200,7 @@ FlawList Cegar::apply_plan(int collection_index, State &current) const {
     return flaws;
 }
 
-FlawList Cegar::get_flaws_for_projection(
+FlawList CEGAR::get_flaws_for_projection(
     int collection_index, const State &concrete_init) {
     const Projection &projection = *projection_collection[collection_index];
     if (projection.is_unsolvable()) {
@@ -255,7 +255,7 @@ FlawList Cegar::get_flaws_for_projection(
     return flaws;
 }
 
-FlawList Cegar::get_flaws() {
+FlawList CEGAR::get_flaws() {
     FlawList flaws;
     State concrete_init = task_proxy.get_initial_state();
     for (size_t collection_index = 0;
@@ -279,7 +279,7 @@ FlawList Cegar::get_flaws() {
     return flaws;
 }
 
-void Cegar::add_pattern_for_var(int var) {
+void CEGAR::add_pattern_for_var(int var) {
     projection_collection.push_back(
         compute_projection(
             task, {var}, rng, wildcard_plans, verbosity));
@@ -287,7 +287,7 @@ void Cegar::add_pattern_for_var(int var) {
     collection_size += projection_collection.back()->get_pdb()->get_size();
 }
 
-bool Cegar::can_merge_patterns(int index1, int index2) const {
+bool CEGAR::can_merge_patterns(int index1, int index2) const {
     int pdb_size1 = projection_collection[index1]->get_pdb()->get_size();
     int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
     if (!utils::is_product_within_limit(pdb_size1, pdb_size2, max_pdb_size)) {
@@ -297,7 +297,7 @@ bool Cegar::can_merge_patterns(int index1, int index2) const {
     return collection_size + added_size <= max_collection_size;
 }
 
-void Cegar::merge_patterns(int index1, int index2) {
+void CEGAR::merge_patterns(int index1, int index2) {
     // Merge projection at index2 into projection at index2.
     Projection &projection1 = *projection_collection[index1];
     Projection &projection2 = *projection_collection[index2];
@@ -331,7 +331,7 @@ void Cegar::merge_patterns(int index1, int index2) {
     projection_collection[index2] = nullptr;
 }
 
-bool Cegar::can_add_variable_to_pattern(int index, int var) const {
+bool CEGAR::can_add_variable_to_pattern(int index, int var) const {
     int pdb_size = projection_collection[index]->get_pdb()->get_size();
     int domain_size = task_proxy.get_variables()[var].get_domain_size();
     if (!utils::is_product_within_limit(pdb_size, domain_size, max_pdb_size)) {
@@ -341,7 +341,7 @@ bool Cegar::can_add_variable_to_pattern(int index, int var) const {
     return collection_size + added_size <= max_collection_size;
 }
 
-void Cegar::add_variable_to_pattern(int collection_index, int var) {
+void CEGAR::add_variable_to_pattern(int collection_index, int var) {
     const Projection &projection = *projection_collection[collection_index];
 
     Pattern new_pattern(projection.get_pattern());
@@ -358,7 +358,7 @@ void Cegar::add_variable_to_pattern(int collection_index, int var) {
     projection_collection[collection_index] = move(new_projection);
 }
 
-void Cegar::handle_flaw(const Flaw &flaw) {
+void CEGAR::handle_flaw(const Flaw &flaw) {
     int collection_index = flaw.collection_index;
     int var = flaw.variable;
     bool added_var = false;
@@ -403,7 +403,7 @@ void Cegar::handle_flaw(const Flaw &flaw) {
     }
 }
 
-void Cegar::refine(const FlawList &flaws) {
+void CEGAR::refine(const FlawList &flaws) {
     assert(!flaws.empty());
     int random_flaw_index = (*rng)(flaws.size());
     const Flaw &flaw = flaws[random_flaw_index];
@@ -416,7 +416,7 @@ void Cegar::refine(const FlawList &flaws) {
     handle_flaw(flaw);
 }
 
-PatternCollectionInformation Cegar::run() {
+PatternCollectionInformation CEGAR::compute_pattern_collection() {
     utils::CountdownTimer timer(max_time);
     compute_initial_collection();
     int refinement_counter = 0;
@@ -489,7 +489,7 @@ PatternCollectionInformation Cegar::run() {
     return pattern_collection_information;
 }
 
-Cegar::Cegar(
+CEGAR::CEGAR(
     int max_refinements,
     int max_pdb_size,
     int max_collection_size,

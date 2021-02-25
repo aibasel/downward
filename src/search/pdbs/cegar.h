@@ -75,7 +75,7 @@ struct Flaw {
 
 using FlawList = std::vector<Flaw>;
 
-class Cegar {
+class CEGAR {
     const int max_refinements;
     const int max_pdb_size;
     const int max_collection_size;
@@ -127,7 +127,7 @@ class Cegar {
     void handle_flaw(const Flaw &flaw);
     void refine(const FlawList &flaws);
 public:
-    Cegar(
+    CEGAR(
         int max_refinements,
         int max_pdb_size,
         int max_collection_size,
@@ -138,8 +138,7 @@ public:
         const std::shared_ptr<AbstractTask> &task,
         std::vector<FactPair> &&goals,
         std::unordered_set<int> &&blacklisted_variables = std::unordered_set<int>());
-
-    PatternCollectionInformation run();
+    PatternCollectionInformation compute_pattern_collection();
 };
 
 extern void add_cegar_options_to_parser(

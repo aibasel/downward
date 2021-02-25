@@ -106,17 +106,18 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 
         int remaining_collection_size = total_collection_max_size - collection_size;
         double remaining_time = total_time_limit - timer.get_elapsed_time();
-        auto collection_info = Cegar(
+        auto collection_info = CEGAR(
             cegar_max_refinements,
             cegar_max_pdb_size,
             min(remaining_collection_size, cegar_max_collection_size),
             cegar_wildcard_plans,
             min(remaining_time, cegar_max_time),
             cegar_verbosity,
-            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
+            make_shared<utils::RandomNumberGenerator>(
+                initial_random_seed + num_iterations),
             task,
             {goals[goal_index]},
-            move(blacklisted_variables)).run();
+            move(blacklisted_variables)).compute_pattern_collection();
         auto pattern_collection = collection_info.get_patterns();
         auto pdb_collection = collection_info.get_pdbs();
         if (pdb_collection->size() > 1) {
@@ -136,7 +137,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             shared_ptr<PatternDatabase> &pdb = pdb_collection->front();
             collection_size += pdb->get_size();
             if (total_collection_max_size - collection_size <= 0) {
-                // This happens because a single CEGAR run can violate the
+                // This happens because a single CEGAR compute_pattern_collection can violate the
                 // imposed size limit if already the given goal variable is
                 // too large.
                 if (verbosity >= utils::Verbosity::NORMAL) {

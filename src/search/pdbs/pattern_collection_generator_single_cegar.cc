@@ -32,7 +32,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     }
     rng->shuffle(goals);
 
-    return Cegar(
+    return CEGAR(
         max_refinements,
         max_pdb_size,
         max_collection_size,
@@ -41,7 +41,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         verbosity,
         rng,
         task,
-        move(goals)).run();
+        move(goals)).compute_pattern_collection();
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(
