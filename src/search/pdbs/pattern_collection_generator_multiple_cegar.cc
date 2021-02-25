@@ -112,12 +112,11 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             min(remaining_collection_size, cegar_max_collection_size),
             cegar_wildcard_plans,
             min(remaining_time, cegar_max_time),
+            cegar_verbosity,
+            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
             task,
             {goals[goal_index]},
-            move(blacklisted_variables),
-            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
-            cegar_verbosity
-            );
+            move(blacklisted_variables));
         auto pattern_collection = collection_info.get_patterns();
         auto pdb_collection = collection_info.get_pdbs();
         if (pdb_collection->size() > 1) {

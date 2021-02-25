@@ -38,11 +38,10 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         max_collection_size,
         wildcard_plans,
         max_time,
-        task,
-        move(goals),
-        {}, // Empty blacklist.
+        verbosity,
         rng,
-        verbosity);
+        task,
+        move(goals));
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(

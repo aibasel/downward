@@ -21,11 +21,11 @@ extern PatternCollectionInformation cegar(
     int max_collection_size,
     bool wildcard_plans,
     double max_time,
+    utils::Verbosity verbosity,
+    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     const std::shared_ptr<AbstractTask> &task,
     std::vector<FactPair> &&goals,
-    std::unordered_set<int> &&blacklisted_variables,
-    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
-    utils::Verbosity verbosity);
+    std::unordered_set<int> &&blacklisted_variables = std::unordered_set<int>());
 
 extern void add_cegar_options_to_parser(
     options::OptionParser &parser);

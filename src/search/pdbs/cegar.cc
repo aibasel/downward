@@ -123,12 +123,12 @@ class Cegar {
     const int max_collection_size;
     const bool wildcard_plans;
     const double max_time;
+    const utils::Verbosity verbosity;
+    shared_ptr<utils::RandomNumberGenerator> rng;
     const shared_ptr<AbstractTask> &task;
     const TaskProxy task_proxy;
     const vector<FactPair> goals;
     unordered_set<int> blacklisted_variables;
-    shared_ptr<utils::RandomNumberGenerator> rng;
-    const utils::Verbosity verbosity;
 
     vector<unique_ptr<Projection>> projection_collection;
     /*
@@ -175,11 +175,11 @@ public:
         int max_collection_size,
         bool wildcard_plans,
         double max_time,
+        utils::Verbosity verbosity,
+        const shared_ptr<utils::RandomNumberGenerator> &rng,
         const shared_ptr<AbstractTask> &task,
         vector<FactPair> &&goals,
-        unordered_set<int> &&blacklisted_variables,
-        const shared_ptr<utils::RandomNumberGenerator> &rng,
-        utils::Verbosity verbosity);
+        unordered_set<int> &&blacklisted_variables);
 
     PatternCollectionInformation run();
 };
@@ -615,22 +615,22 @@ Cegar::Cegar(
     int max_collection_size,
     bool wildcard_plans,
     double max_time,
+    utils::Verbosity verbosity,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
     vector<FactPair> &&goals,
-    unordered_set<int> &&blacklisted_variables,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    utils::Verbosity verbosity)
+    unordered_set<int> &&blacklisted_variables)
     : max_refinements(max_refinements),
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
       max_time(max_time),
+      verbosity(verbosity),
+      rng(rng),
       task(task),
       task_proxy(*task),
       goals(move(goals)),
       blacklisted_variables(move(blacklisted_variables)),
-      rng(rng),
-      verbosity(verbosity),
       collection_size(0),
       concrete_solution_index(-1) {
 }
@@ -641,11 +641,11 @@ PatternCollectionInformation cegar(
     int max_collection_size,
     bool wildcard_plans,
     double max_time,
+    utils::Verbosity verbosity,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
     vector<FactPair> &&goals,
-    unordered_set<int> &&blacklisted_variables,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    utils::Verbosity verbosity) {
+    unordered_set<int> &&blacklisted_variables) {
 #ifndef NDEBUG
     TaskProxy task_proxy(*task);
     for (const FactPair &goal : goals) {
@@ -701,18 +701,10 @@ PatternCollectionInformation cegar(
         utils::g_log << endl;
     }
 
-    Cegar cegar(
-        max_refinements,
-        max_pdb_size,
-        max_collection_size,
-        wildcard_plans,
-        max_time,
-        task,
-        move(goals),
-        move(blacklisted_variables),
-        rng,
-        verbosity);
-    return cegar.run();
+    return Cegar(
+        max_refinements, max_pdb_size, max_collection_size, wildcard_plans,
+        max_time, verbosity, rng, task, move(goals),
+        move(blacklisted_variables)).run();
 }
 
 void add_cegar_options_to_parser(options::OptionParser &parser) {
