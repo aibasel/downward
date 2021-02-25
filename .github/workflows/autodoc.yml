@@ -1,0 +1,30 @@
+---
+name: Autodoc
+
+on: [push]
+
+jobs:
+  autodoc:
+    name: Autodoc
+    timeout-minutes: 60
+    runs-on: ubuntu-20.04
+    env:
+      DOWNWARD_AUTODOC_PASSWORD: ${{ secrets.DOWNWARD_AUTODOC_PASSWORD }}
+    steps:
+      - name: Clone repository
+        if: ${{ env.DOWNWARD_AUTODOC_PASSWORD != 0}}
+        uses: actions/checkout@master
+
+      - name: Install Python
+        if: ${{ env.DOWNWARD_AUTODOC_PASSWORD != 0}}
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.8
+
+      - name: Run Autodoc
+        if: ${{ env.DOWNWARD_AUTODOC_PASSWORD != 0}}
+        run: |
+          cd misc/autodoc
+          python3 autodoc.py
+
+...
