@@ -69,7 +69,7 @@ public:
         return solved;
     }
 };
-    
+
 struct Flaw {
     int collection_index;
     int variable;
@@ -138,7 +138,7 @@ class CEGAR {
      */
     FlawList apply_plan(int collection_index, State &current) const;
     FlawList get_flaws_for_projection(
-            int collection_index, const State &concrete_init);
+        int collection_index, const State &concrete_init);
     FlawList get_flaws();
 
     // Methods related to refining.
