@@ -162,7 +162,7 @@ FlawList CEGAR::apply_plan(int collection_index, State &current) const {
             for (FactProxy precondition : op.get_preconditions()) {
                 int var = precondition.get_variable().get_id();
 
-                // Ignore blacklisted variables
+                // Ignore blacklisted variables.
                 if (blacklisted_variables.count(var)) {
                     continue;
                 }
@@ -267,7 +267,7 @@ FlawList CEGAR::get_flaws() {
             if (concrete_solution_index != -1) {
                 assert(concrete_solution_index == static_cast<int>(collection_index));
                 assert(new_flaws.empty());
-                // Return empty flaws to terminating the algorithm.
+                // Return empty flaws to terminate the algorithm.
                 flaws.clear();
                 return flaws;
             }

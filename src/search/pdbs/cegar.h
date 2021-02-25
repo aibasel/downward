@@ -22,6 +22,13 @@ class RandomNumberGenerator;
 }
 
 namespace pdbs {
+/*
+  This is used as a "collection entry" in the CEGAR algorithm. It stores
+  the PDB (and with that, the pattern) and an optimal plan (in the wildcard
+  format) for that PDB if it exists or unsolvable is true otherwise. It can
+  be marked as "solved" to ignore it in further iterations of the CEGAR
+  algorithm.
+*/
 class Projection {
     std::shared_ptr<PatternDatabase> pdb;
     std::vector<std::vector<OperatorID>> plan;
@@ -75,6 +82,22 @@ struct Flaw {
 
 using FlawList = std::vector<Flaw>;
 
+/*
+  This class implements the CEGAR algorithm for computing pattern collections.
+
+  In a nutshell, it receives a concrete task plus a (sub)set of its goal in a
+  randomized order. Starting from the pattern collection consisting of a
+  singleton pattern for each goal variable, it repeatedly attempts to execute
+  an optimal plan of each pattern in the concrete task, collects reasons if
+  this is not possible (so-called flaws) and refines the pattern in question
+  by adding a variable to it.
+
+  Further parameters allow blacklisting a (sub)set of the non-goal variables
+  which are then never added to the collection, limiting PDB and collection
+  size, setting a time limit and switching between computing regular or
+  wildcard plans, where the latter are sequences of parallel operators
+  inducing the same abstract transition.
+*/
 class CEGAR {
     const int max_refinements;
     const int max_pdb_size;
@@ -103,7 +126,7 @@ class CEGAR {
     void compute_initial_collection();
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
     bool termination_conditions_met(
-            const utils::CountdownTimer &timer, int refinement_counter) const;
+        const utils::CountdownTimer &timer, int refinement_counter) const;
 
     /*
       Try to apply the plan of the projection at the given index in the
