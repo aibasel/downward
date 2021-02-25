@@ -106,7 +106,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 
         int remaining_collection_size = total_collection_max_size - collection_size;
         double remaining_time = total_time_limit - timer.get_elapsed_time();
-        auto collection_info = cegar(
+        auto collection_info = Cegar(
             cegar_max_refinements,
             cegar_max_pdb_size,
             min(remaining_collection_size, cegar_max_collection_size),
@@ -116,7 +116,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
             task,
             {goals[goal_index]},
-            move(blacklisted_variables));
+            move(blacklisted_variables)).run();
         auto pattern_collection = collection_info.get_patterns();
         auto pdb_collection = collection_info.get_pdbs();
         if (pdb_collection->size() > 1) {
