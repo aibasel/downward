@@ -1,12 +1,15 @@
 ---
 name: Autodoc
 
-on: [push]
+on:
+  push:
+    branches:
+      - issue1013
 
 jobs:
   autodoc:
     name: Autodoc
-    if: github.repository == 'aibasel/downward'
+    if: github.repository == 'PatrickFerber/downward'
     timeout-minutes: 60
     runs-on: ubuntu-20.04
     env:
@@ -20,7 +23,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Run Autodoc
+      - name: Run autodoc
         run: |
           cd misc/autodoc
           python3 autodoc.py
