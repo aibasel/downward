@@ -301,7 +301,7 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(
             'publish-absolute-report', subprocess.call, ['publish', outfile])
 
-    def add_comparison_table_step(self, **kwargs):
+    def add_comparison_table_step(self, name="make-comparison-tables", revisions=[], **kwargs):
         """Add a step that makes pairwise revision comparisons.
 
         Create comparative reports for all pairs of Fast Downward
@@ -317,9 +317,11 @@ class IssueExperiment(FastDownwardExperiment):
 
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
+        if not revisions:
+            revisions = self._revisions
 
         def make_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self._revisions, 2):
+            for rev1, rev2 in itertools.combinations(revisions, 2):
                 compared_configs = []
                 for config in self._configs:
                     config_nick = config.nick
@@ -335,15 +337,15 @@ class IssueExperiment(FastDownwardExperiment):
                 report(self.eval_dir, outfile)
 
         def publish_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self._revisions, 2):
+            for rev1, rev2 in itertools.combinations(revisions, 2):
                 outfile = os.path.join(
                     self.eval_dir,
                     "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
                 subprocess.call(["publish", outfile])
 
-        self.add_step("make-comparison-tables", make_comparison_tables)
+        self.add_step(name, make_comparison_tables)
         self.add_step(
-            "publish-comparison-tables", publish_comparison_tables)
+            f"publish-{name}", publish_comparison_tables)
 
     def add_scatter_plot_step(self, relative=False, attributes=None, additional=[]):
         """Add step creating (relative) scatter plots for all revision pairs.

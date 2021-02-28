@@ -56,28 +56,82 @@ exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 
-exp.add_fetcher('data/issue1007-v4-multiple-seeds-eval',merge=True)
-exp._revisions=["issue1007-v4", "issue1007-v5"]
 exp.add_absolute_report_step(attributes=['coverage'])
+
+### compare against v4
+exp.add_fetcher('data/issue1007-v4-multiple-seeds-eval',merge=True,filter_algorithm=[
+    'issue1007-v4-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+] + [
+    'issue1007-v4-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+])
 
 exp.add_report(
     AverageAlgorithmReport(
         algo_name_suffixes=['-s{}'.format(seed) for seed in range(2018,2028)],
         attributes=['coverage', 'search_time', 'total_time',
-        'expansions_until_last_jump']
+        'expansions_until_last_jump'],
+        filter_algorithm=[
+            'issue1007-v4-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ] + [
+            'issue1007-v4-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ] + [
+            'issue1007-v5-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ] + [
+            'issue1007-v5-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ],
     ),
-    outfile=os.path.join(exp.eval_dir, "average", "properties"),
-    name="report-average"
+    outfile=os.path.join(exp.eval_dir, "average-v4-v5", "properties"),
+    name="report-average-v4-v5"
 )
 
-exp.add_fetcher('data/issue1007-v5-multiple-seeds-eval/average', merge=True)
+exp.add_fetcher('data/issue1007-v5-multiple-seeds-eval/average-v4-v5', merge=True)
 exp._configs = [
     IssueConfig('cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100', []),
     IssueConfig('cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4', []),
 ]
 exp.add_comparison_table_step(
     attributes=['coverage', 'search_time', 'total_time',
-    'expansions_until_last_jump']
+    'expansions_until_last_jump'],
+    name="compare-v4-v5",
+    revisions=["issue1007-v4", "issue1007-v5"],
+)
+
+### compare against v4-b
+exp.add_fetcher('data/issue1007-v4-b-multiple-seeds-eval',merge=True,filter_algorithm=[
+    'issue1007-v4-b-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+] + [
+    'issue1007-v4-b-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+])
+
+exp.add_report(
+    AverageAlgorithmReport(
+        algo_name_suffixes=['-s{}'.format(seed) for seed in range(2018,2028)],
+        attributes=['coverage', 'search_time', 'total_time',
+        'expansions_until_last_jump'],
+        filter_algorithm=[
+            'issue1007-v4-b-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ] + [
+            'issue1007-v4-b-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ] + [
+            'issue1007-v5-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ] + [
+            'issue1007-v5-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+        ],
+    ),
+    outfile=os.path.join(exp.eval_dir, "average-v4-b-v5", "properties"),
+    name="report-average-v4-b-v5"
+)
+
+exp.add_fetcher('data/issue1007-v5-multiple-seeds-eval/average-v4-b-v5', merge=True)
+exp._configs = [
+    IssueConfig('cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100', []),
+    IssueConfig('cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4', []),
+]
+exp.add_comparison_table_step(
+    attributes=['coverage', 'search_time', 'total_time',
+    'expansions_until_last_jump'],
+    name="compare-v4-b-v5",
+    revisions=["issue1007-v4-b", "issue1007-v5"],
 )
 
 exp.run_steps()
