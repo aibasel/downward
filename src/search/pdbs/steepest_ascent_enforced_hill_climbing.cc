@@ -179,7 +179,7 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
     const int f_star = pdb.get_value_for_hash_index(start_index);
     if (verbosity >= utils::Verbosity::DEBUG) {
         utils::g_log << "Running steepest ascent EHC with start state "
-            << start.get_unpacked_values() << endl;
+                     << start.get_unpacked_values() << endl;
     }
 
     successor_generator::SuccessorGenerator succ_gen(abs_task_proxy);
@@ -188,7 +188,7 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
     while (!task_properties::is_goal_state(abs_task_proxy, start_node->state)) {
         if (verbosity >= utils::Verbosity::DEBUG) {
             utils::g_log << "Current start state of iteration: "
-                << start_node->state.get_unpacked_values() << endl;
+                         << start_node->state.get_unpacked_values() << endl;
         }
         // start_node will be set to the last node of the BFS, thus containing
         // the improving state for the next iteration, and the updated g-value.
