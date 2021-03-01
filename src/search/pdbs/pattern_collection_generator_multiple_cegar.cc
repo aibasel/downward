@@ -6,13 +6,9 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_proxy.h"
-
-#include "../tasks/root_task.h"
 
 #include "../utils/countdown_timer.h"
-#include "../utils/hash.h"
-#include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -30,11 +26,11 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
       cegar_max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       initial_random_seed(opts.get<int>("initial_random_seed")),
-      total_collection_max_size(opts.get<int>("total_collection_max_size")),
+      total_max_collection_size(opts.get<int>("total_max_collection_size")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
       blacklist_trigger_time(opts.get<double>("blacklist_trigger_time")),
       blacklist_on_stagnation(opts.get<bool>("blacklist_on_stagnation")),
-      total_time_limit(opts.get<double>("total_time_limit")) {
+      total_max_time(opts.get<double>("total_max_time")) {
 }
 
 PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
@@ -44,7 +40,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     }
     TaskProxy task_proxy(*task);
 
-    utils::CountdownTimer timer(total_time_limit);
+    utils::CountdownTimer timer(total_max_time);
     shared_ptr<PatternCollection> union_patterns = make_shared<PatternCollection>();
     shared_ptr<PDBCollection> union_pdbs = make_shared<PDBCollection>();
     utils::HashSet<Pattern> pattern_set; // for checking if a pattern is already in collection
@@ -86,7 +82,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         // or if blacklisting was forced due to stagnation
         int blacklist_size = 0;
         if (force_blacklisting ||
-            timer.get_elapsed_time() / total_time_limit > blacklist_trigger_time) {
+            timer.get_elapsed_time() / total_max_time > blacklist_trigger_time) {
             blacklist_size = static_cast<int>(num_vars * rng());
             force_blacklisting = true;
         }
@@ -104,8 +100,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             blacklisted_variables.insert(var_id);
         }
 
-        int remaining_collection_size = total_collection_max_size - collection_size;
-        double remaining_time = total_time_limit - timer.get_elapsed_time();
+        int remaining_collection_size = total_max_collection_size - collection_size;
+        double remaining_time = total_max_time - timer.get_elapsed_time();
         auto collection_info = CEGAR(
             cegar_max_refinements,
             cegar_max_pdb_size,
@@ -136,7 +132,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             // decrease size limit
             shared_ptr<PatternDatabase> &pdb = pdb_collection->front();
             collection_size += pdb->get_size();
-            if (total_collection_max_size - collection_size <= 0) {
+            if (total_max_collection_size - collection_size <= 0) {
                 // This happens because a single CEGAR compute_pattern_collection can violate the
                 // imposed size limit if already the given goal variable is
                 // too large.
@@ -227,43 +223,62 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {
+    parser.document_synopsis(
+        "Multiple CEGAR",
+        "This pattern collection generator implements the multiple CEGAR algorithm "
+        "described in the paper" + utils::format_conference_reference(
+            {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
+            "Counterexample-Guided Abstraction Refinement for Pattern Selection "
+            "in Optimal Classical Planning",
+            "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
+            "Proceedings of the 29th International Conference on Automated "
+            "Planning and Scheduling (ICAPS 2019)",
+            "362-367",
+            "AAAI Press",
+            "2019"));
     parser.add_option<int>(
         "initial_random_seed",
-        "seed for the random number generator(s) of the cegar generators", "10");
+        "seed for the random number generator used by the multiple CEGAR "
+        "algorithm itself and for the first call to the CEGAR algorithm. "
+        "Subsequent such calls will use a random number generator seeded with "
+        "random seeds increased by 1 after each call.",
+        "2019",
+        Bounds("1", "infinity"));
     parser.add_option<int>(
-        "total_collection_max_size",
-        "max. number of entries in the final collection",
-        "infinity"
-        );
+        "total_max_collection_size",
+        "maximal number of states in the pattern collection maintained by the "
+        "multiple CEGAR algorithm. This potentially overrides the limit "
+        "specified for the CEGAR algorithm.",
+        "infinity",
+        Bounds("1", "infinity"));
     parser.add_option<double>(
-        "total_time_limit",
-        "time budget for PDB collection generation",
-        "25.0"
-        );
+        "total_max_time",
+        "maximum time in seconds for the multiple CEGAR algorithm. The "
+        "algorithm will always execute at least one iteration, i.e., call the "
+        "CEGAR algorithm once. This limit possibly overrides the limit "
+        "specified for the CEGAR algorithm.",
+        "100.0",
+        Bounds("0.0", "infinity"));
     parser.add_option<double>(
         "stagnation_limit",
-        "max. time the algorithm waits for the introduction of a new pattern."
-        " Execution finishes prematurely if no new, unique pattern"
-        " could be added to the collection during this time.",
-        "5.0"
-        );
+        "maximum time in seconds the multiple CEGAR algorithm allows without "
+        "generating a new pattern through the CEGAR algorithm. The multiple "
+        "CEGAR algorithm terminates prematurely if this limit is hit unless "
+        "blacklist_on_stagnation is enabled.",
+        "20.0",
+        Bounds("0.0", "infinity"));
     parser.add_option<double>(
         "blacklist_trigger_time",
-        "time given as percentage of overall time_limit,"
-        " after which blacklisting (for diversification) is enabled."
-        " E.g. blacklist_trigger_time=0.5 will trigger blacklisting"
-        " once half of the total time has passed.",
-        "1.0",
-        Bounds("0.0", "1.0")
-        );
+        "percentage of total_max_time after which the multiple CEGAR "
+        "algorithm enables blacklisting for diversification",
+        "0.75",
+        Bounds("0.0", "1.0"));
     parser.add_option<bool>(
         "blacklist_on_stagnation",
-        "whether the algorithm forces blacklisting to start early if"
-        " stagnation_limit is crossed (instead of aborting)."
-        " The algorithm still aborts if stagnation_limit is"
-        " reached for the second time.",
-        "true"
-        );
+        "If true, the multiple CEGAR algorithm will enable blacklisting for "
+        "diverification when stagnation_limit is hit for the first time and "
+        "terminate when stagnation_limit is hit for the second time.",
+        "true");
 
     utils::add_verbosity_option_to_parser(parser);
     add_cegar_options_to_parser(parser);

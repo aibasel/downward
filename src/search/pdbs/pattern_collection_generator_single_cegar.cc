@@ -5,6 +5,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/markup.h"
 #include "../utils/rng_options.h"
 
 using namespace std;
@@ -45,6 +46,19 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
 
 static shared_ptr<PatternCollectionGenerator> _parse(
     options::OptionParser &parser) {
+    parser.document_synopsis(
+        "Single CEGAR",
+        "This pattern collection generator implements the single CEGAR algorithm "
+        "described in the paper" + utils::format_conference_reference(
+            {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
+            "Counterexample-Guided Abstraction Refinement for Pattern Selection "
+            "in Optimal Classical Planning",
+            "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
+            "Proceedings of the 29th International Conference on Automated "
+            "Planning and Scheduling (ICAPS 2019)",
+            "362-367",
+            "AAAI Press",
+            "2019"));
     add_cegar_options_to_parser(parser);
     utils::add_verbosity_option_to_parser(parser);
     utils::add_rng_options(parser);

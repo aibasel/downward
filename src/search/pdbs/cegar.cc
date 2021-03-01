@@ -571,30 +571,33 @@ CEGAR::CEGAR(
 void add_cegar_options_to_parser(options::OptionParser &parser) {
     parser.add_option<int>(
         "max_refinements",
-        "maximum allowed number of refinements",
+        "maximum allowed number of refinement calls of the CEGAR algorithm",
         "infinity",
         Bounds("0", "infinity"));
     parser.add_option<int>(
         "max_pdb_size",
-        "maximum allowed number of states in a pdb (not applied to initial "
-        "goal variable pattern(s))",
-        "1000000",
+        "maximum number of states per pattern database (ignored for the "
+        "initial collection consisting of singleton patterns for each goal "
+        "variable)",
+        "2000000",
         Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_collection_size",
-        "limit for the total number of PDB entries across all PDBs (not "
-        "applied to initial goal variable pattern(s))",
-        "infinity",
+        "maximum number of states in the pattern collection (ignored for the "
+        "initial collection consisting of singleton patterns for each goal "
+        "variable)",
+        "20000000",
         Bounds("1", "infinity"));
     parser.add_option<bool>(
         "wildcard_plans",
-        "Make the algorithm work with wildcard rather than regular plans.",
+        "if true, compute wildcard plans which are sequences of sets of "
+        "operators that induce the same transition; otherwise compute regular "
+        "plans which are sequences of single operators",
         "true");
     parser.add_option<double>(
         "max_time",
-        "maximum time in seconds for CEGAR pattern generation. "
-        "This includes the creation of the initial PDB collection"
-        " as well as the creation of the correlation matrix.",
+        "maximum time in seconds for the CEGAR algorithm (ignored for"
+        "computing initial collection)",
         "infinity",
         Bounds("0.0", "infinity"));
 }
