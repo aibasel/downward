@@ -89,10 +89,9 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
     const PatternDatabase &pdb,
     int f_star,
     shared_ptr<SearchNode> &start_node) {
-    // Start node may have been used in earlier iteration, so we reset it here
+    // Start node may have been used in earlier iteration, so we reset it here.
     start_node->cost = -1;
     start_node->predecessor = nullptr;
-//    utils::g_log << "Running BFS with start state " << start_node->state.get_values() << endl;
     queue<shared_ptr<SearchNode>> open;
     // See feed for T=vector in utils/hash.h why we cannot use size_t here.
     utils::HashSet<uint64_t> closed;
@@ -143,23 +142,26 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
         }
         if (best_improving_succ_node) {
             start_node = best_improving_succ_node;
-            return extract_plan(abs_task_proxy, succ_gen, rng, compute_wildcard_plan, best_improving_succ_node);
+            return extract_plan(
+                abs_task_proxy, succ_gen, rng, compute_wildcard_plan,
+                best_improving_succ_node);
         }
     }
 }
 
-static void print_plan(const TaskProxy &abs_task_proxy,
-                       const PatternDatabase &pdb,
-                       const vector<vector<OperatorID>> &plan) {
+static void print_plan(
+    const TaskProxy &abs_task_proxy,
+    const PatternDatabase &pdb,
+    const vector<vector<OperatorID>> &plan) {
     utils::g_log << "##### Plan for pattern " << pdb.get_pattern() << " #####" << endl;
-    int i = 1;
-    for (const auto &eqv_ops : plan) {
-        utils::g_log << "step #" << i << endl;
-        for (OperatorID opid : eqv_ops) {
-            OperatorProxy op = abs_task_proxy.get_operators()[opid];
+    int step = 1;
+    for (const vector<OperatorID> &equivalent_ops : plan) {
+        utils::g_log << "step #" << step << endl;
+        for (OperatorID op_id : equivalent_ops) {
+            OperatorProxy op = abs_task_proxy.get_operators()[op_id];
             utils::g_log << op.get_name() << " " << op.get_cost() << endl;
         }
-        ++i;
+        ++step;
     }
     utils::g_log << "##### End of plan #####" << endl;
 }
@@ -175,22 +177,26 @@ vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
     start.unpack();
     size_t start_index = pdb.hash_index_of_projected_state(start);
     const int f_star = pdb.get_value_for_hash_index(start_index);
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "Running steepest ascent EHC with start state " << start.get_unpacked_values() << endl;
+    if (verbosity >= utils::Verbosity::DEBUG) {
+        utils::g_log << "Running steepest ascent EHC with start state "
+            << start.get_unpacked_values() << endl;
     }
 
     successor_generator::SuccessorGenerator succ_gen(abs_task_proxy);
     shared_ptr<SearchNode> start_node =
         make_shared<SearchNode>(move(start), start_index, 0, -1, nullptr);
     while (!task_properties::is_goal_state(abs_task_proxy, start_node->state)) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "Current start state of iteration: " << start_node->state.get_unpacked_values() << endl;
+        if (verbosity >= utils::Verbosity::DEBUG) {
+            utils::g_log << "Current start state of iteration: "
+                << start_node->state.get_unpacked_values() << endl;
         }
         // start_node will be set to the last node of the BFS, thus containing
         // the improving state for the next iteration, and the updated g-value.
         vector<vector<OperatorID>> plateau_plan =
-            bfs_for_improving_state(abs_task_proxy, succ_gen, rng, compute_wildcard_plan, pdb, f_star, start_node);
-        if (verbosity >= utils::Verbosity::VERBOSE) {
+            bfs_for_improving_state(
+                abs_task_proxy, succ_gen, rng, compute_wildcard_plan, pdb,
+                f_star, start_node);
+        if (verbosity >= utils::Verbosity::DEBUG) {
             utils::g_log << "BFS wildcard plan to next improving state: " << endl;
             print_plan(abs_task_proxy, pdb, plateau_plan);
         }
