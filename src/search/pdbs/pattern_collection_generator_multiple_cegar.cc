@@ -1,7 +1,6 @@
 #include "pattern_collection_generator_multiple_cegar.h"
 
 #include "cegar.h"
-
 #include "pattern_database.h"
 
 #include "../option_parser.h"
@@ -19,14 +18,14 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     options::Options &opts)
-    : cegar_max_refinements(opts.get<int>("max_refinements")),
-      cegar_max_pdb_size(opts.get<int>("max_pdb_size")),
-      cegar_max_collection_size(opts.get<int>("max_collection_size")),
-      cegar_wildcard_plans(opts.get<bool>("wildcard_plans")),
+    : max_refinements(opts.get<int>("max_refinements")),
+      max_pdb_size(opts.get<int>("max_pdb_size")),
+      max_collection_size(opts.get<int>("max_collection_size")),
+      wildcard_plans(opts.get<bool>("wildcard_plans")),
       cegar_max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
-      initial_random_seed(opts.get<int>("initial_random_seed")),
-      total_max_collection_size(opts.get<int>("total_max_collection_size")),
+      rng(utils::parse_rng_from_options(opts)),
+      random_seed(opts.get<int>("random_seed")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
       blacklist_trigger_time(opts.get<double>("blacklist_trigger_time")),
       blacklist_on_stagnation(opts.get<bool>("blacklist_on_stagnation")),
@@ -44,13 +43,12 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     shared_ptr<PatternCollection> union_patterns = make_shared<PatternCollection>();
     shared_ptr<PDBCollection> union_pdbs = make_shared<PDBCollection>();
     utils::HashSet<Pattern> pattern_set; // for checking if a pattern is already in collection
-    utils::RandomNumberGenerator rng(initial_random_seed);
 
     vector<FactPair> goals;
     for (FactProxy goal : task_proxy.get_goals()) {
         goals.push_back(goal.get_pair());
     }
-    rng.shuffle(goals);
+    rng->shuffle(goals);
 
     int num_vars = task_proxy.get_variables().size();
     vector<int> non_goal_variables;
@@ -83,11 +81,11 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         int blacklist_size = 0;
         if (force_blacklisting ||
             timer.get_elapsed_time() / total_max_time > blacklist_trigger_time) {
-            blacklist_size = static_cast<int>(num_vars * rng());
+            blacklist_size = static_cast<int>(num_vars * (*rng)());
             force_blacklisting = true;
         }
 
-        rng.shuffle(non_goal_variables);
+        rng->shuffle(non_goal_variables);
         unordered_set<int> blacklisted_variables;
         // Select a random subset of non goals.
         for (size_t i = 0;
@@ -100,17 +98,23 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             blacklisted_variables.insert(var_id);
         }
 
-        int remaining_collection_size = total_max_collection_size - collection_size;
+        int remaining_collection_size = max_collection_size - collection_size;
         double remaining_time = total_max_time - timer.get_elapsed_time();
+        /*
+          Call CEGAR with the remaining size budget (limiting one of pdb and
+          collection size would be enough, but this is cleaner), with the
+          remaining time limit and an RNG instance with a different random
+          seed in each iteration.
+        */
         auto collection_info = CEGAR(
-            cegar_max_refinements,
-            cegar_max_pdb_size,
-            min(remaining_collection_size, cegar_max_collection_size),
-            cegar_wildcard_plans,
+            max_refinements,
+            min(remaining_collection_size, max_collection_size),
+            min(remaining_collection_size, max_collection_size),
+            wildcard_plans,
             min(remaining_time, cegar_max_time),
             cegar_verbosity,
             make_shared<utils::RandomNumberGenerator>(
-                initial_random_seed + num_iterations),
+                random_seed + num_iterations),
             task,
             {goals[goal_index]},
             move(blacklisted_variables)).compute_pattern_collection();
@@ -132,7 +136,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             // decrease size limit
             shared_ptr<PatternDatabase> &pdb = pdb_collection->front();
             collection_size += pdb->get_size();
-            if (total_max_collection_size - collection_size <= 0) {
+            if (max_collection_size - collection_size <= 0) {
                 // This happens because a single CEGAR compute_pattern_collection can violate the
                 // imposed size limit if already the given goal variable is
                 // too large.
@@ -236,21 +240,6 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
             "362-367",
             "AAAI Press",
             "2019"));
-    parser.add_option<int>(
-        "initial_random_seed",
-        "seed for the random number generator used by the multiple CEGAR "
-        "algorithm itself and for the first call to the CEGAR algorithm. "
-        "Subsequent such calls will use a random number generator seeded with "
-        "random seeds increased by 1 after each call.",
-        "2019",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "total_max_collection_size",
-        "maximal number of states in the pattern collection maintained by the "
-        "multiple CEGAR algorithm. This potentially overrides the limit "
-        "specified for the CEGAR algorithm.",
-        "infinity",
-        Bounds("1", "infinity"));
     parser.add_option<double>(
         "total_max_time",
         "maximum time in seconds for the multiple CEGAR algorithm. The "
@@ -276,12 +265,12 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
     parser.add_option<bool>(
         "blacklist_on_stagnation",
         "If true, the multiple CEGAR algorithm will enable blacklisting for "
-        "diverification when stagnation_limit is hit for the first time and "
+        "diversification when stagnation_limit is hit for the first time and "
         "terminate when stagnation_limit is hit for the second time.",
         "true");
-
-    utils::add_verbosity_option_to_parser(parser);
     add_cegar_options_to_parser(parser);
+    utils::add_verbosity_option_to_parser(parser);
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run()) {
