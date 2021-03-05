@@ -27,7 +27,7 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
     // We store the random seed for creating different RNG objects for CEGAR.
     const int random_seed;
     const double stagnation_limit;
-    const double blacklist_trigger_time;
+    const double blacklist_trigger_percentage;
     const bool blacklist_on_stagnation;
     const double total_max_time;
 public:
