@@ -88,7 +88,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             stagnation_start_time = -1;
             if (verbosity >= utils::Verbosity::NORMAL) {
                 utils::g_log << "Multiple CEGAR: given percentage of total "
-                    << "time limit exhausted; enabling blacklisting." << endl;
+                             << "time limit exhausted; enabling blacklisting."
+                             << endl;
             }
         }
 
@@ -147,7 +148,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 */
                 if (verbosity >= utils::Verbosity::NORMAL) {
                     utils::g_log << "Multiple CEGAR: Total collection size "
-                        << "limit reached." << endl;
+                                 << "limit reached." << endl;
                 }
                 break;
             }
@@ -172,14 +173,14 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
                 if (blacklisting) {
                     if (verbosity >= utils::Verbosity::NORMAL) {
                         utils::g_log << "Multiple CEGAR: Stagnation limit "
-                            << "reached despite blacklisting. Terminating."
-                            << endl;
+                                     << "reached despite blacklisting. Terminating."
+                                     << endl;
                     }
                     break;
                 } else {
                     if (verbosity >= utils::Verbosity::NORMAL) {
                         utils::g_log << "Multiple CEGAR: Stagnation limit "
-                            << "reached. Enabling blacklisting." << endl;
+                                     << "reached. Enabling blacklisting." << endl;
                     }
                     blacklisting = true;
                     stagnation_start_time = -1;
@@ -187,7 +188,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             } else {
                 if (verbosity >= utils::Verbosity::NORMAL) {
                     utils::g_log << "Multiple CEGAR: Stagnation limit "
-                        << "reached. Terminating. " << endl;
+                                 << "reached. Terminating. " << endl;
                 }
                 break;
             }
