@@ -94,7 +94,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         }
 
         unordered_set<int> blacklisted_variables;
-        if (blacklisting && non_goal_variables.size() > 0) {
+        if (blacklisting && !non_goal_variables.empty()) {
             // Blacklist a random subset of non goals.
             int blacklist_size = (*rng)(non_goal_variables.size());
             rng->shuffle(non_goal_variables);
