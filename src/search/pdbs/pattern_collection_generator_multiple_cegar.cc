@@ -65,6 +65,15 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         }
     }
 
+    if (verbosity >= utils::Verbosity::DEBUG) {
+        utils::g_log << "goal variables: ";
+        for (auto goal : goals) {
+            utils::g_log << goal.var << ", ";
+        }
+        utils::g_log << endl;
+        utils::g_log << "non-goal variables: " << non_goal_variables << endl;
+    }
+
     // Collect all unique patterns and their PDBs.
     utils::HashSet<Pattern> generated_patterns;
     shared_ptr<PDBCollection> generated_pdbs = make_shared<PDBCollection>();
@@ -95,12 +104,27 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 
         unordered_set<int> blacklisted_variables;
         if (blacklisting && !non_goal_variables.empty()) {
-            // Blacklist a random subset of non goals.
+            /*
+              Randomize the number of non-goal variables for blacklisting.
+              We want to choose at least 1 non-goal variable and up to the
+              entire set of non-goal variables.
+            */
             int blacklist_size = (*rng)(non_goal_variables.size());
+            ++blacklist_size; // [1, |non-goal variables|]
             rng->shuffle(non_goal_variables);
             for (int i = 0; i < blacklist_size; ++i) {
                 int var_id = non_goal_variables[i];
                 blacklisted_variables.insert(var_id);
+            }
+            if (verbosity >= utils::Verbosity::DEBUG) {
+                utils::g_log << "Multiple CEGAR: blacklisting "
+                             << blacklist_size << " out of "
+                             << non_goal_variables.size()
+                             << " non-goal variables: ";
+                for (int var : blacklisted_variables) {
+                    utils::g_log << var << ", ";
+                }
+                utils::g_log << endl;
             }
         }
 
@@ -132,6 +156,10 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         }
 
         const Pattern &pattern = new_patterns->front();
+        if (verbosity >= utils::Verbosity::DEBUG) {
+            utils::g_log << "Multiple CEGAR: generated pattern "
+                         << pattern << endl;
+        }
         if (generated_patterns.insert(pattern).second) {
             // CEGAR generated a new pattern. Reset stagnation_start_time.
             stagnation_start_time = -1;
