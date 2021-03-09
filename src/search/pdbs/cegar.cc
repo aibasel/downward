@@ -2,6 +2,7 @@
 
 #include "steepest_ascent_enforced_hill_climbing.h"
 #include "types.h"
+#include "utils.h"
 
 #include "../option_parser.h"
 
@@ -430,10 +431,10 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         if (flaws.empty()) {
             if (verbosity >= utils::Verbosity::NORMAL) {
                 if (concrete_solution_index != -1) {
-                    utils::g_log << "task solved during computation of abstraction."
+                    utils::g_log << "task solved during computation of abstraction"
                                  << endl;
                 } else {
-                    utils::g_log << "flaw list empty. No further refinements possible."
+                    utils::g_log << "flaw list empty. No further refinements possible"
                                  << endl;
                 }
             }
@@ -475,17 +476,19 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         }
     }
 
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "CEGAR computation time: " << timer.get_elapsed_time() << endl;
-        utils::g_log << "CEGAR number of iterations: " << refinement_counter << endl;
-        utils::g_log << "CEGAR final collection: " << *patterns << endl;
-        utils::g_log << "CEGAR final collection number of patterns: " << patterns->size() << endl;
-        utils::g_log << "CEGAR final collection summed PDB sizes: " << collection_size << endl;
-    }
-
     PatternCollectionInformation pattern_collection_information(
         task_proxy, patterns);
     pattern_collection_information.set_pdbs(pdbs);
+
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "CEGAR number of iterations: " << refinement_counter << endl;
+        dump_pattern_collection_generation_statistics(
+            "CEGAR",
+            timer.get_elapsed_time(),
+            pattern_collection_information,
+            collection_size);
+    }
+
     return pattern_collection_information;
 }
 
