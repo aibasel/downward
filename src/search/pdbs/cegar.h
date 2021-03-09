@@ -166,6 +166,9 @@ public:
 
 extern void add_cegar_options_to_parser(
     options::OptionParser &parser);
+
+extern std::vector<FactPair> get_goals_in_random_order(
+    const TaskProxy &task_proxy, const std::shared_ptr<utils::RandomNumberGenerator> &rng);
 }
 
 #endif

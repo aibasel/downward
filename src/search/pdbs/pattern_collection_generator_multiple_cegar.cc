@@ -43,11 +43,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     utils::CountdownTimer timer(total_max_time);
 
     // Store the set of goals in random order.
-    vector<FactPair> goals;
-    for (FactProxy goal : task_proxy.get_goals()) {
-        goals.push_back(goal.get_pair());
-    }
-    rng->shuffle(goals);
+    vector<FactPair> goals = get_goals_in_random_order(task_proxy, rng);
 
     // Store the non-goal variables for potential blacklisting.
     int num_vars = task_proxy.get_variables().size();
