@@ -404,10 +404,10 @@ void CEGAR::refine(const FlawList &flaws) {
 PatternCollectionInformation CEGAR::compute_pattern_collection() {
     utils::CountdownTimer timer(max_time);
     compute_initial_collection();
-    int refinement_counter = 0;
+    int iteration = 1;
     while (!time_limit_reached(timer)) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "iteration #" << refinement_counter + 1 << endl;
+            utils::g_log << "iteration #" << iteration << endl;
         }
 
         FlawList flaws = get_flaws();
@@ -426,7 +426,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         }
 
         refine(flaws);
-        ++refinement_counter;
+        ++iteration;
 
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "current collection size: " << collection_size << endl;
@@ -461,7 +461,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     pattern_collection_information.set_pdbs(pdbs);
 
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "CEGAR number of iterations: " << refinement_counter << endl;
+        utils::g_log << "CEGAR number of iterations: " << iteration << endl;
         dump_pattern_collection_generation_statistics(
             "CEGAR",
             timer.get_elapsed_time(),
