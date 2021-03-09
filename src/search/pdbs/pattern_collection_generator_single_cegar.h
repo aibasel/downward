@@ -14,7 +14,6 @@ enum class Verbosity;
 
 namespace pdbs {
 class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator {
-    const int max_refinements;
     const int max_pdb_size;
     const int max_collection_size;
     const bool wildcard_plans;

@@ -103,22 +103,6 @@ bool CEGAR::time_limit_reached(
     return false;
 }
 
-bool CEGAR::termination_conditions_met(
-    const utils::CountdownTimer &timer, int refinement_counter) const {
-    if (time_limit_reached(timer)) {
-        return true;
-    }
-
-    if (refinement_counter == max_refinements) {
-        if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << "maximum allowed number of refinements reached." << endl;
-        }
-        return true;
-    }
-
-    return false;
-}
-
 /*
   TODO: this is a duplicate of State::get_unregistered_successor.
   The reason is that we may apply operators even though they are not
@@ -421,7 +405,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     utils::CountdownTimer timer(max_time);
     compute_initial_collection();
     int refinement_counter = 0;
-    while (!termination_conditions_met(timer, refinement_counter)) {
+    while (!time_limit_reached(timer)) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "iteration #" << refinement_counter + 1 << endl;
         }
@@ -438,10 +422,6 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
                                  << endl;
                 }
             }
-            break;
-        }
-
-        if (time_limit_reached(timer)) {
             break;
         }
 
@@ -493,7 +473,6 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
 }
 
 CEGAR::CEGAR(
-    int max_refinements,
     int max_pdb_size,
     int max_collection_size,
     bool wildcard_plans,
@@ -503,8 +482,7 @@ CEGAR::CEGAR(
     const shared_ptr<AbstractTask> &task,
     vector<FactPair> &&goals,
     unordered_set<int> &&blacklisted_variables)
-    : max_refinements(max_refinements),
-      max_pdb_size(max_pdb_size),
+    : max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
       max_time(max_time),
@@ -533,7 +511,6 @@ CEGAR::CEGAR(
 #endif
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "options of the CEGAR algorithm for computing a pattern collection: " << endl;
-        utils::g_log << "max refinements: " << max_refinements << endl;
         utils::g_log << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << "max collection size: " << max_collection_size << endl;
         utils::g_log << "wildcard plans: " << wildcard_plans << endl;
@@ -572,11 +549,6 @@ CEGAR::CEGAR(
 }
 
 void add_cegar_options_to_parser(options::OptionParser &parser) {
-    parser.add_option<int>(
-        "max_refinements",
-        "maximum allowed number of refinement calls of the CEGAR algorithm",
-        "infinity",
-        Bounds("0", "infinity"));
     parser.add_option<int>(
         "max_pdb_size",
         "maximum number of states per pattern database (ignored for the "

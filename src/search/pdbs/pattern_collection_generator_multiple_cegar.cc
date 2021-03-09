@@ -19,8 +19,7 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     options::Options &opts)
-    : max_refinements(opts.get<int>("max_refinements")),
-      max_pdb_size(opts.get<int>("max_pdb_size")),
+    : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
       wildcard_plans(opts.get<bool>("wildcard_plans")),
       cegar_max_time(opts.get<double>("max_time")),
@@ -132,7 +131,6 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
           seed in each iteration.
         */
         PatternCollectionInformation collection_info = CEGAR(
-            max_refinements,
             remaining_pdb_size_for_cegar,
             remaining_collection_size,
             wildcard_plans,

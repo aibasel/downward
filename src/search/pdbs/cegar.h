@@ -99,7 +99,6 @@ using FlawList = std::vector<Flaw>;
   inducing the same abstract transition.
 */
 class CEGAR {
-    const int max_refinements;
     const int max_pdb_size;
     const int max_collection_size;
     const bool wildcard_plans;
@@ -125,8 +124,6 @@ class CEGAR {
     void print_collection() const;
     void compute_initial_collection();
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
-    bool termination_conditions_met(
-        const utils::CountdownTimer &timer, int refinement_counter) const;
 
     /*
       Try to apply the plan of the projection at the given index in the
@@ -151,7 +148,6 @@ class CEGAR {
     void refine(const FlawList &flaws);
 public:
     CEGAR(
-        int max_refinements,
         int max_pdb_size,
         int max_collection_size,
         bool wildcard_plans,
