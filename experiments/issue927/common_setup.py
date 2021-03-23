@@ -14,8 +14,6 @@ from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import ComparativeReport
 from downward.reports.scatter import ScatterPlotReport
 
-from relativescatter import RelativeScatterPlotReport
-
 
 def parse_args():
     ARGPARSER.add_argument(
@@ -43,7 +41,7 @@ DEFAULT_OPTIMAL_SUITE = [
     'openstacks-strips', 'organic-synthesis-opt18-strips',
     'organic-synthesis-split-opt18-strips', 'parcprinter-08-strips',
     'parcprinter-opt11-strips', 'parking-opt11-strips',
-    'parking-opt14-strips', 'pathways-noneg', 'pegsol-08-strips',
+    'parking-opt14-strips', 'pathways', 'pegsol-08-strips',
     'pegsol-opt11-strips', 'petri-net-alignment-opt18-strips',
     'pipesworld-notankage', 'pipesworld-tankage', 'psr-small', 'rovers',
     'satellite', 'scanalyzer-08-strips', 'scanalyzer-opt11-strips',
@@ -75,7 +73,7 @@ DEFAULT_SATISFICING_SUITE = [
     'organic-synthesis-sat18-strips',
     'organic-synthesis-split-sat18-strips', 'parcprinter-08-strips',
     'parcprinter-sat11-strips', 'parking-sat11-strips',
-    'parking-sat14-strips', 'pathways', 'pathways-noneg',
+    'parking-sat14-strips', 'pathways',
     'pegsol-08-strips', 'pegsol-sat11-strips', 'philosophers',
     'pipesworld-notankage', 'pipesworld-tankage', 'psr-large',
     'psr-middle', 'psr-small', 'rovers', 'satellite',
@@ -126,12 +124,12 @@ def get_repo_base():
     """Get base directory of the repository, as an absolute path.
 
     Search upwards in the directory tree from the main script until a
-    directory with a subdirectory named ".hg" is found.
+    directory with a subdirectory named ".git" is found.
 
     Abort if the repo base cannot be found."""
     path = os.path.abspath(get_script_dir())
     while os.path.dirname(path) != path:
-        if os.path.exists(os.path.join(path, ".hg")):
+        if os.path.exists(os.path.join(path, ".git")):
             return path
         path = os.path.dirname(path)
     sys.exit("repo base could not be found")
@@ -360,24 +358,25 @@ class IssueExperiment(FastDownwardExperiment):
 
         """
         if relative:
-            report_class = RelativeScatterPlotReport
             scatter_dir = os.path.join(self.eval_dir, "scatter-relative")
             step_name = "make-relative-scatter-plots"
         else:
-            report_class = ScatterPlotReport
             scatter_dir = os.path.join(self.eval_dir, "scatter-absolute")
             step_name = "make-absolute-scatter-plots"
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
 
-        def make_scatter_plot(config_nick, rev1, rev2, attribute):
+        def make_scatter_plot(config_nick, rev1, rev2, attribute, config_nick2=None):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
+            if config_nick2 is not None:
+                name += "-" + config_nick2
             print("Make scatter plot for", name)
             algo1 = get_algo_nick(rev1, config_nick)
-            algo2 = get_algo_nick(rev2, config_nick)
-            report = report_class(
+            algo2 = get_algo_nick(rev2, config_nick if config_nick2 is None else config_nick2)
+            report = ScatterPlotReport(
                 filter_algorithm=[algo1, algo2],
                 attributes=[attribute],
+                relative=relative,
                 get_category=lambda run1, run2: run1["domain"])
             report(
                 self.eval_dir,
@@ -389,5 +388,7 @@ class IssueExperiment(FastDownwardExperiment):
                     for attribute in self.get_supported_attributes(
                             config.nick, attributes):
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
+            for nick1, nick2, rev1, rev2, attribute in additional:
+                make_scatter_plot(nick1, rev1, rev2, attribute, config_nick2=nick2)
 
         self.add_step(step_name, make_scatter_plots)
