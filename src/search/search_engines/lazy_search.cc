@@ -56,7 +56,7 @@ void LazySearch::initialize() {
     }
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
-    const GlobalState &initial_state = state_registry.get_initial_state();
+    State initial_state = state_registry.get_initial_state();
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
@@ -109,7 +109,7 @@ void LazySearch::generate_successors() {
         bool is_preferred = preferred_operators.contains(op_id);
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
-                current_eval_context.get_cache(), new_g, is_preferred, nullptr);
+                current_eval_context, new_g, is_preferred, nullptr);
             open_list->insert(new_eval_context, make_pair(current_state.get_id(), op_id));
         }
     }
@@ -125,9 +125,9 @@ SearchStatus LazySearch::fetch_next_state() {
 
     current_predecessor_id = next.first;
     current_operator_id = next.second;
-    GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
+    State current_predecessor = state_registry.lookup_state(current_predecessor_id);
     OperatorProxy current_operator = task_proxy.get_operators()[current_operator_id];
-    assert(task_properties::is_applicable(current_operator, current_predecessor.unpack()));
+    assert(task_properties::is_applicable(current_operator, current_predecessor));
     current_state = state_registry.get_successor_state(current_predecessor, current_operator);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);
@@ -163,10 +163,12 @@ SearchStatus LazySearch::step() {
     if (node.is_new() || reopen) {
         if (current_operator_id != OperatorID::no_operator) {
             assert(current_predecessor_id != StateID::no_state);
-            GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
-            for (Evaluator *evaluator : path_dependent_evaluators)
-                evaluator->notify_state_transition(
-                    parent_state, current_operator_id, current_state);
+            if (!path_dependent_evaluators.empty()) {
+                State parent_state = state_registry.lookup_state(current_predecessor_id);
+                for (Evaluator *evaluator : path_dependent_evaluators)
+                    evaluator->notify_state_transition(
+                        parent_state, current_operator_id, current_state);
+            }
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
@@ -176,7 +178,7 @@ SearchStatus LazySearch::step() {
                 if (search_progress.check_progress(current_eval_context))
                     statistics.print_checkpoint_line(current_g);
             } else {
-                GlobalState parent_state = state_registry.lookup_state(current_predecessor_id);
+                State parent_state = state_registry.lookup_state(current_predecessor_id);
                 SearchNode parent_node = search_space.get_node(parent_state);
                 OperatorProxy current_operator = task_proxy.get_operators()[current_operator_id];
                 if (reopen) {

@@ -15,7 +15,7 @@ class PotentialHeuristic : public Heuristic {
     std::unique_ptr<PotentialFunction> function;
 
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state) override;
+    virtual int compute_heuristic(const State &ancestor_state) override;
 
 public:
     explicit PotentialHeuristic(

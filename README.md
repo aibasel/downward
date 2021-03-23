@@ -2,13 +2,29 @@
 
 Fast Downward is a domain-independent classical planning system.
 
-Copyright 2003-2019 Fast Downward contributors (see below).
+Copyright 2003-2020 Fast Downward contributors (see below).
 
 For further information:
 - Fast Downward website: <http://www.fast-downward.org>
 - Report a bug or file an issue: <http://issues.fast-downward.org>
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
 - Fast Downward main repository: <https://github.com/aibasel/downward>
+
+
+## Tested software versions
+
+This version of Fast Downward has been tested with the following software versions:
+
+| OS           | Python | C++ compiler                                                     | CMake |
+| ------------ | ------ | ---------------------------------------------------------------- | ----- |
+| Ubuntu 20.04 | 3.8    | GCC 9, GCC 10, Clang 10, Clang 11                                | 3.16  |
+| Ubuntu 18.04 | 3.6    | GCC 7, Clang 6                                                   | 3.10  |
+| macOS 10.15  | 3.6    | AppleClang 12                                                    | 3.19  |
+| Windows 10   | 3.6    | Visual Studio Enterprise 2017 (MSVC 19.16) and 2019 (MSVC 19.28) | 3.19  |
+
+We test LP support with CPLEX 12.9, SoPlex 3.1.1 and Osi 0.107.9.
+On Ubuntu, we test both CPLEX and SoPlex. On Windows, we currently 
+only test CPLEX, and on macOS, we do not test LP solvers (yet).
 
 
 ## Contributors
@@ -21,17 +37,17 @@ Currently, this list is sorted by the last year the person has been
 active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
-- 2003-2019 Malte Helmert
-- 2008-2016, 2018-2019 Gabriele Roeger
-- 2010-2019 Jendrik Seipp
-- 2010-2011, 2013-2019 Silvan Sievers
-- 2012-2019 Florian Pommerening
-- 2013, 2015-2019 Salome Eriksson
+- 2003-2020 Malte Helmert
+- 2008-2016, 2018-2020 Gabriele Roeger
+- 2010-2020 Jendrik Seipp
+- 2010-2011, 2013-2020 Silvan Sievers
+- 2012-2020 Florian Pommerening
+- 2013, 2015-2020 Salome Eriksson
+- 2016-2020 Cedric Geissmann
+- 2017-2020 Guillem Francès
+- 2018-2020 Augusto B. Corrêa
+- 2018-2020 Patrick Ferber
 - 2015-2019 Manuel Heusner
-- 2016-2019 Cedric Geissmann
-- 2017-2019 Guillem Francès
-- 2018-2019 Augusto B. Corrêa
-- 2018-2019 Patrick Ferber
 - 2017 Daniel Killenberger
 - 2016 Yusra Alkhazraji
 - 2016 Martin Wehrle

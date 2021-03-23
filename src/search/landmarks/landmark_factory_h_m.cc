@@ -1,5 +1,7 @@
 #include "landmark_factory_h_m.h"
 
+#include "exploration.h"
+
 #include "../abstract_task.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -586,7 +588,81 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     build_pm_ops(task_proxy);
 }
 
-void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
+void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
+    if (only_causal_landmarks) {
+        Exploration exploration(task_proxy);
+        discard_noncausal_landmarks(task_proxy, exploration);
+    }
+    if (!disjunctive_landmarks)
+        discard_disjunctive_landmarks();
+    if (!conjunctive_landmarks)
+        discard_conjunctive_landmarks();
+    lm_graph->set_landmark_ids();
+
+    if (no_orders)
+        discard_all_orderings();
+    else if (reasonable_orders) {
+        utils::g_log << "approx. reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, false);
+        utils::g_log << "approx. obedient reasonable orders" << endl;
+        approximate_reasonable_orders(task_proxy, true);
+    }
+    mk_acyclic_graph();
+    calc_achievers(task_proxy);
+}
+
+void LandmarkFactoryHM::discard_noncausal_landmarks(
+    const TaskProxy &task_proxy, Exploration &exploration) {
+    int num_all_landmarks = lm_graph->get_num_landmarks();
+    lm_graph->remove_node_if(
+        [this, &task_proxy, &exploration](const LandmarkNode &node) {
+            return !is_causal_landmark(task_proxy, exploration, node);
+        });
+    int num_causal_landmarks = lm_graph->get_num_landmarks();
+    utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
+                 << " non-causal landmarks" << endl;
+}
+
+bool LandmarkFactoryHM::is_causal_landmark(
+    const TaskProxy &task_proxy, Exploration &exploration,
+    const LandmarkNode &landmark) const {
+    /* Test whether the relaxed planning task is unsolvable without using any operator
+       that has "landmark" as a precondition.
+       Similar to "relaxed_task_solvable" above.
+     */
+
+    if (landmark.is_true_in_goal)
+        return true;
+    vector<vector<int>> lvl_var;
+    vector<utils::HashMap<FactPair, int>> lvl_op;
+    // Initialize lvl_var to numeric_limits<int>::max()
+    VariablesProxy variables = task_proxy.get_variables();
+    lvl_var.resize(variables.size());
+    for (VariableProxy var : variables) {
+        lvl_var[var.get_id()].resize(var.get_domain_size(),
+                                     numeric_limits<int>::max());
+    }
+    unordered_set<int> exclude_op_ids;
+    vector<FactPair> exclude_props;
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        if (is_landmark_precondition(op, &landmark)) {
+            exclude_op_ids.insert(op.get_id());
+        }
+    }
+    // Do relaxed exploration
+    exploration.compute_reachability_with_excludes(
+        lvl_var, lvl_op, true, exclude_props, exclude_op_ids, false);
+
+    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
+    for (FactProxy goal : task_proxy.get_goals())
+        if (lvl_var[goal.get_variable().get_id()][goal.get_value()] ==
+            numeric_limits<int>::max())
+            return true;
+
+    return false;
+}
+
+void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     utils::g_log << "Calculating achievers." << endl;
 
     OperatorsProxy operators = task_proxy.get_operators();
@@ -597,8 +673,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration 
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &lm_fact : lmn->facts) {
-            const vector<int> &ops =
-                lm_graph->get_operators_including_eff(lm_fact);
+            const vector<int> &ops = get_operators_including_eff(lm_fact);
             candidates.insert(ops.begin(), ops.end());
         }
 
@@ -887,11 +962,11 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         }
         LandmarkNode *node;
         if (lm.size() > 1) { // conjunctive landmark
-            node = &lm_graph->landmark_add_conjunctive(lm);
+            node = &lm_graph->add_conjunctive_landmark(lm);
         } else { // simple landmark
-            node = &lm_graph->landmark_add_simple(h_m_table_[set_index].fluents[0]);
+            node = &lm_graph->add_simple_landmark(h_m_table_[set_index].fluents[0]);
         }
-        node->in_goal = goal;
+        node->is_true_in_goal = goal;
         node->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),
                                      h_m_table_[set_index].first_achievers.end());
         lm_node_table_[set_index] = node;
@@ -899,7 +974,7 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
 }
 
 void LandmarkFactoryHM::generate_landmarks(
-    const shared_ptr<AbstractTask> &task, Exploration &) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     initialize(task_proxy);
     compute_h_m_landmarks(task_proxy);
@@ -956,16 +1031,18 @@ void LandmarkFactoryHM::generate_landmarks(
                 assert(lm_node_table_.find(lm) != lm_node_table_.end());
                 assert(lm_node_table_.find(set_index) != lm_node_table_.end());
 
-                edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::natural);
+                edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::NATURAL);
             }
             if (use_orders()) {
                 for (int gn : h_m_table_[set_index].necessary) {
-                    edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::greedy_necessary);
+                    edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
                 }
             }
         }
     }
     free_unneeded_memory();
+
+    generate(task_proxy);
 }
 
 bool LandmarkFactoryHM::supports_conditional_effects() const {

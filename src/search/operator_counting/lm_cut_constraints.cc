@@ -16,7 +16,7 @@ using namespace std;
 
 namespace operator_counting {
 void LMCutConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> &task, vector<lp::LPConstraint> & /*constraints*/,
+    const shared_ptr<AbstractTask> &task, named_vector::NamedVector<lp::LPConstraint> & /*constraints*/,
     double /*infinity*/) {
     TaskProxy task_proxy(*task);
     landmark_generator =

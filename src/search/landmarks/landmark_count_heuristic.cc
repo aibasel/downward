@@ -4,7 +4,6 @@
 #include "landmark_factory.h"
 #include "landmark_status_manager.h"
 
-#include "../global_state.h"
 #include "../option_parser.h"
 #include "../per_state_bitset.h"
 #include "../plugin.h"
@@ -73,8 +72,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
-                *lgraph,
-                opts.get<lp::LPSolverType>("lpsolver"));
+                *lgraph, opts.get<lp::LPSolverType>("lpsolver"));
         } else {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
@@ -91,7 +89,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 }
 
-int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state) {
+int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     double epsilon = 0.01;
 
     // Need explicit test to see if state is a goal state. The landmark
@@ -100,41 +98,42 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state)
     // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
-    bool dead_end = lm_status_manager->update_lm_status(global_state);
-
-    if (dead_end) {
+    lm_status_manager->update_lm_status(ancestor_state);
+    if (lm_status_manager->dead_end_exists()) {
         return DEAD_END;
     }
 
-    int h = -1;
-
     if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value();
-        h = static_cast<int>(ceil(h_val - epsilon));
+        double h_val = lm_cost_assignment->cost_sharing_h_value(
+            *lm_status_manager);
+        return static_cast<int>(ceil(h_val - epsilon));
     } else {
-        lgraph->count_costs();
-
-        int total_cost = lgraph->cost_of_landmarks();
-        int reached_cost = lgraph->get_reached_cost();
-        int needed_cost = lgraph->get_needed_cost();
-
-        h = total_cost - reached_cost + needed_cost;
+        int h = 0;
+        for (auto &lm : lgraph->get_nodes()) {
+            switch (lm_status_manager->get_landmark_status(
+                        lm->get_id())) {
+            case lm_reached:
+                break;
+            case lm_not_reached:
+            case lm_needed_again:
+                h += lm->cost;
+                break;
+            }
+        }
+        return h;
     }
-
-    assert(h >= 0);
-    return h;
 }
 
-int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
+int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
+    State state = convert_ancestor_state(ancestor_state);
 
     if (task_properties::is_goal_state(task_proxy, state))
         return 0;
 
-    int h = get_heuristic_value(global_state);
+    int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(global_state);
+        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(ancestor_state);
         LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
         generate_helpful_actions(state, reached_lms);
     }
@@ -204,22 +203,21 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
      reached before, the LM is a goal, and it's not true at moment */
 
     int num_reached = reached.size();
-    if (num_reached != lgraph->number_of_landmarks()) {
+    if (num_reached != lgraph->get_num_landmarks()) {
         if (reached.find(&lm) != reached.end())
             return false;
         else
             return !check_node_orders_disobeyed(lm, reached);
     }
-    return lm.is_goal() && !lm.is_true_in_state(state);
+    return lm.is_true_in_goal && !lm.is_true_in_state(state);
 }
 
-void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_state) {
+void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
     lm_status_manager->set_landmarks_for_initial_state(initial_state);
 }
 
 void LandmarkCountHeuristic::notify_state_transition(
-    const GlobalState &parent_state, OperatorID op_id,
-    const GlobalState &state) {
+    const State &parent_state, OperatorID op_id, const State &state) {
     lm_status_manager->update_reached_lms(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the reached landmark
@@ -240,7 +238,7 @@ LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
     LandmarkSet landmark_set;
     for (int i = 0; i < landmark_bitset.size(); ++i)
         if (landmark_bitset.test(i))
-            landmark_set.insert(lgraph->get_lm_for_index(i));
+            landmark_set.insert(lgraph->get_landmark(i));
     return landmark_set;
 }
 

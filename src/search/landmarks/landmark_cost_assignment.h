@@ -11,6 +11,7 @@ class OperatorsProxy;
 namespace landmarks {
 class LandmarkGraph;
 class LandmarkNode;
+class LandmarkStatusManager;
 
 class LandmarkCostAssignment {
     const std::set<int> empty;
@@ -25,7 +26,8 @@ public:
                            const LandmarkGraph &graph);
     virtual ~LandmarkCostAssignment() = default;
 
-    virtual double cost_sharing_h_value() = 0;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
@@ -35,26 +37,31 @@ public:
                                         const LandmarkGraph &graph,
                                         bool use_action_landmarks);
 
-    virtual double cost_sharing_h_value() override;
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
     lp::LPSolver lp_solver;
+    // We keep an additional copy of the constraints around to avoid some effort with recreating the vector (see issue443).
+    std::vector<lp::LPConstraint> lp_constraints;
     /*
       We keep the vectors for LP variables and constraints around instead of
       recreating them for every state. The actual constraints have to be
       recreated because the coefficient matrix of the LP changes from state to
       state. Reusing the vectors still saves some dynamic allocation overhead.
      */
-    std::vector<lp::LPVariable> lp_variables;
-    std::vector<lp::LPConstraint> lp_constraints;
-    std::vector<lp::LPConstraint> non_empty_lp_constraints;
-public:
-    LandmarkEfficientOptimalSharedCostAssignment(const std::vector<int> &operator_costs,
-                                                 const LandmarkGraph &graph,
-                                                 lp::LPSolverType solver_type);
+    lp::LinearProgram lp;
 
-    virtual double cost_sharing_h_value() override;
+    lp::LinearProgram build_initial_lp();
+public:
+    LandmarkEfficientOptimalSharedCostAssignment(
+        const std::vector<int> &operator_costs,
+        const LandmarkGraph &graph,
+        lp::LPSolverType solver_type);
+
+    virtual double cost_sharing_h_value(
+        const LandmarkStatusManager &lm_status_manager) override;
 };
 }
 

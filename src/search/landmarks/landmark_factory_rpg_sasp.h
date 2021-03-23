@@ -1,16 +1,18 @@
 #ifndef LANDMARKS_LANDMARK_FACTORY_RPG_SASP_H
 #define LANDMARKS_LANDMARK_FACTORY_RPG_SASP_H
 
-#include "landmark_factory.h"
+#include "landmark_factory_relaxation.h"
 
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 namespace landmarks {
-class LandmarkFactoryRpgSasp : public LandmarkFactory {
+class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
+
+    std::map<LandmarkNode *, utils::HashSet<FactPair>> forward_orders;
 
     // dtg_successors[var_id][val] contains all successor values of val in the
     // domain transition graph for the variable
@@ -39,8 +41,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     int min_cost_for_landmark(const TaskProxy &task_proxy,
                               LandmarkNode *bp,
                               std::vector<std::vector<int>> &lvl_var);
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
-                                    Exploration &exploration) override;
+    virtual void generate_relaxed_landmarks(
+        const std::shared_ptr<AbstractTask> &task,
+        Exploration &exploration) override;
     void found_simple_lm_and_order(const FactPair &a, LandmarkNode &b,
                                    EdgeType t);
     void found_disj_lm_and_order(const TaskProxy &task_proxy,
