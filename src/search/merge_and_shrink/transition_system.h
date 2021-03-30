@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-#include "../utils/hash.h"
-
 #include <iostream>
 #include <memory>
 #include <set>
@@ -42,7 +40,7 @@ struct Transition {
     }
 };
 
-using LabelGroup = utils::HashSet<int>;
+using LabelGroup = std::set<int>;
 
 struct GroupAndTransitions {
     const LabelGroup &label_group;

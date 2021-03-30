@@ -1,7 +1,6 @@
 #ifndef UTILS_LOGGING_H
 #define UTILS_LOGGING_H
 
-#include "hash.h"
 #include "system.h"
 #include "timer.h"
 
@@ -88,26 +87,11 @@ ostream &operator<<(ostream &stream, const vector<T> &vec) {
 template<class T>
 ostream &operator<<(ostream &stream, const set<T> &s) {
     stream << "{";
-    bool dump_separator = true;
+    bool prefix = true;
     for (typename set<T>::const_iterator it = s.begin(); it != s.end(); ++it) {
-        if (dump_separator) {
+        if (prefix) {
             stream << ", ";
-            dump_separator = false;
-        }
-        stream << *it;
-    }
-    stream << "}";
-    return stream;
-}
-
-template<class T>
-ostream &operator<<(ostream &stream, const utils::HashSet<T> &s) {
-    stream << "{";
-    bool dump_separator = true;
-    for (typename utils::HashSet<T>::const_iterator it = s.begin(); it != s.end(); ++it) {
-        if (dump_separator) {
-            stream << ", ";
-            dump_separator = false;
+            prefix = false;
         }
         stream << *it;
     }
