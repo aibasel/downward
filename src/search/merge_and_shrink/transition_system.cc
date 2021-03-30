@@ -433,14 +433,8 @@ void TransitionSystem::apply_label_reduction(
 
             for (int old_label_no : old_label_nos) {
                 assert(global_to_local_label_nos[old_label_no] == local_label_no);
-                for (vector<int>::const_iterator it = local_to_global_label_nos[local_label_no].begin();
-                     it != local_to_global_label_nos[local_label_no].end();) {
-                    if (*it == old_label_no) {
-                        it = local_to_global_label_nos[local_label_no].erase(it);
-                    } else {
-                        ++it;
-                    }
-                }
+                LabelGroup &label_group = local_to_global_label_nos[local_label_no];
+                label_group.erase(find(label_group.begin(), label_group.end(), old_label_no));
                 // Reset (for consistency only, old labels are never accessed).
                 global_to_local_label_nos[old_label_no] = -1;
             }
@@ -492,14 +486,8 @@ void TransitionSystem::apply_label_reduction(
 
             for (int old_label_no : old_label_nos) {
                 int old_local_label_no = global_to_local_label_nos[old_label_no];
-                for (vector<int>::const_iterator it = local_to_global_label_nos[old_local_label_no].begin();
-                     it != local_to_global_label_nos[old_local_label_no].end();) {
-                    if (*it == old_label_no) {
-                        it = local_to_global_label_nos[old_local_label_no].erase(it);
-                    } else {
-                        ++it;
-                    }
-                }
+                LabelGroup &label_group = local_to_global_label_nos[old_local_label_no];
+                label_group.erase(find(label_group.begin(), label_group.end(), old_label_no));
                 // Reset (for consistency only, old labels are never accessed).
                 global_to_local_label_nos[old_label_no] = -1;
             }
