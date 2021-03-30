@@ -65,7 +65,7 @@ class TSConstIterator {
     int current_label_no;
 public:
     TSConstIterator(
-        const std::vector<std::vector<int>> &local_to_global_label_nos,
+        const std::vector<LabelGroup> &local_to_global_label_nos,
         const std::vector<std::vector<Transition>> &transitions_by_local_label_no,
         const std::vector<int> &local_label_no_to_cost,
         bool end);
@@ -132,7 +132,7 @@ public:
         std::vector<int> &&incorporated_variables,
         const GlobalLabels &global_labels,
         std::vector<int> &&global_to_local_label_nos,
-        std::vector<std::vector<int>> &&local_to_global_label_nos,
+        std::vector<LabelGroup> &&local_to_global_label_nos,
         std::vector<std::vector<Transition>> &&transitions_by_local_label_no,
         std::vector<int> &&local_label_no_to_cost,
         int num_states,
