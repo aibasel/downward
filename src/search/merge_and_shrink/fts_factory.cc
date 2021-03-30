@@ -30,7 +30,7 @@ class FTSFactory {
         vector<int> incorporated_variables;
 
         vector<int> global_to_local_label_nos;
-        vector<LabelGroup> local_to_global_label_nos;
+        vector<vector<int>> local_to_global_label_nos;
         vector<vector<Transition>> transitions_by_local_label_no;
         vector<int> local_label_no_to_cost;
         vector<bool> relevant_labels;
@@ -309,7 +309,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
             transition_system_data_by_var[var_no].global_to_local_label_nos;
         vector<vector<Transition>> &transitions_by_local_label_no =
             transition_system_data_by_var[var_no].transitions_by_local_label_no;
-        vector<LabelGroup> &local_to_global_labels =
+        vector<vector<int>> &local_to_global_labels =
             transition_system_data_by_var[var_no].local_to_global_label_nos;
         vector<int> &local_label_to_cost =
             transition_system_data_by_var[var_no].local_label_no_to_cost;
@@ -321,7 +321,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
             if (transitions == group_transitions) {
                 assert(global_to_local_label_nos[label_no] == -1);
                 global_to_local_label_nos[label_no] = local_label_no;
-                local_to_global_labels[local_label_no].insert(local_to_global_labels[local_label_no].end(), label_no);
+                local_to_global_labels[local_label_no].push_back(label_no);
                 local_label_to_cost[local_label_no] = min(local_label_to_cost[local_label_no], label_cost);
                 found_locally_equivalent_label_group = true;
                 break;
@@ -345,11 +345,11 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, co
     int num_labels = task_proxy.get_operators().size();
 
     // Collect all irrelevant labels for this variable.
-    LabelGroup irrelevant_labels;
+    vector<int> irrelevant_labels;
     int cost = INF;
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (!is_relevant(var_no, label_no)) {
-            irrelevant_labels.insert(irrelevant_labels.end(), label_no);
+            irrelevant_labels.push_back(label_no);
             cost = min(cost, labels.get_label_cost(label_no));
         }
     }
