@@ -138,7 +138,7 @@ class CEGAR {
     FlawList apply_plan(int collection_index, State &current) const;
     FlawList get_flaws_for_projection(
         int collection_index, const State &concrete_init);
-    FlawList get_flaws();
+    FlawList get_flaws(const State &concrete_init);
 
     // Methods related to refining.
     void add_pattern_for_var(int var);

@@ -191,6 +191,7 @@ FlawList CEGAR::get_flaws_for_projection(
     }
 
     State current(concrete_init);
+    // TODO: if copying unpacked states results in unpacked states, this can go.
     current.unpack();
     FlawList flaws = apply_plan(collection_index, current);
     if (flaws.empty()) {
@@ -238,9 +239,8 @@ FlawList CEGAR::get_flaws_for_projection(
     return flaws;
 }
 
-FlawList CEGAR::get_flaws() {
+FlawList CEGAR::get_flaws(const State &concrete_init) {
     FlawList flaws;
-    State concrete_init = task_proxy.get_initial_state();
     for (size_t collection_index = 0;
          collection_index < projection_collection.size(); ++collection_index) {
         if (projection_collection[collection_index] &&
@@ -393,12 +393,14 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     utils::CountdownTimer timer(max_time);
     compute_initial_collection();
     int iteration = 1;
+    State concrete_init = task_proxy.get_initial_state();
+    concrete_init.unpack();
     while (!time_limit_reached(timer)) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "iteration #" << iteration << endl;
         }
 
-        FlawList flaws = get_flaws();
+        FlawList flaws = get_flaws(concrete_init);
 
         if (flaws.empty()) {
             if (verbosity >= utils::Verbosity::NORMAL) {
