@@ -85,7 +85,7 @@ using FlawList = std::vector<Flaw>;
 /*
   This class implements the CEGAR algorithm for computing pattern collections.
 
-  In a nutshell, it receives a concrete task plus a (sub)set of its goal in a
+  In a nutshell, it receives a concrete task plus a (sub)set of its goals in a
   randomized order. Starting from the pattern collection consisting of a
   singleton pattern for each goal variable, it repeatedly attempts to execute
   an optimal plan of each pattern in the concrete task, collects reasons why
