@@ -3,16 +3,17 @@
 
 #include "pattern_generator.h"
 
-#include "cegar.h"
-#include "types.h"
-
-#include "../utils/rng.h"
-
 namespace utils {
+class RandomNumberGenerator;
 enum class Verbosity;
 }
 
 namespace pdbs {
+/*
+  This pattern collection generator uses the CEGAR algorithm to compute a
+  disjoint pattern collection for the given task. See the documentation for
+  more details.
+*/
 class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator {
     const int max_pdb_size;
     const int max_collection_size;
