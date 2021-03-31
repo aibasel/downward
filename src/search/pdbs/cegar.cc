@@ -183,7 +183,7 @@ FlawList CEGAR::apply_plan(int collection_index, State &current) const {
 
 FlawList CEGAR::get_flaws_for_projection(
     int collection_index, const State &concrete_init) {
-    const Projection &projection = *projection_collection[collection_index];
+    Projection &projection = *projection_collection[collection_index];
     if (projection.is_unsolvable()) {
         utils::g_log << "task is unsolvable." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
@@ -208,7 +208,7 @@ FlawList CEGAR::get_flaws_for_projection(
                     utils::g_log << "there are blacklisted variables, "
                         "marking projection as solved." << endl;
                 }
-                projection_collection[collection_index]->mark_as_solved();
+                projection.mark_as_solved();
             }
         } else {
             if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -225,7 +225,7 @@ FlawList CEGAR::get_flaws_for_projection(
                     utils::g_log << "there are no non-blacklisted goal variables "
                         "left, marking projection as solved." << endl;
                 }
-                projection_collection[collection_index]->mark_as_solved();
+                projection.mark_as_solved();
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "raising goal violation flaw(s)." << endl;
