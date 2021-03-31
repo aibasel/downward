@@ -155,8 +155,9 @@ FlawList CEGAR::apply_plan(int collection_index, State &current) const {
             }
 
             /*
-              If the operator is applicable, clear flaws and proceed with
-              the next operator.
+              If the operator is applicable, clear flaws, update the state
+              to the successor state and proceed with the next plan step in
+              the next iteration.
             */
             if (!flaw_detected) {
                 step_failed = false;
