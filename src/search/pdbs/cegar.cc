@@ -217,7 +217,8 @@ FlawList CEGAR::get_flaws_for_projection(
             }
             for (const FactPair &goal : goals) {
                 int goal_var_id = goal.var;
-                if (current[goal_var_id].get_pair() != goal && !blacklisted_variables.count(goal_var_id)) {
+                if (current[goal_var_id].get_value() != goal.value &&
+                    !blacklisted_variables.count(goal_var_id)) {
                     flaws.emplace_back(collection_index, goal_var_id);
                 }
             }
