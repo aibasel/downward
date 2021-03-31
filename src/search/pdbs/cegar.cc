@@ -444,14 +444,14 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     if (concrete_solution_index != -1) {
         const shared_ptr<PatternDatabase> &pdb =
             projection_collection[concrete_solution_index]->get_pdb();
-        pdbs->push_back(pdb);
         patterns->push_back(pdb->get_pattern());
+        pdbs->push_back(move(pdb));
     } else {
         for (const unique_ptr<Projection> &projection : projection_collection) {
             if (projection) {
                 const shared_ptr<PatternDatabase> &pdb = projection->get_pdb();
-                pdbs->push_back(pdb);
                 patterns->push_back(pdb->get_pattern());
+                pdbs->push_back(move(pdb));
             }
         }
     }
