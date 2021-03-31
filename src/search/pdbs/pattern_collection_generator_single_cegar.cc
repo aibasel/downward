@@ -28,7 +28,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, rng);
 
-    return CEGAR(
+    CEGAR cegar(
         max_pdb_size,
         max_collection_size,
         wildcard_plans,
@@ -36,7 +36,8 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         verbosity,
         rng,
         task,
-        move(goals)).compute_pattern_collection();
+        move(goals));
+    return cegar.compute_pattern_collection();
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(
