@@ -146,7 +146,6 @@ class CEGAR {
     void merge_patterns(int index1, int index2);
     bool can_add_variable_to_pattern(int index, int var) const;
     void add_variable_to_pattern(int collection_index, int var);
-    void handle_flaw(const Flaw &flaw);
     void refine(const FlawList &flaws);
 public:
     CEGAR(

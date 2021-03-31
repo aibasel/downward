@@ -335,7 +335,16 @@ void CEGAR::add_variable_to_pattern(int collection_index, int var) {
     projection_collection[collection_index] = move(new_projection);
 }
 
-void CEGAR::handle_flaw(const Flaw &flaw) {
+void CEGAR::refine(const FlawList &flaws) {
+    assert(!flaws.empty());
+    const Flaw &flaw = *(rng->choose(flaws));
+
+    if (verbosity >= utils::Verbosity::VERBOSE) {
+        utils::g_log << "chosen flaw: pattern "
+                     << projection_collection[flaw.collection_index]->get_pattern()
+                     << " with a flaw on " << flaw.variable << endl;
+    }
+
     int collection_index = flaw.collection_index;
     int var = flaw.variable;
     bool added_var = false;
@@ -378,19 +387,6 @@ void CEGAR::handle_flaw(const Flaw &flaw) {
         }
         blacklisted_variables.insert(var);
     }
-}
-
-void CEGAR::refine(const FlawList &flaws) {
-    assert(!flaws.empty());
-    int random_flaw_index = (*rng)(flaws.size());
-    const Flaw &flaw = flaws[random_flaw_index];
-
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "chosen flaw: pattern "
-                     << projection_collection[flaw.collection_index]->get_pattern()
-                     << " with a flaw on " << flaw.variable << endl;
-    }
-    handle_flaw(flaw);
 }
 
 PatternCollectionInformation CEGAR::compute_pattern_collection() {
