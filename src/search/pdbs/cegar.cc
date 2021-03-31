@@ -16,17 +16,36 @@
 using namespace std;
 
 namespace pdbs {
-static unique_ptr<Projection> compute_projection(
-    const shared_ptr<AbstractTask> &concrete_task,
-    Pattern &&pattern,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    bool compute_wildcard_plan,
-    utils::Verbosity verbosity) {
-    TaskProxy concrete_task_proxy(*concrete_task);
+void CEGAR::print_collection() const {
+    utils::g_log << "[";
+    for (size_t i = 0; i < projection_collection.size(); ++i) {
+        const unique_ptr<Projection> &projection = projection_collection[i];
+        if (projection) {
+            utils::g_log << projection->get_pattern();
+            if (i != projection_collection.size() - 1) {
+                utils::g_log << ", ";
+            }
+        }
+    }
+    utils::g_log << "]" << endl;
+}
+
+bool CEGAR::time_limit_reached(
+    const utils::CountdownTimer &timer) const {
+    if (timer.is_expired()) {
+        if (verbosity >= utils::Verbosity::NORMAL) {
+            utils::g_log << "time limit reached." << endl;
+        }
+        return true;
+    }
+    return false;
+}
+
+unique_ptr<Projection> CEGAR::compute_projection(Pattern &&pattern) const {
     shared_ptr<PatternDatabase> pdb =
-        make_shared<PatternDatabase>(concrete_task_proxy, pattern);
+        make_shared<PatternDatabase>(task_proxy, pattern);
     shared_ptr<AbstractTask> projected_task =
-        extra_tasks::build_projected_task(concrete_task, move(pattern));
+        extra_tasks::build_projected_task(task, move(pattern));
     TaskProxy projected_task_proxy(*projected_task);
 
     bool unsolvable = false;
@@ -47,7 +66,7 @@ static unique_ptr<Projection> compute_projection(
         }
 
         plan = steepest_ascent_enforced_hill_climbing(
-            projected_task_proxy, rng, *pdb, compute_wildcard_plan, verbosity);
+            projected_task_proxy, rng, *pdb, wildcard_plans, verbosity);
 
         // Convert operator IDs of the abstract in the concrete task.
         for (vector<OperatorID> &plan_step : plan) {
@@ -55,7 +74,7 @@ static unique_ptr<Projection> compute_projection(
             concrete_plan_step.reserve(plan_step.size());
             for (OperatorID abs_op_id : plan_step) {
                 concrete_plan_step.push_back(
-                    projected_task_proxy.get_operators()[abs_op_id].get_ancestor_operator_id(concrete_task.get()));
+                    projected_task_proxy.get_operators()[abs_op_id].get_ancestor_operator_id(task.get()));
             }
             plan_step.swap(concrete_plan_step);
         }
@@ -63,20 +82,6 @@ static unique_ptr<Projection> compute_projection(
 
     return utils::make_unique_ptr<Projection>(
         move(pdb), move(plan), unsolvable);
-}
-
-void CEGAR::print_collection() const {
-    utils::g_log << "[";
-    for (size_t i = 0; i < projection_collection.size(); ++i) {
-        const unique_ptr<Projection> &projection = projection_collection[i];
-        if (projection) {
-            utils::g_log << projection->get_pattern();
-            if (i != projection_collection.size() - 1) {
-                utils::g_log << ", ";
-            }
-        }
-    }
-    utils::g_log << "]" << endl;
 }
 
 void CEGAR::compute_initial_collection() {
@@ -92,16 +97,7 @@ void CEGAR::compute_initial_collection() {
     }
 }
 
-bool CEGAR::time_limit_reached(
-    const utils::CountdownTimer &timer) const {
-    if (timer.is_expired()) {
-        if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << "time limit reached." << endl;
-        }
-        return true;
-    }
-    return false;
-}
+
 
 /*
   TODO: this is a duplicate of State::get_unregistered_successor.
@@ -265,9 +261,7 @@ FlawList CEGAR::get_flaws() {
 }
 
 void CEGAR::add_pattern_for_var(int var) {
-    projection_collection.push_back(
-        compute_projection(
-            task, {var}, rng, wildcard_plans, verbosity));
+    projection_collection.push_back(compute_projection({var}));
     variable_to_projection[var] = projection_collection.size() - 1;
     collection_size += projection_collection.back()->get_pdb()->get_size();
 }
@@ -302,9 +296,7 @@ void CEGAR::merge_patterns(int index1, int index2) {
     int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
 
     // Compute merged projection.
-    unique_ptr<Projection> merged =
-        compute_projection(
-            task, move(new_pattern), rng, wildcard_plans, verbosity);
+    unique_ptr<Projection> merged = compute_projection(move(new_pattern));
 
     // Update collection size.
     collection_size -= pdb_size1;
@@ -333,8 +325,7 @@ void CEGAR::add_variable_to_pattern(int collection_index, int var) {
     new_pattern.push_back(var);
     sort(new_pattern.begin(), new_pattern.end());
 
-    unique_ptr<Projection> new_projection =
-        compute_projection(task, move(new_pattern), rng, wildcard_plans, verbosity);
+    unique_ptr<Projection> new_projection = compute_projection(move(new_pattern));
 
     collection_size -= projection.get_pdb()->get_size();
     collection_size += new_projection->get_pdb()->get_size();

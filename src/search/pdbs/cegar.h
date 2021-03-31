@@ -122,8 +122,10 @@ class CEGAR {
     int concrete_solution_index;
 
     void print_collection() const;
-    void compute_initial_collection();
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
+
+    std::unique_ptr<Projection> compute_projection(Pattern &&pattern) const;
+    void compute_initial_collection();
 
     /*
       Try to apply the plan of the projection at the given index in the
