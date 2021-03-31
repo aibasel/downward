@@ -252,9 +252,8 @@ FlawList CEGAR::get_flaws() {
                 flaws.clear();
                 return flaws;
             }
-            for (Flaw &flaw : new_flaws) {
-                flaws.push_back(move(flaw));
-            }
+            flaws.insert(flaws.end(), make_move_iterator(new_flaws.begin()),
+                         make_move_iterator(new_flaws.end()));
         }
     }
     return flaws;
