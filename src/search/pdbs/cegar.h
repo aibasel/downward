@@ -88,7 +88,7 @@ using FlawList = std::vector<Flaw>;
   In a nutshell, it receives a concrete task plus a (sub)set of its goal in a
   randomized order. Starting from the pattern collection consisting of a
   singleton pattern for each goal variable, it repeatedly attempts to execute
-  an optimal plan of each pattern in the concrete task, collects reasons if
+  an optimal plan of each pattern in the concrete task, collects reasons why
   this is not possible (so-called flaws) and refines the pattern in question
   by adding a variable to it.
 
@@ -162,9 +162,6 @@ public:
 
 extern void add_cegar_options_to_parser(
     options::OptionParser &parser);
-
-extern std::vector<FactPair> get_goals_in_random_order(
-    const TaskProxy &task_proxy, const std::shared_ptr<utils::RandomNumberGenerator> &rng);
 }
 
 #endif

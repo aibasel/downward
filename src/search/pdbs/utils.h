@@ -3,12 +3,16 @@
 
 #include "types.h"
 
+#include "../task_proxy.h"
+
 #include "../utils/timer.h"
 
 #include <memory>
 #include <string>
 
-class TaskProxy;
+namespace utils {
+class RandomNumberGenerator;
+}
 
 namespace pdbs {
 class PatternCollectionInformation;
@@ -17,6 +21,9 @@ class PatternInformation;
 extern int compute_pdb_size(const TaskProxy &task_proxy, const Pattern &pattern);
 extern int compute_total_pdb_size(
     const TaskProxy &task_proxy, const PatternCollection &pattern_collection);
+
+extern std::vector<FactPair> get_goals_in_random_order(
+    const TaskProxy &task_proxy, const std::shared_ptr<utils::RandomNumberGenerator> &rng);
 
 /*
   Dump the given pattern, the number of variables contained, the size of the

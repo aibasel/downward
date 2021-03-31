@@ -576,14 +576,4 @@ void add_cegar_options_to_parser(options::OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
 }
-
-vector<FactPair> get_goals_in_random_order(
-    const TaskProxy &task_proxy, const shared_ptr<utils::RandomNumberGenerator> &rng) {
-    vector<FactPair> goals;
-    for (FactProxy goal : task_proxy.get_goals()) {
-        goals.push_back(goal.get_pair());
-    }
-    rng->shuffle(goals);
-    return goals;
-}
 }

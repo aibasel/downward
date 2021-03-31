@@ -5,6 +5,7 @@
 #include "pattern_information.h"
 
 #include "../utils/logging.h"
+#include "../utils/rng.h"
 
 #include "../task_proxy.h"
 
@@ -26,6 +27,16 @@ int compute_total_pdb_size(
         size += compute_pdb_size(task_proxy, pattern);
     }
     return size;
+}
+
+vector<FactPair> get_goals_in_random_order(
+    const TaskProxy &task_proxy, const shared_ptr<utils::RandomNumberGenerator> &rng) {
+    vector<FactPair> goals;
+    for (FactProxy goal : task_proxy.get_goals()) {
+        goals.push_back(goal.get_pair());
+    }
+    rng->shuffle(goals);
+    return goals;
 }
 
 void dump_pattern_generation_statistics(

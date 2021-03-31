@@ -1,6 +1,7 @@
 #include "pattern_collection_generator_single_cegar.h"
 
 #include "cegar.h"
+#include "utils.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
