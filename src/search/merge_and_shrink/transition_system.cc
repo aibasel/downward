@@ -130,7 +130,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         ts1.incorporated_variables.begin(), ts1.incorporated_variables.end(),
         ts2.incorporated_variables.begin(), ts2.incorporated_variables.end(),
         back_inserter(incorporated_variables));
-    vector<int> global_to_local_label(global_labels.get_max_size(), -1);
+    vector<int> global_to_local_label(global_labels.get_max_num_labels(), -1);
     vector<LabelGroup> local_to_global_labels;
     vector<vector<Transition>> local_label_to_transitions;
     vector<int> local_label_to_cost;

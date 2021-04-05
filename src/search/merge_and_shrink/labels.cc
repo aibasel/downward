@@ -14,12 +14,9 @@
 using namespace std;
 
 namespace merge_and_shrink {
-GlobalLabels::GlobalLabels(vector<unique_ptr<GlobalLabel>> &&labels)
+GlobalLabels::GlobalLabels(vector<unique_ptr<GlobalLabel>> &&labels, int max_num_labels)
     : labels(move(labels)),
-      max_size(0) {
-    if (!this->labels.empty()) {
-        max_size = this->labels.size() * 2 - 1;
-    }
+      max_num_labels(max_num_labels) {
 }
 
 void GlobalLabels::reduce_labels(const vector<int> &old_labels) {

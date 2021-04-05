@@ -57,7 +57,7 @@ class FTSFactory {
     // see TODO in build_transitions()
     int task_has_conditional_effects;
 
-    vector<unique_ptr<GlobalLabel>> create_labels();
+    unique_ptr<GlobalLabels> create_labels();
     void build_state_data(VariableProxy var);
     void initialize_transition_system_data(const GlobalLabels &global_labels);
     bool is_relevant(int var_id, int label) const;
@@ -105,17 +105,19 @@ FTSFactory::FTSFactory(const TaskProxy &task_proxy)
 FTSFactory::~FTSFactory() {
 }
 
-vector<unique_ptr<GlobalLabel>> FTSFactory::create_labels() {
-    vector<unique_ptr<GlobalLabel>> result;
-    int num_ops = task_proxy.get_operators().size();
+unique_ptr<GlobalLabels> FTSFactory::create_labels() {
+    vector<unique_ptr<GlobalLabel>> labels;
+    OperatorsProxy ops = task_proxy.get_operators();
+    int num_ops = ops.size();
+    int max_num_labels = 0;
     if (num_ops > 0) {
-        int max_num_labels = 2 * num_ops - 1;
-        result.reserve(max_num_labels);
+        max_num_labels = 2 * num_ops - 1;
+        labels.reserve(max_num_labels);
+        for (OperatorProxy op : ops) {
+            labels.push_back(utils::make_unique_ptr<GlobalLabel>(op.get_cost()));
+        }
     }
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        result.push_back(utils::make_unique_ptr<GlobalLabel>(op.get_cost()));
-    }
-    return result;
+    return utils::make_unique_ptr<GlobalLabels>(move(labels), max_num_labels);
 }
 
 void FTSFactory::build_state_data(VariableProxy var) {
@@ -151,7 +153,7 @@ void FTSFactory::initialize_transition_system_data(const GlobalLabels &global_la
         TransitionSystemData &ts_data = transition_system_data_by_var[var.get_id()];
         ts_data.num_variables = variables.size();
         ts_data.incorporated_variables.push_back(var.get_id());
-        ts_data.global_to_local_label.resize(global_labels.get_max_size(), -1);
+        ts_data.global_to_local_label.resize(global_labels.get_max_num_labels(), -1);
         ts_data.relevant_labels.resize(global_labels.get_size(), false);
         build_state_data(var);
     }
@@ -457,7 +459,7 @@ FactoredTransitionSystem FTSFactory::create(
         utils::g_log << "Building atomic transition systems... " << endl;
     }
 
-    unique_ptr<GlobalLabels> global_labels = utils::make_unique_ptr<GlobalLabels>(create_labels());
+    unique_ptr<GlobalLabels> global_labels = create_labels();
 
     initialize_transition_system_data(*global_labels);
     build_transitions(*global_labels);
