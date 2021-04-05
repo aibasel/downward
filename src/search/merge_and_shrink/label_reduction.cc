@@ -59,40 +59,35 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
 }
 
 void LabelReduction::compute_label_mapping(
-    const equivalence_relation::EquivalenceRelation *relation,
+    const equivalence_relation::EquivalenceRelation &relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
     utils::Verbosity verbosity) const {
-    const GlobalLabels &labels = fts.get_labels();
-    int next_new_label = labels.get_size();
+    const GlobalLabels &global_labels = fts.get_labels();
+    int next_new_label = global_labels.get_size();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (auto group_it = relation->begin();
-         group_it != relation->end(); ++group_it) {
-        const equivalence_relation::Block &block = *group_it;
-        unordered_map<int, vector<int>> equivalent_labels;
-        for (auto label_it = block.begin();
-             label_it != block.end(); ++label_it) {
-            assert(*label_it < next_new_label);
-            int label = *label_it;
-            if (labels.is_current_label(label)) {
-                // only consider non-reduced labels
-                int cost = labels.get_label_cost(label);
-                equivalent_labels[cost].push_back(label);
-                ++num_labels;
-            }
+    for (const equivalence_relation::Block &block : relation) {
+        unordered_map<int, vector<int>> cost_to_equivalent_labels;
+        for (int label : block) {
+            assert(label < next_new_label);
+            assert(global_labels.is_current_label(label));
+            int cost = global_labels.get_label_cost(label);
+            cost_to_equivalent_labels[cost].push_back(label);
+            ++num_labels;
         }
-        for (auto it = equivalent_labels.begin();
-             it != equivalent_labels.end(); ++it) {
-            const vector<int> &labels = it->second;
-            if (labels.size() > 1) {
+        for (auto it = cost_to_equivalent_labels.begin();
+             it != cost_to_equivalent_labels.end(); ++it) {
+            const vector<int> &equivalent_labels = it->second;
+            if (equivalent_labels.size() > 1) {
                 if (verbosity >= utils::Verbosity::DEBUG) {
-                    utils::g_log << "Reducing labels " << labels << " to " << next_new_label << endl;
+                    utils::g_log << "Reducing labels "
+                        << equivalent_labels << " to " << next_new_label << endl;
                 }
-                label_mapping.push_back(make_pair(next_new_label, labels));
+                label_mapping.push_back(make_pair(next_new_label, equivalent_labels));
                 ++next_new_label;
             }
-            if (!labels.empty()) {
+            if (!equivalent_labels.empty()) {
                 ++num_labels_after_reduction;
             }
         }
@@ -107,7 +102,7 @@ void LabelReduction::compute_label_mapping(
 }
 
 equivalence_relation::EquivalenceRelation
-*LabelReduction::compute_combinable_equivalence_relation(
+LabelReduction::compute_combinable_equivalence_relation(
     int ts_index,
     const FactoredTransitionSystem &fts) const {
     /*
@@ -117,25 +112,20 @@ equivalence_relation::EquivalenceRelation
     */
 
     // Create the equivalence relation where all labels are equivalent.
-    const GlobalLabels &labels = fts.get_labels();
-    int num_labels = labels.get_size();
-    vector<pair<int, int>> annotated_labels;
-    annotated_labels.reserve(num_labels);
-    for (int label = 0; label < num_labels; ++label) {
-        if (labels.is_current_label(label)) {
-            annotated_labels.push_back(make_pair(0, label));
-        }
+    const GlobalLabels &global_labels = fts.get_labels();
+    int num_labels = global_labels.get_num_active_labels();
+    vector<int> labels;
+    labels.reserve(num_labels);
+    for (int label : global_labels) {
+        labels.push_back(label);
     }
-    equivalence_relation::EquivalenceRelation *relation =
-        equivalence_relation::EquivalenceRelation::from_annotated_elements<int>(
-            num_labels, annotated_labels);
+    equivalence_relation::EquivalenceRelation relation(labels);
 
     for (int index : fts) {
         if (index != ts_index) {
             const TransitionSystem &ts = fts.get_transition_system(index);
             for (GroupAndTransitions gat : ts) {
-                const LabelGroup &label_group = gat.label_group;
-                relation->refine(label_group.begin(), label_group.end());
+                relation.refine(gat.label_group);
             }
         }
     }
@@ -163,7 +153,7 @@ bool LabelReduction::reduce(
         assert(fts.is_active(next_merge.second));
 
         bool reduced = false;
-        equivalence_relation::EquivalenceRelation *relation =
+        equivalence_relation::EquivalenceRelation relation =
             compute_combinable_equivalence_relation(next_merge.first, fts);
         vector<pair<int, vector<int>>> label_mapping;
         compute_label_mapping(relation, fts, label_mapping, verbosity);
@@ -171,8 +161,6 @@ bool LabelReduction::reduce(
             fts.apply_label_mapping(label_mapping, next_merge.first);
             reduced = true;
         }
-        delete relation;
-        relation = nullptr;
         utils::release_vector_memory(label_mapping);
 
         relation = compute_combinable_equivalence_relation(
@@ -183,7 +171,6 @@ bool LabelReduction::reduce(
             fts.apply_label_mapping(label_mapping, next_merge.second);
             reduced = true;
         }
-        delete relation;
         return reduced;
     }
 
@@ -224,10 +211,9 @@ bool LabelReduction::reduce(
 
         vector<pair<int, vector<int>>> label_mapping;
         if (fts.is_active(ts_index)) {
-            equivalence_relation::EquivalenceRelation *relation =
+            equivalence_relation::EquivalenceRelation relation =
                 compute_combinable_equivalence_relation(ts_index, fts);
             compute_label_mapping(relation, fts, label_mapping, verbosity);
-            delete relation;
         }
 
         if (label_mapping.empty()) {
