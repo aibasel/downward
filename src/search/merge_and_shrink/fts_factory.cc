@@ -344,12 +344,11 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
 void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, const GlobalLabels &labels) {
     int var_id = variable.get_id();
     int num_states = variable.get_domain_size();
-    int num_labels = task_proxy.get_operators().size();
 
     // Collect all irrelevant labels for this variable.
     LabelGroup irrelevant_labels;
     int cost = INF;
-    for (int label = 0; label < num_labels; ++label) {
+    for (int label : labels) {
         if (!is_relevant(var_id, label)) {
             irrelevant_labels.push_back(label);
             cost = min(cost, labels.get_label_cost(label));

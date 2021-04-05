@@ -552,21 +552,19 @@ bool TransitionSystem::is_valid() const {
 }
 
 bool TransitionSystem::is_label_mapping_consistent() const {
-    for (int global_label = 0; global_label < global_labels.get_size(); ++global_label) {
-        if (global_labels.is_current_label(global_label)) {
-            int local_label = global_to_local_label[global_label];
-            const LabelGroup &global_labels = local_to_global_labels[local_label];
-            assert(!global_labels.empty());
+    for (int global_label : global_labels) {
+        int local_label = global_to_local_label[global_label];
+        const LabelGroup &global_labels = local_to_global_labels[local_label];
+        assert(!global_labels.empty());
 
-            if (find(global_labels.begin(),
-                     global_labels.end(),
-                     global_label)
-                == global_labels.end()) {
-                dump_label_mapping();
-                cerr << "global label " << global_label << " is not part of the "
-                    "local label it is mapped to" << endl;
-                return false;
-            }
+        if (find(global_labels.begin(),
+                 global_labels.end(),
+                 global_label)
+            == global_labels.end()) {
+            dump_label_mapping();
+            cerr << "global label " << global_label << " is not part of the "
+                "local label it is mapped to" << endl;
+            return false;
         }
     }
 
@@ -585,11 +583,9 @@ bool TransitionSystem::is_label_mapping_consistent() const {
 
 void TransitionSystem::dump_label_mapping() const {
     utils::g_log << "global to local label mapping: ";
-    for (int global_label = 0; global_label < global_labels.get_size(); ++global_label) {
-        if (global_labels.is_current_label(global_label)) {
-            utils::g_log << global_label << " -> "
-                         << global_to_local_label[global_label] << ", ";
-        }
+    for (int global_label : global_labels) {
+        utils::g_log << global_label << " -> "
+                     << global_to_local_label[global_label] << ", ";
     }
     utils::g_log << endl;
     utils::g_log << "local to global label mapping: ";

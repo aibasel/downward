@@ -14,6 +14,25 @@
 using namespace std;
 
 namespace merge_and_shrink {
+GlobalLabelsConstIterator::GlobalLabelsConstIterator(
+    const std::vector<int> &label_costs, bool end)
+    : label_costs(label_costs),
+      current_index(end ? label_costs.size() : 0) {
+    next_valid_index();
+}
+
+void GlobalLabelsConstIterator::next_valid_index() {
+    while (current_index < label_costs.size()
+           && label_costs[current_index] == -1) {
+        ++current_index;
+    }
+}
+
+void GlobalLabelsConstIterator::operator++() {
+    ++current_index;
+    next_valid_index();
+}
+
 GlobalLabels::GlobalLabels(vector<int> &&label_costs, int max_num_labels)
     : label_costs(move(label_costs)),
       max_num_labels(max_num_labels) {
