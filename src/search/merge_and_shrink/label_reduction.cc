@@ -64,35 +64,35 @@ void LabelReduction::compute_label_mapping(
     vector<pair<int, vector<int>>> &label_mapping,
     utils::Verbosity verbosity) const {
     const GlobalLabels &labels = fts.get_labels();
-    int next_new_label_no = labels.get_size();
+    int next_new_label = labels.get_size();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (auto group_it = relation->begin();
          group_it != relation->end(); ++group_it) {
         const equivalence_relation::Block &block = *group_it;
-        unordered_map<int, vector<int>> equivalent_label_nos;
+        unordered_map<int, vector<int>> equivalent_labels;
         for (auto label_it = block.begin();
              label_it != block.end(); ++label_it) {
-            assert(*label_it < next_new_label_no);
-            int label_no = *label_it;
-            if (labels.is_current_label(label_no)) {
+            assert(*label_it < next_new_label);
+            int label = *label_it;
+            if (labels.is_current_label(label)) {
                 // only consider non-reduced labels
-                int cost = labels.get_label_cost(label_no);
-                equivalent_label_nos[cost].push_back(label_no);
+                int cost = labels.get_label_cost(label);
+                equivalent_labels[cost].push_back(label);
                 ++num_labels;
             }
         }
-        for (auto it = equivalent_label_nos.begin();
-             it != equivalent_label_nos.end(); ++it) {
-            const vector<int> &label_nos = it->second;
-            if (label_nos.size() > 1) {
+        for (auto it = equivalent_labels.begin();
+             it != equivalent_labels.end(); ++it) {
+            const vector<int> &labels = it->second;
+            if (labels.size() > 1) {
                 if (verbosity >= utils::Verbosity::DEBUG) {
-                    utils::g_log << "Reducing labels " << label_nos << " to " << next_new_label_no << endl;
+                    utils::g_log << "Reducing labels " << labels << " to " << next_new_label << endl;
                 }
-                label_mapping.push_back(make_pair(next_new_label_no, label_nos));
-                ++next_new_label_no;
+                label_mapping.push_back(make_pair(next_new_label, labels));
+                ++next_new_label;
             }
-            if (!label_nos.empty()) {
+            if (!labels.empty()) {
                 ++num_labels_after_reduction;
             }
         }
@@ -121,9 +121,9 @@ equivalence_relation::EquivalenceRelation
     int num_labels = labels.get_size();
     vector<pair<int, int>> annotated_labels;
     annotated_labels.reserve(num_labels);
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels.is_current_label(label_no)) {
-            annotated_labels.push_back(make_pair(0, label_no));
+    for (int label = 0; label < num_labels; ++label) {
+        if (labels.is_current_label(label)) {
+            annotated_labels.push_back(make_pair(0, label));
         }
     }
     equivalence_relation::EquivalenceRelation *relation =

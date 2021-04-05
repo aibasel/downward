@@ -22,7 +22,7 @@ GlobalLabels::GlobalLabels(vector<unique_ptr<GlobalLabel>> &&labels)
     }
 }
 
-void GlobalLabels::reduce_labels(const vector<int> &old_label_nos) {
+void GlobalLabels::reduce_labels(const vector<int> &old_labels) {
     /*
       Even though we currently only support exact label reductions where
       reduced labels are of equal cost, to support non-exact label reductions,
@@ -30,13 +30,13 @@ void GlobalLabels::reduce_labels(const vector<int> &old_label_nos) {
       labels reduced to it to satisfy admissibility.
     */
     int new_label_cost = INF;
-    for (size_t i = 0; i < old_label_nos.size(); ++i) {
-        int old_label_no = old_label_nos[i];
-        int cost = get_label_cost(old_label_no);
+    for (size_t i = 0; i < old_labels.size(); ++i) {
+        int old_label = old_labels[i];
+        int cost = get_label_cost(old_label);
         if (cost < new_label_cost) {
             new_label_cost = cost;
         }
-        labels[old_label_no] = nullptr;
+        labels[old_label] = nullptr;
     }
     labels.push_back(utils::make_unique_ptr<GlobalLabel>(new_label_cost));
 }
@@ -51,22 +51,22 @@ int GlobalLabels::get_num_active_labels() const {
     return result;
 }
 
-bool GlobalLabels::is_current_label(int label_no) const {
-    assert(utils::in_bounds(label_no, labels));
-    return labels[label_no] != nullptr;
+bool GlobalLabels::is_current_label(int label) const {
+    assert(utils::in_bounds(label, labels));
+    return labels[label] != nullptr;
 }
 
-int GlobalLabels::get_label_cost(int label_no) const {
-    assert(labels[label_no]);
-    return labels[label_no]->get_cost();
+int GlobalLabels::get_label_cost(int label) const {
+    assert(labels[label]);
+    return labels[label]->get_cost();
 }
 
 void GlobalLabels::dump_labels() const {
     utils::g_log << "active labels:" << endl;
-    for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
-        if (labels[label_no]) {
-            utils::g_log << "label " << label_no
-                         << ", cost " << labels[label_no]->get_cost()
+    for (size_t label = 0; label < labels.size(); ++label) {
+        if (labels[label]) {
+            utils::g_log << "label " << label
+                         << ", cost " << labels[label]->get_cost()
                          << endl;
         }
     }

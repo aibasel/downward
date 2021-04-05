@@ -32,10 +32,10 @@ class GlobalLabels {
     int max_size; // the maximum number of labels that can be created
 public:
     explicit GlobalLabels(std::vector<std::unique_ptr<GlobalLabel>> &&labels);
-    void reduce_labels(const std::vector<int> &old_label_nos);
+    void reduce_labels(const std::vector<int> &old_labels);
     int get_num_active_labels() const;
-    bool is_current_label(int label_no) const;
-    int get_label_cost(int label_no) const;
+    bool is_current_label(int label) const;
+    int get_label_cost(int label) const;
     void dump_labels() const;
     int get_size() const {
         return labels.size();

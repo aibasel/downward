@@ -59,25 +59,25 @@ class TSConstIterator {
       This class allows users to easily iterate over both local labels and the
       global labels they represent, as well as their transitions.
     */
-    const std::vector<std::vector<int>> &local_to_global_label_nos;
-    const std::vector<std::vector<Transition>> &transitions_by_local_label_no;
-    const std::vector<int> &local_label_no_to_cost;
-    int current_label_no;
+    const std::vector<std::vector<int>> &local_to_global_labels;
+    const std::vector<std::vector<Transition>> &transitions_by_local_label;
+    const std::vector<int> &local_label_to_cost;
+    int current_label;
 public:
     TSConstIterator(
-        const std::vector<LabelGroup> &local_to_global_label_nos,
-        const std::vector<std::vector<Transition>> &transitions_by_local_label_no,
-        const std::vector<int> &local_label_no_to_cost,
+        const std::vector<LabelGroup> &local_to_global_labels,
+        const std::vector<std::vector<Transition>> &transitions_by_local_label,
+        const std::vector<int> &local_label_to_cost,
         bool end);
     void operator++();
     GroupAndTransitions operator*() const;
 
     bool operator==(const TSConstIterator &rhs) const {
-        return current_label_no == rhs.current_label_no;
+        return current_label == rhs.current_label;
     }
 
     bool operator!=(const TSConstIterator &rhs) const {
-        return current_label_no != rhs.current_label_no;
+        return current_label != rhs.current_label;
     }
 };
 
@@ -103,10 +103,10 @@ private:
       mapped back to the set of global labels they represent. Their cost is
       the minimum cost of all represented global labels.
     */
-    std::vector<int> global_to_local_label_nos;
-    std::vector<std::vector<int>> local_to_global_label_nos;
-    std::vector<std::vector<Transition>> transitions_by_local_label_no;
-    std::vector<int> local_label_no_to_cost;
+    std::vector<int> global_to_local_labels;
+    std::vector<std::vector<int>> local_to_global_labels;
+    std::vector<std::vector<Transition>> transitions_by_local_label;
+    std::vector<int> local_label_to_cost;
 
     int num_states;
     std::vector<bool> goal_states;
@@ -119,8 +119,8 @@ private:
     */
     void compute_locally_equivalent_labels();
 
-    const std::vector<Transition> &get_transitions_for_local_label_no(int label_no) const {
-        return transitions_by_local_label_no[label_no];
+    const std::vector<Transition> &get_transitions_for_local_label(int label) const {
+        return transitions_by_local_label[label];
     }
 
     // Statistics and output
@@ -131,10 +131,10 @@ public:
         int num_variables,
         std::vector<int> &&incorporated_variables,
         const GlobalLabels &global_labels,
-        std::vector<int> &&global_to_local_label_nos,
-        std::vector<LabelGroup> &&local_to_global_label_nos,
-        std::vector<std::vector<Transition>> &&transitions_by_local_label_no,
-        std::vector<int> &&local_label_no_to_cost,
+        std::vector<int> &&global_to_local_labels,
+        std::vector<LabelGroup> &&local_to_global_labels,
+        std::vector<std::vector<Transition>> &&transitions_by_local_label,
+        std::vector<int> &&local_label_to_cost,
         int num_states,
         std::vector<bool> &&goal_states,
         int init_state);
@@ -173,16 +173,16 @@ public:
         bool only_equivalent_labels);
 
     TSConstIterator begin() const {
-        return TSConstIterator(local_to_global_label_nos,
-                               transitions_by_local_label_no,
-                               local_label_no_to_cost,
+        return TSConstIterator(local_to_global_labels,
+                               transitions_by_local_label,
+                               local_label_to_cost,
                                false);
     }
 
     TSConstIterator end() const {
-        return TSConstIterator(local_to_global_label_nos,
-                               transitions_by_local_label_no,
-                               local_label_no_to_cost,
+        return TSConstIterator(local_to_global_labels,
+                               transitions_by_local_label,
+                               local_label_to_cost,
                                true);
     }
 
