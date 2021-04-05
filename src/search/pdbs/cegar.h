@@ -118,9 +118,6 @@ class CEGAR {
     std::unordered_map<int, int> variable_to_projection;
     int collection_size;
 
-    // Store the index of a projection if it solves the concrete task.
-    int concrete_solution_index;
-
     void print_collection() const;
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
 
@@ -136,9 +133,19 @@ class CEGAR {
       current is the last state reached when executing the plan.
      */
     FlawList apply_plan(int collection_index, State &current) const;
-    FlawList get_flaws_for_projection(
-        int collection_index, const State &concrete_init);
-    FlawList get_flaws(const State &concrete_init);
+    /*
+      Use apply_plan to generate flaws. Return true if there are no flaws and
+      no blacklisted variables, in which case the concrete task is solved.
+      Return false in all other cases. Append new flaws to the passed-in flaws.
+    */
+    bool get_flaws_for_projection(
+        int collection_index, const State &concrete_init, FlawList &flaws);
+    /*
+      Use get_flaws_for_projection for all patterns of the collection. Append
+      new flaws to the passed-in flaws. If the task is solved by the plan of
+      any projection, return the index of the collection. Otherwise, return -1.
+    */
+    int get_flaws(const State &concrete_init, FlawList &flaws);
 
     // Methods related to refining.
     void add_pattern_for_var(int var);

@@ -182,8 +182,8 @@ FlawList CEGAR::apply_plan(int collection_index, State &current) const {
     return flaws;
 }
 
-FlawList CEGAR::get_flaws_for_projection(
-    int collection_index, const State &concrete_init) {
+bool CEGAR::get_flaws_for_projection(
+    int collection_index, const State &concrete_init, FlawList &flaws) {
     Projection &projection = *projection_collection[collection_index];
     if (projection.is_unsolvable()) {
         utils::g_log << "task is unsolvable." << endl;
@@ -193,8 +193,9 @@ FlawList CEGAR::get_flaws_for_projection(
     State current(concrete_init);
     // TODO: if copying unpacked states results in unpacked states, this can go.
     current.unpack();
-    FlawList flaws = apply_plan(collection_index, current);
-    if (flaws.empty()) {
+
+    FlawList new_flaws = apply_plan(collection_index, current);
+    if (new_flaws.empty()) {
         if (task_properties::is_goal_state(task_proxy, current)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << "plan led to a concrete goal state: ";
@@ -204,7 +205,7 @@ FlawList CEGAR::get_flaws_for_projection(
                     utils::g_log << "there are no blacklisted variables, "
                         "task solved." << endl;
                 }
-                concrete_solution_index = collection_index;
+                return true;
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are blacklisted variables, "
@@ -216,49 +217,48 @@ FlawList CEGAR::get_flaws_for_projection(
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << "plan did not lead to a goal state: ";
             }
+            bool raise_goal_flaw = false;
             for (const FactPair &goal : goals) {
                 int goal_var_id = goal.var;
                 if (current[goal_var_id].get_value() != goal.value &&
                     !blacklisted_variables.count(goal_var_id)) {
                     flaws.emplace_back(collection_index, goal_var_id);
+                    raise_goal_flaw = true;
                 }
             }
-            if (flaws.empty()) {
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "there are no non-blacklisted goal variables "
-                        "left, marking projection as solved." << endl;
-                }
-                projection.mark_as_solved();
-            } else {
+            if (raise_goal_flaw) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "raising goal violation flaw(s)." << endl;
                 }
+            } else {
+                if (verbosity >= utils::Verbosity::VERBOSE) {
+                    utils::g_log << "there are no non-blacklisted goal variables "
+                                    "left, marking projection as solved." << endl;
+                }
+                projection.mark_as_solved();
             }
         }
+    } else {
+        flaws.insert(flaws.end(), make_move_iterator(new_flaws.begin()),
+                     make_move_iterator(new_flaws.end()));
     }
-    return flaws;
+    return false;
 }
 
-FlawList CEGAR::get_flaws(const State &concrete_init) {
-    FlawList flaws;
+int CEGAR::get_flaws(const State &concrete_init, FlawList &flaws) {
+    assert(flaws.empty());
     for (size_t collection_index = 0;
          collection_index < projection_collection.size(); ++collection_index) {
         if (projection_collection[collection_index] &&
             !projection_collection[collection_index]->is_solved()) {
-            FlawList new_flaws =
-                get_flaws_for_projection(collection_index, concrete_init);
-            if (concrete_solution_index != -1) {
-                assert(concrete_solution_index == static_cast<int>(collection_index));
-                assert(new_flaws.empty());
-                // Return empty flaws to terminate the algorithm.
-                flaws.clear();
-                return flaws;
+            bool solved =
+                get_flaws_for_projection(collection_index, concrete_init, flaws);
+            if (solved) {
+                return collection_index;
             }
-            flaws.insert(flaws.end(), make_move_iterator(new_flaws.begin()),
-                         make_move_iterator(new_flaws.end()));
         }
     }
-    return flaws;
+    return -1;
 }
 
 void CEGAR::add_pattern_for_var(int var) {
@@ -395,22 +395,27 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     int iteration = 1;
     State concrete_init = task_proxy.get_initial_state();
     concrete_init.unpack();
+    int concrete_solution_index = -1;
     while (!time_limit_reached(timer)) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "iteration #" << iteration << endl;
         }
 
-        FlawList flaws = get_flaws(concrete_init);
+        FlawList flaws;
+        concrete_solution_index = get_flaws(concrete_init, flaws);
+
+        if (concrete_solution_index != -1) {
+            if (verbosity >= utils::Verbosity::NORMAL) {
+                utils::g_log << "task solved during computation of abstraction"
+                             << endl;
+            }
+            break;
+        }
 
         if (flaws.empty()) {
             if (verbosity >= utils::Verbosity::NORMAL) {
-                if (concrete_solution_index != -1) {
-                    utils::g_log << "task solved during computation of abstraction"
-                                 << endl;
-                } else {
-                    utils::g_log << "flaw list empty. No further refinements possible"
-                                 << endl;
-                }
+                utils::g_log << "flaw list empty. No further refinements possible"
+                             << endl;
             }
             break;
         }
@@ -482,8 +487,7 @@ CEGAR::CEGAR(
       task_proxy(*task),
       goals(move(goals)),
       blacklisted_variables(move(blacklisted_variables)),
-      collection_size(0),
-      concrete_solution_index(-1) {
+      collection_size(0) {
 #ifndef NDEBUG
     for (const FactPair &goal : goals) {
         bool is_goal = false;
