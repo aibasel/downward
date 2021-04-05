@@ -7,31 +7,15 @@
 #include <vector>
 
 namespace merge_and_shrink {
-class GlobalLabel {
-    /*
-      This class implements labels as used by merge-and-shrink transition
-      systems. Labels are opaque tokens that have an associated cost.
-    */
-    int cost;
-public:
-    explicit GlobalLabel(int cost_)
-        : cost(cost_) {
-    }
-    ~GlobalLabel() {}
-    int get_cost() const {
-        return cost;
-    }
-};
-
 /*
   This class serves both as a container class to handle the set of all global
   labels and to perform label reduction on this set.
 */
 class GlobalLabels {
-    std::vector<std::unique_ptr<GlobalLabel>> labels;
+    std::vector<int> label_costs;
     int max_num_labels; // the maximum number of labels that can be created
 public:
-    GlobalLabels(std::vector<std::unique_ptr<GlobalLabel>> &&labels, int max_num_labels);
+    GlobalLabels(std::vector<int> &&label_costs, int max_num_labels);
     void reduce_labels(const std::vector<int> &old_labels);
     int get_num_active_labels() const;
     bool is_current_label(int label) const;
@@ -39,7 +23,7 @@ public:
     void dump_labels() const;
 
     int get_size() const {
-        return labels.size();
+        return label_costs.size();
     }
 
     int get_max_num_labels() const {

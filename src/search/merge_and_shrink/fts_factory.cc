@@ -106,18 +106,18 @@ FTSFactory::~FTSFactory() {
 }
 
 unique_ptr<GlobalLabels> FTSFactory::create_labels() {
-    vector<unique_ptr<GlobalLabel>> labels;
+    vector<int> label_costs;
     OperatorsProxy ops = task_proxy.get_operators();
     int num_ops = ops.size();
     int max_num_labels = 0;
     if (num_ops > 0) {
         max_num_labels = 2 * num_ops - 1;
-        labels.reserve(max_num_labels);
+        label_costs.reserve(max_num_labels);
         for (OperatorProxy op : ops) {
-            labels.push_back(utils::make_unique_ptr<GlobalLabel>(op.get_cost()));
+            label_costs.push_back(op.get_cost());
         }
     }
-    return utils::make_unique_ptr<GlobalLabels>(move(labels), max_num_labels);
+    return utils::make_unique_ptr<GlobalLabels>(move(label_costs), max_num_labels);
 }
 
 void FTSFactory::build_state_data(VariableProxy var) {
