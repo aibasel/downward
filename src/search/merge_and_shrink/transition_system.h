@@ -60,13 +60,13 @@ class TSConstIterator {
       global labels they represent, as well as their transitions.
     */
     const std::vector<std::vector<int>> &local_to_global_labels;
-    const std::vector<std::vector<Transition>> &transitions_by_local_label;
+    const std::vector<std::vector<Transition>> &local_label_to_transitions;
     const std::vector<int> &local_label_to_cost;
     int current_label;
 public:
     TSConstIterator(
         const std::vector<LabelGroup> &local_to_global_labels,
-        const std::vector<std::vector<Transition>> &transitions_by_local_label,
+        const std::vector<std::vector<Transition>> &local_label_to_transitions,
         const std::vector<int> &local_label_to_cost,
         bool end);
     void operator++();
@@ -99,13 +99,13 @@ private:
     /*
       All locally equivalent labels are grouped together, and their
       transitions are only stored once for every such group. Each such group
-      is represented by a (virtual) local label id. Local label ids can be
-      mapped back to the set of global labels they represent. Their cost is
+      is represented by a (virtual) local label. Local labels can be mapped
+      back to the set of global labels they represent. Their cost is
       the minimum cost of all represented global labels.
     */
-    std::vector<int> global_to_local_labels;
+    std::vector<int> global_to_local_label;
     std::vector<std::vector<int>> local_to_global_labels;
-    std::vector<std::vector<Transition>> transitions_by_local_label;
+    std::vector<std::vector<Transition>> local_label_to_transitions;
     std::vector<int> local_label_to_cost;
 
     int num_states;
@@ -120,7 +120,7 @@ private:
     void compute_locally_equivalent_labels();
 
     const std::vector<Transition> &get_transitions_for_local_label(int label) const {
-        return transitions_by_local_label[label];
+        return local_label_to_transitions[label];
     }
 
     // Statistics and output
@@ -131,9 +131,9 @@ public:
         int num_variables,
         std::vector<int> &&incorporated_variables,
         const GlobalLabels &global_labels,
-        std::vector<int> &&global_to_local_labels,
+        std::vector<int> &&global_to_local_label,
         std::vector<LabelGroup> &&local_to_global_labels,
-        std::vector<std::vector<Transition>> &&transitions_by_local_label,
+        std::vector<std::vector<Transition>> &&local_label_to_transitions,
         std::vector<int> &&local_label_to_cost,
         int num_states,
         std::vector<bool> &&goal_states,
@@ -174,14 +174,14 @@ public:
 
     TSConstIterator begin() const {
         return TSConstIterator(local_to_global_labels,
-                               transitions_by_local_label,
+                               local_label_to_transitions,
                                local_label_to_cost,
                                false);
     }
 
     TSConstIterator end() const {
         return TSConstIterator(local_to_global_labels,
-                               transitions_by_local_label,
+                               local_label_to_transitions,
                                local_label_to_cost,
                                true);
     }

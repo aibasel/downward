@@ -29,9 +29,9 @@ class FTSFactory {
         int num_variables;
         vector<int> incorporated_variables;
 
-        vector<int> global_to_local_labels;
+        vector<int> global_to_local_label;
         vector<LabelGroup> local_to_global_labels;
-        vector<vector<Transition>> transitions_by_local_label;
+        vector<vector<Transition>> local_label_to_transitions;
         vector<int> local_label_to_cost;
         vector<bool> relevant_labels;
         int num_states;
@@ -40,9 +40,9 @@ class FTSFactory {
         TransitionSystemData(TransitionSystemData &&other)
             : num_variables(other.num_variables),
               incorporated_variables(move(other.incorporated_variables)),
-              global_to_local_labels(move(other.global_to_local_labels)),
+              global_to_local_label(move(other.global_to_local_label)),
               local_to_global_labels(move(other.local_to_global_labels)),
-              transitions_by_local_label(move(other.transitions_by_local_label)),
+              local_label_to_transitions(move(other.local_label_to_transitions)),
               local_label_to_cost(move(other.local_label_to_cost)),
               relevant_labels(move(other.relevant_labels)),
               num_states(other.num_states),
@@ -151,7 +151,7 @@ void FTSFactory::initialize_transition_system_data(const GlobalLabels &global_la
         TransitionSystemData &ts_data = transition_system_data_by_var[var.get_id()];
         ts_data.num_variables = variables.size();
         ts_data.incorporated_variables.push_back(var.get_id());
-        ts_data.global_to_local_labels.resize(global_labels.get_max_size(), -1);
+        ts_data.global_to_local_label.resize(global_labels.get_max_size(), -1);
         ts_data.relevant_labels.resize(global_labels.get_size(), false);
         build_state_data(var);
     }
@@ -305,22 +305,22 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
             assert(utils::is_sorted_unique(transitions));
         }
 
-        vector<int> &global_to_local_labels =
-            transition_system_data_by_var[var_id].global_to_local_labels;
-        vector<vector<Transition>> &transitions_by_local_label =
-            transition_system_data_by_var[var_id].transitions_by_local_label;
+        vector<int> &global_to_local_label =
+            transition_system_data_by_var[var_id].global_to_local_label;
+        vector<vector<Transition>> &local_label_to_transitions =
+            transition_system_data_by_var[var_id].local_label_to_transitions;
         vector<LabelGroup> &local_to_global_labels =
             transition_system_data_by_var[var_id].local_to_global_labels;
         vector<int> &local_label_to_cost =
             transition_system_data_by_var[var_id].local_label_to_cost;
-        assert(transitions_by_local_label.size() == local_to_global_labels.size());
-        assert(transitions_by_local_label.size() == local_label_to_cost.size());
+        assert(local_label_to_transitions.size() == local_to_global_labels.size());
+        assert(local_label_to_transitions.size() == local_label_to_cost.size());
         bool found_locally_equivalent_label_group = false;
-        for (size_t local_label = 0; local_label < transitions_by_local_label.size(); ++local_label) {
-            const vector<Transition> &group_transitions = transitions_by_local_label[local_label];
+        for (size_t local_label = 0; local_label < local_label_to_transitions.size(); ++local_label) {
+            const vector<Transition> &group_transitions = local_label_to_transitions[local_label];
             if (transitions == group_transitions) {
-                assert(global_to_local_labels[label] == -1);
-                global_to_local_labels[label] = local_label;
+                assert(global_to_local_label[label] == -1);
+                global_to_local_label[label] = local_label;
                 local_to_global_labels[local_label].push_back(label);
                 local_label_to_cost[local_label] = min(local_label_to_cost[local_label], label_cost);
                 found_locally_equivalent_label_group = true;
@@ -329,12 +329,12 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
         }
 
         if (!found_locally_equivalent_label_group) {
-            int new_local_label = transitions_by_local_label.size();
-            transitions_by_local_label.push_back(move(transitions));
+            int new_local_label = local_label_to_transitions.size();
+            local_label_to_transitions.push_back(move(transitions));
             local_to_global_labels.push_back({label});
             local_label_to_cost.push_back(label_cost);
-            assert(global_to_local_labels[label] == -1);
-            global_to_local_labels[label] = new_local_label;
+            assert(global_to_local_label[label] == -1);
+            global_to_local_label[label] = new_local_label;
         }
     }
 }
@@ -360,13 +360,13 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, co
         transitions.reserve(num_states);
         for (int state = 0; state < num_states; ++state)
             transitions.emplace_back(state, state);
-        int new_local_label = ts_data.transitions_by_local_label.size();
+        int new_local_label = ts_data.local_label_to_transitions.size();
         for (int label : irrelevant_labels) {
-            assert(ts_data.global_to_local_labels[label] == -1);
-            ts_data.global_to_local_labels[label] = new_local_label;
+            assert(ts_data.global_to_local_label[label] == -1);
+            ts_data.global_to_local_label[label] = new_local_label;
         }
         ts_data.local_to_global_labels.push_back(move(irrelevant_labels));
-        ts_data.transitions_by_local_label.push_back(move(transitions));
+        ts_data.local_label_to_transitions.push_back(move(transitions));
         ts_data.local_label_to_cost.push_back(cost);
     }
 }
@@ -403,9 +403,9 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
                              ts_data.num_variables,
                              move(ts_data.incorporated_variables),
                              global_labels,
-                             move(ts_data.global_to_local_labels),
+                             move(ts_data.global_to_local_label),
                              move(ts_data.local_to_global_labels),
-                             move(ts_data.transitions_by_local_label),
+                             move(ts_data.local_label_to_transitions),
                              move(ts_data.local_label_to_cost),
                              ts_data.num_states,
                              move(ts_data.goal_states),
