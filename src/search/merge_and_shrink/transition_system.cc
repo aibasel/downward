@@ -6,12 +6,10 @@
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
-#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <iterator>
 #include <set>
 #include <sstream>
 #include <string>
@@ -189,7 +187,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         // Now create the new groups together with their transitions.
         for (auto &bucket : buckets) {
             const vector<Transition> &transitions2 =
-                ts2.get_transitions_for_local_label(bucket.first);
+                ts2.local_label_to_transitions[bucket.first];
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
@@ -428,12 +426,12 @@ void TransitionSystem::apply_label_reduction(
             int new_label = mapping.first;
             const vector<int> &old_labels = mapping.second;
             int local_label = global_to_local_label[old_labels.front()];
-            local_to_global_labels[local_label].push_back(new_label);
+            LabelGroup &label_group = local_to_global_labels[local_label];
+            label_group.push_back(new_label);
             global_to_local_label[new_label] = local_label;
 
             for (int old_label : old_labels) {
                 assert(global_to_local_label[old_label] == local_label);
-                LabelGroup &label_group = local_to_global_labels[local_label];
                 label_group.erase(find(label_group.begin(), label_group.end(), old_label));
                 // Reset (for consistency only, old labels are never accessed).
                 global_to_local_label[old_label] = -1;
@@ -554,26 +552,19 @@ bool TransitionSystem::is_valid() const {
 }
 
 bool TransitionSystem::is_label_mapping_consistent() const {
-//    for (int label = 0; label < global_labels.get_size(); ++label) {
-//        if (global_labels.is_current_label(label)) {
-//            cout << "label " << label << " -> "
-//                 << global_to_local_label[label] << endl;
-//        }
-//    }
-//    for (size_t local_label = 0; local_label < local_to_global_labels.size(); ++local_label) {
-//        cout << "local label " << local_label << " <- " << local_to_global_labels[local_label] << endl;
-//    }
-
-    for (int label = 0; label < global_labels.get_size(); ++label) {
-        if (global_labels.is_current_label(label)) {
-            int local_label = global_to_local_label[label];
+    for (int global_label = 0; global_label < global_labels.get_size(); ++global_label) {
+        if (global_labels.is_current_label(global_label)) {
+            int local_label = global_to_local_label[global_label];
             const LabelGroup &global_labels = local_to_global_labels[local_label];
-            assert(!local_to_global_labels[local_label].empty());
+            assert(!global_labels.empty());
 
             if (find(global_labels.begin(),
                      global_labels.end(),
-                     label)
+                     global_label)
                 == global_labels.end()) {
+                dump_label_mapping();
+                cerr << "global label " << global_label << " is not part of the "
+                    "local label it is mapped to" << endl;
                 return false;
             }
         }
@@ -582,11 +573,32 @@ bool TransitionSystem::is_label_mapping_consistent() const {
     for (size_t local_label = 0; local_label < local_to_global_labels.size(); ++local_label) {
         for (int global_label : local_to_global_labels[local_label]) {
             if (global_to_local_label[global_label] != static_cast<int>(local_label)) {
+                dump_label_mapping();
+                cerr << "global label " << global_label << " is not mapped "
+                    "to the local label it is part of" << endl;
                 return false;
             }
         }
     }
     return true;
+}
+
+void TransitionSystem::dump_label_mapping() const {
+    utils::g_log << "global to local label mapping: ";
+    for (int global_label = 0; global_label < global_labels.get_size(); ++global_label) {
+        if (global_labels.is_current_label(global_label)) {
+            utils::g_log << global_label << " -> "
+                         << global_to_local_label[global_label] << ", ";
+        }
+    }
+    utils::g_log << endl;
+    utils::g_log << "local to global label mapping: ";
+    for (size_t local_label = 0;
+         local_label < local_to_global_labels.size(); ++local_label) {
+        utils::g_log << local_label << ": "
+                     << local_to_global_labels[local_label] << ", ";
+    }
+    utils::g_log << endl;
 }
 
 bool TransitionSystem::is_solvable(const Distances &distances) const {

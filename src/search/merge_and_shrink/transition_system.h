@@ -59,7 +59,7 @@ class TSConstIterator {
       This class allows users to easily iterate over both local labels and the
       global labels they represent, as well as their transitions.
     */
-    const std::vector<std::vector<int>> &local_to_global_labels;
+    const std::vector<LabelGroup> &local_to_global_labels;
     const std::vector<std::vector<Transition>> &local_label_to_transitions;
     const std::vector<int> &local_label_to_cost;
     int current_label;
@@ -104,7 +104,7 @@ private:
       the minimum cost of all represented global labels.
     */
     std::vector<int> global_to_local_label;
-    std::vector<std::vector<int>> local_to_global_labels;
+    std::vector<LabelGroup> local_to_global_labels;
     std::vector<std::vector<Transition>> local_label_to_transitions;
     std::vector<int> local_label_to_cost;
 
@@ -119,13 +119,18 @@ private:
     */
     void compute_locally_equivalent_labels();
 
-    const std::vector<Transition> &get_transitions_for_local_label(int label) const {
-        return local_label_to_transitions[label];
-    }
-
     // Statistics and output
     int compute_total_transitions() const;
     std::string get_description() const;
+
+    // Consistency
+    /*
+      The transitions for every group of locally equivalent labels are
+      sorted (by source, by target) and there are no duplicates.
+    */
+    bool are_transitions_sorted_unique() const;
+    bool is_label_mapping_consistent() const;
+    void dump_label_mapping() const;
 public:
     TransitionSystem(
         int num_variables,
@@ -195,13 +200,7 @@ public:
     */
     std::string tag() const;
 
-    /*
-      The transitions for every group of locally equivalent labels are
-      sorted (by source, by target) and there are no duplicates.
-    */
-    bool are_transitions_sorted_unique() const;
     bool is_valid() const;
-    bool is_label_mapping_consistent() const;
 
     bool is_solvable(const Distances &distances) const;
     void dump_dot_graph() const;
