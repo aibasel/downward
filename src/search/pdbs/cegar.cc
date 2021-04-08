@@ -191,9 +191,6 @@ bool CEGAR::get_flaws_for_projection(
     }
 
     State current(concrete_init);
-    // TODO: if copying unpacked states results in unpacked states, this can go.
-    current.unpack();
-
     FlawList new_flaws = apply_plan(collection_index, current);
     if (new_flaws.empty()) {
         if (task_properties::is_goal_state(task_proxy, current)) {
