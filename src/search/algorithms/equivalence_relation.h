@@ -1,11 +1,11 @@
 #ifndef ALGORITHMS_EQUIVALENCE_RELATION_H
 #define ALGORITHMS_EQUIVALENCE_RELATION_H
 
-#include "../utils/hash.h"
 #include "../utils/system.h"
 
 #include <algorithm>
 #include <list>
+#include <unordered_map>
 #include <vector>
 
 namespace equivalence_relation {
@@ -69,7 +69,7 @@ class EquivalenceRelation {
       block and points to the element within it.
     */
     using ElementPosition = std::pair<BlockListIter, ElementListIter>;
-    using ElementPositionMap = utils::HashMap<int, ElementPosition>;
+    using ElementPositionMap = std::unordered_map<int, ElementPosition>;
     ElementPositionMap element_positions;
 
     BlockListIter add_empty_block();
