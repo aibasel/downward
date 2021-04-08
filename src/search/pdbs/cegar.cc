@@ -237,7 +237,7 @@ bool CEGAR::get_flaws_for_projection(
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are no non-blacklisted goal variables "
-                                    "left, marking projection as solved." << endl;
+                        "left, marking projection as solved." << endl;
                 }
                 projection.mark_as_solved();
             }
