@@ -82,7 +82,7 @@ void LabelReduction::compute_label_mapping(
             if (equivalent_labels.size() > 1) {
                 if (verbosity >= utils::Verbosity::DEBUG) {
                     utils::g_log << "Reducing labels "
-                        << equivalent_labels << " to " << next_new_label << endl;
+                                 << equivalent_labels << " to " << next_new_label << endl;
                 }
                 label_mapping.push_back(make_pair(next_new_label, equivalent_labels));
                 ++next_new_label;
