@@ -84,6 +84,9 @@ void MergeAndShrinkAlgorithm::dump_options() const {
                      << shrink_threshold_before_merge << endl;
         utils::g_log << endl;
 
+        shrink_strategy->dump_options();
+        utils::g_log << endl;
+
         utils::g_log << "Pruning unreachable states: "
                      << (prune_unreachable_states ? "yes" : "no") << endl;
         utils::g_log << "Pruning irrelevant states: "

@@ -2,7 +2,6 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
 
@@ -53,8 +52,8 @@ vector<int> MergeScoringFunctionDFP::compute_label_ranks(
                                  distances.get_goal_distance(transition.target));
             }
         }
-        for (int label_no : label_group) {
-            label_ranks[label_no] = label_rank;
+        for (int label : label_group) {
+            label_ranks[label] = label_rank;
         }
     }
 

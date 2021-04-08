@@ -2,7 +2,6 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "label_equivalence_relation.h"
 #include "transition_system.h"
 
 #include "../option_parser.h"
@@ -185,7 +184,6 @@ void ShrinkBisimulation::compute_signatures(
             label_reduction=exact(before_shrinking=true,before_merging=false)))
     */
     for (GroupAndTransitions gat : ts) {
-        const LabelGroup &label_group = gat.label_group;
         const vector<Transition> &transitions = gat.transitions;
         for (const Transition &transition : transitions) {
             assert(signatures[transition.src + 1].state == transition.src);
@@ -197,7 +195,7 @@ void ShrinkBisimulation::compute_signatures(
                     // We skip transitions connected to an irrelevant state.
                     skip_transition = true;
                 } else {
-                    int cost = label_group.get_cost();
+                    int cost = gat.cost;
                     assert(target_h + cost >= src_h);
                     skip_transition = (target_h + cost != src_h);
                 }

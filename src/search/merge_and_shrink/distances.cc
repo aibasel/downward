@@ -1,6 +1,5 @@
 #include "distances.h"
 
-#include "label_equivalence_relation.h"
 #include "transition_system.h"
 
 #include "../algorithms/priority_queues.h"
@@ -40,8 +39,7 @@ bool Distances::is_unit_cost() const {
       compute_goal_distances_general_cost) do.
     */
     for (GroupAndTransitions gat : transition_system) {
-        const LabelGroup &label_group = gat.label_group;
-        if (label_group.get_cost() != 1)
+        if (gat.cost != 1)
             return false;
     }
     return true;
@@ -125,9 +123,8 @@ static void dijkstra_search(
 void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int>>> forward_graph(get_num_states());
     for (GroupAndTransitions gat : transition_system) {
-        const LabelGroup &label_group = gat.label_group;
         const vector<Transition> &transitions = gat.transitions;
-        int cost = label_group.get_cost();
+        int cost = gat.cost;
         for (const Transition &transition : transitions) {
             forward_graph[transition.src].push_back(
                 make_pair(transition.target, cost));
@@ -145,9 +142,8 @@ void Distances::compute_init_distances_general_cost() {
 void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int>>> backward_graph(get_num_states());
     for (GroupAndTransitions gat : transition_system) {
-        const LabelGroup &label_group = gat.label_group;
         const vector<Transition> &transitions = gat.transitions;
-        int cost = label_group.get_cost();
+        int cost = gat.cost;
         for (const Transition &transition : transitions) {
             backward_graph[transition.target].push_back(
                 make_pair(transition.src, cost));

@@ -37,14 +37,14 @@ void FTSConstIterator::operator++() {
 
 
 FactoredTransitionSystem::FactoredTransitionSystem(
-    unique_ptr<Labels> labels,
+    unique_ptr<GlobalLabels> labels,
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
     vector<unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
     vector<unique_ptr<Distances>> &&distances,
     const bool compute_init_distances,
     const bool compute_goal_distances,
     utils::Verbosity verbosity)
-    : labels(move(labels)),
+    : global_labels(move(labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
       distances(move(distances)),
@@ -61,7 +61,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
 }
 
 FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&other)
-    : labels(move(other.labels)),
+    : global_labels(move(other.global_labels)),
       transition_systems(move(other.transition_systems)),
       mas_representations(move(other.mas_representations)),
       distances(move(other.distances)),
@@ -97,8 +97,7 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
     if (compute_goal_distances && !distances[index]->are_goal_distances_computed()) {
         return false;
     }
-    return transition_systems[index]->are_transitions_sorted_unique() &&
-           transition_systems[index]->in_sync_with_label_equivalence_relation();
+    return transition_systems[index]->is_valid();
 }
 
 void FactoredTransitionSystem::assert_all_components_valid() const {
@@ -114,8 +113,8 @@ void FactoredTransitionSystem::apply_label_mapping(
     int combinable_index) {
     assert_all_components_valid();
     for (const auto &new_label_old_labels : label_mapping) {
-        assert(new_label_old_labels.first == labels->get_size());
-        labels->reduce_labels(new_label_old_labels.second);
+        assert(new_label_old_labels.first == global_labels->get_size());
+        global_labels->reduce_labels(new_label_old_labels.second);
     }
     for (size_t i = 0; i < transition_systems.size(); ++i) {
         if (transition_systems[i]) {
@@ -166,7 +165,7 @@ int FactoredTransitionSystem::merge(
     assert(is_component_valid(index2));
     transition_systems.push_back(
         TransitionSystem::merge(
-            *labels,
+            *global_labels,
             *transition_systems[index1],
             *transition_systems[index2],
             verbosity));
