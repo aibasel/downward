@@ -97,51 +97,41 @@ void CEGAR::compute_initial_collection() {
     }
 }
 
-
-
 /*
-  TODO: this is a duplicate of State::get_unregistered_successor.
-  In contrast to the original function, it does not assert that the given
-  operator is applicable. It also does not evaluate axioms because this part
-  of the code does not support axioms anyway.
+  Apply the operator to the given state, ignoring that the operator is
+  potentially not applicable in the state, and expecting that the operator
+  has not conditional effects.
 */
-State get_unregistered_successor(
-    const shared_ptr<AbstractTask> &task,
-    const State &state,
-    const OperatorProxy &op) {
+void apply_op_to_state(vector<int> &state, const OperatorProxy &op) {
     assert(!op.is_axiom());
-    vector<int> new_values = state.get_unpacked_values();
-
     for (EffectProxy effect : op.get_effects()) {
-        if (does_fire(effect, state)) {
-            FactPair effect_fact = effect.get_fact().get_pair();
-            new_values[effect_fact.var] = effect_fact.value;
-        }
+        assert(effect.get_conditions().empty());
+        FactPair effect_fact = effect.get_fact().get_pair();
+        state[effect_fact.var] = effect_fact.value;
     }
-
-    assert(task->get_num_axioms() == 0);
-    return State(*task, move(new_values));
 }
 
 FlawList CEGAR::get_violated_preconditions(
-    int collection_index, const OperatorProxy &op, const State &state) const {
+    int collection_index,
+    const OperatorProxy &op,
+    const vector<int> &current_state) const {
     FlawList flaws;
     for (FactProxy precondition : op.get_preconditions()) {
-        int var = precondition.get_variable().get_id();
+        int var_id = precondition.get_variable().get_id();
 
         // Ignore blacklisted variables.
-        if (blacklisted_variables.count(var)) {
+        if (blacklisted_variables.count(var_id)) {
             continue;
         }
 
-        if (state[precondition.get_variable()] != precondition) {
-            flaws.emplace_back(collection_index, var);
+        if (current_state[var_id] != precondition.get_value()) {
+            flaws.emplace_back(collection_index, var_id);
         }
     }
     return flaws;
 }
 
-FlawList CEGAR::apply_plan(int collection_index, State &current) const {
+FlawList CEGAR::apply_plan(int collection_index, vector<int> &current_state) const {
     Projection &projection = *projection_collection[collection_index];
     const vector<vector<OperatorID>> &plan = projection.get_plan();
     if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -152,7 +142,7 @@ FlawList CEGAR::apply_plan(int collection_index, State &current) const {
         FlawList step_flaws;
         for (OperatorID op_id : equivalent_ops) {
             OperatorProxy op = task_proxy.get_operators()[op_id];
-            FlawList operator_flaws = get_violated_preconditions(collection_index, op, current);
+            FlawList operator_flaws = get_violated_preconditions(collection_index, op, current_state);
 
             /*
               If the operator is applicable, clear step_flaws, update the state
@@ -162,7 +152,7 @@ FlawList CEGAR::apply_plan(int collection_index, State &current) const {
             */
             if (operator_flaws.empty()) {
                 step_flaws.clear();
-                current = get_unregistered_successor(task, current, op);
+                apply_op_to_state(current_state, op);
                 break;
             } else {
                 step_flaws.insert(step_flaws.end(),
@@ -197,10 +187,11 @@ bool CEGAR::get_flaws_for_projection(
         utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
     }
 
-    State current(concrete_init);
-    FlawList new_flaws = apply_plan(collection_index, current);
+    vector<int> current_state = concrete_init.get_unpacked_values();
+    FlawList new_flaws = apply_plan(collection_index, current_state);
     if (new_flaws.empty()) {
-        if (task_properties::is_goal_state(task_proxy, current)) {
+        State final_state(*task, move(current_state));
+        if (task_properties::is_goal_state(task_proxy, final_state)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << "plan led to a concrete goal state: ";
             }
@@ -224,7 +215,7 @@ bool CEGAR::get_flaws_for_projection(
             bool raise_goal_flaw = false;
             for (const FactPair &goal : goals) {
                 int goal_var_id = goal.var;
-                if (current[goal_var_id].get_value() != goal.value &&
+                if (final_state[goal_var_id].get_value() != goal.value &&
                     !blacklisted_variables.count(goal_var_id)) {
                     flaws.emplace_back(collection_index, goal_var_id);
                     raise_goal_flaw = true;

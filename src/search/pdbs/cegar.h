@@ -130,7 +130,9 @@ class CEGAR {
       violated preconditions.
     */
     FlawList get_violated_preconditions(
-        int collection_index, const OperatorProxy &op, const State &state) const;
+        int collection_index,
+        const OperatorProxy &op,
+        const std::vector<int> &current_state) const;
     /*
       Try to apply the plan of the projection at the given index in the
       concrete task starting at the given state. During application,
@@ -139,7 +141,7 @@ class CEGAR {
       of all operators of the failing plan step. When the method returns,
       current is the last state reached when executing the plan.
      */
-    FlawList apply_plan(int collection_index, State &current) const;
+    FlawList apply_plan(int collection_index, std::vector<int> &current_state) const;
     /*
       Use apply_plan to generate flaws. Return true if there are no flaws and
       no blacklisted variables, in which case the concrete task is solved.
