@@ -101,8 +101,9 @@ void CEGAR::compute_initial_collection() {
 
 /*
   TODO: this is a duplicate of State::get_unregistered_successor.
-  The reason is that we may apply operators even though they are not
-  applicable due to ignoring blacklisted violated preconditions.
+  In contrast to the original function, it does not assert that the given
+  operator is applicable. It also does not evaluate axioms because this part
+  of the code does not support axioms anyway.
 */
 State get_unregistered_successor(
     const shared_ptr<AbstractTask> &task,
