@@ -123,8 +123,25 @@ State get_unregistered_successor(
     return State(*task, move(new_values));
 }
 
-FlawList CEGAR::apply_plan(int collection_index, State &current) const {
+FlawList CEGAR::get_violated_preconditions(
+    int collection_index, const OperatorProxy &op, const State &state) const {
     FlawList flaws;
+    for (FactProxy precondition : op.get_preconditions()) {
+        int var = precondition.get_variable().get_id();
+
+        // Ignore blacklisted variables.
+        if (blacklisted_variables.count(var)) {
+            continue;
+        }
+
+        if (state[precondition.get_variable()] != precondition) {
+            flaws.emplace_back(collection_index, var);
+        }
+    }
+    return flaws;
+}
+
+FlawList CEGAR::apply_plan(int collection_index, State &current) const {
     Projection &projection = *projection_collection[collection_index];
     const vector<vector<OperatorID>> &plan = projection.get_plan();
     if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -132,55 +149,44 @@ FlawList CEGAR::apply_plan(int collection_index, State &current) const {
                      << projection.get_pattern() << ": ";
     }
     for (const vector<OperatorID> &equivalent_ops : plan) {
-        bool step_failed = true;
+        FlawList step_flaws;
         for (OperatorID op_id : equivalent_ops) {
             OperatorProxy op = task_proxy.get_operators()[op_id];
+            FlawList operator_flaws = get_violated_preconditions(collection_index, op, current);
 
             /*
-              Check if the operator is applicable. If not, add its violated
-              preconditions to the list of flaws.
-            */
-            bool flaw_detected = false;
-            for (FactProxy precondition : op.get_preconditions()) {
-                int var = precondition.get_variable().get_id();
-
-                // Ignore blacklisted variables.
-                if (blacklisted_variables.count(var)) {
-                    continue;
-                }
-
-                if (current[precondition.get_variable()] != precondition) {
-                    flaw_detected = true;
-                    flaws.emplace_back(collection_index, var);
-                }
-            }
-
-            /*
-              If the operator is applicable, clear flaws, update the state
+              If the operator is applicable, clear step_flaws, update the state
               to the successor state and proceed with the next plan step in
-              the next iteration.
+              the next iteration. Otherwise, move the flaws of the operator
+              to step_flaws.
             */
-            if (!flaw_detected) {
-                step_failed = false;
-                flaws.clear();
+            if (operator_flaws.empty()) {
+                step_flaws.clear();
                 current = get_unregistered_successor(task, current, op);
                 break;
+            } else {
+                step_flaws.insert(step_flaws.end(),
+                                  make_move_iterator(operator_flaws.begin()),
+                                  make_move_iterator(operator_flaws.end()));
             }
         }
 
-        // If all equivalent operators are inapplicable, stop plan execution.
-        if (step_failed) {
-            break;
+        /*
+          If all equivalent operators are inapplicable, return the collected
+          flaws of this plan step.
+        */
+        if (!step_flaws.empty()) {
+            if (verbosity >= utils::Verbosity::VERBOSE) {
+                utils::g_log << "failure." << endl;
+            }
+            return step_flaws;
         }
     }
+
     if (verbosity >= utils::Verbosity::VERBOSE) {
-        if (flaws.empty()) {
-            utils::g_log << "success." << endl;
-        } else {
-            utils::g_log << "failure." << endl;
-        }
+        utils::g_log << "success." << endl;
     }
-    return flaws;
+    return {};
 }
 
 bool CEGAR::get_flaws_for_projection(

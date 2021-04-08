@@ -125,6 +125,13 @@ class CEGAR {
     void compute_initial_collection();
 
     /*
+      Check if operator op is applicable in state, ignoring blacklisted
+      variables. If it is, return an empty (flaw) list. Otherwise, return the
+      violated preconditions.
+    */
+    FlawList get_violated_preconditions(
+        int collection_index, const OperatorProxy &op, const State &state) const;
+    /*
       Try to apply the plan of the projection at the given index in the
       concrete task starting at the given state. During application,
       blacklisted variables are ignored. If plan application succeeds,
