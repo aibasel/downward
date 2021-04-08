@@ -438,13 +438,13 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         const shared_ptr<PatternDatabase> &pdb =
             projection_collection[concrete_solution_index]->get_pdb();
         patterns->push_back(pdb->get_pattern());
-        pdbs->push_back(move(pdb));
+        pdbs->push_back(pdb);
     } else {
         for (const unique_ptr<Projection> &projection : projection_collection) {
             if (projection) {
                 const shared_ptr<PatternDatabase> &pdb = projection->get_pdb();
                 patterns->push_back(pdb->get_pattern());
-                pdbs->push_back(move(pdb));
+                pdbs->push_back(pdb);
             }
         }
     }
