@@ -63,7 +63,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
 
     if (verbosity >= utils::Verbosity::DEBUG) {
         utils::g_log << "goal variables: ";
-        for (auto goal : goals) {
+        for (FactPair goal : goals) {
             utils::g_log << goal.var << ", ";
         }
         utils::g_log << endl;
