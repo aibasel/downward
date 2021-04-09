@@ -123,7 +123,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         }
 
         int remaining_pdb_size_for_cegar = min(remaining_collection_size, max_pdb_size);
-        double remaining_time_for_cegar = min(timer.get_remaining_time().operator double(), cegar_max_time);
+        double remaining_time_for_cegar =
+            min(static_cast<double>(timer.get_remaining_time()), cegar_max_time);
         /*
           Call CEGAR with the remaining size budget (limiting one of pdb and
           collection size would be enough, but this is cleaner), with the
