@@ -69,6 +69,7 @@ static vector<vector<OperatorID>> extract_plan(
                 abs_task_proxy, succ_gen, current_node->predecessor->state, current_node->state);
 
         if (compute_wildcard_plan) {
+            rng->shuffle(cheapest_operators);
             plan.push_back(move(cheapest_operators));
         } else {
             OperatorID random_op_id = *rng->choose(cheapest_operators);
