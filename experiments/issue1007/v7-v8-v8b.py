@@ -14,7 +14,7 @@ from average_report import AverageAlgorithmReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue1007-v7", "issue1007-v8", "issue1007-v8b", "issue1007-v8c", "issue1007-v8d"]
+REVISIONS = ["issue1007-v7", "issue1007-v8", "issue1007-v8b"]
 MAX_TIME=20
 if common_setup.is_test_run():
     MAX_TIME=2
