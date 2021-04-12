@@ -120,7 +120,7 @@ FlawList CEGAR::get_violated_preconditions(
         int var_id = precondition.get_variable().get_id();
 
         // Ignore blacklisted variables.
-        if (blacklisted_variables.count(var_id)) {
+        if (!blacklisted_variables.empty() && blacklisted_variables[var_id]) {
             continue;
         }
 
@@ -216,7 +216,7 @@ bool CEGAR::get_flaws_for_projection(
             for (const FactPair &goal : goals) {
                 int goal_var_id = goal.var;
                 if (final_state[goal_var_id].get_value() != goal.value &&
-                    !blacklisted_variables.count(goal_var_id)) {
+                    (blacklisted_variables.empty() || !blacklisted_variables[goal_var_id])) {
                     flaws.emplace_back(collection_index, goal_var_id);
                     raise_goal_flaw = true;
                 }
@@ -380,7 +380,7 @@ void CEGAR::refine(const FlawList &flaws) {
             utils::g_log << "could not add var/merge patterns due to size "
                 "limits. Blacklisting." << endl;
         }
-        blacklisted_variables.insert(var);
+        blacklisted_variables[var] = true;
     }
 }
 
@@ -471,7 +471,7 @@ CEGAR::CEGAR(
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
     vector<FactPair> &&goals,
-    unordered_set<int> &&blacklisted_variables)
+    vector<bool> &&blacklisted_variables)
     : max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
