@@ -61,10 +61,8 @@ unordered_set<int> PatternCollectionGeneratorMultipleCegar::get_blacklisted_vari
         int blacklist_size = (*rng)(non_goal_variables.size());
         ++blacklist_size; // [1, |non-goal variables|]
         rng->shuffle(non_goal_variables);
-        for (int i = 0; i < blacklist_size; ++i) {
-            int var_id = non_goal_variables[i];
-            blacklisted_variables.insert(var_id);
-        }
+        blacklisted_variables.insert(
+            non_goal_variables.begin(), non_goal_variables.begin() + blacklist_size);
         if (verbosity >= utils::Verbosity::DEBUG) {
             utils::g_log << "blacklisting " << blacklist_size << " out of "
                          << non_goal_variables.size()
