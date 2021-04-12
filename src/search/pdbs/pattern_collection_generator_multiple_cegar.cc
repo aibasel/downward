@@ -229,7 +229,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
           remaining time limit and an RNG instance with a different random
           seed in each iteration.
         */
-        PatternCollectionInformation collection_info = CEGAR(
+        CEGAR cegar(
             remaining_pdb_size_for_cegar,
             remaining_collection_size,
             wildcard_plans,
@@ -238,7 +238,9 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             cegar_rng,
             task,
             {goals[goal_index]},
-            move(blacklisted_variables)).compute_pattern_collection();
+            move(blacklisted_variables));
+        PatternCollectionInformation collection_info =
+            cegar.compute_pattern_collection();
         handle_generated_pattern(
             move(collection_info),
             generated_patterns,
