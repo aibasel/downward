@@ -50,7 +50,7 @@ void PatternCollectionGeneratorMultipleCegar::check_blacklist_trigger_timer(
 }
 
 unordered_set<int> PatternCollectionGeneratorMultipleCegar::get_blacklisted_variables(
-    bool blacklisting, vector<int> &non_goal_variables) {
+    vector<int> &non_goal_variables) {
     unordered_set<int> blacklisted_variables;
     if (blacklisting && !non_goal_variables.empty()) {
         /*
@@ -216,7 +216,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         check_blacklist_trigger_timer(blacklisting_start_time, timer);
 
         unordered_set<int> blacklisted_variables =
-            get_blacklisted_variables(blacklisting, non_goal_variables);
+            get_blacklisted_variables(non_goal_variables);
 
         int remaining_pdb_size_for_cegar = min(remaining_collection_size, max_pdb_size);
         double remaining_time_for_cegar =
