@@ -31,8 +31,23 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
     const bool blacklist_on_stagnation;
     const double total_max_time;
 
+    // Variables used in the main loop.
+    bool blacklisting;
+    double stagnation_start_time;
+    int remaining_collection_size;
+
+    void check_blacklist_trigger_timer(
+        double blacklisting_start_time, const utils::CountdownTimer &timer);
     std::unordered_set<int> get_blacklisted_variables(
         bool blacklisting, std::vector<int> &non_goal_variables);
+    void handle_generated_pattern(
+        PatternCollectionInformation &&collection_info,
+        utils::HashSet<Pattern> &generated_patterns,
+        std::shared_ptr<PDBCollection> &generated_pdbs,
+        const utils::CountdownTimer &timer);
+    bool collection_size_limit_reached() const;
+    bool time_limit_reached(const utils::CountdownTimer &timer) const;
+    bool check_for_stagnation(const utils::CountdownTimer &timer);
 public:
     explicit PatternCollectionGeneratorMultipleCegar(options::Options &opts);
     virtual ~PatternCollectionGeneratorMultipleCegar() = default;
