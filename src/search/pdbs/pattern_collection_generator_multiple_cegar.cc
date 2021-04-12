@@ -32,6 +32,47 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
       total_max_time(opts.get<double>("total_max_time")) {
 }
 
+unordered_set<int> PatternCollectionGeneratorMultipleCegar::get_blacklisted_variables(
+    bool blacklisting, vector<int> &non_goal_variables) {
+    unordered_set<int> blacklisted_variables;
+    if (blacklisting && !non_goal_variables.empty()) {
+        /*
+          Randomize the number of non-goal variables for blacklisting.
+          We want to choose at least 1 non-goal variable and up to the
+          entire set of non-goal variables.
+        */
+        int blacklist_size = (*rng)(non_goal_variables.size());
+        ++blacklist_size; // [1, |non-goal variables|]
+        rng->shuffle(non_goal_variables);
+        for (int i = 0; i < blacklist_size; ++i) {
+            int var_id = non_goal_variables[i];
+            blacklisted_variables.insert(var_id);
+        }
+        if (verbosity >= utils::Verbosity::DEBUG) {
+            utils::g_log << "blacklisting " << blacklist_size << " out of "
+                         << non_goal_variables.size()
+                         << " non-goal variables: ";
+            for (int var : blacklisted_variables) {
+                utils::g_log << var << ", ";
+            }
+            utils::g_log << endl;
+        }
+    }
+    return blacklisted_variables;
+}
+
+PatternCollectionInformation get_pattern_collection(
+    const TaskProxy &task_proxy, const shared_ptr<PDBCollection> &pdbs) {
+    shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
+    patterns->reserve(pdbs->size());
+    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
+        patterns->push_back(pdb->get_pattern());
+    }
+    PatternCollectionInformation result(task_proxy, patterns);
+    result.set_pdbs(pdbs);
+    return result;
+}
+
 PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
@@ -45,21 +86,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, rng);
 
     // Store the non-goal variables for potential blacklisting.
-    int num_vars = task_proxy.get_variables().size();
-    vector<int> non_goal_variables;
-    non_goal_variables.reserve(num_vars - goals.size());
-    for (int var_id = 0; var_id < num_vars; ++var_id) {
-        bool is_goal_var = false;
-        for (const FactPair &goal : goals) {
-            if (var_id == goal.var) {
-                is_goal_var = true;
-                break;
-            }
-        }
-        if (!is_goal_var) {
-            non_goal_variables.push_back(var_id);
-        }
-    }
+    vector<int> non_goal_variables = get_non_goal_variables(task_proxy);
 
     if (verbosity >= utils::Verbosity::DEBUG) {
         utils::g_log << "goal variables: ";
@@ -97,30 +124,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             }
         }
 
-        unordered_set<int> blacklisted_variables;
-        if (blacklisting && !non_goal_variables.empty()) {
-            /*
-              Randomize the number of non-goal variables for blacklisting.
-              We want to choose at least 1 non-goal variable and up to the
-              entire set of non-goal variables.
-            */
-            int blacklist_size = (*rng)(non_goal_variables.size());
-            ++blacklist_size; // [1, |non-goal variables|]
-            rng->shuffle(non_goal_variables);
-            for (int i = 0; i < blacklist_size; ++i) {
-                int var_id = non_goal_variables[i];
-                blacklisted_variables.insert(var_id);
-            }
-            if (verbosity >= utils::Verbosity::DEBUG) {
-                utils::g_log << "blacklisting " << blacklist_size << " out of "
-                             << non_goal_variables.size()
-                             << " non-goal variables: ";
-                for (int var : blacklisted_variables) {
-                    utils::g_log << var << ", ";
-                }
-                utils::g_log << endl;
-            }
-        }
+        unordered_set<int> blacklisted_variables =
+            get_blacklisted_variables(blacklisting, non_goal_variables);
 
         int remaining_pdb_size_for_cegar = min(remaining_collection_size, max_pdb_size);
         double remaining_time_for_cegar =
@@ -219,13 +224,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         assert(utils::in_bounds(goal_index, goals));
     }
 
-    shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
-    patterns->reserve(generated_pdbs->size());
-    for (const shared_ptr<PatternDatabase> &pdb : *generated_pdbs) {
-        patterns->push_back(pdb->get_pattern());
-    }
-    PatternCollectionInformation result(task_proxy, patterns);
-    result.set_pdbs(generated_pdbs);
+    PatternCollectionInformation result = get_pattern_collection(task_proxy, generated_pdbs);
 
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Multiple CEGAR number of iterations: "

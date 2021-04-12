@@ -39,6 +39,26 @@ vector<FactPair> get_goals_in_random_order(
     return goals;
 }
 
+vector<int> get_non_goal_variables(const TaskProxy &task_proxy) {
+    GoalsProxy goals = task_proxy.get_goals();
+    int num_vars = task_proxy.get_variables().size();
+    vector<int> non_goal_variables;
+    non_goal_variables.reserve(num_vars - goals.size());
+    for (int var_id = 0; var_id < num_vars; ++var_id) {
+        bool is_goal_var = false;
+        for (FactProxy goal : goals) {
+            if (var_id == goal.get_variable().get_id()) {
+                is_goal_var = true;
+                break;
+            }
+        }
+        if (!is_goal_var) {
+            non_goal_variables.push_back(var_id);
+        }
+    }
+    return non_goal_variables;
+}
+
 void dump_pattern_generation_statistics(
     const string &identifier,
     utils::Duration runtime,

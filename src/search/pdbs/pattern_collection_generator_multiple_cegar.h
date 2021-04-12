@@ -8,6 +8,7 @@ class Options;
 }
 
 namespace utils {
+class CountdownTimer;
 class RandomNumberGenerator;
 enum class Verbosity;
 }
@@ -29,6 +30,9 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
     const double blacklist_trigger_percentage;
     const bool blacklist_on_stagnation;
     const double total_max_time;
+
+    std::unordered_set<int> get_blacklisted_variables(
+        bool blacklisting, std::vector<int> &non_goal_variables);
 public:
     explicit PatternCollectionGeneratorMultipleCegar(options::Options &opts);
     virtual ~PatternCollectionGeneratorMultipleCegar() = default;
