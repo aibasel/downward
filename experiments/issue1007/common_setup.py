@@ -347,6 +347,37 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(
             f"publish-{name}", publish_comparison_tables)
 
+    def add_comparison_table_step_for_revision_pairs(
+        self, revision_pairs, name="make-comparison-tables-for-revision-pairs", **kwargs):
+        kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
+
+        def make_comparison_tables():
+            for rev1, rev2 in revision_pairs:
+                compared_configs = []
+                for config in self._configs:
+                    config_nick = config.nick
+                    compared_configs.append(
+                        ("%s-%s" % (rev1, config_nick),
+                         "%s-%s" % (rev2, config_nick),
+                         "Diff (%s)" % config_nick))
+                report = ComparativeReport(compared_configs, **kwargs)
+                outfile = os.path.join(
+                    self.eval_dir,
+                    "%s-%s-%s-compare.%s" % (
+                        self.name, rev1, rev2, report.output_format))
+                report(self.eval_dir, outfile)
+
+        def publish_comparison_tables():
+            for rev1, rev2 in revision_pairs:
+                outfile = os.path.join(
+                    self.eval_dir,
+                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
+                subprocess.call(["publish", outfile])
+
+        self.add_step(name, make_comparison_tables)
+        self.add_step(
+            f"publish-{name}", publish_comparison_tables)
+
     def add_scatter_plot_step(self, relative=False, attributes=None, additional=[]):
         """Add step creating (relative) scatter plots for all revision pairs.
 
