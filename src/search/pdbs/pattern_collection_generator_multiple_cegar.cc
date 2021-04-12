@@ -207,6 +207,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     int num_iterations = 1;
     int goal_index = 0;
     const utils::Verbosity cegar_verbosity(utils::Verbosity::SILENT);
+    shared_ptr<utils::RandomNumberGenerator> cegar_rng =
+        make_shared<utils::RandomNumberGenerator>(random_seed);
     /*
       Start blacklisting after the percentage of total_max_time specified via
       blacklisting_trigger_percentage has passed. Compute this time point once.
@@ -233,8 +235,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             wildcard_plans,
             remaining_time_for_cegar,
             cegar_verbosity,
-            make_shared<utils::RandomNumberGenerator>(
-                random_seed + num_iterations),
+            cegar_rng,
             task,
             {goals[goal_index]},
             move(blacklisted_variables)).compute_pattern_collection();
