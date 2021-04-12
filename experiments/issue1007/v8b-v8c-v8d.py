@@ -78,8 +78,6 @@ exp._configs = [
 ]
 exp.add_comparison_table_step_for_revision_pairs(
     revision_pairs=[
-        ("issue1007-v7", "issue1007-v8"),
-        ("issue1007-v8", "issue1007-v8b"),
         ("issue1007-v8b", "issue1007-v8c"),
         ("issue1007-v8c", "issue1007-v8d"),
     ],
