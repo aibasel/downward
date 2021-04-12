@@ -5,6 +5,7 @@
 #include "pattern_information.h"
 
 #include "../utils/logging.h"
+#include "../utils/math.h"
 #include "../utils/rng.h"
 
 #include "../task_proxy.h"
@@ -15,7 +16,15 @@ namespace pdbs {
 int compute_pdb_size(const TaskProxy &task_proxy, const Pattern &pattern) {
     int size = 1;
     for (int var : pattern) {
-        size *= task_proxy.get_variables()[var].get_domain_size();
+        int domain_size = task_proxy.get_variables()[var].get_domain_size();
+        if (utils::is_product_within_limit(size, domain_size,
+                                           numeric_limits<int>::max())) {
+            size *= domain_size;
+        } else {
+            cerr << "Given pattern is too large! (Overflow occured): " << endl;
+            cerr << pattern << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
     }
     return size;
 }
