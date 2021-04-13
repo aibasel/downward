@@ -195,9 +195,9 @@ bool CEGAR::get_flaws_for_projection(
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << "plan led to a concrete goal state: ";
             }
-            if (std::any_of(blacklisted_variables.cbegin(),
-                            blacklisted_variables.cend(),
-                            [](bool element) {return element;})) {
+            if (any_of(blacklisted_variables.cbegin(),
+                       blacklisted_variables.cend(),
+                       [](bool element) {return element;})) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are blacklisted variables, "
                         "marking projection as solved." << endl;
