@@ -71,7 +71,7 @@ exp.add_report(
     name="report-average"
 )
 
-exp.add_fetcher('data/issue1007-v8-multiple-seeds-eval/average', merge=True)
+exp.add_fetcher(os.path.join(exp.eval_dir, 'average'), merge=True)
 exp._configs = [
     IssueConfig('cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t20', []),
     IssueConfig('cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t20-blacklist0.75-stag4', []),
