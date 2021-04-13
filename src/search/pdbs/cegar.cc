@@ -197,16 +197,16 @@ bool CEGAR::get_flaws_for_projection(
             }
             if (std::any_of(blacklisted_variables.cbegin(),
                             blacklisted_variables.cend(),
-                            [](bool element){ return element; })) {
+                            [](bool element) {return element;})) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are blacklisted variables, "
-                                    "marking projection as solved." << endl;
+                        "marking projection as solved." << endl;
                 }
                 projection.mark_as_solved();
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are no blacklisted variables, "
-                                    "task solved." << endl;
+                        "task solved." << endl;
                 }
                 return true;
             }
