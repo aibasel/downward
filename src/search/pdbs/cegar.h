@@ -172,7 +172,7 @@ public:
         const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         const std::shared_ptr<AbstractTask> &task,
         std::vector<FactPair> &&goals,
-        std::vector<bool> &&blacklisted_variables = std::vector<bool>());
+        std::vector<bool> &&blacklisted_variables);
     PatternCollectionInformation compute_pattern_collection();
 };
 
