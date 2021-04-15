@@ -65,7 +65,8 @@ exp.add_report(
     AverageAlgorithmReport(
         algo_name_suffixes=['-s{}'.format(seed) for seed in range(2018,2028)],
         attributes=['coverage', 'search_time', 'total_time',
-        'expansions_until_last_jump', 'score_search_time', 'score_total_time'],
+        'expansions_until_last_jump', 'score_search_time',
+        'score_total_time', 'score_memory'],
     ),
     outfile=os.path.join(exp.eval_dir, "average", "properties"),
     name="report-average"
@@ -82,7 +83,8 @@ exp.add_comparison_table_step_for_revision_pairs(
         ("issue1007-v8c", "issue1007-v8d"),
     ],
     attributes=['coverage', 'search_time', 'total_time',
-    'expansions_until_last_jump', 'score_search_time', 'score_total_time'],
+    'expansions_until_last_jump', 'score_search_time',
+    'score_total_time', 'score_memory'],
 )
 
 exp.run_steps()
