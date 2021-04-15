@@ -27,7 +27,6 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     // Store the set of goals in random order.
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, rng);
-    vector<bool> blacklisted_variables(task_proxy.get_variables().size(), false);
 
     CEGAR cegar(
         max_pdb_size,
@@ -37,8 +36,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
         verbosity,
         rng,
         task,
-        move(goals),
-        move(blacklisted_variables));
+        move(goals));
     return cegar.compute_pattern_collection();
 }
 

@@ -38,8 +38,8 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
 
     void check_blacklist_trigger_timer(
         double blacklisting_start_time, const utils::CountdownTimer &timer);
-    std::vector<bool> get_blacklisted_variables(
-        std::vector<int> &non_goal_variables, int num_variables);
+    std::unordered_set<int> get_blacklisted_variables(
+        std::vector<int> &non_goal_variables);
     void handle_generated_pattern(
         PatternCollectionInformation &&collection_info,
         utils::HashSet<Pattern> &generated_patterns,

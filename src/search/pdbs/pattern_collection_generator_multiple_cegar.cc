@@ -49,9 +49,9 @@ void PatternCollectionGeneratorMultipleCegar::check_blacklist_trigger_timer(
     }
 }
 
-vector<bool> PatternCollectionGeneratorMultipleCegar::get_blacklisted_variables(
-    vector<int> &non_goal_variables, int num_variables) {
-    vector<bool> blacklisted_variables(num_variables, false);
+unordered_set<int> PatternCollectionGeneratorMultipleCegar::get_blacklisted_variables(
+    vector<int> &non_goal_variables) {
+    unordered_set<int> blacklisted_variables;
     if (blacklisting && !non_goal_variables.empty()) {
         /*
           Randomize the number of non-goal variables for blacklisting.
@@ -61,18 +61,14 @@ vector<bool> PatternCollectionGeneratorMultipleCegar::get_blacklisted_variables(
         int blacklist_size = (*rng)(non_goal_variables.size());
         ++blacklist_size; // [1, |non-goal variables|]
         rng->shuffle(non_goal_variables);
-        for (int i = 0; i < blacklist_size; ++i) {
-            int var_id = non_goal_variables[i];
-            blacklisted_variables[var_id] = true;
-        }
+        blacklisted_variables.insert(
+            non_goal_variables.begin(), non_goal_variables.begin() + blacklist_size);
         if (verbosity >= utils::Verbosity::DEBUG) {
             utils::g_log << "blacklisting " << blacklist_size << " out of "
                          << non_goal_variables.size()
                          << " non-goal variables: ";
-            for (size_t var_id = 0; var_id < blacklisted_variables.size(); ++var_id) {
-                if (blacklisted_variables[var_id]) {
-                    utils::g_log << var_id << ", ";
-                }
+            for (int var : blacklisted_variables) {
+                utils::g_log << var << ", ";
             }
             utils::g_log << endl;
         }
@@ -221,8 +217,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     while (true) {
         check_blacklist_trigger_timer(blacklisting_start_time, timer);
 
-        vector<bool> blacklisted_variables =
-            get_blacklisted_variables(non_goal_variables, task_proxy.get_variables().size());
+        unordered_set<int> blacklisted_variables =
+            get_blacklisted_variables(non_goal_variables);
 
         int remaining_pdb_size_for_cegar = min(remaining_collection_size, max_pdb_size);
         double remaining_time_for_cegar =

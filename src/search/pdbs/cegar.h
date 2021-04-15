@@ -9,6 +9,7 @@
 #include "../utils/logging.h"
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 namespace options {
@@ -107,7 +108,7 @@ class CEGAR {
     const std::shared_ptr<AbstractTask> &task;
     const TaskProxy task_proxy;
     const std::vector<FactPair> goals;
-    std::vector<bool> blacklisted_variables;
+    std::unordered_set<int> blacklisted_variables;
 
     std::vector<std::unique_ptr<Projection>> projection_collection;
     /*
@@ -172,7 +173,7 @@ public:
         const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         const std::shared_ptr<AbstractTask> &task,
         std::vector<FactPair> &&goals,
-        std::vector<bool> &&blacklisted_variables);
+        std::unordered_set<int> &&blacklisted_variables = std::unordered_set<int>());
     PatternCollectionInformation compute_pattern_collection();
 };
 

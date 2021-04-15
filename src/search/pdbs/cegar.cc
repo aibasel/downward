@@ -120,7 +120,7 @@ FlawList CEGAR::get_violated_preconditions(
         int var_id = precondition.get_variable().get_id();
 
         // Ignore blacklisted variables.
-        if (blacklisted_variables[var_id]) {
+        if (blacklisted_variables.count(var_id)) {
             continue;
         }
 
@@ -195,20 +195,18 @@ bool CEGAR::get_flaws_for_projection(
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << "plan led to a concrete goal state: ";
             }
-            if (any_of(blacklisted_variables.cbegin(),
-                       blacklisted_variables.cend(),
-                       [](bool element) {return element;})) {
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "there are blacklisted variables, "
-                        "marking projection as solved." << endl;
-                }
-                projection.mark_as_solved();
-            } else {
+            if (blacklisted_variables.empty()) {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are no blacklisted variables, "
                         "task solved." << endl;
                 }
                 return true;
+            } else {
+                if (verbosity >= utils::Verbosity::VERBOSE) {
+                    utils::g_log << "there are blacklisted variables, "
+                        "marking projection as solved." << endl;
+                }
+                projection.mark_as_solved();
             }
         } else {
             if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -218,7 +216,7 @@ bool CEGAR::get_flaws_for_projection(
             for (const FactPair &goal : goals) {
                 int goal_var_id = goal.var;
                 if (final_state[goal_var_id].get_value() != goal.value &&
-                    !blacklisted_variables[goal_var_id]) {
+                    !blacklisted_variables.count(goal_var_id)) {
                     flaws.emplace_back(collection_index, goal_var_id);
                     raise_goal_flaw = true;
                 }
@@ -382,7 +380,7 @@ void CEGAR::refine(const FlawList &flaws) {
             utils::g_log << "could not add var/merge patterns due to size "
                 "limits. Blacklisting." << endl;
         }
-        blacklisted_variables[var] = true;
+        blacklisted_variables.insert(var);
     }
 }
 
@@ -473,7 +471,7 @@ CEGAR::CEGAR(
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
     vector<FactPair> &&goals,
-    vector<bool> &&blacklisted_variables)
+    unordered_set<int> &&blacklisted_variables)
     : max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       wildcard_plans(wildcard_plans),
@@ -528,12 +526,13 @@ CEGAR::CEGAR(
         }
         utils::g_log << endl;
         utils::g_log << "blacklisted variables: ";
-        for (size_t var_id = 0; var_id < blacklisted_variables.size(); ++var_id) {
-            if (blacklisted_variables[var_id]) {
-                utils::g_log << var_id << ", ";
+        if (blacklisted_variables.empty()) {
+            utils::g_log << "none";
+        } else {
+            for (int var : blacklisted_variables) {
+                utils::g_log << var << ", ";
             }
         }
-        utils::g_log << endl;
         utils::g_log << endl;
     }
 }
