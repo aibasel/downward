@@ -47,7 +47,8 @@ class AverageAlgorithmReport(PlanningReport):
                     # print values
                     values_without_none = [value for value in values if value is not None]
                     if attribute in ['coverage', 'single_cegar_pdbs_timed_out', 'score_search_time', 'score_total_time'] or 'solved_without_search' in attribute:
-                        assert len(values_without_none) == 10
+                        if 'score' not in attribute:
+                            assert len(values_without_none) == 10 # does not hold for scores
                         average_value = sum(values_without_none)/float(len(values))
                     elif 'time' in attribute or 'expansions' in attribute:
                         if len(values_without_none) == 10:
