@@ -46,7 +46,7 @@ class AverageAlgorithmReport(PlanningReport):
                         values.append(real_algo_run.get(attribute))
                     # print values
                     values_without_none = [value for value in values if value is not None]
-                    if attribute == 'coverage' or 'solved_without_search' in attribute or attribute == 'single_cegar_pdbs_timed_out':
+                    if attribute in ['coverage', 'single_cegar_pdbs_timed_out', 'score_search_time', 'score_total_time'] or 'solved_without_search' in attribute:
                         assert len(values_without_none) == 10
                         average_value = sum(values_without_none)/float(len(values))
                     elif 'time' in attribute or 'expansions' in attribute:

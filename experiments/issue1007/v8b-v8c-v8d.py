@@ -21,10 +21,10 @@ if common_setup.is_test_run():
 CONFIGS = []
 for random_seed in range(2018, 2028):
     ### single cegar
-    CONFIGS.append(IssueConfig('cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t20-s{}'.format(random_seed), ['--search', f'astar(cpdbs(single_cegar(wildcard_plans=false,max_time={MAX_TIME},max_pdb_size=1000000,max_collection_size=10000000,random_seed={random_seed},verbosity=normal)),verbosity=silent)'], driver_options=['--search-time-limit', '5m']))
+    CONFIGS.append(IssueConfig(f'cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t20-s{random_seed}', ['--search', f'astar(cpdbs(single_cegar(wildcard_plans=false,max_time={MAX_TIME},max_pdb_size=1000000,max_collection_size=10000000,random_seed={random_seed},verbosity=normal)),verbosity=silent)'], driver_options=['--search-time-limit', '5m']))
 
     ### multiple cegar
-    CONFIGS.append(IssueConfig('cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t20-blacklist0.75-stag4-s{}'.format(random_seed), ['--search', f'astar(cpdbs(multiple_cegar(wildcard_plans=true,max_time=100,max_pdb_size=1000000,max_collection_size=10000000,random_seed={random_seed},total_max_time={MAX_TIME},stagnation_limit=4,blacklist_trigger_percentage=0.75,blacklist_on_stagnation=true,verbosity=normal)),verbosity=silent)'], driver_options=['--search-time-limit', '5m']))
+    CONFIGS.append(IssueConfig(f'cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t20-blacklist0.75-stag4-s{random_seed}', ['--search', f'astar(cpdbs(multiple_cegar(wildcard_plans=true,max_time=100,max_pdb_size=1000000,max_collection_size=10000000,random_seed={random_seed},total_max_time={MAX_TIME},stagnation_limit=4,blacklist_trigger_percentage=0.75,blacklist_on_stagnation=true,verbosity=normal)),verbosity=silent)'], driver_options=['--search-time-limit', '5m']))
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
@@ -65,7 +65,7 @@ exp.add_report(
     AverageAlgorithmReport(
         algo_name_suffixes=['-s{}'.format(seed) for seed in range(2018,2028)],
         attributes=['coverage', 'search_time', 'total_time',
-        'expansions_until_last_jump'],
+        'expansions_until_last_jump', 'score_search_time', 'score_total_time'],
     ),
     outfile=os.path.join(exp.eval_dir, "average", "properties"),
     name="report-average"
@@ -82,7 +82,7 @@ exp.add_comparison_table_step_for_revision_pairs(
         ("issue1007-v8c", "issue1007-v8d"),
     ],
     attributes=['coverage', 'search_time', 'total_time',
-    'expansions_until_last_jump'],
+    'expansions_until_last_jump', 'score_search_time', 'score_total_time'],
 )
 
 exp.run_steps()
