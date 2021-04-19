@@ -39,7 +39,7 @@ public:
       pattern_database_factory to create a PDB.
     */
     PatternDatabase(
-        const Pattern &pattern,
+        const Pattern &&pattern,
         std::size_t num_states,
         std::vector<int> &&distances,
         std::vector<std::size_t> &&hash_multipliers);

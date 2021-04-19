@@ -80,7 +80,7 @@ public:
 class PatternDatabaseFactory {
     const TaskProxy &task_proxy;
     VariablesProxy variables;
-    const Pattern &pattern;
+    Pattern pattern;
 
     std::vector<size_t> hash_multipliers;
     size_t num_states;
@@ -129,18 +129,29 @@ class PatternDatabaseFactory {
     */
     bool is_goal_state(size_t state_index) const;
     void compute_distances();
-
 public:
     /*
       We recommend using generate_pdb() for creating PDBs.
       See there for a description of the parameters.
+
+      This constructor computes all data needed to create a PDB, but does
+      not create the PDB yet. Use extract_pdb() to retrieve the PDB.
     */
     PatternDatabaseFactory(
         const TaskProxy &task_proxy,
-        const Pattern &pattern,
+        Pattern &&pattern,
         bool dump,
         const std::vector<int> &operator_costs);
+    // Calling this method invalidates the factory.
     std::shared_ptr<PatternDatabase> extract_pdb();
+
+    const std::vector<AbstractOperator> &get_operators() const {
+        return operators;
+    }
+
+    const std::unique_ptr<MatchTree> &get_match_tree() const {
+        return match_tree;
+    }
 };
 
 /*

@@ -6,11 +6,11 @@ using namespace std;
 
 namespace pdbs {
 PatternDatabase::PatternDatabase(
-    const Pattern &pattern,
+    const Pattern &&pattern,
     std::size_t num_states,
     std::vector<int> &&distances,
     std::vector<std::size_t> &&hash_multipliers)
-    : pattern(pattern),
+    : pattern(move(pattern)),
       num_states(num_states),
       distances(move(distances)),
       hash_multipliers(move(hash_multipliers)) {

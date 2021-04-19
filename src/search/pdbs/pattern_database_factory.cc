@@ -70,12 +70,12 @@ void AbstractOperator::dump(const Pattern &pattern,
 
 PatternDatabaseFactory::PatternDatabaseFactory(
     const TaskProxy &task_proxy,
-    const Pattern &pattern,
+    Pattern &&pattern,
     bool dump,
     const vector<int> &operator_costs)
     : task_proxy(task_proxy),
       variables(task_proxy.get_variables()),
-      pattern(pattern) {
+      pattern(move(pattern)) {
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
     assert(operator_costs.empty() ||
@@ -97,7 +97,7 @@ PatternDatabaseFactory::PatternDatabaseFactory(
 
 shared_ptr<PatternDatabase> PatternDatabaseFactory::extract_pdb() {
     return make_shared<PatternDatabase>(
-        pattern, num_states, move(distances), move(hash_multipliers));
+        move(pattern), num_states, move(distances), move(hash_multipliers));
 }
 
 void PatternDatabaseFactory::compute_hash_multipliers() {
@@ -298,7 +298,7 @@ shared_ptr<PatternDatabase> generate_pdb(
     const Pattern &pattern,
     bool dump,
     const vector<int> &operator_costs) {
-    PatternDatabaseFactory pdb_factory(task_proxy, pattern, dump, operator_costs);
+    PatternDatabaseFactory pdb_factory(task_proxy, Pattern(pattern), dump, operator_costs);
     return pdb_factory.extract_pdb();
 }
 }
