@@ -8,6 +8,8 @@
 #include <vector>
 
 namespace pdbs {
+class MatchTree;
+
 class AbstractOperator {
     /*
       This class represents an abstract operator how it is needed for
@@ -77,10 +79,19 @@ public:
 */
 class PatternDatabaseFactory {
     const TaskProxy &task_proxy;
+    VariablesProxy variables;
     const Pattern &pattern;
-    bool dump;
-    const std::vector<int> &operator_costs;
-    std::vector<std::size_t> hash_multipliers;
+
+    std::vector<size_t> hash_multipliers;
+    size_t num_states;
+    std::vector<int> variable_to_index;
+    std::vector<AbstractOperator> operators;
+    std::unique_ptr<MatchTree> match_tree;
+    std::vector<FactPair> abstract_goals;
+    std::vector<int> distances;
+
+    void compute_hash_multipliers();
+    void compute_variable_to_index();
 
     /*
       Recursive method; called by build_abstract_operators. In the case
@@ -94,9 +105,7 @@ class PatternDatabaseFactory {
         std::vector<FactPair> &prev_pairs,
         std::vector<FactPair> &pre_pairs,
         std::vector<FactPair> &eff_pairs,
-        const std::vector<FactPair> &effects_without_pre,
-        const VariablesProxy &variables,
-        std::vector<AbstractOperator> &operators);
+        const std::vector<FactPair> &effects_without_pre);
 
     /*
       Computes all abstract operators for a given concrete operator (by
@@ -105,10 +114,12 @@ class PatternDatabaseFactory {
       variables in the task to their index in the pattern or -1.
     */
     void build_abstract_operators(
-        const OperatorProxy &op, int cost,
-        const std::vector<int> &variable_to_index,
-        const VariablesProxy &variables,
-        std::vector<AbstractOperator> &operators);
+        const OperatorProxy &op, int cost);
+
+    void compute_abstract_operators(
+        const std::vector<int> &operator_costs);
+    void build_match_tree();
+    void compute_abstract_goals();
 
     /*
       For a given abstract state (given as index), the according values
@@ -116,30 +127,32 @@ class PatternDatabaseFactory {
       given pairs of goal variables and values. Returns true iff the
       state is a goal state.
     */
-    bool is_goal_state(
-        std::size_t state_index,
-        const std::vector<FactPair> &abstract_goals,
-        const VariablesProxy &variables) const;
+    bool is_goal_state(size_t state_index) const;
+    void compute_distances();
+
 public:
     /*
-      Important: It is assumed that the pattern (passed via Options) is
-      sorted, contains no duplicates and is small enough so that the
-      number of abstract states is below numeric_limits<int>::max()
-      Parameters:
-       dump:           If set to true, prints the construction time.
-       operator_costs: Can specify individual operator costs for each
-       operator. This is useful for action cost partitioning. If left
-       empty, default operator costs are used.
+      We recommend using generate_pdb() for creating PDBs.
+      See there for a description of the parameters.
     */
     PatternDatabaseFactory(
         const TaskProxy &task_proxy,
         const Pattern &pattern,
         bool dump,
         const std::vector<int> &operator_costs);
-    ~PatternDatabaseFactory() = default;
-    std::shared_ptr<PatternDatabase> generate();
+    std::shared_ptr<PatternDatabase> extract_pdb();
 };
 
+/*
+  Important: It is assumed that the given pattern is sorted, contains no
+  duplicates and is small enough so that the number of abstract states is
+  below numeric_limits<int>::max().
+  Optional parameters:
+   dump:           If set to true, prints the construction time.
+   operator_costs: Can specify individual operator costs for each
+   operator. This is useful for action cost partitioning. If left
+   empty, default operator costs are used.
+*/
 extern std::shared_ptr<PatternDatabase> generate_pdb(
     const TaskProxy &task_proxy,
     const Pattern &pattern,

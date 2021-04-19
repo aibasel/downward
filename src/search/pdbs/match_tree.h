@@ -18,7 +18,7 @@ namespace pdbs {
 */
 
 class MatchTree {
-    TaskProxy task_proxy;
+    const TaskProxy &task_proxy;
     struct Node;
     // See PatternDatabase for documentation on pattern and hash_multipliers.
     Pattern pattern;

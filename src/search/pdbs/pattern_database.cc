@@ -1,6 +1,6 @@
 #include "pattern_database.h"
 
-#include "../utils/math.h"
+#include "../task_proxy.h"
 
 using namespace std;
 

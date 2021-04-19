@@ -72,20 +72,63 @@ PatternDatabaseFactory::PatternDatabaseFactory(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     bool dump,
-    const std::vector<int> &operator_costs)
+    const vector<int> &operator_costs)
     : task_proxy(task_proxy),
-      pattern(pattern),
-      dump(dump),
-      operator_costs(operator_costs) {
+      variables(task_proxy.get_variables()),
+      pattern(pattern) {
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
+    assert(operator_costs.empty() ||
+           operator_costs.size() == task_proxy.get_operators().size());
+    assert(utils::is_sorted_unique(pattern));
+
+    utils::Timer timer;
+
+    compute_hash_multipliers();
+    compute_variable_to_index();
+    compute_abstract_operators(operator_costs);
+    build_match_tree();
+    compute_abstract_goals();
+    compute_distances();
+
+    if (dump)
+        utils::g_log << "PDB construction time: " << timer << endl;
+}
+
+shared_ptr<PatternDatabase> PatternDatabaseFactory::extract_pdb() {
+    return make_shared<PatternDatabase>(
+        pattern, num_states, move(distances), move(hash_multipliers));
+}
+
+void PatternDatabaseFactory::compute_hash_multipliers() {
+    hash_multipliers.reserve(pattern.size());
+    num_states = 1;
+    for (int pattern_var_id : pattern) {
+        hash_multipliers.push_back(num_states);
+        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
+        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
+                                           numeric_limits<int>::max())) {
+            num_states *= var.get_domain_size();
+        } else {
+            cerr << "Given pattern is too large! (Overflow occurred): " << endl;
+            cerr << pattern << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+    }
+}
+
+void PatternDatabaseFactory::compute_variable_to_index() {
+    variable_to_index.resize(variables.size(), -1);
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        variable_to_index[pattern[i]] = i;
+    }
 }
 
 void PatternDatabaseFactory::multiply_out(
     int pos, int cost, vector<FactPair> &prev_pairs,
     vector<FactPair> &pre_pairs,
     vector<FactPair> &eff_pairs,
-    const vector<FactPair> &effects_without_pre,
-    const VariablesProxy &variables,
-    vector<AbstractOperator> &operators) {
+    const vector<FactPair> &effects_without_pre) {
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
@@ -107,7 +150,7 @@ void PatternDatabaseFactory::multiply_out(
                 prev_pairs.emplace_back(var_id, i);
             }
             multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
-                         effects_without_pre, variables, operators);
+                         effects_without_pre);
             if (i != eff) {
                 pre_pairs.pop_back();
                 eff_pairs.pop_back();
@@ -118,11 +161,7 @@ void PatternDatabaseFactory::multiply_out(
     }
 }
 
-void PatternDatabaseFactory::build_abstract_operators(
-    const OperatorProxy &op, int cost,
-    const vector<int> &variable_to_index,
-    const VariablesProxy &variables,
-    vector<AbstractOperator> &operators) {
+void PatternDatabaseFactory::build_abstract_operators(const OperatorProxy &op, int cost) {
     // All variable value pairs that are a prevail condition
     vector<FactPair> prev_pairs;
     // All variable value pairs that are a precondition (value != -1)
@@ -164,14 +203,44 @@ void PatternDatabaseFactory::build_abstract_operators(
             }
         }
     }
-    multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre,
-                 variables, operators);
+    multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre);
 }
 
-bool PatternDatabaseFactory::is_goal_state(
-    const size_t state_index,
-    const vector<FactPair> &abstract_goals,
-    const VariablesProxy &variables) const {
+void PatternDatabaseFactory::compute_abstract_operators(
+    const vector<int> &operator_costs) {
+    // compute all abstract operators
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        int op_cost;
+        if (operator_costs.empty()) {
+            op_cost = op.get_cost();
+        } else {
+            op_cost = operator_costs[op.get_id()];
+        }
+        build_abstract_operators(op, op_cost);
+    }
+}
+
+void PatternDatabaseFactory::build_match_tree() {
+    // build the match tree
+    match_tree = utils::make_unique_ptr<MatchTree>(task_proxy, pattern, hash_multipliers);
+    for (size_t op_id = 0; op_id < operators.size(); ++op_id) {
+        const AbstractOperator &op = operators[op_id];
+        match_tree->insert(op_id, op.get_regression_preconditions());
+    }
+}
+
+void PatternDatabaseFactory::compute_abstract_goals() {
+    // compute abstract goal var-val pairs
+    for (FactProxy goal : task_proxy.get_goals()) {
+        int var_id = goal.get_variable().get_id();
+        int val = goal.get_value();
+        if (variable_to_index[var_id] != -1) {
+            abstract_goals.emplace_back(variable_to_index[var_id], val);
+        }
+    }
+}
+
+bool PatternDatabaseFactory::is_goal_state(size_t state_index) const {
     for (const FactPair &abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.var;
         int var_id = pattern[pattern_var_id];
@@ -185,73 +254,14 @@ bool PatternDatabaseFactory::is_goal_state(
     return true;
 }
 
-shared_ptr<PatternDatabase> PatternDatabaseFactory::generate() {
-    task_properties::verify_no_axioms(task_proxy);
-    task_properties::verify_no_conditional_effects(task_proxy);
-    assert(operator_costs.empty() ||
-           operator_costs.size() == task_proxy.get_operators().size());
-    assert(utils::is_sorted_unique(pattern));
-
-    utils::Timer timer;
-    hash_multipliers.reserve(pattern.size());
-    size_t num_states = 1;
-    for (int pattern_var_id : pattern) {
-        hash_multipliers.push_back(num_states);
-        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
-        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
-                                           numeric_limits<int>::max())) {
-            num_states *= var.get_domain_size();
-        } else {
-            cerr << "Given pattern is too large! (Overflow occured): " << endl;
-            cerr << pattern << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-    }
-
-    VariablesProxy variables = task_proxy.get_variables();
-    vector<int> variable_to_index(variables.size(), -1);
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        variable_to_index[pattern[i]] = i;
-    }
-
-    // compute all abstract operators
-    vector<AbstractOperator> operators;
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        int op_cost;
-        if (operator_costs.empty()) {
-            op_cost = op.get_cost();
-        } else {
-            op_cost = operator_costs[op.get_id()];
-        }
-        build_abstract_operators(
-            op, op_cost, variable_to_index, variables, operators);
-    }
-
-    // build the match tree
-    MatchTree match_tree(task_proxy, pattern, hash_multipliers);
-    for (size_t op_id = 0; op_id < operators.size(); ++op_id) {
-        const AbstractOperator &op = operators[op_id];
-        match_tree.insert(op_id, op.get_regression_preconditions());
-    }
-
-    // compute abstract goal var-val pairs
-    vector<FactPair> abstract_goals;
-    for (FactProxy goal : task_proxy.get_goals()) {
-        int var_id = goal.get_variable().get_id();
-        int val = goal.get_value();
-        if (variable_to_index[var_id] != -1) {
-            abstract_goals.emplace_back(variable_to_index[var_id], val);
-        }
-    }
-
-    vector<int> distances;
+void PatternDatabaseFactory::compute_distances() {
     distances.reserve(num_states);
     // first implicit entry: priority, second entry: index for an abstract state
     priority_queues::AdaptiveQueue<size_t> pq;
 
     // initialize queue
     for (size_t state_index = 0; state_index < num_states; ++state_index) {
-        if (is_goal_state(state_index, abstract_goals, variables)) {
+        if (is_goal_state(state_index)) {
             pq.push(0, state_index);
             distances.push_back(0);
         } else {
@@ -270,7 +280,7 @@ shared_ptr<PatternDatabase> PatternDatabaseFactory::generate() {
 
         // regress abstract_state
         vector<int> applicable_operator_ids;
-        match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
+        match_tree->get_applicable_operator_ids(state_index, applicable_operator_ids);
         for (int op_id : applicable_operator_ids) {
             const AbstractOperator &op = operators[op_id];
             size_t predecessor = state_index + op.get_hash_effect();
@@ -281,20 +291,14 @@ shared_ptr<PatternDatabase> PatternDatabaseFactory::generate() {
             }
         }
     }
-
-    if (dump)
-        utils::g_log << "PDB construction time: " << timer << endl;
-
-    return make_shared<PatternDatabase>(
-        pattern, num_states, move(distances), move(hash_multipliers));
 }
 
 shared_ptr<PatternDatabase> generate_pdb(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     bool dump,
-    const std::vector<int> &operator_costs) {
+    const vector<int> &operator_costs) {
     PatternDatabaseFactory pdb_factory(task_proxy, pattern, dump, operator_costs);
-    return pdb_factory.generate();
+    return pdb_factory.extract_pdb();
 }
 }

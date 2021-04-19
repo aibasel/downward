@@ -3,10 +3,11 @@
 
 #include "types.h"
 
-#include "../task_proxy.h"
-
 #include <utility>
 #include <vector>
+
+class OperatorProxy;
+class State;
 
 namespace pdbs {
 // Implements a single pattern database
@@ -34,8 +35,8 @@ class PatternDatabase {
 public:
     /*
       This is a one-shot constructor which should not be called by users
-      wishing to create a PDB. Instead, they should use PatternDatabaseFactory
-      for creating a PDB.
+      wishing to create a PDB. Instead, they should use generate_pdb from file
+      pattern_database_factory to create a PDB.
     */
     PatternDatabase(
         const Pattern &pattern,
