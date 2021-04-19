@@ -735,6 +735,7 @@ fast_downward_plugin(
         pdbs/pattern_collection_generator_multiple_cegar
         pdbs/pattern_collection_generator_single_cegar
         pdbs/pattern_collection_generator_systematic
+        pdbs/pattern_database_factory
         pdbs/pattern_database
         pdbs/pattern_generator_greedy
         pdbs/pattern_generator_manual

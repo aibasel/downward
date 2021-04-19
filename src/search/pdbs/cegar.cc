@@ -1,5 +1,6 @@
 #include "cegar.h"
 
+#include "pattern_database_factory.h"
 #include "steepest_ascent_enforced_hill_climbing.h"
 #include "types.h"
 #include "utils.h"
@@ -43,7 +44,7 @@ bool CEGAR::time_limit_reached(
 
 unique_ptr<Projection> CEGAR::compute_projection(Pattern &&pattern) const {
     shared_ptr<PatternDatabase> pdb =
-        make_shared<PatternDatabase>(task_proxy, pattern);
+        generate_pdb(task_proxy, pattern);
     shared_ptr<AbstractTask> projected_task =
         extra_tasks::build_projected_task(task, move(pattern));
     TaskProxy projected_task_proxy(*projected_task);
