@@ -22,7 +22,7 @@ size_t PerfectHashFunction::rank(const vector<int> &state) const {
     return index;
 }
 
-int PerfectHashFunction::unrank(size_t index, int var,  int domain_size) const {
+int PerfectHashFunction::unrank(size_t index, int var, int domain_size) const {
     int temp = index / hash_multipliers[var];
     return temp % domain_size;
 }
