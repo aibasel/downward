@@ -5,18 +5,16 @@
 using namespace std;
 
 namespace pdbs {
-PatternDatabase::PatternDatabase(
-    const Pattern &&pattern,
-    std::size_t num_states,
-    std::vector<int> &&distances,
-    std::vector<std::size_t> &&hash_multipliers)
+PerfectHashFunction::PerfectHashFunction(
+    Pattern &&pattern,
+    size_t num_states,
+    vector<size_t> &&hash_multipliers)
     : pattern(move(pattern)),
       num_states(num_states),
-      distances(move(distances)),
       hash_multipliers(move(hash_multipliers)) {
 }
 
-size_t PatternDatabase::hash_index_of_concrete_state(const vector<int> &state) const {
+size_t PerfectHashFunction::rank(const vector<int> &state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
         index += hash_multipliers[i] * state[pattern[i]];
@@ -24,20 +22,20 @@ size_t PatternDatabase::hash_index_of_concrete_state(const vector<int> &state) c
     return index;
 }
 
-size_t PatternDatabase::hash_index_of_projected_state(const State &projected_state) const {
-    size_t index = 0;
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        index += hash_multipliers[i] * projected_state[i].get_value();
-    }
-    return index;
+int PerfectHashFunction::unrank(size_t index, int var,  int domain_size) const {
+    int temp = index / hash_multipliers[var];
+    return temp % domain_size;
+}
+
+PatternDatabase::PatternDatabase(
+    PerfectHashFunction &&hash_function,
+    vector<int> &&distances)
+    : hash_function(move(hash_function)),
+      distances(move(distances)) {
 }
 
 int PatternDatabase::get_value(const vector<int> &state) const {
-    return distances[hash_index_of_concrete_state(state)];
-}
-
-int PatternDatabase::get_value_for_hash_index(size_t index) const {
-    return distances[index];
+    return distances[hash_function.rank(state)];
 }
 
 double PatternDatabase::compute_mean_finite_h() const {
@@ -59,7 +57,9 @@ double PatternDatabase::compute_mean_finite_h() const {
 bool PatternDatabase::is_operator_relevant(const OperatorProxy &op) const {
     for (EffectProxy effect : op.get_effects()) {
         int var_id = effect.get_fact().get_variable().get_id();
-        if (binary_search(pattern.begin(), pattern.end(), var_id)) {
+        if (binary_search(hash_function.get_pattern().begin(),
+                          hash_function.get_pattern().end(),
+                          var_id)) {
             return true;
         }
     }

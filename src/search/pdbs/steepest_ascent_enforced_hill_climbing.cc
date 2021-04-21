@@ -1,6 +1,9 @@
 #include "steepest_ascent_enforced_hill_climbing.h"
 
+#include "abstract_operator.h"
+#include "match_tree.h"
 #include "pattern_database.h"
+#include "pattern_database_factory.h"
 
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
@@ -14,50 +17,50 @@ using namespace std;
 
 namespace pdbs {
 struct SearchNode {
-    State state;
-    size_t hash;
+    size_t state_hash_index;
     int g;
     int cost;
     shared_ptr<SearchNode> predecessor;
 
-    SearchNode(State state, size_t hash, int g, int cost,
-               shared_ptr<SearchNode> predecessor)
-        : state(move(state)), hash(hash), g(g), cost(cost),
-          predecessor(predecessor) {
+    SearchNode(size_t state_hash_index, int g, int cost, shared_ptr<SearchNode> predecessor)
+        : state_hash_index(state_hash_index), g(g), cost(cost), predecessor(predecessor) {
     }
 };
 
 static vector<OperatorID> get_cheapest_operators(
-    const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator &succ_gen,
-    const State &from, const State &to) {
-    vector<OperatorID> applicable_ops;
-    succ_gen.generate_applicable_ops(from, applicable_ops);
+    const vector<AbstractOperator> &progression_operators,
+    const MatchTree &progression_match_tree,
+    const vector<OperatorID> &abstract_to_concrete_op_ids,
+    size_t from_state,
+    size_t to_state) {
+    vector<int> applicable_op_ids;
+    progression_match_tree.get_applicable_operator_ids(from_state, applicable_op_ids);
     int best_cost = numeric_limits<int>::max();
-    vector<OperatorID> cheapest_ops;
-    for (OperatorID op_id : applicable_ops) {
-        OperatorProxy op = abs_task_proxy.get_operators()[op_id];
+    vector<OperatorID> cheapest_op_ids;
+    for (int op_id : applicable_op_ids) {
+        const AbstractOperator &op = progression_operators[op_id];
         int op_cost = op.get_cost();
         if (op_cost > best_cost) {
             continue;
         }
 
-        State succ = from.get_unregistered_successor(op);
-        if (succ == to) {
+        size_t successor = op.apply_to_state(from_state);
+        if (successor == to_state) {
             if (op_cost < best_cost) {
-                cheapest_ops.clear();
+                cheapest_op_ids.clear();
                 best_cost = op_cost;
             }
             assert(op_cost == best_cost);
-            cheapest_ops.push_back(op_id);
+            cheapest_op_ids.push_back(abstract_to_concrete_op_ids[op_id]);
         }
     }
-    return cheapest_ops;
+    return cheapest_op_ids;
 }
 
 static vector<vector<OperatorID>> extract_plan(
-    const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator &succ_gen,
+    const vector<AbstractOperator> &progression_operators,
+    const MatchTree &progression_match_tree,
+    const vector<OperatorID> &abstract_to_concrete_op_ids,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan,
     const shared_ptr<SearchNode> &goal_node) {
@@ -66,7 +69,11 @@ static vector<vector<OperatorID>> extract_plan(
     while (current_node->predecessor) {
         vector<OperatorID> cheapest_operators =
             get_cheapest_operators(
-                abs_task_proxy, succ_gen, current_node->predecessor->state, current_node->state);
+                progression_operators,
+                progression_match_tree,
+                abstract_to_concrete_op_ids,
+                current_node->predecessor->state_hash_index,
+                current_node->state_hash_index);
 
         if (compute_wildcard_plan) {
             rng->shuffle(cheapest_operators);
@@ -83,52 +90,64 @@ static vector<vector<OperatorID>> extract_plan(
 }
 
 static vector<vector<OperatorID>> bfs_for_improving_state(
-    const TaskProxy &abs_task_proxy,
-    const successor_generator::SuccessorGenerator &succ_gen,
+    const Projection &projection,
+    const PerfectHashFunction &hash_function,
+    const vector<int> &distances,
+    const vector<AbstractOperator> &progression_operators,
+    const MatchTree &progression_match_tree,
+    const vector<OperatorID> &abstract_to_concrete_op_ids,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan,
-    const PatternDatabase &pdb,
+    utils::Verbosity verbosity,
     int f_star,
     shared_ptr<SearchNode> &start_node) {
     // Start node may have been used in earlier iteration, so we reset it here.
     start_node->cost = -1;
     start_node->predecessor = nullptr;
     queue<shared_ptr<SearchNode>> open;
-    // See feed for T=vector in utils/hash.h why we cannot use size_t here.
-    utils::HashSet<uint64_t> closed;
-    closed.insert(static_cast<uint64_t>(start_node->hash));
-    int h_start = pdb.get_value_for_hash_index(start_node->hash);
+    unordered_set<size_t> closed;
+    closed.insert(start_node->state_hash_index);
+    int h_start = distances[start_node->state_hash_index];
     open.push(move(start_node));
     while (true) {
+        assert(!open.empty());
         shared_ptr<SearchNode> current_node = open.front();
         open.pop();
+        size_t current_state = current_node->state_hash_index;
+        if (verbosity >= utils::Verbosity::DEBUG) {
+            utils::g_log << "current state: " << current_state << endl;
+        }
 
-        vector<OperatorID> applicable_ops;
-        succ_gen.generate_applicable_ops(current_node->state, applicable_ops);
+        vector<int> applicable_ops;
+        progression_match_tree.get_applicable_operator_ids(current_state, applicable_ops);
         rng->shuffle(applicable_ops);
 
-        shared_ptr<SearchNode> best_improving_succ_node;
+        shared_ptr<SearchNode> best_improving_succ_node = nullptr;
         int best_h_so_far = h_start;
-
-        for (OperatorID op_id : applicable_ops) {
-            OperatorProxy op = abs_task_proxy.get_operators()[op_id];
-//            utils::g_log << "applying op " << op.get_name() << endl;
-            State successor = current_node->state.get_unregistered_successor(op);
-            size_t successor_index =
-                pdb.hash_index_of_projected_state(successor);
-            if (!closed.count(static_cast<uint64_t>(successor_index))) {
-                int h_succ = pdb.get_value_for_hash_index(successor_index);
+        for (int op_id : applicable_ops) {
+            const AbstractOperator &op = progression_operators[op_id];
+            size_t successor_state = op.apply_to_state(current_state);
+            if (verbosity >= utils::Verbosity::DEBUG) {
+                utils::g_log << "successor state: " << successor_state << endl;
+            }
+            if (!closed.count(successor_state)) {
+                if (verbosity >= utils::Verbosity::DEBUG) {
+                    utils::g_log << "is new" << endl;
+                }
+                int h_succ = distances[successor_state];
                 int op_cost = op.get_cost();
                 int g_succ = current_node->g + op_cost;
                 int f_succ = g_succ + h_succ;
                 if (f_succ == f_star) {
-//                    utils::g_log << "f* successor: " << successor.get_values() << endl;
+                    if (verbosity >= utils::Verbosity::DEBUG) {
+                        utils::g_log << "has f* value" << endl;
+                    }
                     shared_ptr<SearchNode> succ_node =
                         make_shared<SearchNode>(
-                            move(successor), successor_index, g_succ, op_cost, current_node);
-                    assert(!closed.count(static_cast<uint64_t>(successor_index)));
+                            successor_state, g_succ, op_cost, current_node);
+                    assert(!closed.count(successor_state));
 
-                    if (task_properties::is_goal_state(abs_task_proxy, succ_node->state)) {
+                    if (is_goal_state(projection, hash_function, successor_state)) {
                         h_succ = -1;
                     }
                     if (h_succ < best_h_so_far) {
@@ -136,77 +155,78 @@ static vector<vector<OperatorID>> bfs_for_improving_state(
                         best_improving_succ_node = succ_node;
                     }
 
-                    closed.insert(static_cast<uint64_t>(successor_index));
+                    closed.insert(successor_state);
                     open.push(succ_node);
+                }
+            } else {
+                if (verbosity >= utils::Verbosity::DEBUG) {
+                    utils::g_log << "is not new" << endl;
                 }
             }
         }
         if (best_improving_succ_node) {
             start_node = best_improving_succ_node;
             return extract_plan(
-                abs_task_proxy, succ_gen, rng, compute_wildcard_plan,
+                progression_operators, progression_match_tree,
+                abstract_to_concrete_op_ids, rng, compute_wildcard_plan,
                 best_improving_succ_node);
         }
     }
 }
 
-static void print_plan(
-    const TaskProxy &abs_task_proxy,
-    const PatternDatabase &pdb,
-    const vector<vector<OperatorID>> &plan) {
-    utils::g_log << "##### Plan for pattern " << pdb.get_pattern() << " #####" << endl;
-    int step = 1;
-    for (const vector<OperatorID> &equivalent_ops : plan) {
-        utils::g_log << "step #" << step << endl;
-        for (OperatorID op_id : equivalent_ops) {
-            OperatorProxy op = abs_task_proxy.get_operators()[op_id];
-            utils::g_log << op.get_name() << " " << op.get_cost() << endl;
-        }
-        ++step;
-    }
-    utils::g_log << "##### End of plan #####" << endl;
-}
-
 vector<vector<OperatorID>> steepest_ascent_enforced_hill_climbing(
-    const TaskProxy &abs_task_proxy,
+    const Projection &projection,
+    const PerfectHashFunction &hash_function,
+    const vector<int> &distances,
+    const AbstractOperators &abstract_operators,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
-    const PatternDatabase &pdb,
     bool compute_wildcard_plan,
-    utils::Verbosity verbosity) {
-    vector<vector<OperatorID>> plan;
-    State start = abs_task_proxy.get_initial_state();
-    start.unpack();
-    size_t start_index = pdb.hash_index_of_projected_state(start);
-    const int f_star = pdb.get_value_for_hash_index(start_index);
+    utils::Verbosity verbosity,
+    size_t initial_state) {
     if (verbosity >= utils::Verbosity::DEBUG) {
-        utils::g_log << "Running steepest ascent EHC with start state "
-                     << start.get_unpacked_values() << endl;
+        utils::g_log << "Running steepest ascent EHC" << endl;
     }
 
-    successor_generator::SuccessorGenerator succ_gen(abs_task_proxy);
-    shared_ptr<SearchNode> start_node =
-        make_shared<SearchNode>(move(start), start_index, 0, -1, nullptr);
-    while (!task_properties::is_goal_state(abs_task_proxy, start_node->state)) {
+    const vector<AbstractOperator> &progression_operators = abstract_operators.get_progression_operators();
+    const vector<OperatorID> &abstract_to_concrete_op_ids = abstract_operators.get_abstract_to_concrete_op_ids();
+    assert(abstract_to_concrete_op_ids.size() == progression_operators.size());
+    MatchTree progression_match_tree = build_match_tree(
+        projection,
+        hash_function,
+        progression_operators);
+
+    vector<vector<OperatorID>> plan;
+    const int f_star = distances[initial_state];
+    shared_ptr<SearchNode> current_node =
+        make_shared<SearchNode>(initial_state, 0, -1, nullptr);
+    while (!is_goal_state(projection, hash_function, current_node->state_hash_index)) {
         if (verbosity >= utils::Verbosity::DEBUG) {
             utils::g_log << "Current start state of iteration: "
-                         << start_node->state.get_unpacked_values() << endl;
+                         << current_node->state_hash_index << endl;
         }
-        // start_node will be set to the last node of the BFS, thus containing
+        // current_node will be set to the last node of the BFS, thus containing
         // the improving state for the next iteration, and the updated g-value.
         vector<vector<OperatorID>> plateau_plan =
             bfs_for_improving_state(
-                abs_task_proxy, succ_gen, rng, compute_wildcard_plan, pdb,
-                f_star, start_node);
+                projection, hash_function, distances, progression_operators,
+                progression_match_tree, abstract_to_concrete_op_ids, rng,
+                compute_wildcard_plan, verbosity, f_star, current_node);
         if (verbosity >= utils::Verbosity::DEBUG) {
             utils::g_log << "BFS wildcard plan to next improving state: " << endl;
-            print_plan(abs_task_proxy, pdb, plateau_plan);
+            int step = 1;
+            for (const vector<OperatorID> &equivalent_ops : plateau_plan) {
+                utils::g_log << "step #" << step << endl;
+                for (OperatorID op_id : equivalent_ops) {
+                    utils::g_log << "op id: " << op_id << endl;
+                }
+                ++step;
+            }
         }
-        plan.insert(plan.end(), plateau_plan.begin(), plateau_plan.end());
+        plan.insert(plan.end(),
+                    make_move_iterator(plateau_plan.begin()),
+                    make_move_iterator(plateau_plan.end()));
     }
 
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        print_plan(abs_task_proxy, pdb, plan);
-    }
     return plan;
 }
 }

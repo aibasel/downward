@@ -566,8 +566,6 @@ fast_downward_plugin(
         tasks/domain_abstracted_task_factory
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
-        tasks/projected_task
-        tasks/projected_task_factory
     DEPENDS TASK_PROPERTIES
     DEPENDENCY_ONLY
 )
@@ -719,6 +717,7 @@ fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES
+        pdbs/abstract_operator
         pdbs/canonical_pdbs
         pdbs/canonical_pdbs_heuristic
         pdbs/cegar
