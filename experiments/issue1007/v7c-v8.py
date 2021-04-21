@@ -79,8 +79,7 @@ exp._configs = [
 ]
 exp.add_comparison_table_step_for_revision_pairs(
     revision_pairs=[
-        ("issue1007-v7", "issue1007-v7b"),
-        ("issue1007-v7b", "issue1007-v7c"),
+        ("issue1007-v7c", "issue1007-v8"),
     ],
     attributes=['coverage', 'search_time', 'total_time',
     'expansions_until_last_jump', 'score_search_time',
