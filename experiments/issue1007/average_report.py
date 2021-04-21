@@ -23,9 +23,8 @@ class AverageAlgorithmReport(PlanningReport):
                 if suffix in algo:
                     algo_infixes.add(algo.replace(suffix, ''))
                     break
-        # print algo_infixes
-        # print self.algo_name_suffixes
-        # print os.path.join(self.directory, 'properties')
+        # print(algo_infixes)
+        # print(self.algo_name_suffixes)
         props = tools.Properties(self.outfile)
         for domain, problem in self.problem_runs.keys():
             for algo in algo_infixes:
