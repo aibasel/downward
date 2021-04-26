@@ -133,7 +133,7 @@ void PatternDatabase::multiply_out(
                 prev_pairs.emplace_back(var_id, i);
             }
             multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
-                         effects_without_pre, variables, op_id,operators);
+                         effects_without_pre, variables, op_id, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
                 eff_pairs.pop_back();
