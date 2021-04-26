@@ -8,6 +8,7 @@
 #include "../utils/logging.h"
 #include "../utils/math.h"
 #include "../utils/timer.h"
+#include "../utils/rng.h"
 
 #include <algorithm>
 #include <cassert>
@@ -24,8 +25,10 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
                                    const vector<FactPair> &pre_pairs,
                                    const vector<FactPair> &eff_pairs,
                                    int cost,
-                                   const vector<size_t> &hash_multipliers)
-    : cost(cost),
+                                   const vector<size_t> &hash_multipliers,
+                                   int concrete_op_id)
+    : concrete_op_id(concrete_op_id),
+      cost(cost),
       regression_preconditions(prev_pairs) {
     regression_preconditions.insert(regression_preconditions.end(),
                                     eff_pairs.begin(),
@@ -70,7 +73,10 @@ PatternDatabase::PatternDatabase(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     bool dump,
-    const vector<int> &operator_costs)
+    const vector<int> &operator_costs,
+    bool compute_plan,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    bool compute_wildcard_plan)
     : pattern(pattern) {
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
@@ -93,7 +99,7 @@ PatternDatabase::PatternDatabase(
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
     }
-    create_pdb(task_proxy, operator_costs);
+    create_pdb(task_proxy, operator_costs, compute_plan, rng, compute_wildcard_plan);
     if (dump)
         utils::g_log << "PDB construction time: " << timer << endl;
 }
@@ -104,13 +110,14 @@ void PatternDatabase::multiply_out(
     vector<FactPair> &eff_pairs,
     const vector<FactPair> &effects_without_pre,
     const VariablesProxy &variables,
+    int op_id,
     vector<AbstractOperator> &operators) {
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
             operators.push_back(
                 AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost,
-                                 hash_multipliers));
+                                 hash_multipliers, op_id));
         }
     } else {
         // For each possible value for the current variable, build an
@@ -126,7 +133,7 @@ void PatternDatabase::multiply_out(
                 prev_pairs.emplace_back(var_id, i);
             }
             multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
-                         effects_without_pre, variables, operators);
+                         effects_without_pre, variables, op_id,operators);
             if (i != eff) {
                 pre_pairs.pop_back();
                 eff_pairs.pop_back();
@@ -184,11 +191,13 @@ void PatternDatabase::build_abstract_operators(
         }
     }
     multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre,
-                 variables, operators);
+                 variables, op.get_id(), operators);
 }
 
 void PatternDatabase::create_pdb(
-    const TaskProxy &task_proxy, const vector<int> &operator_costs) {
+    const TaskProxy &task_proxy, const vector<int> &operator_costs,
+    bool compute_plan, const shared_ptr<utils::RandomNumberGenerator> &rng,
+    bool compute_wildcard_plan) {
     VariablesProxy variables = task_proxy.get_variables();
     vector<int> variable_to_index(variables.size(), -1);
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -239,6 +248,10 @@ void PatternDatabase::create_pdb(
         }
     }
 
+    if (compute_plan) {
+        generating_op_ids.resize(num_states);
+    }
+
     // Dijkstra loop
     while (!pq.empty()) {
         pair<int, size_t> node = pq.pop();
@@ -258,6 +271,49 @@ void PatternDatabase::create_pdb(
             if (alternative_cost < distances[predecessor]) {
                 distances[predecessor] = alternative_cost;
                 pq.push(alternative_cost, predecessor);
+                if (compute_plan) {
+                    generating_op_ids[predecessor] = {op_id};
+                }
+            } else if (alternative_cost == distances[predecessor] && compute_plan) {
+                generating_op_ids[predecessor].push_back(op_id);
+            }
+        }
+    }
+
+    // Compute abstract plan
+    if (compute_plan) {
+        State initial_state = task_proxy.get_initial_state();
+        initial_state.unpack();
+        size_t current_state =
+            hash_index_of_concrete_state(initial_state.get_unpacked_values());
+        if (distances[current_state] != numeric_limits<int>::max()) {
+            while (!is_goal_state(current_state, abstract_goals, variables)) {
+                int op_id = *rng->choose(generating_op_ids[current_state]);
+                assert(op_id != -1);
+                const AbstractOperator &op = operators[op_id];
+                size_t successor_state = current_state - op.get_hash_effect();
+
+                // Compute equivalent ops
+                vector<OperatorID> cheapest_operators;
+                vector<int> applicable_operator_ids;
+                match_tree.get_applicable_operator_ids(successor_state, applicable_operator_ids);
+                for (int applicable_op_id : applicable_operator_ids) {
+                    const AbstractOperator &applicable_op = operators[applicable_op_id];
+                    size_t predecessor = successor_state + applicable_op.get_hash_effect();
+                    if (predecessor == current_state && op.get_cost() == applicable_op.get_cost()) {
+                        cheapest_operators.emplace_back(applicable_op.get_concrete_op_id());
+                    }
+                }
+                if (compute_wildcard_plan) {
+                    rng->shuffle(cheapest_operators);
+                    wildcard_plan.push_back(move(cheapest_operators));
+                } else {
+                    OperatorID random_op_id = *rng->choose(cheapest_operators);
+                    wildcard_plan.emplace_back();
+                    wildcard_plan.back().push_back(random_op_id);
+                }
+
+                current_state = successor_state;
             }
         }
     }

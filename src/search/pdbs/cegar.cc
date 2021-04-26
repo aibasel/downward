@@ -42,46 +42,24 @@ bool CEGAR::time_limit_reached(
 }
 
 unique_ptr<Projection> CEGAR::compute_projection(Pattern &&pattern) const {
+    bool dump = false;
+    vector<int> op_cost;
+    bool compute_plan = true;
     shared_ptr<PatternDatabase> pdb =
-        make_shared<PatternDatabase>(task_proxy, pattern);
-    shared_ptr<AbstractTask> projected_task =
-        extra_tasks::build_projected_task(task, move(pattern));
-    TaskProxy projected_task_proxy(*projected_task);
+        make_shared<PatternDatabase>(task_proxy, pattern, dump, op_cost, compute_plan, rng, wildcard_plans);
+    vector<vector<OperatorID>> plan = pdb->extract_wildcard_plan();
 
     bool unsolvable = false;
-    vector<vector<OperatorID>> plan;
-    size_t initial_state_index = pdb->hash_index_of_projected_state(
-        projected_task_proxy.get_initial_state());
-    int init_goal_dist = pdb->get_value_for_hash_index(initial_state_index);
-    if (init_goal_dist == numeric_limits<int>::max()) {
+    State initial_state = task_proxy.get_initial_state();
+    initial_state.unpack();
+    if (pdb->get_value(initial_state.get_unpacked_values()) == numeric_limits<int>::max()) {
         unsolvable = true;
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "PDB with pattern " << pdb->get_pattern()
                          << " is unsolvable" << endl;
         }
-    } else {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "Computing plan for PDB with pattern "
-                         << pdb->get_pattern() << endl;
-        }
-
-        plan = steepest_ascent_enforced_hill_climbing(
-            projected_task_proxy, rng, *pdb, wildcard_plans, verbosity);
-
-        // Convert operator IDs of the abstract in the concrete task.
-        for (vector<OperatorID> &plan_step : plan) {
-            vector<OperatorID> concrete_plan_step;
-            concrete_plan_step.reserve(plan_step.size());
-            for (OperatorID abs_op_id : plan_step) {
-                concrete_plan_step.push_back(
-                    projected_task_proxy.get_operators()[abs_op_id].get_ancestor_operator_id(task.get()));
-            }
-            plan_step.swap(concrete_plan_step);
-        }
     }
-
-    return utils::make_unique_ptr<Projection>(
-        move(pdb), move(plan), unsolvable);
+    return utils::make_unique_ptr<Projection>(move(pdb), move(plan), unsolvable);
 }
 
 void CEGAR::compute_initial_collection() {
