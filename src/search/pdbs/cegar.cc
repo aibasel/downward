@@ -1,14 +1,12 @@
 #include "cegar.h"
 
-#include "abstract_operator.h"
-#include "match_tree.h"
-#include "pattern_database.h"
-#include "pattern_database_factory.h"
 #include "steepest_ascent_enforced_hill_climbing.h"
 #include "types.h"
 #include "utils.h"
 
 #include "../option_parser.h"
+
+#include "../tasks/projected_task_factory.h"
 
 #include "../task_utils/task_properties.h"
 
@@ -20,11 +18,11 @@ using namespace std;
 namespace pdbs {
 void CEGAR::print_collection() const {
     utils::g_log << "[";
-    for (size_t i = 0; i < collection.size(); ++i) {
-        const unique_ptr<PDBInfo> &collection_entry = collection[i];
-        if (collection_entry) {
-            utils::g_log << collection_entry->get_pattern();
-            if (i != collection.size() - 1) {
+    for (size_t i = 0; i < projection_collection.size(); ++i) {
+        const unique_ptr<Projection> &projection = projection_collection[i];
+        if (projection) {
+            utils::g_log << projection->get_pattern();
+            if (i != projection_collection.size() - 1) {
                 utils::g_log << ", ";
             }
         }
@@ -43,76 +41,47 @@ bool CEGAR::time_limit_reached(
     return false;
 }
 
-unique_ptr<PDBInfo> CEGAR::compute_pdb_and_plan(Pattern &&pattern) const {
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "Computing PDB and plan for pattern "
-                     << pattern << endl;
-    }
+unique_ptr<Projection> CEGAR::compute_projection(Pattern &&pattern) const {
+    shared_ptr<PatternDatabase> pdb =
+        make_shared<PatternDatabase>(task_proxy, pattern);
+    shared_ptr<AbstractTask> projected_task =
+        extra_tasks::build_projected_task(task, move(pattern));
+    TaskProxy projected_task_proxy(*projected_task);
 
-    Projection projection(task_proxy, pattern);
-    PerfectHashFunction hash_function = compute_hash_function(
-        task_proxy, pattern);
-    OperatorType operator_type(OperatorType::RegressionAndProgression);
-    bool compute_op_id_mapping = true;
-    AbstractOperators abstract_operators(
-        projection,
-        hash_function,
-        operator_type,
-        {},
-        compute_op_id_mapping);
-    const vector<AbstractOperator> &regression_operators = abstract_operators.get_regression_operators();
-    MatchTree regression_match_tree = build_match_tree(
-        projection,
-        hash_function,
-        regression_operators);
-//    cout << "regression operators" << endl;
-//    for (const AbstractOperator &op : regression_operators) {
-//        op.dump(projection.get_pattern(), projection.get_task_proxy().get_variables());
-//    }
-//    cout << "regression match tree" << endl;
-//    regression_match_tree.dump();
-    vector<int> distances = compute_distances(
-        projection,
-        hash_function,
-        regression_operators,
-        regression_match_tree);
-
-    State initial_state = projection.get_task_proxy().get_initial_state();
-    initial_state.unpack();
-    size_t initial_state_hash = hash_function.rank(initial_state.get_unpacked_values());
-    int init_goal_dist = distances[initial_state_hash];
-    bool unsolvable;
+    bool unsolvable = false;
     vector<vector<OperatorID>> plan;
+    size_t initial_state_index = pdb->hash_index_of_projected_state(
+        projected_task_proxy.get_initial_state());
+    int init_goal_dist = pdb->get_value_for_hash_index(initial_state_index);
     if (init_goal_dist == numeric_limits<int>::max()) {
         unsolvable = true;
+        if (verbosity >= utils::Verbosity::VERBOSE) {
+            utils::g_log << "PDB with pattern " << pdb->get_pattern()
+                         << " is unsolvable" << endl;
+        }
     } else {
-        unsolvable = false;
+        if (verbosity >= utils::Verbosity::VERBOSE) {
+            utils::g_log << "Computing plan for PDB with pattern "
+                         << pdb->get_pattern() << endl;
+        }
+
         plan = steepest_ascent_enforced_hill_climbing(
-            projection, hash_function, distances, abstract_operators, rng,
-            wildcard_plans, verbosity, initial_state_hash);
-    }
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        if (unsolvable) {
-            utils::g_log << "PDB is unsolvable" << endl;
-        } else {
-            utils::g_log << "##### Start of plan #####" << endl;
-            int step = 1;
-            for (const vector<OperatorID> &equivalent_ops : plan) {
-                utils::g_log << "step #" << step << endl;
-                for (OperatorID op_id : equivalent_ops) {
-                    OperatorProxy op = task_proxy.get_operators()[op_id];
-                    utils::g_log << op.get_name() << " " << op.get_cost() << endl;
-                }
-                ++step;
+            projected_task_proxy, rng, *pdb, wildcard_plans, verbosity);
+
+        // Convert operator IDs of the abstract in the concrete task.
+        for (vector<OperatorID> &plan_step : plan) {
+            vector<OperatorID> concrete_plan_step;
+            concrete_plan_step.reserve(plan_step.size());
+            for (OperatorID abs_op_id : plan_step) {
+                concrete_plan_step.push_back(
+                    projected_task_proxy.get_operators()[abs_op_id].get_ancestor_operator_id(task.get()));
             }
-            utils::g_log << "##### End of plan #####" << endl;
+            plan_step.swap(concrete_plan_step);
         }
     }
 
-    return utils::make_unique_ptr<PDBInfo>(
-        make_shared<PatternDatabase>(move(hash_function), move(distances)),
-        move(plan),
-        unsolvable);
+    return utils::make_unique_ptr<Projection>(
+        move(pdb), move(plan), unsolvable);
 }
 
 void CEGAR::compute_initial_collection() {
@@ -163,11 +132,11 @@ FlawList CEGAR::get_violated_preconditions(
 }
 
 FlawList CEGAR::apply_plan(int collection_index, vector<int> &current_state) const {
-    PDBInfo &pdb_info = *collection[collection_index];
-    const vector<vector<OperatorID>> &plan = pdb_info.get_plan();
+    Projection &projection = *projection_collection[collection_index];
+    const vector<vector<OperatorID>> &plan = projection.get_plan();
     if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << "executing plan for pattern "
-                     << pdb_info.get_pattern() << ": ";
+                     << projection.get_pattern() << ": ";
     }
     for (const vector<OperatorID> &equivalent_ops : plan) {
         FlawList step_flaws;
@@ -210,10 +179,10 @@ FlawList CEGAR::apply_plan(int collection_index, vector<int> &current_state) con
     return {};
 }
 
-bool CEGAR::get_flaws_for_pdb(
+bool CEGAR::get_flaws_for_projection(
     int collection_index, const State &concrete_init, FlawList &flaws) {
-    PDBInfo &collection_entry = *collection[collection_index];
-    if (collection_entry.is_unsolvable()) {
+    Projection &projection = *projection_collection[collection_index];
+    if (projection.is_unsolvable()) {
         utils::g_log << "task is unsolvable." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
     }
@@ -235,9 +204,9 @@ bool CEGAR::get_flaws_for_pdb(
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are blacklisted variables, "
-                        "marking collection_entry as solved." << endl;
+                        "marking projection as solved." << endl;
                 }
-                collection_entry.mark_as_solved();
+                projection.mark_as_solved();
             }
         } else {
             if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -259,9 +228,9 @@ bool CEGAR::get_flaws_for_pdb(
             } else {
                 if (verbosity >= utils::Verbosity::VERBOSE) {
                     utils::g_log << "there are no non-blacklisted goal variables "
-                        "left, marking collection_entry as solved." << endl;
+                        "left, marking projection as solved." << endl;
                 }
-                collection_entry.mark_as_solved();
+                projection.mark_as_solved();
             }
         }
     } else {
@@ -274,11 +243,11 @@ bool CEGAR::get_flaws_for_pdb(
 int CEGAR::get_flaws(const State &concrete_init, FlawList &flaws) {
     assert(flaws.empty());
     for (size_t collection_index = 0;
-         collection_index < collection.size(); ++collection_index) {
-        if (collection[collection_index] &&
-            !collection[collection_index]->is_solved()) {
+         collection_index < projection_collection.size(); ++collection_index) {
+        if (projection_collection[collection_index] &&
+            !projection_collection[collection_index]->is_solved()) {
             bool solved =
-                get_flaws_for_pdb(collection_index, concrete_init, flaws);
+                get_flaws_for_projection(collection_index, concrete_init, flaws);
             if (solved) {
                 return collection_index;
             }
@@ -288,14 +257,14 @@ int CEGAR::get_flaws(const State &concrete_init, FlawList &flaws) {
 }
 
 void CEGAR::add_pattern_for_var(int var) {
-    collection.push_back(compute_pdb_and_plan({var}));
-    variable_to_collection_index[var] = collection.size() - 1;
-    collection_size += collection.back()->get_pdb()->get_size();
+    projection_collection.push_back(compute_projection({var}));
+    variable_to_projection[var] = projection_collection.size() - 1;
+    collection_size += projection_collection.back()->get_pdb()->get_size();
 }
 
 bool CEGAR::can_merge_patterns(int index1, int index2) const {
-    int pdb_size1 = collection[index1]->get_pdb()->get_size();
-    int pdb_size2 = collection[index2]->get_pdb()->get_size();
+    int pdb_size1 = projection_collection[index1]->get_pdb()->get_size();
+    int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
     if (!utils::is_product_within_limit(pdb_size1, pdb_size2, max_pdb_size)) {
         return false;
     }
@@ -304,39 +273,39 @@ bool CEGAR::can_merge_patterns(int index1, int index2) const {
 }
 
 void CEGAR::merge_patterns(int index1, int index2) {
-    // Merge pattern at index2 into pattern at index2.
-    PDBInfo &pdb_info1 = *collection[index1];
-    PDBInfo &pdb_info2 = *collection[index2];
+    // Merge projection at index2 into projection at index2.
+    Projection &projection1 = *projection_collection[index1];
+    Projection &projection2 = *projection_collection[index2];
 
-    const Pattern &pattern2 = pdb_info2.get_pattern();
+    const Pattern &pattern2 = projection2.get_pattern();
     for (int var : pattern2) {
-        variable_to_collection_index[var] = index1;
+        variable_to_projection[var] = index1;
     }
 
-    // Compute merged_pdb_info pattern.
-    Pattern new_pattern = pdb_info1.get_pattern();
+    // Compute merged pattern.
+    Pattern new_pattern = projection1.get_pattern();
     new_pattern.insert(new_pattern.end(), pattern2.begin(), pattern2.end());
     sort(new_pattern.begin(), new_pattern.end());
 
     // Store old pdb sizes.
-    int pdb_size1 = collection[index1]->get_pdb()->get_size();
-    int pdb_size2 = collection[index2]->get_pdb()->get_size();
+    int pdb_size1 = projection_collection[index1]->get_pdb()->get_size();
+    int pdb_size2 = projection_collection[index2]->get_pdb()->get_size();
 
-    // Compute PDB and plan for merged_pdb_info pattern.
-    unique_ptr<PDBInfo> merged_pdb_info = compute_pdb_and_plan(move(new_pattern));
+    // Compute merged projection.
+    unique_ptr<Projection> merged = compute_projection(move(new_pattern));
 
     // Update collection size.
     collection_size -= pdb_size1;
     collection_size -= pdb_size2;
-    collection_size += merged_pdb_info->get_pdb()->get_size();
+    collection_size += merged->get_pdb()->get_size();
 
     // Clean up.
-    collection[index1] = move(merged_pdb_info);
-    collection[index2] = nullptr;
+    projection_collection[index1] = move(merged);
+    projection_collection[index2] = nullptr;
 }
 
 bool CEGAR::can_add_variable_to_pattern(int index, int var) const {
-    int pdb_size = collection[index]->get_pdb()->get_size();
+    int pdb_size = projection_collection[index]->get_pdb()->get_size();
     int domain_size = task_proxy.get_variables()[var].get_domain_size();
     if (!utils::is_product_within_limit(pdb_size, domain_size, max_pdb_size)) {
         return false;
@@ -346,19 +315,19 @@ bool CEGAR::can_add_variable_to_pattern(int index, int var) const {
 }
 
 void CEGAR::add_variable_to_pattern(int collection_index, int var) {
-    const PDBInfo &pdb_info = *collection[collection_index];
+    const Projection &projection = *projection_collection[collection_index];
 
-    Pattern new_pattern(pdb_info.get_pattern());
+    Pattern new_pattern(projection.get_pattern());
     new_pattern.push_back(var);
     sort(new_pattern.begin(), new_pattern.end());
 
-    unique_ptr<PDBInfo> new_pdb_info = compute_pdb_and_plan(move(new_pattern));
+    unique_ptr<Projection> new_projection = compute_projection(move(new_pattern));
 
-    collection_size -= pdb_info.get_pdb()->get_size();
-    collection_size += new_pdb_info->get_pdb()->get_size();
+    collection_size -= projection.get_pdb()->get_size();
+    collection_size += new_projection->get_pdb()->get_size();
 
-    variable_to_collection_index[var] = collection_index;
-    collection[collection_index] = move(new_pdb_info);
+    variable_to_projection[var] = collection_index;
+    projection_collection[collection_index] = move(new_projection);
 }
 
 void CEGAR::refine(const FlawList &flaws) {
@@ -367,22 +336,22 @@ void CEGAR::refine(const FlawList &flaws) {
 
     if (verbosity >= utils::Verbosity::VERBOSE) {
         utils::g_log << "chosen flaw: pattern "
-                     << collection[flaw.collection_index]->get_pattern()
+                     << projection_collection[flaw.collection_index]->get_pattern()
                      << " with a flaw on " << flaw.variable << endl;
     }
 
     int collection_index = flaw.collection_index;
     int var = flaw.variable;
     bool added_var = false;
-    auto it = variable_to_collection_index.find(var);
-    if (it != variable_to_collection_index.end()) {
+    auto it = variable_to_projection.find(var);
+    if (it != variable_to_projection.end()) {
         // Variable is contained in another pattern of the collection.
         int other_index = it->second;
         assert(other_index != collection_index);
-        assert(collection[other_index] != nullptr);
+        assert(projection_collection[other_index] != nullptr);
         if (verbosity >= utils::Verbosity::VERBOSE) {
             utils::g_log << "var" << var << " is already in pattern "
-                         << collection[other_index]->get_pattern() << endl;
+                         << projection_collection[other_index]->get_pattern() << endl;
         }
         if (can_merge_patterns(collection_index, other_index)) {
             if (verbosity >= utils::Verbosity::VERBOSE) {
@@ -464,13 +433,13 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     shared_ptr<PDBCollection> pdbs = make_shared<PDBCollection>();
     if (concrete_solution_index != -1) {
         const shared_ptr<PatternDatabase> &pdb =
-            collection[concrete_solution_index]->get_pdb();
+            projection_collection[concrete_solution_index]->get_pdb();
         patterns->push_back(pdb->get_pattern());
         pdbs->push_back(pdb);
     } else {
-        for (const unique_ptr<PDBInfo> &pdb_info : collection) {
-            if (pdb_info) {
-                const shared_ptr<PatternDatabase> &pdb = pdb_info->get_pdb();
+        for (const unique_ptr<Projection> &projection : projection_collection) {
+            if (projection) {
+                const shared_ptr<PatternDatabase> &pdb = projection->get_pdb();
                 patterns->push_back(pdb->get_pattern());
                 pdbs->push_back(pdb);
             }
@@ -566,31 +535,6 @@ CEGAR::CEGAR(
         }
         utils::g_log << endl;
     }
-
-//    for (VariableProxy var : task_proxy.get_variables()) {
-//        cout << "var " << var.get_id() << ": ";
-//        for (int fact_id = 0; fact_id < var.get_domain_size(); ++fact_id) {
-//            cout << var.get_fact(fact_id).get_pair() << ", ";
-//            cout << var.get_fact(fact_id).get_name() << "; ";
-//        }
-//        cout << endl;
-//    }
-//
-//    for (OperatorProxy op : task_proxy.get_operators()) {
-//        cout << "op " << op.get_id() << ", " << op.get_name() << endl;
-//        cout << "pre: ";
-//        for (FactProxy pre : op.get_preconditions()) {
-//            cout << pre.get_pair() << ", ";
-//            cout << pre.get_name() << "; ";
-//        }
-//        cout << endl;
-//        cout << "eff: ";
-//        for (EffectProxy eff : op.get_effects()) {
-//            cout << eff.get_fact().get_pair() << ", ";
-//            cout << eff.get_fact().get_name() << "; ";
-//        }
-//        cout << endl;
-//    }
 }
 
 void add_cegar_options_to_parser(options::OptionParser &parser) {

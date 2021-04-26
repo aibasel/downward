@@ -2,7 +2,6 @@
 
 #include "canonical_pdbs.h"
 #include "pattern_database.h"
-#include "pattern_database_factory.h"
 
 using namespace std;
 
@@ -23,7 +22,7 @@ IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
 }
 
 void IncrementalCanonicalPDBs::add_pdb_for_pattern(const Pattern &pattern) {
-    pattern_databases->push_back(generate_pdb(task_proxy, pattern));
+    pattern_databases->push_back(make_shared<PatternDatabase>(task_proxy, pattern));
     size += pattern_databases->back()->get_size();
 }
 

@@ -1,7 +1,6 @@
 #include "zero_one_pdbs.h"
 
 #include "pattern_database.h"
-#include "pattern_database_factory.h"
 
 #include "../task_proxy.h"
 
@@ -25,7 +24,7 @@ ZeroOnePDBs::ZeroOnePDBs(
 
     pattern_databases.reserve(patterns.size());
     for (const Pattern &pattern : patterns) {
-        shared_ptr<PatternDatabase> pdb = generate_pdb(
+        shared_ptr<PatternDatabase> pdb = make_shared<PatternDatabase>(
             task_proxy, pattern, false, remaining_operator_costs);
 
         /* Set cost of relevant operators to 0 for further iterations

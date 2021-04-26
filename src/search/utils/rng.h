@@ -35,13 +35,11 @@ public:
 
     template<typename T>
     typename std::vector<T>::const_iterator choose(const std::vector<T> &vec) {
-        assert(!vec.empty());
         return vec.begin() + operator()(vec.size());
     }
 
     template<typename T>
     typename std::vector<T>::iterator choose(std::vector<T> &vec) {
-        assert(!vec.empty());
         return vec.begin() + operator()(vec.size());
     }
 

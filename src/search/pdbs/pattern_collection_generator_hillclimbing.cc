@@ -3,7 +3,6 @@
 #include "canonical_pdbs_heuristic.h"
 #include "incremental_canonical_pdbs.h"
 #include "pattern_database.h"
-#include "pattern_database_factory.h"
 #include "utils.h"
 #include "validation.h"
 
@@ -160,7 +159,7 @@ int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
                     */
                     generated_patterns.insert(new_pattern);
                     candidate_pdbs.push_back(
-                        generate_pdb(task_proxy, new_pattern));
+                        make_shared<PatternDatabase>(task_proxy, new_pattern));
                     max_pdb_size = max(max_pdb_size,
                                        candidate_pdbs.back()->get_size());
                 }

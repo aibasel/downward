@@ -1,7 +1,6 @@
 #include "pattern_information.h"
 
 #include "pattern_database.h"
-#include "pattern_database_factory.h"
 #include "validation.h"
 
 #include <cassert>
@@ -24,7 +23,7 @@ bool PatternInformation::information_is_valid() const {
 
 void PatternInformation::create_pdb_if_missing() {
     if (!pdb) {
-        pdb = generate_pdb(task_proxy, pattern);
+        pdb = make_shared<PatternDatabase>(task_proxy, pattern);
     }
 }
 

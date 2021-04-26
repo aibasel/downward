@@ -23,19 +23,20 @@ class RandomNumberGenerator;
 
 namespace pdbs {
 /*
-  This class stores the PDB (and with that, the pattern) and an optimal plan
-  (in the wildcard format) for that PDB if it exists or unsolvable is true
-  otherwise. It can be marked as "solved" to ignore it in further iterations
-  of the CEGAR algorithm.
+  This is used as a "collection entry" in the CEGAR algorithm. It stores
+  the PDB (and with that, the pattern) and an optimal plan (in the wildcard
+  format) for that PDB if it exists or unsolvable is true otherwise. It can
+  be marked as "solved" to ignore it in further iterations of the CEGAR
+  algorithm.
 */
-class PDBInfo {
+class Projection {
     std::shared_ptr<PatternDatabase> pdb;
     std::vector<std::vector<OperatorID>> plan;
     bool unsolvable;
     bool solved;
 
 public:
-    PDBInfo(
+    Projection(
         const std::shared_ptr<PatternDatabase> &&pdb,
         const std::vector<std::vector<OperatorID>> &&plan,
         bool unsolvable)
@@ -64,7 +65,7 @@ public:
         solved = true;
     }
 
-    bool is_solved() const {
+    bool is_solved() {
         return solved;
     }
 };
@@ -109,18 +110,18 @@ class CEGAR {
     const std::vector<FactPair> goals;
     std::unordered_set<int> blacklisted_variables;
 
-    std::vector<std::unique_ptr<PDBInfo>> collection;
+    std::vector<std::unique_ptr<Projection>> projection_collection;
     /*
-      Map each variable of the task which is contained in the collection to
-      the index of the collection entry it is part of.
+      Map each variable of the task which is contained in the collection to the
+      projection which it is part of.
     */
-    std::unordered_map<int, int> variable_to_collection_index;
+    std::unordered_map<int, int> variable_to_projection;
     int collection_size;
 
     void print_collection() const;
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
 
-    std::unique_ptr<PDBInfo> compute_pdb_and_plan(Pattern &&pattern) const;
+    std::unique_ptr<Projection> compute_projection(Pattern &&pattern) const;
     void compute_initial_collection();
 
     /*
@@ -133,7 +134,7 @@ class CEGAR {
         const OperatorProxy &op,
         const std::vector<int> &current_state) const;
     /*
-      Try to apply the plan of the PDB at the given collection index in the
+      Try to apply the plan of the projection at the given index in the
       concrete task starting at the given state. During application,
       blacklisted variables are ignored. If plan application succeeds,
       return an empty flaw list. Otherwise, return all precondition variables
@@ -146,12 +147,12 @@ class CEGAR {
       no blacklisted variables, in which case the concrete task is solved.
       Return false in all other cases. Append new flaws to the passed-in flaws.
     */
-    bool get_flaws_for_pdb(
+    bool get_flaws_for_projection(
         int collection_index, const State &concrete_init, FlawList &flaws);
     /*
-      Use get_flaws_for_pdb for all PDBs of the collection. Append
+      Use get_flaws_for_projection for all patterns of the collection. Append
       new flaws to the passed-in flaws. If the task is solved by the plan of
-      any PDB, return the index of the collection. Otherwise, return -1.
+      any projection, return the index of the collection. Otherwise, return -1.
     */
     int get_flaws(const State &concrete_init, FlawList &flaws);
 

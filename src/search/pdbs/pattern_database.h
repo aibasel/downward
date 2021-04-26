@@ -3,77 +3,183 @@
 
 #include "types.h"
 
+#include "../task_proxy.h"
+
 #include <utility>
 #include <vector>
 
-class OperatorProxy;
-class State;
-
 namespace pdbs {
-class PerfectHashFunction {
-    Pattern pattern;
-    // size of the PDB
-    std::size_t num_states;
-    // multipliers for each variable for perfect hash function
-    std::vector<std::size_t> hash_multipliers;
-public:
-    PerfectHashFunction(
-        Pattern &&pattern,
-        std::size_t num_states,
-        std::vector<std::size_t> &&hash_multipliers);
+class AbstractOperator {
     /*
-      The given concrete state is used to calculate the index of the
-      according abstract state. This is only used for table lookup
-      (distances) during search.
+      This class represents an abstract operator how it is needed for
+      the regression search performed during the PDB-construction. As
+      all abstract states are represented as a number, abstract
+      operators don't have "usual" effects but "hash effects", i.e. the
+      change (as number) the abstract operator implies on a given
+      abstract state.
     */
-    std::size_t rank(const std::vector<int> &state) const;
-    int unrank(size_t index, int var, int domain_size) const;
 
-    const Pattern &get_pattern() const {
-        return pattern;
+    int cost;
+
+    /*
+      Preconditions for the regression search, corresponds to normal
+      effects and prevail of concrete operators.
+    */
+    std::vector<FactPair> regression_preconditions;
+
+    /*
+      Effect of the operator during regression search on a given
+      abstract state number.
+    */
+    std::size_t hash_effect;
+public:
+    /*
+      Abstract operators are built from concrete operators. The
+      parameters follow the usual name convention of SAS+ operators,
+      meaning prevail, preconditions and effects are all related to
+      progression search.
+    */
+    AbstractOperator(const std::vector<FactPair> &prevail,
+                     const std::vector<FactPair> &preconditions,
+                     const std::vector<FactPair> &effects,
+                     int cost,
+                     const std::vector<std::size_t> &hash_multipliers);
+    ~AbstractOperator();
+
+    /*
+      Returns variable value pairs which represent the preconditions of
+      the abstract operator in a regression search
+    */
+    const std::vector<FactPair> &get_regression_preconditions() const {
+        return regression_preconditions;
     }
 
-    // Returns the size (number of abstract states) of the PDB
-    std::size_t get_num_states() const {
-        return num_states;
-    }
+    /*
+      Returns the effect of the abstract operator in form of a value
+      change (+ or -) to an abstract state index
+    */
+    std::size_t get_hash_effect() const {return hash_effect;}
 
-    std::size_t get_multiplier(int var) const {
-        return hash_multipliers[var];
-    }
+    /*
+      Returns the cost of the abstract operator (same as the cost of
+      the original concrete operator)
+    */
+    int get_cost() const {return cost;}
+    void dump(const Pattern &pattern,
+              const VariablesProxy &variables) const;
 };
 
 // Implements a single pattern database
 class PatternDatabase {
-    PerfectHashFunction hash_function;
+    Pattern pattern;
+
+    // size of the PDB
+    std::size_t num_states;
 
     /*
       final h-values for abstract-states.
       dead-ends are represented by numeric_limits<int>::max()
     */
     std::vector<int> distances;
+
+    // multipliers for each variable for perfect hash function
+    std::vector<std::size_t> hash_multipliers;
+
+    /*
+      Recursive method; called by build_abstract_operators. In the case
+      of a precondition with value = -1 in the concrete operator, all
+      multiplied out abstract operators are computed, i.e. for all
+      possible values of the variable (with precondition = -1), one
+      abstract operator with a concrete value (!= -1) is computed.
+    */
+    void multiply_out(
+        int pos, int cost,
+        std::vector<FactPair> &prev_pairs,
+        std::vector<FactPair> &pre_pairs,
+        std::vector<FactPair> &eff_pairs,
+        const std::vector<FactPair> &effects_without_pre,
+        const VariablesProxy &variables,
+        std::vector<AbstractOperator> &operators);
+
+    /*
+      Computes all abstract operators for a given concrete operator (by
+      its global operator number). Initializes data structures for initial
+      call to recursive method multiply_out. variable_to_index maps
+      variables in the task to their index in the pattern or -1.
+    */
+    void build_abstract_operators(
+        const OperatorProxy &op, int cost,
+        const std::vector<int> &variable_to_index,
+        const VariablesProxy &variables,
+        std::vector<AbstractOperator> &operators);
+
+    /*
+      Computes all abstract operators, builds the match tree (successor
+      generator) and then does a Dijkstra regression search to compute
+      all final h-values (stored in distances). operator_costs can
+      specify individual operator costs for each operator for action
+      cost partitioning. If left empty, default operator costs are used.
+    */
+    void create_pdb(
+        const TaskProxy &task_proxy,
+        const std::vector<int> &operator_costs = std::vector<int>());
+
+    /*
+      For a given abstract state (given as index), the according values
+      for each variable in the state are computed and compared with the
+      given pairs of goal variables and values. Returns true iff the
+      state is a goal state.
+    */
+    bool is_goal_state(
+        std::size_t state_index,
+        const std::vector<FactPair> &abstract_goals,
+        const VariablesProxy &variables) const;
+
+    /*
+      The given concrete state is used to calculate the index of the
+      according abstract state. This is only used for table lookup
+      (distances) during search.
+    */
+    std::size_t hash_index_of_concrete_state(const std::vector<int> &state) const;
 public:
     /*
-      This is a one-shot constructor which should not be called by users
-      wishing to create a PDB. Instead, they should use generate_pdb from file
-      pattern_database_factory to create a PDB.
+      Important: It is assumed that the pattern (passed via Options) is
+      sorted, contains no duplicates and is small enough so that the
+      number of abstract states is below numeric_limits<int>::max()
+      Parameters:
+       dump:           If set to true, prints the construction time.
+       operator_costs: Can specify individual operator costs for each
+       operator. This is useful for action cost partitioning. If left
+       empty, default operator costs are used.
     */
     PatternDatabase(
-        PerfectHashFunction &&hash_function,
-        std::vector<int> &&distances);
+        const TaskProxy &task_proxy,
+        const Pattern &pattern,
+        bool dump = false,
+        const std::vector<int> &operator_costs = std::vector<int>());
     ~PatternDatabase() = default;
+
+    /*
+      Like hash_index_of_concrete_state, compute the hash index of the
+      given state. However, the given state must be a State of a ProjectedTask
+      using pattern for the projected variables.
+    */
+    std::size_t hash_index_of_projected_state(const State &projected_state) const;
 
     // Return the PDB value of the given concrete state.
     int get_value(const std::vector<int> &state) const;
 
+    // Return the PDB value of a state with the given hash index.
+    int get_value_for_hash_index(std::size_t index) const;
+
     // Returns the pattern (i.e. all variables used) of the PDB
     const Pattern &get_pattern() const {
-        return hash_function.get_pattern();
+        return pattern;
     }
 
     // Returns the size (number of abstract states) of the PDB
     int get_size() const {
-        return hash_function.get_num_states();
+        return num_states;
     }
 
     /*
