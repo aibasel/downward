@@ -58,6 +58,20 @@ unique_ptr<Projection> CEGAR::compute_projection(Pattern &&pattern) const {
             utils::g_log << "PDB with pattern " << pdb->get_pattern()
                          << " is unsolvable" << endl;
         }
+    } else {
+        if (verbosity >= utils::Verbosity::VERBOSE) {
+            utils::g_log << "##### Plan for pattern " << pdb->get_pattern() << " #####" << endl;
+            int step = 1;
+            for (const vector<OperatorID> &equivalent_ops : plan) {
+                utils::g_log << "step #" << step << endl;
+                for (OperatorID op_id : equivalent_ops) {
+                    OperatorProxy op = task_proxy.get_operators()[op_id];
+                    utils::g_log << op.get_name() << " " << op.get_cost() << endl;
+                }
+                ++step;
+            }
+            utils::g_log << "##### End of plan #####" << endl;
+        }
     }
     return utils::make_unique_ptr<Projection>(move(pdb), move(plan), unsolvable);
 }
@@ -499,15 +513,15 @@ CEGAR::CEGAR(
         utils::g_log << endl;
         utils::g_log << "max time: " << max_time << endl;
         utils::g_log << "goal variables: ";
-        for (const FactPair &goal : goals) {
+        for (const FactPair &goal : this->goals) {
             utils::g_log << goal.var << ", ";
         }
         utils::g_log << endl;
         utils::g_log << "blacklisted variables: ";
-        if (blacklisted_variables.empty()) {
+        if (this->blacklisted_variables.empty()) {
             utils::g_log << "none";
         } else {
-            for (int var : blacklisted_variables) {
+            for (int var : this->blacklisted_variables) {
                 utils::g_log << var << ", ";
             }
         }
