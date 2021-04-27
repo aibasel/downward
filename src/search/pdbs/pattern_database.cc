@@ -316,6 +316,7 @@ void PatternDatabase::create_pdb(
                 current_state = successor_state;
             }
         }
+        utils::release_vector_memory(generating_op_ids);
     }
 }
 
