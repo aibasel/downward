@@ -28,6 +28,7 @@ after the corresponding tracker issues.
 - For developers: move functionality used during search away from
   LandmarkGraph, making it constant after creation.
   <http://issues.fast-downward.org/issue988>
+  <http://issues.fast-downward.org/issue1000>
 
 - For developers: new state class
   <http://issues.fast-downward.org/issue348>
@@ -59,6 +60,36 @@ after the corresponding tracker issues.
   --evaluator hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()))
   is equivalent to the deprecated
   --evaluator hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true))
+
+- For developers: add support for Github actions
+  <http://issues.fast-downward.org/issue940>
+
+- For developers: We cleaned up the code of LandmarkGraph. Some of the public
+  methods were renamed. This class will undergo further changes in the future.
+  <http://issues.fast-downward.org/issue989>
+
+- Debug builds with LP solvers vs. the _GLIBCXX_DEBUG flag
+  <http://issues.fast-downward.org/issue982>
+  Previously, we used the flag _GLIBCXX_DEBUG in debug builds for additional
+  checks. This makes the binary incompatible with external libraries such as
+  LP solvers. The flag is now disabled by default. If no LP solvers are present
+  or LP solvers are disabled, it can be enabled by setting the CMake option
+  USE_GLIBCXX_DEBUG. The build configurations debugnolp and releasenolp have
+  been removed, and the build configuration glibcxx_debug has been added.
+
+- For developers: decide on rules regarding software support and
+  improve Github actions accordingly
+  <http://issues.fast-downward.org/issue1003>
+  
+- For developers: add CPLEX support to our GitHub Actions for Windows
+  <http://issues.fast-downward.org/issue1005>
+
+- Fix a bug in the computation of RHW landmarks
+  <http://issues.fast-downward.org/issue1004>
+  
+- Only build configurations defined in `build_configs.py` are loaded in the
+  `build.py` script.
+  <http://issues.fast-downward.org/issue1016>
   
 ## Fast Downward 20.06
 

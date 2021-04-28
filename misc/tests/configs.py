@@ -126,11 +126,6 @@ def configs_satisficing_core():
 
 def configs_optimal_extended():
     return {
-        "astar_lmcount_lm_merged_rhw_hm_no_order": [
-            "--evaluator",
-            "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
-            "--search",
-            "astar(lmc,lazy_evaluator=lmc)"],
         "astar_cegar": [
             "--search",
             "astar(cegar())"],
@@ -202,10 +197,10 @@ def configs_satisficing_extended():
     }
 
 
-def configs_optimal_lp():
+def configs_optimal_lp(lp_solver="CPLEX"):
     return {
-        "divpot": ["--search", "astar(diverse_potentials())"],
-        "seq+lmcut": ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))"],
+        "divpot": ["--search", f"astar(diverse_potentials(lpsolver={lp_solver}))"],
+        "seq+lmcut": ["--search", f"astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver={lp_solver}))"],
     }
 
 

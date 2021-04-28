@@ -168,60 +168,57 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
     return min_cost;
 }
 
-void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
-                                                       LandmarkNode &b, EdgeType t) {
-    LandmarkNode *new_lm;
+void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
+    const FactPair &a, LandmarkNode &b, EdgeType t) {
     if (lm_graph->contains_simple_landmark(a)) {
-        new_lm = &lm_graph->get_simple_landmark(a);
-        edge_add(*new_lm, b, t);
+        LandmarkNode &simple_lm = lm_graph->get_simple_landmark(a);
+        edge_add(simple_lm, b, t);
         return;
     }
-    set<FactPair> a_set;
-    a_set.insert(a);
-    if (lm_graph->contains_overlapping_disjunctive_landmark(a_set)) {
+
+    if (lm_graph->contains_disjunctive_landmark(a)) {
+        // In issue1004, we fixed a bug in this part of the code. It now removes
+        // the disjunctive landmark along with all its orderings from the
+        // landmark graph and adds a new simple landmark node. Before this
+        // change, incoming orderings were maintained, which is not always
+        // correct for greedy necessary orderings. We now replace those
+        // incoming orderings with natural orderings.
+
         // Simple landmarks are more informative than disjunctive ones,
-        // change disj. landmark into simple
+        // remove disj. landmark and add simple one
+        LandmarkNode *disj_lm = &lm_graph->get_disjunctive_landmark(a);
 
-        // old: call to methode
-        LandmarkNode &node = lm_graph->replace_disjunctive_by_simple_landmark(a);
-
-        /* TODO: Problem: Schon diese jetzige Implementierung ist nicht mehr korrekt,
-        da rm_landmark_node nicht nur bei allen children die parents-zeiger auf sich selbst
-        loescht, sondern auch bei allen parents die children-zeiger auf sich selbst. Ein
-        einfaches Speichern aller Attribute von node funktioniert also nicht - entweder man
-        muss dann manuell bei den parents des alten node alle children-Zeiger neu setzen auf
-        den neuen node oder man ueberarbeitet das ganze komplett anders... Eine andere Vermutung
-        meinerseits waere, dass die alte Version verbugt ist und eigentlich auch die children-
-        Zeiger der parents von node geloescht werden muessten, wie es in rm_landmark_node passiert.
-        */
-        // TODO: avoid copy constructor, save attributes locally and assign to new lm
-        // new: replace by new program logic
-        /*LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
-        LandmarkNode node(node2);
-        lm_graph->rm_landmark_node(&node2);
-        lm_graph->landmark_add_simple(a);*/
-
-        node.facts.clear();
-        node.facts.push_back(a);
-        // Clean orders: let disj. LM {D1,...,Dn} be ordered before L. We
-        // cannot infer that any one of D1,...Dn by itself is ordered before L
-        for (const auto &child : node.children) {
-            child.first->parents.erase(&node);
+        // Remove all pointers to disj_lm from internal data structures (i.e.,
+        // the list of open landmarks and forward orders)
+        auto it = find(open_landmarks.begin(), open_landmarks.end(), disj_lm);
+        if (it != open_landmarks.end()) {
+            open_landmarks.erase(it);
         }
-        node.children.clear();
-        forward_orders[&node].clear();
+        forward_orders.erase(disj_lm);
 
-        edge_add(node, b, t);
-        // Node has changed, reexamine it again. This also fixes min_cost.
-        for (list<LandmarkNode *>::const_iterator it = open_landmarks.begin(); it
-             != open_landmarks.end(); ++it)
-            if (*it == &node)
-                return;
-        open_landmarks.push_back(&node);
+        // Retrieve incoming edges from disj_lm
+        vector<LandmarkNode *> predecessors;
+        for (auto &pred : disj_lm->parents) {
+            predecessors.push_back(pred.first);
+        }
+
+        // Remove disj_lm from landmark graph
+        lm_graph->remove_node(disj_lm);
+
+        // Add simple landmark node
+        LandmarkNode &simple_lm = lm_graph->add_simple_landmark(a);
+        open_landmarks.push_back(&simple_lm);
+        edge_add(simple_lm, b, t);
+
+        // Add incoming orderings of replaced disj_lm as natural orderings to
+        // simple_lm
+        for (LandmarkNode *pred : predecessors) {
+            edge_add(*pred, simple_lm, EdgeType::NATURAL);
+        }
     } else {
-        new_lm = &lm_graph->add_simple_landmark(a);
-        open_landmarks.push_back(new_lm);
-        edge_add(*new_lm, b, t);
+        LandmarkNode &simple_lm = lm_graph->add_simple_landmark(a);
+        open_landmarks.push_back(&simple_lm);
+        edge_add(simple_lm, b, t);
     }
 }
 

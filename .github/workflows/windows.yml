@@ -1,71 +1,177 @@
 ---
-name: windows-latest
+name: Windows
 
 on: [push, pull_request]
+
 env:
   ARCH: "x64"
-  VC: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+  CC: cl
+  CXX: cl
+
+  DOWNWARD_COIN_ROOT_RELEASE: D:\a\downward\osi_release
+  DOWNWARD_COIN_ROOT_DEBUG: D:\a\downward\osi_debug
+  DOWNWARD_CPLEX_ROOT: D:\a\downward\cplex
+  ZLIB_ROOT: D:\a\downward\zlib
+
+  CPLEX_URL: "${{ secrets.CPLEX129_WINDOWS_URL }}"
+  OSI_URL: "https://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz"
+  ZLIB_URL: "https://www.zlib.net/zlib1211.zip"
+
+
 jobs:
-  compile: # name of the job. Jobs run in parallel unless specified otherwise.
-    name: compile
-    runs-on: windows-latest
+  test:
+    name: Compile and test planner
+    timeout-minutes: 60
+    runs-on: ${{ matrix.platform.os }}
     strategy:
       matrix:
-        python-version: ['3.6']
-        build-version: ["release", "debug"]
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
+        platform:
+          - {os: "windows-2016", vc: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
+          - {os: "windows-2019", vc: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
+        python-version: [3.6]
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@master
 
-      - name: Setup python
-        uses: actions/setup-python@v1
+      - name: Install Python
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.ARCH }}
 
-      - name: compile
+
+      - name: Install zlib
+        if: ${{ env.CPLEX_URL != 0 }}
         shell: cmd
         run: |
-          "${{ env.VC }}" ${{ env.ARCH }} & python build.py ${{ matrix.build-version }}
+          call "${{ matrix.platform.vc }}" %ARCH%
 
-      - name: upload-planner
-        uses: actions/upload-artifact@master
-        with:
-          name: ${{ matrix.build-version }}
-          path: builds/${{ matrix.build-version }}
+          cd ..
+          curl.exe --output zlib.zip %ZLIB_URL%
+          unzip zlib.zip
+          del zlib.zip
+          mkdir zlib
+          cd zlib
+
+          echo "Set up zlib include directory"
+          move ../zlib-1.2.11 include
+
+          echo "Compile zlib library"
+          cd include
+          nmake /f win32/Makefile.msc
+          mkdir ..\lib
+          move zdll.lib ..\lib\zdll.lib
+          move zlib.lib ..\lib\zlib.lib
+          move zlib1.dll ..\lib\zlib1.dll
 
 
-  tests: # name of the job. Jobs run in parallel unless specified otherwise.
-    name: test
-    runs-on: windows-latest
-    needs: compile
-    strategy:
-      matrix:
-        python-version: ['3.6']
-    steps: # each - is a new sequentially run step
-      - uses: actions/checkout@master
-
-      - name: Setup python
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.ARCH }}
-
-      - name: setup
+      - name: Install CPLEX
+        if: ${{ env.CPLEX_URL != 0 }}
         run: |
-          pip3 install pytest tox
-          mkdir builds
+          echo "For information about the CPLEX silent installation consult:"
+          echo "https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.studio.help/Optimization_Studio/topics/td_silent_install.html"
+          curl.exe --output cplex.exe $ENV:CPLEX_URL
 
-      - name: download-planner
-        uses: actions/download-artifact@master
-        with:
-          # without 'name' attribute all artifacts are downloaded and the
-          # artifact name is used as directory name.
-          path: builds/
+          echo "Install CPLEX"
+          Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "D:\a\downward\downward\.github\workflows\misc\cplex129_windows_installer.properties" -PassThru | Wait-Process
+          del .\cplex.exe
 
-      - name: test
+          echo "Copy the relevant directory to a location which is not magically protected against cmake"
+          Xcopy /E /I ..\cplex_temp\cplex ..\cplex
+
+
+      - name: Install Coin
+        shell: cmd
+        if: ${{ env.CPLEX_URL != 0 }}
+        run: |
+          call "${{ matrix.platform.vc }}" %ARCH%
+          set SET_RUNTIME_LIBRARY=python D:\a\downward\downward\.github\workflows\misc\set-visual-studio-static-runtime-libraries.py
+
+          cd ..
+          echo "Download OSI"
+          curl.exe --output osi.tgz %OSI_URL%
+          tar xf osi.tgz
+          del osi.tgz
+          cd Osi-0.107.9
+
+          echo "Set up Include Directory"
+          mkdir ..\osi_release\include
+          copy CoinUtils\src\*.hpp ..\osi_release\include
+          copy CoinUtils\src\*.h ..\osi_release\include
+          copy Osi\src\Osi\*.hpp ..\osi_release\include
+          copy Osi\src\Osi\*.h ..\osi_release\include
+          copy Osi\src\OsiCpx\*.hpp ..\osi_release\include
+          copy Osi\src\OsiCpx\*.h ..\osi_release\include
+          Xcopy /E /I ..\osi_release\include ..\osi_debug\include
+
+          echo "Set up Lib Directory"
+          mkdir ..\osi_release\lib
+          mkdir ..\osi_debug\lib
+
+          echo "Compile libOsi"
+          cd Osi\MSVisualStudio\v10\
+          devenv Osi.sln /Upgrade
+          cd libOsi\
+          %SET_RUNTIME_LIBRARY% libOsi.vcxproj libOsi.vcxproj
+          msbuild libOsi.vcxproj /p:Configuration=Release /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
+          move lib\* ..\..\..\..\..\osi_release\lib\
+          msbuild libOsi.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
+          move lib\* ..\..\..\..\..\osi_debug\lib\
+
+          echo "Compile libOsiCpx"
+          cd ..\..\..\src\OsiCpx
+          cl /EHsc OsiCpxSolverInterface.cpp /I ..\Osi /I ..\..\..\CoinUtils\src /I "%DOWNWARD_CPLEX_ROOT%\include\ilcplex" /c
+          lib OsiCpxSolverInterface.obj
+          move OsiCpxSolverInterface.lib ..\..\..\..\osi_release\lib\libOsiCpx.lib
+          cl /EHsc OsiCpxSolverInterface.cpp /I ..\Osi /I ..\..\..\CoinUtils\src /I "%DOWNWARD_CPLEX_ROOT%\include\ilcplex" /c /MTd
+          lib OsiCpxSolverInterface.obj
+          move OsiCpxSolverInterface.lib ..\..\..\..\osi_debug\lib\libOsiCpx.lib
+
+          echo "Compile libCoinUtils"
+          cd ..\..\..\CoinUtils\MSVisualStudio\v10
+          devenv CoinUtils.sln /Upgrade
+          cd libCoinUtils
+          %SET_RUNTIME_LIBRARY% libCoinUtils.vcxproj libCoinUtils.vcxproj
+          msbuild libCoinUtils.vcxproj /p:Configuration=Release /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
+          move lib\* ..\..\..\..\..\osi_release\lib\
+          msbuild libCoinUtils.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
+          move lib\* ..\..\..\..\..\osi_debug\lib\
+
+
+      - name: Compile planner
         shell: cmd
         run: |
+          call "${{ matrix.platform.vc }}" %ARCH%
+          python build.py release
+          python build.py debug
+
+      - name: Install tox
+        run: |
+          pip3 install tox
+
+      - name: Run translator and search tests
+        shell: cmd
+        # We do not run driver tests here because that would require
+        # VAL to be installed, which currently cannot be easily done
+        # on Windows for the version of VAL we use. When the maintainers
+        # of VAL fix the latest version to accept plans without time
+        # steps, we hope to be able to install VAL natively on Windows.
+        run: |
+          call "${{ matrix.platform.vc }}" %ARCH%
+          rem "dumpbin /dependents builds\release\bin\downward.exe shows that"
+          rem "downward.exe depends on cplexXYZ.dll. Thus, we have to add it to"
+          rem "the PATH. On my local CPLEX installation this is done"
+          rem "automatically. For the GitHub Action we have to do it manually:"
+          set PATH=%PATH%;D:\a\downward\cplex_temp\opl\bin\x64_win64/
           cd misc/
-          "${{ env.VC }}" ${{ env.ARCH }} & tox -e search,translator
+          tox -e translator,search
+
+      - name: Run CPLEX tests
+        shell: cmd
+        if: ${{ env.CPLEX_URL != 0 }}
+        run: |
+          call "${{ matrix.platform.vc }}" %ARCH%
+          set PATH=%PATH%;D:\a\downward\cplex_temp\opl\bin\x64_win64/
+          cd misc/
+          tox -e cplex
 
 ...

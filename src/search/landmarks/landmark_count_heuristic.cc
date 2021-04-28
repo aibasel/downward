@@ -37,7 +37,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
-    utils::g_log << "Initializing landmarks count heuristic..." << endl;
+    utils::g_log << "Initializing landmark count heuristic..." << endl;
 
     /*
       Actually, we should like to test if this is the root task or a
@@ -108,15 +108,11 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
         return static_cast<int>(ceil(h_val - epsilon));
     } else {
         int h = 0;
-        for (auto &lm : lgraph->get_nodes()) {
-            switch (lm_status_manager->get_landmark_status(
-                        lm->get_id())) {
-            case lm_reached:
-                break;
-            case lm_not_reached:
-            case lm_needed_again:
-                h += lm->cost;
-                break;
+        for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
+            landmark_status status =
+                lm_status_manager->get_landmark_status(id);
+            if (status == lm_not_reached || status == lm_needed_again) {
+                h += lgraph->get_landmark(id)->cost;
             }
         }
         return h;
