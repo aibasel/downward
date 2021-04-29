@@ -64,7 +64,7 @@ jobs:
         run: |
           # We redirect output of wget to hide the secret URLs.
           wget -O soplex-3.1.1.tgz $SOPLEX_URL &> /dev/null
-          tar xvzf soplex-3.1.1.tgz
+          tar xzf soplex-3.1.1.tgz
           cd soplex-3.1.1
           mkdir build
           cd build
@@ -119,7 +119,7 @@ jobs:
             libs="${libs} lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so"
           fi
 
-          tar cfz archive.tar.gz fast-downward.py driver misc builds/debug/bin/ builds/release/bin/ ${libs}
+          tar cfz archive.tar.gz fast-downward.py driver misc builds/debug/bin/ builds/release/bin/ --directory /home/runner ${libs}
 
       - name: Upload archive
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
@@ -183,7 +183,7 @@ jobs:
         run: |
           tar xfz archive.tar.gz
           if [[ ! -z "${CPLEX_URL}" || ! -z "${SOPLEX_URL}" ]]; then
-            mv lib/ ../
+            mv lib/ /home/runner
           fi
 
       - name: Run driver, translator and search tests
