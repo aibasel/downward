@@ -119,7 +119,8 @@ jobs:
             libs="${libs} lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so"
           fi
 
-          tar cfz archive.tar.gz fast-downward.py driver misc builds/debug/bin/ builds/release/bin/ --directory /home/runner ${libs}
+          # Handle libs first because tar complains when no files follow the last --directory option.
+          tar cfz archive.tar.gz --directory /home/runner ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
 
       - name: Upload archive
         if: ${{ matrix.compiler-version.cc == 'gcc' }}
