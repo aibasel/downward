@@ -267,11 +267,11 @@ void PatternDatabase::create_pdb(
         match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
         sort(applicable_operator_ids.begin(), applicable_operator_ids.end(),
              [&operators](int lhs, int rhs) {
-                if (operators[lhs].get_hash_effect() == operators[rhs].get_hash_effect()) {
-                    return operators[lhs].get_cost() < operators[rhs].get_cost();
-                }
-                return operators[lhs].get_hash_effect() < operators[rhs].get_hash_effect();
-                });
+                 if (operators[lhs].get_hash_effect() == operators[rhs].get_hash_effect()) {
+                     return operators[lhs].get_cost() < operators[rhs].get_cost();
+                 }
+                 return operators[lhs].get_hash_effect() < operators[rhs].get_hash_effect();
+             });
         size_t last_hash_effect = 0;
         for (int op_id : applicable_operator_ids) {
             const AbstractOperator &op = operators[op_id];
