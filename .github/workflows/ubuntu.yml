@@ -3,6 +3,11 @@ name: Ubuntu
 
 on: [push, pull_request]
 
+# Some notes on file paths: the working directory is $GITHUB_WORKSPACE,
+# which equals /home/runner/work/my-repo-name/my-repo-name. The code is
+# checked out to $GITHUB_WORKSPACE as well. We put all libraries under
+# /home/runner/lib.
+
 jobs:
   compile:
     name: Compile planner
@@ -33,7 +38,6 @@ jobs:
       DOWNWARD_SOPLEX_ROOT: /home/runner/lib/soplex-3.1.1
       DOWNWARD_COIN_ROOT: /home/runner/lib/coin
     steps:
-      # Check out repo at $GITHUB_WORKSPACE (= /home/runner/work/my-repo/my-repo).
       - name: Clone repository
         uses: actions/checkout@master
 
