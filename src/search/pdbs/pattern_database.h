@@ -92,7 +92,8 @@ class PatternDatabase {
     */
     std::vector<int> distances;
 
-    std::vector<std::vector<int>> generating_op_ids;
+    std::vector<int> generating_op_ids;
+    std::vector<int> number_of_generating_op_ids;
     std::vector<std::vector<OperatorID>> wildcard_plan;
 
     // multipliers for each variable for perfect hash function

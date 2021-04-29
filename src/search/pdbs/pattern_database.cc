@@ -250,6 +250,7 @@ void PatternDatabase::create_pdb(
 
     if (compute_plan) {
         generating_op_ids.resize(num_states);
+        number_of_generating_op_ids.resize(num_states);
     }
 
     // Dijkstra loop
@@ -272,10 +273,16 @@ void PatternDatabase::create_pdb(
                 distances[predecessor] = alternative_cost;
                 pq.push(alternative_cost, predecessor);
                 if (compute_plan) {
-                    generating_op_ids[predecessor] = {op_id};
+                    generating_op_ids[predecessor] = op_id;
+                    number_of_generating_op_ids[predecessor] = 1;
                 }
             } else if (alternative_cost == distances[predecessor] && compute_plan) {
-                generating_op_ids[predecessor].push_back(op_id);
+                number_of_generating_op_ids[predecessor]++;
+                int num_ops = number_of_generating_op_ids[predecessor];
+                int rnd = (*rng)(num_ops);
+                if (rnd == 0) {
+                    generating_op_ids[predecessor] = op_id;
+                }
             }
         }
     }
@@ -288,7 +295,7 @@ void PatternDatabase::create_pdb(
             hash_index_of_concrete_state(initial_state.get_unpacked_values());
         if (distances[current_state] != numeric_limits<int>::max()) {
             while (!is_goal_state(current_state, abstract_goals, variables)) {
-                int op_id = *rng->choose(generating_op_ids[current_state]);
+                int op_id = generating_op_ids[current_state];
                 assert(op_id != -1);
                 const AbstractOperator &op = operators[op_id];
                 size_t successor_state = current_state - op.get_hash_effect();
