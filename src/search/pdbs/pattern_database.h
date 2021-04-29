@@ -31,7 +31,7 @@ class AbstractOperator {
       Effect of the operator during regression search on a given
       abstract state number.
     */
-    std::size_t hash_effect;
+    int hash_effect;
 public:
     /*
       Abstract operators are built from concrete operators. The
@@ -58,7 +58,7 @@ public:
       Returns the effect of the abstract operator in form of a value
       change (+ or -) to an abstract state index
     */
-    std::size_t get_hash_effect() const {return hash_effect;}
+    int get_hash_effect() const {return hash_effect;}
 
     /*
       Returns the cost of the abstract operator (same as the cost of

@@ -44,7 +44,7 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
         int old_val = eff_pairs[i].value;
         int new_val = pre_pairs[i].value;
         assert(new_val != -1);
-        size_t effect = (new_val - old_val) * hash_multipliers[var];
+        int effect = (new_val - old_val) * static_cast<int>(hash_multipliers[var]);
         hash_effect += effect;
     }
 }
@@ -253,6 +253,7 @@ void PatternDatabase::create_pdb(
         match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
         for (int op_id : applicable_operator_ids) {
             const AbstractOperator &op = operators[op_id];
+            assert(static_cast<int>(state_index) + op.get_hash_effect() >= 0);
             size_t predecessor = state_index + op.get_hash_effect();
             int alternative_cost = distances[state_index] + op.get_cost();
             if (alternative_cost < distances[predecessor]) {
