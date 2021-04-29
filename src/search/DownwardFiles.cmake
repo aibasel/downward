@@ -717,6 +717,7 @@ fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES
+        pdbs/abstract_operator
         pdbs/canonical_pdbs
         pdbs/canonical_pdbs_heuristic
         pdbs/dominance_pruning
@@ -730,6 +731,7 @@ fast_downward_plugin(
         pdbs/pattern_collection_generator_hillclimbing
         pdbs/pattern_collection_generator_manual
         pdbs/pattern_collection_generator_systematic
+        pdbs/pattern_database_factory
         pdbs/pattern_database
         pdbs/pattern_generator_greedy
         pdbs/pattern_generator_manual

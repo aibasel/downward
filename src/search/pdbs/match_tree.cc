@@ -1,5 +1,8 @@
 #include "match_tree.h"
 
+#include "pattern_database.h"
+#include "pattern_database_factory.h"
+
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -63,12 +66,10 @@ bool MatchTree::Node::is_leaf_node() const {
     return var_id == LEAF_NODE;
 }
 
-MatchTree::MatchTree(const TaskProxy &task_proxy,
-                     const Pattern &pattern,
-                     const vector<size_t> &hash_multipliers)
-    : task_proxy(task_proxy),
-      pattern(pattern),
-      hash_multipliers(hash_multipliers),
+MatchTree::MatchTree(const Projection &projection,
+                     const PerfectHashFunction &hash_function)
+    : projection(projection),
+      hash_function(hash_function),
       root(nullptr) {
 }
 
@@ -77,7 +78,7 @@ MatchTree::~MatchTree() {
 }
 
 void MatchTree::insert_recursive(
-    int op_id, const vector<FactPair> &regression_preconditions,
+    int op_id, const vector<FactPair> &preconditions,
     int pre_index, Node **edge_from_parent) {
     if (*edge_from_parent == 0) {
         // We don't exist yet: create a new node.
@@ -85,14 +86,14 @@ void MatchTree::insert_recursive(
     }
 
     Node *node = *edge_from_parent;
-    if (pre_index == static_cast<int>(regression_preconditions.size())) {
+    if (pre_index == static_cast<int>(preconditions.size())) {
         // All preconditions have been checked, insert operator ID.
         node->applicable_operator_ids.push_back(op_id);
     } else {
-        const FactPair &fact = regression_preconditions[pre_index];
+        const FactPair &fact = preconditions[pre_index];
         int pattern_var_id = fact.var;
-        int var_id = pattern[pattern_var_id];
-        VariableProxy var = task_proxy.get_variables()[var_id];
+        int var_id = projection.get_pattern()[pattern_var_id];
+        VariableProxy var = projection.get_task_proxy().get_variables()[var_id];
         int var_domain_size = var.get_domain_size();
 
         // Set up node correctly or insert a new node if necessary.
@@ -124,12 +125,12 @@ void MatchTree::insert_recursive(
             edge_to_child = &node->star_successor;
         }
 
-        insert_recursive(op_id, regression_preconditions, pre_index, edge_to_child);
+        insert_recursive(op_id, preconditions, pre_index, edge_to_child);
     }
 }
 
-void MatchTree::insert(int op_id, const vector<FactPair> &regression_preconditions) {
-    insert_recursive(op_id, regression_preconditions, 0, &root);
+void MatchTree::insert(int op_id, const vector<FactPair> &preconditions) {
+    insert_recursive(op_id, preconditions, 0, &root);
 }
 
 void MatchTree::get_applicable_operator_ids_recursive(
@@ -148,8 +149,7 @@ void MatchTree::get_applicable_operator_ids_recursive(
     if (node->is_leaf_node())
         return;
 
-    int temp = state_index / hash_multipliers[node->var_id];
-    int val = temp % node->var_domain_size;
+    int val = hash_function.unrank(state_index, node->var_id, node->var_domain_size);
 
     if (node->successors[val]) {
         // Follow the correct successor edge, if it exists.
