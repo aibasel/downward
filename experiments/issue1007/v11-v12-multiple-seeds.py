@@ -14,7 +14,7 @@ from average_report import AverageAlgorithmReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue1007-v8c", "issue1007-v10", "issue1007-v11", "issue1007-v12"]
+REVISIONS = ["issue1007-v11", "issue1007-v12"]
 MAX_TIME=20
 if common_setup.is_test_run():
     MAX_TIME=1
@@ -83,9 +83,7 @@ exp._configs = [
 ]
 exp.add_comparison_table_step_for_revision_pairs(
     revision_pairs=[
-        ("issue1007-v10", "issue1007-v11"),
         ("issue1007-v11", "issue1007-v12"),
-        ("issue1007-v8c", "issue1007-v12"),
     ],
     attributes=['coverage', 'search_time', 'total_time',
     'expansions_until_last_jump', 'score_search_time',
