@@ -3,12 +3,12 @@
 
 #include "types.h"
 
+#include "../task_proxy.h"
+
 #include "../utils/timer.h"
 
 #include <memory>
 #include <string>
-
-class TaskProxy;
 
 namespace pdbs {
 class PatternCollectionInformation;
