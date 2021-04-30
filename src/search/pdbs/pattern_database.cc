@@ -251,6 +251,7 @@ void PatternDatabase::create_pdb(
     if (compute_plan) {
         generating_op_ids.resize(num_states);
         number_of_generating_op_ids.resize(num_states);
+        number_of_zero_cost_ops.resize(num_states);
     }
 
     // Dijkstra loop
@@ -288,13 +289,36 @@ void PatternDatabase::create_pdb(
                 if (compute_plan) {
                     generating_op_ids[predecessor] = op_id;
                     number_of_generating_op_ids[predecessor] = 1;
+                    if (op.get_cost() == 0) {
+                        number_of_zero_cost_ops[predecessor] = number_of_zero_cost_ops[state_index] + 1;
+                    } else {
+                        number_of_zero_cost_ops[predecessor] = 0;
+                    }
                 }
             } else if (alternative_cost == distances[predecessor] && compute_plan) {
-                number_of_generating_op_ids[predecessor]++;
-                int num_ops = number_of_generating_op_ids[predecessor];
-                int rnd = (*rng)(num_ops);
-                if (rnd == 0) {
-                    generating_op_ids[predecessor] = op_id;
+                if (op.get_cost() == 0) {
+                    int pred_num_zero_cost_ops = number_of_zero_cost_ops[predecessor];
+                    int num_zero_cost_ops_on_current_path = number_of_zero_cost_ops[state_index] + 1;
+                    if (num_zero_cost_ops_on_current_path < pred_num_zero_cost_ops) {
+                        generating_op_ids[predecessor] = op_id;
+                        number_of_generating_op_ids[predecessor] = 1;
+                        number_of_zero_cost_ops[predecessor] = num_zero_cost_ops_on_current_path;
+                    } else if (num_zero_cost_ops_on_current_path == pred_num_zero_cost_ops) {
+                        number_of_generating_op_ids[predecessor]++;
+                        int num_ops = number_of_generating_op_ids[predecessor];
+                        int rnd = (*rng)(num_ops);
+                        if (rnd == 0) {
+                            generating_op_ids[predecessor] = op_id;
+                        }
+                    }
+                } else {
+                    number_of_generating_op_ids[predecessor]++;
+                    int num_ops = number_of_generating_op_ids[predecessor];
+                    int rnd = (*rng)(num_ops);
+                    if (rnd == 0) {
+                        generating_op_ids[predecessor] = op_id;
+                        number_of_zero_cost_ops[predecessor] = 0;
+                    }
                 }
             }
         }
@@ -337,6 +361,8 @@ void PatternDatabase::create_pdb(
             }
         }
         utils::release_vector_memory(generating_op_ids);
+        utils::release_vector_memory(number_of_generating_op_ids);
+        utils::release_vector_memory(number_of_zero_cost_ops);
     }
 }
 
