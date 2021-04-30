@@ -64,14 +64,14 @@ PerfectHashFunction compute_hash_function(
     return PerfectHashFunction(Pattern(pattern), num_states, move(hash_multipliers));
 }
 
-MatchTree build_match_tree(
+unique_ptr<MatchTree> build_match_tree(
     const Projection &projection,
     const PerfectHashFunction &hash_function,
     const vector<AbstractOperator> &abstract_operators) {
-    MatchTree match_tree(projection, hash_function);
+    unique_ptr<MatchTree> match_tree = utils::make_unique_ptr<MatchTree>(projection, hash_function);
     for (size_t op_id = 0; op_id < abstract_operators.size(); ++op_id) {
         const AbstractOperator &op = abstract_operators[op_id];
-        match_tree.insert(op_id, op.get_preconditions());
+        match_tree->insert(op_id, op.get_preconditions());
     }
     return match_tree;
 }
@@ -156,7 +156,7 @@ shared_ptr<PatternDatabase> generate_pdb(
         projection,
         hash_function,
         operator_costs);
-    MatchTree match_tree = build_match_tree(
+    unique_ptr<MatchTree> match_tree = build_match_tree(
         projection,
         hash_function,
         abstract_operators);
@@ -164,7 +164,7 @@ shared_ptr<PatternDatabase> generate_pdb(
         projection,
         hash_function,
         abstract_operators,
-        match_tree);
+        *match_tree);
 
     if (dump)
         utils::g_log << "PDB construction time: " << timer << endl;

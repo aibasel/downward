@@ -51,7 +51,7 @@ public:
 extern PerfectHashFunction compute_hash_function(
     const TaskProxy &task_proxy, const Pattern &pattern);
 
-extern MatchTree build_match_tree(
+extern std::unique_ptr<MatchTree> build_match_tree(
     const Projection &projection,
     const PerfectHashFunction &hash_function,
     const std::vector<AbstractOperator> &abstract_operators);
