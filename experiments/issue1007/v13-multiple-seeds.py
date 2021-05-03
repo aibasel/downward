@@ -4,6 +4,7 @@ import itertools
 import os
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
+from lab.reports import Attribute
 
 from downward.reports.compare import ComparativeReport
 
@@ -61,6 +62,15 @@ exp.add_parser(exp.PLANNER_PARSER)
 exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
+exp.add_parser('cpdbs-parser.py')
+exp.add_parser('cegar-parser.py')
+
+cegar_num_iterations = Attribute('cegar_num_iterations', absolute=False, min_wins=True)
+cegar_num_patterns = Attribute('cegar_num_patterns', absolute=False, min_wins=True)
+cegar_total_pdb_size = Attribute('cegar_total_pdb_size', absolute=False, min_wins=True)
+cegar_computation_time = Attribute('cegar_computation_time', absolute=False, min_wins=True)
+
+exp.add_parse_again_step()
 
 exp.add_absolute_report_step(attributes=['coverage'])
 
@@ -69,7 +79,8 @@ exp.add_report(
         algo_name_suffixes=['-s{}'.format(seed) for seed in range(2018,2028)],
         attributes=['coverage', 'search_time', 'total_time',
         'expansions_until_last_jump', 'score_search_time',
-        'score_total_time', 'score_memory'],
+        'score_total_time', 'score_memory', cegar_num_iterations,
+        cegar_num_patterns, cegar_total_pdb_size, cegar_computation_time],
     ),
     outfile=os.path.join(exp.eval_dir, "average", "properties"),
     name="report-average"
@@ -87,7 +98,8 @@ exp.add_comparison_table_step_for_revision_pairs(
     ],
     attributes=['coverage', 'search_time', 'total_time',
     'expansions_until_last_jump', 'score_search_time',
-    'score_total_time', 'score_memory'],
+    'score_total_time', 'score_memory', cegar_num_iterations,
+    cegar_num_patterns, cegar_total_pdb_size, cegar_computation_time],
 )
 
 exp.run_steps()

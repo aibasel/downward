@@ -4,6 +4,7 @@ import itertools
 import os
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
+from lab.reports import Attribute
 
 from downward.reports.compare import ComparativeReport
 
@@ -66,12 +67,37 @@ exp.add_parser(exp.PLANNER_PARSER)
 exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
+exp.add_parser('cpdbs-parser.py')
+exp.add_parser('cegar-parser.py')
 
-exp.add_absolute_report_step()
+cpdbs_num_patterns = Attribute('cpdbs_num_patterns', absolute=False, min_wins=True)
+cpdbs_total_pdb_size = Attribute('cpdbs_total_pdb_size', absolute=False, min_wins=True)
+cpdbs_computation_time = Attribute('cpdbs_computation_time', absolute=False, min_wins=True)
+cegar_num_iterations = Attribute('cegar_num_iterations', absolute=False, min_wins=True)
+cegar_num_patterns = Attribute('cegar_num_patterns', absolute=False, min_wins=True)
+cegar_total_pdb_size = Attribute('cegar_total_pdb_size', absolute=False, min_wins=True)
+cegar_computation_time = Attribute('cegar_computation_time', absolute=False, min_wins=True)
+
+attributes = [
+    cpdbs_num_patterns,
+    cpdbs_total_pdb_size,
+    cpdbs_computation_time,
+    cegar_num_iterations,
+    cegar_num_patterns,
+    cegar_total_pdb_size,
+    cegar_computation_time,
+]
+attributes.extend(exp.DEFAULT_TABLE_ATTRIBUTES)
+attributes.append('initial_h_value')
+
+exp.add_parse_again_step()
+
+exp.add_absolute_report_step(attributes=attributes)
 exp.add_comparison_table_step_for_revision_pairs(
     revision_pairs=[
         ("issue1007-v8c", "issue1007-v13"),
     ],
+    attributes=attributes,
 )
 
 exp.run_steps()
