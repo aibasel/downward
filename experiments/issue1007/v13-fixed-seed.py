@@ -93,11 +93,28 @@ attributes.append('initial_h_value')
 exp.add_parse_again_step()
 
 exp.add_absolute_report_step(attributes=attributes)
-exp.add_comparison_table_step_for_revision_pairs(
-    revision_pairs=[
-        ("issue1007-v8c", "issue1007-v13"),
-    ],
-    attributes=attributes,
+exp.add_report(
+    ComparativeReport(
+        [
+            (f'issue1007-v8c-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}'),
+        ],
+        attributes=attributes,
+    ),
+    name="cpdbs-hillclimbing",
+)
+exp.add_report(
+    ComparativeReport(
+        [
+            (f'issue1007-v8c-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'issue1007-v8c-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'issue1007-v8c-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'issue1007-v8c-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}'),
+            (f'issue1007-v8c-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'issue1007-v8c-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}'),
+        ],
+        attributes=attributes,
+    ),
+    name="cpdbs-cegar",
 )
 
 exp.run_steps()
