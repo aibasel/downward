@@ -61,17 +61,20 @@ after the corresponding tracker issues.
 - For developers: decide on rules regarding software support and
   improve Github actions accordingly
   <http://issues.fast-downward.org/issue1003>
-  
+
 - For developers: add CPLEX support to our GitHub Actions for Windows
   <http://issues.fast-downward.org/issue1005>
 
 - Fix a bug in the computation of RHW landmarks
   <http://issues.fast-downward.org/issue1004>
-  
+
 - Only build configurations defined in `build_configs.py` are loaded in the
   `build.py` script.
   <http://issues.fast-downward.org/issue1016>
-  
+
+- Replace size_t by int for abstract state hashes in PDB-related code
+  <http://issues.fast-downward.org/issue1018>
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
