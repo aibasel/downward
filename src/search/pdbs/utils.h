@@ -24,6 +24,7 @@ extern int compute_total_pdb_size(
   prepended with the given string identifier.
 */
 extern void dump_pattern_generation_statistics(
+    const TaskProxy &task_proxy,
     const std::string &identifier,
     utils::Duration runtime,
     const PatternInformation &pattern_info);
@@ -35,6 +36,7 @@ extern void dump_pattern_generation_statistics(
   the given string identifier.
 */
 extern void dump_pattern_collection_generation_statistics(
+    const TaskProxy &task_proxy,
     const std::string &identifier,
     utils::Duration runtime,
     const PatternCollectionInformation &pci,
