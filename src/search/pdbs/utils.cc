@@ -84,8 +84,8 @@ void dump_pattern_collection_generation_statistics(
     const string &identifier,
     utils::Duration runtime,
     const PatternCollectionInformation &pci,
-    int collection_size,
-    bool dump_collection) {
+    bool dump_collection,
+    int collection_size) {
     const PatternCollection &pattern_collection = *pci.get_patterns();
     if (dump_collection) {
         utils::g_log << identifier << " collection: " << pattern_collection << endl;

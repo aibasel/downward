@@ -266,10 +266,12 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         utils::g_log << "Multiple CEGAR average time per generator: "
                      << timer.get_elapsed_time() / num_iterations
                      << endl;
+        bool dump_collection = false;
         dump_pattern_collection_generation_statistics(
             "Multiple CEGAR",
             timer.get_elapsed_time(),
             result,
+            dump_collection,
             max_collection_size - remaining_collection_size);
     }
     return result;

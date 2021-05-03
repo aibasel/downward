@@ -57,8 +57,9 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     }
 
     // Do not dump pattern collections for size reasons.
+    bool dump_collection = false;
     dump_pattern_collection_generation_statistics(
-        "Canonical PDB heuristic", timer(), pattern_collection_info, false);
+        "Canonical PDB heuristic", timer(), pattern_collection_info, dump_collection);
     return CanonicalPDBs(pdbs, pattern_cliques);
 }
 
