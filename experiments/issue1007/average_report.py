@@ -6,6 +6,8 @@ from lab.reports import geometric_mean
 
 import os
 
+DEBUG=False
+
 class AverageAlgorithmReport(PlanningReport):
     """
     This currently only works for some hard-coded attributes.
@@ -27,8 +29,11 @@ class AverageAlgorithmReport(PlanningReport):
         # print(self.algo_name_suffixes)
         props = tools.Properties(self.outfile)
         for domain, problem in self.problem_runs.keys():
+            if DEBUG:
+                print(domain, problem)
             for algo in algo_infixes:
-                # print "Consider ", algo
+                if DEBUG:
+                    print("Consider ", algo)
                 properties_key = algo + '-' + domain + '-' + problem
                 average_algo_dict = {}
                 average_algo_dict['algorithm'] = algo
@@ -36,18 +41,22 @@ class AverageAlgorithmReport(PlanningReport):
                 average_algo_dict['problem'] = problem
                 average_algo_dict['id'] = [algo, domain, problem]
                 for attribute in self.attributes:
-                    # print "Consider ", attribute
+                    if DEBUG:
+                        print("Consider ", attribute)
                     values = []
                     for suffix in self.algo_name_suffixes:
                         real_algo = algo + suffix
-                        # print "Composed algo ", real_algo
+                        # if DEBUG:
+                            # print("Composed algo ", real_algo)
                         real_algo_run = self.runs[(domain, problem, real_algo)]
                         values.append(real_algo_run.get(attribute))
-                    # print values
+                    if DEBUG:
+                        print(values)
                     values_without_none = [value for value in values if value is not None]
-                    if attribute in ['coverage', 'single_cegar_pdbs_timed_out'] or 'score' in attribute:
-                        if 'score' not in attribute:
-                            assert len(values_without_none) == 10 # does not hold for scores
+                    if attribute in ['coverage', 'cegar_num_iterations', 'cegar_num_patterns',
+                        'cegar_total_pdb_size'] or 'score' in attribute or 'cegar' in attribute:
+                        # if 'score' not in attribute:
+                            # assert len(values_without_none) == 10 # does not hold for scores
                         average_value = sum(values_without_none)/float(len(values))
                     elif 'time' in attribute or 'expansions' in attribute:
                         if len(values_without_none) == 10:
