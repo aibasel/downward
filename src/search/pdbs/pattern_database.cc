@@ -24,7 +24,7 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
                                    const vector<FactPair> &pre_pairs,
                                    const vector<FactPair> &eff_pairs,
                                    int cost,
-                                   const vector<size_t> &hash_multipliers)
+                                   const vector<int> &hash_multipliers)
     : cost(cost),
       regression_preconditions(prev_pairs) {
     regression_preconditions.insert(regression_preconditions.end(),
@@ -44,7 +44,7 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
         int old_val = eff_pairs[i].value;
         int new_val = pre_pairs[i].value;
         assert(new_val != -1);
-        size_t effect = (new_val - old_val) * hash_multipliers[var];
+        int effect = (new_val - old_val) * hash_multipliers[var];
         hash_effect += effect;
     }
 }
@@ -227,10 +227,10 @@ void PatternDatabase::create_pdb(
 
     distances.reserve(num_states);
     // first implicit entry: priority, second entry: index for an abstract state
-    priority_queues::AdaptiveQueue<size_t> pq;
+    priority_queues::AdaptiveQueue<int> pq;
 
     // initialize queue
-    for (size_t state_index = 0; state_index < num_states; ++state_index) {
+    for (int state_index = 0; state_index < num_states; ++state_index) {
         if (is_goal_state(state_index, abstract_goals, variables)) {
             pq.push(0, state_index);
             distances.push_back(0);
@@ -241,9 +241,9 @@ void PatternDatabase::create_pdb(
 
     // Dijkstra loop
     while (!pq.empty()) {
-        pair<int, size_t> node = pq.pop();
+        pair<int, int> node = pq.pop();
         int distance = node.first;
-        size_t state_index = node.second;
+        int state_index = node.second;
         if (distance > distances[state_index]) {
             continue;
         }
@@ -253,7 +253,7 @@ void PatternDatabase::create_pdb(
         match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
         for (int op_id : applicable_operator_ids) {
             const AbstractOperator &op = operators[op_id];
-            size_t predecessor = state_index + op.get_hash_effect();
+            int predecessor = state_index + op.get_hash_effect();
             int alternative_cost = distances[state_index] + op.get_cost();
             if (alternative_cost < distances[predecessor]) {
                 distances[predecessor] = alternative_cost;
@@ -264,7 +264,7 @@ void PatternDatabase::create_pdb(
 }
 
 bool PatternDatabase::is_goal_state(
-    const size_t state_index,
+    int state_index,
     const vector<FactPair> &abstract_goals,
     const VariablesProxy &variables) const {
     for (const FactPair &abstract_goal : abstract_goals) {
@@ -280,8 +280,8 @@ bool PatternDatabase::is_goal_state(
     return true;
 }
 
-size_t PatternDatabase::hash_index(const vector<int> &state) const {
-    size_t index = 0;
+int PatternDatabase::hash_index(const vector<int> &state) const {
+    int index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
         index += hash_multipliers[i] * state[pattern[i]];
     }
