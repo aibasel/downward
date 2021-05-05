@@ -35,6 +35,10 @@ private:
         const OperatorProxy &op, std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
 
 protected:
+    /*
+      The method discard_noncausal_landmarks assumes the graph has no conjunctive
+      landmarks, and will not process conjunctive landmarks correctly.
+    */
     void discard_noncausal_landmarks(const TaskProxy &task_proxy,
                                      Exploration &exploration);
     bool is_causal_landmark(const TaskProxy &task_proxy,

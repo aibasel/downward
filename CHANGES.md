@@ -52,13 +52,13 @@ after the corresponding tracker issues.
   lm_rhw: conjunctive_landmarks, no_orders, reasonable_orders
   lm_zg: disjunctive_landmarks, conjunctive_landmarks, only_causal_landmarks, reasonable_orders
   Added options:
-  lm_hm/lm_rhw/lm_zg: use_orders (negation of deprecated "no_orders"
+  lm_hm/lm_rhw/lm_zg: use_orders (negation of removed option "no_orders")
   New Factory "lm_reasonable_orders_hps": This factory approximates reasonable
   orders according to Hoffman, Porteus and Sebastia ("Ordered Landmarks in
-  Planning", JAIR 2004) and is equivalent to the deprecated option
+  Planning", JAIR 2004) and is equivalent to the removed option
   "reasonable_orders", i.e. the command line argument
   --evaluator hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()))
-  is equivalent to the deprecated
+  is equivalent to the removed command line argument
   --evaluator hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true))
 
 - For developers: add support for Github actions

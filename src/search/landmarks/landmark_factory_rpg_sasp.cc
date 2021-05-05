@@ -618,6 +618,10 @@ void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() {
     }
 }
 
+bool LandmarkFactoryRpgSasp::computes_reasonable_orders() const {
+    return false;
+}
+
 bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
     return true;
 }

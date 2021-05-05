@@ -20,7 +20,6 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<Abs
     utils::g_log << "Building a landmark graph with reasonable orders." << endl;
 
     lm_graph = lm_factory->compute_lm_graph(task);
-    lm_graph->set_reasonable_orders();
 
     TaskProxy task_proxy(*task);
     utils::g_log << "approx. reasonable orders" << endl;
@@ -361,6 +360,9 @@ bool LandmarkFactoryReasonableOrdersHPS::effect_always_happens(
     return eff.empty();
 }
 
+bool LandmarkFactoryReasonableOrdersHPS::computes_reasonable_orders() const {
+    return true;
+}
 
 bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
     return lm_factory->supports_conditional_effects();

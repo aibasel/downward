@@ -131,18 +131,16 @@ void LandmarkFactoryMerged::generate_landmarks(
 
 void LandmarkFactoryMerged::postprocess() {
     lm_graph->set_landmark_ids();
-
-    /*
-      TODO: causal, disjunctive and/or conjunctive landmarks as well as orders
-       have been removed in the individual landmark graphs. Since merging
-       landmark graphs doesn't introduce any of these, it should not be
-       necessary to do so again here, so these steps are omitted. For
-       reasonable orders, acyclicity of the landmark graph and the costs of
-       landmarks we should also determine this.
-
-       Do we still need this comment?
-    */
     mk_acyclic_graph();
+}
+
+bool LandmarkFactoryMerged::computes_reasonable_orders() const {
+    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
+        if (lm_factory->computes_reasonable_orders()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool LandmarkFactoryMerged::supports_conditional_effects() const {

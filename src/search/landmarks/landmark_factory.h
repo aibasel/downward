@@ -30,6 +30,13 @@ public:
 
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
+    /*
+      Currently reasonable orders are not supported for admissible landmark count heuristics,
+      which is why the heuristic needs to know whether the factory computes reasonable orders.
+      Once issue383 is dealt with we should be able to use reasonable orders for admissible
+      heuristics and this method can be removed.
+    */
+    virtual bool computes_reasonable_orders() const = 0;
     virtual bool supports_conditional_effects() const = 0;
 
 protected:

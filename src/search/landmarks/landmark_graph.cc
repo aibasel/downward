@@ -31,8 +31,7 @@ bool LandmarkNode::is_true_in_state(const State &state) const {
 }
 
 LandmarkGraph::LandmarkGraph()
-    : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0),
-      reasonable_orders(false) {
+    : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0) {
 }
 
 int LandmarkGraph::get_num_edges() const {
@@ -40,11 +39,6 @@ int LandmarkGraph::get_num_edges() const {
     for (auto &node : nodes)
         total += node->children.size();
     return total;
-}
-
-
-bool LandmarkGraph::uses_reasonable_orders() {
-    return reasonable_orders;
 }
 
 LandmarkNode *LandmarkGraph::get_landmark(int i) const {
@@ -216,9 +210,5 @@ void LandmarkGraph::set_landmark_ids() {
         lmn->set_id(id);
         ++id;
     }
-}
-
-void LandmarkGraph::set_reasonable_orders() {
-    reasonable_orders = true;
 }
 }

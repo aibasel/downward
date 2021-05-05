@@ -51,6 +51,10 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
     }
 }
 
+bool LandmarkFactoryRpgExhaust::computes_reasonable_orders() const {
+    return false;
+}
+
 bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
     return false;
 }

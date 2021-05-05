@@ -22,8 +22,7 @@ void LandmarkFactoryRelaxation::postprocess(const TaskProxy &task_proxy, Explora
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration) {
-    // TODO: can this code handle axioms correctly? If so, remove verify_no_axioms
-    task_properties::verify_no_axioms(task_proxy);
+    // TODO: Check if the code works correctly in the presence of axioms.
     task_properties::verify_no_conditional_effects(task_proxy);
     int num_all_landmarks = lm_graph->get_num_landmarks();
     lm_graph->remove_node_if(

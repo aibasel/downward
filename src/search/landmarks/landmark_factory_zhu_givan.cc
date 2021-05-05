@@ -302,6 +302,10 @@ void LandmarkFactoryZhuGivan::add_operator_to_triggers(const OperatorProxy &op) 
         triggers[lm.var][lm.value].push_back(op_or_axiom_id);
 }
 
+bool LandmarkFactoryZhuGivan::computes_reasonable_orders() const {
+    return false;
+}
+
 bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
