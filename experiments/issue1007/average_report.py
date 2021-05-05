@@ -54,7 +54,7 @@ class AverageAlgorithmReport(PlanningReport):
                         print(values)
                     values_without_none = [value for value in values if value is not None]
                     if attribute in ['coverage', 'cegar_num_iterations', 'cegar_num_patterns',
-                        'cegar_total_pdb_size'] or 'score' in attribute or 'cegar' in attribute:
+                        'cegar_total_pdb_size', 'initial_h_value'] or 'score' in attribute or 'cegar' in attribute:
                         # if 'score' not in attribute:
                             # assert len(values_without_none) == 10 # does not hold for scores
                         average_value = sum(values_without_none)/float(len(values))
