@@ -250,7 +250,6 @@ void PatternDatabase::create_pdb(
 
     if (compute_plan) {
         generating_op_ids.resize(num_states);
-        number_of_generating_op_ids.resize(num_states);
         number_of_zero_cost_ops.resize(num_states);
     }
 
@@ -266,21 +265,9 @@ void PatternDatabase::create_pdb(
         // regress abstract_state
         vector<int> applicable_operator_ids;
         match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
-        sort(applicable_operator_ids.begin(), applicable_operator_ids.end(),
-             [&operators](int lhs, int rhs) {
-                 if (operators[lhs].get_hash_effect() == operators[rhs].get_hash_effect()) {
-                     return operators[lhs].get_cost() < operators[rhs].get_cost();
-                 }
-                 return operators[lhs].get_hash_effect() < operators[rhs].get_hash_effect();
-             });
-        size_t last_hash_effect = 0;
         for (int op_id : applicable_operator_ids) {
             const AbstractOperator &op = operators[op_id];
             size_t hash_effect = op.get_hash_effect();
-            if (hash_effect == last_hash_effect) {
-                continue;
-            }
-            last_hash_effect = hash_effect;
             size_t predecessor = state_index + hash_effect;
             int alternative_cost = distances[state_index] + op.get_cost();
             if (alternative_cost < distances[predecessor]) {
@@ -288,37 +275,18 @@ void PatternDatabase::create_pdb(
                 pq.push(alternative_cost, predecessor);
                 if (compute_plan) {
                     generating_op_ids[predecessor] = op_id;
-                    number_of_generating_op_ids[predecessor] = 1;
                     if (op.get_cost() == 0) {
                         number_of_zero_cost_ops[predecessor] = number_of_zero_cost_ops[state_index] + 1;
                     } else {
                         number_of_zero_cost_ops[predecessor] = 0;
                     }
                 }
-            } else if (alternative_cost == distances[predecessor] && compute_plan) {
-                if (op.get_cost() == 0) {
-                    int pred_num_zero_cost_ops = number_of_zero_cost_ops[predecessor];
-                    int num_zero_cost_ops_on_current_path = number_of_zero_cost_ops[state_index] + 1;
-                    if (num_zero_cost_ops_on_current_path < pred_num_zero_cost_ops) {
-                        generating_op_ids[predecessor] = op_id;
-                        number_of_generating_op_ids[predecessor] = 1;
-                        number_of_zero_cost_ops[predecessor] = num_zero_cost_ops_on_current_path;
-                    } else if (num_zero_cost_ops_on_current_path == pred_num_zero_cost_ops) {
-                        number_of_generating_op_ids[predecessor]++;
-                        int num_ops = number_of_generating_op_ids[predecessor];
-                        int rnd = (*rng)(num_ops);
-                        if (rnd == 0) {
-                            generating_op_ids[predecessor] = op_id;
-                        }
-                    }
-                } else {
-                    number_of_generating_op_ids[predecessor]++;
-                    int num_ops = number_of_generating_op_ids[predecessor];
-                    int rnd = (*rng)(num_ops);
-                    if (rnd == 0) {
-                        generating_op_ids[predecessor] = op_id;
-                        number_of_zero_cost_ops[predecessor] = 0;
-                    }
+            } else if (alternative_cost == distances[predecessor] && op.get_cost() == 0 && compute_plan) {
+                int pred_num_zero_cost_ops = number_of_zero_cost_ops[predecessor];
+                int num_zero_cost_ops_on_current_path = number_of_zero_cost_ops[state_index] + 1;
+                if (num_zero_cost_ops_on_current_path < pred_num_zero_cost_ops) {
+                    generating_op_ids[predecessor] = op_id;
+                    number_of_zero_cost_ops[predecessor] = num_zero_cost_ops_on_current_path;
                 }
             }
         }
@@ -361,7 +329,6 @@ void PatternDatabase::create_pdb(
             }
         }
         utils::release_vector_memory(generating_op_ids);
-        utils::release_vector_memory(number_of_generating_op_ids);
         utils::release_vector_memory(number_of_zero_cost_ops);
     }
 }

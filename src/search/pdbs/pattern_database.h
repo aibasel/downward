@@ -93,7 +93,6 @@ class PatternDatabase {
     std::vector<int> distances;
 
     std::vector<int> generating_op_ids;
-    std::vector<int> number_of_generating_op_ids;
     std::vector<int> number_of_zero_cost_ops;
     std::vector<std::vector<OperatorID>> wildcard_plan;
 
