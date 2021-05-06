@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import itertools
+import math
 import os
 import subprocess
 
@@ -74,22 +75,48 @@ exp.add_parser('cegar-parser.py')
 cpdbs_num_patterns = Attribute('cpdbs_num_patterns', absolute=False, min_wins=True)
 cpdbs_total_pdb_size = Attribute('cpdbs_total_pdb_size', absolute=False, min_wins=True)
 cpdbs_computation_time = Attribute('cpdbs_computation_time', absolute=False, min_wins=True)
+score_cpdbs_computation_time = Attribute('score_cpdbs_computation_time', absolute=False, min_wins=True)
 cegar_num_iterations = Attribute('cegar_num_iterations', absolute=False, min_wins=True)
 cegar_num_patterns = Attribute('cegar_num_patterns', absolute=False, min_wins=True)
 cegar_total_pdb_size = Attribute('cegar_total_pdb_size', absolute=False, min_wins=True)
 cegar_computation_time = Attribute('cegar_computation_time', absolute=False, min_wins=True)
+score_cegar_computation_time = Attribute('score_cegar_computation_time', absolute=True, min_wins=False)
 
 attributes = [
     cpdbs_num_patterns,
     cpdbs_total_pdb_size,
     cpdbs_computation_time,
+    score_cpdbs_computation_time,
     cegar_num_iterations,
     cegar_num_patterns,
     cegar_total_pdb_size,
     cegar_computation_time,
+    score_cegar_computation_time,
 ]
 attributes.extend(exp.DEFAULT_TABLE_ATTRIBUTES)
 attributes.append('initial_h_value')
+
+def add_computation_time_score(run):
+    """
+    Convert cegar/cpdbs computation time into scores in the range [0, 1].
+
+    Best possible performance in a task is counted as 1, while failure
+    to construct the heuristic and worst performance are counted as 0.
+
+    """
+    def log_score(value, min_bound, max_bound):
+        assert min_bound < max_bound
+        if value is None:
+            return 0
+        value = max(value, min_bound)
+        value = min(value, max_bound)
+        raw_score = math.log(value) - math.log(max_bound)
+        best_raw_score = math.log(min_bound) - math.log(max_bound)
+        return raw_score / best_raw_score
+
+    run['score_cegar_computation_time'] = log_score(run.get('cegar_computation_time'), min_bound=1.0, max_bound=MAX_TIME)
+    run['score_cpdbs_computation_time'] = log_score(run.get('cpdbs_computation_time'), min_bound=1.0, max_bound=MAX_TIME)
+    return run
 
 exp.add_absolute_report_step(attributes=attributes)
 
@@ -103,6 +130,7 @@ exp.add_report(
             (f'{REVISIONS[0]}-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}', f'{REVISIONS[1]}-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}'),
         ],
         attributes=attributes,
+        filter=[add_computation_time_score],
     ),
     name=name,
     outfile=outfile,
@@ -128,6 +156,7 @@ exp.add_report(
             (f'{REVISIONS[0]}-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}', f'{REVISIONS[1]}-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}'),
         ],
         attributes=attributes,
+        filter=[add_computation_time_score],
     ),
     name=name,
     outfile=outfile,

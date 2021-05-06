@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import itertools
+import math
 import os
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
@@ -65,20 +66,54 @@ exp.add_fetcher(name='fetch')
 exp.add_parser('cpdbs-parser.py')
 exp.add_parser('cegar-parser.py')
 
+cpdbs_num_patterns = Attribute('cpdbs_num_patterns', absolute=False, min_wins=True)
+cpdbs_total_pdb_size = Attribute('cpdbs_total_pdb_size', absolute=False, min_wins=True)
+cpdbs_computation_time = Attribute('cpdbs_computation_time', absolute=False, min_wins=True)
+score_cpdbs_computation_time = Attribute('score_cpdbs_computation_time', absolute=False, min_wins=True)
 cegar_num_iterations = Attribute('cegar_num_iterations', absolute=False, min_wins=True)
 cegar_num_patterns = Attribute('cegar_num_patterns', absolute=False, min_wins=True)
 cegar_total_pdb_size = Attribute('cegar_total_pdb_size', absolute=False, min_wins=True)
 cegar_computation_time = Attribute('cegar_computation_time', absolute=False, min_wins=True)
+score_cegar_computation_time = Attribute('score_cegar_computation_time', absolute=True, min_wins=False)
 
 exp.add_absolute_report_step(attributes=['coverage'])
+
+def add_computation_time_score(run):
+    """
+    Convert cegar/cpdbs computation time into scores in the range [0, 1].
+
+    Best possible performance in a task is counted as 1, while failure
+    to construct the heuristic and worst performance are counted as 0.
+
+    """
+    def log_score(value, min_bound, max_bound):
+        assert min_bound < max_bound
+        if value is None:
+            return 0
+        value = max(value, min_bound)
+        value = min(value, max_bound)
+        raw_score = math.log(value) - math.log(max_bound)
+        best_raw_score = math.log(min_bound) - math.log(max_bound)
+        return raw_score / best_raw_score
+
+    run['score_cegar_computation_time'] = log_score(run.get('cegar_computation_time'), min_bound=1.0, max_bound=MAX_TIME)
+    run['score_cpdbs_computation_time'] = log_score(run.get('cpdbs_computation_time'), min_bound=1.0, max_bound=MAX_TIME)
+    return run
 
 exp.add_report(
     AverageAlgorithmReport(
         algo_name_suffixes=['-s{}'.format(seed) for seed in range(2018,2028)],
-        attributes=['coverage', 'search_time', 'total_time',
-        'expansions_until_last_jump', 'score_search_time',
-        'score_total_time', 'score_memory', 'initial_h_value', cegar_num_iterations,
-        cegar_num_patterns, cegar_total_pdb_size, cegar_computation_time],
+        attributes=[
+            'coverage', 'search_time', 'total_time',
+            'expansions_until_last_jump', 'score_search_time',
+            'score_total_time', 'score_memory', 'initial_h_value',
+            cpdbs_num_patterns, cpdbs_total_pdb_size,
+            cpdbs_computation_time, score_cpdbs_computation_time,
+            cegar_num_iterations, cegar_num_patterns,
+            cegar_total_pdb_size, cegar_computation_time,
+            score_cegar_computation_time,
+        ],
+        filter=[add_computation_time_score],
     ),
     outfile=os.path.join(exp.eval_dir, "average", "properties"),
     name="report-average"
@@ -94,10 +129,16 @@ exp.add_comparison_table_step_for_revision_pairs(
     revision_pairs=[
         (f"{REVISIONS[0]}", f"{REVISIONS[1]}"),
     ],
-    attributes=['coverage', 'search_time', 'total_time',
-    'expansions_until_last_jump', 'score_search_time',
-    'score_total_time', 'score_memory', 'initial_h_value', cegar_num_iterations,
-    cegar_num_patterns, cegar_total_pdb_size, cegar_computation_time],
+    attributes=[
+        'coverage', 'search_time', 'total_time',
+        'expansions_until_last_jump', 'score_search_time',
+        'score_total_time', 'score_memory', 'initial_h_value',
+        cpdbs_num_patterns, cpdbs_total_pdb_size,
+        cpdbs_computation_time, score_cpdbs_computation_time,
+        cegar_num_iterations, cegar_num_patterns,
+        cegar_total_pdb_size, cegar_computation_time,
+        score_cegar_computation_time,
+    ],
 )
 
 exp.run_steps()
