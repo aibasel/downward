@@ -281,7 +281,7 @@ void PatternDatabase::create_pdb(
                         number_of_zero_cost_ops[predecessor] = 0;
                     }
                 }
-            } else if (alternative_cost == distances[predecessor] && op.get_cost() == 0 && compute_plan) {
+            } else if (alternative_cost == distances[predecessor] && compute_plan && op.get_cost() == 0) {
                 int pred_num_zero_cost_ops = number_of_zero_cost_ops[predecessor];
                 int num_zero_cost_ops_on_current_path = number_of_zero_cost_ops[state_index] + 1;
                 if (num_zero_cost_ops_on_current_path < pred_num_zero_cost_ops) {
