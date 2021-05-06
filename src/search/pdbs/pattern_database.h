@@ -169,6 +169,11 @@ public:
        operator_costs: Can specify individual operator costs for each
        operator. This is useful for action cost partitioning. If left
        empty, default operator costs are used.
+       compute_plan: if true, compute an optimal plan when computing
+       distances of the PDB. This requires a RNG object passed via rng.
+       compute_wildcard_plan: when computing a plan (see compute_plan), compute
+       a wildcard plan, i.e., a sequence of parallel operators inducing an
+       optimal plan. Otherwise, compute a simple plan (a sequence of operators).
     */
     PatternDatabase(
         const TaskProxy &task_proxy,
