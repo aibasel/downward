@@ -29,14 +29,14 @@ namespace pdbs {
   be marked as "solved" to ignore it in further iterations of the CEGAR
   algorithm.
 */
-class Projection {
+class PatternInfo {
     std::shared_ptr<PatternDatabase> pdb;
     std::vector<std::vector<OperatorID>> plan;
     bool unsolvable;
     bool solved;
 
 public:
-    Projection(
+    PatternInfo(
         const std::shared_ptr<PatternDatabase> &&pdb,
         const std::vector<std::vector<OperatorID>> &&plan,
         bool unsolvable)
@@ -110,18 +110,18 @@ class CEGAR {
     const std::vector<FactPair> goals;
     std::unordered_set<int> blacklisted_variables;
 
-    std::vector<std::unique_ptr<Projection>> projection_collection;
+    std::vector<std::unique_ptr<PatternInfo>> pattern_collection;
     /*
       Map each variable of the task which is contained in the collection to the
-      projection which it is part of.
+      collection index at which the pattern containing the variable is stored.
     */
-    std::unordered_map<int, int> variable_to_projection;
+    std::unordered_map<int, int> variable_to_collection_index;
     int collection_size;
 
     void print_collection() const;
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
 
-    std::unique_ptr<Projection> compute_projection(Pattern &&pattern) const;
+    std::unique_ptr<PatternInfo> compute_pattern_info(Pattern &&pattern) const;
     void compute_initial_collection();
 
     /*
@@ -134,7 +134,7 @@ class CEGAR {
         const OperatorProxy &op,
         const std::vector<int> &current_state) const;
     /*
-      Try to apply the plan of the projection at the given index in the
+      Try to apply the plan of the pattern at the given index in the
       concrete task starting at the given state. During application,
       blacklisted variables are ignored. If plan application succeeds,
       return an empty flaw list. Otherwise, return all precondition variables
@@ -147,12 +147,13 @@ class CEGAR {
       no blacklisted variables, in which case the concrete task is solved.
       Return false in all other cases. Append new flaws to the passed-in flaws.
     */
-    bool get_flaws_for_projection(
+    bool get_flaws_for_pattern(
         int collection_index, const State &concrete_init, FlawList &flaws);
     /*
-      Use get_flaws_for_projection for all patterns of the collection. Append
+      Use get_flaws_for_pattern for all patterns of the collection. Append
       new flaws to the passed-in flaws. If the task is solved by the plan of
-      any projection, return the index of the collection. Otherwise, return -1.
+      any pattern, return the collection index of that pattern. Otherwise,
+      return -1.
     */
     int get_flaws(const State &concrete_init, FlawList &flaws);
 
