@@ -54,6 +54,7 @@ exp.add_parser(os.path.join(DIR, "landmark_parser.py"))
 exp.add_step("build", exp.build)
 exp.add_step("start", exp.start_runs)
 exp.add_fetcher(name="fetch")
+exp.add_parse_again_step()
 
 ATTRIBUTES = [
     "cost",
@@ -78,7 +79,8 @@ ATTRIBUTES = [
     "search_time",
     "total_time",
     "landmarks",
-    "edges"
+    "edges",
+    "landmark_generation_time"
     ]
 exp.add_comparison_table_step(attributes=ATTRIBUTES)
 exp.add_scatter_plot_step(attributes=['search_time'])

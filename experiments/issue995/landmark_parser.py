@@ -24,6 +24,6 @@ parser.add_bottom_up_pattern("landmarks", r"Discovered (\d+) landmarks")
 parser.add_bottom_up_pattern("conj_landmarks", r"(\d+) are conjunctive")
 parser.add_bottom_up_pattern("disj_landmarks", r"(\d+) are disjunctive")
 parser.add_bottom_up_pattern("edges", r"(\d+) edges")
-    
+parser.add_bottom_up_pattern("landmark_generation_time", r"Landmarks generation time: (.+)s",type=float)    
 parser.parse()
 

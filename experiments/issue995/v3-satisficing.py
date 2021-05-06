@@ -12,7 +12,7 @@ from common_setup import IssueConfig, IssueExperiment
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue995-base", "issue995-v2"]
+REVISIONS = ["issue995-v3-base", "issue995-v3"]
 
 CONFIGS = [
     IssueConfig("lama-first", [],
@@ -49,7 +49,6 @@ exp.add_parser(os.path.join(DIR, "landmark_parser.py"))
 exp.add_step("build", exp.build)
 exp.add_step("start", exp.start_runs)
 exp.add_fetcher(name="fetch")
-exp.add_parse_again_step()
 ATTRIBUTES = [
     "cost",
     "coverage",

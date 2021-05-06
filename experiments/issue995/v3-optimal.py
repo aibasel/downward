@@ -12,19 +12,25 @@ from common_setup import IssueConfig, IssueExperiment
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue995-base", "issue995-v2"]
+REVISIONS = ["issue995-v3-base", "issue995-v3"]
 
 CONFIGS = [
-    IssueConfig("lama-first", [],
-                driver_options=["--alias", "lama-first"]),
-    IssueConfig("lm_zg", ["--search", "eager_greedy([lmcount(lm_zg())])"]),
+    IssueConfig("seq-opt-bjolp", [],
+                driver_options=["--alias", "seq-opt-bjolp"]),
+    IssueConfig("lm_exhaust", ["--evaluator", "lmc=lmcount(lm_exhaust(),admissible=true)",
+                "--search", "astar(lmc,lazy_evaluator=lmc)"]),
+    IssueConfig("lm_hm", ["--evaluator", "lmc=lmcount(lm_hm(m=2),admissible=true)",
+                "--search", "astar(lmc,lazy_evaluator=lmc)"]),
+    IssueConfig("seq-opt-bjolp-optimal", ["--evaluator", 
+    "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true)",
+    "--search", "astar(lmc,lazy_evaluator=lmc)"]),
 ]
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
     partition="infai_2",
     email="salome.eriksson@unibas.ch",
-    export=['export PATH=/scicore/soft/apps/binutils/2.32-GCCcore-8.3.0/bin:/scicore/soft/apps/GCCcore/8.3.0/bin:/infai/sieverss/repos/bin:/infai/sieverss/local:/export/soft/lua_lmod/centos7/lmod/lmod/libexec:$PATH\nexport LD_LIBRARY_PATH=/scicore/soft/apps/binutils/2.32-GCCcore-8.3.0/lib:/scicore/soft/apps/zlib/1.2.11-GCCcore-8.3.0/lib:/scicore/soft/apps/GCCcore/8.3.0/lib64:/scicore/soft/apps/GCCcore/8.3.0/lib', "DOWNWARD_BENCHMARKS"],
+    export=["PATH", "DOWNWARD_BENCHMARKS"],
 )
 
 if common_setup.is_test_run():
@@ -39,7 +45,6 @@ exp = common_setup.IssueExperiment(
 
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
-exp.add_parser(exp.ANYTIME_SEARCH_PARSER)
 exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 exp.add_parser(exp.SINGLE_SEARCH_PARSER)
@@ -49,7 +54,7 @@ exp.add_parser(os.path.join(DIR, "landmark_parser.py"))
 exp.add_step("build", exp.build)
 exp.add_step("start", exp.start_runs)
 exp.add_fetcher(name="fetch")
-exp.add_parse_again_step()
+
 ATTRIBUTES = [
     "cost",
     "coverage",
@@ -74,9 +79,10 @@ ATTRIBUTES = [
     "total_time",
     "landmarks",
     "edges",
-    "landmark_generation_time",
+    "landmark_generation_time"
     ]
-
 exp.add_comparison_table_step(attributes=ATTRIBUTES)
+exp.add_scatter_plot_step(attributes=['search_time'])
+exp.add_scatter_plot_step(attributes=['search_time'], relative=True)
 exp.run_steps()
 
