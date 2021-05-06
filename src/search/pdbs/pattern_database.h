@@ -36,7 +36,7 @@ class AbstractOperator {
       Effect of the operator during regression search on a given
       abstract state number.
     */
-    std::size_t hash_effect;
+    int hash_effect;
 public:
     /*
       Abstract operators are built from concrete operators. The
@@ -48,7 +48,7 @@ public:
                      const std::vector<FactPair> &preconditions,
                      const std::vector<FactPair> &effects,
                      int cost,
-                     const std::vector<std::size_t> &hash_multipliers,
+                     const std::vector<int> &hash_multipliers,
                      int concrete_op_id);
     ~AbstractOperator();
 
@@ -64,7 +64,7 @@ public:
       Returns the effect of the abstract operator in form of a value
       change (+ or -) to an abstract state index
     */
-    std::size_t get_hash_effect() const {return hash_effect;}
+    int get_hash_effect() const {return hash_effect;}
 
     int get_concrete_op_id() const {
         return concrete_op_id;
@@ -84,7 +84,7 @@ class PatternDatabase {
     Pattern pattern;
 
     // size of the PDB
-    std::size_t num_states;
+    int num_states;
 
     /*
       final h-values for abstract-states.
@@ -97,7 +97,7 @@ class PatternDatabase {
     std::vector<std::vector<OperatorID>> wildcard_plan;
 
     // multipliers for each variable for perfect hash function
-    std::vector<std::size_t> hash_multipliers;
+    std::vector<int> hash_multipliers;
 
     /*
       Recursive method; called by build_abstract_operators. In the case
@@ -149,7 +149,7 @@ class PatternDatabase {
       state is a goal state.
     */
     bool is_goal_state(
-        std::size_t state_index,
+        int state_index,
         const std::vector<FactPair> &abstract_goals,
         const VariablesProxy &variables) const;
 
@@ -158,7 +158,7 @@ class PatternDatabase {
       according abstract state. This is only used for table lookup
       (distances) during search.
     */
-    std::size_t hash_index_of_concrete_state(const std::vector<int> &state) const;
+    int hash_index(const std::vector<int> &state) const;
 public:
     /*
       Important: It is assumed that the pattern (passed via Options) is

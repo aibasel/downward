@@ -614,8 +614,8 @@ public:
     StateID get_id() const;
 
     /* Access the unpacked values. Accessing the unpacked values in a state
-       that that doesn't have them is an error. Use unpack() to ensure the
-       data exists. */
+       that doesn't have them is an error. Use unpack() to ensure the data
+       exists. */
     const std::vector<int> &get_unpacked_values() const;
 
     /* Access the packed values. Accessing packed values on states that do
@@ -711,7 +711,7 @@ public:
       case, the function aborts.
 
       Eventually, this method should perhaps not be part of TaskProxy but live
-      in a class that handles the task transformation and known about both the
+      in a class that handles the task transformation and knows about both the
       original and the transformed task.
     */
     State convert_ancestor_state(const State &ancestor_state) const {

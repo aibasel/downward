@@ -37,7 +37,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
-    utils::g_log << "Initializing landmarks count heuristic..." << endl;
+    utils::g_log << "Initializing landmark count heuristic..." << endl;
 
     /*
       Actually, we should like to test if this is the root task or a
@@ -52,13 +52,12 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
+    utils::Timer lm_graph_timer;
+    utils::g_log << "Generating landmark graph..." << endl;
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    lgraph = lm_graph_factory->compute_lm_graph(task);
-    bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
-    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (admissible) {
-        if (reasonable_orders) {
+        if (lm_graph_factory->computes_reasonable_orders()) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         } else if (task_properties::has_axioms(task_proxy)) {
@@ -69,6 +68,19 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
             cerr << "conditional effects not supported by the landmark generation method" << endl;
             utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
         }
+    }
+
+    lgraph = lm_graph_factory->compute_lm_graph(task);
+    utils::g_log << "Landmark graph generation time: " << lm_graph_timer << endl;
+    utils::g_log << "Landmark graph contains " << lgraph->get_num_landmarks()
+                 << " landmarks, of which " << lgraph->get_num_disjunctive_landmarks()
+                 << " are disjunctive and " << lgraph->get_num_conjunctive_landmarks()
+                 << " are conjunctive." << endl;
+    utils::g_log << "Landmark graph contains " << lgraph->get_num_edges()
+                 << " orderings." << endl;
+    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
+
+    if (admissible) {
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
@@ -109,15 +121,11 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
         return static_cast<int>(ceil(h_val - epsilon));
     } else {
         int h = 0;
-        for (auto &lm : lgraph->get_nodes()) {
-            switch (lm_status_manager->get_landmark_status(
-                        lm->get_id())) {
-            case lm_reached:
-                break;
-            case lm_not_reached:
-            case lm_needed_again:
-                h += lm->cost;
-                break;
+        for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
+            landmark_status status =
+                lm_status_manager->get_landmark_status(id);
+            if (status == lm_not_reached || status == lm_needed_again) {
+                h += lgraph->get_landmark(id)->cost;
             }
         }
         return h;

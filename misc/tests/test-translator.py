@@ -10,17 +10,17 @@ different runs might lead to the same nondeterministic results.
 
 import argparse
 from collections import defaultdict
-from distutils.spawn import find_executable
 import itertools
 import os
+from pathlib import Path
 import re
 import subprocess
 import sys
 
 
-DIR = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(os.path.dirname(DIR))
-DRIVER = os.path.join(REPO, "fast-downward.py")
+DIR = Path(__file__).resolve().parent
+REPO = DIR.parents[1]
+DRIVER = REPO / "fast-downward.py"
 
 
 def parse_args():
@@ -33,25 +33,27 @@ def parse_args():
         help='Use "all" to test all benchmarks, '
              '"first" to test the first task of each domain (default), '
              'or "<domain>:<problem>" to test individual tasks')
+    parser.add_argument(
+        "--runs-per-task",
+        help="translate each task this many times and compare the outputs",
+        type=int, default=3)
     args = parser.parse_args()
-    args.benchmarks_dir = os.path.abspath(args.benchmarks_dir)
+    args.benchmarks_dir = Path(args.benchmarks_dir).resolve()
     return args
 
 
 def get_task_name(path):
-    return "-".join(path.split("/")[-2:])
+    return "-".join(str(path).split("/")[-2:])
 
 
 def translate_task(task_file):
-    python = sys.executable
-    print("Translate {} with {}".format(get_task_name(task_file), python))
+    print(f"Translate {get_task_name(task_file)}", flush=True)
     sys.stdout.flush()
-    cmd = [python, DRIVER, "--translate", task_file]
+    cmd = [sys.executable, str(DRIVER), "--translate", str(task_file)]
     try:
-        output = subprocess.check_output(cmd)
+        output = subprocess.check_output(cmd, encoding=sys.getfilesystemencoding())
     except OSError as err:
-        sys.exit("Call failed: {}\n{}".format(" ".join(cmd), err))
-    output = str(output)
+        sys.exit(f"Call failed: {' '.join(cmd)}\n{err}")
     # Remove information that may differ between calls.
     for pattern in [
             r"\[.+s CPU, .+s wall-clock\]",
@@ -67,22 +69,23 @@ def _get_all_tasks_by_domain(benchmarks_dir):
     # seems to be detrimental on some other domains.
     blacklisted_domains = [
         "agricola-sat18-strips",
-        "citycar-opt14-adl", # cf. issue875
-        "citycar-sat14-adl", # cf. issue875
+        "citycar-opt14-adl",  # cf. issue879
+        "citycar-sat14-adl",  # cf. issue879
         "organic-synthesis-sat18-strips",
         "organic-synthesis-split-opt18-strips",
         "organic-synthesis-split-sat18-strips"]
+    benchmarks_dir = Path(benchmarks_dir)
     tasks = defaultdict(list)
     domains = [
-        name for name in os.listdir(benchmarks_dir)
-        if os.path.isdir(os.path.join(benchmarks_dir, name)) and
-        not name.startswith((".", "_")) and
-        name not in blacklisted_domains]
+        domain_dir for domain_dir in benchmarks_dir.iterdir()
+        if domain_dir.is_dir() and
+        not str(domain_dir.name).startswith((".", "_", "unofficial")) and
+        str(domain_dir.name) not in blacklisted_domains]
     for domain in domains:
-        path = os.path.join(benchmarks_dir, domain)
+        path = benchmarks_dir / domain
         tasks[domain] = [
-            os.path.join(benchmarks_dir, domain, f)
-            for f in sorted(os.listdir(path)) if "domain" not in f]
+            benchmarks_dir / domain / f
+            for f in sorted(path.iterdir()) if "domain" not in str(f)]
     return sorted(tasks.values())
 
 
@@ -99,15 +102,13 @@ def get_tasks(args):
         else:
             # Add task from command line.
             task = task.replace(":", "/")
-            suite.append(os.path.join(args.benchmarks_dir, task))
+            suite.append(args.benchmarks_dir / task)
     return sorted(set(suite))
 
 
 def cleanup():
-    # We can't use the driver's cleanup function since the files are renamed.
-    for f in os.listdir("."):
-        if f.endswith(".sas"):
-            os.remove(f)
+    for f in Path(".").glob("translator-output-*.txt"):
+        f.unlink()
 
 
 def write_combined_output(output_file, task):
@@ -123,18 +124,18 @@ def main():
     os.chdir(DIR)
     cleanup()
     for task in get_tasks(args):
-        write_combined_output("base.sas", task)
-        for iteration in range(2):
-            write_combined_output("output{}.sas".format(iteration), task)
-            print("Compare translator output", flush=True)
-            files = ["base.sas", "output{}.sas".format(iteration)]
+        base_file = "translator-output-0.txt"
+        write_combined_output(base_file, task)
+        for i in range(1, args.runs_per_task):
+            compared_file = f"translator-output-{i}.txt"
+            write_combined_output(compared_file, task)
+            files = [base_file, compared_file]
             try:
                 subprocess.check_call(["diff", "-q"] + files)
             except subprocess.CalledProcessError:
-                sys.exit(
-                    "Error: Translator is nondeterministic for {task}.".format(**locals()))
-            print(flush=True)
-    cleanup()
+                sys.exit(f"Error: Translator is nondeterministic for {task}.")
+        print("Outputs match\n", flush=True)
+        cleanup()
 
 
 if __name__ == "__main__":

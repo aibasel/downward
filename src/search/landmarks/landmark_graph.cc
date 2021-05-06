@@ -181,27 +181,27 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
     }
 }
 
+void LandmarkGraph::remove_node(LandmarkNode *node) {
+    remove_node_occurrences(node);
+    auto it = find_if(nodes.begin(), nodes.end(),
+                      [&node](unique_ptr<LandmarkNode> &n) {
+                          return n.get() == node;
+                      });
+    assert(it != nodes.end());
+    nodes.erase(it);
+}
+
 void LandmarkGraph::remove_node_if(
-    const function<bool (const LandmarkNode &)> &remove_node) {
+    const function<bool (const LandmarkNode &)> &remove_node_condition) {
     for (auto &node : nodes) {
-        if (remove_node(*node)) {
+        if (remove_node_condition(*node)) {
             remove_node_occurrences(node.get());
         }
     }
     nodes.erase(remove_if(nodes.begin(), nodes.end(),
-                          [&remove_node](const unique_ptr<LandmarkNode> &node) {
-                              return remove_node(*node);
+                          [&remove_node_condition](const unique_ptr<LandmarkNode> &node) {
+                              return remove_node_condition(*node);
                           }), nodes.end());
-}
-
-LandmarkNode &LandmarkGraph::replace_disjunctive_by_simple_landmark(const FactPair &lm) {
-    LandmarkNode &node = get_disjunctive_landmark(lm);
-    node.disjunctive = false;
-    for (const FactPair &lm_fact : node.facts)
-        // TODO: shouldn't this decrease num_disjunctive_landmarks?
-        disjunctive_landmarks_to_nodes.erase(lm_fact);
-    simple_landmarks_to_nodes.emplace(lm, &node);
-    return node;
 }
 
 void LandmarkGraph::set_landmark_ids() {

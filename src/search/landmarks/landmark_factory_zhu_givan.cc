@@ -18,7 +18,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : LandmarkFactoryRelaxation(opts) {
+    : use_orders(opts.get<bool>("use_orders")) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
@@ -36,6 +36,10 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     }
 
     extract_landmarks(task_proxy, exploration, last_prop_layer);
+
+    if (!use_orders) {
+        discard_all_orderings();
+    }
 }
 
 bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
@@ -298,6 +302,10 @@ void LandmarkFactoryZhuGivan::add_operator_to_triggers(const OperatorProxy &op) 
         triggers[lm.var][lm.value].push_back(op_or_axiom_id);
 }
 
+bool LandmarkFactoryZhuGivan::computes_reasonable_orders() const {
+    return false;
+}
+
 bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
@@ -307,8 +315,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
-    parser.document_note("Relevant options", "reasonable_orders, no_orders");
-    _add_options_to_parser(parser);
+    _add_use_orders_option_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: Make sure that conditional effects are indeed supported.
