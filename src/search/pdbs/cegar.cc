@@ -1,12 +1,9 @@
 #include "cegar.h"
 
-#include "steepest_ascent_enforced_hill_climbing.h"
 #include "types.h"
 #include "utils.h"
 
 #include "../option_parser.h"
-
-#include "../tasks/projected_task_factory.h"
 
 #include "../task_utils/task_properties.h"
 

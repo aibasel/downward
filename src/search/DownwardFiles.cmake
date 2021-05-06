@@ -566,8 +566,6 @@ fast_downward_plugin(
         tasks/domain_abstracted_task_factory
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
-        tasks/projected_task
-        tasks/projected_task_factory
     DEPENDS TASK_PROPERTIES
     DEPENDENCY_ONLY
 )
@@ -742,13 +740,12 @@ fast_downward_plugin(
         pdbs/pattern_information
         pdbs/pdb_heuristic
         pdbs/plugin_group
-        pdbs/steepest_ascent_enforced_hill_climbing
         pdbs/types
         pdbs/utils
         pdbs/validation
         pdbs/zero_one_pdbs
         pdbs/zero_one_pdbs_heuristic
-    DEPENDS CAUSAL_GRAPH EXTRA_TASKS MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES VARIABLE_ORDER_FINDER
+    DEPENDS CAUSAL_GRAPH MAX_CLIQUES PRIORITY_QUEUES SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES VARIABLE_ORDER_FINDER
 )
 
 fast_downward_plugin(

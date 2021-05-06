@@ -107,12 +107,4 @@ public:
         const AbstractTask *ancestor_task) const = 0;
 };
 
-/*
-  This function is only supposed to be used from within AbstractTasks.
-  If a user of a task needs this functionality, they should use
-  has_conditional_effects(TaskProxy) from task_tools.h instead.
-  This is expensive to compute and should not be called repeatedly.
-*/
-extern bool has_conditional_effects(const AbstractTask &task);
-
 #endif
