@@ -36,21 +36,26 @@ after the corresponding tracker issues.
   State. This removed a lot of code duplication and hacks from the code.
   A description of the new class can be found in the wiki:
   <http://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
-  
+
 - For developers: introduce class for delete-relaxation based landmark
   factories and move usage of exploration object to subclasses of
   (abstract) landmark factory class.
-  http://issues.fast-downward.org/issue990
+  <http://issues.fast-downward.org/issue990>
 
 - For users: We removed options from LandmarkFactories that were not relevant,
   renamed the option "no_orders" to "use_orders" and changed the
   reasonable_orders option to a Factory.
   <http://issues.fast-downward.org/issue995>
   Removed options:
-  lm_exhaust: disjunctive_landmarks, conjunctive_landmarks, no_orders, reasonable_orders
-  lm_hm: disjunctive_landmarks, only_causal_landmarks, no_orders, reasonable_orders
+  lm_exhaust: disjunctive_landmarks, conjunctive_landmarks, no_orders,
+    reasonable_orders
+  lm_hm: disjunctive_landmarks, only_causal_landmarks, no_orders,
+    reasonable_orders
+  lm_merged: disjunctive_landmarks, conjunctive_landmarks,
+    only_causal_landmarks, no_orders, reasonable_orders
   lm_rhw: conjunctive_landmarks, no_orders, reasonable_orders
-  lm_zg: disjunctive_landmarks, conjunctive_landmarks, only_causal_landmarks, reasonable_orders
+  lm_zg: disjunctive_landmarks, conjunctive_landmarks, only_causal_landmarks,
+    no_orders, reasonable_orders
   Added options:
   lm_hm/lm_rhw/lm_zg: use_orders (negation of removed option "no_orders")
   New Factory "lm_reasonable_orders_hps": This factory approximates reasonable

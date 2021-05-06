@@ -52,6 +52,8 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
+    utils::Timer lm_graph_timer;
+    utils::g_log << "Generating landmark graph..." << endl;
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
 
     if (admissible) {
@@ -69,6 +71,13 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 
     lgraph = lm_graph_factory->compute_lm_graph(task);
+    utils::g_log << "Landmark graph generation time: " << lm_graph_timer << endl;
+    utils::g_log << "Landmark graph contains " << lgraph->get_num_landmarks()
+                 << " landmarks, of which " << lgraph->get_num_disjunctive_landmarks()
+                 << " are disjunctive and " << lgraph->get_num_conjunctive_landmarks()
+                 << " are conjunctive." << endl;
+    utils::g_log << "Landmark graph contains " << lgraph->get_num_edges()
+                 << " orderings." << endl;
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (admissible) {
