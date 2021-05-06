@@ -185,18 +185,7 @@ public:
         bool compute_wildcard_plan = false);
     ~PatternDatabase() = default;
 
-    /*
-      Like hash_index_of_concrete_state, compute the hash index of the
-      given state. However, the given state must be a State of a ProjectedTask
-      using pattern for the projected variables.
-    */
-    std::size_t hash_index_of_projected_state(const State &projected_state) const;
-
-    // Return the PDB value of the given concrete state.
     int get_value(const std::vector<int> &state) const;
-
-    // Return the PDB value of a state with the given hash index.
-    int get_value_for_hash_index(std::size_t index) const;
 
     // Returns the pattern (i.e. all variables used) of the PDB
     const Pattern &get_pattern() const {
