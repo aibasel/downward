@@ -2,6 +2,7 @@
 
 import itertools
 import os
+import subprocess
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.reports import Attribute
@@ -93,28 +94,50 @@ attributes.append('initial_h_value')
 exp.add_parse_again_step()
 
 exp.add_absolute_report_step(attributes=attributes)
+
+outfile = os.path.join(
+    exp.eval_dir,
+    f"{exp.name}-{REVISIONS[0]}-{REVISIONS[1]}-compare-hillclimbing.html")
+name="make-comparison-tables-hillclimbing"
 exp.add_report(
     ComparativeReport(
         [
-            (f'issue1007-v8c-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'{REVISIONS[0]}-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}', f'{REVISIONS[1]}-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}'),
         ],
         attributes=attributes,
     ),
-    name="cpdbs-hillclimbing",
+    name=name,
+    outfile=outfile,
 )
+exp.add_step(
+    f"publish-{name}",
+    subprocess.call,
+    ["publish", outfile],
+)
+
+outfile = os.path.join(
+    exp.eval_dir,
+    f"{exp.name}-{REVISIONS[0]}-{REVISIONS[1]}-compare-cegar.html")
+name="make-comparison-tables-cegar"
 exp.add_report(
     ComparativeReport(
         [
-            (f'issue1007-v8c-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}'),
-            (f'issue1007-v8c-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}'),
-            (f'issue1007-v8c-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}'),
-            (f'issue1007-v8c-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}'),
-            (f'issue1007-v8c-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}'),
-            (f'issue1007-v8c-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}', f'issue1007-v13-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}'),
+            (f'{REVISIONS[0]}-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}', f'{REVISIONS[1]}-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'{REVISIONS[0]}-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}', f'{REVISIONS[1]}-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'{REVISIONS[0]}-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}', f'{REVISIONS[1]}-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'{REVISIONS[0]}-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}', f'{REVISIONS[1]}-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}'),
+            (f'{REVISIONS[0]}-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}', f'{REVISIONS[1]}-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}'),
+            (f'{REVISIONS[0]}-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}', f'{REVISIONS[1]}-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}'),
         ],
         attributes=attributes,
     ),
-    name="cpdbs-cegar",
+    name=name,
+    outfile=outfile,
+)
+exp.add_step(
+    f"publish-{name}",
+    subprocess.call,
+    ["publish", outfile],
 )
 
 exp.run_steps()

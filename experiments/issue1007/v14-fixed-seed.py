@@ -2,6 +2,7 @@
 
 import itertools
 import os
+import subprocess
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.reports import Attribute
@@ -91,6 +92,11 @@ attributes.extend(exp.DEFAULT_TABLE_ATTRIBUTES)
 attributes.append('initial_h_value')
 
 exp.add_absolute_report_step(attributes=attributes)
+
+outfile = os.path.join(
+    exp.eval_dir,
+    f"{exp.name}-{REVISIONS[0]}-{REVISIONS[1]}-compare-hillclimbing.html")
+name="make-comparison-tables-hillclimbing"
 exp.add_report(
     ComparativeReport(
         [
@@ -98,8 +104,19 @@ exp.add_report(
         ],
         attributes=attributes,
     ),
-    name="cpdbs-hillclimbing",
+    name=name,
+    outfile=outfile,
 )
+exp.add_step(
+    f"publish-{name}",
+    subprocess.call,
+    ["publish", outfile],
+)
+
+outfile = os.path.join(
+    exp.eval_dir,
+    f"{exp.name}-{REVISIONS[0]}-{REVISIONS[1]}-compare-cegar.html")
+name="make-comparison-tables-cegar"
 exp.add_report(
     ComparativeReport(
         [
@@ -112,7 +129,13 @@ exp.add_report(
         ],
         attributes=attributes,
     ),
-    name="cpdbs-cegar",
+    name=name,
+    outfile=outfile,
+)
+exp.add_step(
+    f"publish-{name}",
+    subprocess.call,
+    ["publish", outfile],
 )
 
 exp.run_steps()
