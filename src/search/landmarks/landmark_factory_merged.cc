@@ -16,8 +16,7 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
-    : LandmarkFactory(opts),
-      lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
+    : lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &lm) const {
@@ -127,29 +126,21 @@ void LandmarkFactoryMerged::generate_landmarks(
             }
         }
     }
-
-    TaskProxy task_proxy(*task);
-    generate(task_proxy);
+    postprocess();
 }
 
-void LandmarkFactoryMerged::generate(const TaskProxy &task_proxy) {
+void LandmarkFactoryMerged::postprocess() {
     lm_graph->set_landmark_ids();
-
-    /*
-      TODO: causal, disjunctive and/or conjunctive landmarks as well as orders
-       have been removed in the individual landmark graphs. Since merging
-       landmark graphs doesn't introduce any of these, it should not be
-       necessary to do so again here, so these steps are omitted. For
-       reasonable orders, acyclicity of the landmark graph and the costs of
-       landmarks we should also determine this.
-    */
-    if (reasonable_orders) {
-        utils::g_log << "approx. reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, false);
-        utils::g_log << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, true);
-    }
     mk_acyclic_graph();
+}
+
+bool LandmarkFactoryMerged::computes_reasonable_orders() const {
+    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
+        if (lm_factory->computes_reasonable_orders()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool LandmarkFactoryMerged::supports_conditional_effects() const {
@@ -171,13 +162,9 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "orderings take precedence in the usual manner "
         "(gn > nat > reas > o_reas). ");
     parser.document_note(
-        "Relevant options",
-        "Depends on landmarks");
-    parser.document_note(
         "Note",
         "Does not currently support conjunctive landmarks");
     parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
-    _add_options_to_parser(parser);
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");

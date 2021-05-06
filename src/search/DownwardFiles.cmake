@@ -690,6 +690,7 @@ fast_downward_plugin(
         landmarks/landmark_count_heuristic
         landmarks/landmark_factory
         landmarks/landmark_factory_h_m
+        landmarks/landmark_factory_reasonable_orders_hps
         landmarks/landmark_factory_merged
         landmarks/landmark_factory_relaxation
         landmarks/landmark_factory_rpg_exhaust
