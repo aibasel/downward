@@ -249,6 +249,16 @@ void PatternDatabase::create_pdb(
     }
 
     if (compute_plan) {
+        /*
+          If computing a plan during Dijkstra, we store, for each state,
+          an operator leading from that state to another state on a
+          strongly optimal plan of the PDB. We store the first operator
+          encountered during Dijstra and only update it if the goal distance
+          of the state was updated or, in the presence of zero-cost operators,
+          the state could be reached with the same cost but with fewer
+          zero-cost operators. For the latter, we need to count the number of
+          zero-cost operators leading to each state.
+         */
         generating_op_ids.resize(num_states);
         number_of_zero_cost_ops.resize(num_states);
     }
@@ -294,6 +304,18 @@ void PatternDatabase::create_pdb(
 
     // Compute abstract plan
     if (compute_plan) {
+        /*
+          Using the generating operators computed during Dijkstra, we start
+          from the initial state and follow the generating operator to the
+          next state. Then we compute all operators of the same cost inducing
+          the same abstract transition and randomly pick one of them to
+          set for the next state. We iterate until reaching a goal state.
+          Note that this kind of plan extraction does not uniformly at random
+          consider all successor of a state but rather uses the arbitrarily
+          chosen generating operator to settle on one successor state, which
+          is biased by the number of operators leading to the same successor
+          from the given state.
+        */
         State initial_state = task_proxy.get_initial_state();
         initial_state.unpack();
         size_t current_state =
