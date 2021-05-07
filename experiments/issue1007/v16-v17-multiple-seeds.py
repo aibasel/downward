@@ -143,6 +143,7 @@ exp.add_comparison_table_step_for_revision_pairs(
         cegar_num_iterations, cegar_num_patterns, cegar_total_pdb_size,
         cegar_computation_time, score_cegar_computation_time,
     ],
+    filter=[add_computation_time_score],
 )
 
 exp.run_steps()
