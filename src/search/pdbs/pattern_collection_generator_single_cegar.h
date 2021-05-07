@@ -17,7 +17,7 @@ namespace pdbs {
 class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator {
     const int max_pdb_size;
     const int max_collection_size;
-    const bool wildcard_plans;
+    const bool use_wildcard_plans;
     const double max_time;
     const utils::Verbosity verbosity;
     std::shared_ptr<utils::RandomNumberGenerator> rng;

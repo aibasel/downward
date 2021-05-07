@@ -43,7 +43,7 @@ unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
     vector<int> op_cost;
     bool compute_plan = true;
     shared_ptr<PatternDatabase> pdb =
-        make_shared<PatternDatabase>(task_proxy, pattern, dump, op_cost, compute_plan, rng, wildcard_plans);
+        make_shared<PatternDatabase>(task_proxy, pattern, dump, op_cost, compute_plan, rng, use_wildcard_plans);
     vector<vector<OperatorID>> plan = pdb->extract_wildcard_plan();
 
     bool unsolvable = false;
@@ -455,7 +455,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
 CEGAR::CEGAR(
     int max_pdb_size,
     int max_collection_size,
-    bool wildcard_plans,
+    bool use_wildcard_plans,
     double max_time,
     utils::Verbosity verbosity,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
@@ -464,7 +464,7 @@ CEGAR::CEGAR(
     unordered_set<int> &&blacklisted_variables)
     : max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
-      wildcard_plans(wildcard_plans),
+      use_wildcard_plans(use_wildcard_plans),
       max_time(max_time),
       verbosity(verbosity),
       rng(rng),
@@ -492,7 +492,7 @@ CEGAR::CEGAR(
         utils::g_log << "options of the CEGAR algorithm for computing a pattern collection: " << endl;
         utils::g_log << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << "max collection size: " << max_collection_size << endl;
-        utils::g_log << "wildcard plans: " << wildcard_plans << endl;
+        utils::g_log << "wildcard plans: " << use_wildcard_plans << endl;
         utils::g_log << "Verbosity: ";
         switch (verbosity) {
         case utils::Verbosity::SILENT:
@@ -543,7 +543,7 @@ void add_cegar_options_to_parser(options::OptionParser &parser) {
         "20000000",
         Bounds("1", "infinity"));
     parser.add_option<bool>(
-        "wildcard_plans",
+        "use_wildcard_plans",
         "if true, compute wildcard plans which are sequences of sets of "
         "operators that induce the same transition; otherwise compute regular "
         "plans which are sequences of single operators",

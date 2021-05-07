@@ -16,7 +16,7 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
     const options::Options &opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
-      wildcard_plans(opts.get<bool>("wildcard_plans")),
+      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
       max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)) {
@@ -31,7 +31,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     CEGAR cegar(
         max_pdb_size,
         max_collection_size,
-        wildcard_plans,
+        use_wildcard_plans,
         max_time,
         verbosity,
         rng,

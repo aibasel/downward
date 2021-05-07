@@ -21,7 +21,7 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
     options::Options &opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
-      wildcard_plans(opts.get<bool>("wildcard_plans")),
+      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
       cegar_max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)),
@@ -232,7 +232,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         CEGAR cegar(
             remaining_pdb_size_for_cegar,
             remaining_collection_size,
-            wildcard_plans,
+            use_wildcard_plans,
             remaining_time_for_cegar,
             cegar_verbosity,
             cegar_rng,

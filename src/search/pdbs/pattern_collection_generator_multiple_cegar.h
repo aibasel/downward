@@ -18,7 +18,7 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
     // Options for the CEGAR algorithm.
     const int max_pdb_size;
     const int max_collection_size;
-    const bool wildcard_plans;
+    const bool use_wildcard_plans;
     const double cegar_max_time;
 
     // Options for this generator.
