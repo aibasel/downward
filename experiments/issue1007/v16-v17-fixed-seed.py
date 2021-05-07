@@ -132,6 +132,7 @@ exp.add_comparison_table_step_for_revision_pairs(
         ("issue1007-v14", "issue1007-v17"),
         ("issue1007-v16", "issue1007-v17"),
     ],
+    attributes=attributes,
     filter=[add_computation_time_score],
 )
 
