@@ -4,11 +4,13 @@
 #include "pattern_database.h"
 #include "pattern_information.h"
 
+#include "../task_proxy.h"
+
+#include "../task_utils/task_properties.h"
+
 #include "../utils/logging.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
-
-#include "../task_proxy.h"
 
 using namespace std;
 
@@ -40,10 +42,7 @@ int compute_total_pdb_size(
 
 vector<FactPair> get_goals_in_random_order(
     const TaskProxy &task_proxy, const shared_ptr<utils::RandomNumberGenerator> &rng) {
-    vector<FactPair> goals;
-    for (FactProxy goal : task_proxy.get_goals()) {
-        goals.push_back(goal.get_pair());
-    }
+    vector<FactPair> goals = task_properties::get_fact_pairs(task_proxy.get_goals());
     rng->shuffle(goals);
     return goals;
 }
