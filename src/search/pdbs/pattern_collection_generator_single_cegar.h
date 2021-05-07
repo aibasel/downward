@@ -22,7 +22,6 @@ class PatternCollectionGeneratorSingleCegar : public PatternCollectionGenerator 
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 public:
     explicit PatternCollectionGeneratorSingleCegar(const options::Options &opts);
-    virtual ~PatternCollectionGeneratorSingleCegar() = default;
 
     virtual PatternCollectionInformation generate(
         const std::shared_ptr<AbstractTask> &task) override;
