@@ -110,14 +110,14 @@ void PatternDatabase::multiply_out(
     vector<FactPair> &eff_pairs,
     const vector<FactPair> &effects_without_pre,
     const VariablesProxy &variables,
-    int op_id,
+    int concrete_op_id,
     vector<AbstractOperator> &operators) {
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
             operators.push_back(
                 AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost,
-                                 hash_multipliers, op_id));
+                                 hash_multipliers, concrete_op_id));
         }
     } else {
         // For each possible value for the current variable, build an
@@ -133,7 +133,7 @@ void PatternDatabase::multiply_out(
                 prev_pairs.emplace_back(var_id, i);
             }
             multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
-                         effects_without_pre, variables, op_id, operators);
+                         effects_without_pre, variables, concrete_op_id, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
                 eff_pairs.pop_back();

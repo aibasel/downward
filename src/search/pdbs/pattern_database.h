@@ -113,7 +113,7 @@ class PatternDatabase {
         std::vector<FactPair> &eff_pairs,
         const std::vector<FactPair> &effects_without_pre,
         const VariablesProxy &variables,
-        int op_id,
+        int concrete_op_id,
         std::vector<AbstractOperator> &operators);
 
     /*
