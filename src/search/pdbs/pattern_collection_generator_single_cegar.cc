@@ -26,7 +26,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     const shared_ptr<AbstractTask> &task) {
     // Store the set of goals in random order.
     TaskProxy task_proxy(*task);
-    vector<FactPair> goals = get_goals_in_random_order(task_proxy, rng);
+    vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);
 
     CEGAR cegar(
         max_pdb_size,

@@ -41,9 +41,9 @@ int compute_total_pdb_size(
 }
 
 vector<FactPair> get_goals_in_random_order(
-    const TaskProxy &task_proxy, const shared_ptr<utils::RandomNumberGenerator> &rng) {
+    const TaskProxy &task_proxy, utils::RandomNumberGenerator &rng) {
     vector<FactPair> goals = task_properties::get_fact_pairs(task_proxy.get_goals());
-    rng->shuffle(goals);
+    rng.shuffle(goals);
     return goals;
 }
 
