@@ -7,8 +7,8 @@
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
-#include "../utils/timer.h"
 #include "../utils/rng.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
