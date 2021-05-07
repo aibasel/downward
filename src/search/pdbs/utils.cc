@@ -48,19 +48,17 @@ vector<FactPair> get_goals_in_random_order(
 }
 
 vector<int> get_non_goal_variables(const TaskProxy &task_proxy) {
+    size_t num_vars = task_proxy.get_variables().size();
     GoalsProxy goals = task_proxy.get_goals();
-    int num_vars = task_proxy.get_variables().size();
+    vector<bool> is_goal(num_vars, false);
+    for (FactProxy goal : goals) {
+        is_goal[goal.get_variable().get_id()] = true;
+    }
+
     vector<int> non_goal_variables;
     non_goal_variables.reserve(num_vars - goals.size());
-    for (int var_id = 0; var_id < num_vars; ++var_id) {
-        bool is_goal_var = false;
-        for (FactProxy goal : goals) {
-            if (var_id == goal.get_variable().get_id()) {
-                is_goal_var = true;
-                break;
-            }
-        }
-        if (!is_goal_var) {
+    for (int var_id = 0; var_id < static_cast<int>(num_vars); ++var_id) {
+        if (!is_goal[var_id]) {
             non_goal_variables.push_back(var_id);
         }
     }
