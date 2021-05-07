@@ -253,7 +253,7 @@ void PatternDatabase::create_pdb(
           If computing a plan during Dijkstra, we store, for each state,
           an operator leading from that state to another state on a
           strongly optimal plan of the PDB. We store the first operator
-          encountered during Dijstra and only update it if the goal distance
+          encountered during Dijkstra and only update it if the goal distance
           of the state was updated or, in the presence of zero-cost operators,
           the state could be reached with the same cost but with fewer
           zero-cost operators. For the latter, we need to count the number of
