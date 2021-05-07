@@ -41,8 +41,9 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     }
 
     PatternCollectionInformation pci(task_proxy, patterns);
+    bool dump_collection = false;
     dump_pattern_collection_generation_statistics(
-        "Combo generator", timer(), pci);
+        "Combo generator", timer(), pci, dump_collection);
     return pci;
 }
 
