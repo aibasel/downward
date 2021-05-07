@@ -206,11 +206,7 @@ void PatternDatabase::create_pdb(
 
     // compute all abstract operators
     vector<AbstractOperator> operators;
-    bool task_has_zero_cost_operators = false;
     for (OperatorProxy op : task_proxy.get_operators()) {
-        if (!task_has_zero_cost_operators && op.get_cost() == 0) {
-            task_has_zero_cost_operators = true;
-        }
         int op_cost;
         if (operator_costs.empty()) {
             op_cost = op.get_cost();
@@ -258,15 +254,12 @@ void PatternDatabase::create_pdb(
           an operator leading from that state to another state on a
           strongly optimal plan of the PDB. We store the first operator
           encountered during Dijkstra and only update it if the goal distance
-          of the state was updated or, in the presence of zero-cost operators,
-          the state could be reached with the same cost but with fewer
-          zero-cost operators. For the latter, we need to count the number of
-          zero-cost operators leading to each state.
+          of the state was updated. Note that in the presence of zero-cost
+          operators, this does not guarantee that we compute a strongly
+          optimal plan because we do not minimize the number of used zero-cost
+          operators.
          */
         generating_op_ids.resize(num_states);
-        if (task_has_zero_cost_operators) {
-            number_of_zero_cost_ops.resize(num_states);
-        }
     }
 
     // Dijkstra loop
@@ -290,23 +283,6 @@ void PatternDatabase::create_pdb(
                 pq.push(alternative_cost, predecessor);
                 if (compute_plan) {
                     generating_op_ids[predecessor] = op_id;
-                    if (task_has_zero_cost_operators) {
-                        if (op.get_cost() == 0) {
-                            number_of_zero_cost_ops[predecessor] = number_of_zero_cost_ops[state_index] + 1;
-                        } else {
-                            number_of_zero_cost_ops[predecessor] = 0;
-                        }
-                    }
-                }
-            } else if (alternative_cost == distances[predecessor] &&
-                task_has_zero_cost_operators &&
-                compute_plan &&
-                op.get_cost() == 0) {
-                int pred_num_zero_cost_ops = number_of_zero_cost_ops[predecessor];
-                int num_zero_cost_ops_on_current_path = number_of_zero_cost_ops[state_index] + 1;
-                if (num_zero_cost_ops_on_current_path < pred_num_zero_cost_ops) {
-                    generating_op_ids[predecessor] = op_id;
-                    number_of_zero_cost_ops[predecessor] = num_zero_cost_ops_on_current_path;
                 }
             }
         }
@@ -361,7 +337,6 @@ void PatternDatabase::create_pdb(
             }
         }
         utils::release_vector_memory(generating_op_ids);
-        utils::release_vector_memory(number_of_zero_cost_ops);
     }
 }
 
