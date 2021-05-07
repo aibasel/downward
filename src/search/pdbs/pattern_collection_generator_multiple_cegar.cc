@@ -28,7 +28,7 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
       random_seed(opts.get<int>("random_seed")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
       blacklist_trigger_percentage(opts.get<double>("blacklist_trigger_percentage")),
-      blacklist_on_stagnation(opts.get<bool>("blacklist_on_stagnation")),
+      enable_blacklist_on_stagnation(opts.get<bool>("enable_blacklist_on_stagnation")),
       total_max_time(opts.get<double>("total_max_time")),
       blacklisting(false),
       stagnation_start_time(-1),
@@ -138,7 +138,7 @@ bool PatternCollectionGeneratorMultipleCegar::check_for_stagnation(
     // Test if no new pattern was generated for longer than stagnation_limit.
     if (stagnation_start_time != -1 &&
         timer.get_elapsed_time() - stagnation_start_time > stagnation_limit) {
-        if (blacklist_on_stagnation) {
+        if (enable_blacklist_on_stagnation) {
             if (blacklisting) {
                 if (verbosity >= utils::Verbosity::NORMAL) {
                     utils::g_log << "stagnation limit reached "
@@ -304,7 +304,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "maximum time in seconds the multiple CEGAR algorithm allows without "
         "generating a new pattern through the CEGAR algorithm. The multiple "
         "CEGAR algorithm terminates prematurely if this limit is hit unless "
-        "blacklist_on_stagnation is enabled.",
+        "enable_blacklist_on_stagnation is enabled.",
         "20.0",
         Bounds("1.0", "infinity"));
     parser.add_option<double>(
@@ -314,9 +314,9 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "0.75",
         Bounds("0.0", "1.0"));
     parser.add_option<bool>(
-        "blacklist_on_stagnation",
-        "If true, the multiple CEGAR algorithm will enable blacklisting for "
-        "diversification when stagnation_limit is hit for the first time "
+        "enable_blacklist_on_stagnation",
+        "If true, the multiple CEGAR algorithm will enable blacklisting "
+        "for diversification when stagnation_limit is hit for the first time "
         "(unless it was already enabled due to blacklist_trigger_percentage) "
         "and terminate when stagnation_limit is hit for the second time.",
         "true");

@@ -28,7 +28,7 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
     const int random_seed;
     const double stagnation_limit;
     const double blacklist_trigger_percentage;
-    const bool blacklist_on_stagnation;
+    const bool enable_blacklist_on_stagnation;
     const double total_max_time;
 
     // Variables used in the main loop.
