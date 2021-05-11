@@ -98,6 +98,23 @@ def add_computation_time_score(run):
     return run
 
 exp.add_absolute_report_step(attributes=attributes,filter=[add_computation_time_score])
-exp.add_comparison_table_step(attributes=attributes,filter=[add_computation_time_score])
+
+exp.add_fetcher('data/issue1007-v15-ipdb-sys-eval', filter_algorithm=[
+    f'issue1007-v15-cpdbs-hillclimbing-pdb1m-pdbs10m-t100-s{random_seed}',
+    f'issue1007-v15-cpdbs-sys2',
+    f'issue1007-v15-cpdbs-sys3',
+],merge=True)
+
+exp.add_comparison_table_step_for_revision_pairs(
+    revision_pairs=[
+        ("issue1007-v15", "issue1007-v16"),
+        ("issue1007-v16", "issue1007-v17"),
+        ("issue1007-v15", "issue1007-v17"),
+        ("issue1007-base-v2", "issue1007-v16"),
+        ("issue1007-base-v2", "issue1007-v17"),
+    ],
+    attributes=attributes,
+    filter=[add_computation_time_score],
+)
 
 exp.run_steps()
