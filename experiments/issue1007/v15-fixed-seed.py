@@ -16,7 +16,7 @@ from common_setup import IssueConfig, IssueExperiment
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue1007-v16", "issue1007-v17"]
+REVISIONS = ["issue1007-v15"]
 random_seed=2018
 MAX_TIME=100
 if common_setup.is_test_run():
@@ -117,20 +117,18 @@ def add_computation_time_score(run):
 
 exp.add_absolute_report_step(attributes=attributes,filter=[add_computation_time_score])
 
-exp.add_fetcher('data/issue1007-v15-fixed-seed-eval', filter_algorithm=[
-    f'issue1007-v15-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}',
-    f'issue1007-v15-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}',
-    f'issue1007-v15-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}',
-    f'issue1007-v15-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}',
-    f'issue1007-v15-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}',
-    f'issue1007-v15-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}',
+exp.add_fetcher('data/issue1007-v14-fixed-seed-eval', filter_algorithm=[
+    f'issue1007-v14-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}',
+    f'issue1007-v14-cpdbs-singlecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}',
+    f'issue1007-v14-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-s{random_seed}',
+    f'issue1007-v14-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}',
+    f'issue1007-v14-cpdbs-multiplecegar-regularplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}',
+    f'issue1007-v14-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag20-s{random_seed}',
 ],merge=True)
 
 exp.add_comparison_table_step_for_revision_pairs(
     revision_pairs=[
-        ("issue1007-v15", "issue1007-v16"),
-        ("issue1007-v15", "issue1007-v17"),
-        ("issue1007-v16", "issue1007-v17"),
+        ("issue1007-v14", "issue1007-v15"),
     ],
     attributes=attributes,
     filter=[add_computation_time_score],

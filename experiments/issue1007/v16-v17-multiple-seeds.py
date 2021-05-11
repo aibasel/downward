@@ -75,11 +75,11 @@ score_cegar_computation_time = Attribute('score_cegar_computation_time', absolut
 
 exp.add_absolute_report_step(attributes=['coverage'])
 
-### compare against v14
-exp.add_fetcher('data/issue1007-v14-multiple-seeds-eval',merge=True,filter_algorithm=[
-    'issue1007-v14-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t20-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+### compare against v15
+exp.add_fetcher('data/issue1007-v15-multiple-seeds-eval',merge=True,filter_algorithm=[
+    'issue1007-v15-cpdbs-singlecegar-regularplans-pdb1m-pdbs10m-t20-s{}'.format(random_seed) for random_seed in range(2018, 2028)
 ] + [
-    'issue1007-v14-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t20-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
+    'issue1007-v15-cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t20-blacklist0.75-stag4-s{}'.format(random_seed) for random_seed in range(2018, 2028)
 ])
 
 def add_computation_time_score(run):
@@ -130,8 +130,8 @@ exp._configs = [
 ]
 exp.add_comparison_table_step_for_revision_pairs(
     revision_pairs=[
-        ("issue1007-v14", "issue1007-v16"),
-        ("issue1007-v14", "issue1007-v17"),
+        ("issue1007-v15", "issue1007-v16"),
+        ("issue1007-v15", "issue1007-v17"),
         ("issue1007-v16", "issue1007-v17"),
     ],
     attributes=[
