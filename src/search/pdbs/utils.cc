@@ -80,22 +80,13 @@ void dump_pattern_generation_statistics(
 void dump_pattern_collection_generation_statistics(
     const string &identifier,
     utils::Duration runtime,
-    const PatternCollectionInformation &pci,
-    bool dump_collection,
-    int collection_size) {
+    const PatternCollectionInformation &pci) {
     const PatternCollection &pattern_collection = *pci.get_patterns();
-    if (dump_collection) {
-        utils::g_log << identifier << " collection: " << pattern_collection << endl;
-    }
     utils::g_log << identifier << " number of patterns: " << pattern_collection.size()
                  << endl;
     utils::g_log << identifier << " total PDB size: ";
-    if (collection_size != -1) {
-        utils::g_log << collection_size << endl;
-    } else {
-        utils::g_log << compute_total_pdb_size(
-            pci.get_task_proxy(), pattern_collection) << endl;
-    }
+    utils::g_log << compute_total_pdb_size(
+        pci.get_task_proxy(), pattern_collection) << endl;
     utils::g_log << identifier << " computation time: " << runtime << endl;
 }
 }

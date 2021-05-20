@@ -47,9 +47,7 @@ extern void dump_pattern_generation_statistics(
 extern void dump_pattern_collection_generation_statistics(
     const std::string &identifier,
     utils::Duration runtime,
-    const PatternCollectionInformation &pci,
-    bool dump_collection,
-    int collection_size = -1);
+    const PatternCollectionInformation &pci);
 }
 
 #endif

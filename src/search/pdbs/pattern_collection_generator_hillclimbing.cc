@@ -430,9 +430,8 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
     }
 
     PatternCollectionInformation pci = current_pdbs->get_pattern_collection_information();
-    bool dump_collection = false;
     dump_pattern_collection_generation_statistics(
-        "Hill climbing generator", timer(), pci, dump_collection, current_pdbs->get_size());
+        "Hill climbing generator", timer(), pci);
     return pci;
 }
 

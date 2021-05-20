@@ -276,9 +276,8 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     PatternCollectionInformation pci(task_proxy, patterns);
     /* Do not dump the collection since it can be very large for
        pattern_max_size >= 3. */
-    bool dump_collection = false;
     dump_pattern_collection_generation_statistics(
-        "Systematic generator", timer(), pci, dump_collection);
+        "Systematic generator", timer(), pci);
     return pci;
 }
 

@@ -441,12 +441,10 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
 
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "CEGAR number of iterations: " << iteration << endl;
-        bool dump_collection = false;
         dump_pattern_collection_generation_statistics(
             "CEGAR",
             timer.get_elapsed_time(),
-            pattern_collection_information,
-            dump_collection);
+            pattern_collection_information);
     }
 
     return pattern_collection_information;
