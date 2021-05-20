@@ -55,6 +55,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(
             "362-367",
             "AAAI Press",
             "2019"));
+    add_implementation_notes_to_parser(parser);
     add_cegar_options_to_parser(parser);
     utils::add_verbosity_option_to_parser(parser);
     utils::add_rng_options(parser);

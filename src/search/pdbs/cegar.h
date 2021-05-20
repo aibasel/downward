@@ -178,8 +178,8 @@ public:
     PatternCollectionInformation compute_pattern_collection();
 };
 
-extern void add_cegar_options_to_parser(
-    options::OptionParser &parser);
+extern void add_implementation_notes_to_parser(options::OptionParser &parser);
+extern void add_cegar_options_to_parser(options::OptionParser &parser);
 }
 
 #endif

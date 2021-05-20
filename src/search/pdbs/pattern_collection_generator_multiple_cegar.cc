@@ -288,6 +288,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
             "362-367",
             "AAAI Press",
             "2019"));
+    add_implementation_notes_to_parser(parser);
     parser.add_option<double>(
         "total_max_time",
         "maximum time in seconds for the multiple CEGAR algorithm. The "
