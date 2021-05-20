@@ -13,6 +13,81 @@
 using namespace std;
 
 namespace pdbs {
+CEGAR::CEGAR(
+    int max_pdb_size,
+    int max_collection_size,
+    bool use_wildcard_plans,
+    double max_time,
+    utils::Verbosity verbosity,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    const shared_ptr<AbstractTask> &task,
+    vector<FactPair> &&goals,
+    unordered_set<int> &&blacklisted_variables)
+    : max_pdb_size(max_pdb_size),
+      max_collection_size(max_collection_size),
+      use_wildcard_plans(use_wildcard_plans),
+      max_time(max_time),
+      verbosity(verbosity),
+      rng(rng),
+      task(task),
+      task_proxy(*task),
+      goals(move(goals)),
+      blacklisted_variables(move(blacklisted_variables)),
+      collection_size(0) {
+#ifndef NDEBUG
+    for (const FactPair &goal : goals) {
+        bool is_goal = false;
+        for (FactProxy task_goal : task_proxy.get_goals()) {
+            if (goal == task_goal.get_pair()) {
+                is_goal = true;
+                break;
+            }
+        }
+        if (!is_goal) {
+            cerr << "given goal is not a goal of the task." << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+        }
+    }
+#endif
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "options of the CEGAR algorithm for computing a pattern collection: " << endl;
+        utils::g_log << "max pdb size: " << max_pdb_size << endl;
+        utils::g_log << "max collection size: " << max_collection_size << endl;
+        utils::g_log << "wildcard plans: " << use_wildcard_plans << endl;
+        utils::g_log << "Verbosity: ";
+        switch (verbosity) {
+            case utils::Verbosity::SILENT:
+                utils::g_log << "silent";
+                break;
+            case utils::Verbosity::NORMAL:
+                utils::g_log << "normal";
+                break;
+            case utils::Verbosity::VERBOSE:
+                utils::g_log << "verbose";
+                break;
+            case utils::Verbosity::DEBUG:
+                utils::g_log << "debug";
+                break;
+        }
+        utils::g_log << endl;
+        utils::g_log << "max time: " << max_time << endl;
+        utils::g_log << "goal variables: ";
+        for (const FactPair &goal : this->goals) {
+            utils::g_log << goal.var << ", ";
+        }
+        utils::g_log << endl;
+        utils::g_log << "blacklisted variables: ";
+        if (this->blacklisted_variables.empty()) {
+            utils::g_log << "none";
+        } else {
+            for (int var : this->blacklisted_variables) {
+                utils::g_log << var << ", ";
+            }
+        }
+        utils::g_log << endl;
+    }
+}
+
 void CEGAR::print_collection() const {
     utils::g_log << "[";
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
@@ -448,81 +523,6 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     }
 
     return pattern_collection_information;
-}
-
-CEGAR::CEGAR(
-    int max_pdb_size,
-    int max_collection_size,
-    bool use_wildcard_plans,
-    double max_time,
-    utils::Verbosity verbosity,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    const shared_ptr<AbstractTask> &task,
-    vector<FactPair> &&goals,
-    unordered_set<int> &&blacklisted_variables)
-    : max_pdb_size(max_pdb_size),
-      max_collection_size(max_collection_size),
-      use_wildcard_plans(use_wildcard_plans),
-      max_time(max_time),
-      verbosity(verbosity),
-      rng(rng),
-      task(task),
-      task_proxy(*task),
-      goals(move(goals)),
-      blacklisted_variables(move(blacklisted_variables)),
-      collection_size(0) {
-#ifndef NDEBUG
-    for (const FactPair &goal : goals) {
-        bool is_goal = false;
-        for (FactProxy task_goal : task_proxy.get_goals()) {
-            if (goal == task_goal.get_pair()) {
-                is_goal = true;
-                break;
-            }
-        }
-        if (!is_goal) {
-            cerr << "given goal is not a goal of the task." << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-        }
-    }
-#endif
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "options of the CEGAR algorithm for computing a pattern collection: " << endl;
-        utils::g_log << "max pdb size: " << max_pdb_size << endl;
-        utils::g_log << "max collection size: " << max_collection_size << endl;
-        utils::g_log << "wildcard plans: " << use_wildcard_plans << endl;
-        utils::g_log << "Verbosity: ";
-        switch (verbosity) {
-        case utils::Verbosity::SILENT:
-            utils::g_log << "silent";
-            break;
-        case utils::Verbosity::NORMAL:
-            utils::g_log << "normal";
-            break;
-        case utils::Verbosity::VERBOSE:
-            utils::g_log << "verbose";
-            break;
-        case utils::Verbosity::DEBUG:
-            utils::g_log << "debug";
-            break;
-        }
-        utils::g_log << endl;
-        utils::g_log << "max time: " << max_time << endl;
-        utils::g_log << "goal variables: ";
-        for (const FactPair &goal : this->goals) {
-            utils::g_log << goal.var << ", ";
-        }
-        utils::g_log << endl;
-        utils::g_log << "blacklisted variables: ";
-        if (this->blacklisted_variables.empty()) {
-            utils::g_log << "none";
-        } else {
-            for (int var : this->blacklisted_variables) {
-                utils::g_log << var << ", ";
-            }
-        }
-        utils::g_log << endl;
-    }
 }
 
 void add_implementation_notes_to_parser(options::OptionParser &parser) {
