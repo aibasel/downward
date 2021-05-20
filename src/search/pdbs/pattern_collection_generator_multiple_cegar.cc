@@ -78,7 +78,7 @@ unordered_set<int> PatternCollectionGeneratorMultipleCegar::get_blacklisted_vari
 
 void PatternCollectionGeneratorMultipleCegar::handle_generated_pattern(
     PatternCollectionInformation &&collection_info,
-    utils::HashSet<Pattern> &generated_patterns,
+    set<Pattern> &generated_patterns,
     shared_ptr<PDBCollection> &generated_pdbs,
     const utils::CountdownTimer &timer) {
     shared_ptr<PatternCollection> new_patterns = collection_info.get_patterns();
@@ -201,7 +201,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     }
 
     // Collect all unique patterns and their PDBs.
-    utils::HashSet<Pattern> generated_patterns;
+    set<Pattern> generated_patterns;
     shared_ptr<PDBCollection> generated_pdbs = make_shared<PDBCollection>();
 
     int num_iterations = 1;

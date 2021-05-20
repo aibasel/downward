@@ -3,6 +3,8 @@
 
 #include "pattern_generator.h"
 
+#include <set>
+
 namespace options {
 class Options;
 }
@@ -42,7 +44,7 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
         std::vector<int> &non_goal_variables);
     void handle_generated_pattern(
         PatternCollectionInformation &&collection_info,
-        utils::HashSet<Pattern> &generated_patterns,
+        std::set<Pattern> &generated_patterns,
         std::shared_ptr<PDBCollection> &generated_pdbs,
         const utils::CountdownTimer &timer);
     bool collection_size_limit_reached() const;
