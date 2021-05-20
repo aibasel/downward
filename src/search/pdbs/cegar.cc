@@ -10,6 +10,8 @@
 #include "../utils/countdown_timer.h"
 #include "../utils/rng.h"
 
+#include <limits>
+
 using namespace std;
 
 namespace pdbs {
