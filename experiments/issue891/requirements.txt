@@ -4,7 +4,7 @@ kiwisolver==1.2.0
 lab==6.2
 matplotlib==3.3.2
 numpy==1.19.2
-Pillow==8.1.1
+Pillow==8.2.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
 simplejson==3.17.2
