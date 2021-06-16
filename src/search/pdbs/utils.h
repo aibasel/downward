@@ -37,12 +37,9 @@ extern void dump_pattern_generation_statistics(
     const PatternInformation &pattern_info);
 
 /*
-  Dump the given pattern collection if dump_collection = true, the
-  number of patterns, the total size of the corresponding PDBs, and the
-  runtime used for computing the collection. If collection_size is different
-  from -1, this is assumed to be the total size of all PDBs. Otherwise, this
-  will be computed for the pattern collection. All output is prepended with
-  the given string identifier.
+  Compute and dump the number of patterns, the total size of the corresponding
+  PDBs, and the runtime used for computing the collection. All output is
+  prepended with the given string identifier.
 */
 extern void dump_pattern_collection_generation_statistics(
     const std::string &identifier,
