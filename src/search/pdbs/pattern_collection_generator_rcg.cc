@@ -1,13 +1,13 @@
 #include "pattern_collection_generator_rcg.h"
 
 #include "pattern_database.h"
-#include "pattern_generator_rcg.h"
+#include "rcg.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../tasks/root_task.h"
+#include "../task_utils/causal_graph.h"
 
 #include "../utils/countdown_timer.h"
 #include "../utils/hash.h"
@@ -48,30 +48,19 @@ PatternCollectionInformation PatternCollectionGeneratorRCG::generate(
         const std::shared_ptr<AbstractTask> &task) {
     utils::g_log << "SPS: generating patterns" << endl;
     TaskProxy task_proxy(*task);
+    int num_vars = task_proxy.get_variables().size();
+    const causal_graph::CausalGraph &cg = causal_graph::get_causal_graph(task.get());
 
-    // compute neighborhood for each variable, which is basically the inverted
-    // causal graph since we want to go over it from goal variables.
-    vector<vector<int>> neighborhoods(task_proxy.get_variables().size());
-    for (auto op : task_proxy.get_operators()) {
-        for (auto eff1 : op.get_effects()) {
-            int var1 = eff1.get_fact().get_variable().get_id();
-            for (auto eff2 : op.get_effects()) {
-                int var2 = eff2.get_fact().get_variable().get_id();
-                if (var1 == var2) continue;
-                neighborhoods[var1].push_back(var2);
-                neighborhoods[var2].push_back(var1);
-            }
-
-            for (auto pre : op.get_preconditions()) {
-                int var2 = pre.get_variable().get_id();
-                if (var2 == var1) continue;
-                if (bidirectional)
-                    neighborhoods[var2].push_back(var1);
-                neighborhoods[var1].push_back(var2);
-            }
+    // Compute the CG neighbors once to allow RCG shuffling them.
+    vector<vector<int>> cg_neighbors(num_vars);
+    for (int var_id = 0; var_id < num_vars; ++var_id) {
+        cg_neighbors[var_id] = cg.get_predecessors(var_id);
+        if (bidirectional) {
+            const vector<int> &successors = cg.get_successors(var_id);
+            cg_neighbors[var_id].insert(cg_neighbors[var_id].end(), successors.begin(), successors.end());
         }
+        utils::sort_unique(cg_neighbors[var_id]);
     }
-
 
     utils::CountdownTimer timer(total_time_limit);
     shared_ptr<PatternCollection> union_patterns = make_shared<PatternCollection>();
@@ -95,14 +84,13 @@ PatternCollectionInformation PatternCollectionGeneratorRCG::generate(
     shared_ptr<PDBCollection> pdbs = make_shared<PDBCollection>();
     int collection_size = 0;
     while (can_generate && num_iterations< max_num_iterations) {
-        PatternGeneratorRCG generator(
-            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
-            neighborhoods,
+        Pattern P = generate_pattern(
             min(single_generator_max_pdb_size, total_collection_max_size - collection_size),
-            goals[goal_index]
+            goals[goal_index],
+            make_shared<utils::RandomNumberGenerator>(initial_random_seed + num_iterations),
+            task_proxy,
+            cg_neighbors
         );
-
-        Pattern P = generator.generate(task);
 
         // TODO: this is not very efficient since pattern
         // since each pattern is stored twice. Needs some optimization
