@@ -99,6 +99,9 @@ after the corresponding tracker issues.
 - Replace size_t by int for abstract state hashes in PDB-related code
   <http://issues.fast-downward.org/issue1018>
 
+- Integrate the pattern generation methods based on CEGAR
+  <http://issues.fast-downward.org/issue1007>
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.

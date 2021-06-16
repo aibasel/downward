@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include <limits>
+
 using namespace std;
 
 namespace pdbs {

@@ -100,12 +100,12 @@ vector<int> DelegatingTask::get_initial_state_values() const {
     return parent->get_initial_state_values();
 }
 
-void DelegatingTask::convert_state_values(
+void DelegatingTask::convert_ancestor_state_values(
     vector<int> &values, const AbstractTask *ancestor_task) const {
     if (this == ancestor_task) {
         return;
     }
-    parent->convert_state_values(values, ancestor_task);
+    parent->convert_ancestor_state_values(values, ancestor_task);
     convert_state_values_from_parent(values);
 }
 }
