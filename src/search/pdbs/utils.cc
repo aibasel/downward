@@ -6,6 +6,7 @@
 
 #include "../task_proxy.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../task_utils/task_properties.h"
 
 #include "../utils/logging.h"
@@ -65,6 +66,24 @@ vector<int> get_non_goal_variables(const TaskProxy &task_proxy) {
         }
     }
     return non_goal_variables;
+}
+
+vector<vector<int>> compute_cg_neighbors(
+    const shared_ptr<AbstractTask> &task,
+    bool bidirectional) {
+    TaskProxy task_proxy(*task);
+    int num_vars = task_proxy.get_variables().size();
+    const causal_graph::CausalGraph &cg = causal_graph::get_causal_graph(task.get());
+    vector<vector<int>> cg_neighbors(num_vars);
+    for (int var_id = 0; var_id < num_vars; ++var_id) {
+        cg_neighbors[var_id] = cg.get_predecessors(var_id);
+        if (bidirectional) {
+            const vector<int> &successors = cg.get_successors(var_id);
+            cg_neighbors[var_id].insert(cg_neighbors[var_id].end(), successors.begin(), successors.end());
+        }
+        utils::sort_unique(cg_neighbors[var_id]);
+    }
+    return cg_neighbors;
 }
 
 void dump_pattern_generation_statistics(

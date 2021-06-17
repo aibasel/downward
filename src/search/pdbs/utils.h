@@ -25,6 +25,9 @@ extern int compute_total_pdb_size(
 extern std::vector<FactPair> get_goals_in_random_order(
     const TaskProxy &task_proxy, utils::RandomNumberGenerator &rng);
 extern std::vector<int> get_non_goal_variables(const TaskProxy &task_proxy);
+extern std::vector<std::vector<int>> compute_cg_neighbors(
+    const std::shared_ptr<AbstractTask> &task,
+    bool bidirectional);
 
 /*
   Dump the given pattern, the number of variables contained, the size of the

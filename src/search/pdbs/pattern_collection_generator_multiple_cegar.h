@@ -19,15 +19,12 @@ namespace pdbs {
 class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerator {
     // Options for the CEGAR algorithm.
     const int max_pdb_size;
-    const int max_collection_size;
     const bool use_wildcard_plans;
     const double cegar_max_time;
 
     // Options for this generator.
     const utils::Verbosity verbosity;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
-    // We store the random seed for creating different RNG objects for CEGAR.
-    const int random_seed;
     const double stagnation_limit;
     const double blacklist_trigger_percentage;
     const bool enable_blacklist_on_stagnation;

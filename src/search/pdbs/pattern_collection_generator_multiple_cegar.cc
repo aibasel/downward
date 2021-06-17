@@ -20,19 +20,17 @@ namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     options::Options &opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
-      max_collection_size(opts.get<int>("max_collection_size")),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
       cegar_max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)),
-      random_seed(opts.get<int>("random_seed")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
       blacklist_trigger_percentage(opts.get<double>("blacklist_trigger_percentage")),
       enable_blacklist_on_stagnation(opts.get<bool>("enable_blacklist_on_stagnation")),
       total_max_time(opts.get<double>("total_max_time")),
       blacklisting(false),
       stagnation_start_time(-1),
-      remaining_collection_size(max_collection_size) {
+      remaining_collection_size(opts.get<int>("max_collection_size")) {
 }
 
 void PatternCollectionGeneratorMultipleCegar::check_blacklist_trigger_timer(
@@ -164,7 +162,7 @@ bool PatternCollectionGeneratorMultipleCegar::check_for_stagnation(
     return false;
 }
 
-PatternCollectionInformation get_pattern_collection(
+static PatternCollectionInformation get_pattern_collection(
     const TaskProxy &task_proxy, const shared_ptr<PDBCollection> &pdbs) {
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
     patterns->reserve(pdbs->size());
@@ -207,8 +205,6 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
     int num_iterations = 1;
     int goal_index = 0;
     const utils::Verbosity cegar_verbosity(utils::Verbosity::SILENT);
-    shared_ptr<utils::RandomNumberGenerator> cegar_rng =
-        make_shared<utils::RandomNumberGenerator>(random_seed);
     /*
       Start blacklisting after the percentage of total_max_time specified via
       blacklisting_trigger_percentage has passed. Compute this time point once.
@@ -224,10 +220,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
         double remaining_time_for_cegar =
             min(static_cast<double>(timer.get_remaining_time()), cegar_max_time);
         /*
-          Call CEGAR with the remaining size budget (limiting one of pdb and
-          collection size would be enough, but this is cleaner), with the
-          remaining time limit and an RNG instance with a different random
-          seed in each iteration.
+          Call CEGAR with the remaining size budget (limiting one of PDB and
+          collection size would be enough, but this is cleaner).
         */
         CEGAR cegar(
             remaining_pdb_size_for_cegar,
@@ -235,7 +229,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultipleCegar::generate(
             use_wildcard_plans,
             remaining_time_for_cegar,
             cegar_verbosity,
-            cegar_rng,
+            rng,
             task,
             {goals[goal_index]},
             move(blacklisted_variables));
