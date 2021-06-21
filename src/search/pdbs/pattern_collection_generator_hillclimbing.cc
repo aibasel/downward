@@ -444,7 +444,7 @@ void add_hillclimbing_options(OptionParser &parser) {
     parser.document_note(
         "Note",
         "This pattern generation method generates patterns optimized "
-        "for the use with the canonical pattern collection heuristic.");
+        "for use with the canonical pattern database heuristic.");
     parser.document_note(
         "Implementation Notes",
         "The following will very briefly describe the algorithm and explain "
@@ -583,7 +583,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
-        "This approach is a combination of using a Evaluator#Canonical_PDB "
+        "This approach is a combination of using the Evaluator#Canonical_PDB "
         "heuristic over patterns computed with the "
         "PatternCollectionGenerator#hillclimbing algorithm for pattern "
         "generation. It is a short-hand for the command-line option "
