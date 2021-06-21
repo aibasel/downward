@@ -17,7 +17,7 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
-    : LandmarkFactoryRelaxation(opts) {
+    : only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
@@ -45,6 +45,14 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
             }
         }
     }
+
+    if (only_causal_landmarks) {
+        discard_noncausal_landmarks(task_proxy, exploration);
+    }
+}
+
+bool LandmarkFactoryRpgExhaust::computes_reasonable_orders() const {
+    return false;
 }
 
 bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
@@ -56,10 +64,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Exhaustive Landmarks",
         "Exhaustively checks for each fact if it is a landmark."
         "This check is done using relaxed planning.");
-    parser.document_note(
-        "Relevant options",
-        "reasonable_orders, only_causal_landmarks");
-    _add_options_to_parser(parser);
+
+    _add_only_causal_landmarks_option_to_parser(parser);
 
     Options opts = parser.parse();
 

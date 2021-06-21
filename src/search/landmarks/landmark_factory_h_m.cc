@@ -563,8 +563,9 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 }
 
 LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
-    : LandmarkFactory(opts),
-      m_(opts.get<int>("m")) {
+    : m_(opts.get<int>("m")),
+      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
+      use_orders(opts.get<bool>("use_orders")) {
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
@@ -588,78 +589,25 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     build_pm_ops(task_proxy);
 }
 
-void LandmarkFactoryHM::generate(const TaskProxy &task_proxy) {
-    if (only_causal_landmarks) {
-        Exploration exploration(task_proxy);
-        discard_noncausal_landmarks(task_proxy, exploration);
-    }
-    if (!disjunctive_landmarks)
-        discard_disjunctive_landmarks();
+void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
     if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
 
-    if (no_orders)
+    if (!use_orders)
         discard_all_orderings();
-    else if (reasonable_orders) {
-        utils::g_log << "approx. reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, false);
-        utils::g_log << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, true);
-    }
+
     mk_acyclic_graph();
     calc_achievers(task_proxy);
 }
 
-void LandmarkFactoryHM::discard_noncausal_landmarks(
-    const TaskProxy &task_proxy, Exploration &exploration) {
-    int num_all_landmarks = lm_graph->get_num_landmarks();
-    lm_graph->remove_node_if(
-        [this, &task_proxy, &exploration](const LandmarkNode &node) {
-            return !is_causal_landmark(task_proxy, exploration, node);
-        });
-    int num_causal_landmarks = lm_graph->get_num_landmarks();
-    utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
-                 << " non-causal landmarks" << endl;
-}
-
-bool LandmarkFactoryHM::is_causal_landmark(
-    const TaskProxy &task_proxy, Exploration &exploration,
-    const LandmarkNode &landmark) const {
-    /* Test whether the relaxed planning task is unsolvable without using any operator
-       that has "landmark" as a precondition.
-       Similar to "relaxed_task_solvable" above.
-     */
-
-    if (landmark.is_true_in_goal)
-        return true;
-    vector<vector<int>> lvl_var;
-    vector<utils::HashMap<FactPair, int>> lvl_op;
-    // Initialize lvl_var to numeric_limits<int>::max()
-    VariablesProxy variables = task_proxy.get_variables();
-    lvl_var.resize(variables.size());
-    for (VariableProxy var : variables) {
-        lvl_var[var.get_id()].resize(var.get_domain_size(),
-                                     numeric_limits<int>::max());
+void LandmarkFactoryHM::discard_conjunctive_landmarks() {
+    if (lm_graph->get_num_conjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
+                     << " conjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.conjunctive;});
     }
-    unordered_set<int> exclude_op_ids;
-    vector<FactPair> exclude_props;
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        if (is_landmark_precondition(op, &landmark)) {
-            exclude_op_ids.insert(op.get_id());
-        }
-    }
-    // Do relaxed exploration
-    exploration.compute_reachability_with_excludes(
-        lvl_var, lvl_op, true, exclude_props, exclude_op_ids, false);
-
-    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
-    for (FactProxy goal : task_proxy.get_goals())
-        if (lvl_var[goal.get_variable().get_id()][goal.get_value()] ==
-            numeric_limits<int>::max())
-            return true;
-
-    return false;
 }
 
 void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
@@ -814,7 +762,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                 union_with(local_landmarks, h_m_table_[*it].landmarks);
                 insert_into(local_landmarks, *it);
 
-                if (use_orders()) {
+                if (use_orders) {
                     insert_into(local_necessary, *it);
                 }
             }
@@ -830,7 +778,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                     // or add op to first achievers
                     if (!contains(local_landmarks, *it)) {
                         insert_into(h_m_table_[*it].first_achievers, op_index);
-                        if (use_orders()) {
+                        if (use_orders) {
                             intersect_with(h_m_table_[*it].necessary, local_necessary);
                         }
                     }
@@ -840,7 +788,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                 } else {
                     h_m_table_[*it].level = level;
                     h_m_table_[*it].landmarks = local_landmarks;
-                    if (use_orders()) {
+                    if (use_orders) {
                         h_m_table_[*it].necessary = local_necessary;
                     }
                     insert_into(h_m_table_[*it].first_achievers, op_index);
@@ -902,7 +850,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
 
     cn_landmarks = local_landmarks;
 
-    if (use_orders()) {
+    if (use_orders) {
         cn_necessary.clear();
         cn_necessary = local_necessary;
     }
@@ -912,7 +860,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
         union_with(cn_landmarks, h_m_table_[pm_fluent].landmarks);
         insert_into(cn_landmarks, pm_fluent);
 
-        if (use_orders()) {
+        if (use_orders) {
             insert_into(cn_necessary, pm_fluent);
         }
     }
@@ -932,7 +880,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
             // or add op to first achievers
             if (!contains(cn_landmarks, pm_fluent)) {
                 insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
-                if (use_orders()) {
+                if (use_orders) {
                     intersect_with(h_m_table_[pm_fluent].necessary, cn_necessary);
                 }
             }
@@ -942,7 +890,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
         } else {
             h_m_table_[pm_fluent].level = level;
             h_m_table_[pm_fluent].landmarks = cn_landmarks;
-            if (use_orders()) {
+            if (use_orders) {
                 h_m_table_[pm_fluent].necessary = cn_necessary;
             }
             insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
@@ -1009,7 +957,7 @@ void LandmarkFactoryHM::generate_landmarks(
     for (int lm : all_lms) {
         add_lm_node(lm, false);
     }
-    if (use_orders()) {
+    if (use_orders) {
         // do reduction of graph
         // if f2 is landmark for f1, subtract landmark set of f2 from that of f1
         for (int f1 : all_lms) {
@@ -1020,7 +968,7 @@ void LandmarkFactoryHM::generate_landmarks(
             set_minus(h_m_table_[f1].landmarks, everything_to_remove);
             // remove necessaries here, otherwise they will be overwritten
             // since we are writing them as greedy nec. orderings.
-            if (use_orders())
+            if (use_orders)
                 set_minus(h_m_table_[f1].landmarks, h_m_table_[f1].necessary);
         }
 
@@ -1033,7 +981,7 @@ void LandmarkFactoryHM::generate_landmarks(
 
                 edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::NATURAL);
             }
-            if (use_orders()) {
+            if (use_orders) {
                 for (int gn : h_m_table_[set_index].necessary) {
                     edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
                 }
@@ -1042,7 +990,11 @@ void LandmarkFactoryHM::generate_landmarks(
     }
     free_unneeded_memory();
 
-    generate(task_proxy);
+    postprocess(task_proxy);
+}
+
+bool LandmarkFactoryHM::computes_reasonable_orders() const {
+    return false;
 }
 
 bool LandmarkFactoryHM::supports_conditional_effects() const {
@@ -1054,12 +1006,13 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "h^m Landmarks",
         "The landmark generation method introduced by "
         "Keyder, Richter & Helmert (ECAI 2010).");
-    parser.document_note(
-        "Relevant options",
-        "m, reasonable_orders, conjunctive_landmarks, no_orders");
     parser.add_option<int>(
         "m", "subset size (if unsure, use the default of 2)", "2");
-    _add_options_to_parser(parser);
+    parser.add_option<bool>(
+        "conjunctive_landmarks",
+        "keep conjunctive landmarks",
+        "true");
+    _add_use_orders_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;

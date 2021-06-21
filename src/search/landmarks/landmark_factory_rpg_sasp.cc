@@ -18,7 +18,9 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
-    : LandmarkFactoryRelaxation(opts) {
+    : disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+      use_orders(opts.get<bool>("use_orders")),
+      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }
 
 void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
@@ -459,6 +461,18 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
         }
     }
     add_lm_forward_orders();
+
+    if (!disjunctive_landmarks) {
+        discard_disjunctive_landmarks();
+    }
+
+    if (!use_orders) {
+        discard_all_orderings();
+    }
+
+    if (only_causal_landmarks) {
+        discard_noncausal_landmarks(task_proxy, exploration);
+    }
 }
 
 void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
@@ -590,6 +604,24 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     }
 }
 
+void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() {
+    /*
+      Using disjunctive landmarks during landmark generation can be beneficial
+      even if we don't want to use disjunctive landmarks during search. So we
+      allow removing disjunctive landmarks after landmark generation.
+    */
+    if (lm_graph->get_num_disjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_disjunctive_landmarks()
+                     << " disjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.disjunctive;});
+    }
+}
+
+bool LandmarkFactoryRpgSasp::computes_reasonable_orders() const {
+    return false;
+}
+
 bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
     return true;
 }
@@ -599,11 +631,12 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "RHW Landmarks",
         "The landmark generation method introduced by "
         "Richter, Helmert and Westphal (AAAI 2008).");
-    parser.document_note(
-        "Relevant Options",
-        "reasonable_orders, only_causal_landmarks, "
-        "disjunctive_landmarks, no_orders");
-    _add_options_to_parser(parser);
+
+    parser.add_option<bool>("disjunctive_landmarks",
+                            "keep disjunctive landmarks",
+                            "true");
+    _add_use_orders_option_to_parser(parser);
+    _add_only_causal_landmarks_option_to_parser(parser);
 
     Options opts = parser.parse();
 

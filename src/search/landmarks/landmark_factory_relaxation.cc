@@ -1,5 +1,7 @@
 #include "landmark_factory_relaxation.h"
 
+#include "../task_utils/task_properties.h"
+
 #include "exploration.h"
 
 using namespace std;
@@ -9,32 +11,19 @@ void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask
     TaskProxy task_proxy(*task);
     Exploration exploration(task_proxy);
     generate_relaxed_landmarks(task, exploration);
-    generate(task_proxy, exploration);
+    postprocess(task_proxy, exploration);
 }
 
-void LandmarkFactoryRelaxation::generate(const TaskProxy &task_proxy, Exploration &exploration) {
-    if (only_causal_landmarks)
-        discard_noncausal_landmarks(task_proxy, exploration);
-    if (!disjunctive_landmarks)
-        discard_disjunctive_landmarks();
-    if (!conjunctive_landmarks)
-        discard_conjunctive_landmarks();
+void LandmarkFactoryRelaxation::postprocess(const TaskProxy &task_proxy, Exploration &exploration) {
     lm_graph->set_landmark_ids();
-
-    if (no_orders)
-        discard_all_orderings();
-    else if (reasonable_orders) {
-        utils::g_log << "approx. reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, false);
-        utils::g_log << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(task_proxy, true);
-    }
     mk_acyclic_graph();
     calc_achievers(task_proxy, exploration);
 }
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration) {
+    // TODO: Check if the code works correctly in the presence of axioms.
+    task_properties::verify_no_conditional_effects(task_proxy);
     int num_all_landmarks = lm_graph->get_num_landmarks();
     lm_graph->remove_node_if(
         [this, &task_proxy, &exploration](const LandmarkNode &node) {
@@ -52,6 +41,8 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
        that has "landmark" as a precondition.
        Similar to "relaxed_task_solvable" above.
      */
+
+    assert(!landmark.conjunctive);
 
     if (landmark.is_true_in_goal)
         return true;
