@@ -549,7 +549,7 @@ static basic_string<char> paper_references() {
         "1007-1012",
         "AAAI Press",
         "2007") +
-        "For implementation notes, see:" + utils::format_conference_reference(
+           "For implementation notes, see:" + utils::format_conference_reference(
         {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
         "Efficient Implementation of Pattern Database Heuristics for"
         " Classical Planning",
