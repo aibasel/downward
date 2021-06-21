@@ -587,11 +587,11 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
         "heuristic over patterns computed with the "
         "PatternCollectionGenerator#hillclimbing algorithm for pattern "
         "generation. It is a short-hand for the command-line option "
-        "{{{cpdbs(hillclimbing())}}}."
+        "{{{cpdbs(hillclimbing())}}}. "
         "Both the heuristic and the pattern generation algorithm are described "
         "in the following paper:" + paper_references() +
         "See also Evaluator#Canonical_PDB and "
-        "PatternCollectionGenerator#hillclimbing for more details.");
+        "PatternCollectionGenerator#Hill_climbing for more details.");
 
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
