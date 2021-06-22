@@ -81,7 +81,7 @@ void EagerSearch::initialize() {
       Note: we consider the initial state as reached by a preferred
       operator.
     */
-    EvaluationContext eval_context(initial_state, 0, true, &statistics);
+    EvaluationContext eval_context(initial_state, true, &statistics);
 
     statistics.inc_evaluated_states();
 
@@ -126,7 +126,7 @@ SearchStatus EagerSearch::step() {
           We can pass calculate_preferred=false here since preferred
           operators are computed when the state is expanded.
         */
-        EvaluationContext eval_context(s, node->get_g(), false, &statistics);
+        EvaluationContext eval_context(s, false, &statistics);
 
         if (lazy_evaluator) {
             /*
@@ -182,7 +182,7 @@ SearchStatus EagerSearch::step() {
     pruning_method->prune_operators(s, applicable_ops);
 
     // This evaluates the expanded state (again) to get preferred ops
-    EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
+    EvaluationContext eval_context(s, false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
         collect_preferred_operators(eval_context,
@@ -213,13 +213,7 @@ SearchStatus EagerSearch::step() {
             // We have not seen this state before.
             // Evaluate and create a new node.
 
-            // Careful: succ_node.get_g() is not available here yet,
-            // hence the stupid computation of succ_g.
-            // TODO: Make this less fragile.
-            int succ_g = node->get_g() + get_adjusted_cost(op);
-
-            EvaluationContext succ_eval_context(
-                succ_state, succ_g, is_preferred, &statistics);
+            EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
             statistics.inc_evaluated_states();
 
             if (open_list->is_dead_end(succ_eval_context)) {
@@ -250,7 +244,7 @@ SearchStatus EagerSearch::step() {
                 succ_node.reopen(*node, op, get_adjusted_cost(op));
 
                 EvaluationContext succ_eval_context(
-                    succ_state, succ_node.get_g(), is_preferred, &statistics);
+                    succ_state, is_preferred, &statistics);
 
                 /*
                   Note: our old code used to retrieve the h value from

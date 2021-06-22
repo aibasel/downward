@@ -20,9 +20,7 @@ GEvaluator::GEvaluator(const shared_ptr<AbstractTask> &task)
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
-    result.set_evaluator_value(eval_context.get_g_value());
-    int g = g_values[eval_context.get_state()];
-    assert(result.get_evaluator_value() == g);
+    result.set_evaluator_value(g_values[eval_context.get_state()]);
     return result;
 }
 
