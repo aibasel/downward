@@ -7,7 +7,9 @@
 #include "../pruning_method.h"
 
 #include "../algorithms/ordered_set.h"
+#include "../evaluators/g_evaluator.h"
 #include "../task_utils/successor_generator.h"
+#include "../tasks/root_task.h"
 
 #include "../utils/logging.h"
 
@@ -25,6 +27,7 @@ EagerSearch::EagerSearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
+      g_evaluator(opts.get<shared_ptr<Evaluator>>("g_eval", nullptr)),
       f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
@@ -32,6 +35,10 @@ EagerSearch::EagerSearch(const Options &opts)
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+    // Even for GBFS, we need a g-evaluator for reporting progress.
+    if (!g_evaluator) {
+        g_evaluator = make_shared<g_evaluator::GEvaluator>(tasks::g_root_task);
     }
 }
 
@@ -63,9 +70,10 @@ void EagerSearch::initialize() {
     }
 
     /*
-      Collect path-dependent evaluators that are used in the lazy_evaluator
-      (in case they are not already included).
+      Collect path-dependent evaluators that are used in the g_evaluator and
+      lazy_evaluator (in case they are not already included).
     */
+    g_evaluator->get_path_dependent_evaluators(evals);
     if (lazy_evaluator) {
         lazy_evaluator->get_path_dependent_evaluators(evals);
     }
@@ -190,6 +198,8 @@ SearchStatus EagerSearch::step() {
                                     preferred_operators);
     }
 
+    int node_g = eval_context.get_evaluator_value(g_evaluator.get());
+
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
         if ((node->get_real_g() + op.get_cost()) >= bound)
@@ -199,11 +209,15 @@ SearchStatus EagerSearch::step() {
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
-        SearchNode succ_node = search_space.get_node(succ_state);
+        EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
 
+        int succ_g_old = succ_eval_context.get_evaluator_value_or_infinity(g_evaluator.get());
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
         }
+        int succ_g_new = min(succ_g_old, node_g + get_adjusted_cost(op));
+
+        SearchNode succ_node = search_space.get_node(succ_state);
 
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
@@ -213,9 +227,7 @@ SearchStatus EagerSearch::step() {
             // We have not seen this state before.
             // Evaluate and create a new node.
 
-            EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
             statistics.inc_evaluated_states();
-
             if (open_list->is_dead_end(succ_eval_context)) {
                 succ_node.mark_as_dead_end();
                 statistics.inc_dead_ends();
@@ -225,10 +237,11 @@ SearchStatus EagerSearch::step() {
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
-                statistics.print_checkpoint_line(succ_node.get_g());
+                assert(succ_g_new == succ_node.get_g());
+                statistics.print_checkpoint_line(succ_g_new);
                 reward_progress();
             }
-        } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
+        } else if (succ_g_old > succ_g_new) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
                 if (succ_node.is_closed()) {
