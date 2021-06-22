@@ -10,6 +10,7 @@
 #include "../open_lists/alternation_open_list.h"
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
+#include "../tasks/root_task.h"
 
 #include <memory>
 
@@ -98,7 +99,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get_list<shared_ptr<Evaluator>>("evals");
     int w = options.get<int>("w");
 
-    shared_ptr<GEval> g_eval = make_shared<GEval>();
+    shared_ptr<GEval> g_eval = make_shared<GEval>(tasks::g_root_task);
     vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)
@@ -112,7 +113,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
-    shared_ptr<GEval> g = make_shared<GEval>();
+    shared_ptr<GEval> g = make_shared<GEval>(tasks::g_root_task);
     shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
     shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h}));
     vector<shared_ptr<Evaluator>> evals = {f, h};
