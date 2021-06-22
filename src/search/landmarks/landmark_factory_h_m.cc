@@ -1,6 +1,7 @@
 #include "landmark_factory_h_m.h"
 
 #include "exploration.h"
+#include "landmark.h"
 
 #include "../abstract_task.h"
 #include "../option_parser.h"
@@ -606,7 +607,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
         utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
                      << " conjunctive landmarks" << endl;
         lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.conjunctive;});
+            [](const LandmarkNode &node) {return node.get_landmark()->conjunctive;});
     }
 }
 
@@ -618,9 +619,10 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
     for (auto &lmn : lm_graph->get_nodes()) {
+        Landmark *landmark = lmn->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
-        for (const FactPair &lm_fact : lmn->facts) {
+        for (const FactPair &lm_fact : landmark->facts) {
             const vector<int> &ops = get_operators_including_eff(lm_fact);
             candidates.insert(ops.begin(), ops.end());
         }
@@ -629,8 +631,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
             FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
             FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
-            for (j = 0; j < lmn->facts.size(); ++j) {
-                const FactPair &lm_fact = lmn->facts[j];
+            for (j = 0; j < landmark->facts.size(); ++j) {
+                const FactPair &lm_fact = landmark->facts[j];
                 // action adds this element of lm as well
                 if (find(post.begin(), post.end(), lm_fact) != post.end())
                     continue;
@@ -658,9 +660,9 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                     break;
                 }
             }
-            if (j == lmn->facts.size()) {
+            if (j == landmark->facts.size()) {
                 // not inconsistent with any of the other landmark fluents
-                lmn->possible_achievers.insert(op_id);
+                landmark->possible_achievers.insert(op_id);
             }
         }
     }
@@ -914,9 +916,10 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         } else { // simple landmark
             node = &lm_graph->add_simple_landmark(h_m_table_[set_index].fluents[0]);
         }
-        node->is_true_in_goal = goal;
-        node->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),
-                                     h_m_table_[set_index].first_achievers.end());
+        node->landmark->is_true_in_goal = goal;
+        node->landmark->first_achievers.insert(
+            h_m_table_[set_index].first_achievers.begin(),
+            h_m_table_[set_index].first_achievers.end());
         lm_node_table_[set_index] = node;
     }
 }

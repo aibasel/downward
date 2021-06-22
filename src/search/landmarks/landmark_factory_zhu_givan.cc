@@ -1,5 +1,6 @@
 #include "landmark_factory_zhu_givan.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
 #include "util.h"
 
@@ -63,10 +64,10 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         LandmarkNode *lmp;
         if (lm_graph->contains_simple_landmark(goal_lm)) {
             lmp = &lm_graph->get_simple_landmark(goal_lm);
-            lmp->is_true_in_goal = true;
+            lmp->landmark->is_true_in_goal = true;
         } else {
             lmp = &lm_graph->add_simple_landmark(goal_lm);
-            lmp->is_true_in_goal = true;
+            lmp->landmark->is_true_in_goal = true;
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -85,7 +86,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
                 assert(initial_state[lm.var].get_value() == lm.value ||
-                       !relaxed_task_solvable(task_proxy, exploration, true, node));
+                       !relaxed_task_solvable(task_proxy, exploration, true, node->get_landmark()));
             } else {
                 node = &lm_graph->get_simple_landmark(lm);
             }

@@ -1,7 +1,7 @@
 #include "landmark_factory.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
-
 #include "util.h"
 
 #include "../option_parser.h"
@@ -73,12 +73,12 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 }
 
 bool LandmarkFactory::is_landmark_precondition(const OperatorProxy &op,
-                                               const LandmarkNode *lmp) const {
+                                               const Landmark *landmark) const {
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
-    assert(lmp);
+    assert(landmark);
     for (FactProxy pre : op.get_preconditions()) {
-        for (const FactPair &lm_fact : lmp->facts) {
+        for (const FactPair &lm_fact : landmark->facts) {
             if (pre.get_pair() == lm_fact)
                 return true;
         }

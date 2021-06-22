@@ -1,6 +1,8 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
+#include "landmark.h"
+
 #include "../task_proxy.h"
 
 #include "../utils/hash.h"
@@ -32,25 +34,15 @@ enum class EdgeType {
 class LandmarkNode {
     int id;
 public:
-    LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
-        : id(-1), facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
-          is_true_in_goal(false), cost(1), is_derived(false) {
+    LandmarkNode(std::unique_ptr<Landmark> &&_landmark)
+        : id(-1), landmark(move(_landmark)) {
     }
+    LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive);
 
-    std::vector<FactPair> facts;
-    bool disjunctive;
-    bool conjunctive;
+    std::unique_ptr<Landmark> landmark;
+
     std::unordered_map<LandmarkNode *, EdgeType> parents;
     std::unordered_map<LandmarkNode *, EdgeType> children;
-    bool is_true_in_goal;
-
-    // Cost of achieving the landmark (as determined by the landmark factory)
-    int cost;
-
-    bool is_derived;
-
-    std::set<int> first_achievers;
-    std::set<int> possible_achievers;
 
     int get_id() const {
         return id;
@@ -62,7 +54,9 @@ public:
         id = new_id;
     }
 
-    bool is_true_in_state(const State &state) const;
+    Landmark *get_landmark() const {
+        return landmark.get();
+    }
 };
 
 using LandmarkSet = std::unordered_set<const LandmarkNode *>;

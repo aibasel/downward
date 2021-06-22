@@ -1,8 +1,9 @@
 #include "landmark_factory_relaxation.h"
 
-#include "../task_utils/task_properties.h"
-
 #include "exploration.h"
+#include "landmark.h"
+
+#include "../task_utils/task_properties.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
     int num_all_landmarks = lm_graph->get_num_landmarks();
     lm_graph->remove_node_if(
         [this, &task_proxy, &exploration](const LandmarkNode &node) {
-            return !is_causal_landmark(task_proxy, exploration, node);
+            return !is_causal_landmark(task_proxy, exploration, node.get_landmark());
         });
     int num_causal_landmarks = lm_graph->get_num_landmarks();
     utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
@@ -36,15 +37,15 @@ void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
 
 bool LandmarkFactoryRelaxation::is_causal_landmark(
     const TaskProxy &task_proxy, Exploration &exploration,
-    const LandmarkNode &landmark) const {
+    const Landmark *landmark) const {
     /* Test whether the relaxed planning task is unsolvable without using any operator
        that has "landmark" as a precondition.
        Similar to "relaxed_task_solvable" above.
      */
 
-    assert(!landmark.conjunctive);
+    assert(!landmark->conjunctive);
 
-    if (landmark.is_true_in_goal)
+    if (landmark->is_true_in_goal)
         return true;
     vector<vector<int>> lvl_var;
     vector<utils::HashMap<FactPair, int>> lvl_op;
@@ -58,7 +59,7 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     unordered_set<int> exclude_op_ids;
     vector<FactPair> exclude_props;
     for (OperatorProxy op : task_proxy.get_operators()) {
-        if (is_landmark_precondition(op, &landmark)) {
+        if (is_landmark_precondition(op, landmark)) {
             exclude_op_ids.insert(op.get_id());
         }
     }
@@ -78,23 +79,24 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
 void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lmn : lm_graph->get_nodes()) {
-        for (const FactPair &lm_fact : lmn->facts) {
+        Landmark *landmark = lmn->get_landmark();
+        for (const FactPair &lm_fact : landmark->facts) {
             const vector<int> &ops = get_operators_including_eff(lm_fact);
-            lmn->possible_achievers.insert(ops.begin(), ops.end());
+            landmark->possible_achievers.insert(ops.begin(), ops.end());
 
             if (variables[lm_fact.var].is_derived())
-                lmn->is_derived = true;
+                landmark->is_derived = true;
         }
 
         vector<vector<int>> lvl_var;
         vector<utils::HashMap<FactPair, int>> lvl_op;
-        relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, true, lmn.get());
+        relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, true, landmark);
 
-        for (int op_or_axom_id : lmn->possible_achievers) {
+        for (int op_or_axom_id : landmark->possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
-            if (_possibly_reaches_lm(op, lvl_var, lmn.get())) {
-                lmn->first_achievers.insert(op_or_axom_id);
+            if (_possibly_reaches_lm(op, lvl_var, landmark)) {
+                landmark->first_achievers.insert(op_or_axom_id);
             }
         }
     }
@@ -102,7 +104,7 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
 
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration, bool level_out,
-    const LandmarkNode *exclude, bool compute_lvl_op) const {
+    const Landmark *exclude, bool compute_lvl_op) const {
     vector<vector<int>> lvl_var;
     vector<utils::HashMap<FactPair, int>> lvl_op;
     return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
@@ -111,7 +113,7 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
     vector<vector<int>> &lvl_var, vector<utils::HashMap<FactPair, int>> &lvl_op,
-    bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
+    bool level_out, const Landmark *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
      As a side effect, collect in lvl_var and lvl_op the earliest possible point in time
@@ -161,12 +163,12 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 }
 
 bool LandmarkFactoryRelaxation::achieves_non_conditional(
-    const OperatorProxy &o, const LandmarkNode *lmp) const {
+    const OperatorProxy &o, const Landmark *landmark) const {
     /* Test whether the landmark is achieved by the operator unconditionally.
     A disjunctive landmark is achieved if one of its disjuncts is achieved. */
-    assert(lmp);
+    assert(landmark);
     for (EffectProxy effect: o.get_effects()) {
-        for (const FactPair &lm_fact : lmp->facts) {
+        for (const FactPair &lm_fact : landmark->facts) {
             FactProxy effect_fact = effect.get_fact();
             if (effect_fact.get_pair() == lm_fact) {
                 if (effect.get_conditions().empty())

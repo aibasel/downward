@@ -1,5 +1,6 @@
 #include "landmark_factory_rpg_exhaust.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
 
 #include "../option_parser.h"
@@ -28,7 +29,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
         LandmarkNode &lmp = lm_graph->add_simple_landmark(goal.get_pair());
-        lmp.is_true_in_goal = true;
+        lmp.landmark->is_true_in_goal = true;
     }
     // test all other possible facts
     State initial_state = task_proxy.get_initial_state();
@@ -39,7 +40,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
                 vector<FactPair> facts = {lm};
                 LandmarkNode node(facts, false, false);
                 if (initial_state[lm.var].get_value() == lm.value ||
-                    !relaxed_task_solvable(task_proxy, exploration, true, &node)) {
+                    !relaxed_task_solvable(task_proxy, exploration, true, node.get_landmark())) {
                     lm_graph->add_simple_landmark(lm);
                 }
             }

@@ -1,5 +1,7 @@
 #include "landmark_graph.h"
 
+#include "landmark.h"
+
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -11,23 +13,8 @@
 using namespace std;
 
 namespace landmarks {
-bool LandmarkNode::is_true_in_state(const State &state) const {
-    if (disjunctive) {
-        for (const FactPair &fact : facts) {
-            if (state[fact.var].get_value() == fact.value) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-        // conjunctive or simple
-        for (const FactPair &fact : facts) {
-            if (state[fact.var].get_value() != fact.value) {
-                return false;
-            }
-        }
-        return true;
-    }
+LandmarkNode::LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
+    : id(-1), landmark(utils::make_unique_ptr<Landmark>(facts, disjunctive, conjunctive)) {
 }
 
 LandmarkGraph::LandmarkGraph()
@@ -169,15 +156,15 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         child_node.parents.erase(node);
         assert(child_node.parents.find(node) == child_node.parents.end());
     }
-    if (node->disjunctive) {
+    if (node->landmark->disjunctive) {
         --num_disjunctive_landmarks;
-        for (const FactPair &lm_fact : node->facts) {
+        for (const FactPair &lm_fact : node->landmark->facts) {
             disjunctive_landmarks_to_nodes.erase(lm_fact);
         }
-    } else if (node->conjunctive) {
+    } else if (node->landmark->conjunctive) {
         --num_conjunctive_landmarks;
     } else {
-        simple_landmarks_to_nodes.erase(node->facts[0]);
+        simple_landmarks_to_nodes.erase(node->landmark->facts[0]);
     }
 }
 
