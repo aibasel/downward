@@ -732,7 +732,8 @@ fast_downward_plugin(
         pdbs/pattern_collection_generator_hillclimbing
         pdbs/pattern_collection_generator_manual
         pdbs/pattern_collection_generator_multiple_cegar
-        pdbs/pattern_collection_generator_rcg
+        pdbs/pattern_collection_generator_multiple_random
+        pdbs/pattern_collection_generator_multiple
         pdbs/pattern_collection_generator_single_cegar
         pdbs/pattern_collection_generator_systematic
         pdbs/pattern_database
