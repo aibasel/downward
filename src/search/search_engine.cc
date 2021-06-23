@@ -52,6 +52,7 @@ SearchEngine::SearchEngine(const Options &opts)
       search_space(state_registry),
       search_progress(opts.get<utils::Verbosity>("verbosity")),
       statistics(opts.get<utils::Verbosity>("verbosity")),
+      real_g_evaluator(opts.get<shared_ptr<Evaluator>>("real_g_eval", nullptr)),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")) {
@@ -60,10 +61,7 @@ SearchEngine::SearchEngine(const Options &opts)
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
-    if (bound != numeric_limits<int>::max()) {
-        // TODO: reuse g_evaluator if it has the same cost type.
-        real_g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
-    }
+    assert(bound == numeric_limits<int>::max() || real_g_evaluator);
     task_properties::print_variable_statistics(task_proxy);
 }
 
