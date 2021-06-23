@@ -19,8 +19,7 @@ using namespace std;
 
 namespace pdbs {
 
-PatternGeneratorRandom::PatternGeneratorRandom(
-    options::Options& opts)
+PatternGeneratorRandom::PatternGeneratorRandom(options::Options& opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_time(opts.get<double>("max_time")),
       bidirectional(opts.get<bool>("bidirectional")),
@@ -63,8 +62,9 @@ PatternInformation PatternGeneratorRandom::generate(
 static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Random Pattern",
-        "This pattern collection generator implements the sRCG algorithm "
-        "described in experiments of the the paper" + utils::format_conference_reference(
+        "This pattern collection generator implements the 'single randomized "
+        "causal graph' algorithm described in experiments of the the paper"
+        + utils::format_conference_reference(
             {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
             "Counterexample-Guided Abstraction Refinement for Pattern Selection "
             "in Optimal Classical Planning",
@@ -79,14 +79,13 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "including all visited variables.");
     parser.add_option<int>(
         "max_pdb_size",
-        "maximum number of states per pattern database (possibly ignored "
-        "by a pattern containing a single goal variable)",
+        "maximum number of states in the final pattern database (possibly "
+        "ignored by a singleton pattern consisting of a single goal variable)",
         "2000000",
         Bounds("1", "infinity"));
     parser.add_option<double>(
         "max_time",
-        "maximum time in seconds for the RCG algorithm (ignored for"
-        "computing initial collection)",
+        "maximum time in seconds for the pattern generation",
         "infinity",
         Bounds("0.0", "infinity"));
     add_random_pattern_bidirectional_option_to_parser(parser);

@@ -37,7 +37,8 @@ Pattern generate_random_pattern(
     int current_var = goal_variable;
     unordered_set<int> visited_vars;
     visited_vars.insert(current_var);
-    int pdb_size = task_proxy.get_variables()[current_var].get_domain_size();
+    VariablesProxy variables = task_proxy.get_variables();
+    int pdb_size = variables[current_var].get_domain_size();
     while (!time_limit_reached(timer, verbosity)) {
         // Pick random cg neighbor.
         rng->shuffle(cg_neighbors[current_var]);
@@ -50,8 +51,8 @@ Pattern generate_random_pattern(
         }
 
         if (neighbor_var != -1 && utils::is_product_within_limit(
-            pdb_size, task_proxy.get_variables()[neighbor_var].get_domain_size(), max_pdb_size)) {
-            pdb_size *= task_proxy.get_variables()[neighbor_var].get_domain_size();
+            pdb_size, variables[neighbor_var].get_domain_size(), max_pdb_size)) {
+            pdb_size *= variables[neighbor_var].get_domain_size();
             visited_vars.insert(neighbor_var);
             current_var = neighbor_var;
         } else {
@@ -65,11 +66,14 @@ Pattern generate_random_pattern(
 }
 
 void add_random_pattern_bidirectional_option_to_parser(options::OptionParser &parser) {
-    // TODO: better documentation
     parser.add_option<bool>(
         "bidirectional",
-        "consider pre-eff edges of the causal graph in both directions",
-        "true"
-        );
+        "this option decides if the causal graph is considered to be "
+        "directed or undirected selecting predecessors of already selected "
+        "variables. If true (default), it is considered to be undirected "
+        "(precondition-effect edges are bidirectional). If false, it is "
+        "considered to be directed (a variable is a neighbor only if it is a "
+        "predecessor.",
+        "true");
 }
 }

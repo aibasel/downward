@@ -58,6 +58,7 @@ protected:
         std::unordered_set<int> &&blacklisted_variables) = 0;
 public:
     explicit PatternCollectionGeneratorMultiple(options::Options &opts);
+    virtual ~PatternCollectionGeneratorMultiple() override = default;
     virtual PatternCollectionInformation generate(
         const std::shared_ptr<AbstractTask> &task) override;
 };

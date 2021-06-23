@@ -25,6 +25,12 @@ extern int compute_total_pdb_size(
 extern std::vector<FactPair> get_goals_in_random_order(
     const TaskProxy &task_proxy, utils::RandomNumberGenerator &rng);
 extern std::vector<int> get_non_goal_variables(const TaskProxy &task_proxy);
+/*
+  Compute the causal graph neighbors for each variable of the task. If
+  bidirectional is false, then only predecessors of variables are considered
+  neighbors. If bidirectional is ture, then the causal graph is treated as
+  undirected graph and also successors of variables are considered neighbors.
+*/
 extern std::vector<std::vector<int>> compute_cg_neighbors(
     const std::shared_ptr<AbstractTask> &task,
     bool bidirectional);
