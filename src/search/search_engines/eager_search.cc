@@ -27,6 +27,7 @@ EagerSearch::EagerSearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
+      // TODO: move into base class.
       g_evaluator(opts.get<shared_ptr<Evaluator>>("g_eval", nullptr)),
       f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
@@ -38,6 +39,7 @@ EagerSearch::EagerSearch(const Options &opts)
     }
     // Even for GBFS, we need a g-evaluator for reporting progress.
     if (!g_evaluator) {
+        // TODO: use cost transformation.
         g_evaluator = make_shared<g_evaluator::GEvaluator>(tasks::g_root_task);
     }
 }
@@ -211,6 +213,7 @@ SearchStatus EagerSearch::step() {
 
         EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
 
+        // TODO: make this nicer. Construct before and after evaluation context?
         int succ_g_old = succ_eval_context.get_evaluator_value_or_infinity(g_evaluator.get());
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
