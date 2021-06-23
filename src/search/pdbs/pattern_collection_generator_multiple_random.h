@@ -5,21 +5,18 @@
 
 namespace pdbs {
 class PatternCollectionGeneratorMultipleRandom : public PatternCollectionGeneratorMultiple {
-    // Options for the RCG algorithm.
-    const int max_pdb_size;
-    const double random_causal_graph_max_time;
-    bool bidirectional;
-
+    const bool bidirectional;
     std::vector<std::vector<int>> cg_neighbors;
 protected:
     virtual std::string get_name() const override;
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
     virtual PatternInformation compute_pattern(
+        int max_pdb_size,
+        double max_time,
+        const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         const std::shared_ptr<AbstractTask> &task,
         FactPair goal,
-        std::unordered_set<int> &&blacklisted_variables,
-        const utils::CountdownTimer &timer,
-        int remaining_collection_size) override;
+        std::unordered_set<int> &&blacklisted_variables) override;
 public:
     explicit PatternCollectionGeneratorMultipleRandom(options::Options &opts);
 };

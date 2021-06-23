@@ -101,8 +101,8 @@ using FlawList = std::vector<Flaw>;
 class CEGAR {
     const int max_pdb_size;
     const int max_collection_size;
-    const bool use_wildcard_plans;
     const double max_time;
+    const bool use_wildcard_plans;
     const utils::Verbosity verbosity;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     const std::shared_ptr<AbstractTask> &task;
@@ -168,8 +168,8 @@ public:
     CEGAR(
         int max_pdb_size,
         int max_collection_size,
-        bool use_wildcard_plans,
         double max_time,
+        bool use_wildcard_plans,
         utils::Verbosity verbosity,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         const std::shared_ptr<AbstractTask> &task,
@@ -179,7 +179,7 @@ public:
 };
 
 extern void add_implementation_notes_to_parser(options::OptionParser &parser);
-extern void add_cegar_options_to_parser(options::OptionParser &parser);
+extern void add_cegar_wildcard_option_to_parser(options::OptionParser &parser);
 }
 
 #endif

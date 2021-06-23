@@ -739,12 +739,12 @@ fast_downward_plugin(
         pdbs/pattern_database
         pdbs/pattern_generator_greedy
         pdbs/pattern_generator_manual
-        pdbs/pattern_generator_rcg
+        pdbs/pattern_generator_random
         pdbs/pattern_generator
         pdbs/pattern_information
         pdbs/pdb_heuristic
         pdbs/plugin_group
-        pdbs/rcg
+        pdbs/random_pattern
         pdbs/types
         pdbs/utils
         pdbs/validation

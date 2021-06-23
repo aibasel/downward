@@ -19,10 +19,15 @@ enum class Verbosity;
 
 namespace pdbs {
 class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
+    const int max_pdb_size;
+    const double pattern_generation_max_time;
+    const double total_max_time;
     const double stagnation_limit;
     const double blacklist_trigger_percentage;
     const bool enable_blacklist_on_stagnation;
-    const double total_max_time;
+    const utils::Verbosity verbosity;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
+    const int random_seed;
 
     // Variables used in the main loop.
     int remaining_collection_size;
@@ -42,17 +47,15 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     bool time_limit_reached(const utils::CountdownTimer &timer) const;
     bool check_for_stagnation(const utils::CountdownTimer &timer);
 protected:
-    const utils::Verbosity verbosity;
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
-
     virtual std::string get_name() const = 0;
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) = 0;
     virtual PatternInformation compute_pattern(
+        int max_pdb_size,
+        double max_time,
+        const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         const std::shared_ptr<AbstractTask> &task,
         FactPair goal,
-        std::unordered_set<int> &&blacklisted_variables,
-        const utils::CountdownTimer &timer,
-        int remaining_collection_size) = 0;
+        std::unordered_set<int> &&blacklisted_variables) = 0;
 public:
     explicit PatternCollectionGeneratorMultiple(options::Options &opts);
     virtual PatternCollectionInformation generate(

@@ -18,8 +18,8 @@ namespace pdbs {
 CEGAR::CEGAR(
     int max_pdb_size,
     int max_collection_size,
-    bool use_wildcard_plans,
     double max_time,
+    bool use_wildcard_plans,
     utils::Verbosity verbosity,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
@@ -27,8 +27,8 @@ CEGAR::CEGAR(
     unordered_set<int> &&blacklisted_variables)
     : max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
-      use_wildcard_plans(use_wildcard_plans),
       max_time(max_time),
+      use_wildcard_plans(use_wildcard_plans),
       verbosity(verbosity),
       rng(rng),
       task(task),
@@ -55,6 +55,7 @@ CEGAR::CEGAR(
         utils::g_log << "options of the CEGAR algorithm for computing a pattern collection: " << endl;
         utils::g_log << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << "max collection size: " << max_collection_size << endl;
+        utils::g_log << "max time: " << max_time << endl;
         utils::g_log << "wildcard plans: " << use_wildcard_plans << endl;
         utils::g_log << "Verbosity: ";
         switch (verbosity) {
@@ -72,7 +73,6 @@ CEGAR::CEGAR(
             break;
         }
         utils::g_log << endl;
-        utils::g_log << "max time: " << max_time << endl;
         utils::g_log << "goal variables: ";
         for (const FactPair &goal : this->goals) {
             utils::g_log << goal.var << ", ";
@@ -576,32 +576,12 @@ void add_implementation_notes_to_parser(options::OptionParser &parser) {
         true);
 }
 
-void add_cegar_options_to_parser(options::OptionParser &parser) {
-    parser.add_option<int>(
-        "max_pdb_size",
-        "maximum number of states per pattern database (ignored for the "
-        "initial collection consisting of singleton patterns for each goal "
-        "variable)",
-        "2000000",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "max_collection_size",
-        "maximum number of states in the pattern collection (ignored for the "
-        "initial collection consisting of singleton patterns for each goal "
-        "variable)",
-        "20000000",
-        Bounds("1", "infinity"));
+void add_cegar_wildcard_option_to_parser(options::OptionParser &parser) {
     parser.add_option<bool>(
         "use_wildcard_plans",
         "if true, compute wildcard plans which are sequences of sets of "
         "operators that induce the same transition; otherwise compute regular "
         "plans which are sequences of single operators",
         "true");
-    parser.add_option<double>(
-        "max_time",
-        "maximum time in seconds for the CEGAR algorithm (ignored for"
-        "computing initial collection)",
-        "infinity",
-        Bounds("0.0", "infinity"));
 }
 }

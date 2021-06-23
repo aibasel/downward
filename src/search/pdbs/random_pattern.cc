@@ -1,4 +1,4 @@
-#include "rcg.h"
+#include "random_pattern.h"
 
 #include "../option_parser.h"
 
@@ -25,13 +25,13 @@ static bool time_limit_reached(
     return false;
 }
 
-Pattern generate_pattern_rcg(
+Pattern generate_random_pattern(
     int max_pdb_size,
     double max_time,
-    int goal_variable,
     utils::Verbosity verbosity,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const TaskProxy &task_proxy,
+    int goal_variable,
     vector<vector<int>> &cg_neighbors) {
     utils::CountdownTimer timer(max_time);
     int current_var = goal_variable;
@@ -64,20 +64,8 @@ Pattern generate_pattern_rcg(
     return pattern;
 }
 
-void add_rcg_options_to_parser(options::OptionParser &parser) {
-    parser.add_option<int>(
-        "max_pdb_size",
-        "maximum number of states per pattern database (ignored for the "
-        "initial collection consisting of singleton patterns for each goal "
-        "variable)",
-        "2000000",
-        Bounds("1", "infinity"));
-    parser.add_option<double>(
-        "max_time",
-        "maximum time in seconds for the RCG algorithm (ignored for"
-        "computing initial collection)",
-        "infinity",
-        Bounds("0.0", "infinity"));
+void add_random_pattern_bidirectional_option_to_parser(options::OptionParser &parser) {
+    // TODO: better documentation
     parser.add_option<bool>(
         "bidirectional",
         "consider pre-eff edges of the causal graph in both directions",

@@ -20,8 +20,6 @@ namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     options::Options &opts)
     : PatternCollectionGeneratorMultiple(opts),
-      max_pdb_size(opts.get<int>("max_pdb_size")),
-      cegar_max_time(opts.get<double>("max_time")),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")) {
 }
 
@@ -30,24 +28,22 @@ string PatternCollectionGeneratorMultipleCegar::get_name() const {
 }
 
 PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
+    int max_pdb_size,
+    double max_time,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
     FactPair goal,
-    unordered_set<int> &&blacklisted_variables,
-    const utils::CountdownTimer &timer,
-    int remaining_collection_size) {
-    int remaining_pdb_size = min(remaining_collection_size, max_pdb_size);
-    double remaining_time =
-        min(static_cast<double>(timer.get_remaining_time()), cegar_max_time);
+    unordered_set<int> &&blacklisted_variables) {
     const utils::Verbosity cegar_verbosity(utils::Verbosity::SILENT);
     /*
       Call CEGAR with the remaining size budget (limiting one of PDB and
       collection size would be enough, but this is cleaner).
     */
     CEGAR cegar(
-        remaining_pdb_size,
-        remaining_collection_size,
+        max_pdb_size,
+        max_pdb_size,
+        max_time,
         use_wildcard_plans,
-        remaining_time,
         cegar_verbosity,
         rng,
         task,
@@ -86,10 +82,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
             "2019"));
     add_implementation_notes_to_parser(parser);
     add_multiple_options_to_parser(parser);
-    // TODO: this adds max_pdb_size and max_collection_size twice and does
-    // not allow using different size limits for the single and multiple CEGAR
-    // algorithms. But maybe this is also not desired.
-    add_cegar_options_to_parser(parser);
+    add_cegar_wildcard_option_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run()) {

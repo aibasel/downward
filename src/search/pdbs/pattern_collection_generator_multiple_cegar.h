@@ -5,19 +5,17 @@
 
 namespace pdbs {
 class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGeneratorMultiple {
-    // Options for the CEGAR algorithm.
-    const int max_pdb_size;
-    const double cegar_max_time;
     const bool use_wildcard_plans;
 protected:
     virtual std::string get_name() const override;
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override {}
     virtual PatternInformation compute_pattern(
+        int max_pdb_size,
+        double max_time,
+        const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         const std::shared_ptr<AbstractTask> &task,
         FactPair goal,
-        std::unordered_set<int> &&blacklisted_variables,
-        const utils::CountdownTimer &timer,
-        int remaining_collection_size) override;
+        std::unordered_set<int> &&blacklisted_variables) override;
 public:
     explicit PatternCollectionGeneratorMultipleCegar(options::Options &opts);
 };

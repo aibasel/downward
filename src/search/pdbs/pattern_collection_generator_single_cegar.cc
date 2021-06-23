@@ -16,8 +16,8 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
     const options::Options &opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
-      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
       max_time(opts.get<double>("max_time")),
+      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)) {
 }
@@ -31,8 +31,8 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     CEGAR cegar(
         max_pdb_size,
         max_collection_size,
-        use_wildcard_plans,
         max_time,
+        use_wildcard_plans,
         verbosity,
         rng,
         task,
@@ -56,7 +56,27 @@ static shared_ptr<PatternCollectionGenerator> _parse(
             "AAAI Press",
             "2019"));
     add_implementation_notes_to_parser(parser);
-    add_cegar_options_to_parser(parser);
+    parser.add_option<int>(
+        "max_pdb_size",
+        "maximum number of states per pattern database (ignored for the "
+        "initial collection consisting of singleton patterns for each goal "
+        "variable)",
+        "2000000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "max_collection_size",
+        "maximum number of states in the pattern collection (ignored for the "
+        "initial collection consisting of singleton patterns for each goal "
+        "variable)",
+        "20000000",
+        Bounds("1", "infinity"));
+    parser.add_option<double>(
+        "max_time",
+        "maximum time in seconds for the CEGAR algorithm (ignored for"
+        "computing initial collection)",
+        "infinity",
+        Bounds("0.0", "infinity"));
+    add_cegar_wildcard_option_to_parser(parser);
     utils::add_verbosity_option_to_parser(parser);
     utils::add_rng_options(parser);
 

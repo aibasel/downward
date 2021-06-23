@@ -1,6 +1,6 @@
 #include "pattern_collection_generator_multiple_random.h"
 #include "pattern_database.h"
-#include "rcg.h"
+#include "random_pattern.h"
 #include "utils.h"
 
 #include "../option_parser.h"
@@ -11,6 +11,7 @@
 
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -22,8 +23,6 @@ namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
     options::Options &opts)
     : PatternCollectionGeneratorMultiple(opts),
-      max_pdb_size(opts.get<int>("max_pdb_size")),
-      random_causal_graph_max_time(opts.get<double>("max_time")),
       bidirectional(opts.get<bool>("bidirectional")) {
 }
 
@@ -38,23 +37,21 @@ void PatternCollectionGeneratorMultipleRandom::initialize(
 }
 
 PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
+    int max_pdb_size,
+    double max_time,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
     FactPair goal,
-    unordered_set<int> &&,
-    const utils::CountdownTimer &timer,
-    int remaining_collection_size) {
+    unordered_set<int> &&) {
     // TODO: add support for blacklisting in single RCG?
-    int remaining_pdb_size = min(remaining_collection_size, max_pdb_size);
-    double remaining_time =
-        min(static_cast<double>(timer.get_remaining_time()), random_causal_graph_max_time);
-    const utils::Verbosity random_causal_graph_verbosity(utils::Verbosity::SILENT);
-    Pattern pattern = generate_pattern_rcg(
-        remaining_pdb_size,
-        remaining_time,
-        goal.var,
-        random_causal_graph_verbosity,
+    const utils::Verbosity random_pattern_verbosity(utils::Verbosity::SILENT);
+    Pattern pattern = generate_random_pattern(
+        max_pdb_size,
+        max_time,
+        random_pattern_verbosity,
         rng,
         TaskProxy(*task),
+        goal.var,
         cg_neighbors
     );
 
@@ -63,8 +60,25 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {
-    add_rcg_options_to_parser(parser);
+    parser.document_synopsis(
+        "Multiple Random Patterns",
+        "This pattern collection generator implements the 'multiple "
+        "randomized causal graph' (mRCG) algorithm described in experiments of "
+        "the the paper" + utils::format_conference_reference(
+            {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
+            "Counterexample-Guided Abstraction Refinement for Pattern Selection "
+            "in Optimal Classical Planning",
+            "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
+            "Proceedings of the 29th International Conference on Automated "
+            "Planning and Scheduling (ICAPS 2019)",
+            "362-367",
+            "AAAI Press",
+            "2019") +
+        "To compute a pattern in each iteration, it uses the 'single random "
+        "pattern' algorithm, called 'single randomized causal graph' (sRCG) "
+        "in the paper; see PatternCollectionGenerator#Single_Random_Pattern.");
     add_multiple_options_to_parser(parser);
+    add_random_pattern_bidirectional_option_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run()) {

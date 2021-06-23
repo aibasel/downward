@@ -19,15 +19,18 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
     options::Options &opts)
-    : stagnation_limit(opts.get<double>("stagnation_limit")),
+    : max_pdb_size(opts.get<int>("max_pdb_size")),
+      pattern_generation_max_time(opts.get<double>("pattern_generation_max_time")),
+      total_max_time(opts.get<double>("total_max_time")),
+      stagnation_limit(opts.get<double>("stagnation_limit")),
       blacklist_trigger_percentage(opts.get<double>("blacklist_trigger_percentage")),
       enable_blacklist_on_stagnation(opts.get<bool>("enable_blacklist_on_stagnation")),
-      total_max_time(opts.get<double>("total_max_time")),
+      verbosity(opts.get<utils::Verbosity>("verbosity")),
+      rng(utils::parse_rng_from_options(opts)),
+      random_seed(opts.get<int>("random_seed")),
       remaining_collection_size(opts.get<int>("max_collection_size")),
       blacklisting(false),
-      stagnation_start_time(-1),
-      verbosity(opts.get<utils::Verbosity>("verbosity")),
-      rng(utils::parse_rng_from_options(opts)) {
+      stagnation_start_time(-1) {
 }
 
 void PatternCollectionGeneratorMultiple::check_blacklist_trigger_timer(
@@ -196,10 +199,12 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
     set<Pattern> generated_patterns;
     shared_ptr<PDBCollection> generated_pdbs = make_shared<PDBCollection>();
 
+    shared_ptr<utils::RandomNumberGenerator> pattern_computation_rng =
+        make_shared<utils::RandomNumberGenerator>(random_seed);
     int num_iterations = 1;
     int goal_index = 0;
     /*
-      Start blacklisting after the percentage of total_max_time specified via
+      Start blacklisting after the percentage of max_time specified via
       blacklisting_trigger_percentage has passed. Compute this time point once.
     */
     double blacklisting_start_time = total_max_time * blacklist_trigger_percentage;
@@ -209,12 +214,17 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
         unordered_set<int> blacklisted_variables =
             get_blacklisted_variables(non_goal_variables);
 
+        int remaining_pdb_size = min(remaining_collection_size, max_pdb_size);
+        double remaining_time =
+            min(static_cast<double>(timer.get_remaining_time()), pattern_generation_max_time);
+
         PatternInformation pattern_info = compute_pattern(
+            remaining_pdb_size,
+            remaining_time,
+            pattern_computation_rng,
             task,
             goals[goal_index],
-            move(blacklisted_variables),
-            timer,
-            remaining_collection_size);
+            move(blacklisted_variables));
         handle_generated_pattern(
             move(pattern_info),
             generated_patterns,
@@ -252,24 +262,27 @@ void add_multiple_options_to_parser(options::OptionParser &parser) {
     // TODO: change/drop CEGAR once we settled on a name here.
     parser.add_option<int>(
         "max_pdb_size",
-        "Maximum number of states per pattern database. Since a pattern "
-        "needs to consist of at least a goal variable, singleton patterns "
-        "containing only a goal variable are allowed to ignore this limit "
-        "if it is too low.",
+        "maximum number of states for each pattern database, computed "
+        "by compute_pattern (possibly ignored by patterns containing a single "
+        "goal variable)",
         "2000000",
         Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_collection_size",
-        "Maximum number of states in the pattern collection. This limit can "
-        "ignored as described above for parameter max_pdb_size.",
+        "maximum number of states in all pattern databases of the "
+        "collection (possibly ignored, see max_pdb_size)",
         "20000000",
         Bounds("1", "infinity"));
+    parser.add_option<double>(
+        "pattern_generation_max_time",
+        "maximum time in seconds for each call to compute_pattern",
+        "infinity",
+        Bounds("0.0", "infinity"));
     parser.add_option<double>(
         "total_max_time",
         "maximum time in seconds for the multiple CEGAR algorithm. The "
         "algorithm will always execute at least one iteration, i.e., call the "
-        "CEGAR algorithm once. This limit possibly overrides the limit "
-        "specified for the CEGAR algorithm.",
+        "CEGAR algorithm once.",
         "100.0",
         Bounds("0.0", "infinity"));
     parser.add_option<double>(
