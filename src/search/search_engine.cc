@@ -51,7 +51,6 @@ SearchEngine::SearchEngine(const Options &opts)
       search_space(state_registry),
       search_progress(opts.get<utils::Verbosity>("verbosity")),
       statistics(opts.get<utils::Verbosity>("verbosity")),
-      cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")) {

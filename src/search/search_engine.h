@@ -49,7 +49,6 @@ protected:
     SearchProgress search_progress;
     SearchStatistics statistics;
     int bound;
-    OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
     const utils::Verbosity verbosity;
