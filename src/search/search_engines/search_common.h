@@ -28,6 +28,8 @@ class Options;
 }
 
 namespace search_common {
+extern void add_g_evaluators(options::Options &opts);
+
 /*
   Create a standard scalar open list factory with the given "eval" and
   "pref_only" options.

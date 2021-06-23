@@ -42,14 +42,12 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
-        // TODO: use given cost type when creating g-evaluators.
-        shared_ptr<Evaluator> g = make_shared<g_evaluator::GEvaluator>(
-            tasks::g_root_task);
+        search_common::add_g_evaluators(opts);
+        shared_ptr<Evaluator> g = opts.get<shared_ptr<Evaluator>>("g_eval");
         shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
         shared_ptr<Evaluator> f = make_shared<sum_evaluator::SumEvaluator>(
             vector<shared_ptr<Evaluator>>({g, h}));
         opts.set("open", search_common::create_astar_open_list_factory(h, f));
-        opts.set("g_eval", g);
         opts.set("f_eval", f);
         opts.set("reopen_closed", true);
         vector<shared_ptr<Evaluator>> preferred_list;

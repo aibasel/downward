@@ -1,15 +1,16 @@
 #include "search_common.h"
 
 #include "../open_list_factory.h"
+#include "../operator_cost.h"
 #include "../option_parser_util.h"
 
 #include "../evaluators/g_evaluator.h"
 #include "../evaluators/sum_evaluator.h"
 #include "../evaluators/weighted_evaluator.h"
-
 #include "../open_lists/alternation_open_list.h"
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
+#include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
 
 #include <memory>
@@ -20,6 +21,30 @@ namespace search_common {
 using GEval = g_evaluator::GEvaluator;
 using SumEval = sum_evaluator::SumEvaluator;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
+
+void add_g_evaluators(options::Options &opts) {
+    shared_ptr<AbstractTask> task = tasks::g_root_task;
+    OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
+
+    shared_ptr<Evaluator> g_evaluator;
+    if (cost_type == OperatorCost::NORMAL) {
+        g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
+    } else {
+        g_evaluator = make_shared<g_evaluator::GEvaluator>(
+            make_shared<tasks::CostAdaptedTask>(task, cost_type));
+    }
+    opts.set<shared_ptr<Evaluator>>("g_eval", g_evaluator);
+
+    shared_ptr<Evaluator> real_g_evaluator;
+    if (opts.get<int>("bound") != numeric_limits<int>::max()) {
+        if (cost_type == OperatorCost::NORMAL) {
+            real_g_evaluator = g_evaluator;
+        } else {
+            real_g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
+        }
+    }
+    opts.set<shared_ptr<Evaluator>>("real_g_eval", real_g_evaluator);
+}
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     const shared_ptr<Evaluator> &eval, bool pref_only) {
