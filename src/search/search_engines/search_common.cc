@@ -22,7 +22,7 @@ using GEval = g_evaluator::GEvaluator;
 using SumEval = sum_evaluator::SumEvaluator;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
-void add_g_evaluators(options::Options &opts) {
+void add_g_evaluator(options::Options &opts) {
     shared_ptr<AbstractTask> task = tasks::g_root_task;
     OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
 
@@ -34,16 +34,23 @@ void add_g_evaluators(options::Options &opts) {
             make_shared<tasks::CostAdaptedTask>(task, cost_type));
     }
     opts.set<shared_ptr<Evaluator>>("g_eval", g_evaluator);
+}
+
+void add_real_g_evaluator_if_needed(options::Options &opts) {
+    shared_ptr<AbstractTask> task = tasks::g_root_task;
+    OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
+    shared_ptr<Evaluator> g_evaluator = opts.get<shared_ptr<Evaluator>>(
+        "g_eval", nullptr);
 
     shared_ptr<Evaluator> real_g_evaluator;
     if (opts.get<int>("bound") != numeric_limits<int>::max()) {
-        if (cost_type == OperatorCost::NORMAL) {
+        if (g_evaluator && cost_type == OperatorCost::NORMAL) {
             real_g_evaluator = g_evaluator;
         } else {
             real_g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
         }
+        opts.set<shared_ptr<Evaluator>>("real_g_eval", real_g_evaluator);
     }
-    opts.set<shared_ptr<Evaluator>>("real_g_eval", real_g_evaluator);
 }
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
@@ -106,7 +113,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 0, we omit the h-evaluator altogether:
   we use g instead of g + 0 * h.
 */
-static shared_ptr<Evaluator> create_wastar_eval(const shared_ptr<GEval> &g_eval, int w,
+static shared_ptr<Evaluator> create_wastar_eval(const shared_ptr<Evaluator> &g_eval, int w,
                                                 const shared_ptr<Evaluator> &h_eval) {
     if (w == 0)
         return g_eval;
@@ -124,7 +131,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get_list<shared_ptr<Evaluator>>("evals");
     int w = options.get<int>("w");
 
-    shared_ptr<GEval> g_eval = make_shared<GEval>(tasks::g_root_task);
+    shared_ptr<Evaluator> g_eval = options.get<shared_ptr<Evaluator>>("g_eval");
     vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)

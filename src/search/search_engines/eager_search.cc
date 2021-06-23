@@ -37,16 +37,6 @@ EagerSearch::EagerSearch(const Options &opts)
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
-    // Even for GBFS, we need a g-evaluator for reporting progress.
-    if (!g_evaluator) {
-        OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
-        if (cost_type == OperatorCost::NORMAL) {
-            g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
-        } else {
-            g_evaluator = make_shared<g_evaluator::GEvaluator>(
-                make_shared<tasks::CostAdaptedTask>(task, cost_type));
-        }
-    }
 }
 
 void EagerSearch::initialize() {
@@ -80,7 +70,9 @@ void EagerSearch::initialize() {
       Collect path-dependent evaluators that are used in the g-evaluators and
       lazy_evaluator (in case they are not already included).
     */
-    g_evaluator->get_path_dependent_evaluators(evals);
+    if (g_evaluator) {
+        g_evaluator->get_path_dependent_evaluators(evals);
+    }
     if (real_g_evaluator) {
         real_g_evaluator->get_path_dependent_evaluators(evals);
     }
@@ -208,7 +200,9 @@ SearchStatus EagerSearch::step() {
                                     preferred_operators);
     }
 
-    int node_real_g = real_g_evaluator ? eval_context.get_evaluator_value(real_g_evaluator.get()) : -1;
+    int node_real_g = real_g_evaluator
+        ? eval_context.get_evaluator_value(real_g_evaluator.get())
+        : -1;
 
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
@@ -219,13 +213,13 @@ SearchStatus EagerSearch::step() {
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
-        int succ_g_old = EvaluationContext(succ_state).get_evaluator_value_or_infinity(
-            g_evaluator.get());
+        int succ_g_old = g_evaluator
+            ? EvaluationContext(succ_state).get_evaluator_value_or_infinity(g_evaluator.get())
+            : -1;
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
         }
         EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
-        int succ_g_new = succ_eval_context.get_evaluator_value(g_evaluator.get());
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
@@ -247,51 +241,45 @@ SearchStatus EagerSearch::step() {
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
+                int succ_g_new = g_evaluator
+                    ? succ_eval_context.get_evaluator_value(g_evaluator.get())
+                    : -1;
                 statistics.print_checkpoint_line(succ_g_new);
                 reward_progress();
             }
-        } else if (succ_g_old > succ_g_new) {
+        } else if (reopen_closed_nodes &&
+                   succ_g_old > succ_eval_context.get_evaluator_value(g_evaluator.get())) {
             // We found a new cheapest path to an open or closed state.
-            if (reopen_closed_nodes) {
-                if (succ_node.is_closed()) {
-                    /*
-                      TODO: It would be nice if we had a way to test
-                      that reopening is expected behaviour, i.e., exit
-                      with an error when this is something where
-                      reopening should not occur (e.g. A* with a
-                      consistent heuristic).
-                    */
-                    statistics.inc_reopened();
-                }
-                succ_node.reopen(*node, op);
-
-                EvaluationContext succ_eval_context(
-                    succ_state, is_preferred, &statistics);
-
+            if (succ_node.is_closed()) {
                 /*
-                  Note: our old code used to retrieve the h value from
-                  the search node here. Our new code recomputes it as
-                  necessary, thus avoiding the incredible ugliness of
-                  the old "set_evaluator_value" approach, which also
-                  did not generalize properly to settings with more
-                  than one evaluator.
-
-                  Reopening should not happen all that frequently, so
-                  the performance impact of this is hopefully not that
-                  large. In the medium term, we want the evaluators to
-                  remember evaluator values for states themselves if
-                  desired by the user, so that such recomputations
-                  will just involve a look-up by the Evaluator object
-                  rather than a recomputation of the evaluator value
-                  from scratch.
+                  TODO: It would be nice if we had a way to test
+                  that reopening is expected behaviour, i.e., exit
+                  with an error when this is something where
+                  reopening should not occur (e.g. A* with a
+                  consistent heuristic).
                 */
-                open_list->insert(succ_eval_context, succ_state.get_id());
-            } else {
-                // If we do not reopen closed nodes, we just update the parent pointers.
-                // Note that this could cause an incompatibility between
-                // the g-value and the actual path that is traced back.
-                succ_node.update_parent(*node, op);
+                statistics.inc_reopened();
             }
+            succ_node.reopen(*node, op);
+
+            /*
+              Note: our old code used to retrieve the h value from
+              the search node here. Our new code recomputes it as
+              necessary, thus avoiding the incredible ugliness of
+              the old "set_evaluator_value" approach, which also
+              did not generalize properly to settings with more
+              than one evaluator.
+
+              Reopening should not happen all that frequently, so
+              the performance impact of this is hopefully not that
+              large. In the medium term, we want the evaluators to
+              remember evaluator values for states themselves if
+              desired by the user, so that such recomputations
+              will just involve a look-up by the Evaluator object
+              rather than a recomputation of the evaluator value
+              from scratch.
+            */
+            open_list->insert(succ_eval_context, succ_state.get_id());
         }
     }
 

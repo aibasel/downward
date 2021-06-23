@@ -63,8 +63,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
-        shared_ptr<Evaluator> evaluator = nullptr;
-        opts.set("f_eval", evaluator);
+        search_common::add_real_g_evaluator_if_needed(opts);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
     return engine;

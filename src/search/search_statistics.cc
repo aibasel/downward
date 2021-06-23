@@ -49,7 +49,9 @@ void SearchStatistics::print_f_line() const {
 
 void SearchStatistics::print_checkpoint_line(int g) const {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "g=" << g << ", ";
+        if (g != -1) {
+            utils::g_log << "g=" << g << ", ";
+        }
         print_basic_statistics();
         utils::g_log << endl;
     }

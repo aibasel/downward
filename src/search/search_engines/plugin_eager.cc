@@ -27,6 +27,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
+        if (opts.get<bool>("reopen_closed")) {
+            search_common::add_g_evaluator(opts);
+        }
+        search_common::add_real_g_evaluator_if_needed(opts);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
 
