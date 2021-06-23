@@ -14,7 +14,7 @@ static const int INFTY = numeric_limits<int>::max();
 
 GEvaluator::GEvaluator(const shared_ptr<AbstractTask> &task)
     : task(task),
-      task_proxy(*task),
+      operators(TaskProxy(*task).get_operators()),
       g_values(INFTY) {
 }
 
@@ -36,7 +36,7 @@ void GEvaluator::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
     g_values[state] = min(
         g_values[state],
-        g_values[parent_state] + task_proxy.get_operators()[op_id.get_index()].get_cost());
+        g_values[parent_state] + operators[op_id.get_index()].get_cost());
 }
 
 static shared_ptr<Evaluator> _parse(OptionParser &parser) {

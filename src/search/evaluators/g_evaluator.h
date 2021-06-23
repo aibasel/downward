@@ -9,7 +9,7 @@
 namespace g_evaluator {
 class GEvaluator : public Evaluator {
     std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+    OperatorsProxy operators;
     PerStateInformation<int> g_values;
 public:
     GEvaluator(const std::shared_ptr<AbstractTask> &task);
