@@ -200,8 +200,6 @@ SearchStatus EagerSearch::step() {
                                     preferred_operators);
     }
 
-    int node_g = eval_context.get_evaluator_value(g_evaluator.get());
-
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
         if ((node->get_real_g() + op.get_cost()) >= bound)
@@ -211,14 +209,13 @@ SearchStatus EagerSearch::step() {
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
-        EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
-
-        // TODO: make this nicer. Construct before and after evaluation context?
-        int succ_g_old = succ_eval_context.get_evaluator_value_or_infinity(g_evaluator.get());
+        int succ_g_old = EvaluationContext(succ_state).get_evaluator_value_or_infinity(
+            g_evaluator.get());
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
         }
-        int succ_g_new = min(succ_g_old, node_g + get_adjusted_cost(op));
+        EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
+        int succ_g_new = succ_eval_context.get_evaluator_value(g_evaluator.get());
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
