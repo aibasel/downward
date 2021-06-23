@@ -61,6 +61,7 @@ SearchEngine::SearchEngine(const Options &opts)
     }
     bound = opts.get<int>("bound");
     if (bound != numeric_limits<int>::max()) {
+        // TODO: reuse g_evaluator if it has the same cost type.
         real_g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
     }
     task_properties::print_variable_statistics(task_proxy);

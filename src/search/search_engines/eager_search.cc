@@ -10,7 +10,6 @@
 #include "../evaluators/g_evaluator.h"
 #include "../task_utils/successor_generator.h"
 #include "../tasks/cost_adapted_task.h"
-#include "../tasks/root_task.h"
 
 #include "../utils/logging.h"
 
@@ -40,12 +39,13 @@ EagerSearch::EagerSearch(const Options &opts)
     }
     // Even for GBFS, we need a g-evaluator for reporting progress.
     if (!g_evaluator) {
-        shared_ptr<AbstractTask> task = tasks::g_root_task;
         OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
-        if (cost_type != OperatorCost::NORMAL) {
-            task = make_shared<tasks::CostAdaptedTask>(task, cost_type);
+        if (cost_type == OperatorCost::NORMAL) {
+            g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
+        } else {
+            g_evaluator = make_shared<g_evaluator::GEvaluator>(
+                make_shared<tasks::CostAdaptedTask>(task, cost_type));
         }
-        g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
     }
 }
 

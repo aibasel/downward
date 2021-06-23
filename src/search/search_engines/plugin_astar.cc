@@ -42,6 +42,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
+        // TODO: use given cost type when creating g-evaluators.
         shared_ptr<Evaluator> g = make_shared<g_evaluator::GEvaluator>(
             tasks::g_root_task);
         shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
