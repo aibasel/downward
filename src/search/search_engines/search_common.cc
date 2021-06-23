@@ -136,14 +136,19 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get<int>("boost"));
 }
 
-shared_ptr<OpenListFactory> create_astar_open_list_factory(
-    const shared_ptr<Evaluator> &h, const shared_ptr<Evaluator> &f) {
+pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
+create_astar_open_list_factory_and_f_eval(const Options &opts) {
+    shared_ptr<Evaluator> g = opts.get<shared_ptr<Evaluator>>("g_eval");
+    shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
+    shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h}));
     vector<shared_ptr<Evaluator>> evals = {f, h};
 
     Options options;
     options.set("evals", evals);
     options.set("pref_only", false);
     options.set("unsafe_pruning", false);
-    return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
+    shared_ptr<OpenListFactory> open =
+        make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
+    return make_pair(open, f);
 }
 }

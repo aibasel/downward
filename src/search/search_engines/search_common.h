@@ -70,13 +70,15 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     const options::Options &opts);
 
 /*
-  Create open list factory for A* search.
+  Create open list factory and f_evaluator (used for displaying progress
+  statistics) for A* search.
 
   The resulting open list factory produces a tie-breaking open list
-  ordered primarily on g + h and secondarily on h.
+  ordered primarily on g + h and secondarily on h. Uses "eval" from
+  the passed-in Options object as the h evaluator.
 */
-extern std::shared_ptr<OpenListFactory> create_astar_open_list_factory(
-    const std::shared_ptr<Evaluator> &h, const std::shared_ptr<Evaluator> &f);
+extern std::pair<std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
+create_astar_open_list_factory_and_f_eval(const options::Options &opts);
 }
 
 #endif
