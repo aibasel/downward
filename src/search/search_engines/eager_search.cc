@@ -28,7 +28,7 @@ EagerSearch::EagerSearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
-      // TODO: move into base class.
+      // TODO: move into base class?
       g_evaluator(opts.get<shared_ptr<Evaluator>>("g_eval", nullptr)),
       f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
@@ -77,10 +77,13 @@ void EagerSearch::initialize() {
     }
 
     /*
-      Collect path-dependent evaluators that are used in the g_evaluator and
+      Collect path-dependent evaluators that are used in the g-evaluators and
       lazy_evaluator (in case they are not already included).
     */
     g_evaluator->get_path_dependent_evaluators(evals);
+    if (real_g_evaluator) {
+        real_g_evaluator->get_path_dependent_evaluators(evals);
+    }
     if (lazy_evaluator) {
         lazy_evaluator->get_path_dependent_evaluators(evals);
     }
@@ -205,9 +208,11 @@ SearchStatus EagerSearch::step() {
                                     preferred_operators);
     }
 
+    int node_real_g = real_g_evaluator ? eval_context.get_evaluator_value(real_g_evaluator.get()) : -1;
+
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        if ((node->get_real_g() + op.get_cost()) >= bound)
+        if (real_g_evaluator && node_real_g + op.get_cost() >= bound)
             continue;
 
         State succ_state = state_registry.get_successor_state(s, op);

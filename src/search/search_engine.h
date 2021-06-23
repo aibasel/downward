@@ -48,6 +48,7 @@ protected:
     SearchSpace search_space;
     SearchProgress search_progress;
     SearchStatistics statistics;
+    std::shared_ptr<Evaluator> real_g_evaluator;
     int bound;
     bool is_unit_cost;
     double max_time;

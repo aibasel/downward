@@ -6,6 +6,7 @@
 #include "plugin.h"
 
 #include "algorithms/ordered_set.h"
+#include "evaluators/g_evaluator.h"
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
@@ -59,6 +60,9 @@ SearchEngine::SearchEngine(const Options &opts)
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
+    if (bound != numeric_limits<int>::max()) {
+        real_g_evaluator = make_shared<g_evaluator::GEvaluator>(task);
+    }
     task_properties::print_variable_statistics(task_proxy);
 }
 
