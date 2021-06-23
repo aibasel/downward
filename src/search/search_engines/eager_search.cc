@@ -233,7 +233,7 @@ SearchStatus EagerSearch::step() {
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open(*node, op, get_adjusted_cost(op));
+            succ_node.open(*node, op);
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
@@ -253,7 +253,7 @@ SearchStatus EagerSearch::step() {
                     */
                     statistics.inc_reopened();
                 }
-                succ_node.reopen(*node, op, get_adjusted_cost(op));
+                succ_node.reopen(*node, op);
 
                 EvaluationContext succ_eval_context(
                     succ_state, is_preferred, &statistics);
@@ -280,7 +280,7 @@ SearchStatus EagerSearch::step() {
                 // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back.
-                succ_node.update_parent(*node, op, get_adjusted_cost(op));
+                succ_node.update_parent(*node, op);
             }
         }
     }

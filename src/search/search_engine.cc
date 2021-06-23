@@ -116,10 +116,6 @@ void SearchEngine::save_plan_if_necessary() {
     }
 }
 
-int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
-    return get_adjusted_action_cost(op, cost_type, is_unit_cost);
-}
-
 /* TODO: merge this into add_options_to_parser when all search
          engines support pruning.
 
