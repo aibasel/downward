@@ -35,11 +35,6 @@ bool SearchNode::is_new() const {
     return info.status == SearchNodeInfo::NEW;
 }
 
-int SearchNode::get_g() const {
-    assert(info.g >= 0);
-    return info.g;
-}
-
 int SearchNode::get_real_g() const {
     return info.real_g;
 }

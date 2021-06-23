@@ -237,7 +237,6 @@ SearchStatus EagerSearch::step() {
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
-                assert(succ_g_new == succ_node.get_g());
                 statistics.print_checkpoint_line(succ_g_new);
                 reward_progress();
             }

@@ -25,7 +25,6 @@ public:
     bool is_closed() const;
     bool is_dead_end() const;
 
-    int get_g() const;
     int get_real_g() const;
 
     void open_initial();
