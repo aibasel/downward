@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkNode::LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
+LandmarkNode::LandmarkNode(vector<FactPair> &facts, bool disjunctive, bool conjunctive)
     : id(-1), landmark(utils::make_unique_ptr<Landmark>(facts, disjunctive, conjunctive)) {
 }
 
