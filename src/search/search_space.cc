@@ -35,15 +35,9 @@ bool SearchNode::is_new() const {
     return info.status == SearchNodeInfo::NEW;
 }
 
-int SearchNode::get_real_g() const {
-    return info.real_g;
-}
-
 void SearchNode::open_initial() {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
-    info.g = 0;
-    info.real_g = 0;
     info.parent_state_id = StateID::no_state;
     info.creating_operator = OperatorID::no_operator;
 }
@@ -52,7 +46,6 @@ void SearchNode::open(const SearchNode &parent_node,
                       const OperatorProxy &parent_op) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
-    info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
@@ -65,7 +58,6 @@ void SearchNode::reopen(const SearchNode &parent_node,
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
-    info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
@@ -77,7 +69,6 @@ void SearchNode::update_parent(const SearchNode &parent_node,
            info.status == SearchNodeInfo::CLOSED);
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
-    info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
