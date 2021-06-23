@@ -6,10 +6,11 @@
 #include <set>
 
 namespace landmarks {
-struct Landmark {
+class Landmark {
+public:
     Landmark(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
-    : facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
-        is_true_in_goal(false), is_derived(false), cost(1) {
+        : facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
+          is_true_in_goal(false), is_derived(false), cost(1) {
     }
 
     std::vector<FactPair> facts;
