@@ -18,8 +18,7 @@
 using namespace std;
 
 namespace pdbs {
-
-PatternGeneratorRandom::PatternGeneratorRandom(options::Options& opts)
+PatternGeneratorRandom::PatternGeneratorRandom(options::Options &opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_time(opts.get<double>("max_time")),
       bidirectional(opts.get<bool>("bidirectional")),
@@ -46,8 +45,7 @@ PatternInformation PatternGeneratorRandom::generate(
         rng,
         task_proxy,
         goals[0].var,
-        cg_neighbors
-    );
+        cg_neighbors);
 
     PatternInformation result(task_proxy, pattern);
     if (verbosity >= utils::Verbosity::NORMAL) {

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-namespace pdbs{
+namespace pdbs {
 static bool time_limit_reached(
     const utils::CountdownTimer &timer, utils::Verbosity verbosity) {
     if (timer.is_expired()) {
@@ -51,7 +51,7 @@ Pattern generate_random_pattern(
         }
 
         if (neighbor_var != -1 && utils::is_product_within_limit(
-            pdb_size, variables[neighbor_var].get_domain_size(), max_pdb_size)) {
+                pdb_size, variables[neighbor_var].get_domain_size(), max_pdb_size)) {
             pdb_size *= variables[neighbor_var].get_domain_size();
             visited_vars.insert(neighbor_var);
             current_var = neighbor_var;
