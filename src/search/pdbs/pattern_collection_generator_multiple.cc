@@ -160,7 +160,6 @@ static PatternCollectionInformation get_pattern_collection(
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
     patterns->reserve(pdbs->size());
     for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
-        cout << pdb->get_pattern() << endl;
         patterns->push_back(pdb->get_pattern());
     }
     PatternCollectionInformation result(task_proxy, patterns);
