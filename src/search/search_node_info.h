@@ -10,14 +10,22 @@
 struct SearchNodeInfo {
     enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
 
-    // TODO: pack this into 8 bytes.
-    NodeStatus status;
+    unsigned int status : 2;
+    int creating_operator : 30;
     StateID parent_state_id;
-    OperatorID creating_operator;
 
     SearchNodeInfo()
-        : status(NEW), parent_state_id(StateID::no_state),
-          creating_operator(OperatorID::no_operator) {
+        : status(NEW), creating_operator(OperatorID::no_operator.get_index()),
+          parent_state_id(StateID::no_state) {
+    }
+
+    OperatorID get_creating_operator_id() const {
+        return OperatorID(creating_operator);
+    }
+
+    void set_creating_operator_id(OperatorID op_id) {
+        // TODO: check against overflow.
+        creating_operator = op_id.get_index();
     }
 };
 
