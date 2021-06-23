@@ -27,7 +27,7 @@ PatternGeneratorRandom::PatternGeneratorRandom(options::Options &opts)
 }
 
 PatternInformation PatternGeneratorRandom::generate(
-    const std::shared_ptr<AbstractTask> &task) {
+    const shared_ptr<AbstractTask> &task) {
     utils::Timer timer;
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Generating pattern using the Random Pattern algorithm."
