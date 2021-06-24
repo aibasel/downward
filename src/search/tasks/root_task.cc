@@ -316,6 +316,10 @@ vector<ExplicitOperator> read_actions(
     const vector<ExplicitVariable> &variables) {
     int count;
     in >> count;
+    if (count > OperatorID::max_operator_id + 1) {
+        cerr << "Task has too many operators!" << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {

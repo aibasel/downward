@@ -29,9 +29,15 @@ class OperatorID {
 public:
     explicit OperatorID(int index)
         : index(index) {
+        assert(index <= max_operator_id);
     }
 
     static const OperatorID no_operator;
+
+    // SearchNodeInfo packs operator IDs and node status into 30+2 bits.
+    static const int num_bits = 30;
+    // Maximum positive signed 30-bit integer.
+    static const int max_operator_id = (1 << num_bits) - 1;
 
     int get_index() const {
         return index;
