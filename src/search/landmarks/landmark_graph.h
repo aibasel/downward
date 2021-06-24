@@ -34,14 +34,13 @@ enum class EdgeType {
 
 class LandmarkNode {
     int id;
+    Landmark landmark;
 public:
-    LandmarkNode(std::unique_ptr<Landmark> &&_landmark)
-        : id(-1), landmark(move(_landmark)) {
+    LandmarkNode(Landmark &&_landmark)
+        : id(-1), landmark(std::move(_landmark)) {
     }
     LandmarkNode(std::vector<FactPair> &facts, bool disjunctive,
                  bool conjunctive);
-
-    std::unique_ptr<Landmark> landmark;
 
     std::unordered_map<LandmarkNode *, EdgeType> parents;
     std::unordered_map<LandmarkNode *, EdgeType> children;
@@ -56,8 +55,12 @@ public:
         id = new_id;
     }
 
-    Landmark *get_landmark() const {
-        return landmark.get();
+    Landmark &get_landmark() {
+        return landmark;
+    }
+
+    const Landmark &get_landmark() const {
+        return landmark;
     }
 };
 
@@ -110,11 +113,11 @@ public:
     int get_num_edges() const;
 
     // only needed by non-landmarkgraph-factories
-    Landmark *get_landmark(int index) const;
+    const Landmark &get_landmark(int index) const;
     // only needed by non-landmarkgraph-factories
     LandmarkNode *get_landmark_node(int index) const;
     // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_landmark(const FactPair &fact) const;
+    LandmarkNode *get_landmark_node(const FactPair &fact) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     LandmarkNode &get_simple_landmark(const FactPair &fact) const;
@@ -142,13 +145,7 @@ public:
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    LandmarkNode &add_simple_landmark(const FactPair &lm);
-    /* This is needed only by landmark graph factories and will disappear
-       when moving landmark graph creation there. */
-    LandmarkNode &add_disjunctive_landmark(const std::set<FactPair> &lm);
-    /* This is needed only by landmark graph factories and will disappear
-       when moving landmark graph creation there. */
-    LandmarkNode &add_conjunctive_landmark(const std::set<FactPair> &lm);
+    LandmarkNode &add_landmark(Landmark &&landmark);
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     void remove_node(LandmarkNode *node);

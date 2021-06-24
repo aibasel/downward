@@ -30,16 +30,17 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
     int inserted = 0;
     int num_goal_lms = 0;
     for (auto &node_p : lm_graph.get_nodes()) {
-        if (node_p->landmark->is_true_in_goal) {
+        const Landmark &landmark = node_p->get_landmark();
+        if (landmark.is_true_in_goal) {
             ++num_goal_lms;
         }
 
         if (!node_p->parents.empty()) {
             continue;
         }
-        if (node_p->landmark->conjunctive) {
+        if (landmark.conjunctive) {
             bool lm_true = true;
-            for (const FactPair &fact : node_p->landmark->facts) {
+            for (const FactPair &fact : landmark.facts) {
                 if (initial_state[fact.var].get_value() != fact.value) {
                     lm_true = false;
                     break;
@@ -50,7 +51,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                 ++inserted;
             }
         } else {
-            for (const FactPair &fact : node_p->landmark->facts) {
+            for (const FactPair &fact : landmark.facts) {
                 if (initial_state[fact.var].get_value() == fact.value) {
                     reached.set(node_p->get_id());
                     ++inserted;
@@ -95,7 +96,7 @@ bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_stat
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
             LandmarkNode *node = lm_graph.get_landmark_node(id);
-            if (node->landmark->is_true_in_state(ancestor_state)) {
+            if (node->get_landmark().is_true_in_state(ancestor_state)) {
                 if (landmark_is_leaf(*node, reached)) {
                     reached.set(id);
                 }
@@ -138,13 +139,14 @@ bool LandmarkStatusManager::dead_end_exists() {
           from the current state.
         */
 
-        if (!node->landmark->is_derived) {
+        const Landmark &landmark = node->get_landmark();
+        if (!landmark.is_derived) {
             if ((lm_status[id] == lm_not_reached) &&
-                node->landmark->first_achievers.empty()) {
+                landmark.first_achievers.empty()) {
                 return true;
             }
             if ((lm_status[id] == lm_needed_again) &&
-                node->landmark->possible_achievers.empty()) {
+                landmark.possible_achievers.empty()) {
                 return true;
             }
         }
@@ -155,9 +157,10 @@ bool LandmarkStatusManager::dead_end_exists() {
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const State &state) {
     LandmarkNode *node = lm_graph.get_landmark_node(id);
-    if (node->landmark->is_true_in_state(state)) {
+    const Landmark &landmark = node->get_landmark();
+    if (landmark.is_true_in_state(state)) {
         return false;
-    } else if (node->landmark->is_true_in_goal) {
+    } else if (landmark.is_true_in_goal) {
         return true;
     } else {
         /*

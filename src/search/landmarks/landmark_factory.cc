@@ -73,12 +73,11 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 }
 
 bool LandmarkFactory::is_landmark_precondition(
-    const OperatorProxy &op, const Landmark *landmark) const {
+    const OperatorProxy &op, const Landmark &landmark) const {
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
-    assert(landmark);
     for (FactProxy pre : op.get_preconditions()) {
-        for (const FactPair &lm_fact : landmark->facts) {
+        for (const FactPair &lm_fact : landmark.facts) {
             if (pre.get_pair() == lm_fact)
                 return true;
         }

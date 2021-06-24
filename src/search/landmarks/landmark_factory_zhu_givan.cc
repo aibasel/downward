@@ -64,10 +64,11 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         LandmarkNode *lmp;
         if (lm_graph->contains_simple_landmark(goal_lm)) {
             lmp = &lm_graph->get_simple_landmark(goal_lm);
-            lmp->landmark->is_true_in_goal = true;
+            lmp->get_landmark().is_true_in_goal = true;
         } else {
-            lmp = &lm_graph->add_simple_landmark(goal_lm);
-            lmp->landmark->is_true_in_goal = true;
+            vector<FactPair> fact = {goal_lm};
+            Landmark landmark(fact, false, false, true);
+            lmp = &lm_graph->add_landmark(move(landmark));
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -81,13 +82,12 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             LandmarkNode *node;
             // Add new landmarks
             if (!lm_graph->contains_simple_landmark(lm)) {
-                node = &lm_graph->add_simple_landmark(lm);
-
-                // if landmark is not in the initial state,
-                // relaxed_task_solvable() should be false
+                vector<FactPair> fact = {lm};
+                Landmark landmark(fact, false, false);
                 assert(initial_state[lm.var].get_value() == lm.value ||
                        !relaxed_task_solvable(task_proxy, exploration,
-                                              true, node->get_landmark()));
+                                              true, landmark));
+                node = &lm_graph->add_landmark(move(landmark));
             } else {
                 node = &lm_graph->get_simple_landmark(lm);
             }

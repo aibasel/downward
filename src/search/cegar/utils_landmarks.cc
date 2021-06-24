@@ -14,11 +14,11 @@ using namespace std;
 using namespace landmarks;
 
 namespace cegar {
-static FactPair get_fact(const Landmark *landmark) {
+static FactPair get_fact(const Landmark &landmark) {
     /* We assume that the given LandmarkNodes are from an h^m landmark
        graph with m=1. */
-    assert(landmark->facts.size() == 1);
-    return landmark->facts[0];
+    assert(landmark.facts.size() == 1);
+    return landmark.facts[0];
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {
@@ -46,7 +46,7 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
 
 VarToValues get_prev_landmarks(const LandmarkGraph &graph, const FactPair &fact) {
     VarToValues groups;
-    LandmarkNode *node = graph.get_landmark(fact);
+    LandmarkNode *node = graph.get_landmark_node(fact);
     assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;

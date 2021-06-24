@@ -126,7 +126,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
             landmark_status status =
                 lm_status_manager->get_landmark_status(id);
             if (status == lm_not_reached || status == lm_needed_again) {
-                h += lgraph->get_landmark(id)->cost;
+                h += lgraph->get_landmark(id).cost;
             }
         }
         return h;
@@ -179,9 +179,9 @@ bool LandmarkCountHeuristic::generate_helpful_actions(
             if (!does_fire(effect, state))
                 continue;
             FactProxy fact_proxy = effect.get_fact();
-            LandmarkNode *lm_p = lgraph->get_landmark(fact_proxy.get_pair());
+            LandmarkNode *lm_p = lgraph->get_landmark_node(fact_proxy.get_pair());
             if (lm_p && landmark_is_interesting(state, reached, *lm_p)) {
-                if (lm_p->landmark->disjunctive) {
+                if (lm_p->get_landmark().disjunctive) {
                     ha_disj.push_back(op_id);
                 } else {
                     ha_simple.push_back(op_id);
@@ -218,7 +218,8 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
         else
             return !check_node_orders_disobeyed(lm, reached);
     }
-    return lm.landmark->is_true_in_goal && !lm.landmark->is_true_in_state(state);
+    const Landmark &landmark = lm.get_landmark();
+    return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {

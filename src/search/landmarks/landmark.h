@@ -14,6 +14,14 @@ public:
           is_true_in_goal(is_true_in_goal), is_derived(is_derived), cost(1) {
     }
 
+    bool operator ==(const Landmark &other) const {
+        return this == &other;
+    }
+
+    bool operator !=(const Landmark &other) const {
+        return !(*this == other);
+    }
+
     std::vector<FactPair> facts;
     bool disjunctive;
     bool conjunctive;

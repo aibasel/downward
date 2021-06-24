@@ -23,12 +23,12 @@ LandmarkCostAssignment::LandmarkCostAssignment(
 }
 
 const set<int> &LandmarkCostAssignment::get_achievers(
-    int lmn_status, const Landmark *landmark) const {
+    int lmn_status, const Landmark &landmark) const {
     // Return relevant achievers of the landmark according to its status.
     if (lmn_status == lm_not_reached)
-        return landmark->first_achievers;
+        return landmark.first_achievers;
     else if (lmn_status == lm_needed_again)
-        return landmark->possible_achievers;
+        return landmark.possible_achievers;
     else
         return empty;
 }
@@ -56,6 +56,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
        compute which op achieves how many landmarks. Along the way,
        mark action landmarks and add their cost to h. */
     for (auto &node : nodes) {
+        // TODO: Iterate over Landmarks instead of LandmarkNodes
         int lmn_status =
             lm_status_manager.get_landmark_status(node->get_id());
         if (lmn_status != lm_reached) {
@@ -79,6 +80,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
         }
     }
 
+    // TODO: Replace with Landmarks
     vector<LandmarkNode *> relevant_lms;
 
     /* Second pass:
@@ -86,6 +88,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
        an action landmark; decrease the counters accordingly
        so that no unnecessary cost is assigned to these landmarks. */
     for (auto &node : nodes) {
+        // TODO: Iterate over Landmarks instead of LandmarkNodes
         int lmn_status =
             lm_status_manager.get_landmark_status(node->get_id());
         if (lmn_status != lm_reached) {
@@ -113,6 +116,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
     /* Third pass:
        count shared costs for the remaining landmarks. */
     for (const LandmarkNode *node : relevant_lms) {
+        // TODO: Iterate over Landmarks instead of LandmarkNodes
         int lmn_status =
             lm_status_manager.get_landmark_status(node->get_id());
         const set<int> &achievers =
@@ -199,11 +203,11 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
         constraint.clear();
     }
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        const LandmarkNode *lm_node = lm_graph.get_landmark_node(lm_id);
+        const Landmark &landmark = lm_graph.get_landmark_node(lm_id)->get_landmark();
         int lm_status = lm_status_manager.get_landmark_status(lm_id);
         if (lm_status != lm_reached) {
             const set<int> &achievers =
-                get_achievers(lm_status, lm_node->get_landmark());
+                get_achievers(lm_status, landmark);
             assert(!achievers.empty());
             for (int op_id : achievers) {
                 assert(utils::in_bounds(op_id, lp_constraints));
