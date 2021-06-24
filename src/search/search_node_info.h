@@ -19,14 +19,8 @@ struct SearchNodeInfo {
           parent_state_id(StateID::no_state) {
     }
 
-    OperatorID get_creating_operator_id() const {
-        return OperatorID(creating_operator);
-    }
-
-    void set_creating_operator_id(OperatorID op_id) {
-        // TODO: check against overflow.
-        creating_operator = op_id.get_index();
-    }
+    OperatorID get_creating_operator_id() const;
+    void set_creating_operator_id(OperatorID op_id);
 };
 
 #endif
