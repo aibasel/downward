@@ -9,12 +9,20 @@ from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
 
+ATTRIBUTES = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [
+    Attribute("landmarks", min_wins=False),
+    Attribute("landmarks_disjunctive", min_wins=False),
+    Attribute("landmarks_conjunctiv", min_wins=False),
+    Attribute("orderings", min_wins=False),
+    Attribute("lmgraph_generation_time"),
+]
 
 def make_comparison_table():
     report = common_setup.ComparativeReport(
         algorithm_pairs=[
             ("issue999-base-lama-first", "issue999-v1-lama-first"),
-        ], attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES,
+            ("issue999-v1-lama-first", "issue999-v2-lama-first"),
+        ], attributes=ATTRIBUTES,
     )
     outfile = os.path.join(
         exp.eval_dir, "%s-compare.%s" % (exp.name, report.output_format)
@@ -27,7 +35,7 @@ def make_comparison_table():
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue999-base", "issue999-v1"]
+REVISIONS = ["issue999-base", "issue999-v1", "issue999-v2"]
 
 CONFIGS = [
     IssueConfig("lama-first", [],
@@ -57,11 +65,13 @@ exp.add_parser(exp.ANYTIME_SEARCH_PARSER)
 exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 exp.add_parser(exp.SINGLE_SEARCH_PARSER)
+exp.add_parser("landmark_parser.py")
 
 exp.add_step("build", exp.build)
 exp.add_step("start", exp.start_runs)
 exp.add_fetcher(name="fetch")
 exp.add_step("comparison table", make_comparison_table)
+#exp.add_parse_again_step()
 
 exp.run_steps()
 
