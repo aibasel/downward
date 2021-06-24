@@ -5,6 +5,7 @@
 import os
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
+from lab.reports import Attribute
 
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
