@@ -6,6 +6,7 @@
 #include "../task_proxy.h"
 
 #include "../utils/hash.h"
+#include "../utils/memory.h"
 
 #include <cassert>
 #include <list>
@@ -37,7 +38,8 @@ public:
     LandmarkNode(std::unique_ptr<Landmark> &&_landmark)
         : id(-1), landmark(move(_landmark)) {
     }
-    LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive);
+    LandmarkNode(std::vector<FactPair> &facts, bool disjunctive,
+                 bool conjunctive);
 
     std::unique_ptr<Landmark> landmark;
 
@@ -108,7 +110,9 @@ public:
     int get_num_edges() const;
 
     // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_landmark(int index) const;
+    Landmark *get_landmark(int index) const;
+    // only needed by non-landmarkgraph-factories
+    LandmarkNode *get_landmark_node(int index) const;
     // only needed by non-landmarkgraph-factories
     LandmarkNode *get_landmark(const FactPair &fact) const;
     /* This is needed only by landmark graph factories and will disappear

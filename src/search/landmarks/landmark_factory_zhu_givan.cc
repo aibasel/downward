@@ -86,7 +86,8 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
                 assert(initial_state[lm.var].get_value() == lm.value ||
-                       !relaxed_task_solvable(task_proxy, exploration, true, node->get_landmark()));
+                       !relaxed_task_solvable(task_proxy, exploration,
+                                              true, node->get_landmark()));
             } else {
                 node = &lm_graph->get_simple_landmark(lm);
             }

@@ -53,6 +53,7 @@ void LandmarkFactoryMerged::generate_landmarks(
     utils::g_log << "Adding simple landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
+        // TODO: loop over landmarks instead
         for (auto &lm_node : nodes) {
             const Landmark *landmark = lm_node->get_landmark();
             const FactPair &lm_fact = landmark->facts[0];
@@ -79,6 +80,7 @@ void LandmarkFactoryMerged::generate_landmarks(
     utils::g_log << "Adding disjunctive landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
+        // TODO: loop over landmarks instead
         for (auto &lm_node : nodes) {
             const Landmark *landmark = lm_node->get_landmark();
             if (landmark->disjunctive) {

@@ -126,7 +126,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
             landmark_status status =
                 lm_status_manager->get_landmark_status(id);
             if (status == lm_not_reached || status == lm_needed_again) {
-                h += lgraph->get_landmark(id)->landmark->cost;
+                h += lgraph->get_landmark(id)->cost;
             }
         }
         return h;
@@ -160,8 +160,8 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &nod
     return false;
 }
 
-bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
-                                                      const LandmarkSet &reached) {
+bool LandmarkCountHeuristic::generate_helpful_actions(
+    const State &state, const LandmarkSet &reached) {
     /* Find actions that achieve new landmark leaves. If no such action exist,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
@@ -239,15 +239,18 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
     return dead_ends_reliable;
 }
 
-// This function exists purely so we don't have to change all the
-// functions in this class that use LandmarkSets for the reached LMs
-// (HACK).
+/*
+  This function exists purely so we don't have to change all the
+  functions in this class that use LandmarkSets for the reached LMs (HACK).
+*/
 LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
     const BitsetView &landmark_bitset) {
     LandmarkSet landmark_set;
-    for (int i = 0; i < landmark_bitset.size(); ++i)
-        if (landmark_bitset.test(i))
-            landmark_set.insert(lgraph->get_landmark(i));
+    for (int i = 0; i < landmark_bitset.size(); ++i) {
+        if (landmark_bitset.test(i)) {
+            landmark_set.insert(lgraph->get_landmark_node(i));
+        }
+    }
     return landmark_set;
 }
 

@@ -28,7 +28,8 @@ void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
     int num_all_landmarks = lm_graph->get_num_landmarks();
     lm_graph->remove_node_if(
         [this, &task_proxy, &exploration](const LandmarkNode &node) {
-            return !is_causal_landmark(task_proxy, exploration, node.get_landmark());
+            return !is_causal_landmark(task_proxy, exploration,
+                                       node.get_landmark());
         });
     int num_causal_landmarks = lm_graph->get_num_landmarks();
     utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
@@ -90,7 +91,8 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
 
         vector<vector<int>> lvl_var;
         vector<utils::HashMap<FactPair, int>> lvl_op;
-        relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, true, landmark);
+        relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op,
+                              true, landmark);
 
         for (int op_or_axom_id : landmark->possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);

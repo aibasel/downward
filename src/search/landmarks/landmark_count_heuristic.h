@@ -31,7 +31,8 @@ class LandmarkCountHeuristic : public Heuristic {
     bool check_node_orders_disobeyed(
         const LandmarkNode &node, const LandmarkSet &reached) const;
 
-    void add_node_children(LandmarkNode &node, const LandmarkSet &reached) const;
+    void add_node_children(LandmarkNode &node,
+                           const LandmarkSet &reached) const;
 
     bool landmark_is_interesting(
         const State &state, const LandmarkSet &reached, LandmarkNode &lm) const;

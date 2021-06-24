@@ -36,6 +36,7 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     vector<FactPair> facts;
     const LandmarkGraph::Nodes &nodes = graph.get_nodes();
     facts.reserve(nodes.size());
+    // TODO: loop over landmarks instead
     for (auto &node : nodes) {
         facts.push_back(get_fact(node->get_landmark()));
     }

@@ -607,7 +607,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
         utils::g_log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
                      << " conjunctive landmarks" << endl;
         lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.get_landmark()->conjunctive;});
+            [](const LandmarkNode &node) {return node.landmark->conjunctive;});
     }
 }
 
@@ -618,6 +618,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
+    // TODO: loop over landmarks instead
     for (auto &lmn : lm_graph->get_nodes()) {
         Landmark *landmark = lmn->get_landmark();
         set<int> candidates;

@@ -30,7 +30,9 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     return result;
 }
 
-bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lvl_var, const Landmark *landmark) {
+bool _possibly_reaches_lm(const OperatorProxy &op,
+                          const vector<vector<int>> &lvl_var,
+                          const Landmark *landmark) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in lvl_var) */
 

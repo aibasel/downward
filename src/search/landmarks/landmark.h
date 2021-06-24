@@ -8,9 +8,10 @@
 namespace landmarks {
 class Landmark {
 public:
-    Landmark(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
+    Landmark(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive,
+             bool is_true_in_goal=false, bool is_derived=false)
         : facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
-          is_true_in_goal(false), is_derived(false), cost(1) {
+          is_true_in_goal(is_true_in_goal), is_derived(is_derived), cost(1) {
     }
 
     std::vector<FactPair> facts;
