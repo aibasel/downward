@@ -63,7 +63,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "Multiple Random Patterns",
         "This pattern collection generator implements the 'multiple "
         "randomized causal graph' (mRCG) algorithm described in experiments of "
-        "the the paper" + utils::format_conference_reference(
+        "the paper" + utils::format_conference_reference(
             {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
             "Counterexample-Guided Abstraction Refinement for Pattern Selection "
             "in Optimal Classical Planning",

@@ -279,30 +279,31 @@ void add_multiple_options_to_parser(options::OptionParser &parser) {
         Bounds("0.0", "infinity"));
     parser.add_option<double>(
         "total_max_time",
-        "maximum time in seconds for this pattern collection generator. The "
-        "algorithm will always execute at least one iteration, i.e., call the "
+        "maximum time in seconds for this pattern collection generator. "
+        "It will always execute at least one iteration, i.e., call the "
         "algorithm for computing a single pattern at least once.",
         "100.0",
         Bounds("0.0", "infinity"));
     parser.add_option<double>(
         "stagnation_limit",
-        "maximum time in seconds the algorithm allows without generating a "
-        "new pattern. The multiple algorithm terminates prematurely if this "
+        "maximum time in seconds this pattern generator is allowed to run "
+        "without generating a new pattern. It terminates prematurely if this "
         "limit is hit unless enable_blacklist_on_stagnation is enabled.",
         "20.0",
         Bounds("1.0", "infinity"));
     parser.add_option<double>(
         "blacklist_trigger_percentage",
-        "percentage of total_max_time after which the algorithm enables "
-        "blacklisting for diversification",
+        "percentage of total_max_time after which blacklisting is enabled",
         "0.75",
         Bounds("0.0", "1.0"));
     parser.add_option<bool>(
         "enable_blacklist_on_stagnation",
-        "if true, the multiple algorithm will enable blacklisting "
-        "for diversification when stagnation_limit is hit for the first time "
-        "(unless it was already enabled due to blacklist_trigger_percentage) "
-        "and terminate when stagnation_limit is hit for the second time.",
+        "if true, blacklisting is enabled when stagnation_limit is hit "
+        "for the first time (unless it was already enabled due to "
+        "blacklist_trigger_percentage) and pattern generation is terminated "
+        "when stagnation_limit is hit for the second time. If false, pattern "
+        "generation is terminated already the first time stagnation_limit is "
+        "hit.",
         "true");
     utils::add_verbosity_option_to_parser(parser);
     utils::add_rng_options(parser);
