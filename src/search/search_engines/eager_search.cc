@@ -253,41 +253,46 @@ SearchStatus EagerSearch::step() {
                 statistics.print_checkpoint_line(succ_g_new);
                 reward_progress();
             }
-        } else if (reopen_closed_nodes &&
-                   succ_g_old > g_evaluator->get_cached_estimate(succ_state)) {
+        } else if (succ_g_old > g_evaluator->get_cached_estimate(succ_state)) {
             // We found a new cheapest path to an open or closed state.
-            if (succ_node.is_closed()) {
+            if (reopen_closed_nodes) {
+                if (succ_node.is_closed()) {
+                    /*
+                      TODO: It would be nice if we had a way to test
+                      that reopening is expected behaviour, i.e., exit
+                      with an error when this is something where
+                      reopening should not occur (e.g. A* with a
+                      consistent heuristic).
+                    */
+                    statistics.inc_reopened();
+                }
+                succ_node.reopen(*node, op);
+
                 /*
-                  TODO: It would be nice if we had a way to test
-                  that reopening is expected behaviour, i.e., exit
-                  with an error when this is something where
-                  reopening should not occur (e.g. A* with a
-                  consistent heuristic).
+                  Note: our old code used to retrieve the h value from
+                  the search node here. Our new code recomputes it as
+                  necessary, thus avoiding the incredible ugliness of
+                  the old "set_evaluator_value" approach, which also
+                  did not generalize properly to settings with more
+                  than one evaluator.
+
+                  Reopening should not happen all that frequently, so
+                  the performance impact of this is hopefully not that
+                  large. In the medium term, we want the evaluators to
+                  remember evaluator values for states themselves if
+                  desired by the user, so that such recomputations
+                  will just involve a look-up by the Evaluator object
+                  rather than a recomputation of the evaluator value
+                  from scratch.
                 */
-                statistics.inc_reopened();
+                open_list->insert(succ_eval_context, succ_state.get_id());
+            } else {
+                // If we do not reopen closed nodes, we just update the parent pointers.
+                // Note that this could cause an incompatibility between
+                // the g-value and the actual path that is traced back.
+                succ_node.update_parent(*node, op);
             }
-            succ_node.reopen(*node, op);
-
-            /*
-              Note: our old code used to retrieve the h value from
-              the search node here. Our new code recomputes it as
-              necessary, thus avoiding the incredible ugliness of
-              the old "set_evaluator_value" approach, which also
-              did not generalize properly to settings with more
-              than one evaluator.
-
-              Reopening should not happen all that frequently, so
-              the performance impact of this is hopefully not that
-              large. In the medium term, we want the evaluators to
-              remember evaluator values for states themselves if
-              desired by the user, so that such recomputations
-              will just involve a look-up by the Evaluator object
-              rather than a recomputation of the evaluator value
-              from scratch.
-            */
-            open_list->insert(succ_eval_context, succ_state.get_id());
         }
-        // TODO: restore code for updating parent without reopening.
     }
 
     return IN_PROGRESS;
