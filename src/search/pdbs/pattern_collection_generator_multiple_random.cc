@@ -26,7 +26,7 @@ string PatternCollectionGeneratorMultipleRandom::get_name() const {
 
 void PatternCollectionGeneratorMultipleRandom::initialize(
     const shared_ptr<AbstractTask> &task) {
-    // Compute CG neighbors once. They will be shuffled after each use.
+    // Compute CG neighbors once. They are shuffled when used.
     cg_neighbors = compute_cg_neighbors(task, bidirectional);
 }
 
