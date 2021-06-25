@@ -170,18 +170,18 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
                      << enable_blacklist_on_stagnation << endl;
         utils::g_log << "verbosity: ";
         switch (verbosity) {
-            case utils::Verbosity::SILENT:
-                utils::g_log << "silent";
-                break;
-            case utils::Verbosity::NORMAL:
-                utils::g_log << "normal";
-                break;
-            case utils::Verbosity::VERBOSE:
-                utils::g_log << "verbose";
-                break;
-            case utils::Verbosity::DEBUG:
-                utils::g_log << "debug";
-                break;
+        case utils::Verbosity::SILENT:
+            utils::g_log << "silent";
+            break;
+        case utils::Verbosity::NORMAL:
+            utils::g_log << "normal";
+            break;
+        case utils::Verbosity::VERBOSE:
+            utils::g_log << "verbose";
+            break;
+        case utils::Verbosity::DEBUG:
+            utils::g_log << "debug";
+            break;
         }
         utils::g_log << endl;
     }
