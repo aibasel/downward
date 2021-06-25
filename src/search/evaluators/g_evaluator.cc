@@ -1,7 +1,5 @@
 #include "g_evaluator.h"
 
-#include "../evaluation_context.h"
-#include "../evaluation_result.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -15,12 +13,6 @@ GEvaluator::GEvaluator(const Options &opts)
 int GEvaluator::compute_heuristic(const State &ancestor_state) {
     // No need to convert the state since we only allow cost transformations.
     return heuristic_cache[ancestor_state].h;
-}
-
-EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
-    EvaluationResult result;
-    result.set_evaluator_value(heuristic_cache[eval_context.get_state()].h);
-    return result;
 }
 
 void GEvaluator::get_path_dependent_evaluators(std::set<Evaluator *> &evals) {
@@ -51,8 +43,8 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         "Returns the g-value (path cost) of the search node.");
     parser.add_option<shared_ptr<AbstractTask>>(
         "transform",
-        "Optional task transformation."
-        " Currently, adapt_costs() and no_transform() are available.",
+        "Optional task transformation. "
+        "Currently, adapt_costs() and no_transform() are available.",
         "no_transform()");
     Options opts = parser.parse();
     opts.set<bool>("cache_estimates", true);
