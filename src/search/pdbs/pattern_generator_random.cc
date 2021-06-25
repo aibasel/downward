@@ -70,7 +70,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "max_pdb_size",
         "maximum number of states in the final pattern database (possibly "
         "ignored by a singleton pattern consisting of a single goal variable)",
-        "2000000",
+        "1000000",
         Bounds("1", "infinity"));
     parser.add_option<double>(
         "max_time",

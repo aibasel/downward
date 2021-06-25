@@ -57,14 +57,14 @@ static shared_ptr<PatternCollectionGenerator> _parse(
         "maximum number of states per pattern database (ignored for the "
         "initial collection consisting of a singleton pattern for each goal "
         "variable)",
-        "2000000",
+        "1000000",
         Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_collection_size",
         "maximum number of states in the pattern collection (ignored for the "
         "initial collection consisting of a singleton pattern for each goal "
         "variable)",
-        "20000000",
+        "10000000",
         Bounds("1", "infinity"));
     parser.add_option<double>(
         "max_time",

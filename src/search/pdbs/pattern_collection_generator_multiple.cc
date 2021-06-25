@@ -271,13 +271,13 @@ void add_multiple_options_to_parser(options::OptionParser &parser) {
         "maximum number of states for each pattern database, computed "
         "by compute_pattern (possibly ignored by singleton patterns consisting "
         "of a goal variable)",
-        "2000000",
+        "1000000",
         Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_collection_size",
         "maximum number of states in all pattern databases of the "
         "collection (possibly ignored, see max_pdb_size)",
-        "20000000",
+        "10000000",
         Bounds("1", "infinity"));
     parser.add_option<double>(
         "pattern_generation_max_time",
