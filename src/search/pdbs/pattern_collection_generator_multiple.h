@@ -23,7 +23,7 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     const double pattern_generation_max_time;
     const double total_max_time;
     const double stagnation_limit;
-    const double blacklist_trigger_percentage;
+    const double blacklisting_start_time;
     const bool enable_blacklist_on_stagnation;
     const utils::Verbosity verbosity;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
@@ -34,8 +34,7 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     bool blacklisting;
     double stagnation_start_time;
 
-    void check_blacklist_trigger_timer(
-        double blacklisting_start_time, const utils::CountdownTimer &timer);
+    void check_blacklist_trigger_timer(const utils::CountdownTimer &timer);
     std::unordered_set<int> get_blacklisted_variables(
         std::vector<int> &non_goal_variables);
     void handle_generated_pattern(

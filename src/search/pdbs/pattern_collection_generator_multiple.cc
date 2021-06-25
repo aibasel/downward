@@ -23,7 +23,7 @@ PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
       pattern_generation_max_time(opts.get<double>("pattern_generation_max_time")),
       total_max_time(opts.get<double>("total_max_time")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
-      blacklist_trigger_percentage(opts.get<double>("blacklist_trigger_percentage")),
+      blacklisting_start_time(total_max_time * opts.get<double>("blacklist_trigger_percentage")),
       enable_blacklist_on_stagnation(opts.get<bool>("enable_blacklist_on_stagnation")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)),
@@ -34,7 +34,7 @@ PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
 }
 
 void PatternCollectionGeneratorMultiple::check_blacklist_trigger_timer(
-    double blacklisting_start_time, const utils::CountdownTimer &timer) {
+    const utils::CountdownTimer &timer) {
     // Check if blacklisting should be started.
     if (!blacklisting && timer.get_elapsed_time() > blacklisting_start_time) {
         blacklisting = true;
@@ -160,6 +160,30 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Generating patterns using the " << get_name()
                      << " algorithm." << endl;
+        utils::g_log << "max pdb size: " << max_pdb_size << endl;
+        utils::g_log << "max collection size: " << remaining_collection_size << endl;
+        utils::g_log << "max time: " << total_max_time << endl;
+        utils::g_log << "stagnation time limit: " << stagnation_limit << endl;
+        utils::g_log << "timer after which blacklisting is enabled: "
+                     << blacklisting_start_time << endl;
+        utils::g_log << "enable blacklisting after stagnation: "
+                     << enable_blacklist_on_stagnation << endl;
+        utils::g_log << "verbosity: ";
+        switch (verbosity) {
+            case utils::Verbosity::SILENT:
+                utils::g_log << "silent";
+                break;
+            case utils::Verbosity::NORMAL:
+                utils::g_log << "normal";
+                break;
+            case utils::Verbosity::VERBOSE:
+                utils::g_log << "verbose";
+                break;
+            case utils::Verbosity::DEBUG:
+                utils::g_log << "debug";
+                break;
+        }
+        utils::g_log << endl;
     }
 
     TaskProxy task_proxy(*task);
@@ -190,13 +214,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
         make_shared<utils::RandomNumberGenerator>(random_seed);
     int num_iterations = 1;
     int goal_index = 0;
-    /*
-      Start blacklisting after the percentage of max_time specified via
-      blacklisting_trigger_percentage has passed. Compute this time point once.
-    */
-    double blacklisting_start_time = total_max_time * blacklist_trigger_percentage;
     while (true) {
-        check_blacklist_trigger_timer(blacklisting_start_time, timer);
+        check_blacklist_trigger_timer(timer);
 
         unordered_set<int> blacklisted_variables =
             get_blacklisted_variables(non_goal_variables);

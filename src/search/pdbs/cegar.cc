@@ -51,43 +51,6 @@ CEGAR::CEGAR(
         }
     }
 #endif
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "options of the CEGAR algorithm for computing a pattern collection: " << endl;
-        utils::g_log << "max pdb size: " << max_pdb_size << endl;
-        utils::g_log << "max collection size: " << max_collection_size << endl;
-        utils::g_log << "max time: " << max_time << endl;
-        utils::g_log << "wildcard plans: " << use_wildcard_plans << endl;
-        utils::g_log << "Verbosity: ";
-        switch (verbosity) {
-        case utils::Verbosity::SILENT:
-            utils::g_log << "silent";
-            break;
-        case utils::Verbosity::NORMAL:
-            utils::g_log << "normal";
-            break;
-        case utils::Verbosity::VERBOSE:
-            utils::g_log << "verbose";
-            break;
-        case utils::Verbosity::DEBUG:
-            utils::g_log << "debug";
-            break;
-        }
-        utils::g_log << endl;
-        utils::g_log << "goal variables: ";
-        for (const FactPair &goal : this->goals) {
-            utils::g_log << goal.var << ", ";
-        }
-        utils::g_log << endl;
-        utils::g_log << "blacklisted variables: ";
-        if (this->blacklisted_variables.empty()) {
-            utils::g_log << "none";
-        } else {
-            for (int var : this->blacklisted_variables) {
-                utils::g_log << var << ", ";
-            }
-        }
-        utils::g_log << endl;
-    }
 }
 
 void CEGAR::print_collection() const {
@@ -129,7 +92,7 @@ unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
     if (pdb->get_value(initial_state.get_unpacked_values()) == numeric_limits<int>::max()) {
         unsolvable = true;
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "Projection onto pattern " << pdb->get_pattern()
+            utils::g_log << "projection onto pattern " << pdb->get_pattern()
                          << " is unsolvable" << endl;
         }
     } else {
@@ -443,14 +406,52 @@ void CEGAR::refine(const FlawList &flaws) {
 
     if (!added_var) {
         if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "could not add var/merge patterns due to size "
-                "limits. Blacklisting." << endl;
+            utils::g_log << "could not add var/merge pattern containing var "
+                         << "due to size limits, blacklisting var" << endl;
         }
         blacklisted_variables.insert(var);
     }
 }
 
 PatternCollectionInformation CEGAR::compute_pattern_collection() {
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "CEGAR options:" << endl;
+        utils::g_log << "max pdb size: " << max_pdb_size << endl;
+        utils::g_log << "max collection size: " << max_collection_size << endl;
+        utils::g_log << "max time: " << max_time << endl;
+        utils::g_log << "wildcard plans: " << use_wildcard_plans << endl;
+        utils::g_log << "verbosity: ";
+        switch (verbosity) {
+            case utils::Verbosity::SILENT:
+                utils::g_log << "silent";
+                break;
+            case utils::Verbosity::NORMAL:
+                utils::g_log << "normal";
+                break;
+            case utils::Verbosity::VERBOSE:
+                utils::g_log << "verbose";
+                break;
+            case utils::Verbosity::DEBUG:
+                utils::g_log << "debug";
+                break;
+        }
+        utils::g_log << endl;
+        utils::g_log << "goal variables: ";
+        for (const FactPair &goal : this->goals) {
+            utils::g_log << goal.var << ", ";
+        }
+        utils::g_log << endl;
+        utils::g_log << "blacklisted variables: ";
+        if (this->blacklisted_variables.empty()) {
+            utils::g_log << "none";
+        } else {
+            for (int var : this->blacklisted_variables) {
+                utils::g_log << var << ", ";
+            }
+        }
+        utils::g_log << endl;
+    }
+
     utils::CountdownTimer timer(max_time);
     compute_initial_collection();
     int iteration = 1;
