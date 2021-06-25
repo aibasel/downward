@@ -61,6 +61,9 @@ SearchEngine::SearchEngine(const Options &opts)
     }
     bound = opts.get<int>("bound");
     if (bound != numeric_limits<int>::max()) {
+        // TODO: if the g-evaluator is present and uses the original costs, we
+        // would like to reuse it as the real-g evaluator, but it's tricky to
+        // test whether this situation applies.
         Options real_g_eval_opts;
         real_g_eval_opts.set<shared_ptr<AbstractTask>>("transform", tasks::g_root_task);
         real_g_eval_opts.set<bool>("cache_estimates", true);
