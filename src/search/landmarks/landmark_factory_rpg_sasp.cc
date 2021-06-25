@@ -433,7 +433,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     State initial_state = task_proxy.get_initial_state();
     while (!open_landmarks.empty()) {
         LandmarkNode *bp = open_landmarks.front();
-        Landmark landmark = bp->get_landmark();
+        Landmark &landmark = bp->get_landmark();
         open_landmarks.pop_front();
         assert(forward_orders[bp].empty());
 
