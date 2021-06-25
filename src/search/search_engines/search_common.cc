@@ -35,13 +35,13 @@ void add_g_evaluator(options::Options &opts) {
     g_eval_opts.set<bool>("cache_estimates", true);
 
     opts.set<shared_ptr<Evaluator>>(
-        "g_eval", make_shared<g_evaluator::GEvaluator>(g_eval_opts));
+        "g_evaluator", make_shared<g_evaluator::GEvaluator>(g_eval_opts));
 }
 
 void add_real_g_evaluator_if_needed(options::Options &opts) {
     OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
     shared_ptr<Evaluator> g_evaluator = opts.get<shared_ptr<Evaluator>>(
-        "g_eval", nullptr);
+        "g_evaluator", nullptr);
 
     shared_ptr<Evaluator> real_g_evaluator;
     if (opts.get<int>("bound") != numeric_limits<int>::max()) {
@@ -53,7 +53,7 @@ void add_real_g_evaluator_if_needed(options::Options &opts) {
             g_eval_opts.set<bool>("cache_estimates", true);
             real_g_evaluator = make_shared<g_evaluator::GEvaluator>(g_eval_opts);
         }
-        opts.set<shared_ptr<Evaluator>>("real_g_eval", real_g_evaluator);
+        opts.set<shared_ptr<Evaluator>>("real_g_evaluator", real_g_evaluator);
     }
 }
 
@@ -135,7 +135,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get_list<shared_ptr<Evaluator>>("evals");
     int w = options.get<int>("w");
 
-    shared_ptr<Evaluator> g_eval = options.get<shared_ptr<Evaluator>>("g_eval");
+    shared_ptr<Evaluator> g_eval = options.get<shared_ptr<Evaluator>>("g_evaluator");
     vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)
@@ -149,7 +149,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
-    shared_ptr<Evaluator> g = opts.get<shared_ptr<Evaluator>>("g_eval");
+    shared_ptr<Evaluator> g = opts.get<shared_ptr<Evaluator>>("g_evaluator");
     shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
     shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h}));
     vector<shared_ptr<Evaluator>> evals = {f, h};

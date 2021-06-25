@@ -52,7 +52,7 @@ SearchEngine::SearchEngine(const Options &opts)
       search_space(state_registry),
       search_progress(opts.get<utils::Verbosity>("verbosity")),
       statistics(opts.get<utils::Verbosity>("verbosity")),
-      real_g_evaluator(opts.get<shared_ptr<Evaluator>>("real_g_eval", nullptr)),
+      real_g_evaluator(opts.get<shared_ptr<Evaluator>>("real_g_evaluator", nullptr)),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")) {

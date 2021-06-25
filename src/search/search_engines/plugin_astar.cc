@@ -46,7 +46,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         search_common::add_real_g_evaluator_if_needed(opts);
         auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts);
         opts.set("open", temp.first);
-        opts.set("f_eval", temp.second);
+        opts.set("f_evaluator", temp.second);
         opts.set("reopen_closed", true);
         vector<shared_ptr<Evaluator>> preferred_list;
         opts.set("preferred", preferred_list);

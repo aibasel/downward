@@ -27,14 +27,13 @@ EagerSearch::EagerSearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
-      // TODO: move into base class?
-      g_evaluator(opts.get<shared_ptr<Evaluator>>("g_eval", nullptr)),
-      f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
+      g_evaluator(opts.get<shared_ptr<Evaluator>>("g_evaluator", nullptr)),
+      f_evaluator(opts.get<shared_ptr<Evaluator>>("f_evaluator", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
     if (g_evaluator && !g_evaluator->does_cache_estimates()) {
-        cerr << "g_eval must cache its estimates" << endl;
+        cerr << "g_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
