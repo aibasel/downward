@@ -8,7 +8,6 @@
 #include "../task_proxy.h"
 
 #include "../utils/logging.h"
-#include "../utils/markup.h"
 
 #include <vector>
 
@@ -57,16 +56,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "Multiple Random Patterns",
         "This pattern collection generator implements the 'multiple "
         "randomized causal graph' (mRCG) algorithm described in experiments of "
-        "the paper" + utils::format_conference_reference(
-            {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
-            "Counterexample-Guided Abstraction Refinement for Pattern Selection "
-            "in Optimal Classical Planning",
-            "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
-            "Proceedings of the 29th International Conference on Automated "
-            "Planning and Scheduling (ICAPS 2019)",
-            "362-367",
-            "AAAI Press",
-            "2019") +
+        "the paper" + get_rovner_et_al_reference() +
         "To compute a pattern in each iteration, it uses the 'single random "
         "pattern' algorithm, called 'single randomized causal graph' (sRCG) "
         "in the paper; see PatternCollectionGenerator#Single_Random_Pattern.");

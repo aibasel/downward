@@ -58,6 +58,8 @@ extern void dump_pattern_collection_generation_statistics(
     const std::string &identifier,
     utils::Duration runtime,
     const PatternCollectionInformation &pci);
+
+extern std::string get_rovner_et_al_reference();
 }
 
 #endif

@@ -10,6 +10,7 @@
 #include "../task_utils/task_properties.h"
 
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
 
@@ -122,5 +123,18 @@ void dump_pattern_collection_generation_statistics(
     utils::g_log << compute_total_pdb_size(
         pci.get_task_proxy(), pattern_collection) << endl;
     utils::g_log << identifier << " computation time: " << runtime << endl;
+}
+
+string get_rovner_et_al_reference() {
+    return utils::format_conference_reference(
+    {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
+    "Counterexample-Guided Abstraction Refinement for Pattern Selection "
+    "in Optimal Classical Planning",
+        "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
+        "Proceedings of the 29th International Conference on Automated "
+        "Planning and Scheduling (ICAPS 2019)",
+        "362-367",
+        "AAAI Press",
+        "2019");
 }
 }

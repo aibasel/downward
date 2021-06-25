@@ -9,7 +9,6 @@
 #include "../task_proxy.h"
 
 #include "../utils/logging.h"
-#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -63,16 +62,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "Random Pattern",
         "This pattern collection generator implements the 'single randomized "
         "causal graph' algorithm described in experiments of the the paper"
-        + utils::format_conference_reference(
-            {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
-            "Counterexample-Guided Abstraction Refinement for Pattern Selection "
-            "in Optimal Classical Planning",
-            "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
-            "Proceedings of the 29th International Conference on Automated "
-            "Planning and Scheduling (ICAPS 2019)",
-            "362-367",
-            "AAAI Press",
-            "2019") +
+        + get_rovner_et_al_reference() +
         "It computes a pattern by performing a simple random walk on the "
         "causal graph, starting from the given random goal variable, and "
         "including all visited variables.");
