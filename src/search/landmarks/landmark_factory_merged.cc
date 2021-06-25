@@ -84,7 +84,7 @@ void LandmarkFactoryMerged::generate_landmarks(
 */
                 bool exists =
                     any_of(landmark.facts.begin(), landmark.facts.end(),
-                           [&](const FactPair& lm_fact) { return lm_graph->contains_landmark(lm_fact); });
+                           [&](const FactPair &lm_fact) {return lm_graph->contains_landmark(lm_fact);});
                 if (!exists) {
                     Landmark copy(landmark);
                     lm_graph->add_landmark(move(copy));
