@@ -18,6 +18,7 @@ class OptionParser;
 class Options;
 }
 
+// TODO: rename Heuristic to CachingEvaluator.
 class Heuristic : public Evaluator {
     struct HEntry {
         /* dirty is conceptually a bool, but Visual C++ does not support
