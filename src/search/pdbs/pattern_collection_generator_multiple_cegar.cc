@@ -2,17 +2,12 @@
 
 #include "cegar.h"
 #include "pattern_database.h"
-#include "utils.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/countdown_timer.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
-#include "../utils/rng.h"
-#include "../utils/rng_options.h"
-
-#include <vector>
 
 using namespace std;
 
@@ -34,7 +29,6 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
     const shared_ptr<AbstractTask> &task,
     FactPair goal,
     unordered_set<int> &&blacklisted_variables) {
-    const utils::Verbosity cegar_verbosity(utils::Verbosity::SILENT);
     /*
       Call CEGAR with the remaining size budget (limiting one of PDB and
       collection size would be enough, but this is cleaner).
@@ -44,7 +38,7 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
-        cegar_verbosity,
+        utils::Verbosity::SILENT,
         rng,
         task,
         {goal},

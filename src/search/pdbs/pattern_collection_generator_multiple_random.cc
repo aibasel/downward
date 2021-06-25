@@ -1,5 +1,5 @@
 #include "pattern_collection_generator_multiple_random.h"
-#include "pattern_database.h"
+
 #include "random_pattern.h"
 #include "utils.h"
 
@@ -7,13 +7,8 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../task_utils/causal_graph.h"
-
-#include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
-#include "../utils/rng.h"
-#include "../utils/rng_options.h"
 
 #include <vector>
 
@@ -44,11 +39,10 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     FactPair goal,
     unordered_set<int> &&) {
     // TODO: add support for blacklisting in single RCG?
-    const utils::Verbosity random_pattern_verbosity(utils::Verbosity::SILENT);
     Pattern pattern = generate_random_pattern(
         max_pdb_size,
         max_time,
-        random_pattern_verbosity,
+        utils::Verbosity::SILENT,
         rng,
         TaskProxy(*task),
         goal.var,
