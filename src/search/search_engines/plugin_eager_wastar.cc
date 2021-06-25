@@ -48,7 +48,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         return nullptr;
     } else {
         search_common::add_g_evaluator(opts);
-        search_common::add_real_g_evaluator_if_needed(opts);
         opts.set("open", search_common::create_wastar_open_list_factory(opts));
         return make_shared<eager_search::EagerSearch>(opts);
     }

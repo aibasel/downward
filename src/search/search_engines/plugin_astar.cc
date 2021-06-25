@@ -43,7 +43,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
         search_common::add_g_evaluator(opts);
-        search_common::add_real_g_evaluator_if_needed(opts);
         auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts);
         opts.set("open", temp.first);
         opts.set("f_evaluator", temp.second);

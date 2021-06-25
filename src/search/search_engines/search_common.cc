@@ -38,26 +38,6 @@ void add_g_evaluator(options::Options &opts) {
         "g_evaluator", make_shared<g_evaluator::GEvaluator>(g_eval_opts));
 }
 
-// TODO: call this function from search engine ctor.
-void add_real_g_evaluator_if_needed(options::Options &opts) {
-    OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
-    shared_ptr<Evaluator> g_evaluator = opts.get<shared_ptr<Evaluator>>(
-        "g_evaluator", nullptr);
-
-    shared_ptr<Evaluator> real_g_evaluator;
-    if (opts.get<int>("bound") != numeric_limits<int>::max()) {
-        if (g_evaluator && cost_type == OperatorCost::NORMAL) {
-            real_g_evaluator = g_evaluator;
-        } else {
-            Options g_eval_opts;
-            g_eval_opts.set<shared_ptr<AbstractTask>>("transform", tasks::g_root_task);
-            g_eval_opts.set<bool>("cache_estimates", true);
-            real_g_evaluator = make_shared<g_evaluator::GEvaluator>(g_eval_opts);
-        }
-        opts.set<shared_ptr<Evaluator>>("real_g_evaluator", real_g_evaluator);
-    }
-}
-
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     const shared_ptr<Evaluator> &eval, bool pref_only) {
     Options options;

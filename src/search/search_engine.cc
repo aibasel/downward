@@ -52,7 +52,6 @@ SearchEngine::SearchEngine(const Options &opts)
       search_space(state_registry),
       search_progress(opts.get<utils::Verbosity>("verbosity")),
       statistics(opts.get<utils::Verbosity>("verbosity")),
-      real_g_evaluator(opts.get<shared_ptr<Evaluator>>("real_g_evaluator", nullptr)),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(opts.get<double>("max_time")),
       verbosity(opts.get<utils::Verbosity>("verbosity")) {
@@ -61,9 +60,14 @@ SearchEngine::SearchEngine(const Options &opts)
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
-    assert(bound == numeric_limits<int>::max() || real_g_evaluator);
+    if (bound != numeric_limits<int>::max()) {
+        Options real_g_eval_opts;
+        real_g_eval_opts.set<shared_ptr<AbstractTask>>("transform", tasks::g_root_task);
+        real_g_eval_opts.set<bool>("cache_estimates", true);
+        real_g_evaluator = make_shared<g_evaluator::GEvaluator>(real_g_eval_opts);
+    }
     if (real_g_evaluator && !real_g_evaluator->does_cache_estimates()) {
-        cerr << "real_g_eval must cache its estimates" << endl;
+        cerr << "real_g_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
     task_properties::print_variable_statistics(task_proxy);

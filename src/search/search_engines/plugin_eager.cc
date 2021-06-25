@@ -31,12 +31,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
-        if (opts.get<bool>("reopen_closed") && !opts.contains("g_evaluator")) {
-            parser.error(
-                "g_evaluator is required if reopen_closed=true. "
-                "For example, you may use g_evaluator=g().");
-        }
-        search_common::add_real_g_evaluator_if_needed(opts);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
 

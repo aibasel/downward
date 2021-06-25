@@ -29,7 +29,6 @@ class Options;
 
 namespace search_common {
 extern void add_g_evaluator(options::Options &opts);
-extern void add_real_g_evaluator_if_needed(options::Options &opts);
 
 /*
   Create a standard scalar open list factory with the given "eval" and

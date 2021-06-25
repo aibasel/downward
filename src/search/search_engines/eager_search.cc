@@ -32,6 +32,11 @@ EagerSearch::EagerSearch(const Options &opts)
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+    if (reopen_closed_nodes && !g_evaluator) {
+        cerr << "g_evaluator is required if reopen_closed=true. "
+             << "For example, you may use g_evaluator=g()." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
     if (g_evaluator && !g_evaluator->does_cache_estimates()) {
         cerr << "g_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
