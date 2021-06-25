@@ -84,7 +84,7 @@ void PatternCollectionGeneratorMultiple::handle_generated_pattern(
         utils::g_log << "generated pattern " << pattern << endl;
     }
     if (generated_patterns.insert(move(pattern)).second) {
-        // RCG generated a new pattern. Reset stagnation_start_time.
+        // compute_pattern generated a new pattern. Reset stagnation_start_time.
         stagnation_start_time = -1;
         shared_ptr<PatternDatabase> pdb = pattern_info.get_pdb();
         remaining_collection_size -= pdb->get_size();
