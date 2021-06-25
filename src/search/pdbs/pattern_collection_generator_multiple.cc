@@ -155,18 +155,6 @@ bool PatternCollectionGeneratorMultiple::check_for_stagnation(
     return false;
 }
 
-static PatternCollectionInformation get_pattern_collection(
-    const TaskProxy &task_proxy, const shared_ptr<PDBCollection> &pdbs) {
-    shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
-    patterns->reserve(pdbs->size());
-    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
-        patterns->push_back(pdb->get_pattern());
-    }
-    PatternCollectionInformation result(task_proxy, patterns);
-    result.set_pdbs(pdbs);
-    return result;
-}
-
 PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
     const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
@@ -242,7 +230,8 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
         assert(utils::in_bounds(goal_index, goals));
     }
 
-    PatternCollectionInformation result = get_pattern_collection(task_proxy, generated_pdbs);
+    PatternCollectionInformation result = get_pattern_collection_info(
+        task_proxy, generated_pdbs);
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << get_name() << " number of iterations: "
                      << num_iterations << endl;

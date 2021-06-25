@@ -86,6 +86,19 @@ vector<vector<int>> compute_cg_neighbors(
     return cg_neighbors;
 }
 
+
+PatternCollectionInformation get_pattern_collection_info(
+    const TaskProxy &task_proxy, const shared_ptr<PDBCollection> &pdbs) {
+    shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
+    patterns->reserve(pdbs->size());
+    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
+        patterns->push_back(pdb->get_pattern());
+    }
+    PatternCollectionInformation result(task_proxy, patterns);
+    result.set_pdbs(pdbs);
+    return result;
+}
+
 void dump_pattern_generation_statistics(
     const string &identifier,
     utils::Duration runtime,
