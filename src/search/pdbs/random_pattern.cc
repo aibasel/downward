@@ -18,7 +18,7 @@ static bool time_limit_reached(
     const utils::CountdownTimer &timer, utils::Verbosity verbosity) {
     if (timer.is_expired()) {
         if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << "time limit reached." << endl;
+            utils::g_log << "Random pattern generation time limit reached" << endl;
         }
         return true;
     }

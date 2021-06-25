@@ -24,6 +24,11 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
 
 PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
     const shared_ptr<AbstractTask> &task) {
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Generating patterns using the Single CEGAR algorithm."
+                     << endl;
+    }
+
     // Store the set of goals in random order.
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);

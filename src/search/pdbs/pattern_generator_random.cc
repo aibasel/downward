@@ -28,11 +28,12 @@ PatternGeneratorRandom::PatternGeneratorRandom(options::Options &opts)
 
 PatternInformation PatternGeneratorRandom::generate(
     const shared_ptr<AbstractTask> &task) {
-    utils::Timer timer;
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Generating pattern using the Random Pattern algorithm."
                      << endl;
     }
+
+    utils::Timer timer;
     vector<vector<int>> cg_neighbors = compute_cg_neighbors(
         task, bidirectional);
     TaskProxy task_proxy(*task);

@@ -108,7 +108,7 @@ bool CEGAR::time_limit_reached(
     const utils::CountdownTimer &timer) const {
     if (timer.is_expired()) {
         if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << "time limit reached." << endl;
+            utils::g_log << "CEGAR time limit reached" << endl;
         }
         return true;
     }
