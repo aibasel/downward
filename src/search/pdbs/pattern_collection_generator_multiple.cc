@@ -30,7 +30,7 @@ PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
       random_seed(opts.get<int>("random_seed")),
       remaining_collection_size(opts.get<int>("max_collection_size")),
       blacklisting(false),
-      stagnation_start_time(-1) {
+      time_point_of_last_new_pattern(0.0) {
 }
 
 void PatternCollectionGeneratorMultiple::check_blacklist_trigger_timer(
@@ -38,8 +38,11 @@ void PatternCollectionGeneratorMultiple::check_blacklist_trigger_timer(
     // Check if blacklisting should be started.
     if (!blacklisting && timer.get_elapsed_time() > blacklisting_start_time) {
         blacklisting = true;
-        // Also reset stagnation timer in case it was already set.
-        stagnation_start_time = -1;
+        /*
+          Also treat this time point as having seen a new pattern to avoid
+          stopping due to stagnation right after enabling blacklisting.
+        */
+        time_point_of_last_new_pattern = timer.get_elapsed_time();
         if (verbosity >= utils::Verbosity::NORMAL) {
             utils::g_log << "given percentage of total time limit "
                          << "exhausted; enabling blacklisting." << endl;
@@ -84,16 +87,14 @@ void PatternCollectionGeneratorMultiple::handle_generated_pattern(
         utils::g_log << "generated pattern " << pattern << endl;
     }
     if (generated_patterns.insert(move(pattern)).second) {
-        // compute_pattern generated a new pattern. Reset stagnation_start_time.
-        stagnation_start_time = -1;
+        /*
+          compute_pattern generated a new pattern. Create/retrieve corresponding
+          PDB, update collection size and reset time_point_of_last_new_pattern.
+        */
+        time_point_of_last_new_pattern = timer.get_elapsed_time();
         shared_ptr<PatternDatabase> pdb = pattern_info.get_pdb();
         remaining_collection_size -= pdb->get_size();
         generated_pdbs->push_back(move(pdb));
-    } else {
-        // Pattern is not new. Set stagnation start time if not already set.
-        if (stagnation_start_time == -1) {
-            stagnation_start_time = timer.get_elapsed_time();
-        }
     }
 }
 
@@ -127,8 +128,7 @@ bool PatternCollectionGeneratorMultiple::time_limit_reached(
 bool PatternCollectionGeneratorMultiple::check_for_stagnation(
     const utils::CountdownTimer &timer) {
     // Test if no new pattern was generated for longer than stagnation_limit.
-    if (stagnation_start_time != -1 &&
-        timer.get_elapsed_time() - stagnation_start_time > stagnation_limit) {
+    if (timer.get_elapsed_time() - time_point_of_last_new_pattern > stagnation_limit) {
         if (enable_blacklist_on_stagnation) {
             if (blacklisting) {
                 if (verbosity >= utils::Verbosity::NORMAL) {
@@ -143,7 +143,7 @@ bool PatternCollectionGeneratorMultiple::check_for_stagnation(
                                  << "enabling blacklisting" << endl;
                 }
                 blacklisting = true;
-                stagnation_start_time = -1;
+                time_point_of_last_new_pattern = timer.get_elapsed_time();
             }
         } else {
             if (verbosity >= utils::Verbosity::NORMAL) {

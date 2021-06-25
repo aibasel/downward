@@ -32,7 +32,7 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     // Variables used in the main loop.
     int remaining_collection_size;
     bool blacklisting;
-    double stagnation_start_time;
+    double time_point_of_last_new_pattern;
 
     void check_blacklist_trigger_timer(const utils::CountdownTimer &timer);
     std::unordered_set<int> get_blacklisted_variables(
