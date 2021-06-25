@@ -1,18 +1,16 @@
 #ifndef EVALUATORS_G_EVALUATOR_H
 #define EVALUATORS_G_EVALUATOR_H
 
-#include "../evaluator.h"
-#include "../per_state_information.h"
+#include "../heuristic.h"
 
 #include <memory>
 
 namespace g_evaluator {
-class GEvaluator : public Evaluator {
-    std::shared_ptr<AbstractTask> task;
-    OperatorsProxy operators;
-    PerStateInformation<int> g_values;
+class GEvaluator : public Heuristic {
+protected:
+    virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    GEvaluator(const std::shared_ptr<AbstractTask> &task);
+    explicit GEvaluator(const options::Options &opts);
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

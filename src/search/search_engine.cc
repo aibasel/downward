@@ -62,6 +62,10 @@ SearchEngine::SearchEngine(const Options &opts)
     }
     bound = opts.get<int>("bound");
     assert(bound == numeric_limits<int>::max() || real_g_evaluator);
+    if (real_g_evaluator && !real_g_evaluator->does_cache_estimates()) {
+        cerr << "real_g_eval must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
     task_properties::print_variable_statistics(task_proxy);
 }
 

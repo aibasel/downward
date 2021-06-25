@@ -33,6 +33,10 @@ EagerSearch::EagerSearch(const Options &opts)
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+    if (g_evaluator && !g_evaluator->does_cache_estimates()) {
+        cerr << "g_eval must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -200,9 +204,7 @@ SearchStatus EagerSearch::step() {
                                     preferred_operators);
     }
 
-    int node_real_g = real_g_evaluator
-        ? eval_context.get_evaluator_value(real_g_evaluator.get())
-        : -1;
+    int node_real_g = real_g_evaluator ? real_g_evaluator->get_cached_estimate(s) : -1;
 
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
@@ -213,9 +215,9 @@ SearchStatus EagerSearch::step() {
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
-        int succ_g_old = g_evaluator
-            ? EvaluationContext(succ_state).get_evaluator_value_or_infinity(g_evaluator.get())
-            : -1;
+        int succ_g_old = g_evaluator && g_evaluator->is_estimate_cached(succ_state)
+            ? g_evaluator->get_cached_estimate(succ_state)
+            : numeric_limits<int>::max();
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
         }
@@ -242,13 +244,13 @@ SearchStatus EagerSearch::step() {
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
                 int succ_g_new = g_evaluator
-                    ? succ_eval_context.get_evaluator_value(g_evaluator.get())
+                    ? g_evaluator->get_cached_estimate(succ_state)
                     : -1;
                 statistics.print_checkpoint_line(succ_g_new);
                 reward_progress();
             }
         } else if (reopen_closed_nodes &&
-                   succ_g_old > succ_eval_context.get_evaluator_value(g_evaluator.get())) {
+                   succ_g_old > g_evaluator->get_cached_estimate(succ_state)) {
             // We found a new cheapest path to an open or closed state.
             if (succ_node.is_closed()) {
                 /*
@@ -281,6 +283,7 @@ SearchStatus EagerSearch::step() {
             */
             open_list->insert(succ_eval_context, succ_state.get_id());
         }
+        // TODO: restore code for updating parent without reopening.
     }
 
     return IN_PROGRESS;
