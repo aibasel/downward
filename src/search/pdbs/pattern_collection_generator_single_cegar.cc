@@ -56,6 +56,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(
             "AAAI Press",
             "2019"));
     add_implementation_notes_to_parser(parser);
+    // TODO: these options could be move to the base class; see issue1022.
     parser.add_option<int>(
         "max_pdb_size",
         "maximum number of states per pattern database (ignored for the "
