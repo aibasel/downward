@@ -22,7 +22,7 @@ def make_comparison_table():
     report = common_setup.ComparativeReport(
         algorithm_pairs=[
             ("issue999-base-seq-opt-bjolp", "issue999-v1-seq-opt-bjolp"),
-            ("issue999-v1-seq-opt-bjolp", "issue999-v3-seq-opt-bjolp"),
+            ("issue999-v1-seq-opt-bjolp", "issue999-v4-seq-opt-bjolp"),
         ], attributes=ATTRIBUTES,
     )
     outfile = os.path.join(
@@ -36,7 +36,7 @@ def make_comparison_table():
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue999-base", "issue999-v1", "issue999-v3"]
+REVISIONS = ["issue999-base", "issue999-v1", "issue999-v4"]
 
 CONFIGS = [
     IssueConfig("seq-opt-bjolp", [],
