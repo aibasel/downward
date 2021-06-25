@@ -50,7 +50,7 @@ void LandmarkFactoryMerged::generate_landmarks(
         lm_graphs.push_back(lm_factory->compute_lm_graph(task));
     }
 
-    utils::g_log << "Adding landmarks" << endl;
+    utils::g_log << "Adding simple landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         // TODO: loop over landmarks instead
@@ -59,20 +59,36 @@ void LandmarkFactoryMerged::generate_landmarks(
             if (landmark.conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
                 utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
-            }
-            /*
-              TODO: It seems that disjunctive landmarks are only added if none of the
-               facts it is made of is also there as a simple landmark. This should
-               either be more general (add only if none of its subset is already there)
-               or it should be done only upon request (e.g., heuristics that consider
-               orders might want to keep all landmarks).
-            */
-            bool exists =
-                any_of(landmark.facts.begin(), landmark.facts.end(),
-                       [&](const FactPair &lm_fact) {return lm_graph->contains_landmark(lm_fact);});
-            if (!exists) {
+            } else if (landmark.disjunctive) {
+                continue;
+            } else if (!lm_graph->contains_landmark(landmark.facts[0])) {
                 Landmark copy(landmark);
                 lm_graph->add_landmark(move(copy));
+            }
+        }
+    }
+
+    utils::g_log << "Adding disjunctive landmarks" << endl;
+    for (size_t i = 0; i < lm_graphs.size(); ++i) {
+        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
+        // TODO: loop over landmarks instead
+        for (auto &lm_node : nodes) {
+            const Landmark &landmark = lm_node->get_landmark();
+            if (landmark.disjunctive) {
+/*
+  TODO: It seems that disjunctive landmarks are only added if none of the
+   facts it is made of is also there as a simple landmark. This should
+   either be more general (add only if none of its subset is already there)
+   or it should be done only upon request (e.g., heuristics that consider
+   orders might want to keep all landmarks).
+*/
+                bool exists =
+                    any_of(landmark.facts.begin(), landmark.facts.end(),
+                           [&](const FactPair& lm_fact) { return lm_graph->contains_landmark(lm_fact); });
+                if (!exists) {
+                    Landmark copy(landmark);
+                    lm_graph->add_landmark(move(copy));
+                }
             }
         }
     }
