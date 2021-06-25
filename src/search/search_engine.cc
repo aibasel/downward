@@ -144,12 +144,11 @@ void SearchEngine::add_pruning_option(OptionParser &parser) {
 }
 
 void SearchEngine::add_options_to_parser(OptionParser &parser) {
-    // TODO: remove cost_type option.
-    ::add_cost_type_option_to_parser(parser);
     parser.add_option<int>(
         "bound",
         "exclusive depth bound on g-values. Cutoffs are always performed according to "
-        "the real cost, regardless of the cost_type parameter", "infinity");
+        "the real path cost, regardless of the cost type used by the optional g-evaluator",
+        "infinity");
     parser.add_option<double>(
         "max_time",
         "maximum time in seconds the search is allowed to run for. The "

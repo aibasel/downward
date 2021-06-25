@@ -10,7 +10,6 @@
 #include "../open_lists/alternation_open_list.h"
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
-#include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
 
 #include <memory>
@@ -23,15 +22,8 @@ using SumEval = sum_evaluator::SumEvaluator;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
 void add_g_evaluator(options::Options &opts) {
-    OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
-
-    shared_ptr<AbstractTask> task = tasks::g_root_task;
-    if (cost_type != OperatorCost::NORMAL) {
-        task = make_shared<tasks::CostAdaptedTask>(task, cost_type);
-    }
-
     Options g_eval_opts;
-    g_eval_opts.set<shared_ptr<AbstractTask>>("transform", task);
+    g_eval_opts.set<shared_ptr<AbstractTask>>("transform", tasks::g_root_task);
     g_eval_opts.set<bool>("cache_estimates", true);
 
     opts.set<shared_ptr<Evaluator>>(
