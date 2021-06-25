@@ -53,11 +53,11 @@ unordered_set<int> PatternCollectionGeneratorMultiple::get_blacklisted_variables
     if (blacklisting && !non_goal_variables.empty()) {
         /*
           Randomize the number of non-goal variables for blacklisting.
-          We want to choose at least 1 non-goal variable and up to the
-          entire set of non-goal variables.
+          We want to choose at least 1 non-goal variable, so we pick a random
+          value in the range [1, |non-goal variables|].
         */
         int blacklist_size = (*rng)(non_goal_variables.size());
-        ++blacklist_size; // [1, |non-goal variables|]
+        ++blacklist_size;
         rng->shuffle(non_goal_variables);
         blacklisted_variables.insert(
             non_goal_variables.begin(), non_goal_variables.begin() + blacklist_size);
