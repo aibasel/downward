@@ -14,6 +14,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
     parser.add_option<shared_ptr<Evaluator>>(
+        "g_evaluator",
+        "evaluator for path costs of search nodes. (Required iff reopen_closed=true.)",
+        OptionParser::NONE);
+    parser.add_option<shared_ptr<Evaluator>>(
         "f_evaluator",
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
@@ -27,8 +31,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
-        if (opts.get<bool>("reopen_closed")) {
-            search_common::add_g_evaluator(opts);
+        if (opts.get<bool>("reopen_closed") && !opts.contains("g_evaluator")) {
+            parser.error(
+                "g_evaluator is required if reopen_closed=true. "
+                "For example, you may use g_evaluator=g().");
         }
         search_common::add_real_g_evaluator_if_needed(opts);
         engine = make_shared<eager_search::EagerSearch>(opts);

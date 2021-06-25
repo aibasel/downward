@@ -38,6 +38,7 @@ void add_g_evaluator(options::Options &opts) {
         "g_evaluator", make_shared<g_evaluator::GEvaluator>(g_eval_opts));
 }
 
+// TODO: call this function from search engine ctor.
 void add_real_g_evaluator_if_needed(options::Options &opts) {
     OperatorCost cost_type = opts.get<OperatorCost>("cost_type");
     shared_ptr<Evaluator> g_evaluator = opts.get<shared_ptr<Evaluator>>(

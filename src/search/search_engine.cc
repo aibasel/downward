@@ -137,6 +137,7 @@ void SearchEngine::add_pruning_option(OptionParser &parser) {
 }
 
 void SearchEngine::add_options_to_parser(OptionParser &parser) {
+    // TODO: remove cost_type option.
     ::add_cost_type_option_to_parser(parser);
     parser.add_option<int>(
         "bound",
