@@ -1,7 +1,7 @@
-#include "pattern_generator_random.h"
+#include "pattern_generator_cegar.h"
 
+#include "cegar.h"
 #include "pattern_database.h"
-#include "random_pattern.h"
 #include "utils.h"
 
 #include "../option_parser.h"
@@ -17,55 +17,50 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorRandom::PatternGeneratorRandom(options::Options &opts)
+PatternGeneratorCEGAR::PatternGeneratorCEGAR(options::Options &opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_time(opts.get<double>("max_time")),
-      bidirectional(opts.get<bool>("bidirectional")),
+      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
       verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)) {
 }
 
-PatternInformation PatternGeneratorRandom::generate(
+PatternInformation PatternGeneratorCEGAR::generate(
     const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating pattern using the Random Pattern algorithm."
+        utils::g_log << "Generating pattern using the CEGAR algorithm."
                      << endl;
     }
 
     utils::Timer timer;
-    vector<vector<int>> cg_neighbors = compute_cg_neighbors(
-        task, bidirectional);
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);
 
-    Pattern pattern = generate_random_pattern(
+    PatternInformation pattern_info = generate_pattern_with_cegar(
         max_pdb_size,
         max_time,
-        verbosity,
+        use_wildcard_plans,
+        utils::Verbosity::SILENT,
         rng,
-        task_proxy,
-        goals[0].var,
-        cg_neighbors);
+        task,
+        goals[0]);
 
-    PatternInformation result(task_proxy, pattern);
     if (verbosity >= utils::Verbosity::NORMAL) {
         dump_pattern_generation_statistics(
-            "Random Pattern",
+            "CEGAR",
             timer.stop(),
-            result);
+            pattern_info);
     }
-    return result;
+    return pattern_info;
 }
 
 static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
     parser.document_synopsis(
-        "Random Pattern",
-        "This pattern generator implements the 'single randomized "
-        "causal graph' algorithm described in experiments of the the paper"
-        + get_rovner_et_al_reference() +
-        "It computes a pattern by performing a simple random walk on the "
-        "causal graph, starting from the given random goal variable, and "
-        "including all visited variables.");
+        "CEGAR",
+        "This pattern generator uses the CEGAR algorithm restricted to a "
+        "random single goal of the task to compute a pattern. Also see the "
+        "paper" + get_rovner_et_al_reference());
+    add_implementation_notes_to_parser(parser);
     parser.add_option<int>(
         "max_pdb_size",
         "maximum number of states in the final pattern database (possibly "
@@ -77,7 +72,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "maximum time in seconds for the pattern generation",
         "infinity",
         Bounds("0.0", "infinity"));
-    add_random_pattern_bidirectional_option_to_parser(parser);
+    add_cegar_wildcard_option_to_parser(parser);
     utils::add_verbosity_option_to_parser(parser);
     utils::add_rng_options(parser);
 
@@ -86,8 +81,8 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         return nullptr;
     }
 
-    return make_shared<PatternGeneratorRandom>(opts);
+    return make_shared<PatternGeneratorCEGAR>(opts);
 }
 
-static Plugin<PatternGenerator> _plugin("random_pattern", _parse);
+static Plugin<PatternGenerator> _plugin("cegar_pattern", _parse);
 }
