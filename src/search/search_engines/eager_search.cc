@@ -219,9 +219,6 @@ SearchStatus EagerSearch::step() {
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
-        int succ_g_old = g_evaluator && g_evaluator->is_estimate_cached(succ_state)
-            ? g_evaluator->get_cached_estimate(succ_state)
-            : numeric_limits<int>::max();
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
         }
@@ -253,8 +250,13 @@ SearchStatus EagerSearch::step() {
                 statistics.print_checkpoint_line(succ_g_new);
                 reward_progress();
             }
-        } else if (succ_g_old > g_evaluator->get_cached_estimate(succ_state)) {
+        } else if (g_evaluator && g_evaluator->is_cached_estimate_dirty(succ_state)) {
             // We found a new cheapest path to an open or closed state.
+
+            // Mark cached g-value as not dirty.
+            succ_eval_context.get_evaluator_value(g_evaluator.get());
+            assert(!g_evaluator->is_cached_estimate_dirty(succ_state));
+
             if (reopen_closed_nodes) {
                 if (succ_node.is_closed()) {
                     /*

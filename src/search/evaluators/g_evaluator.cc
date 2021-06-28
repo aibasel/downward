@@ -21,7 +21,7 @@ void GEvaluator::get_path_dependent_evaluators(std::set<Evaluator *> &evals) {
 
 void GEvaluator::notify_initial_state(const State &initial_state) {
     heuristic_cache[initial_state].h = 0;
-    heuristic_cache[initial_state].dirty = false;
+    heuristic_cache[initial_state].dirty = true;
 }
 
 void GEvaluator::notify_state_transition(
@@ -33,7 +33,7 @@ void GEvaluator::notify_state_transition(
     int new_g = parent_g + task_proxy.get_operators()[op_id.get_index()].get_cost();
     if (old_g == NO_VALUE || new_g < old_g) {
         heuristic_cache[state].h = new_g;
-        heuristic_cache[state].dirty = false;
+        heuristic_cache[state].dirty = true;
     }
 }
 

@@ -107,3 +107,8 @@ int Heuristic::get_cached_estimate(const State &state) const {
     assert(is_estimate_cached(state));
     return heuristic_cache[state].h;
 }
+
+bool Heuristic::is_cached_estimate_dirty(const State &state) const {
+    assert(is_estimate_cached(state));
+    return heuristic_cache[state].dirty;
+}
