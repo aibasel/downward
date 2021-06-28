@@ -25,23 +25,17 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
     const shared_ptr<AbstractTask> &task,
     FactPair goal,
     unordered_set<int> &&blacklisted_variables) {
-    /*
-      Call CEGAR with the remaining size budget (limiting one of PDB and
-      collection size would be enough, but this is cleaner).
-    */
-    CEGAR cegar(
-        max_pdb_size,
-        max_pdb_size,
-        max_time,
-        use_wildcard_plans,
-        utils::Verbosity::SILENT,
-        rng,
-        task,
-        {goal},
-        move(blacklisted_variables));
     PatternCollectionInformation collection_info =
-        cegar.compute_pattern_collection();
-
+        generate_pattern_collection_with_cegar(
+            max_pdb_size,
+            max_pdb_size,
+            max_time,
+            use_wildcard_plans,
+            utils::Verbosity::SILENT,
+            rng,
+            task,
+            {goal},
+            move(blacklisted_variables));
     shared_ptr<PatternCollection> new_patterns = collection_info.get_patterns();
     if (new_patterns->size() > 1) {
         cerr << "CEGAR limited to one goal computed more than one pattern" << endl;

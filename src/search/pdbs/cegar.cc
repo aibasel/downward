@@ -4,17 +4,160 @@
 #include "utils.h"
 
 #include "../option_parser.h"
+#include "../task_proxy.h"
 
 #include "../task_utils/task_properties.h"
 
 #include "../utils/countdown_timer.h"
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 
 #include <limits>
+#include <unordered_set>
 
 using namespace std;
 
 namespace pdbs {
+/*
+  This is used as a "collection entry" in the CEGAR algorithm. It stores
+  the PDB (and with that, the pattern) and an optimal plan (in the wildcard
+  format) for that PDB if it exists or unsolvable is true otherwise. It can
+  be marked as "solved" to ignore it in further iterations of the CEGAR
+  algorithm.
+*/
+class PatternInfo {
+    shared_ptr<PatternDatabase> pdb;
+    vector<vector<OperatorID>> plan;
+    bool unsolvable;
+    bool solved;
+
+public:
+    PatternInfo(
+        const shared_ptr<PatternDatabase> &&pdb,
+        const vector<vector<OperatorID>> &&plan,
+        bool unsolvable)
+        : pdb(move(pdb)),
+          plan(move(plan)),
+          unsolvable(unsolvable),
+          solved(false) {}
+
+    const shared_ptr<PatternDatabase> &get_pdb() const {
+        return pdb;
+    }
+
+    const Pattern &get_pattern() const {
+        return pdb->get_pattern();
+    }
+
+    const vector<vector<OperatorID>> &get_plan() const {
+        return plan;
+    }
+
+    bool is_unsolvable() const {
+        return unsolvable;
+    }
+
+    void mark_as_solved() {
+        solved = true;
+    }
+
+    bool is_solved() {
+        return solved;
+    }
+};
+
+struct Flaw {
+    int collection_index;
+    int variable;
+
+    Flaw(int collection_index, int variable)
+        : collection_index(collection_index),
+          variable(variable) {
+    }
+};
+
+using FlawList = vector<Flaw>;
+
+class CEGAR {
+    const int max_pdb_size;
+    const int max_collection_size;
+    const double max_time;
+    const bool use_wildcard_plans;
+    const utils::Verbosity verbosity;
+    shared_ptr<utils::RandomNumberGenerator> rng;
+    const shared_ptr<AbstractTask> &task;
+    const TaskProxy task_proxy;
+    const vector<FactPair> goals;
+    unordered_set<int> blacklisted_variables;
+
+    vector<unique_ptr<PatternInfo>> pattern_collection;
+    /*
+      Map each variable of the task which is contained in the collection to the
+      collection index at which the pattern containing the variable is stored.
+    */
+    unordered_map<int, int> variable_to_collection_index;
+    int collection_size;
+
+    void print_collection() const;
+    bool time_limit_reached(const utils::CountdownTimer &timer) const;
+
+    unique_ptr<PatternInfo> compute_pattern_info(Pattern &&pattern) const;
+    void compute_initial_collection();
+
+    /*
+      Check if operator op is applicable in state, ignoring blacklisted
+      variables. If it is, return an empty (flaw) list. Otherwise, return the
+      violated preconditions.
+    */
+    FlawList get_violated_preconditions(
+        int collection_index,
+        const OperatorProxy &op,
+        const vector<int> &current_state) const;
+    /*
+      Try to apply the plan of the pattern at the given index in the
+      concrete task starting at the given state. During application,
+      blacklisted variables are ignored. If plan application succeeds,
+      return an empty flaw list. Otherwise, return all precondition variables
+      of all operators of the failing plan step. When the method returns,
+      current is the last state reached when executing the plan.
+     */
+    FlawList apply_plan(int collection_index, vector<int> &current_state) const;
+    /*
+      Use apply_plan to generate flaws. Return true if there are no flaws and
+      no blacklisted variables, in which case the concrete task is solved.
+      Return false in all other cases. Append new flaws to the passed-in flaws.
+    */
+    bool get_flaws_for_pattern(
+        int collection_index, const State &concrete_init, FlawList &flaws);
+    /*
+      Use get_flaws_for_pattern for all patterns of the collection. Append
+      new flaws to the passed-in flaws. If the task is solved by the plan of
+      any pattern, return the collection index of that pattern. Otherwise,
+      return -1.
+    */
+    int get_flaws(const State &concrete_init, FlawList &flaws);
+
+    // Methods related to refining.
+    void add_pattern_for_var(int var);
+    bool can_merge_patterns(int index1, int index2) const;
+    void merge_patterns(int index1, int index2);
+    bool can_add_variable_to_pattern(int index, int var) const;
+    void add_variable_to_pattern(int collection_index, int var);
+    void refine(const FlawList &flaws);
+public:
+    CEGAR(
+        int max_pdb_size,
+        int max_collection_size,
+        double max_time,
+        bool use_wildcard_plans,
+        utils::Verbosity verbosity,
+        const shared_ptr<utils::RandomNumberGenerator> &rng,
+        const shared_ptr<AbstractTask> &task,
+        vector<FactPair> &&goals,
+        unordered_set<int> &&blacklisted_variables = unordered_set<int>());
+    PatternCollectionInformation compute_pattern_collection();
+};
+
 CEGAR::CEGAR(
     int max_pdb_size,
     int max_collection_size,
@@ -526,6 +669,29 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     }
 
     return pattern_collection_information;
+}
+
+PatternCollectionInformation generate_pattern_collection_with_cegar(
+    int max_pdb_size,
+    int max_collection_size,
+    double max_time,
+    bool use_wildcard_plans,
+    utils::Verbosity verbosity,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    const shared_ptr<AbstractTask> &task,
+    vector<FactPair> &&goals,
+    unordered_set<int> &&blacklisted_variables) {
+    CEGAR cegar(
+        max_pdb_size,
+        max_collection_size,
+        max_time,
+        use_wildcard_plans,
+        verbosity,
+        rng,
+        task,
+        move(goals),
+        move(blacklisted_variables));
+    return cegar.compute_pattern_collection();
 }
 
 void add_implementation_notes_to_parser(options::OptionParser &parser) {

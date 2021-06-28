@@ -6,6 +6,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/rng_options.h"
 
 using namespace std;
@@ -32,7 +33,7 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::generate(
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);
 
-    CEGAR cegar(
+    return generate_pattern_collection_with_cegar(
         max_pdb_size,
         max_collection_size,
         max_time,
@@ -41,7 +42,6 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::generate(
         rng,
         task,
         move(goals));
-    return cegar.compute_pattern_collection();
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(
