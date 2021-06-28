@@ -87,7 +87,6 @@ vector<vector<int>> compute_cg_neighbors(
     return cg_neighbors;
 }
 
-
 PatternCollectionInformation get_pattern_collection_info(
     const TaskProxy &task_proxy, const shared_ptr<PDBCollection> &pdbs) {
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();

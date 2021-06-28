@@ -29,7 +29,7 @@ extern std::vector<int> get_non_goal_variables(const TaskProxy &task_proxy);
 /*
   Compute the causal graph neighbors for each variable of the task. If
   bidirectional is false, then only predecessors of variables are considered
-  neighbors. If bidirectional is ture, then the causal graph is treated as
+  neighbors. If bidirectional is true, then the causal graph is treated as
   undirected graph and also successors of variables are considered neighbors.
 */
 extern std::vector<std::vector<int>> compute_cg_neighbors(
