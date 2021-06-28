@@ -1,6 +1,4 @@
-<div align="center">
-    <img src="misc/images/fast-downward.svg" width="800" alt="Fast Downward">
-</div>
+<img src="misc/images/fast-downward.png" width="800" alt="Fast Downward">
 
 Fast Downward is a domain-independent classical planning system.
 
