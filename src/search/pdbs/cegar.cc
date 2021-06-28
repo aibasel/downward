@@ -699,10 +699,10 @@ PatternInformation generate_pattern_with_cegar(
     double max_time,
     bool use_wildcard_plans,
     utils::Verbosity verbosity,
-    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
-    const std::shared_ptr<AbstractTask> &task,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    const shared_ptr<AbstractTask> &task,
     const FactPair &goal,
-    std::unordered_set<int> &&blacklisted_variables) {
+    unordered_set<int> &&blacklisted_variables) {
     vector<FactPair> goals = {goal};
     CEGAR cegar(
         max_pdb_size,
