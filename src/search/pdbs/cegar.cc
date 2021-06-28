@@ -87,7 +87,7 @@ class CEGAR {
     shared_ptr<utils::RandomNumberGenerator> rng;
     const shared_ptr<AbstractTask> &task;
     const TaskProxy task_proxy;
-    const vector<FactPair> goals;
+    const vector<FactPair> &goals;
     unordered_set<int> blacklisted_variables;
 
     vector<unique_ptr<PatternInfo>> pattern_collection;
@@ -153,7 +153,7 @@ public:
         utils::Verbosity verbosity,
         const shared_ptr<utils::RandomNumberGenerator> &rng,
         const shared_ptr<AbstractTask> &task,
-        vector<FactPair> &&goals,
+        const vector<FactPair> &goals,
         unordered_set<int> &&blacklisted_variables = unordered_set<int>());
     PatternCollectionInformation compute_pattern_collection();
 };
@@ -166,7 +166,7 @@ CEGAR::CEGAR(
     utils::Verbosity verbosity,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
-    vector<FactPair> &&goals,
+    const vector<FactPair> &goals,
     unordered_set<int> &&blacklisted_variables)
     : max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
@@ -176,7 +176,7 @@ CEGAR::CEGAR(
       rng(rng),
       task(task),
       task_proxy(*task),
-      goals(move(goals)),
+      goals(goals),
       blacklisted_variables(move(blacklisted_variables)),
       collection_size(0) {
 #ifndef NDEBUG
@@ -679,7 +679,7 @@ PatternCollectionInformation generate_pattern_collection_with_cegar(
     utils::Verbosity verbosity,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
-    vector<FactPair> &&goals,
+    const vector<FactPair> &goals,
     unordered_set<int> &&blacklisted_variables) {
     CEGAR cegar(
         max_pdb_size,
@@ -689,7 +689,7 @@ PatternCollectionInformation generate_pattern_collection_with_cegar(
         verbosity,
         rng,
         task,
-        move(goals),
+        goals,
         move(blacklisted_variables));
     return cegar.compute_pattern_collection();
 }
@@ -703,6 +703,7 @@ PatternInformation generate_pattern_with_cegar(
     const std::shared_ptr<AbstractTask> &task,
     const FactPair &goal,
     std::unordered_set<int> &&blacklisted_variables) {
+    vector<FactPair> goals = {goal};
     CEGAR cegar(
         max_pdb_size,
         max_pdb_size,
@@ -711,7 +712,7 @@ PatternInformation generate_pattern_with_cegar(
         verbosity,
         rng,
         task,
-        {goal},
+        goals,
         move(blacklisted_variables));
     PatternCollectionInformation collection_info = cegar.compute_pattern_collection();
     shared_ptr<PatternCollection> new_patterns = collection_info.get_patterns();
