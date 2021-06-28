@@ -23,31 +23,17 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
     double max_time,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
-    FactPair goal,
+    const FactPair &goal,
     unordered_set<int> &&blacklisted_variables) {
-    PatternCollectionInformation collection_info =
-        generate_pattern_collection_with_cegar(
-            max_pdb_size,
-            max_pdb_size,
-            max_time,
-            use_wildcard_plans,
-            utils::Verbosity::SILENT,
-            rng,
-            task,
-            {goal},
-            move(blacklisted_variables));
-    shared_ptr<PatternCollection> new_patterns = collection_info.get_patterns();
-    if (new_patterns->size() > 1) {
-        cerr << "CEGAR limited to one goal computed more than one pattern" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-    }
-
-    Pattern &pattern = new_patterns->front();
-    shared_ptr<PDBCollection> new_pdbs = collection_info.get_pdbs();
-    shared_ptr<PatternDatabase> &pdb = new_pdbs->front();
-    PatternInformation result(TaskProxy(*task), move(pattern));
-    result.set_pdb(pdb);
-    return result;
+    return generate_pattern_with_cegar(
+        max_pdb_size,
+        max_time,
+        use_wildcard_plans,
+        utils::Verbosity::SILENT,
+        rng,
+        task,
+        goal,
+        move(blacklisted_variables));
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {

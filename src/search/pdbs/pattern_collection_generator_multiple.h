@@ -53,7 +53,7 @@ protected:
         double max_time,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         const std::shared_ptr<AbstractTask> &task,
-        FactPair goal,
+        const FactPair &goal,
         std::unordered_set<int> &&blacklisted_variables) = 0;
 public:
     PatternCollectionGeneratorMultiple(options::Options &opts, const std::string &name);

@@ -31,7 +31,7 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     double max_time,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
-    FactPair goal,
+    const FactPair &goal,
     unordered_set<int> &&) {
     // TODO: add support for blacklisting in single RCG?
     Pattern pattern = generate_random_pattern(

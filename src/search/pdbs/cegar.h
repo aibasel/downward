@@ -3,6 +3,7 @@
 
 #include "pattern_collection_information.h"
 #include "pattern_database.h"
+#include "pattern_information.h"
 
 #include <memory>
 #include <vector>
@@ -43,6 +44,21 @@ extern PatternCollectionInformation generate_pattern_collection_with_cegar(
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     const std::shared_ptr<AbstractTask> &task,
     std::vector<FactPair> &&goals,
+    std::unordered_set<int> &&blacklisted_variables = std::unordered_set<int>());
+
+/*
+  This function implements the CEGAR algorithm as described above, however
+  restricted to a single goal and therefore guaranteed to generate a single
+  pattern instead of a pattern collection.
+*/
+extern PatternInformation generate_pattern_with_cegar(
+    int max_pdb_size,
+    double max_time,
+    bool use_wildcard_plans,
+    utils::Verbosity verbosity,
+    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
+    const std::shared_ptr<AbstractTask> &task,
+    const FactPair &goal,
     std::unordered_set<int> &&blacklisted_variables = std::unordered_set<int>());
 
 extern void add_implementation_notes_to_parser(options::OptionParser &parser);

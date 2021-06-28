@@ -694,6 +694,40 @@ PatternCollectionInformation generate_pattern_collection_with_cegar(
     return cegar.compute_pattern_collection();
 }
 
+PatternInformation generate_pattern_with_cegar(
+    int max_pdb_size,
+    double max_time,
+    bool use_wildcard_plans,
+    utils::Verbosity verbosity,
+    const std::shared_ptr<utils::RandomNumberGenerator> &rng,
+    const std::shared_ptr<AbstractTask> &task,
+    const FactPair &goal,
+    std::unordered_set<int> &&blacklisted_variables) {
+    CEGAR cegar(
+        max_pdb_size,
+        max_pdb_size,
+        max_time,
+        use_wildcard_plans,
+        verbosity,
+        rng,
+        task,
+        {goal},
+        move(blacklisted_variables));
+    PatternCollectionInformation collection_info = cegar.compute_pattern_collection();
+    shared_ptr<PatternCollection> new_patterns = collection_info.get_patterns();
+    if (new_patterns->size() > 1) {
+        cerr << "CEGAR limited to one goal computed more than one pattern" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+
+    Pattern &pattern = new_patterns->front();
+    shared_ptr<PDBCollection> new_pdbs = collection_info.get_pdbs();
+    shared_ptr<PatternDatabase> &pdb = new_pdbs->front();
+    PatternInformation result(TaskProxy(*task), move(pattern));
+    result.set_pdb(pdb);
+    return result;
+}
+
 void add_implementation_notes_to_parser(options::OptionParser &parser) {
     parser.document_note(
         "Implementation Notes",
