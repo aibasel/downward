@@ -565,15 +565,15 @@ void add_implementation_notes_to_parser(options::OptionParser &parser) {
         "computation significantly while not having a strongly negative effect "
         "on heuristic quality due to potentially computing worse plans.\n\n"
         "Two further changes fix bugs of the original implementation to match "
-        "the description in the paper. The first concerns the single CEGAR "
-        "algorithm: raise a flaw for all goal variables of the task if the "
-        "plan for a PDB can be executed on the concrete task but does not lead "
-        "to a goal state. Previously, such flaws would not have been raised "
-        "because all goal variables are part of the collection from the start "
-        "on and therefore not considered. This means that the original "
-        "implementation accidentally disallowed merging patterns due to goal "
-        "violation flaws. The second bug fix is to actually randomize the "
-        "order of parallel operators in wildcard plan steps.",
+        "the description in the paper. The first bug fix is to raise a flaw "
+        "for all goal variables of the task if the plan for a PDB can be "
+        "executed on the concrete task but does not lead to a goal state. "
+        "Previously, such flaws would not have been raised because all goal "
+        "variables are part of the collection from the start on and therefore "
+        "not considered. This means that the original implementation "
+        "accidentally disallowed merging patterns due to goal violation "
+        "flaws. The second bug fix is to actually randomize the order of "
+        "parallel operators in wildcard plan steps.",
         true);
 }
 

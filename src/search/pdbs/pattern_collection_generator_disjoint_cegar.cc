@@ -1,4 +1,4 @@
-#include "pattern_collection_generator_single_cegar.h"
+#include "pattern_collection_generator_disjoint_cegar.h"
 
 #include "cegar.h"
 #include "utils.h"
@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace pdbs {
-PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
+PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar(
     const options::Options &opts)
     : max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
@@ -21,10 +21,10 @@ PatternCollectionGeneratorSingleCegar::PatternCollectionGeneratorSingleCegar(
       rng(utils::parse_rng_from_options(opts)) {
 }
 
-PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
+PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::generate(
     const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating patterns using the Single CEGAR algorithm."
+        utils::g_log << "Generating patterns using the Disjoint CEGAR algorithm."
                      << endl;
     }
 
@@ -47,7 +47,7 @@ PatternCollectionInformation PatternCollectionGeneratorSingleCegar::generate(
 static shared_ptr<PatternCollectionGenerator> _parse(
     options::OptionParser &parser) {
     parser.document_synopsis(
-        "Single CEGAR",
+        "Disjoint CEGAR",
         "This pattern collection generator implements the single CEGAR algorithm "
         "described in the paper" + get_rovner_et_al_reference());
     add_implementation_notes_to_parser(parser);
@@ -81,8 +81,8 @@ static shared_ptr<PatternCollectionGenerator> _parse(
     if (parser.dry_run())
         return nullptr;
 
-    return make_shared<PatternCollectionGeneratorSingleCegar>(opts);
+    return make_shared<PatternCollectionGeneratorDisjointCegar>(opts);
 }
 
-static Plugin<PatternCollectionGenerator> _plugin("single_cegar", _parse);
+static Plugin<PatternCollectionGenerator> _plugin("disjoint_cegar", _parse);
 }
