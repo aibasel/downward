@@ -14,12 +14,8 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     options::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts),
+    : PatternCollectionGeneratorMultiple(opts, "Multiple CEGAR"),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")) {
-}
-
-string PatternCollectionGeneratorMultipleCegar::get_name() const {
-    return "Multiple CEGAR";
 }
 
 PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(

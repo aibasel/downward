@@ -18,8 +18,9 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
-    options::Options &opts)
-    : max_pdb_size(opts.get<int>("max_pdb_size")),
+    options::Options &opts, const string &name)
+    : name(name),
+      max_pdb_size(opts.get<int>("max_pdb_size")),
       pattern_generation_max_time(opts.get<double>("pattern_generation_max_time")),
       total_max_time(opts.get<double>("total_max_time")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
@@ -158,7 +159,7 @@ bool PatternCollectionGeneratorMultiple::check_for_stagnation(
 PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
     const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating patterns using the " << get_name()
+        utils::g_log << "Generating patterns using the " << name
                      << " algorithm." << endl;
         utils::g_log << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << "max collection size: " << remaining_collection_size << endl;
@@ -252,13 +253,13 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
     PatternCollectionInformation result = get_pattern_collection_info(
         task_proxy, generated_pdbs);
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << get_name() << " number of iterations: "
+        utils::g_log << name << " number of iterations: "
                      << num_iterations << endl;
-        utils::g_log << get_name() << " average time per generator: "
+        utils::g_log << name << " average time per generator: "
                      << timer.get_elapsed_time() / num_iterations
                      << endl;
         dump_pattern_collection_generation_statistics(
-            get_name(),
+            name,
             timer.get_elapsed_time(),
             result);
     }
