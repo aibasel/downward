@@ -13,7 +13,7 @@ from common_setup import IssueConfig, IssueExperiment
 ATTRIBUTES = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [
     Attribute("landmarks", min_wins=False),
     Attribute("landmarks_disjunctive", min_wins=False),
-    Attribute("landmarks_conjunctiv", min_wins=False),
+    Attribute("landmarks_conjunctive", min_wins=False),
     Attribute("orderings", min_wins=False),
     Attribute("lmgraph_generation_time"),
 ]
@@ -22,7 +22,7 @@ def make_comparison_table():
     report = common_setup.ComparativeReport(
         algorithm_pairs=[
             ("issue999-base-lama-first", "issue999-v1-lama-first"),
-            ("issue999-v1-lama-first", "issue999-v4-lama-first"),
+            ("issue999-base-lama-first", "issue999-v4-lama-first"),
         ], attributes=ATTRIBUTES,
     )
     outfile = os.path.join(

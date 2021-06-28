@@ -74,16 +74,15 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
                 const EdgeType &edge2 = child.second;
                 if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2: node_p ->_gn node2
                     for (const auto &p : node2.parents) {   // find parent
-                        LandmarkNode &parent = *(p.first);
+                        LandmarkNode &parent_node = *(p.first);
                         const EdgeType &edge = p.second;
-                        if (parent.get_landmark().disjunctive)
+                        if (parent_node.get_landmark().disjunctive)
                             continue;
                         if ((edge >= EdgeType::NATURAL || (obedient_orders && edge == EdgeType::REASONABLE)) &&
-                            &parent != node_p.get()) {  // find predecessors or parent and collect in
-                            // "interesting nodes"
-                            interesting_nodes.insert(&parent);
-                            collect_ancestors(interesting_nodes, parent,
-                                              obedient_orders);
+                            &parent_node != node_p.get()) {
+                            // find predecessors or parent and collect in "interesting nodes"
+                            interesting_nodes.insert(&parent_node);
+                            collect_ancestors(interesting_nodes, parent_node, obedient_orders);
                         }
                     }
                 }

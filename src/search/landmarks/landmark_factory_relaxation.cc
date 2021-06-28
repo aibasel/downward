@@ -78,8 +78,8 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
 
 void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
     VariablesProxy variables = task_proxy.get_variables();
-    for (auto &lmn : lm_graph->get_nodes()) {
-        Landmark &landmark = lmn->get_landmark();
+    for (auto &lm_node : lm_graph->get_nodes()) {
+        Landmark &landmark = lm_node->get_landmark();
         for (const FactPair &lm_fact : landmark.facts) {
             const vector<int> &ops = get_operators_including_eff(lm_fact);
             landmark.possible_achievers.insert(ops.begin(), ops.end());

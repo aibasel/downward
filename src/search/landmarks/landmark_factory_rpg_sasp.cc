@@ -177,8 +177,8 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
         return;
     }
 
-    vector<FactPair> fact = {a};
-    Landmark landmark(fact, false, false);
+    vector<FactPair> facts = {a};
+    Landmark landmark(facts, false, false);
     if (lm_graph->contains_disjunctive_landmark(a)) {
         // In issue1004, we fixed a bug in this part of the code. It now removes
         // the disjunctive landmark along with all its orderings from the

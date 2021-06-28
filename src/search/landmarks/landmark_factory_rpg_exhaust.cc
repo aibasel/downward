@@ -38,8 +38,8 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const FactPair lm(var.get_id(), value);
             if (!lm_graph->contains_simple_landmark(lm)) {
-                vector<FactPair> fact = {lm};
-                Landmark landmark(fact, false, false);
+                vector<FactPair> facts = {lm};
+                Landmark landmark(facts, false, false);
                 if (initial_state[lm.var].get_value() == lm.value ||
                     !relaxed_task_solvable(task_proxy, exploration, true, landmark)) {
                     lm_graph->add_landmark(move(landmark));

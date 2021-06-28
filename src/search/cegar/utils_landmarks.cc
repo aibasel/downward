@@ -15,8 +15,7 @@ using namespace landmarks;
 
 namespace cegar {
 static FactPair get_fact(const Landmark &landmark) {
-    /* We assume that the given LandmarkNodes are from an h^m landmark
-       graph with m=1. */
+    // We assume that the given Landmarks are from an h^m landmark graph with m=1.
     assert(landmark.facts.size() == 1);
     return landmark.facts[0];
 }
@@ -36,7 +35,6 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     vector<FactPair> facts;
     const LandmarkGraph::Nodes &nodes = graph.get_nodes();
     facts.reserve(nodes.size());
-    // TODO: loop over landmarks instead
     for (auto &node : nodes) {
         facts.push_back(get_fact(node->get_landmark()));
     }

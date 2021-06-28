@@ -64,8 +64,6 @@ public:
     }
 };
 
-using LandmarkSet = std::unordered_set<const LandmarkNode *>;
-
 class LandmarkGraph {
 public:
     /*

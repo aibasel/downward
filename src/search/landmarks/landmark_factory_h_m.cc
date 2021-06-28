@@ -618,9 +618,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
-    // TODO: loop over landmarks instead
-    for (auto &lmn : lm_graph->get_nodes()) {
-        Landmark &landmark = lmn->get_landmark();
+    for (auto &lm_node : lm_graph->get_nodes()) {
+        Landmark &landmark = lm_node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &lm_fact : landmark.facts) {
@@ -913,7 +912,7 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         }
         vector<FactPair> facts;
         if (lm.size() > 1) { // conjunctive landmark
-            facts.insert(facts.end(), lm.begin(), lm.end());
+            facts.assign(lm.begin(), lm.end());
         } else { // simple landmark
             facts = {h_m_table_[set_index].fluents[0]};
         }
