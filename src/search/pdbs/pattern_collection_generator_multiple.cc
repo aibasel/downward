@@ -60,7 +60,7 @@ unordered_set<int> PatternCollectionGeneratorMultiple::get_blacklisted_variables
           We want to choose at least 1 non-goal variable, so we pick a random
           value in the range [1, |non-goal variables|].
         */
-        int blacklist_size = (*rng)(non_goal_variables.size());
+        int blacklist_size = rng->random(non_goal_variables.size());
         ++blacklist_size;
         rng->shuffle(non_goal_variables);
         blacklisted_variables.insert(
