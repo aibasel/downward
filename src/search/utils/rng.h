@@ -21,13 +21,13 @@ public:
     void seed(int seed);
 
     // Return random double in [0..1).
-    double operator()() {
+    double random() {
         std::uniform_real_distribution<double> distribution(0.0, 1.0);
         return distribution(rng);
     }
 
     // Return random integer in [0..bound).
-    int operator()(int bound) {
+    int random(int bound) {
         assert(bound > 0);
         std::uniform_int_distribution<int> distribution(0, bound - 1);
         return distribution(rng);
@@ -35,12 +35,12 @@ public:
 
     template<typename T>
     typename std::vector<T>::const_iterator choose(const std::vector<T> &vec) {
-        return vec.begin() + operator()(vec.size());
+        return vec.begin() + random(vec.size());
     }
 
     template<typename T>
     typename std::vector<T>::iterator choose(std::vector<T> &vec) {
-        return vec.begin() + operator()(vec.size());
+        return vec.begin() + random(vec.size());
     }
 
     template<typename T>
