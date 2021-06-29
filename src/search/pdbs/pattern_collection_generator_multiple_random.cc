@@ -56,6 +56,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "To compute a pattern in each iteration, it uses the 'single random "
         "pattern' algorithm, called 'single randomized causal graph' (sRCG) "
         "in the paper; see PatternCollectionGenerator#Random_Pattern.");
+    add_random_pattern_implementation_notes_to_parser(parser);
     add_multiple_algorithm_implementation_notes_to_parser(parser);
     add_multiple_options_to_parser(parser);
     add_random_pattern_bidirectional_option_to_parser(parser);

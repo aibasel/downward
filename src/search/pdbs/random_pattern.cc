@@ -40,22 +40,26 @@ Pattern generate_random_pattern(
     VariablesProxy variables = task_proxy.get_variables();
     int pdb_size = variables[current_var].get_domain_size();
     while (!time_limit_reached(timer, verbosity)) {
-        // Pick random cg neighbor.
         rng->shuffle(cg_neighbors[current_var]);
-        int neighbor_var = -1;
-        for (int candidate : cg_neighbors[current_var]) {
-            if (!visited_vars.count(candidate)) {
-                neighbor_var = candidate;
+
+        /*
+          Search for a neighbor which was not selected yet and which fits the
+          size limit.
+        */
+        bool found_neighbor = false;
+        for (int neighbor : cg_neighbors[current_var]) {
+            int neighbor_dom_size = variables[neighbor].get_domain_size();
+            if (!visited_vars.count(neighbor) && utils::is_product_within_limit(
+                pdb_size, neighbor_dom_size, max_pdb_size)) {
+                pdb_size *= neighbor_dom_size;
+                visited_vars.insert(neighbor);
+                current_var = neighbor;
+                found_neighbor = true;
                 break;
             }
         }
 
-        if (neighbor_var != -1 && utils::is_product_within_limit(
-                pdb_size, variables[neighbor_var].get_domain_size(), max_pdb_size)) {
-            pdb_size *= variables[neighbor_var].get_domain_size();
-            visited_vars.insert(neighbor_var);
-            current_var = neighbor_var;
-        } else {
+        if (!found_neighbor) {
             break;
         }
     }
@@ -63,6 +67,19 @@ Pattern generate_random_pattern(
     Pattern pattern(visited_vars.begin(), visited_vars.end());
     sort(pattern.begin(), pattern.end());
     return pattern;
+}
+
+void add_random_pattern_implementation_notes_to_parser(
+    options::OptionParser &parser) {
+    parser.document_note(
+        "Implementation notes about the random pattern algorithm",
+        "In the original implementation used in the paper, the algorithm "
+        "selected a random neighbor and then checked if selecting it would "
+        "violate the PDB size limit. If so, the algorithm would not select "
+        "it and terminate. In the current implementation, the algorithm instead "
+        "loops over all neighbors of the current variable in random order and "
+        "selects the first one not violating the PDB size limit. If no such "
+        "neighbor exists, the algorithm terminates.");
 }
 
 void add_random_pattern_bidirectional_option_to_parser(options::OptionParser &parser) {

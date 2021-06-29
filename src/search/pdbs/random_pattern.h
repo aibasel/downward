@@ -27,7 +27,10 @@ extern Pattern generate_random_pattern(
     int goal_variable,
     std::vector<std::vector<int>> &cg_neighbors);
 
-extern void add_random_pattern_bidirectional_option_to_parser(options::OptionParser &parser);
+extern void add_random_pattern_implementation_notes_to_parser(
+    options::OptionParser &parser);
+extern void add_random_pattern_bidirectional_option_to_parser(
+    options::OptionParser &parser);
 }
 
 #endif

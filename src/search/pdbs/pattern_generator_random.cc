@@ -66,6 +66,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "It computes a pattern by performing a simple random walk on the "
         "causal graph, starting from the given random goal variable, and "
         "including all visited variables.");
+    add_random_pattern_implementation_notes_to_parser(parser);
     parser.add_option<int>(
         "max_pdb_size",
         "maximum number of states in the final pattern database (possibly "
