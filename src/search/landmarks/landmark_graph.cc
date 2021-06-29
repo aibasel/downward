@@ -13,10 +13,6 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkNode::LandmarkNode(vector<FactPair> &facts, bool disjunctive, bool conjunctive)
-    : id(-1), landmark(facts, disjunctive, conjunctive) {
-}
-
 LandmarkGraph::LandmarkGraph()
     : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0) {
 }
@@ -28,15 +24,11 @@ int LandmarkGraph::get_num_edges() const {
     return total;
 }
 
-const Landmark &LandmarkGraph::get_landmark(int i) const {
-    return nodes[i]->get_landmark();
-}
-
-LandmarkNode *LandmarkGraph::get_landmark_node(int i) const {
+LandmarkNode *LandmarkGraph::get_node(int i) const {
     return nodes[i].get();
 }
 
-LandmarkNode *LandmarkGraph::get_landmark_node(const FactPair &fact) const {
+LandmarkNode *LandmarkGraph::get_node(const FactPair &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact,
        or nullptr if no such landmark exists. */
     LandmarkNode *node_p = nullptr;

@@ -36,11 +36,9 @@ class LandmarkNode {
     int id;
     Landmark landmark;
 public:
-    LandmarkNode(Landmark &&_landmark)
-        : id(-1), landmark(std::move(_landmark)) {
+    LandmarkNode(Landmark &&landmark)
+        : id(-1), landmark(std::move(landmark)) {
     }
-    LandmarkNode(std::vector<FactPair> &facts, bool disjunctive,
-                 bool conjunctive);
 
     std::unordered_map<LandmarkNode *, EdgeType> parents;
     std::unordered_map<LandmarkNode *, EdgeType> children;
@@ -111,11 +109,9 @@ public:
     int get_num_edges() const;
 
     // only needed by non-landmarkgraph-factories
-    const Landmark &get_landmark(int index) const;
+    LandmarkNode *get_node(int index) const;
     // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_landmark_node(int index) const;
-    // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_landmark_node(const FactPair &fact) const;
+    LandmarkNode *get_node(const FactPair &fact) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     LandmarkNode &get_simple_landmark(const FactPair &fact) const;

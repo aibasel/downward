@@ -29,13 +29,13 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 
     int inserted = 0;
     int num_goal_lms = 0;
-    for (auto &node_p : lm_graph.get_nodes()) {
-        const Landmark &landmark = node_p->get_landmark();
+    for (auto &lm_node : lm_graph.get_nodes()) {
+        const Landmark &landmark = lm_node->get_landmark();
         if (landmark.is_true_in_goal) {
             ++num_goal_lms;
         }
 
-        if (!node_p->parents.empty()) {
+        if (!lm_node->parents.empty()) {
             continue;
         }
         if (landmark.conjunctive) {
@@ -47,13 +47,13 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                 }
             }
             if (lm_true) {
-                reached.set(node_p->get_id());
+                reached.set(lm_node->get_id());
                 ++inserted;
             }
         } else {
             for (const FactPair &fact : landmark.facts) {
                 if (initial_state[fact.var].get_value() == fact.value) {
-                    reached.set(node_p->get_id());
+                    reached.set(lm_node->get_id());
                     ++inserted;
                     break;
                 }
@@ -95,7 +95,7 @@ bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_stat
     // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
-            LandmarkNode *node = lm_graph.get_landmark_node(id);
+            LandmarkNode *node = lm_graph.get_node(id);
             if (node->get_landmark().is_true_in_state(ancestor_state)) {
                 if (landmark_is_leaf(*node, reached)) {
                     reached.set(id);
@@ -156,7 +156,7 @@ bool LandmarkStatusManager::dead_end_exists() {
 
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const State &state) {
-    LandmarkNode *node = lm_graph.get_landmark_node(id);
+    LandmarkNode *node = lm_graph.get_node(id);
     const Landmark &landmark = node->get_landmark();
     if (landmark.is_true_in_state(state)) {
         return false;

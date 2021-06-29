@@ -61,14 +61,13 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
         FactPair goal_lm = goal.get_pair();
-        LandmarkNode *lmp;
+        LandmarkNode *lm_node;
         if (lm_graph->contains_simple_landmark(goal_lm)) {
-            lmp = &lm_graph->get_simple_landmark(goal_lm);
-            lmp->get_landmark().is_true_in_goal = true;
+            lm_node = &lm_graph->get_simple_landmark(goal_lm);
+            lm_node->get_landmark().is_true_in_goal = true;
         } else {
-            vector<FactPair> fact = {goal_lm};
-            Landmark landmark(fact, false, false, true);
-            lmp = &lm_graph->add_landmark(move(landmark));
+            Landmark landmark({goal_lm}, false, false, true);
+            lm_node = &lm_graph->add_landmark(move(landmark));
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -82,8 +81,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             LandmarkNode *node;
             // Add new landmarks
             if (!lm_graph->contains_simple_landmark(lm)) {
-                vector<FactPair> fact = {lm};
-                Landmark landmark(fact, false, false);
+                Landmark landmark({lm}, false, false);
                 assert(initial_state[lm.var].get_value() == lm.value ||
                        !relaxed_task_solvable(task_proxy, exploration,
                                               true, landmark));
@@ -92,9 +90,9 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 node = &lm_graph->get_simple_landmark(lm);
             }
             // Add order: lm ->_{nat} lm
-            assert(node->parents.find(lmp) == node->parents.end());
-            assert(lmp->children.find(node) == lmp->children.end());
-            edge_add(*node, *lmp, EdgeType::NATURAL);
+            assert(node->parents.find(lm_node) == node->parents.end());
+            assert(lm_node->children.find(node) == lm_node->children.end());
+            edge_add(*node, *lm_node, EdgeType::NATURAL);
         }
     }
 }

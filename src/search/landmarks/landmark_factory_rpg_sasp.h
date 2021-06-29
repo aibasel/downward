@@ -25,7 +25,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void add_dtg_successor(int var_id, int pre, int post);
     void find_forward_orders(const VariablesProxy &variables,
                              const std::vector<std::vector<int>> &lvl_var,
-                             LandmarkNode *lmp);
+                             LandmarkNode *lm_node);
     void add_lm_forward_orders();
 
     void get_greedy_preconditions_for_lm(

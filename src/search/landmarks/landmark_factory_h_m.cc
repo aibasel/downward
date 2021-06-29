@@ -902,26 +902,16 @@ void LandmarkFactoryHM::compute_noop_landmarks(
 }
 
 void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
-    set<FactPair> lm;
-
-    map<int, LandmarkNode *>::iterator it = lm_node_table_.find(set_index);
-
-    if (it == lm_node_table_.end()) {
-        for (const FactPair &fluent : h_m_table_[set_index].fluents) {
-            lm.insert(fluent);
-        }
-        vector<FactPair> facts;
-        if (lm.size() > 1) { // conjunctive landmark
-            facts.assign(lm.begin(), lm.end());
-        } else { // simple landmark
-            facts = {h_m_table_[set_index].fluents[0]};
-        }
-        Landmark landmark(facts, false, (lm.size() > 1), goal);
+    if (lm_node_table_.find(set_index) == lm_node_table_.end()) {
+        const HMEntry &hm_entry = h_m_table_[set_index];
+        vector<FactPair> facts(hm_entry.fluents);
+        utils::sort_unique(facts);
+        assert(!facts.empty());
+        Landmark landmark(facts, false, (facts.size() > 1), goal);
         landmark.first_achievers.insert(
-            h_m_table_[set_index].first_achievers.begin(),
-            h_m_table_[set_index].first_achievers.end());
-        LandmarkNode *node = &lm_graph->add_landmark(move(landmark));
-        lm_node_table_[set_index] = node;
+            hm_entry.first_achievers.begin(),
+            hm_entry.first_achievers.end());
+        lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark));
     }
 }
 

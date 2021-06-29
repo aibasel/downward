@@ -96,7 +96,7 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
         for (int op_or_axom_id : landmark.possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
-            if (_possibly_reaches_lm(op, lvl_var, landmark)) {
+            if (possibly_reaches_lm(op, lvl_var, landmark)) {
                 landmark.first_achievers.insert(op_or_axom_id);
             }
         }

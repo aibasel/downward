@@ -16,7 +16,7 @@ extern std::unordered_map<int, int> _intersect(
     const std::unordered_map<int, int> &a,
     const std::unordered_map<int, int> &b);
 
-extern bool _possibly_reaches_lm(
+extern bool possibly_reaches_lm(
     const OperatorProxy &op, const std::vector<std::vector<int>> &lvl_var,
     const Landmark &landmark);
 

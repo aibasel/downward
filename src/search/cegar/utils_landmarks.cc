@@ -44,7 +44,7 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
 
 VarToValues get_prev_landmarks(const LandmarkGraph &graph, const FactPair &fact) {
     VarToValues groups;
-    LandmarkNode *node = graph.get_landmark_node(fact);
+    LandmarkNode *node = graph.get_node(fact);
     assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
