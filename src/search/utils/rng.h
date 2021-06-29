@@ -33,19 +33,16 @@ public:
         return distribution(rng);
     }
 
-    // Return random const element from vec
     template<typename T>
     typename std::vector<T>::const_iterator choose(const std::vector<T> &vec) {
         return vec.begin() + random(vec.size());
     }
 
-    // Return random element from vec
     template<typename T>
     typename std::vector<T>::iterator choose(std::vector<T> &vec) {
         return vec.begin() + random(vec.size());
     }
 
-    // Shuffle vec
     template<typename T>
     void shuffle(std::vector<T> &vec) {
         std::shuffle(vec.begin(), vec.end(), rng);
