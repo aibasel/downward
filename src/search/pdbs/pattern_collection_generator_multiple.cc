@@ -267,6 +267,15 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
 }
 
 void add_multiple_options_to_parser(options::OptionParser &parser) {
+    parser.document_note(
+        "Implementation Note",
+        "A difference compared to the original implementation used in the "
+        "paper is that the original implementation of stagnation in "
+        "the multiple CEGAR/RCG algorithms started counting the time towards "
+        "stagnation only after having generated a duplicate pattern. Now, "
+        "time towards stagnation starts counting from the start and is reset "
+        "to the current time only when having found a new pattern or when "
+        "enabling blacklisting.");
     parser.add_option<int>(
         "max_pdb_size",
         "maximum number of states for each pattern database, computed "

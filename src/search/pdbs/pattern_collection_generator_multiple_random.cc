@@ -55,16 +55,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "the paper" + get_rovner_et_al_reference() +
         "To compute a pattern in each iteration, it uses the 'single random "
         "pattern' algorithm, called 'single randomized causal graph' (sRCG) "
-        "in the paper; see PatternCollectionGenerator#Single_Random_Pattern.");
-    parser.document_note(
-        "Implementation Note",
-        "A change compared to the original implementation as used in the "
-        "paper is that the original implementation of stagnation in "
-        "the multiple CEGAR/RCG algorithms started counting the time towards "
-        "stagnation only after having generated a duplicate pattern. Now, "
-        "time towards stagnation starts counting from the start and is reset "
-        "to the current time only when having found a new pattern or when "
-        "enabling blacklisting.");
+        "in the paper; see PatternCollectionGenerator#Random_Pattern.");
     add_multiple_options_to_parser(parser);
     add_random_pattern_bidirectional_option_to_parser(parser);
 
