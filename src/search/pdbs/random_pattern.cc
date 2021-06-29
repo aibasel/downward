@@ -50,7 +50,7 @@ Pattern generate_random_pattern(
         for (int neighbor : cg_neighbors[current_var]) {
             int neighbor_dom_size = variables[neighbor].get_domain_size();
             if (!visited_vars.count(neighbor) && utils::is_product_within_limit(
-                pdb_size, neighbor_dom_size, max_pdb_size)) {
+                    pdb_size, neighbor_dom_size, max_pdb_size)) {
                 pdb_size *= neighbor_dom_size;
                 visited_vars.insert(neighbor);
                 current_var = neighbor;
