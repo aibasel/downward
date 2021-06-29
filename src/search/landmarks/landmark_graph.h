@@ -53,6 +53,7 @@ public:
         id = new_id;
     }
 
+    // TODO: Remove this function once the LM-graph is constant after creation.
     Landmark &get_landmark() {
         return landmark;
     }

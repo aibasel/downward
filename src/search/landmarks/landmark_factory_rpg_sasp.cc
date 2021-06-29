@@ -451,7 +451,9 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
                                          lvl_var, landmark);
             // All such shared preconditions are landmarks, and greedy necessary predecessors of landmark.
             for (const auto &pre : shared_pre) {
-                found_simple_lm_and_order(FactPair(pre.first, pre.second), *lm_node, EdgeType::GREEDY_NECESSARY);
+                found_simple_lm_and_order(
+                    FactPair(pre.first, pre.second), *lm_node,
+                    EdgeType::GREEDY_NECESSARY);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(task_proxy, lvl_var, lm_node);
@@ -465,7 +467,9 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
                 task_proxy, disjunctive_pre, lvl_var, landmark);
             for (const auto &preconditions : disjunctive_pre)
                 if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
-                    found_disj_lm_and_order(task_proxy, preconditions, *lm_node, EdgeType::GREEDY_NECESSARY);
+                    found_disj_lm_and_order(
+                        task_proxy, preconditions, *lm_node,
+                        EdgeType::GREEDY_NECESSARY);
                 }
         }
     }

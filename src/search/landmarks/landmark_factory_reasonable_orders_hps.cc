@@ -70,10 +70,10 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
             // Use hash set to filter duplicates.
             unordered_set<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
-                const LandmarkNode &node2 = *child.first;
+                const LandmarkNode &node2_p = *child.first;
                 const EdgeType &edge2 = child.second;
-                if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2: node_p ->_gn node2
-                    for (const auto &p : node2.parents) {   // find parent
+                if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2_p: node_p ->_gn node2_p
+                    for (const auto &p : node2_p.parents) {   // find parent
                         LandmarkNode &parent_node = *(p.first);
                         const EdgeType &edge = p.second;
                         if (parent_node.get_landmark().disjunctive)
@@ -89,15 +89,15 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
             }
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
-            for (LandmarkNode *node : interesting_nodes) {
-                const Landmark &landmark2 = node->get_landmark();
+            for (LandmarkNode *node2_p : interesting_nodes) {
+                const Landmark &landmark2 = node2_p->get_landmark();
                 if (landmark == landmark2 || landmark2.disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
                     if (!obedient_orders)
-                        edge_add(*node, *node_p, EdgeType::REASONABLE);
+                        edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
                     else
-                        edge_add(*node, *node_p, EdgeType::OBEDIENT_REASONABLE);
+                        edge_add(*node2_p, *node_p, EdgeType::OBEDIENT_REASONABLE);
                 }
             }
         }

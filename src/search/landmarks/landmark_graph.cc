@@ -105,9 +105,6 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
     assert(all_of(landmark.facts.begin(), landmark.facts.end(), [&](const FactPair &lm_fact) {
                       return !contains_landmark(lm_fact);
                   }));
-    // TODO: This turned out to be very ugly with the creation of the unique
-    //  pointer which moves the Landmark object, then the getting of the raw
-    //  pointer and then the re-getting of the Landmark object.
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(move(landmark));
     LandmarkNode *new_node_p = new_node.get();
