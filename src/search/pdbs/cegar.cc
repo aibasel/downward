@@ -729,9 +729,9 @@ PatternInformation generate_pattern_with_cegar(
     return result;
 }
 
-void add_implementation_notes_to_parser(options::OptionParser &parser) {
+void add_cegar_implementation_notes_to_parser(options::OptionParser &parser) {
     parser.document_note(
-        "Implementation Notes",
+        "Implementation notes about the CEGAR algorithm",
         "The following describes differences of the implementation to "
         "the original implementation used and described in the paper.\n\n"
         "Conceptually, there is one larger difference which concerns the "

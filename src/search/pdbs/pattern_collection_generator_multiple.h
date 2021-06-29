@@ -62,6 +62,8 @@ public:
         const std::shared_ptr<AbstractTask> &task) override;
 };
 
+extern void add_multiple_algorithm_implementation_notes_to_parser(
+    options::OptionParser &parser);
 extern void add_multiple_options_to_parser(options::OptionParser &parser);
 }
 

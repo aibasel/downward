@@ -44,7 +44,8 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "To compute a pattern in each iteration, it uses the CEGAR algorithm "
         "restricted to a single goal variable; see also "
         "PatternCollectionGenerator#CEGAR.");
-    add_implementation_notes_to_parser(parser);
+    add_cegar_implementation_notes_to_parser(parser);
+    add_multiple_algorithm_implementation_notes_to_parser(parser);
     add_multiple_options_to_parser(parser);
     add_cegar_wildcard_option_to_parser(parser);
 

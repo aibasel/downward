@@ -50,7 +50,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(
         "Disjoint CEGAR",
         "This pattern collection generator implements the single CEGAR "
         "algorithm described in the paper" + get_rovner_et_al_reference());
-    add_implementation_notes_to_parser(parser);
+    add_cegar_implementation_notes_to_parser(parser);
     // TODO: these options could be move to the base class; see issue1022.
     parser.add_option<int>(
         "max_pdb_size",
