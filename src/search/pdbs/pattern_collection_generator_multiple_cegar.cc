@@ -58,7 +58,7 @@ unordered_set<int> PatternCollectionGeneratorMultipleCegar::get_blacklisted_vari
           We want to choose at least 1 non-goal variable and up to the
           entire set of non-goal variables.
         */
-        int blacklist_size = (*rng)(non_goal_variables.size());
+        int blacklist_size = rng->random(non_goal_variables.size());
         ++blacklist_size; // [1, |non-goal variables|]
         rng->shuffle(non_goal_variables);
         blacklisted_variables.insert(

@@ -94,8 +94,8 @@ EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const Options &opts)
 template<class Entry>
 Entry EpsilonGreedyOpenList<Entry>::remove_min() {
     assert(size > 0);
-    if ((*rng)() < epsilon) {
-        int pos = (*rng)(size);
+    if (rng->random() < epsilon) {
+        int pos = rng->random(size);
         heap[pos].h = numeric_limits<int>::min();
         adjust_heap_up(heap, pos);
     }
