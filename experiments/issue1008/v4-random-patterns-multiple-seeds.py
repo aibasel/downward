@@ -16,17 +16,17 @@ from average_report import AverageAlgorithmReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue1008-v2", "issue1008-v3"]
+REVISIONS = ["issue1008-v3", "issue1008-v4"]
 MAX_TIME=20
 if common_setup.is_test_run():
     MAX_TIME=2
 CONFIGS = []
 for random_seed in range(2018, 2028):
-    ### multiple cegar
-    CONFIGS.append(IssueConfig(f'cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-s{random_seed}', ['--search', f"astar(cpdbs(multiple_cegar(max_pdb_size=1000000,max_collection_size=10000000,pattern_generation_max_time=infinity,random_seed={random_seed},max_collection_size=10000000,total_max_time={MAX_TIME},stagnation_limit=infinity,blacklist_trigger_percentage=1,enable_blacklist_on_stagnation=false,verbosity=normal,use_wildcard_plans=true)),verbosity=silent)"], driver_options=['--search-time-limit', '5m']))
-    # CONFIGS.append(IssueConfig(f'cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-stag4-s{random_seed}', ['--search', f"astar(cpdbs(multiple_cegar(max_pdb_size=1000000,max_collection_size=10000000,pattern_generation_max_time=infinity,random_seed={random_seed},max_collection_size=10000000,total_max_time={MAX_TIME},stagnation_limit=4,blacklist_trigger_percentage=1,enable_blacklist_on_stagnation=false,verbosity=normal,use_wildcard_plans=true)),verbosity=silent)"], driver_options=['--search-time-limit', '5m']))
-    # CONFIGS.append(IssueConfig(f'cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-s{random_seed}', ['--search', f"astar(cpdbs(multiple_cegar(max_pdb_size=1000000,max_collection_size=10000000,pattern_generation_max_time=infinity,random_seed={random_seed},max_collection_size=10000000,total_max_time={MAX_TIME},stagnation_limit=infinity,blacklist_trigger_percentage=0.75,enable_blacklist_on_stagnation=false,verbosity=normal,use_wildcard_plans=true)),verbosity=silent)"], driver_options=['--search-time-limit', '5m']))
-    CONFIGS.append(IssueConfig(f'cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4-s{random_seed}', ['--search', f"astar(cpdbs(multiple_cegar(max_pdb_size=1000000,max_collection_size=10000000,pattern_generation_max_time=infinity,random_seed={random_seed},max_collection_size=10000000,total_max_time={MAX_TIME},stagnation_limit=4,blacklist_trigger_percentage=0.75,enable_blacklist_on_stagnation=true,verbosity=normal,use_wildcard_plans=true)),verbosity=silent)"], driver_options=['--search-time-limit', '5m']))
+    ### single random pattern
+    CONFIGS.append(IssueConfig(f'srnd-bidi-pdb1m-pdbs10m-t20-s{random_seed}', ['--search', f'astar(pdb(random_pattern(max_pdb_size=1000000,max_time={MAX_TIME},verbosity=normal,random_seed={random_seed},bidirectional=true)),verbosity=silent)'], driver_options=['--search-time-limit', '5m']))
+
+    ### multiple random patterns
+    CONFIGS.append(IssueConfig(f'mrnd-bidi-pdb1m-pdbs10m-t20-stag1-s{random_seed}', ['--search', f'astar(cpdbs(random_patterns(max_pdb_size=1000000,max_collection_size=10000000,pattern_generation_max_time=infinity,total_max_time={MAX_TIME},stagnation_limit=1,random_seed={random_seed},verbosity=normal,bidirectional=true)),verbosity=silent)'], driver_options=['--search-time-limit', '5m']))
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 ENVIRONMENT = BaselSlurmEnvironment(
@@ -61,17 +61,17 @@ exp.add_step('build', exp.build)
 exp.add_step('start', exp.start_runs)
 exp.add_fetcher(name='fetch')
 exp.add_parser('cpdbs-parser.py')
-exp.add_parser('cegar-parser.py')
+exp.add_parser('random-pattern-parser.py')
 
 cpdbs_num_patterns = Attribute('cpdbs_num_patterns', absolute=False, min_wins=True)
 cpdbs_total_pdb_size = Attribute('cpdbs_total_pdb_size', absolute=False, min_wins=True)
 cpdbs_computation_time = Attribute('cpdbs_computation_time', absolute=False, min_wins=True)
 score_cpdbs_computation_time = Attribute('score_cpdbs_computation_time', absolute=True, min_wins=False)
-cegar_num_iterations = Attribute('cegar_num_iterations', absolute=False, min_wins=True)
-cegar_num_patterns = Attribute('cegar_num_patterns', absolute=False, min_wins=True)
-cegar_total_pdb_size = Attribute('cegar_total_pdb_size', absolute=False, min_wins=True)
-cegar_computation_time = Attribute('cegar_computation_time', absolute=False, min_wins=True)
-score_cegar_computation_time = Attribute('score_cegar_computation_time', absolute=True, min_wins=False)
+random_pattern_num_iterations = Attribute('random_pattern_num_iterations', absolute=False, min_wins=True)
+random_pattern_num_patterns = Attribute('random_pattern_num_patterns', absolute=False, min_wins=True)
+random_pattern_total_pdb_size = Attribute('random_pattern_total_pdb_size', absolute=False, min_wins=True)
+random_pattern_computation_time = Attribute('random_pattern_computation_time', absolute=False, min_wins=True)
+score_random_pattern_computation_time = Attribute('score_random_pattern_computation_time', absolute=True, min_wins=False)
 
 attributes=[
     'coverage', 'search_time', 'total_time',
@@ -79,13 +79,15 @@ attributes=[
     'score_total_time', 'score_memory', 'score_expansions',
     'initial_h_value', cpdbs_num_patterns, cpdbs_total_pdb_size,
     cpdbs_computation_time, score_cpdbs_computation_time,
-    cegar_num_iterations, cegar_num_patterns, cegar_total_pdb_size,
-    cegar_computation_time, score_cegar_computation_time,
+    random_pattern_num_iterations, random_pattern_num_patterns, random_pattern_total_pdb_size,
+    random_pattern_computation_time, score_random_pattern_computation_time,
 ]
+
+exp.add_absolute_report_step(attributes=['coverage'])
 
 def add_computation_time_score(run):
     """
-    Convert cegar/cpdbs computation time into scores in the range [0, 1].
+    Convert random_pattern/cpdbs computation time into scores in the range [0, 1].
 
     Best possible performance in a task is counted as 1, while failure
     to construct the heuristic and worst performance are counted as 0.
@@ -117,8 +119,8 @@ exp.add_report(
 
 exp.add_fetcher(os.path.join(exp.eval_dir, 'average'), merge=True)
 exp._configs = [
-    IssueConfig('cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100', []),
-    IssueConfig('cpdbs-multiplecegar-wildcardplans-pdb1m-pdbs10m-t100-blacklist0.75-stag4', []),
+    IssueConfig('srnd-bidi-pdb1m-pdbs10m-t20', []),
+    IssueConfig('mrnd-bidi-pdb1m-pdbs10m-t20-stag1', []),
 ]
 exp.add_comparison_table_step(
     attributes=attributes,
