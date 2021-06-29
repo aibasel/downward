@@ -17,7 +17,13 @@ enum class Verbosity;
 }
 
 namespace pdbs {
-// TODO: document
+/*
+  This function computes a pattern for the given task. Starting with the given
+  goal variable, the algorithm executes a random walk on the causal graph. In
+  each iteration, it selects a random causal graph neighbor of the current
+  variable (given via cg_neighbors). It terminates if no neighbor fits the
+  pattern due to the size limit or if the time limit is reached.
+*/
 extern Pattern generate_random_pattern(
     int max_pdb_size,
     double max_time,
