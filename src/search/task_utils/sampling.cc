@@ -42,7 +42,7 @@ static State sample_state_with_random_walk(
     // Calculate length of random walk according to a binomial distribution.
     int length = 0;
     for (int j = 0; j < n; ++j) {
-        double random = rng(); // [0..1)
+        double random = rng.random(); // [0..1)
         if (random < p)
             ++length;
     }
