@@ -25,7 +25,7 @@ public:
         return !(*this == other);
     }
 
-    std::vector<FactPair> facts;
+    const std::vector<FactPair> facts;
     bool disjunctive;
     bool conjunctive;
     bool is_true_in_goal;
