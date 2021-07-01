@@ -6,9 +6,11 @@
 
 #include "../task_proxy.h"
 
+#include "../task_utils/causal_graph.h"
 #include "../task_utils/task_properties.h"
 
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
 
@@ -67,6 +69,36 @@ vector<int> get_non_goal_variables(const TaskProxy &task_proxy) {
     return non_goal_variables;
 }
 
+vector<vector<int>> compute_cg_neighbors(
+    const shared_ptr<AbstractTask> &task,
+    bool bidirectional) {
+    TaskProxy task_proxy(*task);
+    int num_vars = task_proxy.get_variables().size();
+    const causal_graph::CausalGraph &cg = causal_graph::get_causal_graph(task.get());
+    vector<vector<int>> cg_neighbors(num_vars);
+    for (int var_id = 0; var_id < num_vars; ++var_id) {
+        cg_neighbors[var_id] = cg.get_predecessors(var_id);
+        if (bidirectional) {
+            const vector<int> &successors = cg.get_successors(var_id);
+            cg_neighbors[var_id].insert(cg_neighbors[var_id].end(), successors.begin(), successors.end());
+        }
+        utils::sort_unique(cg_neighbors[var_id]);
+    }
+    return cg_neighbors;
+}
+
+PatternCollectionInformation get_pattern_collection_info(
+    const TaskProxy &task_proxy, const shared_ptr<PDBCollection> &pdbs) {
+    shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
+    patterns->reserve(pdbs->size());
+    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
+        patterns->push_back(pdb->get_pattern());
+    }
+    PatternCollectionInformation result(task_proxy, patterns);
+    result.set_pdbs(pdbs);
+    return result;
+}
+
 void dump_pattern_generation_statistics(
     const string &identifier,
     utils::Duration runtime,
@@ -90,5 +122,18 @@ void dump_pattern_collection_generation_statistics(
     utils::g_log << compute_total_pdb_size(
         pci.get_task_proxy(), pattern_collection) << endl;
     utils::g_log << identifier << " computation time: " << runtime << endl;
+}
+
+string get_rovner_et_al_reference() {
+    return utils::format_conference_reference(
+        {"Alexander Rovner", "Silvan Sievers", "Malte Helmert"},
+        "Counterexample-Guided Abstraction Refinement for Pattern Selection "
+        "in Optimal Classical Planning",
+        "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
+        "Proceedings of the 29th International Conference on Automated "
+        "Planning and Scheduling (ICAPS 2019)",
+        "362-367",
+        "AAAI Press",
+        "2019");
 }
 }

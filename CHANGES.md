@@ -101,9 +101,12 @@ after the corresponding tracker issues.
 
 - Integrate the pattern generation methods based on CEGAR
   <http://issues.fast-downward.org/issue1007>
-  
-- For developers: change public interface of generation of random ints and 
-  doubles in the RandomNumberGenerator class  
+
+- Integrate the random pattern generation methods
+  <http://issues.fast-downward.org/issue1007>
+
+- For developers: change public interface of generation of random ints and
+  doubles in the RandomNumberGenerator class
   <http://issues.fast-downward.org/issue1026>
 
 
