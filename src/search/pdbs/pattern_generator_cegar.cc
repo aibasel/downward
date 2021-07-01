@@ -40,7 +40,7 @@ PatternInformation PatternGeneratorCEGAR::generate(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
-        utils::Verbosity::SILENT,
+        verbosity,
         rng,
         task,
         goals[0]);
