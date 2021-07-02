@@ -52,10 +52,10 @@ void PatternCollectionGeneratorGenetic::select(
         int selected;
         if (total_so_far == 0) {
             // All fitness values are 0 => choose uniformly.
-            selected = (*rng)(fitness_values.size());
+            selected = rng->random(fitness_values.size());
         } else {
             // [0..total_so_far)
-            double random = (*rng)() * total_so_far;
+            double random = rng->random() * total_so_far;
             // Find first entry which is strictly greater than random.
             selected = upper_bound(cumulative_fitness.begin(),
                                    cumulative_fitness.end(), random) -
@@ -70,7 +70,7 @@ void PatternCollectionGeneratorGenetic::mutate() {
     for (auto &collection : pattern_collections) {
         for (vector<bool> &pattern : collection) {
             for (size_t k = 0; k < pattern.size(); ++k) {
-                double random = (*rng)(); // [0..1)
+                double random = rng->random(); // [0..1)
                 if (random < mutation_probability) {
                     pattern[k].flip();
                 }
