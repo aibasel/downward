@@ -109,6 +109,10 @@ after the corresponding tracker issues.
   doubles in the RandomNumberGenerator class
   <http://issues.fast-downward.org/issue1026>
 
+- For developers: we separate the functionality of landmarks from the
+  functionality of landmark nodes by introducing a new Landmark class
+  http://issues.fast-downward.org/issue999
+
 
 ## Fast Downward 20.06
 
