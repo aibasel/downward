@@ -1,9 +1,12 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
+#include "landmark.h"
+
 #include "../task_proxy.h"
 
 #include "../utils/hash.h"
+#include "../utils/memory.h"
 
 #include <cassert>
 #include <list>
@@ -31,26 +34,14 @@ enum class EdgeType {
 
 class LandmarkNode {
     int id;
+    Landmark landmark;
 public:
-    LandmarkNode(std::vector<FactPair> &facts, bool disjunctive, bool conjunctive)
-        : id(-1), facts(facts), disjunctive(disjunctive), conjunctive(conjunctive),
-          is_true_in_goal(false), cost(1), is_derived(false) {
+    LandmarkNode(Landmark &&landmark)
+        : id(-1), landmark(std::move(landmark)) {
     }
 
-    std::vector<FactPair> facts;
-    bool disjunctive;
-    bool conjunctive;
     std::unordered_map<LandmarkNode *, EdgeType> parents;
     std::unordered_map<LandmarkNode *, EdgeType> children;
-    bool is_true_in_goal;
-
-    // Cost of achieving the landmark (as determined by the landmark factory)
-    int cost;
-
-    bool is_derived;
-
-    std::set<int> first_achievers;
-    std::set<int> possible_achievers;
 
     int get_id() const {
         return id;
@@ -62,10 +53,15 @@ public:
         id = new_id;
     }
 
-    bool is_true_in_state(const State &state) const;
-};
+    // TODO: Remove this function once the LM-graph is constant after creation.
+    Landmark &get_landmark() {
+        return landmark;
+    }
 
-using LandmarkSet = std::unordered_set<const LandmarkNode *>;
+    const Landmark &get_landmark() const {
+        return landmark;
+    }
+};
 
 class LandmarkGraph {
 public:
@@ -114,9 +110,9 @@ public:
     int get_num_edges() const;
 
     // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_landmark(int index) const;
+    LandmarkNode *get_node(int index) const;
     // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_landmark(const FactPair &fact) const;
+    LandmarkNode *get_node(const FactPair &fact) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     LandmarkNode &get_simple_landmark(const FactPair &fact) const;
@@ -144,13 +140,7 @@ public:
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    LandmarkNode &add_simple_landmark(const FactPair &lm);
-    /* This is needed only by landmark graph factories and will disappear
-       when moving landmark graph creation there. */
-    LandmarkNode &add_disjunctive_landmark(const std::set<FactPair> &lm);
-    /* This is needed only by landmark graph factories and will disappear
-       when moving landmark graph creation there. */
-    LandmarkNode &add_conjunctive_landmark(const std::set<FactPair> &lm);
+    LandmarkNode &add_landmark(Landmark &&landmark);
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     void remove_node(LandmarkNode *node);

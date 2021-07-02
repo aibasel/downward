@@ -8,6 +8,7 @@ class OperatorProxy;
 class TaskProxy;
 
 namespace landmarks {
+class Landmark;
 class LandmarkNode;
 class LandmarkGraph;
 
@@ -15,9 +16,9 @@ extern std::unordered_map<int, int> _intersect(
     const std::unordered_map<int, int> &a,
     const std::unordered_map<int, int> &b);
 
-extern bool _possibly_reaches_lm(
+extern bool possibly_reaches_lm(
     const OperatorProxy &op, const std::vector<std::vector<int>> &lvl_var,
-    const LandmarkNode *lmp);
+    const Landmark &landmark);
 
 extern OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id);
 extern int get_operator_or_axiom_id(const OperatorProxy &op);

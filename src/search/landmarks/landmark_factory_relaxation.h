@@ -12,13 +12,13 @@ protected:
 
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                bool level_out,
-                               const LandmarkNode *exclude,
+                               const Landmark &exclude,
                                bool compute_lvl_op = false) const;
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                std::vector<std::vector<int>> &lvl_var,
                                std::vector<utils::HashMap<FactPair, int>> &lvl_op,
                                bool level_out,
-                               const LandmarkNode *exclude,
+                               const Landmark &exclude,
                                bool compute_lvl_op = false) const;
 
 private:
@@ -30,7 +30,7 @@ private:
 
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
     bool achieves_non_conditional(const OperatorProxy &o,
-                                  const LandmarkNode *lmp) const;
+                                  const Landmark &landmark) const;
     void add_operator_and_propositions_to_list(
         const OperatorProxy &op, std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
 
@@ -43,7 +43,7 @@ protected:
                                      Exploration &exploration);
     bool is_causal_landmark(const TaskProxy &task_proxy,
                             Exploration &exploration,
-                            const LandmarkNode &landmark) const;
+                            const Landmark &landmark) const;
 };
 }
 

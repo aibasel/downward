@@ -2,6 +2,7 @@
 
 #include "../option_parser.h"
 
+#include "../landmarks/landmark.h"
 #include "../landmarks/landmark_factory_h_m.h"
 #include "../landmarks/landmark_graph.h"
 
@@ -13,11 +14,10 @@ using namespace std;
 using namespace landmarks;
 
 namespace cegar {
-static FactPair get_fact(const LandmarkNode &node) {
-    /* We assume that the given LandmarkNodes are from an h^m landmark
-       graph with m=1. */
-    assert(node.facts.size() == 1);
-    return node.facts[0];
+static FactPair get_fact(const Landmark &landmark) {
+    // We assume that the given Landmarks are from an h^m landmark graph with m=1.
+    assert(landmark.facts.size() == 1);
+    return landmark.facts[0];
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {
@@ -36,7 +36,7 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     const LandmarkGraph::Nodes &nodes = graph.get_nodes();
     facts.reserve(nodes.size());
     for (auto &node : nodes) {
-        facts.push_back(get_fact(*node));
+        facts.push_back(get_fact(node->get_landmark()));
     }
     sort(facts.begin(), facts.end());
     return facts;
@@ -44,7 +44,7 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
 
 VarToValues get_prev_landmarks(const LandmarkGraph &graph, const FactPair &fact) {
     VarToValues groups;
-    LandmarkNode *node = graph.get_landmark(fact);
+    LandmarkNode *node = graph.get_node(fact);
     assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
@@ -58,7 +58,7 @@ VarToValues get_prev_landmarks(const LandmarkGraph &graph, const FactPair &fact)
         if (closed.find(ancestor) != closed.end())
             continue;
         closed.insert(ancestor);
-        FactPair ancestor_fact = get_fact(*ancestor);
+        FactPair ancestor_fact = get_fact(ancestor->get_landmark());
         groups[ancestor_fact.var].push_back(ancestor_fact.value);
         for (const auto &parent_and_edge : ancestor->parents) {
             const LandmarkNode *parent = parent_and_edge.first;

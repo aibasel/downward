@@ -11,7 +11,7 @@ class LandmarkFactoryMerged : public LandmarkFactory {
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
     void postprocess();
-    LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
+    LandmarkNode *get_matching_landmark(const Landmark &landmark) const;
 public:
     explicit LandmarkFactoryMerged(const options::Options &opts);
 

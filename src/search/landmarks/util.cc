@@ -1,5 +1,6 @@
 #include "util.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
 
 #include "../task_proxy.h"
@@ -29,7 +30,9 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     return result;
 }
 
-bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lvl_var, const LandmarkNode *lmp) {
+bool possibly_reaches_lm(const OperatorProxy &op,
+                         const vector<vector<int>> &lvl_var,
+                         const Landmark &landmark) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in lvl_var) */
 
@@ -48,7 +51,7 @@ bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lv
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         assert(!lvl_var[effect_fact.get_variable().get_id()].empty());
-        for (const FactPair &fact : lmp->facts) {
+        for (const FactPair &fact : landmark.facts) {
             if (effect_fact.get_pair() == fact) {
                 if (_possibly_fires(effect.get_conditions(), lvl_var))
                     return true;
@@ -79,11 +82,12 @@ int get_operator_or_axiom_id(const OperatorProxy &op) {
 static void dump_node(const TaskProxy &task_proxy, const LandmarkNode &node) {
     cout << "  lm" << node.get_id() << " [label=\"";
     bool first = true;
-    for (FactPair fact : node.facts) {
+    const Landmark &landmark = node.get_landmark();
+    for (FactPair fact : landmark.facts) {
         if (!first) {
-            if (node.disjunctive) {
+            if (landmark.disjunctive) {
                 cout << " | ";
-            } else if (node.conjunctive) {
+            } else if (landmark.conjunctive) {
                 cout << " & ";
             }
         }
@@ -92,10 +96,10 @@ static void dump_node(const TaskProxy &task_proxy, const LandmarkNode &node) {
         cout << var.get_fact(fact.value).get_name();
     }
     cout << "\"";
-    if (node.is_true_in_state(task_proxy.get_initial_state())) {
+    if (landmark.is_true_in_state(task_proxy.get_initial_state())) {
         cout << ", style=bold";
     }
-    if (node.is_true_in_goal) {
+    if (landmark.is_true_in_goal) {
         cout << ", style=filled";
     }
     cout << "];\n";

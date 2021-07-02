@@ -1,5 +1,6 @@
 #include "landmark_factory_reasonable_orders_hps.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
 
 #include "util.h"
@@ -48,17 +49,19 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
     for (auto &node_p : lm_graph->get_nodes()) {
-        if (node_p->disjunctive)
+        const Landmark &landmark = node_p->get_landmark();
+        if (landmark.disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(initial_state))
+        if (landmark.is_true_in_state(initial_state))
             return;
 
-        if (!obedient_orders && node_p->is_true_in_goal) {
+        if (!obedient_orders && landmark.is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
-                if (node2_p == node_p || node2_p->disjunctive)
+                const Landmark &landmark2 = node2_p->get_landmark();
+                if (landmark == landmark2 || landmark2.disjunctive)
                     continue;
-                if (interferes(task_proxy, node2_p.get(), node_p.get())) {
+                if (interferes(task_proxy, landmark2, landmark)) {
                     edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
                 }
             }
@@ -67,34 +70,34 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
             // Use hash set to filter duplicates.
             unordered_set<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
-                const LandmarkNode &node2 = *child.first;
+                const LandmarkNode &node2_p = *child.first;
                 const EdgeType &edge2 = child.second;
-                if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2: node_p ->_gn node2
-                    for (const auto &p : node2.parents) {   // find parent
-                        LandmarkNode &parent = *(p.first);
+                if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2_p: node_p ->_gn node2_p
+                    for (const auto &p : node2_p.parents) {   // find parent
+                        LandmarkNode &parent_node = *(p.first);
                         const EdgeType &edge = p.second;
-                        if (parent.disjunctive)
+                        if (parent_node.get_landmark().disjunctive)
                             continue;
                         if ((edge >= EdgeType::NATURAL || (obedient_orders && edge == EdgeType::REASONABLE)) &&
-                            &parent != node_p.get()) {  // find predecessors or parent and collect in
-                            // "interesting nodes"
-                            interesting_nodes.insert(&parent);
-                            collect_ancestors(interesting_nodes, parent,
-                                              obedient_orders);
+                            &parent_node != node_p.get()) {
+                            // find predecessors or parent and collect in "interesting nodes"
+                            interesting_nodes.insert(&parent_node);
+                            collect_ancestors(interesting_nodes, parent_node, obedient_orders);
                         }
                     }
                 }
             }
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
-            for (LandmarkNode *node : interesting_nodes) {
-                if (node == node_p.get() || node->disjunctive)
+            for (LandmarkNode *node2_p : interesting_nodes) {
+                const Landmark &landmark2 = node2_p->get_landmark();
+                if (landmark == landmark2 || landmark2.disjunctive)
                     continue;
-                if (interferes(task_proxy, node, node_p.get())) {
+                if (interferes(task_proxy, landmark2, landmark)) {
                     if (!obedient_orders)
-                        edge_add(*node, *node_p, EdgeType::REASONABLE);
+                        edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
                     else
-                        edge_add(*node, *node_p, EdgeType::OBEDIENT_REASONABLE);
+                        edge_add(*node2_p, *node_p, EdgeType::OBEDIENT_REASONABLE);
                 }
             }
         }
@@ -102,8 +105,8 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
 }
 
 bool LandmarkFactoryReasonableOrdersHPS::interferes(
-    const TaskProxy &task_proxy, const LandmarkNode *node_a,
-    const LandmarkNode *node_b) const {
+    const TaskProxy &task_proxy, const Landmark &landmark_a,
+    const Landmark &landmark_b) const {
     /* Facts a and b interfere (i.e., achieving b before a would mean having to delete b
      and re-achieve it in order to achieve a) if one of the following condition holds:
      1. a and b are mutex
@@ -113,16 +116,16 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
      "all actions that add a delete b". However, in our case (SAS+ formalism), this condition
      is the same as 2.
      */
-    assert(node_a != node_b);
-    assert(!node_a->disjunctive && !node_b->disjunctive);
+    assert(landmark_a != landmark_b);
+    assert(!landmark_a.disjunctive && !landmark_b.disjunctive);
 
     VariablesProxy variables = task_proxy.get_variables();
-    for (const FactPair &lm_fact_b : node_b->facts) {
+    for (const FactPair &lm_fact_b : landmark_b.facts) {
         FactProxy fact_b = variables[lm_fact_b.var].get_fact(lm_fact_b.value);
-        for (const FactPair &lm_fact_a : node_a->facts) {
+        for (const FactPair &lm_fact_a : landmark_a.facts) {
             FactProxy fact_a = variables[lm_fact_a.var].get_fact(lm_fact_a.value);
             if (lm_fact_a == lm_fact_b) {
-                if (!node_a->conjunctive || !node_b->conjunctive)
+                if (!landmark_a.conjunctive || !landmark_b.conjunctive)
                     return false;
                 else
                     continue;
@@ -135,7 +138,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
             // Skip this for conjunctive nodes a, as they are typically achieved through a
             // sequence of operators successively adding the parts of a
-            if (node_a->conjunctive)
+            if (landmark_a.conjunctive)
                 continue;
 
             unordered_map<int, int> shared_eff;
