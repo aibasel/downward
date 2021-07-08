@@ -1,7 +1,11 @@
 ---
 name: Windows
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, issue*, release-*]
+  pull_request:
+    branches: [main, issue*, release-*]
 
 env:
   ARCH: "x64"
