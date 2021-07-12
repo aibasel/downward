@@ -91,13 +91,12 @@ bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_stat
     */
     reached.intersect(parent_reached);
 
-
     // Mark landmarks reached right now as "reached" (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
         if (!reached.test(id)) {
-            LandmarkNode *node = lm_graph.get_node(id);
-            if (node->get_landmark().is_true_in_state(ancestor_state)) {
-                if (landmark_is_leaf(*node, reached)) {
+            const LandmarkNode &node = lm_graph.get_node(id);
+            if (node.get_landmark().is_true_in_state(ancestor_state)) {
+                if (landmark_is_leaf(node, reached)) {
                     reached.set(id);
                 }
             }
@@ -156,8 +155,8 @@ bool LandmarkStatusManager::dead_end_exists() {
 
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const State &state) {
-    LandmarkNode *node = lm_graph.get_node(id);
-    const Landmark &landmark = node->get_landmark();
+    const LandmarkNode &node = lm_graph.get_node(id);
+    const Landmark &landmark = node.get_landmark();
     if (landmark.is_true_in_state(state)) {
         return false;
     } else if (landmark.is_true_in_goal) {
@@ -168,7 +167,7 @@ bool LandmarkStatusManager::landmark_needed_again(
           true, since A is a necessary precondition for actions
           achieving B for the first time, it must become true again.
         */
-        for (const auto &child : node->children) {
+        for (const auto &child : node.children) {
             if (child.second >= EdgeType::GREEDY_NECESSARY
                 && lm_status[child.first->get_id()] == lm_not_reached) {
                 return true;
