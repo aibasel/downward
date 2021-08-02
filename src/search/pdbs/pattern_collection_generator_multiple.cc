@@ -284,8 +284,7 @@ void add_multiple_algorithm_implementation_notes_to_parser(
         "blacklisting when stagnating.",
         true);
     parser.document_note(
-        "Implementation note about the multiple CEGAR and the random "
-        "patterns algorithms",
+        "Implementation note about the 'multiple algorithm framework'",
         "A difference compared to the original implementation used in the "
         "paper is that the original implementation of stagnation in "
         "the multiple CEGAR/RCG algorithms started counting the time towards "
