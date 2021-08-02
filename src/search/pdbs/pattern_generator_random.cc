@@ -63,9 +63,8 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "This pattern generator implements the 'single randomized "
         "causal graph' algorithm described in experiments of the the paper"
         + get_rovner_et_al_reference() +
-        "It computes a pattern by performing a simple random walk on the "
-        "causal graph, starting from the given random goal variable, and "
-        "including all visited variables.");
+        "See below for a description of the algorithm and some implementation "
+        "notes.");
     add_random_pattern_implementation_notes_to_parser(parser);
     parser.add_option<int>(
         "max_pdb_size",

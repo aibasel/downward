@@ -58,8 +58,10 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "CEGAR",
         "This pattern generator uses the CEGAR algorithm restricted to a "
-        "random single goal of the task to compute a pattern. Also see the "
-        "paper" + get_rovner_et_al_reference());
+        "random single goal of the task to compute a pattern. See below "
+        "for a description of the algorithm and some implementation notes. "
+        "The original algorithm is described in the paper "
+        + get_rovner_et_al_reference());
     add_cegar_implementation_notes_to_parser(parser);
     parser.add_option<int>(
         "max_pdb_size",

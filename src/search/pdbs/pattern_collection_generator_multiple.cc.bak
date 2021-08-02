@@ -280,8 +280,8 @@ void add_multiple_algorithm_implementation_notes_to_parser(
         "The algorithm runs until reaching a given time limit. Another parameter allows "
         "exiting early if no new patterns are found for a certain time ('stagnation'). "
         "Further parameters allow enabling blacklisting for the given pattern computation "
-        "method after a certain time to force some diversification or to enable said "
-        "blacklisting when stagnating.",
+        "method after a certain time to force some diversifaction or to enable said "
+        "blacklisting when stagnating."
         true);
     parser.document_note(
         "Implementation note about the multiple CEGAR and the random "

@@ -32,7 +32,7 @@ namespace pdbs {
   The algorithm runs until reaching a given time limit. Another parameter allows
   exiting early if no new patterns are found for a certain time ("stagnation").
   Further parameters allow enabling blacklisting for the given pattern computation
-  method after a certain time to force some diversification or to enable said
+  method after a certain time to force some diversifaction or to enable said
   blacklisting when stagnating.
 */
 class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
