@@ -24,7 +24,7 @@ extern void dump_variable_order_type(VariableOrderType variable_order_type);
   least as long as the variable order finder.
 */
 class VariableOrderFinder {
-    TaskProxy task_proxy;
+    const TaskProxy &task_proxy;
     const VariableOrderType variable_order_type;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
