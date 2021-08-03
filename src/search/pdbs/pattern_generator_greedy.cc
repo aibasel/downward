@@ -10,6 +10,8 @@
 #include "../task_utils/variable_order_finder.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
+#include "../utils/rng.h"
+#include "../utils/rng_options.h"
 #include "../utils/timer.h"
 
 #include <iostream>
@@ -18,11 +20,14 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
-    : PatternGeneratorGreedy(opts.get<int>("max_states")) {
+    : PatternGeneratorGreedy(
+        opts.get<int>("max_states"),
+        utils::parse_rng_from_options(opts)) {
 }
 
-PatternGeneratorGreedy::PatternGeneratorGreedy(int max_states)
-    : max_states(max_states) {
+PatternGeneratorGreedy::PatternGeneratorGreedy(
+    int max_states, const shared_ptr<utils::RandomNumberGenerator> &rng)
+    : max_states(max_states), rng(rng) {
 }
 
 PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
@@ -30,7 +35,8 @@ PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTas
     utils::g_log << "Generating a pattern using the greedy generator..." << endl;
     TaskProxy task_proxy(*task);
     Pattern pattern;
-    variable_order_finder::VariableOrderFinder order(task_proxy, variable_order_finder::GOAL_CG_LEVEL);
+    variable_order_finder::VariableOrderFinder order(
+        task_proxy, variable_order_finder::GOAL_CG_LEVEL, *rng);
     VariablesProxy variables = task_proxy.get_variables();
 
     int size = 1;
@@ -60,6 +66,7 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
         "maximal number of abstract states in the pattern database.",
         "1000000",
         Bounds("1", "infinity"));
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())
