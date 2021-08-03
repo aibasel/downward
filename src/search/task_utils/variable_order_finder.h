@@ -6,6 +6,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace variable_order_finder {
 enum VariableOrderType {
     CG_GOAL_LEVEL,
@@ -34,7 +38,8 @@ class VariableOrderFinder {
     void select_next(int position, int var_no);
 public:
     VariableOrderFinder(const TaskProxy &task_proxy,
-                        VariableOrderType variable_order_type);
+                        VariableOrderType variable_order_type,
+                        utils::RandomNumberGenerator &rng);
     ~VariableOrderFinder() = default;
     bool done() const;
     int next();
