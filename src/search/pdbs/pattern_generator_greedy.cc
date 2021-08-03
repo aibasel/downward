@@ -21,8 +21,8 @@ using namespace std;
 namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
     : PatternGeneratorGreedy(
-        opts.get<int>("max_states"),
-        utils::parse_rng_from_options(opts)) {
+          opts.get<int>("max_states"),
+          utils::parse_rng_from_options(opts)) {
 }
 
 PatternGeneratorGreedy::PatternGeneratorGreedy(
