@@ -23,12 +23,12 @@ enum VariableOrderType {
 extern void dump_variable_order_type(VariableOrderType variable_order_type);
 
 /*
-  NOTE: VariableOrderFinder keeps a reference to the task proxy passed to the
-  constructor. Therefore, users of the class must ensure that the task lives at
-  least as long as the variable order finder.
+  NOTE: VariableOrderFinder keeps a copy of the task proxy passed to the
+  constructor. Therefore, users of the class must ensure that the underlying
+  task lives at least as long as the variable order finder.
 */
 class VariableOrderFinder {
-    const TaskProxy &task_proxy;
+    TaskProxy task_proxy;
     const VariableOrderType variable_order_type;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
