@@ -111,7 +111,7 @@ after the corresponding tracker issues.
 
 - For developers: we separate the functionality of landmarks from the
   functionality of landmark nodes by introducing a new Landmark class
-  http://issues.fast-downward.org/issue999
+  <http://issues.fast-downward.org/issue999>
 
 - For developers: use RandomNumberGenerator class in VariableOrderFinder
   <http://issues.fast-downward.org/issue1032>
