@@ -35,7 +35,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     PatternGeneratorGreedy large_pattern_generator(max_states, rng);
     Pattern large_pattern = large_pattern_generator.generate(task).get_pattern();
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
-    patterns->emplace_back(move(large_pattern));
+    patterns->push_back(move(large_pattern));
 
     for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
