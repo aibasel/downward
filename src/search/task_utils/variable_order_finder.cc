@@ -5,7 +5,6 @@
 #include "../utils/rng.h"
 #include "../utils/system.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
