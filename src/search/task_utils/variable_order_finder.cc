@@ -17,7 +17,7 @@ using utils::ExitCode;
 namespace variable_order_finder {
 VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
                                          VariableOrderType variable_order_type,
-                                         utils::RandomNumberGenerator &rng)
+                                         shared_ptr<utils::RandomNumberGenerator> rng)
     : task_proxy(task_proxy),
       variable_order_type(variable_order_type) {
     int var_count = task_proxy.get_variables().size();
@@ -31,7 +31,12 @@ VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
 
     if (variable_order_type == CG_GOAL_RANDOM ||
         variable_order_type == RANDOM) {
-        rng.shuffle(remaining_vars);
+        if (!rng) {
+            ABORT("No random number generator passed to VariableOrderFinder "
+                  "although the chosen value for VariableOrderType relies on "
+                  "randomization");
+        }
+        rng->shuffle(remaining_vars);
     }
 
     is_causal_predecessor.resize(var_count, false);

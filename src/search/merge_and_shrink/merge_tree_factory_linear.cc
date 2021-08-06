@@ -29,7 +29,7 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const TaskProxy &task_proxy) {
-    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, *rng);
+    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, rng);
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
@@ -72,7 +72,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
      skipping all indices not in indices_subset, because these have been set
      to "used" above.
     */
-    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, *rng);
+    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, rng);
 
     int next_var = vof.next();
     int ts_index = var_to_ts_index[next_var];

@@ -9,8 +9,6 @@
 #include "../task_proxy.h"
 
 #include "../utils/logging.h"
-#include "../utils/rng.h"
-#include "../utils/rng_options.h"
 #include "../utils/timer.h"
 
 #include <iostream>
@@ -21,8 +19,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &opts)
-    : max_states(opts.get<int>("max_states")),
-      rng(utils::parse_rng_from_options(opts)) {
+    : max_states(opts.get<int>("max_states")) {
 }
 
 PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
@@ -32,7 +29,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
-    PatternGeneratorGreedy large_pattern_generator(max_states, rng);
+    PatternGeneratorGreedy large_pattern_generator(max_states);
     Pattern large_pattern = large_pattern_generator.generate(task).get_pattern();
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
     patterns->push_back(move(large_pattern));
@@ -56,7 +53,6 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "maximum abstraction size for combo strategy",
         "1000000",
         Bounds("1", "infinity"));
-    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())
