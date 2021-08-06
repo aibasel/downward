@@ -123,7 +123,6 @@ void MergeTreeFactoryLinear::add_options_to_parser(
         "variable_order", merge_strategies,
         "the order in which atomic transition systems are merged",
         "CG_GOAL_LEVEL");
-    utils::add_rng_options(parser);
 }
 
 static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
