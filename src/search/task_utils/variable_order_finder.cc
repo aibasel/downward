@@ -2,9 +2,9 @@
 
 #include "../task_utils/causal_graph.h"
 #include "../utils/logging.h"
+#include "../utils/rng.h"
 #include "../utils/system.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
@@ -16,7 +16,8 @@ using utils::ExitCode;
 
 namespace variable_order_finder {
 VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
-                                         VariableOrderType variable_order_type)
+                                         VariableOrderType variable_order_type,
+                                         utils::RandomNumberGenerator &rng)
     : task_proxy(task_proxy),
       variable_order_type(variable_order_type) {
     int var_count = task_proxy.get_variables().size();
@@ -30,8 +31,7 @@ VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
 
     if (variable_order_type == CG_GOAL_RANDOM ||
         variable_order_type == RANDOM) {
-        // TODO: use an instance of RandomNumberGenerator for shuffling.
-        random_shuffle(remaining_vars.begin(), remaining_vars.end());
+        rng.shuffle(remaining_vars);
     }
 
     is_causal_predecessor.resize(var_count, false);
