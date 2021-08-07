@@ -116,6 +116,9 @@ after the corresponding tracker issues.
 - For developers: use RandomNumberGenerator class in VariableOrderFinder
   <http://issues.fast-downward.org/issue1032>
 
+- Use C++17 language standard
+  <http://issues.fast-downward.org/issue1028>
+
 
 ## Fast Downward 20.06
 
