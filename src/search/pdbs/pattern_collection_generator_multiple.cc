@@ -269,15 +269,30 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
 void add_multiple_algorithm_implementation_notes_to_parser(
     options::OptionParser &parser) {
     parser.document_note(
-        "Implementation note about the multiple CEGAR and the random "
-        "patterns algorithms",
+        "Short description of the 'multiple algorithm framework'",
+        "This algorithm is a general framework for computing a pattern collection "
+        "for a given planning task. It requires as input a method for computing a "
+        "single pattern for the given task and a single goal of the task. The "
+        "algorithm works as follows. It first stores the goals of the task in "
+        "random order. Then, it repeatedly iterates over all goals and for each "
+        "goal, it uses the given method for computing a single pattern. If the "
+        "pattern is new (duplicate detection), it is kept for the final collection.\n"
+        "The algorithm runs until reaching a given time limit. Another parameter allows "
+        "exiting early if no new patterns are found for a certain time ('stagnation'). "
+        "Further parameters allow enabling blacklisting for the given pattern computation "
+        "method after a certain time to force some diversification or to enable said "
+        "blacklisting when stagnating.",
+        true);
+    parser.document_note(
+        "Implementation note about the 'multiple algorithm framework'",
         "A difference compared to the original implementation used in the "
         "paper is that the original implementation of stagnation in "
         "the multiple CEGAR/RCG algorithms started counting the time towards "
         "stagnation only after having generated a duplicate pattern. Now, "
         "time towards stagnation starts counting from the start and is reset "
         "to the current time only when having found a new pattern or when "
-        "enabling blacklisting.");
+        "enabling blacklisting.",
+        true);
 }
 
 void add_multiple_options_to_parser(options::OptionParser &parser) {
@@ -286,13 +301,13 @@ void add_multiple_options_to_parser(options::OptionParser &parser) {
         "maximum number of states for each pattern database, computed "
         "by compute_pattern (possibly ignored by singleton patterns consisting "
         "of a goal variable)",
-        "1000000",
+        "1M",
         Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_collection_size",
         "maximum number of states in all pattern databases of the "
         "collection (possibly ignored, see max_pdb_size)",
-        "10000000",
+        "10M",
         Bounds("1", "infinity"));
     parser.add_option<double>(
         "pattern_generation_max_time",

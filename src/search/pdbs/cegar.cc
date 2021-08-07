@@ -731,6 +731,21 @@ PatternInformation generate_pattern_with_cegar(
 
 void add_cegar_implementation_notes_to_parser(options::OptionParser &parser) {
     parser.document_note(
+        "Short description of the CEGAR algorithm",
+        "The CEGAR algorithm computes a pattern collection for a given planning "
+        "task and a given (sub)set of its goals in a randomized order as "
+        "follows. Starting from the pattern collection consisting of a singleton "
+        "pattern for each goal variable, it repeatedly attempts to execute an "
+        "optimal plan of each pattern in the concrete task, collects reasons why "
+        "this is not possible (so-called flaws) and refines the pattern in "
+        "question by adding a variable to it.\n"
+        "Further parameters allow blacklisting a (sub)set of the non-goal "
+        "variables which are then never added to the collection, limiting PDB "
+        "and collection size, setting a time limit and switching between "
+        "computing regular or wildcard plans, where the latter are sequences of "
+        "parallel operators inducing the same abstract transition.",
+        true);
+    parser.document_note(
         "Implementation notes about the CEGAR algorithm",
         "The following describes differences of the implementation to "
         "the original implementation used and described in the paper.\n\n"
