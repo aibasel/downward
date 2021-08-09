@@ -5,7 +5,7 @@ Experiments using Downward Lab
 
 All experiments use their own common_setup.py module that simplifies the
 creation of experiments. We recommend using common_setup.py (and related
-*.py files) from issue891 for new experiments since it is the most
+*.py files) from issue1028 for new experiments since it is the most
 recent version.
 
 To isolate the Downward Lab versions used for different experiments and
@@ -14,10 +14,12 @@ activate a virtual environment for an issue experiment, use the
 following steps:
 
     unset PYTHONPATH  # If PYTHONPATH is set, unset it for a clean environment.
-    cd issue891
-    python3 -m venv --prompt=issue891 .venv
+    cd issue1028
+    python3 -m venv --prompt=issue1028 .venv
     source .venv/bin/activate  # enter the virtual environment
-    # list exact versions of your dependencies in a file (for example, lab==4.2)
+    pip install -U pip pip-tools wheel  # recommended packages and updates
+    # List exact versions of your dependencies in requirements.in (for example, lab==6.4).
+    pip-compile  # compile requirements.txt
     pip install -r requirements.txt  # install dependencies
     ./v1-opt.py 1 2 3 4  # run your experiment
     deactivate  # leave the virtual environment
