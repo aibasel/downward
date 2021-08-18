@@ -116,6 +116,10 @@ after the corresponding tracker issues.
 - For developers: use RandomNumberGenerator class in VariableOrderFinder
   <http://issues.fast-downward.org/issue1032>
 
+- For users: the driver now finds domain files <taskfile>-domain.<ext>
+  for task files called <taskfile>.<ext>
+  <http://issues.fast-downward.org/issue1033>
+
 
 ## Fast Downward 20.06
 
