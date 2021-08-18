@@ -24,10 +24,11 @@ def find_domain_filename(task_filename):
     Find domain filename for the given task using automatic naming rules.
     """
     dirname, basename = os.path.split(task_filename)
+    basename_root, _ = os.path.splitext(basename)
 
     domain_basenames = [
         "domain.pddl",
-        basename[:3] + "-domain.pddl",
+        basename_root + "-domain.pddl",
         "domain_" + basename,
         "domain-" + basename,
     ]
