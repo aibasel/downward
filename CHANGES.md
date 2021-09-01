@@ -120,6 +120,11 @@ after the corresponding tracker issues.
   for task files called <taskfile>.<ext>
   <http://issues.fast-downward.org/issue1033>
 
+- For users: the build system now prefers compilers cc/c++ found on the path
+  over gcc/g++. As before, environment variables CC/CXX can be used to
+  override this choice.
+  <http://issues.fast-downward.org/issue1031>
+
 
 ## Fast Downward 20.06
 
