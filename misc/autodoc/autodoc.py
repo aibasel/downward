@@ -19,7 +19,7 @@ sleep_time = 10
 BOT_USERNAME = "XmlRpcBot"
 ENV_VAR_PASSWORD = "DOWNWARD_AUTODOC_PASSWORD"
 PASSWORD = os.environ.get(ENV_VAR_PASSWORD)
-WIKI_URL = "http://www.fast-downward.org"
+WIKI_URL = "https://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
 
 # a list of characters allowed to be used in doc titles
