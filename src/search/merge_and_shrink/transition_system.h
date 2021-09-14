@@ -41,13 +41,13 @@ struct Transition {
 
 using LabelGroup = std::vector<int>;
 
-struct GroupAndTransitions {
+struct TransitionGroup {
     const LabelGroup &label_group;
     const std::vector<Transition> &transitions;
     int cost;
-    GroupAndTransitions(const LabelGroup &label_group,
-                        const std::vector<Transition> &transitions,
-                        int cost)
+    TransitionGroup(const LabelGroup &label_group,
+                    const std::vector<Transition> &transitions,
+                    int cost)
         : label_group(label_group),
           transitions(transitions),
           cost(cost) {
@@ -70,7 +70,7 @@ public:
         const std::vector<int> &local_label_to_cost,
         bool end);
     void operator++();
-    GroupAndTransitions operator*() const;
+    TransitionGroup operator*() const;
 
     bool operator==(const TSConstIterator &rhs) const {
         return current_label == rhs.current_label;

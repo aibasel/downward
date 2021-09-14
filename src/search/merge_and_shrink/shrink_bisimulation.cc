@@ -183,8 +183,8 @@ void ShrinkBisimulation::compute_signatures(
                                                 threshold=1),
             label_reduction=exact(before_shrinking=true,before_merging=false)))
     */
-    for (GroupAndTransitions gat : ts) {
-        const vector<Transition> &transitions = gat.transitions;
+    for (TransitionGroup ts_group : ts) {
+        const vector<Transition> &transitions = ts_group.transitions;
         for (const Transition &transition : transitions) {
             assert(signatures[transition.src + 1].state == transition.src);
             bool skip_transition = false;
@@ -195,7 +195,7 @@ void ShrinkBisimulation::compute_signatures(
                     // We skip transitions connected to an irrelevant state.
                     skip_transition = true;
                 } else {
-                    int cost = gat.cost;
+                    int cost = ts_group.cost;
                     assert(target_h + cost >= src_h);
                     skip_transition = (target_h + cost != src_h);
                 }
