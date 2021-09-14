@@ -71,7 +71,6 @@ void LabelReduction::compute_label_mapping(
         unordered_map<int, vector<int>> cost_to_equivalent_labels;
         for (int label : block) {
             assert(label < next_new_label);
-            assert(global_labels.is_current_label(label));
             int cost = global_labels.get_label_cost(label);
             cost_to_equivalent_labels[cost].push_back(label);
             ++num_labels;

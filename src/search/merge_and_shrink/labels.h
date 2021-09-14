@@ -40,7 +40,6 @@ public:
     GlobalLabels(std::vector<int> &&label_costs, int max_num_labels);
     void reduce_labels(const std::vector<int> &old_labels);
     int get_num_active_labels() const;
-    bool is_current_label(int label) const;
     int get_label_cost(int label) const;
     void dump_labels() const;
 

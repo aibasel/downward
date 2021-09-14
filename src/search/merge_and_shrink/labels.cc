@@ -48,7 +48,6 @@ void GlobalLabels::reduce_labels(const vector<int> &old_labels) {
     int new_label_cost = INF;
     for (size_t i = 0; i < old_labels.size(); ++i) {
         int old_label = old_labels[i];
-        assert(is_current_label(old_label));
         int cost = get_label_cost(old_label);
         if (cost < new_label_cost) {
             new_label_cost = cost;
@@ -68,13 +67,8 @@ int GlobalLabels::get_num_active_labels() const {
     return result;
 }
 
-bool GlobalLabels::is_current_label(int label) const {
-    assert(utils::in_bounds(label, label_costs));
-    return label_costs[label] != -1;
-}
-
 int GlobalLabels::get_label_cost(int label) const {
-    assert(is_current_label(label));
+    assert(label_costs[label] != -1);
     return label_costs[label];
 }
 
