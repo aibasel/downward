@@ -315,6 +315,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                  local_label2 < local_label_to_transitions.size(); ++local_label2) {
                 if (!local_to_global_labels[local_label2].empty()) {
                     vector<Transition> &transitions2 = local_label_to_transitions[local_label2];
+                    // Comparing transitions directly works because they are sorted and unique.
                     if (transitions1 == transitions2) {
                         for (int global_label : local_to_global_labels[local_label2]) {
                             global_to_local_label[global_label] = local_label1;
@@ -325,6 +326,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                             make_move_iterator(local_to_global_labels[local_label2].end()));
                         local_to_global_labels[local_label2].clear();
                         utils::release_vector_memory(transitions2);
+                        local_label_to_cost[local_label1] = min(local_label_to_cost[local_label1], local_label_to_cost[local_label2]);
                     }
                 }
             }
