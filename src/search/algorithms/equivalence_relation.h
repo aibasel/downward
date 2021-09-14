@@ -14,8 +14,8 @@ class EquivalenceRelation;
 
 using ElementListIter = std::list<int>::iterator;
 using ElementListConstIter = std::list<int>::const_iterator;
-using BlockListIter = typename std::list<Block>::iterator;
-using BlockListConstIter = typename std::list<Block>::const_iterator;
+using BlockListIter = std::list<Block>::iterator;
+using BlockListConstIter = std::list<Block>::const_iterator;
 
 
 class Block {
@@ -58,7 +58,6 @@ public:
         return elements.end();
     }
 };
-
 
 class EquivalenceRelation {
     std::list<Block> blocks;

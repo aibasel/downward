@@ -52,7 +52,7 @@ void EquivalenceRelation::refine(const vector<int> &block) {
         ElementPosition &pos = it_pos->second;
         BlockListIter it_block_B = pos.first;
         Block &block_B = *it_block_B;
-        ElementListIter it_previous_element = pos.second;
+
         // Create the block (B \cap X) on demand.
         if (block_B.it_intersection_block == blocks.end()) {
             block_B.it_intersection_block = add_empty_block();
@@ -60,12 +60,13 @@ void EquivalenceRelation::refine(const vector<int> &block) {
             modified_blocks.push_back(it_block_B);
         }
         // Remove x from B.
-        block_B.erase(it_previous_element);
+        ElementListIter it_previous_pos_x = pos.second;
+        block_B.erase(it_previous_pos_x);
         // Add x to (B \cap X).
-        ElementListIter it_element = block_B.it_intersection_block->insert(x);
+        ElementListIter it_new_pos_x = block_B.it_intersection_block->insert(x);
         // Update the stored position of x.
         pos.first = block_B.it_intersection_block;
-        pos.second = it_element;
+        pos.second = it_new_pos_x;
     }
     // Reset the iterators referencing (B \cap X) for all modified blocks B and
     // remove any blocks B that became empty.
