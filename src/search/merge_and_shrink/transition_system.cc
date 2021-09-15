@@ -472,12 +472,12 @@ void TransitionSystem::apply_label_reduction(
         assert(label_mapping.size() == new_transitions.size());
 
         /*
-           Apply all label mappings to the label mappings. This needs
-           to happen *before* we can add the new transitions to this transition
-           system and *before* we can remove transitions of now obsolete
-           local labels because only after updating the label mappings, we
-           know the local label of the new labels and which old local labels
-           do not represent any global labels anymore.
+           Apply all label reductions to the label mappings (data structures).
+           This needs to happen *before* we can add the new transitions to this
+           transition system and *before* we can remove transitions of now
+           obsolete local labels because only after updating the label
+           mappings, we know the local label of the new global labels and which
+           old local labels do not represent any global labels anymore.
         */
         // Update both label mappings.
         for (const pair<int, vector<int>> &mapping : label_mapping) {
@@ -508,8 +508,8 @@ void TransitionSystem::apply_label_reduction(
         }
 
         /*
-          Go over the transitions of new labels and add them at the correct
-          position.
+          Go over the transitions of new global labels and add them at the
+          correct position.
 
           NOTE: it is important that this happens in increasing order of label
           numbers to ensure that local_label_to_transitions are synchronized
@@ -517,6 +517,7 @@ void TransitionSystem::apply_label_reduction(
         */
         for (size_t i = 0; i < label_mapping.size(); ++i) {
             vector<Transition> &transitions = new_transitions[i];
+            // Assert that the new local label id is correctly set.
             assert(global_to_local_label[label_mapping[i].first]
                    == static_cast<int>(local_label_to_transitions.size()));
             local_label_to_transitions.push_back(move(transitions));
