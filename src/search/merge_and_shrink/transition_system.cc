@@ -411,13 +411,16 @@ void TransitionSystem::apply_label_reduction(
       class from the case where we may combine arbitrary labels.
 
       The case where only equivalent labels are combined is simple: remove all
-      old labels from the local label they belong to and add the new one to
-      the local label instead.
+      old global labels from the local label they belong to (they all belong
+      to the same local label because we know they are equivalent) and add the
+      new global label to the local label instead. Thus the affected local
+      label is "non-empty" in the sense that there are still global labels
+      associated to it.
 
       The other case is more involved: again remove all old labels from their
-      local labels, and the local labels themselves if do not represent any
-      global labels anymore. Also collect the transitions of all reduced
-      labels. Add a new local label for every new label and assign the
+      local labels, and the local labels themselves if they do not represent
+      any global labels anymore. Also collect the transitions of all reduced
+      labels. Add a new local label for every new global label and assign the
       collected transitions to it. Recompute the cost of all affected local
       labels and re-compute locally equivalent labels.
     */
