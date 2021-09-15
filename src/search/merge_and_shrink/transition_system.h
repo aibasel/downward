@@ -129,6 +129,10 @@ private:
       sorted (by source, by target) and there are no duplicates.
     */
     bool are_transitions_sorted_unique() const;
+    /*
+      The mapping global_to_local_label is consistent with the mapping
+      local_to_global_labels.
+    */
     bool is_label_mapping_consistent() const;
     void dump_label_mapping() const;
 public:
