@@ -430,6 +430,7 @@ void TransitionSystem::apply_label_reduction(
         for (const pair<int, vector<int>> &mapping : label_mapping) {
             int new_label = mapping.first;
             const vector<int> &old_labels = mapping.second;
+            assert(old_labels.size() >= 2);
             int local_label = global_to_local_label[old_labels.front()];
             LabelGroup &label_group = local_to_global_labels[local_label];
             label_group.push_back(new_label);
