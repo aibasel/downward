@@ -460,6 +460,7 @@ void TransitionSystem::apply_label_reduction(
             const vector<int> &old_labels = mapping.second;
             assert(old_labels.size() >= 2);
             unordered_set<int> seen_local_labels;
+            // TODO: consider using unordered_set and sort once at the end.
             set<Transition> new_label_transitions;
             for (int old_label : old_labels) {
                 int local_label = global_to_local_label[old_label];
