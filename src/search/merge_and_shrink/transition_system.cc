@@ -327,6 +327,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                         local_to_global_labels[local_label2].clear();
                         utils::release_vector_memory(transitions2);
                         local_label_to_cost[local_label1] = min(local_label_to_cost[local_label1], local_label_to_cost[local_label2]);
+                        local_label_to_cost[local_label2] = -1; // for consistency
                     }
                 }
             }
@@ -441,6 +442,8 @@ void TransitionSystem::apply_label_reduction(
                 label_group.erase(find(label_group.begin(), label_group.end(), old_label));
                 // Reset (for consistency only, old labels are never accessed).
                 global_to_local_label[old_label] = -1;
+                // NOTE: if we were combining labels with different cost,
+                // we would need to recompute the cost of the local label here.
             }
         }
     } else {
@@ -528,6 +531,7 @@ void TransitionSystem::apply_label_reduction(
         for (int local_label : affected_local_labels) {
             if (local_to_global_labels[local_label].empty()) {
                 utils::release_vector_memory(local_label_to_transitions[local_label]);
+                local_label_to_cost[local_label] = -1; // for consistency
             }
         }
 
