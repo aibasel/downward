@@ -341,17 +341,17 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
     }
 }
 
-void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, const GlobalLabels &labels) {
+void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, const GlobalLabels &global_labels) {
     int var_id = variable.get_id();
     int num_states = variable.get_domain_size();
 
     // Collect all irrelevant labels for this variable.
     LabelGroup irrelevant_labels;
     int cost = INF;
-    for (int label : labels) {
+    for (int label : global_labels) {
         if (!is_relevant(var_id, label)) {
             irrelevant_labels.push_back(label);
-            cost = min(cost, labels.get_label_cost(label));
+            cost = min(cost, global_labels.get_label_cost(label));
         }
     }
 
@@ -372,7 +372,7 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, co
     }
 }
 
-void FTSFactory::build_transitions(const GlobalLabels &labels) {
+void FTSFactory::build_transitions(const GlobalLabels &global_labels) {
     /*
       - Compute all transitions of all operators for all variables, grouping
         transitions of locally equivalent labels for a given variable.
@@ -386,7 +386,7 @@ void FTSFactory::build_transitions(const GlobalLabels &labels) {
       once and put the labels into a single label group.
     */
     for (VariableProxy variable : task_proxy.get_variables())
-        build_transitions_for_irrelevant_ops(variable, labels);
+        build_transitions_for_irrelevant_ops(variable, global_labels);
 }
 
 vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const GlobalLabels &global_labels) {

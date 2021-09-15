@@ -37,14 +37,14 @@ void FTSConstIterator::operator++() {
 
 
 FactoredTransitionSystem::FactoredTransitionSystem(
-    unique_ptr<GlobalLabels> labels,
+    unique_ptr<GlobalLabels> global_labels,
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
     vector<unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
     vector<unique_ptr<Distances>> &&distances,
     const bool compute_init_distances,
     const bool compute_goal_distances,
     utils::Verbosity verbosity)
-    : global_labels(move(labels)),
+    : global_labels(move(global_labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
       distances(move(distances)),
