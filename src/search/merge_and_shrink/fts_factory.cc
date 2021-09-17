@@ -76,7 +76,7 @@ class FTSFactory {
         vector<vector<Transition>> &transitions_by_var);
     void build_transitions_for_operator(OperatorProxy op);
     void build_transitions_for_irrelevant_ops(
-        VariableProxy variable, const GlobalLabels &global_labels);
+        const VariableProxy &variable, const GlobalLabels &global_labels);
     void build_transitions(const GlobalLabels &global_labels);
     vector<unique_ptr<TransitionSystem>> create_transition_systems(
         const GlobalLabels &global_labels);
@@ -341,7 +341,8 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
     }
 }
 
-void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable, const GlobalLabels &global_labels) {
+void FTSFactory::build_transitions_for_irrelevant_ops(
+    const VariableProxy &variable, const GlobalLabels &global_labels) {
     int var_id = variable.get_id();
     int num_states = variable.get_domain_size();
 
