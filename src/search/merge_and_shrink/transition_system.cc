@@ -32,14 +32,14 @@ static void normalize_given_transitions(vector<Transition> &transitions) {
 }
 
 TSConstIterator::TSConstIterator(
-    const vector<LabelGroup> &local_to_global_labels,
+    const vector<LabelGroup> &local_label_to_global_labels,
     const vector<vector<Transition>> &local_label_to_transitions,
     const vector<int> &local_label_to_cost,
     bool end)
-    : local_to_global_labels(local_to_global_labels),
+    : local_label_to_global_labels(local_label_to_global_labels),
       local_label_to_transitions(local_label_to_transitions),
       local_label_to_cost(local_label_to_cost),
-      current_label((end ? local_to_global_labels.size() : 0)) {
+      current_label((end ? local_label_to_global_labels.size() : 0)) {
 }
 
 void TSConstIterator::operator++() {
@@ -48,7 +48,7 @@ void TSConstIterator::operator++() {
 
 TransitionGroup TSConstIterator::operator*() const {
     return TransitionGroup(
-        local_to_global_labels[current_label],
+        local_label_to_global_labels[current_label],
         local_label_to_transitions[current_label],
         local_label_to_cost[current_label]);
 }
@@ -73,8 +73,8 @@ TransitionSystem::TransitionSystem(
     int num_variables,
     vector<int> &&incorporated_variables,
     const GlobalLabels &global_labels,
-    vector<int> &&global_to_local_label,
-    vector<LabelGroup> &&local_to_global_labels,
+    vector<int> &&global_label_to_local_label,
+    vector<LabelGroup> &&local_label_to_global_labels,
     vector<vector<Transition>> &&local_label_to_transitions,
     vector<int> &&local_label_to_cost,
     int num_states,
@@ -83,15 +83,15 @@ TransitionSystem::TransitionSystem(
     : num_variables(num_variables),
       incorporated_variables(move(incorporated_variables)),
       global_labels(move(global_labels)),
-      global_to_local_label(move(global_to_local_label)),
-      local_to_global_labels(move(local_to_global_labels)),
+      global_label_to_local_label(move(global_label_to_local_label)),
+      local_label_to_global_labels(move(local_label_to_global_labels)),
       local_label_to_transitions(move(local_label_to_transitions)),
       local_label_to_cost(move(local_label_to_cost)),
       num_states(num_states),
       goal_states(move(goal_states)),
       init_state(init_state) {
-    assert(this->local_to_global_labels.size() == this->local_label_to_transitions.size());
-    assert(this->local_to_global_labels.size() == this->local_label_to_cost.size());
+    assert(this->local_label_to_global_labels.size() == this->local_label_to_transitions.size());
+    assert(this->local_label_to_global_labels.size() == this->local_label_to_cost.size());
     assert(is_valid());
 }
 
@@ -99,8 +99,8 @@ TransitionSystem::TransitionSystem(const TransitionSystem &other)
     : num_variables(other.num_variables),
       incorporated_variables(other.incorporated_variables),
       global_labels(other.global_labels),
-      global_to_local_label(other.global_to_local_label),
-      local_to_global_labels(other.local_to_global_labels),
+      global_label_to_local_label(other.global_label_to_local_label),
+      local_label_to_global_labels(other.local_label_to_global_labels),
       local_label_to_transitions(other.local_label_to_transitions),
       local_label_to_cost(other.local_label_to_cost),
       num_states(other.num_states),
@@ -130,15 +130,15 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         ts1.incorporated_variables.begin(), ts1.incorporated_variables.end(),
         ts2.incorporated_variables.begin(), ts2.incorporated_variables.end(),
         back_inserter(incorporated_variables));
-    vector<int> global_to_local_label(global_labels.get_max_num_labels(), -1);
-    vector<LabelGroup> local_to_global_labels;
+    vector<int> global_label_to_local_label(global_labels.get_max_num_labels(), -1);
+    vector<LabelGroup> local_label_to_global_labels;
     vector<vector<Transition>> local_label_to_transitions;
     vector<int> local_label_to_cost;
     int max_num_local_labels_product =
         min(static_cast<int>(ts1.local_label_to_cost.size()) *
             static_cast<int>(ts2.local_label_to_cost.size()),
             global_labels.get_num_active_labels());
-    local_to_global_labels.reserve(max_num_local_labels_product);
+    local_label_to_global_labels.reserve(max_num_local_labels_product);
     local_label_to_transitions.reserve(max_num_local_labels_product);
     local_label_to_cost.reserve(max_num_local_labels_product);
 
@@ -178,7 +178,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         // corresponding to the groups of ts2.
         unordered_map<int, LabelGroup> buckets;
         for (int label : group1) {
-            int ts_local_label2 = ts2.global_to_local_label[label];
+            int ts_local_label2 = ts2.global_label_to_local_label[label];
             buckets[ts_local_label2].push_back(label);
         }
         // Now buckets contains all equivalence classes that are
@@ -217,9 +217,9 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
                 int cost = INF;
                 for (int label : new_labels) {
                     cost = min(ts1.global_labels.get_label_cost(label), cost);
-                    global_to_local_label[label] = new_local_label;
+                    global_label_to_local_label[label] = new_local_label;
                 }
-                local_to_global_labels.push_back(move(new_labels));
+                local_label_to_global_labels.push_back(move(new_labels));
                 local_label_to_transitions.push_back(move(new_transitions));
                 local_label_to_cost.push_back(cost);
             }
@@ -238,23 +238,23 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         int cost = INF;
         for (int label : dead_labels) {
             cost = min(cost, ts1.global_labels.get_label_cost(label));
-            global_to_local_label[label] = new_local_label;
+            global_label_to_local_label[label] = new_local_label;
         }
-        local_to_global_labels.push_back(move(dead_labels));
+        local_label_to_global_labels.push_back(move(dead_labels));
         // Dead labels have empty transitions
         local_label_to_transitions.emplace_back();
         local_label_to_cost.push_back(cost);
     }
 
     assert(static_cast<int>(local_label_to_cost.size()) <= max_num_local_labels_product);
-    assert(local_label_to_transitions.size() == local_to_global_labels.size());
+    assert(local_label_to_transitions.size() == local_label_to_global_labels.size());
 
     return utils::make_unique_ptr<TransitionSystem>(
         num_variables,
         move(incorporated_variables),
         ts1.global_labels,
-        move(global_to_local_label),
-        move(local_to_global_labels),
+        move(global_label_to_local_label),
+        move(local_label_to_global_labels),
         move(local_label_to_transitions),
         move(local_label_to_cost),
         num_states,
@@ -264,35 +264,35 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
 }
 
 void TransitionSystem::make_local_labels_contiguous() {
-    int num_local_labels = local_to_global_labels.size();
+    int num_local_labels = local_label_to_global_labels.size();
     int new_num_local_labels = 0;
     for (int local_label = 0; local_label < num_local_labels; ++local_label) {
-        if (!local_to_global_labels[local_label].empty()) {
+        if (!local_label_to_global_labels[local_label].empty()) {
             ++new_num_local_labels;
         }
     }
 
     if (new_num_local_labels < num_local_labels) {
-        vector<LabelGroup> new_local_to_global_labels;
+        vector<LabelGroup> new_local_label_to_global_labels;
         vector<vector<Transition>> new_local_label_to_transitions;
         vector<int> new_local_label_to_cost;
-        new_local_to_global_labels.reserve(new_num_local_labels);
+        new_local_label_to_global_labels.reserve(new_num_local_labels);
         new_local_label_to_transitions.reserve(new_num_local_labels);
         new_local_label_to_cost.reserve(new_num_local_labels);
         int new_local_label = 0;
         for (int local_label = 0; local_label < num_local_labels; ++local_label) {
-            if (!local_to_global_labels[local_label].empty()) {
-                for (int global_label : local_to_global_labels[local_label]) {
-                    assert(global_to_local_label[global_label] == local_label);
-                    global_to_local_label[global_label] = new_local_label;
+            if (!local_label_to_global_labels[local_label].empty()) {
+                for (int global_label : local_label_to_global_labels[local_label]) {
+                    assert(global_label_to_local_label[global_label] == local_label);
+                    global_label_to_local_label[global_label] = new_local_label;
                 }
-                new_local_to_global_labels.push_back(move(local_to_global_labels[local_label]));
+                new_local_label_to_global_labels.push_back(move(local_label_to_global_labels[local_label]));
                 new_local_label_to_transitions.push_back(move(local_label_to_transitions[local_label]));
                 new_local_label_to_cost.push_back(local_label_to_cost[local_label]);
                 ++new_local_label;
             }
         }
-        new_local_to_global_labels.swap(local_to_global_labels);
+        new_local_label_to_global_labels.swap(local_label_to_global_labels);
         new_local_label_to_transitions.swap(local_label_to_transitions);
         new_local_label_to_cost.swap(local_label_to_cost);
     }
@@ -309,22 +309,22 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     */
     for (size_t local_label1 = 0; local_label1 < local_label_to_transitions.size();
          ++local_label1) {
-        if (!local_to_global_labels[local_label1].empty()) {
+        if (!local_label_to_global_labels[local_label1].empty()) {
             const vector<Transition> &transitions1 = local_label_to_transitions[local_label1];
             for (size_t local_label2 = local_label1 + 1;
                  local_label2 < local_label_to_transitions.size(); ++local_label2) {
-                if (!local_to_global_labels[local_label2].empty()) {
+                if (!local_label_to_global_labels[local_label2].empty()) {
                     vector<Transition> &transitions2 = local_label_to_transitions[local_label2];
                     // Comparing transitions directly works because they are sorted and unique.
                     if (transitions1 == transitions2) {
-                        for (int global_label : local_to_global_labels[local_label2]) {
-                            global_to_local_label[global_label] = local_label1;
+                        for (int global_label : local_label_to_global_labels[local_label2]) {
+                            global_label_to_local_label[global_label] = local_label1;
                         }
-                        local_to_global_labels[local_label1].insert(
-                            local_to_global_labels[local_label1].end(),
-                            make_move_iterator(local_to_global_labels[local_label2].begin()),
-                            make_move_iterator(local_to_global_labels[local_label2].end()));
-                        local_to_global_labels[local_label2].clear();
+                        local_label_to_global_labels[local_label1].insert(
+                            local_label_to_global_labels[local_label1].end(),
+                            make_move_iterator(local_label_to_global_labels[local_label2].begin()),
+                            make_move_iterator(local_label_to_global_labels[local_label2].end()));
+                        local_label_to_global_labels[local_label2].clear();
                         utils::release_vector_memory(transitions2);
                         local_label_to_cost[local_label1] = min(local_label_to_cost[local_label1], local_label_to_cost[local_label2]);
                         local_label_to_cost[local_label2] = -1; // for consistency
@@ -432,16 +432,16 @@ void TransitionSystem::apply_label_reduction(
             int new_label = mapping.first;
             const vector<int> &old_labels = mapping.second;
             assert(old_labels.size() >= 2);
-            int local_label = global_to_local_label[old_labels.front()];
-            LabelGroup &label_group = local_to_global_labels[local_label];
+            int local_label = global_label_to_local_label[old_labels.front()];
+            LabelGroup &label_group = local_label_to_global_labels[local_label];
             label_group.push_back(new_label);
-            global_to_local_label[new_label] = local_label;
+            global_label_to_local_label[new_label] = local_label;
 
             for (int old_label : old_labels) {
-                assert(global_to_local_label[old_label] == local_label);
+                assert(global_label_to_local_label[old_label] == local_label);
                 label_group.erase(find(label_group.begin(), label_group.end(), old_label));
                 // Reset (for consistency only, old labels are never accessed).
-                global_to_local_label[old_label] = -1;
+                global_label_to_local_label[old_label] = -1;
                 // NOTE: if we were combining labels with different cost,
                 // we would need to recompute the cost of the local label here.
             }
@@ -463,7 +463,7 @@ void TransitionSystem::apply_label_reduction(
             // TODO: consider using unordered_set and sort once at the end.
             set<Transition> new_label_transitions;
             for (int old_label : old_labels) {
-                int local_label = global_to_local_label[old_label];
+                int local_label = global_label_to_local_label[old_label];
                 if (seen_local_labels.insert(local_label).second) {
                     affected_local_labels.insert(local_label);
                     const vector<Transition> &transitions = local_label_to_transitions[local_label];
@@ -487,23 +487,23 @@ void TransitionSystem::apply_label_reduction(
         for (const pair<int, vector<int>> &mapping : label_mapping) {
             int new_label = mapping.first;
             const vector<int> &old_labels = mapping.second;
-            int new_local_label = local_to_global_labels.size();
-            local_to_global_labels.push_back({new_label});
+            int new_local_label = local_label_to_global_labels.size();
+            local_label_to_global_labels.push_back({new_label});
             local_label_to_cost.push_back(global_labels.get_label_cost(new_label));
-            global_to_local_label[new_label] = new_local_label;
+            global_label_to_local_label[new_label] = new_local_label;
 
             for (int old_label : old_labels) {
-                int old_local_label = global_to_local_label[old_label];
-                LabelGroup &label_group = local_to_global_labels[old_local_label];
+                int old_local_label = global_label_to_local_label[old_label];
+                LabelGroup &label_group = local_label_to_global_labels[old_local_label];
                 label_group.erase(find(label_group.begin(), label_group.end(), old_label));
                 // Reset (for consistency only, old labels are never accessed).
-                global_to_local_label[old_label] = -1;
+                global_label_to_local_label[old_label] = -1;
             }
         }
 
         // Recompute the cost of all affected local labels.
         for (int local_label : affected_local_labels) {
-            const LabelGroup &label_group = local_to_global_labels[local_label];
+            const LabelGroup &label_group = local_label_to_global_labels[local_label];
             local_label_to_cost[local_label] = INF;
             for (int label : label_group) {
                 int cost = global_labels.get_label_cost(label);
@@ -517,12 +517,12 @@ void TransitionSystem::apply_label_reduction(
 
           NOTE: it is important that this happens in increasing order of label
           numbers to ensure that local_label_to_transitions are synchronized
-          with local_to_global_labels and local_label_to_cost.
+          with local_label_to_global_labels and local_label_to_cost.
         */
         for (size_t i = 0; i < label_mapping.size(); ++i) {
             vector<Transition> &transitions = new_transitions[i];
             // Assert that the new local label id is correctly set.
-            assert(global_to_local_label[label_mapping[i].first]
+            assert(global_label_to_local_label[label_mapping[i].first]
                    == static_cast<int>(local_label_to_transitions.size()));
             local_label_to_transitions.push_back(move(transitions));
         }
@@ -530,7 +530,7 @@ void TransitionSystem::apply_label_reduction(
         // Finally remove transitions of all local labels that do not represent
         // any global label anymore.
         for (int local_label : affected_local_labels) {
-            if (local_to_global_labels[local_label].empty()) {
+            if (local_label_to_global_labels[local_label].empty()) {
                 utils::release_vector_memory(local_label_to_transitions[local_label]);
                 local_label_to_cost[local_label] = -1; // for consistency
             }
@@ -558,15 +558,15 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 
 bool TransitionSystem::is_valid() const {
     return are_transitions_sorted_unique()
-           && local_to_global_labels.size() == local_label_to_cost.size()
-           && local_to_global_labels.size() == local_label_to_transitions.size()
+           && local_label_to_global_labels.size() == local_label_to_cost.size()
+           && local_label_to_global_labels.size() == local_label_to_transitions.size()
            && is_label_mapping_consistent();
 }
 
 bool TransitionSystem::is_label_mapping_consistent() const {
     for (int global_label : global_labels) {
-        int local_label = global_to_local_label[global_label];
-        const LabelGroup &global_labels = local_to_global_labels[local_label];
+        int local_label = global_label_to_local_label[global_label];
+        const LabelGroup &global_labels = local_label_to_global_labels[local_label];
         assert(!global_labels.empty());
 
         if (find(global_labels.begin(),
@@ -580,9 +580,9 @@ bool TransitionSystem::is_label_mapping_consistent() const {
         }
     }
 
-    for (size_t local_label = 0; local_label < local_to_global_labels.size(); ++local_label) {
-        for (int global_label : local_to_global_labels[local_label]) {
-            if (global_to_local_label[global_label] != static_cast<int>(local_label)) {
+    for (size_t local_label = 0; local_label < local_label_to_global_labels.size(); ++local_label) {
+        for (int global_label : local_label_to_global_labels[local_label]) {
+            if (global_label_to_local_label[global_label] != static_cast<int>(local_label)) {
                 dump_label_mapping();
                 cerr << "global label " << global_label << " is not mapped "
                     "to the local label it is part of" << endl;
@@ -597,14 +597,14 @@ void TransitionSystem::dump_label_mapping() const {
     utils::g_log << "global to local label mapping: ";
     for (int global_label : global_labels) {
         utils::g_log << global_label << " -> "
-                     << global_to_local_label[global_label] << ", ";
+                     << global_label_to_local_label[global_label] << ", ";
     }
     utils::g_log << endl;
     utils::g_log << "local to global label mapping: ";
     for (size_t local_label = 0;
-         local_label < local_to_global_labels.size(); ++local_label) {
+         local_label < local_label_to_global_labels.size(); ++local_label) {
         utils::g_log << local_label << ": "
-                     << local_to_global_labels[local_label] << ", ";
+                     << local_label_to_global_labels[local_label] << ", ";
     }
     utils::g_log << endl;
 }

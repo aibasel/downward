@@ -59,13 +59,13 @@ class TSConstIterator {
       This class allows users to easily iterate over both local labels and the
       global labels they represent, as well as their transitions.
     */
-    const std::vector<LabelGroup> &local_to_global_labels;
+    const std::vector<LabelGroup> &local_label_to_global_labels;
     const std::vector<std::vector<Transition>> &local_label_to_transitions;
     const std::vector<int> &local_label_to_cost;
     int current_label;
 public:
     TSConstIterator(
-        const std::vector<LabelGroup> &local_to_global_labels,
+        const std::vector<LabelGroup> &local_label_to_global_labels,
         const std::vector<std::vector<Transition>> &local_label_to_transitions,
         const std::vector<int> &local_label_to_cost,
         bool end);
@@ -103,8 +103,8 @@ private:
       back to the set of global labels they represent. Their cost is
       the minimum cost of all represented global labels.
     */
-    std::vector<int> global_to_local_label;
-    std::vector<LabelGroup> local_to_global_labels;
+    std::vector<int> global_label_to_local_label;
+    std::vector<LabelGroup> local_label_to_global_labels;
     std::vector<std::vector<Transition>> local_label_to_transitions;
     std::vector<int> local_label_to_cost;
 
@@ -130,8 +130,8 @@ private:
     */
     bool are_transitions_sorted_unique() const;
     /*
-      The mapping global_to_local_label is consistent with the mapping
-      local_to_global_labels.
+      The mapping global_label_to_local_label is consistent with the mapping
+      local_label_to_global_labels.
     */
     bool is_label_mapping_consistent() const;
     void dump_label_mapping() const;
@@ -140,8 +140,8 @@ public:
         int num_variables,
         std::vector<int> &&incorporated_variables,
         const GlobalLabels &global_labels,
-        std::vector<int> &&global_to_local_label,
-        std::vector<LabelGroup> &&local_to_global_labels,
+        std::vector<int> &&global_label_to_local_label,
+        std::vector<LabelGroup> &&local_label_to_global_labels,
         std::vector<std::vector<Transition>> &&local_label_to_transitions,
         std::vector<int> &&local_label_to_cost,
         int num_states,
@@ -182,14 +182,14 @@ public:
         bool only_equivalent_labels);
 
     TSConstIterator begin() const {
-        return TSConstIterator(local_to_global_labels,
+        return TSConstIterator(local_label_to_global_labels,
                                local_label_to_transitions,
                                local_label_to_cost,
                                false);
     }
 
     TSConstIterator end() const {
-        return TSConstIterator(local_to_global_labels,
+        return TSConstIterator(local_label_to_global_labels,
                                local_label_to_transitions,
                                local_label_to_cost,
                                true);
