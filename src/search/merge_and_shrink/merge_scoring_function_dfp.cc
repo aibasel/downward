@@ -24,9 +24,9 @@ vector<int> MergeScoringFunctionDFP::compute_label_ranks(
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     vector<int> label_ranks(num_labels, -1);
 
-    for (TransitionGroup ts_group : ts) {
-        const LabelGroup &label_group = ts_group.label_group;
-        const vector<Transition> &transitions = ts_group.transitions;
+    for (const LocalLabelInfo &local_label_info : ts) {
+        const LabelGroup &label_group = local_label_info.get_label_group();
+        const vector<Transition> &transitions = local_label_info.get_transitions();
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
         bool group_relevant = false;

@@ -38,8 +38,8 @@ bool Distances::is_unit_cost() const {
       that the actual shortest-path algorithms (e.g.
       compute_goal_distances_general_cost) do.
     */
-    for (TransitionGroup ts_group : transition_system) {
-        if (ts_group.cost != 1)
+    for (const LocalLabelInfo &local_labe_info : transition_system) {
+        if (local_labe_info.get_cost() != 1)
             return false;
     }
     return true;
@@ -63,8 +63,8 @@ static void breadth_first_search(
 
 void Distances::compute_init_distances_unit_cost() {
     vector<vector<int>> forward_graph(get_num_states());
-    for (TransitionGroup ts_group : transition_system) {
-        const vector<Transition> &transitions = ts_group.transitions;
+    for (const LocalLabelInfo &local_label_info : transition_system) {
+        const vector<Transition> &transitions = local_label_info.get_transitions();
         for (const Transition &transition : transitions) {
             forward_graph[transition.src].push_back(transition.target);
         }
@@ -78,8 +78,8 @@ void Distances::compute_init_distances_unit_cost() {
 
 void Distances::compute_goal_distances_unit_cost() {
     vector<vector<int>> backward_graph(get_num_states());
-    for (TransitionGroup ts_group : transition_system) {
-        const vector<Transition> &transitions = ts_group.transitions;
+    for (const LocalLabelInfo &local_label_info : transition_system) {
+        const vector<Transition> &transitions = local_label_info.get_transitions();
         for (const Transition &transition : transitions) {
             backward_graph[transition.target].push_back(transition.src);
         }
@@ -122,9 +122,9 @@ static void dijkstra_search(
 
 void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int>>> forward_graph(get_num_states());
-    for (TransitionGroup ts_group : transition_system) {
-        const vector<Transition> &transitions = ts_group.transitions;
-        int cost = ts_group.cost;
+    for (const LocalLabelInfo &local_label_info : transition_system) {
+        const vector<Transition> &transitions = local_label_info.get_transitions();
+        int cost = local_label_info.get_cost();
         for (const Transition &transition : transitions) {
             forward_graph[transition.src].push_back(
                 make_pair(transition.target, cost));
@@ -141,9 +141,9 @@ void Distances::compute_init_distances_general_cost() {
 
 void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int>>> backward_graph(get_num_states());
-    for (TransitionGroup ts_group : transition_system) {
-        const vector<Transition> &transitions = ts_group.transitions;
-        int cost = ts_group.cost;
+    for (const LocalLabelInfo &local_label_info : transition_system) {
+        const vector<Transition> &transitions = local_label_info.get_transitions();
+        int cost = local_label_info.get_cost();
         for (const Transition &transition : transitions) {
             backward_graph[transition.target].push_back(
                 make_pair(transition.src, cost));
