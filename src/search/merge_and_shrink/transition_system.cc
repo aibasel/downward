@@ -157,9 +157,9 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     */
     int multiplier = ts2_size;
     LabelGroup dead_labels;
-    for (LocalLabelInfo ts_group : ts1) {
-        const LabelGroup &group1 = ts_group.get_label_group();
-        const vector<Transition> &transitions1 = ts_group.get_transitions();
+    for (const LocalLabelInfo &local_label_info : ts1) {
+        const LabelGroup &group1 = local_label_info.get_label_group();
+        const vector<Transition> &transitions1 = local_label_info.get_transitions();
 
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
@@ -486,8 +486,8 @@ string TransitionSystem::tag() const {
 }
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
-    for (LocalLabelInfo ts_group : *this) {
-        if (!utils::is_sorted_unique(ts_group.transitions))
+    for (const LocalLabelInfo &local_label_info : *this) {
+        if (!utils::is_sorted_unique(local_label_info.get_transitions()))
             return false;
     }
     return true;
@@ -557,8 +557,8 @@ bool TransitionSystem::is_solvable(const Distances &distances) const {
 
 int TransitionSystem::compute_total_transitions() const {
     int total = 0;
-    for (LocalLabelInfo ts_group : *this) {
-        total += ts_group.transitions.size();
+    for (const LocalLabelInfo &local_label_info : *this) {
+        total += local_label_info.get_transitions().size();
     }
     return total;
 }
@@ -589,9 +589,9 @@ void TransitionSystem::dump_dot_graph() const {
         if (is_init)
             utils::g_log << "    start -> node" << i << ";" << endl;
     }
-    for (LocalLabelInfo ts_group : *this) {
-        const LabelGroup &label_group = ts_group.label_group;
-        const vector<Transition> &transitions = ts_group.transitions;
+    for (const LocalLabelInfo &local_label_info : *this) {
+        const LabelGroup &label_group = local_label_info.get_label_group();
+        const vector<Transition> &transitions = local_label_info.get_transitions();
         for (const Transition &transition : transitions) {
             int src = transition.src;
             int target = transition.target;
@@ -609,11 +609,11 @@ void TransitionSystem::dump_dot_graph() const {
 
 void TransitionSystem::dump_labels_and_transitions() const {
     utils::g_log << tag() << "transitions" << endl;
-    for (LocalLabelInfo ts_group : *this) {
-        const LabelGroup &label_group = ts_group.label_group;
+    for (const LocalLabelInfo &local_label_info : *this) {
+        const LabelGroup &label_group = local_label_info.get_label_group();
         utils::g_log << "labels: " << label_group << endl;
         utils::g_log << "transitions: ";
-        const vector<Transition> &transitions = ts_group.transitions;
+        const vector<Transition> &transitions = local_label_info.get_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
@@ -622,7 +622,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
             utils::g_log << src << " -> " << target;
         }
         utils::g_log << endl;
-        utils::g_log << "cost: " << ts_group.cost << endl;
+        utils::g_log << "cost: " << local_label_info.cost << endl;
     }
 }
 
