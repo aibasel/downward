@@ -2,7 +2,7 @@ from collections import defaultdict, deque
 from itertools import chain
 import heapq
 
-import sccs
+from . import sccs
 
 DEBUG = False
 

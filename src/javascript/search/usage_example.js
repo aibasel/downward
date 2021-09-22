@@ -18,7 +18,7 @@ downwardscript.onload = function() {
             let stream = FS.open('output.sas', 'w+');
             FS.write(stream, data, 0, data.length, 0);
             FS.close(stream);
-            console.log('wrote to output.sas');
+            console.log('wrote to' + PATH_TO_INPUT);
         }
     }
     inputXHR.send();

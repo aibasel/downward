@@ -2,14 +2,14 @@
 # components" (where to conditions are related if they share a variabe) into
 # several rules, one for each connected component and one high-level rule.
 
-from pddl_to_prolog import Rule, get_variables
-import graph
-import greedy_join
-import pddl
+from . import pddl_to_prolog 
+from . import graph
+from . import greedy_join
+from . import pddl
 
 def get_connected_conditions(conditions):
     agraph = graph.Graph(conditions)
-    var_to_conditions = {var: [] for var in get_variables(conditions)}
+    var_to_conditions = {var: [] for var in pddl_to_prolog.get_variables(conditions)}
     for cond in conditions:
         for var in cond.args:
             if var[0] == "?":
@@ -23,9 +23,9 @@ def get_connected_conditions(conditions):
 
 def project_rule(rule, conditions, name_generator):
     predicate = next(name_generator)
-    effect_variables = set(rule.effect.args) & get_variables(conditions)
+    effect_variables = set(rule.effect.args) & pddl_to_prolog.get_variables(conditions)
     effect = pddl.Atom(predicate, sorted(effect_variables))
-    projected_rule = Rule(conditions, effect)
+    projected_rule = pddl_to_prolog.Rule(conditions, effect)
     return projected_rule
 
 def split_rule(rule, name_generator):
@@ -53,7 +53,7 @@ def split_rule(rule, name_generator):
 
     conditions = ([proj_rule.effect for proj_rule in projected_rules] +
                   trivial_conditions)
-    combining_rule = Rule(conditions, rule.effect)
+    combining_rule = pddl_to_prolog.Rule(conditions, rule.effect)
     if len(conditions) >= 2:
         combining_rule.type = "product"
     else:

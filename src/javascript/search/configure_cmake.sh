@@ -1,5 +1,5 @@
 #!/bin/sh
-cd "$(dirname "$0")/../"
+cd "$(dirname "$0")/../../"
 if [ $# -eq 0 ]; then
     echo "No arguments provided"
     echo "Run either with "
