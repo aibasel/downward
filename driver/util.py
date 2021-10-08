@@ -29,6 +29,7 @@ def find_domain_filename(task_filename):
     domain_basenames = [
         "domain.pddl",
         basename_root + "-domain" + ext,
+        basename[:3] + "-domain.pddl", # for airport
         "domain_" + basename,
         "domain-" + basename,
     ]
