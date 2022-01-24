@@ -142,17 +142,14 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
             "2014") + "\n" +
         "For a more exhaustive description of merge-and-shrink, see the journal "
         "paper" + utils::format_journal_reference(
-            {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann", "Raz Nissim"},
-            "Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds"
-            " in Factored State Spaces",
-            "https://ai.dmi.unibas.ch/papers/helmert-et-al-jacm2014.pdf",
-            "Journal of the ACM",
-            "61 (3)",
-            "16:1-63",
-            "2014") + "\n" +
-        "Please note that the journal paper describes the \"old\" theory of "
-        "label reduction, which has been superseded by the above conference "
-        "paper and is no longer implemented in Fast Downward.\n\n"
+            {"Silvan Sievers", "Malte Helmert"},
+            "Merge-and-Shrink: A Compositional Theory of Transformations "
+            "of Factored Transition Systems",
+            "https://ai.dmi.unibas.ch/papers/sievers-helmert-jair2021.pdf",
+            "Journal of Artificial Intelligence Research",
+            "71",
+            "781-883",
+            "2021") + "\n" +
         "The following paper describes how to improve the DFP merge strategy "
         "with tie-breaking, and presents two new merge strategies (dyn-MIASM "
         "and SCC-DFP):" + utils::format_conference_reference(
