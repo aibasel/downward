@@ -55,14 +55,6 @@ function set_version {
     git add $REPODIR/driver/version.py
 }
 
-function create_recipe_and_link_latest {
-    CONTAINERTYPE=$1
-    PARAMETER=$2
-    VALUE=$3
-    fill_template "_$CONTAINERTYPE.tpl" "$PARAMETER" "$VALUE" > $MAJOR/$CONTAINERTYPE.$MAJOR
-    ln -fs $MAJOR/$CONTAINERTYPE.$MAJOR latest/$CONTAINERTYPE
-}
-
 set -x
 
 # Create the branch if it doesn't exist already.
@@ -80,7 +72,7 @@ else
         echo "The version number '$VERSION' implies a bugfix release but there is no branch '$BRANCH' yet."
         exit 1
     fi
-    git switch -c "$BRANCH"
+    git branch "$BRANCH"
 fi
 
 # Update version number.
@@ -117,7 +109,8 @@ if [[ $MINOR = 0 ]]; then
 fi
 
 # Create tarball. (ignored files are configured in .gitattributes)
-git archive -o fast-downward-$PRETTY_VERSION.tar.gz $TAG
+ARCHIVE=fast-downward-$PRETTY_VERSION
+git archive --prefix=$ARCHIVE/ -o $ARCHIVE.tar.gz $TAG
 
 popd
 

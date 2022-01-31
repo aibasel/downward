@@ -65,7 +65,7 @@ bool MatchTree::Node::is_leaf_node() const {
 
 MatchTree::MatchTree(const TaskProxy &task_proxy,
                      const Pattern &pattern,
-                     const vector<size_t> &hash_multipliers)
+                     const vector<int> &hash_multipliers)
     : task_proxy(task_proxy),
       pattern(pattern),
       hash_multipliers(hash_multipliers),
@@ -133,7 +133,7 @@ void MatchTree::insert(int op_id, const vector<FactPair> &regression_preconditio
 }
 
 void MatchTree::get_applicable_operator_ids_recursive(
-    Node *node, const size_t state_index, vector<int> &operator_ids) const {
+    Node *node, int state_index, vector<int> &operator_ids) const {
     /*
       Note: different from the code that builds the match tree, we do
       the test if node == 0 *before* calling traverse rather than *at
@@ -164,7 +164,7 @@ void MatchTree::get_applicable_operator_ids_recursive(
 }
 
 void MatchTree::get_applicable_operator_ids(
-    size_t state_index, vector<int> &operator_ids) const {
+    int state_index, vector<int> &operator_ids) const {
     if (root)
         get_applicable_operator_ids_recursive(root, state_index, operator_ids);
 }

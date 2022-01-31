@@ -3,6 +3,8 @@
 #include "canonical_pdbs.h"
 #include "pattern_database.h"
 
+#include <limits>
+
 using namespace std;
 
 namespace pdbs {
@@ -50,8 +52,9 @@ int IncrementalCanonicalPDBs::get_value(const State &state) const {
 }
 
 bool IncrementalCanonicalPDBs::is_dead_end(const State &state) const {
+    state.unpack();
     for (const shared_ptr<PatternDatabase> &pdb : *pattern_databases)
-        if (pdb->get_value(state) == numeric_limits<int>::max())
+        if (pdb->get_value(state.get_unpacked_values()) == numeric_limits<int>::max())
             return true;
     return false;
 }

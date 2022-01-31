@@ -4,11 +4,11 @@
 #include "evaluation_result.h"
 #include "evaluator_cache.h"
 #include "operator_id.h"
+#include "task_proxy.h"
 
 #include <unordered_map>
 
 class Evaluator;
-class GlobalState;
 class SearchStatistics;
 
 /*
@@ -42,6 +42,7 @@ class SearchStatistics;
 
 class EvaluationContext {
     EvaluatorCache cache;
+    State state;
     int g_value;
     bool preferred;
     SearchStatistics *statistics;
@@ -49,6 +50,10 @@ class EvaluationContext {
 
     static const int INVALID = -1;
 
+    EvaluationContext(
+        const EvaluatorCache &cache, const State &state, int g_value,
+        bool is_preferred, SearchStatistics *statistics,
+        bool calculate_preferred);
 public:
     /*
       Copy existing heuristic cache and use it to look up heuristic values.
@@ -57,14 +62,15 @@ public:
       TODO: Can we reuse caches? Can we move them instead of copying them?
     */
     EvaluationContext(
-        const EvaluatorCache &cache, int g_value, bool is_preferred,
-        SearchStatistics *statistics, bool calculate_preferred = false);
+        const EvaluationContext &other,
+        int g_value, bool is_preferred, SearchStatistics *statistics,
+        bool calculate_preferred = false);
     /*
       Create new heuristic cache for caching heuristic values. Used for example
       by eager search.
     */
     EvaluationContext(
-        const GlobalState &state, int g_value, bool is_preferred,
+        const State &state, int g_value, bool is_preferred,
         SearchStatistics *statistics, bool calculate_preferred = false);
     /*
       Use the following constructor when you don't care about g values,
@@ -79,14 +85,12 @@ public:
             contexts that don't need this information.
     */
     EvaluationContext(
-        const GlobalState &state,
+        const State &state,
         SearchStatistics *statistics = nullptr, bool calculate_preferred = false);
-
-    ~EvaluationContext() = default;
 
     const EvaluationResult &get_result(Evaluator *eval);
     const EvaluatorCache &get_cache() const;
-    const GlobalState &get_state() const;
+    const State &get_state() const;
     int get_g_value() const;
     bool is_preferred() const;
 

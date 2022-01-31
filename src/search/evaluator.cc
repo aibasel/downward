@@ -63,11 +63,11 @@ bool Evaluator::does_cache_estimates() const {
     return false;
 }
 
-bool Evaluator::is_estimate_cached(const GlobalState &) const {
+bool Evaluator::is_estimate_cached(const State &) const {
     return false;
 }
 
-int Evaluator::get_cached_estimate(const GlobalState &) const {
+int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 

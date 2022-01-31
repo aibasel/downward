@@ -10,6 +10,7 @@
 #include "../utils/strings.h"
 
 #include <cctype>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>

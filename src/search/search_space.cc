@@ -1,26 +1,22 @@
 #include "search_space.h"
 
-#include "global_state.h"
 #include "search_node_info.h"
 #include "task_proxy.h"
 
+#include "task_utils/task_properties.h"
 #include "utils/logging.h"
 
 #include <cassert>
 
 using namespace std;
 
-SearchNode::SearchNode(const StateRegistry &state_registry,
-                       StateID state_id,
-                       SearchNodeInfo &info)
-    : state_registry(state_registry),
-      state_id(state_id),
-      info(info) {
-    assert(state_id != StateID::no_state);
+SearchNode::SearchNode(const State &state, SearchNodeInfo &info)
+    : state(state), info(info) {
+    assert(state.get_id() != StateID::no_state);
 }
 
-GlobalState SearchNode::get_state() const {
-    return state_registry.lookup_state(state_id);
+const State &SearchNode::get_state() const {
+    return state;
 }
 
 bool SearchNode::is_open() const {
@@ -64,7 +60,7 @@ void SearchNode::open(const SearchNode &parent_node,
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state_id();
+    info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
@@ -79,7 +75,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state_id();
+    info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
@@ -93,7 +89,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     // may require reopening closed nodes.
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state_id();
+    info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
@@ -107,8 +103,8 @@ void SearchNode::mark_as_dead_end() {
 }
 
 void SearchNode::dump(const TaskProxy &task_proxy, utils::LogProxy &log) const {
-    log << state_id << ": ";
-    get_state().dump_fdr();
+    log << state.get_id() << ": ";
+    task_properties::dump_fdr(state);
     if (info.creating_operator != OperatorID::no_operator) {
         OperatorsProxy operators = task_proxy.get_operators();
         OperatorProxy op = operators[info.creating_operator.get_index()];
@@ -123,13 +119,14 @@ SearchSpace::SearchSpace(StateRegistry &state_registry, utils::LogProxy &log)
     : state_registry(state_registry), log(log) {
 }
 
-SearchNode SearchSpace::get_node(const GlobalState &state) {
-    return SearchNode(state_registry, state.get_id(), search_node_infos[state]);
+SearchNode SearchSpace::get_node(const State &state) {
+    return SearchNode(state, search_node_infos[state]);
 }
 
-void SearchSpace::trace_path(const GlobalState &goal_state,
+void SearchSpace::trace_path(const State &goal_state,
                              vector<OperatorID> &path) const {
-    GlobalState current_state = goal_state;
+    State current_state = goal_state;
+    assert(current_state.get_registry() == &state_registry);
     assert(path.empty());
     for (;;) {
         const SearchNodeInfo &info = search_node_infos[current_state];
@@ -148,10 +145,10 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
     for (StateID id : state_registry) {
         /* The body duplicates SearchNode::dump() but we cannot create
            a search node without discarding the const qualifier. */
-        GlobalState state = state_registry.lookup_state(id);
+        State state = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state];
         log << id << ": ";
-        state.dump_fdr();
+        task_properties::dump_fdr(state);
         if (node_info.creating_operator != OperatorID::no_operator &&
             node_info.parent_state_id != StateID::no_state) {
             OperatorProxy op = operators[node_info.creating_operator.get_index()];

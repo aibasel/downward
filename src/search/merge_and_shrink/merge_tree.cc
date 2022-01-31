@@ -207,7 +207,7 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
             surviving_node = second_parent;
             removed_node = first_parent;
         } else if (update_option == UpdateOption::USE_RANDOM) {
-            int random = (*rng)(2);
+            int random = rng->random(2);
             surviving_node = (random == 0 ? first_parent : second_parent);
             removed_node = (random == 0 ? second_parent : first_parent);
         } else {

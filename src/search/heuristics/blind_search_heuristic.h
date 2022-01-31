@@ -7,7 +7,7 @@ namespace blind_search_heuristic {
 class BlindSearchHeuristic : public Heuristic {
     int min_operator_cost;
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     BlindSearchHeuristic(const options::Options &opts);
     ~BlindSearchHeuristic();

@@ -22,7 +22,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     void extract_nontrivial_factors(FactoredTransitionSystem &fts);
     void extract_factors(FactoredTransitionSystem &fts);
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state) override;
+    virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit MergeAndShrinkHeuristic(const options::Options &opts);
 };

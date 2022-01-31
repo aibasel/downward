@@ -25,7 +25,7 @@ PhOConstraints::PhOConstraints(const Options &opts)
 
 void PhOConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task,
-    vector<lp::LPConstraint> &constraints,
+    named_vector::NamedVector<lp::LPConstraint> &constraints,
     double infinity) {
     assert(pattern_generator);
     pdbs::PatternCollectionInformation pattern_collection_info =
@@ -53,10 +53,11 @@ void PhOConstraints::initialize_constraints(
 
 bool PhOConstraints::update_constraints(const State &state,
                                         lp::LPSolver &lp_solver) {
+    state.unpack();
     for (size_t i = 0; i < pdbs->size(); ++i) {
         int constraint_id = constraint_offset + i;
         shared_ptr<pdbs::PatternDatabase> pdb = (*pdbs)[i];
-        int h = pdb->get_value(state);
+        int h = pdb->get_value(state.get_unpacked_values());
         if (h == numeric_limits<int>::max()) {
             return true;
         }

@@ -99,7 +99,7 @@ void SearchEngine::search() {
     log << "Actual search time: " << timer.get_elapsed_time() << endl;
 }
 
-bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
+bool SearchEngine::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         log << "Solution found!" << endl;
         Plan plan;

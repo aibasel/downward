@@ -108,13 +108,13 @@ def configs_satisficing_core():
         # LAMA first
         "lama-first": [
             "--evaluator",
-            "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
+            "hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false)",
             "--evaluator", "hff=ff(transform=adapt_costs(one))",
             "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                        cost_type=one,reopen_closed=false)"""],
         "lama-first-typed": [
             "--evaluator",
-            "hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true),transform=adapt_costs(one),pref=false)",
+            "hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false)",
             "--evaluator", "hff=ff(transform=adapt_costs(one))",
             "--search",
                 "lazy(alt([single(hff), single(hff, pref_only=true),"
@@ -126,11 +126,6 @@ def configs_satisficing_core():
 
 def configs_optimal_extended():
     return {
-        "astar_lmcount_lm_merged_rhw_hm_no_order": [
-            "--evaluator",
-            "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
-            "--search",
-            "astar(lmc,lazy_evaluator=lmc)"],
         "astar_cegar": [
             "--search",
             "astar(cegar())"],
@@ -202,10 +197,10 @@ def configs_satisficing_extended():
     }
 
 
-def configs_optimal_lp():
+def configs_optimal_lp(lp_solver="CPLEX"):
     return {
-        "divpot": ["--search", "astar(diverse_potentials())"],
-        "seq+lmcut": ["--search", "astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]))"],
+        "divpot": ["--search", f"astar(diverse_potentials(lpsolver={lp_solver}))"],
+        "seq+lmcut": ["--search", f"astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver={lp_solver}))"],
     }
 
 
