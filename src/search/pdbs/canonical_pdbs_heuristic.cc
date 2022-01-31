@@ -58,7 +58,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
 
     // Do not dump pattern collections for size reasons.
     dump_pattern_collection_generation_statistics(
-        "Canonical PDB heuristic", timer(), pattern_collection_info, false);
+        "Canonical PDB heuristic", timer(), pattern_collection_info);
     return CanonicalPDBs(pdbs, pattern_cliques);
 }
 
@@ -67,12 +67,8 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
       canonical_pdbs(get_canonical_pdbs_from_options(task, opts)) {
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
-    return compute_heuristic(state);
-}
-
-int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
+int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {
+    State state = convert_ancestor_state(ancestor_state);
     int h = canonical_pdbs.get_value(state);
     if (h == numeric_limits<int>::max()) {
         return DEAD_END;

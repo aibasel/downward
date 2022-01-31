@@ -264,8 +264,9 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     const PatternDatabase &pdb, const State &sample, int h_collection,
     const PDBCollection &pdbs, const vector<PatternClique> &pattern_cliques) {
+    const vector<int> &sample_data = sample.get_unpacked_values();
     // h_pattern: h-value of the new pattern
-    int h_pattern = pdb.get_value(sample);
+    int h_pattern = pdb.get_value(sample_data);
 
     if (h_pattern == numeric_limits<int>::max()) {
         return true;
@@ -278,7 +279,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     vector<int> h_values;
     h_values.reserve(pdbs.size());
     for (const shared_ptr<PatternDatabase> &p : pdbs) {
-        int h = p->get_value(sample);
+        int h = p->get_value(sample_data);
         if (h == numeric_limits<int>::max())
             return false;
         h_values.push_back(h);
@@ -435,103 +436,15 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
 }
 
 void add_hillclimbing_options(OptionParser &parser) {
-    parser.add_option<int>(
-        "pdb_max_size",
-        "maximal number of states per pattern database ",
-        "2000000",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "collection_max_size",
-        "maximal number of states in the pattern collection",
-        "20000000",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "num_samples",
-        "number of samples (random states) on which to evaluate each "
-        "candidate pattern collection",
-        "1000",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "min_improvement",
-        "minimum number of samples on which a candidate pattern "
-        "collection must improve on the current one to be considered "
-        "as the next pattern collection ",
-        "10",
-        Bounds("1", "infinity"));
-    parser.add_option<double>(
-        "max_time",
-        "maximum time in seconds for improving the initial pattern "
-        "collection via hill climbing. If set to 0, no hill climbing "
-        "is performed at all. Note that this limit only affects hill "
-        "climbing. Use max_time_dominance_pruning to limit the time "
-        "spent for pruning dominated patterns.",
-        "infinity",
-        Bounds("0.0", "infinity"));
-    utils::add_rng_options(parser);
-}
-
-void check_hillclimbing_options(
-    OptionParser &parser, const Options &opts) {
-    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
-        parser.error("minimum improvement must not be higher than number of "
-                     "samples");
-}
-
-static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    add_hillclimbing_options(parser);
-
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-
-    check_hillclimbing_options(parser, opts);
-    if (parser.dry_run())
-        return nullptr;
-
-    return make_shared<PatternCollectionGeneratorHillclimbing>(opts);
-}
-
-static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
-    parser.document_synopsis(
-        "iPDB",
-        "This pattern generation method is an adaption of the algorithm "
-        "described in the following paper:" + utils::format_conference_reference(
-            {"Patrik Haslum", "Adi Botea", "Malte Helmert", "Blai Bonet",
-             "Sven Koenig"},
-            "Domain-Independent Construction of Pattern Database Heuristics for"
-            " Cost-Optimal Planning",
-            "http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf",
-            "Proceedings of the 22nd AAAI Conference on Artificial"
-            " Intelligence (AAAI 2007)",
-            "1007-1012",
-            "AAAI Press",
-            "2007") +
-        "For implementation notes, see:" + utils::format_conference_reference(
-            {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
-            "Efficient Implementation of Pattern Database Heuristics for"
-            " Classical Planning",
-            "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
-            "Proceedings of the Fifth Annual Symposium on Combinatorial"
-            " Search (SoCS 2012)",
-            "105-111",
-            "AAAI Press",
-            "2012"));
     parser.document_note(
         "Note",
         "The pattern collection created by the algorithm will always contain "
         "all patterns consisting of a single goal variable, even if this "
         "violates the pdb_max_size or collection_max_size limits.");
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
     parser.document_note(
         "Note",
-        "This pattern generation method uses the canonical pattern collection "
-        "heuristic.");
+        "This pattern generation method generates patterns optimized "
+        "for use with the canonical pattern database heuristic.");
     parser.document_note(
         "Implementation Notes",
         "The following will very briefly describe the algorithm and explain "
@@ -581,6 +494,112 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
         "search. This is similar to the techniques used in the original "
         "implementation as described in the paper.",
         true);
+
+    parser.add_option<int>(
+        "pdb_max_size",
+        "maximal number of states per pattern database ",
+        "2000000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "collection_max_size",
+        "maximal number of states in the pattern collection",
+        "20000000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "num_samples",
+        "number of samples (random states) on which to evaluate each "
+        "candidate pattern collection",
+        "1000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "min_improvement",
+        "minimum number of samples on which a candidate pattern "
+        "collection must improve on the current one to be considered "
+        "as the next pattern collection ",
+        "10",
+        Bounds("1", "infinity"));
+    parser.add_option<double>(
+        "max_time",
+        "maximum time in seconds for improving the initial pattern "
+        "collection via hill climbing. If set to 0, no hill climbing "
+        "is performed at all. Note that this limit only affects hill "
+        "climbing. Use max_time_dominance_pruning to limit the time "
+        "spent for pruning dominated patterns.",
+        "infinity",
+        Bounds("0.0", "infinity"));
+    utils::add_rng_options(parser);
+}
+
+void check_hillclimbing_options(
+    OptionParser &parser, const Options &opts) {
+    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
+        parser.error("minimum improvement must not be higher than number of "
+                     "samples");
+}
+
+static basic_string<char> paper_references() {
+    return utils::format_conference_reference(
+        {"Patrik Haslum", "Adi Botea", "Malte Helmert", "Blai Bonet",
+         "Sven Koenig"},
+        "Domain-Independent Construction of Pattern Database Heuristics for"
+        " Cost-Optimal Planning",
+        "http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf",
+        "Proceedings of the 22nd AAAI Conference on Artificial"
+        " Intelligence (AAAI 2007)",
+        "1007-1012",
+        "AAAI Press",
+        "2007") +
+           "For implementation notes, see:" + utils::format_conference_reference(
+        {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
+        "Efficient Implementation of Pattern Database Heuristics for"
+        " Classical Planning",
+        "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+        "Proceedings of the Fifth Annual Symposium on Combinatorial"
+        " Search (SoCS 2012)",
+        "105-111",
+        "AAAI Press",
+        "2012");
+}
+
+static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Hill climbing",
+        "This algorithm uses hill climbing to generate patterns "
+        "optimized for the Evaluator#Canonical_PDB heuristic. It it described "
+        "in the following paper:" + paper_references());
+    add_hillclimbing_options(parser);
+
+    Options opts = parser.parse();
+    if (parser.help_mode())
+        return nullptr;
+
+    check_hillclimbing_options(parser, opts);
+    if (parser.dry_run())
+        return nullptr;
+
+    return make_shared<PatternCollectionGeneratorHillclimbing>(opts);
+}
+
+static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
+    parser.document_synopsis(
+        "iPDB",
+        "This approach is a combination of using the Evaluator#Canonical_PDB "
+        "heuristic over patterns computed with the "
+        "PatternCollectionGenerator#hillclimbing algorithm for pattern "
+        "generation. It is a short-hand for the command-line option "
+        "{{{cpdbs(hillclimbing())}}}. "
+        "Both the heuristic and the pattern generation algorithm are described "
+        "in the following paper:" + paper_references() +
+        "See also Evaluator#Canonical_PDB and "
+        "PatternCollectionGenerator#Hill_climbing for more details.");
+
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
 
     add_hillclimbing_options(parser);
 

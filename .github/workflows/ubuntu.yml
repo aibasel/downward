@@ -1,0 +1,211 @@
+---
+name: Ubuntu
+
+on: [push, pull_request]
+
+# Some notes on file paths: the working directory is $GITHUB_WORKSPACE,
+# which equals /home/runner/work/my-repo-name/my-repo-name. The code is
+# checked out to $GITHUB_WORKSPACE as well. We put all libraries under
+# /home/runner/lib.
+
+jobs:
+  compile:
+    name: Compile planner
+    timeout-minutes: 60
+    runs-on: ${{ matrix.ubuntu-version }}
+    strategy:
+      matrix:
+        ubuntu-version: [ubuntu-18.04, ubuntu-20.04]
+        compiler-version:
+          - {cc: gcc, cxx: g++}
+          - {cc: gcc-10, cxx: g++-10}
+          - {cc: clang, cxx: clang++}
+          - {cc: clang-11, cxx: clang++-11}
+        python-version: [3.6]
+        # Unfortunately, we couldn't figure out a way to name the
+        # compiler versions so that we don't have to copy them here.
+        exclude:
+          - ubuntu-version: ubuntu-18.04
+            compiler-version: {cc: gcc-10, cxx: g++-10}
+          - ubuntu-version: ubuntu-18.04
+            compiler-version: {cc: clang-11, cxx: clang++-11}
+    env:
+      CC: ${{ matrix.compiler-version.cc }}
+      CXX: ${{ matrix.compiler-version.cxx }}
+      CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
+      SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
+      DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio129/cplex
+      DOWNWARD_SOPLEX_ROOT: /home/runner/lib/soplex-3.1.1
+      DOWNWARD_COIN_ROOT: /home/runner/lib/coin
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@master
+
+      - name: Install Python
+        uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
+          mkdir /home/runner/lib
+
+      # We only want to set up Osi if both LP solvers are set, hence
+      # we execute the following three steps only if both secrets
+      # are set.
+      - name: Install CPLEX
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        run: |
+          # We redirect output of wget to hide the secret URLs.
+          wget -O cplex_installer $CPLEX_URL &> /dev/null
+          chmod +x cplex_installer
+          ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${DOWNWARD_CPLEX_ROOT}")" -i silent
+          rm cplex_installer
+
+      - name: Install SoPlex
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        run: |
+          # We redirect output of wget to hide the secret URLs.
+          wget -O soplex-3.1.1.tgz $SOPLEX_URL &> /dev/null
+          tar xzf soplex-3.1.1.tgz
+          cd soplex-3.1.1
+          mkdir build
+          cd build
+          cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" ..
+          make
+          make install
+          cd ../../
+          rm -r soplex-3.1.1.tgz soplex-3.1.1
+
+      - name: Install Osi
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        run: |
+          wget http://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz
+          tar xzf Osi-0.107.9.tgz
+          cd Osi-0.107.9
+          mkdir $DOWNWARD_COIN_ROOT
+          ./configure CC=$CC CFLAGS="-pthread -Wno-long-long" \
+                      CXX=$CXX CXXFLAGS="-pthread -Wno-long-long" \
+                      LDFLAGS="-L$DOWNWARD_CPLEX_ROOT/lib/x86-64_linux/static_pic \
+                               -L$DOWNWARD_SOPLEX_ROOT/lib" \
+                      --without-lapack --enable-static=no \
+                      --prefix="$DOWNWARD_COIN_ROOT" \
+                      --disable-bzlib \
+                      --with-soplex-incdir=$DOWNWARD_SOPLEX_ROOT/include \
+                      --with-soplex-lib="-lsoplex" \
+                      --with-cplex-incdir=$DOWNWARD_CPLEX_ROOT/include/ilcplex \
+                      --with-cplex-lib="-lcplex -lm -ldl" # -ldl is only needed for CPLEX >= 12.8
+          make -j2
+          make install
+          cd ../
+          rm -r Osi-0.107.9.tgz Osi-0.107.9
+
+      - name: Compile planner
+        run: |
+          export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
+          ./build.py --debug
+          ./build.py
+
+      - name: Archive required files
+        # We only run tests on the version compiled with gcc, so we
+        # only need to archive that one.
+        if: ${{ matrix.compiler-version.cc == 'gcc' }}
+        # We determined the dynamically-linked libraries using ldd. We
+        # archive the entire lib directory of Osi because we need all
+        # 4 large library files and several file links to these.
+        run: |
+          libs=""
+          if [[ ! -z "${CPLEX_URL}" || ! -z "${SOPLEX_URL}" ]]; then
+            libs="${libs} lib/coin/lib/"
+          fi
+          if [[ ! -z "${CPLEX_URL}" ]]; then
+            libs="${libs} lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so"
+          fi
+
+          # Handle libs first because tar complains when no files follow the last --directory option.
+          tar cfz archive.tar.gz --directory /home/runner ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
+
+      - name: Upload archive
+        if: ${{ matrix.compiler-version.cc == 'gcc' }}
+        uses: actions/upload-artifact@master
+        with:
+          name: compiled-planner-${{ matrix.ubuntu-version }}
+          path: archive.tar.gz
+          retention-days: 1
+
+
+  test:
+    name: Test planner
+    runs-on: ${{ matrix.version.ubuntu }}
+    needs: compile # TODO: this only depends on the compile step with gcc
+    strategy:
+      matrix:
+        version:
+          - {ubuntu: ubuntu-18.04, python: 3.6}
+          - {ubuntu: ubuntu-20.04, python: 3.8}
+    env:
+      CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
+      SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
+    steps:
+      - name: Download archive
+        uses: actions/download-artifact@master
+        with:
+          name: compiled-planner-${{ matrix.version.ubuntu }}
+
+      - name: Delete artifact
+        uses: geekyeggo/delete-artifact@master
+        with:
+          name: compiled-planner-${{ matrix.version.ubuntu }}
+
+      - name: Install Python
+        uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.version.python }}
+
+      - name: Install dependencies
+        run: |
+          pip3 install tox
+          sudo apt-get -y install zlib1g-dev libgmp3-dev gcc flex bison
+
+        # NOTE: VAL does not compile with clang-11.
+      - name: Install VAL
+        run: |
+          git clone https://github.com/KCL-Planning/VAL.git
+          cd VAL
+          git checkout a5565396007eee73ac36527fbf904142b3077c74
+          make clean  # Remove old build artifacts and binaries.
+          sed -i 's/-Werror //g' Makefile  # Ignore warnings.
+          make -j2
+          mv validate ../
+          cd ../
+          rm -rf VAL
+          echo `pwd` >> $GITHUB_PATH # Add VAL to path of subsequent steps.
+
+      - name: Extract archive
+        # We need to make sure that library paths are the same as
+        # during compilation.
+        run: |
+          tar xfz archive.tar.gz
+          if [[ ! -z "${CPLEX_URL}" || ! -z "${SOPLEX_URL}" ]]; then
+            mv lib/ /home/runner
+          fi
+
+      - name: Run driver, translator and search tests
+        run: |
+          cd misc/
+          tox -e driver,translator,search
+
+      - name: Run CPLEX tests
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        run: |
+          cd misc/
+          tox -e cplex
+
+      - name: Run SoPlex tests
+        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        run: |
+          cd misc/
+          tox -e soplex
+
+...

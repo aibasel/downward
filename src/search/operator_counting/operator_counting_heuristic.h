@@ -20,8 +20,7 @@ class OperatorCountingHeuristic : public Heuristic {
     lp::LPSolver lp_solver;
     const bool use_integer_operator_counts;
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state) override;
-    int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit OperatorCountingHeuristic(const options::Options &opts);
     ~OperatorCountingHeuristic();

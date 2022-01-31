@@ -1,5 +1,6 @@
 #include "landmark_factory_rpg_sasp.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
 #include "util.h"
 
@@ -18,7 +19,9 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
-    : LandmarkFactory(opts) {
+    : disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+      use_orders(opts.get<bool>("use_orders")),
+      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }
 
 void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
@@ -69,7 +72,7 @@ void LandmarkFactoryRpgSasp::add_dtg_successor(int var_id, int pre, int post) {
 }
 
 void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
-    const TaskProxy &task_proxy, const LandmarkNode *lmp,
+    const TaskProxy &task_proxy, const Landmark &landmark,
     const OperatorProxy &op, unordered_map<int, int> &result) const {
     // Computes a subset of the actual preconditions of o for achieving lmp - takes into account
     // operator preconditions, but only reports those effect conditions that are true for ALL
@@ -91,7 +94,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
         FactProxy effect_fact = effect.get_fact();
         int var_id = effect_fact.get_variable().get_id();
         if (!has_precondition_on_var[var_id] && effect_fact.get_variable().get_domain_size() == 2) {
-            for (const FactPair &lm_fact : lmp->facts) {
+            for (const FactPair &lm_fact : landmark.facts) {
                 if (lm_fact.var == var_id &&
                     initial_state[var_id].get_value() != lm_fact.value) {
                     result.emplace(var_id, initial_state[var_id].get_value());
@@ -105,8 +108,8 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     set<int> lm_props_achievable;
     for (EffectProxy effect : effects) {
         FactProxy effect_fact = effect.get_fact();
-        for (size_t j = 0; j < lmp->facts.size(); ++j)
-            if (lmp->facts[j] == effect_fact.get_pair())
+        for (size_t j = 0; j < landmark.facts.size(); ++j)
+            if (landmark.facts[j] == effect_fact.get_pair())
                 lm_props_achievable.insert(j);
     }
     // Intersect effect conditions of all effects that can achieve lmp
@@ -118,7 +121,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
             if (!init && intersection.empty())
                 break;
             unordered_map<int, int> current_cond;
-            if (lmp->facts[lm_prop] == effect_fact.get_pair()) {
+            if (landmark.facts[lm_prop] == effect_fact.get_pair()) {
                 EffectConditionsProxy effect_conditions = effect.get_conditions();
                 if (effect_conditions.empty()) {
                     intersection.clear();
@@ -139,19 +142,19 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     result.insert(intersection.begin(), intersection.end());
 }
 
-int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
-                                                  LandmarkNode *bp,
-                                                  vector<vector<int>> &lvl_var) {
+int LandmarkFactoryRpgSasp::min_cost_for_landmark(
+    const TaskProxy &task_proxy, const Landmark &landmark,
+    vector<vector<int>> &lvl_var) {
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
-    for (const FactPair &lm_fact : bp->facts) {
+    for (const FactPair &lm_fact : landmark.facts) {
         // ...look at all achieving operators
-        const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact);
+        const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact);
         for (int op_or_axiom_id : op_or_axiom_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
-            if (_possibly_reaches_lm(op, lvl_var, bp)) {
+            if (possibly_reaches_lm(op, lvl_var, landmark)) {
                 min_cost = min(min_cost, op.get_cost());
             }
         }
@@ -166,60 +169,58 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
     return min_cost;
 }
 
-void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
-                                                       LandmarkNode &b, EdgeType t) {
-    LandmarkNode *new_lm;
-    if (lm_graph->simple_landmark_exists(a)) {
-        new_lm = &lm_graph->get_simple_lm_node(a);
-        edge_add(*new_lm, b, t);
+void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
+    const FactPair &a, LandmarkNode &b, EdgeType t) {
+    if (lm_graph->contains_simple_landmark(a)) {
+        LandmarkNode &simple_lm = lm_graph->get_simple_landmark(a);
+        edge_add(simple_lm, b, t);
         return;
     }
-    set<FactPair> a_set;
-    a_set.insert(a);
-    if (lm_graph->disj_landmark_exists(a_set)) {
+
+    Landmark landmark({a}, false, false);
+    if (lm_graph->contains_disjunctive_landmark(a)) {
+        // In issue1004, we fixed a bug in this part of the code. It now removes
+        // the disjunctive landmark along with all its orderings from the
+        // landmark graph and adds a new simple landmark node. Before this
+        // change, incoming orderings were maintained, which is not always
+        // correct for greedy necessary orderings. We now replace those
+        // incoming orderings with natural orderings.
+
         // Simple landmarks are more informative than disjunctive ones,
-        // change disj. landmark into simple
+        // remove disj. landmark and add simple one
+        LandmarkNode *disj_lm = &lm_graph->get_disjunctive_landmark(a);
 
-        // old: call to methode
-        LandmarkNode &node = lm_graph->make_disj_node_simple(a);
-
-        /* TODO: Problem: Schon diese jetzige Implementierung ist nicht mehr korrekt,
-        da rm_landmark_node nicht nur bei allen children die parents-zeiger auf sich selbst
-        loescht, sondern auch bei allen parents die children-zeiger auf sich selbst. Ein
-        einfaches Speichern aller Attribute von node funktioniert also nicht - entweder man
-        muss dann manuell bei den parents des alten node alle children-Zeiger neu setzen auf
-        den neuen node oder man ueberarbeitet das ganze komplett anders... Eine andere Vermutung
-        meinerseits waere, dass die alte Version verbugt ist und eigentlich auch die children-
-        Zeiger der parents von node geloescht werden muessten, wie es in rm_landmark_node passiert.
-        */
-        // TODO: avoid copy constructor, save attributes locally and assign to new lm
-        // new: replace by new program logic
-        /*LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
-        LandmarkNode node(node2);
-        lm_graph->rm_landmark_node(&node2);
-        lm_graph->landmark_add_simple(a);*/
-
-        node.facts.clear();
-        node.facts.push_back(a);
-        // Clean orders: let disj. LM {D1,...,Dn} be ordered before L. We
-        // cannot infer that any one of D1,...Dn by itself is ordered before L
-        for (const auto &child : node.children) {
-            child.first->parents.erase(&node);
+        // Remove all pointers to disj_lm from internal data structures (i.e.,
+        // the list of open landmarks and forward orders)
+        auto it = find(open_landmarks.begin(), open_landmarks.end(), disj_lm);
+        if (it != open_landmarks.end()) {
+            open_landmarks.erase(it);
         }
-        node.children.clear();
-        node.forward_orders.clear();
+        forward_orders.erase(disj_lm);
 
-        edge_add(node, b, t);
-        // Node has changed, reexamine it again. This also fixes min_cost.
-        for (list<LandmarkNode *>::const_iterator it = open_landmarks.begin(); it
-             != open_landmarks.end(); ++it)
-            if (*it == &node)
-                return;
-        open_landmarks.push_back(&node);
+        // Retrieve incoming edges from disj_lm
+        vector<LandmarkNode *> predecessors;
+        for (auto &pred : disj_lm->parents) {
+            predecessors.push_back(pred.first);
+        }
+
+        // Remove disj_lm from landmark graph
+        lm_graph->remove_node(disj_lm);
+
+        // Add simple landmark node
+        LandmarkNode &simple_lm = lm_graph->add_landmark(move(landmark));
+        open_landmarks.push_back(&simple_lm);
+        edge_add(simple_lm, b, t);
+
+        // Add incoming orderings of replaced disj_lm as natural orderings to
+        // simple_lm
+        for (LandmarkNode *pred : predecessors) {
+            edge_add(*pred, simple_lm, EdgeType::NATURAL);
+        }
     } else {
-        new_lm = &lm_graph->landmark_add_simple(a);
-        open_landmarks.push_back(new_lm);
-        edge_add(*new_lm, b, t);
+        LandmarkNode &simple_lm = lm_graph->add_landmark(move(landmark));
+        open_landmarks.push_back(&simple_lm);
+        edge_add(simple_lm, b, t);
     }
 }
 
@@ -236,50 +237,52 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
             //<< g_variable_name[it->first] << " -> " << it->second << endl;
             return;
         }
-        if (lm_graph->simple_landmark_exists(lm)) {
+        if (lm_graph->contains_simple_landmark(lm)) {
             // Propositions in this disj. LM exist already as simple LMs.
             simple_lm_exists = true;
             lm_prop = lm;
             break;
         }
     }
-    LandmarkNode *new_lm;
+    LandmarkNode *new_lm_node;
     if (simple_lm_exists) {
         // Note: don't add orders as we can't be sure that they're correct
         return;
-    } else if (lm_graph->disj_landmark_exists(a)) {
-        if (lm_graph->exact_same_disj_landmark_exists(a)) {
+    } else if (lm_graph->contains_overlapping_disjunctive_landmark(a)) {
+        if (lm_graph->contains_identical_disjunctive_landmark(a)) {
             // LM already exists, just add order.
-            new_lm = &lm_graph->get_disj_lm_node(*a.begin());
-            edge_add(*new_lm, b, t);
+            new_lm_node = &lm_graph->get_disjunctive_landmark(*a.begin());
+            edge_add(*new_lm_node, b, t);
             return;
         }
         // LM overlaps with existing disj. LM, do not add.
         return;
     }
     // This LM and no part of it exist, add the LM to the landmarks graph.
-    new_lm = &lm_graph->landmark_add_disjunctive(a);
-    open_landmarks.push_back(new_lm);
-    edge_add(*new_lm, b, t);
+    Landmark landmark(vector<FactPair>(a.begin(), a.end()), true, false);
+    new_lm_node = &lm_graph->add_landmark(move(landmark));
+    open_landmarks.push_back(new_lm_node);
+    edge_add(*new_lm_node, b, t);
 }
 
 void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     const TaskProxy &task_proxy, unordered_map<int, int> &shared_pre,
-    vector<vector<int>> &lvl_var, LandmarkNode *bp) {
+    vector<vector<int>> &lvl_var, const Landmark &landmark) {
     /* Compute the shared preconditions of all operators that can potentially
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
-    for (const FactPair &lm_fact : bp->facts) {
-        const vector<int> &op_ids = lm_graph->get_operators_including_eff(lm_fact);
+    for (const FactPair &lm_fact : landmark.facts) {
+        const vector<int> &op_ids = get_operators_including_eff(lm_fact);
 
         for (int op_or_axiom_id : op_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
             if (!init && shared_pre.empty())
                 break;
 
-            if (_possibly_reaches_lm(op, lvl_var, bp)) {
+            if (possibly_reaches_lm(op, lvl_var, landmark)) {
                 unordered_map<int, int> next_pre;
-                get_greedy_preconditions_for_lm(task_proxy, bp, op, next_pre);
+                get_greedy_preconditions_for_lm(task_proxy, landmark,
+                                                op, next_pre);
                 if (init) {
                     init = false;
                     shared_pre = next_pre;
@@ -358,7 +361,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(const TaskProxy &task_pro
 
 void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     const TaskProxy &task_proxy, vector<set<FactPair>> &disjunctive_pre,
-    vector<vector<int>> &lvl_var, LandmarkNode *bp) {
+    vector<vector<int>> &lvl_var, const Landmark &landmark) {
     /* Compute disjunctive preconditions from all operators than can potentially
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph).
      A disj. precondition is a set of facts which contains one precondition fact
@@ -366,8 +369,8 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
      in the set stems from the same PDDL predicate. */
 
     vector<int> op_or_axiom_ids;
-    for (const FactPair &lm_fact : bp->facts) {
-        const vector<int> &tmp_op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact);
+    for (const FactPair &lm_fact : landmark.facts) {
+        const vector<int> &tmp_op_or_axiom_ids = get_operators_including_eff(lm_fact);
         for (int op_or_axiom_id : tmp_op_or_axiom_ids)
             op_or_axiom_ids.push_back(op_or_axiom_id);
     }
@@ -378,10 +381,10 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     // proposition which operators use it
     for (size_t i = 0; i < op_or_axiom_ids.size(); ++i) {
         OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_ids[i]);
-        if (_possibly_reaches_lm(op, lvl_var, bp)) {
+        if (possibly_reaches_lm(op, lvl_var, landmark)) {
             ++num_ops;
             unordered_map<int, int> next_pre;
-            get_greedy_preconditions_for_lm(task_proxy, bp, op, next_pre);
+            get_greedy_preconditions_for_lm(task_proxy, landmark, op, next_pre);
             for (const auto &pre : next_pre) {
                 int disj_class = disjunction_classes[pre.first][pre.second];
                 if (disj_class == -1) {
@@ -393,7 +396,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
                 const FactPair pre_fact(pre.first, pre.second);
-                if (!lm_graph->simple_landmark_exists(pre_fact)) {
+                if (!lm_graph->contains_simple_landmark(pre_fact)) {
                     preconditions[disj_class].push_back(pre_fact);
                     used_operators[disj_class].insert(i);
                 }
@@ -411,7 +414,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     }
 }
 
-void LandmarkFactoryRpgSasp::generate_landmarks(
+void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
     utils::g_log << "Generating landmarks using the RPG/SAS+ approach\n";
@@ -419,49 +422,70 @@ void LandmarkFactoryRpgSasp::generate_landmarks(
     build_disjunction_classes(task_proxy);
 
     for (FactProxy goal : task_proxy.get_goals()) {
-        LandmarkNode &lmn = lm_graph->landmark_add_simple(goal.get_pair());
-        lmn.in_goal = true;
-        open_landmarks.push_back(&lmn);
+        Landmark landmark({goal.get_pair()}, false, false, true);
+        LandmarkNode &lm_node = lm_graph->add_landmark(move(landmark));
+        open_landmarks.push_back(&lm_node);
     }
 
     State initial_state = task_proxy.get_initial_state();
     while (!open_landmarks.empty()) {
-        LandmarkNode *bp = open_landmarks.front();
+        LandmarkNode *lm_node = open_landmarks.front();
+        Landmark &landmark = lm_node->get_landmark();
         open_landmarks.pop_front();
-        assert(bp->forward_orders.empty());
+        assert(forward_orders[lm_node].empty());
 
-        if (!bp->is_true_in_state(initial_state)) {
-            // Backchain from landmark bp and compute greedy necessary predecessors.
+        if (!landmark.is_true_in_state(initial_state)) {
+            // Backchain from landmark lm_node and compute greedy necessary predecessors.
             // Firstly, collect information about the earliest possible time step in a
             // relaxed plan that propositions are achieved (in lvl_var) and operators
             // applied (in lvl_ops).
             vector<vector<int>> lvl_var;
             vector<utils::HashMap<FactPair, int>> lvl_op;
-            compute_predecessor_information(task_proxy, exploration, bp, lvl_var, lvl_op);
-            // Use this information to determine all operators that can possibly achieve bp
+            relaxed_task_solvable(task_proxy, exploration, lvl_var,
+                                  lvl_op, true, landmark);
+            // Use this information to determine all operators that can possibly achieve landmark
             // for the first time, and collect any precondition propositions that all such
             // operators share (if there are any).
             unordered_map<int, int> shared_pre;
-            compute_shared_preconditions(task_proxy, shared_pre, lvl_var, bp);
-            // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
+            compute_shared_preconditions(task_proxy, shared_pre,
+                                         lvl_var, landmark);
+            // All such shared preconditions are landmarks, and greedy necessary predecessors of landmark.
             for (const auto &pre : shared_pre) {
-                found_simple_lm_and_order(FactPair(pre.first, pre.second), *bp, EdgeType::greedy_necessary);
+                found_simple_lm_and_order(
+                    FactPair(pre.first, pre.second), *lm_node,
+                    EdgeType::GREEDY_NECESSARY);
             }
             // Extract additional orders from relaxed planning graph and DTG.
-            approximate_lookahead_orders(task_proxy, lvl_var, bp);
-            // Use the information about possibly achieving operators of bp to set its min cost.
-            bp->min_cost = min_cost_for_landmark(task_proxy, bp, lvl_var);
+            approximate_lookahead_orders(task_proxy, lvl_var, lm_node);
+            // Use the information about possibly achieving operators of landmark to set its min cost.
+            landmark.cost =
+                min_cost_for_landmark(task_proxy, landmark, lvl_var);
 
             // Process achieving operators again to find disj. LMs
             vector<set<FactPair>> disjunctive_pre;
-            compute_disjunctive_preconditions(task_proxy, disjunctive_pre, lvl_var, bp);
+            compute_disjunctive_preconditions(
+                task_proxy, disjunctive_pre, lvl_var, landmark);
             for (const auto &preconditions : disjunctive_pre)
                 if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
-                    found_disj_lm_and_order(task_proxy, preconditions, *bp, EdgeType::greedy_necessary);
+                    found_disj_lm_and_order(
+                        task_proxy, preconditions, *lm_node,
+                        EdgeType::GREEDY_NECESSARY);
                 }
         }
     }
     add_lm_forward_orders();
+
+    if (!disjunctive_landmarks) {
+        discard_disjunctive_landmarks();
+    }
+
+    if (!use_orders) {
+        discard_all_orderings();
+    }
+
+    if (only_causal_landmarks) {
+        discard_noncausal_landmarks(task_proxy, exploration);
+    }
 }
 
 void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
@@ -476,30 +500,31 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
 
     // Use domain transition graphs to find further orders. Only possible if lmp is
     // a simple landmark.
-    if (lmp->disjunctive)
+    const Landmark &landmark = lmp->get_landmark();
+    if (landmark.disjunctive)
         return;
-    const FactPair &lmk = lmp->facts[0];
+    const FactPair &lm_fact = landmark.facts[0];
 
     // Collect in "unreached" all values of the LM variable that cannot be reached
     // before the LM value (in the relaxed plan graph)
-    int domain_size = variables[lmk.var].get_domain_size();
+    int domain_size = variables[lm_fact.var].get_domain_size();
     unordered_set<int> unreached(domain_size);
     for (int value = 0; value < domain_size; ++value)
-        if (lvl_var[lmk.var][value] == numeric_limits<int>::max() && lmk.value != value)
+        if (lvl_var[lm_fact.var][value] == numeric_limits<int>::max() && lm_fact.value != value)
             unreached.insert(value);
     // The set "exclude" will contain all those values of the LM variable that
     // cannot be reached before the LM value (as in "unreached") PLUS
     // one value that CAN be reached
     State initial_state = task_proxy.get_initial_state();
     for (int value = 0; value < domain_size; ++value)
-        if (unreached.find(value) == unreached.end() && lmk.value != value) {
+        if (unreached.find(value) == unreached.end() && lm_fact.value != value) {
             unordered_set<int> exclude(domain_size);
             exclude = unreached;
             exclude.insert(value);
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
-            if (!domain_connectivity(initial_state, lmk, exclude))
-                found_simple_lm_and_order(FactPair(lmk.var, value), *lmp, EdgeType::natural);
+            if (!domain_connectivity(initial_state, lm_fact, exclude))
+                found_simple_lm_and_order(FactPair(lm_fact.var, value), *lmp, EdgeType::NATURAL);
         }
 }
 
@@ -541,8 +566,8 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
 
 void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables,
                                                  const vector<vector<int>> &lvl_var,
-                                                 LandmarkNode *lmp) {
-    /* lmp is ordered before any var-val pair that cannot be reached before lmp according to
+                                                 LandmarkNode *lm_node) {
+    /* lm_node is ordered before any var-val pair that cannot be reached before lm_node according to
      relaxed planning graph (as captured in lvl_var).
      These orders are saved in the node member variable "forward_orders".
      */
@@ -553,14 +578,14 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
             const FactPair fact(var.get_id(), value);
 
             bool insert = true;
-            for (const FactPair &lm_fact : lmp->facts) {
+            for (const FactPair &lm_fact : lm_node->get_landmark().facts) {
                 if (fact != lm_fact) {
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
                     const vector<int> &reach_fact =
-                        lm_graph->get_operators_including_eff(fact);
+                        get_operators_including_eff(fact);
                     const vector<int> &reach_lm =
-                        lm_graph->get_operators_including_eff(lm_fact);
+                        get_operators_including_eff(lm_fact);
                     for (size_t j = 0; j < reach_fact.size() && intersection_empty; ++j)
                         for (size_t k = 0; k < reach_lm.size()
                              && intersection_empty; ++k)
@@ -577,20 +602,38 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
                 }
             }
             if (insert)
-                lmp->forward_orders.insert(fact);
+                forward_orders[lm_node].insert(fact);
         }
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     for (auto &node : lm_graph->get_nodes()) {
-        for (const auto &node2_pair : node->forward_orders) {
-            if (lm_graph->simple_landmark_exists(node2_pair)) {
-                LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
-                edge_add(*node, node2, EdgeType::natural);
+        for (const auto &node2_pair : forward_orders[node.get()]) {
+            if (lm_graph->contains_simple_landmark(node2_pair)) {
+                LandmarkNode &node2 = lm_graph->get_simple_landmark(node2_pair);
+                edge_add(*node, node2, EdgeType::NATURAL);
             }
         }
-        node->forward_orders.clear();
+        forward_orders[node.get()].clear();
     }
+}
+
+void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() {
+    /*
+      Using disjunctive landmarks during landmark generation can be beneficial
+      even if we don't want to use disjunctive landmarks during search. So we
+      allow removing disjunctive landmarks after landmark generation.
+    */
+    if (lm_graph->get_num_disjunctive_landmarks() > 0) {
+        utils::g_log << "Discarding " << lm_graph->get_num_disjunctive_landmarks()
+                     << " disjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.get_landmark().disjunctive;});
+    }
+}
+
+bool LandmarkFactoryRpgSasp::computes_reasonable_orders() const {
+    return false;
 }
 
 bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
@@ -602,11 +645,12 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "RHW Landmarks",
         "The landmark generation method introduced by "
         "Richter, Helmert and Westphal (AAAI 2008).");
-    parser.document_note(
-        "Relevant Options",
-        "reasonable_orders, only_causal_landmarks, "
-        "disjunctive_landmarks, no_orders");
-    _add_options_to_parser(parser);
+
+    parser.add_option<bool>("disjunctive_landmarks",
+                            "keep disjunctive landmarks",
+                            "true");
+    _add_use_orders_option_to_parser(parser);
+    _add_only_causal_landmarks_option_to_parser(parser);
 
     Options opts = parser.parse();
 

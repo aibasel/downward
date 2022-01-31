@@ -25,11 +25,113 @@ after the corresponding tracker issues.
   forcing operator counts to take integer values. Solving a MIP is NP-hard
   and usually takes much longer than solving the corresponding LP.
 
-- Add delete-relation constraints to the operator-counting framework.
+- For developers: move functionality used during search away from
+  LandmarkGraph, making it constant after creation.
+  <http://issues.fast-downward.org/issue988>
+  <http://issues.fast-downward.org/issue1000>
+
+- For developers: new state class
+  <http://issues.fast-downward.org/issue348>
+  We unified the classes GlobalState and State into a new class also called
+  State. This removed a lot of code duplication and hacks from the code.
+  A description of the new class can be found in the wiki:
+  <http://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
+
+- For developers: introduce class for delete-relaxation based landmark
+  factories and move usage of exploration object to subclasses of
+  (abstract) landmark factory class.
+  <http://issues.fast-downward.org/issue990>
+
+- For users: We removed options from LandmarkFactories that were not relevant,
+  renamed the option "no_orders" to "use_orders" and changed the
+  reasonable_orders option to a Factory.
+  <http://issues.fast-downward.org/issue995>
+  Removed options:
+  lm_exhaust: disjunctive_landmarks, conjunctive_landmarks, no_orders,
+    reasonable_orders
+  lm_hm: disjunctive_landmarks, only_causal_landmarks, no_orders,
+    reasonable_orders
+  lm_merged: disjunctive_landmarks, conjunctive_landmarks,
+    only_causal_landmarks, no_orders, reasonable_orders
+  lm_rhw: conjunctive_landmarks, no_orders, reasonable_orders
+  lm_zg: disjunctive_landmarks, conjunctive_landmarks, only_causal_landmarks,
+    no_orders, reasonable_orders
+  Added options:
+  lm_hm/lm_rhw/lm_zg: use_orders (negation of removed option "no_orders")
+  New Factory "lm_reasonable_orders_hps": This factory approximates reasonable
+  orders according to Hoffman, Porteus and Sebastia ("Ordered Landmarks in
+  Planning", JAIR 2004) and is equivalent to the removed option
+  "reasonable_orders", i.e. the command line argument
+  --evaluator hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()))
+  is equivalent to the removed command line argument
+  --evaluator hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true))
+
+- For developers: add support for Github actions
+  <http://issues.fast-downward.org/issue940>
+
+- For developers: We cleaned up the code of LandmarkGraph. Some of the public
+  methods were renamed. This class will undergo further changes in the future.
+  <http://issues.fast-downward.org/issue989>
+
+- Debug builds with LP solvers vs. the _GLIBCXX_DEBUG flag
+  <http://issues.fast-downward.org/issue982>
+  Previously, we used the flag _GLIBCXX_DEBUG in debug builds for additional
+  checks. This makes the binary incompatible with external libraries such as
+  LP solvers. The flag is now disabled by default. If no LP solvers are present
+  or LP solvers are disabled, it can be enabled by setting the CMake option
+  USE_GLIBCXX_DEBUG. The build configurations debugnolp and releasenolp have
+  been removed, and the build configuration glibcxx_debug has been added.
+
+- For developers: decide on rules regarding software support and
+  improve Github actions accordingly
+  <http://issues.fast-downward.org/issue1003>
+
+- For developers: add CPLEX support to our GitHub Actions for Windows
+  <http://issues.fast-downward.org/issue1005>
+
+- Fix a bug in the computation of RHW landmarks
+  <http://issues.fast-downward.org/issue1004>
+
+- Only build configurations defined in `build_configs.py` are loaded in the
+  `build.py` script.
+  <http://issues.fast-downward.org/issue1016>
+
+- Replace size_t by int for abstract state hashes in PDB-related code
+  <http://issues.fast-downward.org/issue1018>
+
+- Integrate the pattern generation methods based on CEGAR
+  <http://issues.fast-downward.org/issue1007>
+
+- Integrate the random pattern generation methods
+  <http://issues.fast-downward.org/issue1007>
+
+- For developers: change public interface of generation of random ints and
+  doubles in the RandomNumberGenerator class
+  <http://issues.fast-downward.org/issue1026>
+
+- For developers: we separate the functionality of landmarks from the
+  functionality of landmark nodes by introducing a new Landmark class
+  <http://issues.fast-downward.org/issue999>
+
+- For developers: use RandomNumberGenerator class in VariableOrderFinder
+  <http://issues.fast-downward.org/issue1032>
+
+- For users: the driver now finds domain files <taskfile>-domain.<ext>
+  for task files called <taskfile>.<ext>
+  <http://issues.fast-downward.org/issue1033>
+
+- For users: the build system now prefers compilers cc/c++ found on the path
+  over gcc/g++. As before, environment variables CC/CXX can be used to
+  override this choice.
+  <http://issues.fast-downward.org/issue1031>
+
+- For users: delete-relation constraints can now be used in the
+  operator-counting framework.
   <http://issues.fast-downward.org/issue983>
   The constraints defined by Imai and Fukunaga (JAIR 2015) encode
   different relaxations of the delete-relaxation heuristic.
-  For details, see [our documentation](http://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints).
+  For details, see our documentation.
+  <http://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints>
 
 
 ## Fast Downward 20.06

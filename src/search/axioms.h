@@ -1,16 +1,11 @@
 #ifndef AXIOMS_H
 #define AXIOMS_H
 
-#include "global_state.h"
 #include "per_task_information.h"
 #include "task_proxy.h"
 
 #include <memory>
 #include <vector>
-
-namespace int_packer {
-class IntPacker;
-}
 
 class AxiomEvaluator {
     struct AxiomRule;
@@ -64,7 +59,6 @@ class AxiomEvaluator {
 public:
     explicit AxiomEvaluator(const TaskProxy &task_proxy);
 
-    void evaluate(PackedStateBin *buffer, const int_packer::IntPacker &state_packer);
     void evaluate(std::vector<int> &state);
 };
 

@@ -1,6 +1,5 @@
 #include "additive_heuristic.h"
 
-#include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -129,17 +128,14 @@ int AdditiveHeuristic::compute_add_and_ff(const State &state) {
     return total_cost;
 }
 
-int AdditiveHeuristic::compute_heuristic(const State &state) {
+int AdditiveHeuristic::compute_heuristic(const State &ancestor_state) {
+    State state = convert_ancestor_state(ancestor_state);
     int h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (PropID goal_id : goal_propositions)
             mark_preferred_operators(state, goal_id);
     }
     return h;
-}
-
-int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
-    return compute_heuristic(convert_global_state(global_state));
 }
 
 void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {

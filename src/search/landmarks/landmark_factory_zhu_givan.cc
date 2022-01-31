@@ -1,5 +1,6 @@
 #include "landmark_factory_zhu_givan.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
 #include "util.h"
 
@@ -18,10 +19,10 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : LandmarkFactory(opts) {
+    : use_orders(opts.get<bool>("use_orders")) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks(
+void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
     utils::g_log << "Generating landmarks using Zhu/Givan label propagation\n";
@@ -36,6 +37,10 @@ void LandmarkFactoryZhuGivan::generate_landmarks(
     }
 
     extract_landmarks(task_proxy, exploration, last_prop_layer);
+
+    if (!use_orders) {
+        discard_all_orderings();
+    }
 }
 
 bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
@@ -56,13 +61,13 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
         FactPair goal_lm = goal.get_pair();
-        LandmarkNode *lmp;
-        if (lm_graph->simple_landmark_exists(goal_lm)) {
-            lmp = &lm_graph->get_simple_lm_node(goal_lm);
-            lmp->in_goal = true;
+        LandmarkNode *lm_node;
+        if (lm_graph->contains_simple_landmark(goal_lm)) {
+            lm_node = &lm_graph->get_simple_landmark(goal_lm);
+            lm_node->get_landmark().is_true_in_goal = true;
         } else {
-            lmp = &lm_graph->landmark_add_simple(goal_lm);
-            lmp->in_goal = true;
+            Landmark landmark({goal_lm}, false, false, true);
+            lm_node = &lm_graph->add_landmark(move(landmark));
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -75,20 +80,19 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 continue;
             LandmarkNode *node;
             // Add new landmarks
-            if (!lm_graph->simple_landmark_exists(lm)) {
-                node = &lm_graph->landmark_add_simple(lm);
-
-                // if landmark is not in the initial state,
-                // relaxed_task_solvable() should be false
+            if (!lm_graph->contains_simple_landmark(lm)) {
+                Landmark landmark({lm}, false, false);
                 assert(initial_state[lm.var].get_value() == lm.value ||
-                       !relaxed_task_solvable(task_proxy, exploration, true, node));
+                       !relaxed_task_solvable(task_proxy, exploration,
+                                              true, landmark));
+                node = &lm_graph->add_landmark(move(landmark));
             } else {
-                node = &lm_graph->get_simple_lm_node(lm);
+                node = &lm_graph->get_simple_landmark(lm);
             }
             // Add order: lm ->_{nat} lm
-            assert(node->parents.find(lmp) == node->parents.end());
-            assert(lmp->children.find(node) == lmp->children.end());
-            edge_add(*node, *lmp, EdgeType::natural);
+            assert(node->parents.find(lm_node) == node->parents.end());
+            assert(lm_node->children.find(node) == lm_node->children.end());
+            edge_add(*node, *lm_node, EdgeType::NATURAL);
         }
     }
 }
@@ -298,6 +302,10 @@ void LandmarkFactoryZhuGivan::add_operator_to_triggers(const OperatorProxy &op) 
         triggers[lm.var][lm.value].push_back(op_or_axiom_id);
 }
 
+bool LandmarkFactoryZhuGivan::computes_reasonable_orders() const {
+    return false;
+}
+
 bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
@@ -307,8 +315,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
-    parser.document_note("Relevant options", "reasonable_orders, no_orders");
-    _add_options_to_parser(parser);
+    _add_use_orders_option_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: Make sure that conditional effects are indeed supported.

@@ -59,8 +59,7 @@ using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
 class LandmarkFactoryHM : public LandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::set<int>>;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task,
-                                    Exploration &exploration) override;
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
     void compute_h_m_landmarks(const TaskProxy &task_proxy);
     void compute_noop_landmarks(int op_index, int noop_index,
@@ -79,7 +78,12 @@ class LandmarkFactoryHM : public LandmarkFactory {
     bool interesting(const VariablesProxy &variables,
                      const FactPair &fact1,
                      const FactPair &fact2) const;
-    virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) override;
+
+    void postprocess(const TaskProxy &task_proxy);
+
+    void discard_conjunctive_landmarks();
+
+    void calc_achievers(const TaskProxy &task_proxy);
 
     void add_lm_node(int set_index, bool goal = false);
 
@@ -90,6 +94,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void print_pm_op(const VariablesProxy &variables, const PMOp &op);
 
     const int m_;
+    const bool conjunctive_landmarks;
+    const bool use_orders;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 
@@ -134,6 +140,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
 public:
     explicit LandmarkFactoryHM(const options::Options &opts);
 
+    virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;
 };
 }

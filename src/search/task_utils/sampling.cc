@@ -42,7 +42,7 @@ static State sample_state_with_random_walk(
     // Calculate length of random walk according to a binomial distribution.
     int length = 0;
     for (int j = 0; j < n; ++j) {
-        double random = rng(); // [0..1)
+        double random = rng.random(); // [0..1)
         if (random < p)
             ++length;
     }
@@ -61,11 +61,12 @@ static State sample_state_with_random_walk(
             OperatorID random_op_id = *rng.choose(applicable_operators);
             OperatorProxy random_op = operators[random_op_id];
             assert(task_properties::is_applicable(random_op, current_state));
-            current_state = current_state.get_successor(random_op);
+            current_state = current_state.get_unregistered_successor(random_op);
             /* If current state is a dead end, then restart the random walk
                with the initial state. */
-            if (is_dead_end(current_state))
+            if (is_dead_end(current_state)) {
                 current_state = State(initial_state);
+            }
         }
     }
     // The last state of the random walk is used as a sample.

@@ -11,7 +11,6 @@
 #include <vector>
 
 class FactProxy;
-class GlobalState;
 class OperatorProxy;
 
 namespace relaxation_heuristic {

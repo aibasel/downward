@@ -259,8 +259,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf",
             "Proceedings of the 13th Annual Symposium on Combinatorial Search "
             "(SoCS 2020)",
-            // TODO: add page numbers.
-            "",
+            "57-65",
             "AAAI Press",
             "2020"));
     parser.add_option<bool>(

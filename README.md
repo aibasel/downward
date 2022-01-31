@@ -1,4 +1,4 @@
-# Fast Downward
+<img src="misc/images/fast-downward.svg" width="800" alt="Fast Downward">
 
 Fast Downward is a domain-independent classical planning system.
 
@@ -9,6 +9,22 @@ For further information:
 - Report a bug or file an issue: <http://issues.fast-downward.org>
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
 - Fast Downward main repository: <https://github.com/aibasel/downward>
+
+
+## Tested software versions
+
+This version of Fast Downward has been tested with the following software versions:
+
+| OS           | Python | C++ compiler                                                     | CMake |
+| ------------ | ------ | ---------------------------------------------------------------- | ----- |
+| Ubuntu 20.04 | 3.8    | GCC 9, GCC 10, Clang 10, Clang 11                                | 3.16  |
+| Ubuntu 18.04 | 3.6    | GCC 7, Clang 6                                                   | 3.10  |
+| macOS 10.15  | 3.6    | AppleClang 12                                                    | 3.19  |
+| Windows 10   | 3.6    | Visual Studio Enterprise 2017 (MSVC 19.16) and 2019 (MSVC 19.28) | 3.19  |
+
+We test LP support with CPLEX 12.9, SoPlex 3.1.1 and Osi 0.107.9.
+On Ubuntu, we test both CPLEX and SoPlex. On Windows, we currently 
+only test CPLEX, and on macOS, we do not test LP solvers (yet).
 
 
 ## Contributors

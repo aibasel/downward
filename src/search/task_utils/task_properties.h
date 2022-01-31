@@ -1,7 +1,6 @@
 #ifndef TASK_UTILS_TASK_PROPERTIES_H
 #define TASK_UTILS_TASK_PROPERTIES_H
 
-#include "../global_state.h"
 #include "../per_task_information.h"
 #include "../task_proxy.h"
 
@@ -23,22 +22,6 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
     }
     return true;
 }
-
-/*
-  TODO: get rid of this method and use the overload above instead.
-  To make this efficient however, the search should work with unpacked States
-  instead of packed GlobalStates internally.
-*/
-inline bool is_goal_state(const TaskProxy &task_proxy, const GlobalState &state) {
-    for (FactProxy goal : task_proxy.get_goals()) {
-        FactPair goal_fact = goal.get_pair();
-        if (state[goal_fact.var] != goal_fact.value) {
-            return false;
-        }
-    }
-    return true;
-}
-
 
 /*
   Return true iff all operators have cost 1.

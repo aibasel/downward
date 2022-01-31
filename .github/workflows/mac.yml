@@ -1,0 +1,49 @@
+---
+name: macOS
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Compile and test planner
+    timeout-minutes: 60
+    runs-on: macos-10.15
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@master
+
+      - name: Install Python
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.6
+
+      - name: Compile planner
+        run: |
+          export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
+          ./build.py
+          ./build.py --debug
+
+      - name: Install tox
+        run: |
+          pip3 install tox
+
+      - name: Install VAL
+        run: |
+          brew install gnu-sed
+          git clone https://github.com/KCL-Planning/VAL.git
+          cd VAL
+          git checkout a5565396007eee73ac36527fbf904142b3077c74
+          make clean  # Remove old build artifacts and binaries.
+          gsed -i 's/-Werror //g' Makefile  # Ignore warnings.
+          make -j2
+          mv validate ../
+          cd ../
+          rm -rf VAL
+
+      - name: Run driver, translator and search tests
+        run: |
+          export PATH="$(pwd):$PATH" # Add VAL to path.
+          cd misc
+          tox -e driver,translator,search
+
+...
