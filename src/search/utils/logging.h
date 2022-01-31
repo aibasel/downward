@@ -23,18 +23,43 @@ enum class Verbosity {
     DEBUG
 };
 
-// Internal class encapsulated by LogProxy.
+/*
+  Simple line-based logger that prepends time and peak memory info to each line
+  of output. Lines should be eventually terminated by endl. Logs are written to
+  stdout.
+
+  Internal class encapsulated by LogProxy.
+*/
 class Log {
     std::ostream &stream;
     const Verbosity verbosity;
+    bool line_has_started;
 
 public:
     explicit Log(Verbosity verbosity)
-        : stream(std::cout), verbosity(verbosity) {
+        : stream(std::cout), verbosity(verbosity), line_has_started(false) {
     }
 
-    std::ostream &get_stream() {
-        return stream;
+    template<typename T>
+    Log &operator<<(const T &elem) {
+        if (!line_has_started) {
+            line_has_started = true;
+            stream << "[t=" << g_timer << ", "
+                   << get_peak_memory_in_kb() << " KB] ";
+        }
+
+        stream << elem;
+        return *this;
+    }
+
+    using manip_function = std::ostream &(*)(std::ostream &);
+    Log &operator<<(manip_function f) {
+        if (f == static_cast<manip_function>(&std::endl)) {
+            line_has_started = false;
+        }
+
+        stream << f;
+        return *this;
     }
 
     Verbosity get_verbosity() const {
@@ -43,43 +68,37 @@ public:
 };
 
 /*
-  Simple line-based logger that prepends time and peak memory info to each line
-  of output. Lines should be eventually terminated by endl. Logs are written to
-  stdout.
-
   This class wraps Log which holds onto the used stream (currently hard-coded
   to be cout) and any further options for modifying output (currently only
   the verbosity level).
+
+  The wrapped class Log is a line-based logger that prepends time and peak
+  memory info to each line of output. Lines should be eventually terminated by
+  endl. Logs are written to stdout.
+
+  We need to have this wrapper because we want to be able to return plain
+  objects (as opposed to pointers) in function get_log_from_options below,
+  which internally returns a wrapper to the default Log if default options
+  are specified or a new instance if non-default options are specified.
 */
 class LogProxy {
 private:
     std::shared_ptr<Log> log;
-    bool line_has_started;
 
 public:
     explicit LogProxy(const std::shared_ptr<Log> &log)
-        : log(log), line_has_started(false) {
+        : log(log) {
     }
 
     template<typename T>
     LogProxy &operator<<(const T &elem) {
-        if (!line_has_started) {
-            line_has_started = true;
-            log->get_stream() << "[t=" << g_timer << ", "
-                              << get_peak_memory_in_kb() << " KB] ";
-        }
-
-        log->get_stream() << elem;
+        (*log) << elem;
         return *this;
     }
 
     using manip_function = std::ostream &(*)(std::ostream &);
     LogProxy &operator<<(manip_function f) {
-        if (f == static_cast<manip_function>(&std::endl)) {
-            line_has_started = false;
-        }
-
-        log->get_stream() << f;
+        (*log) << f;
         return *this;
     }
 
