@@ -9,7 +9,7 @@
 
 namespace lp {
 class LPConstraint;
-class LPVariable;
+struct LPVariable;
 }
 
 namespace options {
