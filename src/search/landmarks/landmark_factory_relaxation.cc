@@ -15,10 +15,16 @@ void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask
     postprocess(task_proxy, exploration);
 }
 
-void LandmarkFactoryRelaxation::postprocess(const TaskProxy &task_proxy, Exploration &exploration) {
+void LandmarkFactoryRelaxation::postprocess(
+    const TaskProxy &task_proxy, Exploration &exploration) {
     lm_graph->set_landmark_ids();
-    mk_acyclic_graph();
     calc_achievers(task_proxy, exploration);
+    /*
+      TODO: should only produce natural orderings which are acyclic in
+       solvable tasks and *mk_acyclic_graph* does not care about
+       natural orderings. (Well, now it does, but it didn't previously.)
+    mk_acyclic_graph();
+    */
 }
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(

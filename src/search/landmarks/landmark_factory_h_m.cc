@@ -598,8 +598,8 @@ void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
     if (!use_orders)
         discard_all_orderings();
 
-    mk_acyclic_graph();
     calc_achievers(task_proxy);
+    mk_acyclic_graph();
 }
 
 void LandmarkFactoryHM::discard_conjunctive_landmarks() {

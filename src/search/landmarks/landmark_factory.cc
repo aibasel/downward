@@ -91,8 +91,13 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     reduce cycles. If the edge is already present, the stronger edge type wins.
     */
     assert(&from != &to);
+    /*
+      TODO: I don't think these assertions are correct (and apparently,
+       they fail). Why would we enforce that the factory adds only
+       one (natural) ordering between the same two landmarks?
     assert(from.parents.find(&to) == from.parents.end() || type <= EdgeType::REASONABLE);
     assert(to.children.find(&from) == to.children.end() || type <= EdgeType::REASONABLE);
+    */
 
     if (type == EdgeType::REASONABLE || type == EdgeType::OBEDIENT_REASONABLE) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
@@ -134,12 +139,31 @@ void LandmarkFactory::discard_all_orderings() {
     }
 }
 
+/*
+  TODO: we might want to consider renaming this function, as it does not
+   make the graph acyclic if it is unsolvable.
+*/
 void LandmarkFactory::mk_acyclic_graph() {
     unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->get_num_landmarks());
     int removed_edges = 0;
     for (auto &node : lm_graph->get_nodes()) {
-        if (acyclic_node_set.find(node.get()) == acyclic_node_set.end())
-            removed_edges += loop_acyclic_graph(*node, acyclic_node_set);
+        if (acyclic_node_set.find(node.get()) == acyclic_node_set.end()) {
+            int removed = loop_acyclic_graph(*node, acyclic_node_set);
+            if (removed < 0) {
+                /*
+                  TODO: We terminate early here because a "removed"
+                   value of -1 is used to signal that a cycle of
+                   exclusively natural (and stronger) orderings was
+                   found. In this case, the problem is unsolvable
+                   and it is wasted effort to continue preparing the
+                   landmark graph for the search. Note that the
+                   landmark graph is !NOT ACYCLIC! in this case!
+                 */
+                return;
+            } else {
+                removed_edges += removed;
+            }
+        }
     }
     // [Malte] Commented out the following assertion because
     // the old method for this is no longer available.
@@ -148,35 +172,44 @@ void LandmarkFactory::mk_acyclic_graph() {
                  << " reasonable or obedient reasonable orders" << endl;
 }
 
-bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                                      list<pair<LandmarkNode *, EdgeType>> &path,
-                                                      list<pair<LandmarkNode *, EdgeType>>::iterator it) {
-    LandmarkNode *parent_p = 0;
-    LandmarkNode *child_p = 0;
+bool LandmarkFactory::remove_first_weakest_cycle_edge(
+    LandmarkNode *cur, list<pair<LandmarkNode *, EdgeType>> &path,
+    list<pair<LandmarkNode *, EdgeType>>::iterator it) {
+
+    LandmarkNode *from = nullptr;
+    LandmarkNode *to = nullptr;
     for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it; it2
          != path.end(); ++it2) {
         EdgeType edge = it2->second;
         if (edge == EdgeType::REASONABLE || edge == EdgeType::OBEDIENT_REASONABLE) {
-            parent_p = it2->first;
+            from = it2->first;
             if (*it2 == path.back()) {
-                child_p = cur;
+                to = cur;
                 break;
             } else {
-                list<pair<LandmarkNode *, EdgeType>>::iterator child_it = it2;
-                ++child_it;
-                child_p = child_it->first;
+                to = next(it2, 1)->first;
             }
             if (edge == EdgeType::OBEDIENT_REASONABLE)
                 break;
-            // else no break since o_r order could still appear in list
+            /* Else don't break because we would rather remove an
+              obedient-reasonable ordering. */
         }
     }
-    assert(parent_p != 0 && child_p != 0);
-    assert(parent_p->children.find(child_p) != parent_p->children.end());
-    assert(child_p->parents.find(parent_p) != child_p->parents.end());
-    parent_p->children.erase(child_p);
-    child_p->parents.erase(parent_p);
-    return true;
+    if (from == nullptr && to == nullptr) {
+        // Cycle of natural orderings
+        for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
+             it2 != path.end(); ++it2) {
+            it2->first->get_landmark().first_achievers.clear();
+        }
+        return false;
+    } else {
+        assert(from != nullptr && to != nullptr);
+        assert(from->children.find(to) != from->children.end());
+        assert(to->parents.find(from) != to->parents.end());
+        from->children.erase(to);
+        to->parents.erase(from);
+        return true;
+    }
 }
 
 int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
@@ -197,8 +230,11 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
             }
             assert(it != path.end());
             // remove edge from graph
-            remove_first_weakest_cycle_edge(cur, path, it);
-            //assert(removed);
+            bool cycle_removed =
+                remove_first_weakest_cycle_edge(cur, path, it);
+            if (!cycle_removed) {
+                return -1; // There is a cycle of natural orderings.
+            }
             ++nr_removed;
 
             path.clear();
