@@ -77,7 +77,6 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     return false;
 }
 
-/* TODO: do as soon as possible (explain more) */
 /*
   Achievers should be calculated as soon as possible, but at latest before
   calling *mk_acyclic_graph*. This is because *mk_acyclic_graph* clears the

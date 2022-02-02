@@ -612,14 +612,6 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
 }
 
 /*
-  TODO: this solution requires that *mk_acyclic_graph* is
-   called only after *calc_achievers*. Maybe it would be a good
-   idea to finally implement "acyclic" as its own landmark
-   factory (analogous to reasonable orderings) which guarantees
-   that *mk_acyclic_graph* only happens after achievers are
-   defined by the underlying landmark factories already.
-*/
-/*
   Achievers should be calculated as soon as possible, but at latest before
   calling *mk_acyclic_graph*. This is because *mk_acyclic_graph* clears the
   *first_achievers* when finding a cycle of only natural orderings to denote
