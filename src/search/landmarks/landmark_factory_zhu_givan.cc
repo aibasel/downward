@@ -42,10 +42,10 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration,
     const PropositionLayer &last_prop_layer) {
     /*
-     * We first check if at least one of the goal facts is relaxed unreachable.
-     * In this case we create a graph with just this fact as landmark. Since
-     * the landmark will have no achievers, the heuristic can detect the
-     * initial state as a dead-end.
+      We first check if at least one of the goal facts is relaxed unreachable.
+      In this case we create a graph with just this fact as landmark. Since
+      the landmark will have no achievers, the heuristic can detect the
+      initial state as a dead-end.
      */
     for (FactProxy goal : task_proxy.get_goals()) {
         if (!last_prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
