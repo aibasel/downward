@@ -19,12 +19,7 @@ void LandmarkFactoryRelaxation::postprocess(
     const TaskProxy &task_proxy, Exploration &exploration) {
     lm_graph->set_landmark_ids();
     calc_achievers(task_proxy, exploration);
-    /*
-      TODO: should only produce natural orderings which are acyclic in
-       solvable tasks and *mk_acyclic_graph* does not care about
-       natural orderings. (Well, now it does, but it didn't previously.)
     mk_acyclic_graph();
-    */
 }
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
@@ -82,7 +77,15 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     return false;
 }
 
-void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
+/* TODO: do as soon as possible (explain more) */
+/*
+  Achievers should be calculated as soon as possible, but at latest before
+  calling *mk_acyclic_graph*. This is because *mk_acyclic_graph* clears the
+  *first_achievers* when finding a cycle of only natural orderings to denote
+  that the task is unsolvable.
+*/
+void LandmarkFactoryRelaxation::calc_achievers(
+    const TaskProxy &task_proxy, Exploration &exploration) {
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lm_node : lm_graph->get_nodes()) {
         Landmark &landmark = lm_node->get_landmark();
