@@ -110,7 +110,7 @@ public:
     int get_num_edges() const;
 
     // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_node(int index) const;
+    const LandmarkNode &get_node(int index) const;
     // only needed by non-landmarkgraph-factories
     LandmarkNode *get_node(const FactPair &fact) const;
     /* This is needed only by landmark graph factories and will disappear

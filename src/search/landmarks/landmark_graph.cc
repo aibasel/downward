@@ -24,8 +24,8 @@ int LandmarkGraph::get_num_edges() const {
     return total;
 }
 
-LandmarkNode *LandmarkGraph::get_node(int i) const {
-    return nodes[i].get();
+const LandmarkNode &LandmarkGraph::get_node(int i) const {
+    return *nodes[i];
 }
 
 LandmarkNode *LandmarkGraph::get_node(const FactPair &fact) const {

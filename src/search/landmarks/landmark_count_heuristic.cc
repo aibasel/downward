@@ -126,7 +126,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
             landmark_status status =
                 lm_status_manager->get_landmark_status(id);
             if (status == lm_not_reached || status == lm_needed_again) {
-                h += lgraph->get_node(id)->get_landmark().cost;
+                h += lgraph->get_node(id).get_landmark().cost;
             }
         }
         return h;
@@ -249,7 +249,7 @@ LandmarkNodeSet LandmarkCountHeuristic::convert_to_landmark_set(
     LandmarkNodeSet landmark_node_set;
     for (int i = 0; i < landmark_bitset.size(); ++i) {
         if (landmark_bitset.test(i)) {
-            landmark_node_set.insert(lgraph->get_node(i));
+            landmark_node_set.insert(&lgraph->get_node(i));
         }
     }
     return landmark_node_set;
