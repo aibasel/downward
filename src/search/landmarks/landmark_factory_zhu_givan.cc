@@ -41,7 +41,6 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
 void LandmarkFactoryZhuGivan::extract_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration,
     const PropositionLayer &last_prop_layer) {
-
     /*
      * We first check if at least one of the goal facts is relaxed unreachable.
      * In this case we create a graph with just this fact as landmark. Since
