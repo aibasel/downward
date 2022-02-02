@@ -31,11 +31,6 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
 
     PropositionLayer last_prop_layer = build_relaxed_plan_graph_with_labels(task_proxy);
 
-    if (!satisfies_goal_conditions(task_proxy.get_goals(), last_prop_layer)) {
-        utils::g_log << "Problem not solvable, even if relaxed.\n";
-        return;
-    }
-
     extract_landmarks(task_proxy, exploration, last_prop_layer);
 
     if (!use_orders) {
@@ -43,19 +38,25 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     }
 }
 
-bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
-    const GoalsProxy &goals,
-    const PropositionLayer &layer) const {
-    for (FactProxy goal : goals)
-        if (!layer[goal.get_variable().get_id()][goal.get_value()].reached())
-            return false;
-
-    return true;
-}
-
 void LandmarkFactoryZhuGivan::extract_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration,
     const PropositionLayer &last_prop_layer) {
+
+    /*
+     * We first check if at least one of the goal facts is relaxed unreachable.
+     * In this case we create a graph with just this fact as landmark. Since
+     * the landmark will have no achievers, the heuristic can detect the
+     * initial state as a dead-end.
+     */
+    for (FactProxy goal : task_proxy.get_goals()) {
+        if (!last_prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
+            utils::g_log << "Problem not solvable, even if relaxed.\n";
+            Landmark landmark({goal.get_pair()}, false, false, true);
+            lm_graph->add_landmark(move(landmark));
+            return;
+        }
+    }
+
     utils::unused_variable(exploration);
     State initial_state = task_proxy.get_initial_state();
     // insert goal landmarks and mark them as goals
