@@ -48,8 +48,8 @@ protected:
     SearchSpace search_space;
     SearchProgress search_progress;
     SearchStatistics statistics;
+    std::shared_ptr<Evaluator> real_g_evaluator;
     int bound;
-    OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
     const utils::Verbosity verbosity;
@@ -59,7 +59,6 @@ protected:
 
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const State &state);
-    int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchEngine(const options::Options &opts);
     virtual ~SearchEngine();

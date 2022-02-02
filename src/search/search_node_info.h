@@ -11,14 +11,21 @@ struct SearchNodeInfo {
     enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
 
     unsigned int status : 2;
-    int g : 30;
+private:
+    int creating_operator : OperatorID::num_bits;
+public:
     StateID parent_state_id;
-    OperatorID creating_operator;
-    int real_g;
 
     SearchNodeInfo()
-        : status(NEW), g(-1), parent_state_id(StateID::no_state),
-          creating_operator(-1), real_g(-1) {
+        : status(NEW), creating_operator(OperatorID::no_operator.get_index()),
+          parent_state_id(StateID::no_state) {
+    }
+
+    OperatorID get_creating_operator_id() const {
+        return OperatorID(creating_operator);
+    }
+    void set_creating_operator_id(OperatorID op_id) {
+        creating_operator = op_id.get_index();
     }
 };
 

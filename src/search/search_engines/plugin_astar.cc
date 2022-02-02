@@ -4,6 +4,10 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../evaluators/g_evaluator.h"
+#include "../evaluators/sum_evaluator.h"
+#include "../tasks/root_task.h"
+
 using namespace std;
 
 namespace plugin_astar {
@@ -38,9 +42,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
+        search_common::add_g_evaluator(opts);
         auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts);
         opts.set("open", temp.first);
-        opts.set("f_eval", temp.second);
+        opts.set("f_evaluator", temp.second);
         opts.set("reopen_closed", true);
         vector<shared_ptr<Evaluator>> preferred_list;
         opts.set("preferred", preferred_list);

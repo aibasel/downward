@@ -7,7 +7,9 @@
 #include "../pruning_method.h"
 
 #include "../algorithms/ordered_set.h"
+#include "../evaluators/g_evaluator.h"
 #include "../task_utils/successor_generator.h"
+#include "../tasks/cost_adapted_task.h"
 
 #include "../utils/logging.h"
 
@@ -25,10 +27,20 @@ EagerSearch::EagerSearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
-      f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
+      g_evaluator(opts.get<shared_ptr<Evaluator>>("g_evaluator", nullptr)),
+      f_evaluator(opts.get<shared_ptr<Evaluator>>("f_evaluator", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+    if (reopen_closed_nodes && !g_evaluator) {
+        cerr << "g_evaluator is required if reopen_closed=true. "
+             << "For example, you may use g_evaluator=g()." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+    if (g_evaluator && !g_evaluator->does_cache_estimates()) {
+        cerr << "g_evaluator must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -63,9 +75,15 @@ void EagerSearch::initialize() {
     }
 
     /*
-      Collect path-dependent evaluators that are used in the lazy_evaluator
-      (in case they are not already included).
+      Collect path-dependent evaluators that are used in the g-evaluators and
+      lazy_evaluator (in case they are not already included).
     */
+    if (g_evaluator) {
+        g_evaluator->get_path_dependent_evaluators(evals);
+    }
+    if (real_g_evaluator) {
+        real_g_evaluator->get_path_dependent_evaluators(evals);
+    }
     if (lazy_evaluator) {
         lazy_evaluator->get_path_dependent_evaluators(evals);
     }
@@ -81,7 +99,7 @@ void EagerSearch::initialize() {
       Note: we consider the initial state as reached by a preferred
       operator.
     */
-    EvaluationContext eval_context(initial_state, 0, true, &statistics);
+    EvaluationContext eval_context(initial_state, true, &statistics);
 
     statistics.inc_evaluated_states();
 
@@ -126,7 +144,7 @@ SearchStatus EagerSearch::step() {
           We can pass calculate_preferred=false here since preferred
           operators are computed when the state is expanded.
         */
-        EvaluationContext eval_context(s, node->get_g(), false, &statistics);
+        EvaluationContext eval_context(s, false, &statistics);
 
         if (lazy_evaluator) {
             /*
@@ -182,7 +200,7 @@ SearchStatus EagerSearch::step() {
     pruning_method->prune_operators(s, applicable_ops);
 
     // This evaluates the expanded state (again) to get preferred ops
-    EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
+    EvaluationContext eval_context(s, false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
         collect_preferred_operators(eval_context,
@@ -190,20 +208,23 @@ SearchStatus EagerSearch::step() {
                                     preferred_operators);
     }
 
+    int node_real_g = real_g_evaluator ? real_g_evaluator->get_cached_estimate(s) : -1;
+
     for (OperatorID op_id : applicable_ops) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        if ((node->get_real_g() + op.get_cost()) >= bound)
+        if (real_g_evaluator && node_real_g + op.get_cost() >= bound)
             continue;
 
         State succ_state = state_registry.get_successor_state(s, op);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
-        SearchNode succ_node = search_space.get_node(succ_state);
-
         for (Evaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(s, op_id, succ_state);
         }
+        EvaluationContext succ_eval_context(succ_state, is_preferred, &statistics);
+
+        SearchNode succ_node = search_space.get_node(succ_state);
 
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
@@ -213,29 +234,29 @@ SearchStatus EagerSearch::step() {
             // We have not seen this state before.
             // Evaluate and create a new node.
 
-            // Careful: succ_node.get_g() is not available here yet,
-            // hence the stupid computation of succ_g.
-            // TODO: Make this less fragile.
-            int succ_g = node->get_g() + get_adjusted_cost(op);
-
-            EvaluationContext succ_eval_context(
-                succ_state, succ_g, is_preferred, &statistics);
             statistics.inc_evaluated_states();
-
             if (open_list->is_dead_end(succ_eval_context)) {
                 succ_node.mark_as_dead_end();
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open(*node, op, get_adjusted_cost(op));
+            succ_node.open(*node, op);
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
-                statistics.print_checkpoint_line(succ_node.get_g());
+                int succ_g_new = g_evaluator
+                    ? g_evaluator->get_cached_estimate(succ_state)
+                    : -1;
+                statistics.print_checkpoint_line(succ_g_new);
                 reward_progress();
             }
-        } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
+        } else if (g_evaluator && g_evaluator->is_cached_estimate_dirty(succ_state)) {
             // We found a new cheapest path to an open or closed state.
+
+            // Mark cached g-value as not dirty.
+            succ_eval_context.get_evaluator_value(g_evaluator.get());
+            assert(!g_evaluator->is_cached_estimate_dirty(succ_state));
+
             if (reopen_closed_nodes) {
                 if (succ_node.is_closed()) {
                     /*
@@ -247,10 +268,7 @@ SearchStatus EagerSearch::step() {
                     */
                     statistics.inc_reopened();
                 }
-                succ_node.reopen(*node, op, get_adjusted_cost(op));
-
-                EvaluationContext succ_eval_context(
-                    succ_state, succ_node.get_g(), is_preferred, &statistics);
+                succ_node.reopen(*node, op);
 
                 /*
                   Note: our old code used to retrieve the h value from
@@ -274,7 +292,7 @@ SearchStatus EagerSearch::step() {
                 // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back.
-                succ_node.update_parent(*node, op, get_adjusted_cost(op));
+                succ_node.update_parent(*node, op);
             }
         }
     }

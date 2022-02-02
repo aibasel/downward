@@ -14,7 +14,11 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
     parser.add_option<shared_ptr<Evaluator>>(
-        "f_eval",
+        "g_evaluator",
+        "evaluator for path costs of search nodes. (Required iff reopen_closed=true.)",
+        OptionParser::NONE);
+    parser.add_option<shared_ptr<Evaluator>>(
+        "f_evaluator",
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
         OptionParser::NONE);

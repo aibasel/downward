@@ -87,10 +87,12 @@ public:
     virtual bool does_cache_estimates() const;
     virtual bool is_estimate_cached(const State &state) const;
     /*
-      Calling get_cached_estimate is only allowed if an estimate for
-      the given state is cached, i.e., is_estimate_cached returns true.
+      Calling get_cached_estimate and is_cached_estimate_dirty is only allowed
+      if an estimate for the given state is cached, i.e., is_estimate_cached
+      returns true.
     */
     virtual int get_cached_estimate(const State &state) const;
+    virtual bool is_cached_estimate_dirty(const State &state) const;
 };
 
 #endif

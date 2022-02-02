@@ -18,6 +18,7 @@ class OptionParser;
 class Options;
 }
 
+// TODO: rename Heuristic to CachingEvaluator.
 class Heuristic : public Evaluator {
     struct HEntry {
         /* dirty is conceptually a bool, but Visual C++ does not support
@@ -88,6 +89,7 @@ public:
     virtual bool does_cache_estimates() const override;
     virtual bool is_estimate_cached(const State &state) const override;
     virtual int get_cached_estimate(const State &state) const override;
+    virtual bool is_cached_estimate_dirty(const State &state) const override;
 };
 
 #endif

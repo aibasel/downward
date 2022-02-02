@@ -54,6 +54,12 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
+    parser.add_option<shared_ptr<Evaluator>>(
+        "g_evaluator",
+        "evaluator for path costs of search nodes. (Optional; if given, include "
+        "g-values in progress output and update parent pointer when a new "
+        "shortest path to a node is found.)",
+        OptionParser::NONE);
 
     eager_search::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -63,8 +69,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
-        shared_ptr<Evaluator> evaluator = nullptr;
-        opts.set("f_eval", evaluator);
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
     return engine;

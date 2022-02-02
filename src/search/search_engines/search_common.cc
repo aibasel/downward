@@ -1,15 +1,16 @@
 #include "search_common.h"
 
 #include "../open_list_factory.h"
+#include "../operator_cost.h"
 #include "../option_parser_util.h"
 
 #include "../evaluators/g_evaluator.h"
 #include "../evaluators/sum_evaluator.h"
 #include "../evaluators/weighted_evaluator.h"
-
 #include "../open_lists/alternation_open_list.h"
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
+#include "../tasks/root_task.h"
 
 #include <memory>
 
@@ -19,6 +20,15 @@ namespace search_common {
 using GEval = g_evaluator::GEvaluator;
 using SumEval = sum_evaluator::SumEvaluator;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
+
+void add_g_evaluator(options::Options &opts) {
+    Options g_eval_opts;
+    g_eval_opts.set<shared_ptr<AbstractTask>>("transform", tasks::g_root_task);
+    g_eval_opts.set<bool>("cache_estimates", true);
+
+    opts.set<shared_ptr<Evaluator>>(
+        "g_evaluator", make_shared<g_evaluator::GEvaluator>(g_eval_opts));
+}
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     const shared_ptr<Evaluator> &eval, bool pref_only) {
@@ -80,7 +90,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 0, we omit the h-evaluator altogether:
   we use g instead of g + 0 * h.
 */
-static shared_ptr<Evaluator> create_wastar_eval(const shared_ptr<GEval> &g_eval, int w,
+static shared_ptr<Evaluator> create_wastar_eval(const shared_ptr<Evaluator> &g_eval, int w,
                                                 const shared_ptr<Evaluator> &h_eval) {
     if (w == 0)
         return g_eval;
@@ -98,7 +108,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get_list<shared_ptr<Evaluator>>("evals");
     int w = options.get<int>("w");
 
-    shared_ptr<GEval> g_eval = make_shared<GEval>();
+    shared_ptr<Evaluator> g_eval = options.get<shared_ptr<Evaluator>>("g_evaluator");
     vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)
@@ -112,7 +122,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
-    shared_ptr<GEval> g = make_shared<GEval>();
+    shared_ptr<Evaluator> g = opts.get<shared_ptr<Evaluator>>("g_evaluator");
     shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
     shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h}));
     vector<shared_ptr<Evaluator>> evals = {f, h};

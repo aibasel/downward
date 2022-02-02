@@ -24,8 +24,8 @@ class SearchStatistics;
   EvaluationContext has two main purposes:
 
   1. It packages up the information that evaluators and open lists
-     need in order to perform an evaluation: the state, the g value of
-     the node, and whether it was reached by a preferred operator.
+     need in order to perform an evaluation: the state and whether it was
+     reached by a preferred operator.
 
   2. It caches computed evaluator values and preferred operators for
      the current evaluation so that they do not need to be computed
@@ -43,17 +43,13 @@ class SearchStatistics;
 class EvaluationContext {
     EvaluatorCache cache;
     State state;
-    int g_value;
     bool preferred;
     SearchStatistics *statistics;
     bool calculate_preferred;
 
-    static const int INVALID = -1;
-
     EvaluationContext(
-        const EvaluatorCache &cache, const State &state, int g_value,
-        bool is_preferred, SearchStatistics *statistics,
-        bool calculate_preferred);
+        const EvaluatorCache &cache, const State &state, bool is_preferred,
+        SearchStatistics *statistics, bool calculate_preferred);
 public:
     /*
       Copy existing heuristic cache and use it to look up heuristic values.
@@ -62,27 +58,23 @@ public:
       TODO: Can we reuse caches? Can we move them instead of copying them?
     */
     EvaluationContext(
-        const EvaluationContext &other,
-        int g_value, bool is_preferred, SearchStatistics *statistics,
-        bool calculate_preferred = false);
+        const EvaluationContext &other, bool is_preferred,
+        SearchStatistics *statistics, bool calculate_preferred = false);
     /*
       Create new heuristic cache for caching heuristic values. Used for example
       by eager search.
     */
     EvaluationContext(
-        const State &state, int g_value, bool is_preferred,
-        SearchStatistics *statistics, bool calculate_preferred = false);
+        const State &state, bool is_preferred, SearchStatistics *statistics,
+        bool calculate_preferred = false);
     /*
-      Use the following constructor when you don't care about g values,
-      preferredness (and statistics), e.g. when sampling states for heuristics.
-
-      This constructor sets g_value to -1 and checks that neither get_g_value()
-      nor is_preferred() are called for objects constructed with it.
+      Use the following constructor when you don't care about preferredness
+      (and statistics), e.g., when sampling states for heuristics.
 
       TODO: In the long term we might want to separate how path-dependent and
             path-independent evaluators are evaluated. This change would remove
-            the need to store the g value and preferredness for evaluation
-            contexts that don't need this information.
+            the need to store the preferredness for evaluation contexts that
+            don't need this information.
     */
     EvaluationContext(
         const State &state,
@@ -91,7 +83,6 @@ public:
     const EvaluationResult &get_result(Evaluator *eval);
     const EvaluatorCache &get_cache() const;
     const State &get_state() const;
-    int get_g_value() const;
     bool is_preferred() const;
 
     /*
