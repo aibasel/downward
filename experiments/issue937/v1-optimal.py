@@ -15,6 +15,8 @@ def make_comparison_table():
         algorithm_pairs=[
             ("issue937-base-seq-opt-bjolp", "issue937-v1-seq-opt-bjolp"),
             ("issue937-base-seq-opt-bjolp-opt", "issue937-v1-seq-opt-bjolp-opt"),
+            ("issue937-base-lm-exhaust", "issue937-v1-lm-exhaust"),
+            ("issue937-base-lm-hm2", "issue937-v1-lm-hm2"),
         ], attributes=ATTRIBUTES,
     )
     outfile = os.path.join(

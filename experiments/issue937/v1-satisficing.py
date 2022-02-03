@@ -14,8 +14,9 @@ from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 def make_comparison_table():
     report = common_setup.ComparativeReport(
         algorithm_pairs=[
-            ("issue937-base-lama-first", "issue937-v2-lama-first"),
-            ("issue937-base-lama-first-pref", "issue937-v2-lama-first-pref"),
+            ("issue937-base-lama-first", "issue937-v1-lama-first"),
+            ("issue937-base-lama-first-pref", "issue937-v1-lama-first-pref"),
+            ("issue937-base-lm-zg", "issue937-v1-lm-zg"),
         ], attributes=ATTRIBUTES,
     )
     outfile = os.path.join(
@@ -49,8 +50,8 @@ REPO = os.environ["DOWNWARD_REPO"]
 if common_setup.is_running_on_cluster():
     SUITE = common_setup.DEFAULT_SATISFICING_SUITE
     ENVIRONMENT = BaselSlurmEnvironment(
-        partition="infai_1",
-        email="tho.keller@unibas.ch",
+        partition="infai_2",
+        email="clemens.buechner@unibas.ch",
         export=["PATH", "DOWNWARD_BENCHMARKS"],
     )
 else:
