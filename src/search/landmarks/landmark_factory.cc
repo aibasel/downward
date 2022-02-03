@@ -172,11 +172,19 @@ void LandmarkFactory::remove_first_weakest_cycle_edge(
         }
     }
     if (weakest_edge > EdgeType::REASONABLE) {
-        // Cycle of natural orderings
+        /*
+          If the weakest ordering is natural (or stronger), this means
+          the entire cycle consists of only natural (or stronger)
+          orderings which indicates that the task is unsolvable. We
+          signal this by clearing the *first_achievers* of all landmarks
+          in the cycle.
+          Note that *calc_achievers* should never be called after
+          *mk_acyclic_graph* because of this, because otherwise this
+          information is lost.
+        */
         for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
              it2 != path.end(); ++it2) {
             it2->first->get_landmark().first_achievers.clear();
-            // TODO: maybe also clear *possible_achievers*?
         }
     }
     assert(from->children.find(to) != from->children.end());
