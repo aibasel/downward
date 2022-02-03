@@ -155,8 +155,8 @@ void Exploration::setup_exploration_queue(const State &state,
     // Initialize operator data, deal with precondition-free operators/axioms.
     for (ExUnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.precondition.size();
-        if (!excluded_op_ids.empty() &&
-            (op.effect->h_add_cost == -2 || excluded_op_ids.count(op.op_or_axiom_id))) {
+        if (op.effect->h_add_cost == -2
+            || excluded_op_ids.count(op.op_or_axiom_id)) {
             op.h_add_cost = -2; // operator will not be applied during relaxed exploration
             continue;
         }
