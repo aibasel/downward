@@ -31,7 +31,10 @@ public:
     bool is_true_in_goal;
     bool is_derived;
 
-    // Cost of achieving the landmark (as determined by the landmark factory)
+    /*
+      Cost of achieving the landmark (as determined by the landmark factory),
+      can be infinite (currently only if *first_achievers* is empty).
+    */
     int cost;
 
     std::set<int> first_achievers;
