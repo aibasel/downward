@@ -125,6 +125,10 @@ after the corresponding tracker issues.
   override this choice.
   <http://issues.fast-downward.org/issue1031>
 
+- For users: new LimitedPruning class replaces previous limitation
+  options of individual pruning methods
+  <http://issues.fast-downward.org/issue1042>
+
 
 ## Fast Downward 20.06
 
