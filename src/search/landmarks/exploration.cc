@@ -124,11 +124,19 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
     }
 }
 
-// heuristic computation
-void Exploration::setup_exploration_queue(const State &state,
-                                          const vector<FactPair> &excluded_props,
-                                          const unordered_set<int> &excluded_op_ids,
-                                          bool use_h_max) {
+/*
+  This function initializes the first layer of the relaxed planning task and the
+  priority queue for unrolling the relaxed task graph. Unary operators are
+  excluded if they achieve an excluded proposition or their operator ID is in
+  *excluded_op_ids*.
+
+  *excluded_op_ids* should contain the operators that achieve an excluded
+  proposition unconditionally. Currently, the only place where this is used is
+  in *LandmarkFactoryRelaxation::relaxed_task_solvable()*.
+*/
+void Exploration::setup_exploration_queue(
+    const State &state, const vector<FactPair> &excluded_props,
+    const unordered_set<int> &excluded_op_ids, bool use_h_max) {
     prop_queue.clear();
 
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
