@@ -320,8 +320,8 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME NULL_PRUNING_METHOD
-    HELP "Pruning method wrapper that disables pruning on demand"
+    NAME LIMITED_PRUNING
+    HELP "Method for limiting another pruning method"
     SOURCES
         pruning/limited_pruning
     DEPENDENCY_ONLY

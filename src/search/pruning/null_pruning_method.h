@@ -9,7 +9,6 @@ public:
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
     virtual void prune_operators(const State &,
                                  std::vector<OperatorID> &) override {}
-    virtual void print_statistics() const override {}
 };
 }
 
