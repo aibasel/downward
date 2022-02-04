@@ -160,6 +160,11 @@ after the corresponding tracker issues.
   variables and tasks with total costs starting from 10'000 were affected).
   <http://issues.fast-downward.org/issue983>
 
+- The landmark factories can handle cycles of natural orderings without
+  crashing. Since the planning task is unsolvable in these cases, they 
+  signal this by clearing the first achievers of the involved landmarks.
+  <http://issues.fast-downward.org/issue937>
+
 
 ## Fast Downward 20.06
 
