@@ -104,9 +104,6 @@ void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
-StubbornSetsEC::StubbornSetsEC() : StubbornSets() {
-}
-
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     TaskProxy task_proxy(*task);

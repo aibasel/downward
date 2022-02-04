@@ -10,9 +10,6 @@
 using namespace std;
 
 namespace stubborn_sets_simple {
-StubbornSetsSimple::StubbornSetsSimple() : StubbornSets() {
-}
-
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     interference_relation.resize(num_operators);

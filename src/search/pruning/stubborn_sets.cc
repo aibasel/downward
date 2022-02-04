@@ -31,7 +31,7 @@ bool contain_conflicting_fact(const vector<FactPair> &facts1,
     return false;
 }
 
-StubbornSets::StubbornSets() : PruningMethod(), num_operators(0) {
+StubbornSets::StubbornSets() : num_operators(0) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
