@@ -11,7 +11,7 @@ using namespace std;
 
 namespace stubborn_sets_atom_centric {
 StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
-    : StubbornSets(opts),
+    : StubbornSets(),
       use_sibling_shortcut(opts.get<bool>("use_sibling_shortcut")),
       atom_selection_strategy(opts.get<AtomSelectionStrategy>("atom_selection_strategy")) {
 }
@@ -289,7 +289,6 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "breaking ties.",
         "quick_skip",
         strategies_docs);
-    stubborn_sets::add_pruning_options(parser);
 
     Options opts = parser.parse();
 

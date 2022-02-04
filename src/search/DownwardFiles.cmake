@@ -320,6 +320,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME NULL_PRUNING_METHOD
+    HELP "Pruning method wrapper that disables pruning on demand"
+    SOURCES
+        pruning/limited_pruning
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
     NAME STUBBORN_SETS
     HELP "Base class for all stubborn set partial order reduction methods"
     SOURCES

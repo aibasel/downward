@@ -10,8 +10,7 @@
 using namespace std;
 
 namespace stubborn_sets_simple {
-StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
-    : StubbornSets(opts) {
+StubbornSetsSimple::StubbornSetsSimple() : StubbornSets() {
 }
 
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
@@ -104,15 +103,11 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "AAAI Press",
             "2014"));
 
-    stubborn_sets::add_pruning_options(parser);
-
-    Options opts = parser.parse();
-
     if (parser.dry_run()) {
         return nullptr;
     }
 
-    return make_shared<StubbornSetsSimple>(opts);
+    return make_shared<StubbornSetsSimple>();
 }
 
 static Plugin<PruningMethod> _plugin("stubborn_sets_simple", _parse);
