@@ -127,9 +127,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
                 lm_status_manager->get_landmark_status(id);
             if (status == lm_not_reached || status == lm_needed_again) {
                 int cost = lgraph->get_node(id)->get_landmark().cost;
-                if (cost == numeric_limits<int>::max()) {
-                    return DEAD_END;
-                }
+                assert(cost < numeric_limits<int>::max());
                 h += cost;
             }
         }
