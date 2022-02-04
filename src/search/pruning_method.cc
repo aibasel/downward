@@ -21,7 +21,7 @@ void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
 }
 
 void PruningMethod::prune_op_ids(
-    const State &state, std::vector<OperatorID> &op_ids) {
+    const State &state, vector<OperatorID> &op_ids) {
     assert(!task_properties::is_goal_state(TaskProxy(*task), state));
     timer.resume();
     int num_ops_before_pruning = op_ids.size();

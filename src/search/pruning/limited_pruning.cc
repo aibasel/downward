@@ -23,7 +23,7 @@ void LimitedPruning::initialize(const shared_ptr<AbstractTask> &task) {
 }
 
 void LimitedPruning::prune_operators(
-    const State &state, std::vector<OperatorID> &op_ids) {
+    const State &state, vector<OperatorID> &op_ids) {
     if (is_pruning_disabled) {
         return;
     }
