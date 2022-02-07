@@ -324,7 +324,6 @@ fast_downward_plugin(
     HELP "Method for limiting another pruning method"
     SOURCES
         pruning/limited_pruning
-    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
