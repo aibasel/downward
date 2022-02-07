@@ -124,8 +124,8 @@ public:
 extern LogProxy g_log;
 
 extern void add_log_options_to_parser(options::OptionParser &parser);
-
 extern LogProxy get_log_from_options(const options::Options &options);
+extern LogProxy get_silent_log();
 
 class TraceBlock {
     std::string block_name;

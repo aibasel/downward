@@ -17,19 +17,13 @@
 using namespace std;
 
 namespace merge_and_shrink {
-static utils::LogProxy create_silent_log() {
-    options::Options opts;
-    opts.set<utils::Verbosity>("verbosity", utils::Verbosity::SILENT);
-    return utils::get_log_from_options(opts);
-}
-
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
     const options::Options &options)
     : shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
       max_states(options.get<int>("max_states")),
       max_states_before_merge(options.get<int>("max_states_before_merge")),
       shrink_threshold_before_merge(options.get<int>("threshold_before_merge")),
-      silent_log(create_silent_log()) {
+      silent_log(utils::get_silent_log()) {
 }
 
 vector<double> MergeScoringFunctionMIASM::compute_scores(
