@@ -153,10 +153,10 @@ void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
 
     log << "Merge strategy for merging within sccs: " << endl;
     if (merge_tree_factory) {
-        merge_tree_factory->dump_options();
+        merge_tree_factory->dump_options(log);
     }
     if (merge_selector) {
-        merge_selector->dump_options();
+        merge_selector->dump_options(log);
     }
 }
 

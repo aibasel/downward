@@ -9,19 +9,14 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunction::MergeScoringFunction(const options::Options &options)
-    : log(utils::get_log_from_options(options)),
-      initialized(false) {
+MergeScoringFunction::MergeScoringFunction()
+    : initialized(false) {
 }
 
-void MergeScoringFunction::dump_options() const {
+void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
     log << "Merge scoring function:" << endl;
     log << "Name: " << name() << endl;
-    dump_function_specific_options();
-}
-
-void add_merge_scoring_function_options_to_parser(options::OptionParser &parser) {
-    utils::add_log_options_to_parser(parser);
+    dump_function_specific_options(log);
 }
 
 static options::PluginTypePlugin<MergeScoringFunction> _type_plugin(

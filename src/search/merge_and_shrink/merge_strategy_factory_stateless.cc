@@ -30,7 +30,7 @@ string MergeStrategyFactoryStateless::name() const {
 }
 
 void MergeStrategyFactoryStateless::dump_strategy_specific_options() const {
-    merge_selector->dump_options();
+    merge_selector->dump_options(log);
 }
 
 bool MergeStrategyFactoryStateless::requires_init_distances() const {

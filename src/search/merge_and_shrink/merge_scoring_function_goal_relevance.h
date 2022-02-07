@@ -8,7 +8,7 @@ class MergeScoringFunctionGoalRelevance : public MergeScoringFunction {
 protected:
     virtual std::string name() const override;
 public:
-    explicit MergeScoringFunctionGoalRelevance(const options::Options &options);
+    MergeScoringFunctionGoalRelevance() = default;
     virtual ~MergeScoringFunctionGoalRelevance() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,

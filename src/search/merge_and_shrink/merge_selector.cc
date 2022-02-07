@@ -12,10 +12,6 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeSelector::MergeSelector(const options::Options &options)
-    : log(utils::get_log_from_options(options)) {
-}
-
 vector<pair<int, int>> MergeSelector::compute_merge_candidates(
     const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) const {
@@ -46,14 +42,10 @@ vector<pair<int, int>> MergeSelector::compute_merge_candidates(
     return merge_candidates;
 }
 
-void MergeSelector::dump_options() const {
+void MergeSelector::dump_options(utils::LogProxy &log) const {
     log << "Merge selector options:" << endl;
     log << "Name: " << name() << endl;
-    dump_specific_options();
-}
-
-void add_merge_selector_options_to_parser(options::OptionParser &parser) {
-    utils::add_log_options_to_parser(parser);
+    dump_selector_specific_options(log);
 }
 
 static options::PluginTypePlugin<MergeSelector> _type_plugin(

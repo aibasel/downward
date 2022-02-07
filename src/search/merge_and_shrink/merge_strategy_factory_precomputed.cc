@@ -39,7 +39,7 @@ string MergeStrategyFactoryPrecomputed::name() const {
 }
 
 void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
-    merge_tree_factory->dump_options();
+    merge_tree_factory->dump_options(log);
 }
 
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {

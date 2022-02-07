@@ -10,7 +10,7 @@ class MergeScoringFunctionDFP : public MergeScoringFunction {
 protected:
     virtual std::string name() const override;
 public:
-    explicit MergeScoringFunctionDFP(const options::Options &options);
+    MergeScoringFunctionDFP() = default;
     virtual ~MergeScoringFunctionDFP() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,

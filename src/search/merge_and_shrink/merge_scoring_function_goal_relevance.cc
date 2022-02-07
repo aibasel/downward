@@ -10,11 +10,6 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunctionGoalRelevance::MergeScoringFunctionGoalRelevance(
-    const options::Options &options)
-    : MergeScoringFunction(options) {
-}
-
 vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     const FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {
@@ -52,14 +47,10 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "least one of the two transition systems of the merge candidate is "
         "goal relevant in the sense that there is an abstract non-goal state. "
         "All other candidates get a score of positive infinity.");
-
-    add_merge_scoring_function_options_to_parser(parser);
-
     if (parser.dry_run())
         return nullptr;
 
-    options::Options options = parser.parse();
-    return make_shared<MergeScoringFunctionGoalRelevance>(options);
+    return make_shared<MergeScoringFunctionGoalRelevance>();
 }
 
 static options::Plugin<MergeScoringFunction> _plugin("goal_relevance", _parse);
