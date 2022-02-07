@@ -19,8 +19,6 @@ class PatternGeneratorRandom : public PatternGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     explicit PatternGeneratorRandom(options::Options &opts);
-
-
 };
 }
 

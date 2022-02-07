@@ -14,7 +14,7 @@ PatternCollectionGenerator::PatternCollectionGenerator(const options::Options &o
 }
 
 PatternCollectionInformation PatternCollectionGenerator::generate(
-    const std::shared_ptr<AbstractTask> &task) {
+    const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Generating patterns using: " << name() << endl;
     }
@@ -32,7 +32,7 @@ PatternGenerator::PatternGenerator(const options::Options &opts)
 }
 
 PatternInformation PatternGenerator::generate(
-    const std::shared_ptr<AbstractTask> &task) {
+    const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
         utils::g_log << "Generating pattern using: " << name() << endl;
     }

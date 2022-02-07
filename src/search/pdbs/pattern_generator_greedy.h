@@ -13,8 +13,6 @@ class PatternGeneratorGreedy : public PatternGenerator {
 public:
     explicit PatternGeneratorGreedy(const options::Options &opts);
     virtual ~PatternGeneratorGreedy() = default;
-
-
 };
 }
 
