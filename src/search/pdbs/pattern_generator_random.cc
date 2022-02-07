@@ -25,14 +25,12 @@ PatternGeneratorRandom::PatternGeneratorRandom(options::Options &opts)
       rng(utils::parse_rng_from_options(opts)) {
 }
 
-PatternInformation PatternGeneratorRandom::generate(
-    const shared_ptr<AbstractTask> &task) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating pattern using the Random Pattern algorithm."
-                     << endl;
-    }
+string PatternGeneratorRandom::name() const {
+    return "random pattern generator";
+}
 
-    utils::Timer timer;
+PatternInformation PatternGeneratorRandom::compute_pattern(
+    const shared_ptr<AbstractTask> &task) {
     vector<vector<int>> cg_neighbors = compute_cg_neighbors(
         task, bidirectional);
     TaskProxy task_proxy(*task);
@@ -47,14 +45,7 @@ PatternInformation PatternGeneratorRandom::generate(
         goals[0].var,
         cg_neighbors);
 
-    PatternInformation result(task_proxy, pattern);
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        dump_pattern_generation_statistics(
-            "Random Pattern",
-            timer.stop(),
-            result);
-    }
-    return result;
+    return PatternInformation(task_proxy, pattern);
 }
 
 static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {

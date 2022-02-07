@@ -18,11 +18,12 @@ class PatternCollectionGeneratorDisjointCegar : public PatternCollectionGenerato
     const double max_time;
     const bool use_wildcard_plans;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
+
+    virtual std::string name() const override;
+    virtual PatternCollectionInformation compute_patterns(
+        const std::shared_ptr<AbstractTask> &task) override;
 public:
     explicit PatternCollectionGeneratorDisjointCegar(const options::Options &opts);
-
-    virtual PatternCollectionInformation generate(
-        const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 

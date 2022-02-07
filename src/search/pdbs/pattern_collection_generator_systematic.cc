@@ -261,11 +261,12 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
 
     utils::g_log << "Found " << patterns->size() << " patterns." << endl;
 }
+string PatternCollectionGeneratorSystematic::name() const {
+    return "systematic pattern collection generator";
+}
 
-PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
+PatternCollectionInformation PatternCollectionGeneratorSystematic::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
-    utils::Timer timer;
-    utils::g_log << "Generating patterns using the systematic generator..." << endl;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
     pattern_set.clear();
@@ -274,12 +275,7 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
-    PatternCollectionInformation pci(task_proxy, patterns);
-    /* Do not dump the collection since it can be very large for
-       pattern_max_size >= 3. */
-    dump_pattern_collection_generation_statistics(
-        "Systematic generator", timer(), pci);
-    return pci;
+    return PatternCollectionInformation(task_proxy, patterns);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {

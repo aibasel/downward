@@ -16,8 +16,11 @@ namespace pdbs {
 PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
     : PatternGenerator(opts), pattern(opts.get_list<int>("pattern")) {
 }
+string PatternGeneratorManual::name() const {
+    return "manual pattern generator";
+}
 
-PatternInformation PatternGeneratorManual::generate(
+PatternInformation PatternGeneratorManual::compute_pattern(
     const shared_ptr<AbstractTask> &task) {
     PatternInformation pattern_info(TaskProxy(*task), move(pattern));
     utils::g_log << "Manual pattern: " << pattern_info.get_pattern() << endl;

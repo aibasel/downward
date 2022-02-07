@@ -18,7 +18,11 @@ PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(const Options
       patterns(make_shared<PatternCollection>(opts.get_list<Pattern>("patterns"))) {
 }
 
-PatternCollectionInformation PatternCollectionGeneratorManual::generate(
+string PatternCollectionGeneratorManual::name() const {
+    return "manual pattern collection generator";
+}
+
+PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
     utils::g_log << "Manual pattern collection: " << *patterns << endl;
     TaskProxy task_proxy(*task);

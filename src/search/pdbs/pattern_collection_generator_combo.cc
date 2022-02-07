@@ -23,10 +23,12 @@ PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(
     : PatternCollectionGenerator(opts), opts(opts) {
 }
 
-PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
+string PatternCollectionGeneratorCombo::name() const {
+    return "combo pattern collection generator";
+}
+
+PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
-    utils::Timer timer;
-    utils::g_log << "Generating patterns using the combo generator..." << endl;
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
@@ -43,8 +45,6 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     }
 
     PatternCollectionInformation pci(task_proxy, patterns);
-    dump_pattern_collection_generation_statistics(
-        "Combo generator", timer(), pci);
     return pci;
 }
 

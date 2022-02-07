@@ -6,7 +6,8 @@
 namespace pdbs {
 class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGeneratorMultiple {
     const bool use_wildcard_plans;
-protected:
+
+    virtual std::string id() const override;
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override {}
     virtual PatternInformation compute_pattern(
         int max_pdb_size,

@@ -7,7 +7,8 @@ namespace pdbs {
 class PatternCollectionGeneratorMultipleRandom : public PatternCollectionGeneratorMultiple {
     const bool bidirectional;
     std::vector<std::vector<int>> cg_neighbors;
-protected:
+
+    virtual std::string id() const override;
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
     virtual PatternInformation compute_pattern(
         int max_pdb_size,

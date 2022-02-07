@@ -409,11 +409,14 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     hill_climbing_timer = nullptr;
 }
 
-PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
+string PatternCollectionGeneratorHillclimbing::name() const {
+    return "hill climbing pattern collection generator";
+}
+
+PatternCollectionInformation PatternCollectionGeneratorHillclimbing::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     utils::Timer timer;
-    utils::g_log << "Generating patterns using the hill climbing generator..." << endl;
 
     // Generate initial collection: a pattern for each goal variable.
     PatternCollection initial_pattern_collection;
@@ -430,10 +433,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
         hill_climbing(task_proxy);
     }
 
-    PatternCollectionInformation pci = current_pdbs->get_pattern_collection_information();
-    dump_pattern_collection_generation_statistics(
-        "Hill climbing generator", timer(), pci);
-    return pci;
+    return current_pdbs->get_pattern_collection_information();
 }
 
 void add_hillclimbing_options(OptionParser &parser) {

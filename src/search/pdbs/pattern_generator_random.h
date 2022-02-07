@@ -13,11 +13,14 @@ class PatternGeneratorRandom : public PatternGenerator {
     const int max_time;
     const bool bidirectional;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
+
+    virtual std::string name() const override;
+    virtual PatternInformation compute_pattern(
+        const std::shared_ptr<AbstractTask> &task) override;
 public:
     explicit PatternGeneratorRandom(options::Options &opts);
 
-    virtual PatternInformation generate(
-        const std::shared_ptr<AbstractTask> &task) override;
+
 };
 }
 

@@ -18,9 +18,8 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
-    options::Options &opts, const string &name)
+    options::Options &opts)
     : PatternCollectionGenerator(opts),
-      name(name),
       max_pdb_size(opts.get<int>("max_pdb_size")),
       pattern_generation_max_time(opts.get<double>("pattern_generation_max_time")),
       total_max_time(opts.get<double>("total_max_time")),
@@ -156,11 +155,13 @@ bool PatternCollectionGeneratorMultiple::check_for_stagnation(
     return false;
 }
 
-PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
+string PatternCollectionGeneratorMultiple::name() const {
+    return "multiple " + id() + " pattern collection generator";
+}
+
+PatternCollectionInformation PatternCollectionGeneratorMultiple::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating patterns using the " << name
-                     << " algorithm." << endl;
         utils::g_log << "max pdb size: " << max_pdb_size << endl;
         utils::g_log << "max collection size: " << remaining_collection_size << endl;
         utils::g_log << "max time: " << total_max_time << endl;
@@ -253,15 +254,11 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::generate(
     PatternCollectionInformation result = get_pattern_collection_info(
         task_proxy, generated_pdbs);
     if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << name << " number of iterations: "
+        utils::g_log << name() << " number of iterations: "
                      << num_iterations << endl;
-        utils::g_log << name << " average time per generator: "
+        utils::g_log << name() << " average time per generator: "
                      << timer.get_elapsed_time() / num_iterations
                      << endl;
-        dump_pattern_collection_generation_statistics(
-            name,
-            timer.get_elapsed_time(),
-            result);
     }
     return result;
 }

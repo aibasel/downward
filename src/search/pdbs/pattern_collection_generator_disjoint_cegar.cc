@@ -22,13 +22,12 @@ PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar
       rng(utils::parse_rng_from_options(opts)) {
 }
 
-PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::generate(
-    const shared_ptr<AbstractTask> &task) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating patterns using the Disjoint CEGAR algorithm."
-                     << endl;
-    }
+string PatternCollectionGeneratorDisjointCegar::name() const {
+    return "disjoint CEGAR pattern collection generator";
+}
 
+PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_patterns(
+    const shared_ptr<AbstractTask> &task) {
     // Store the set of goals in random order.
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);

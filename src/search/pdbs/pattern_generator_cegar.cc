@@ -25,18 +25,15 @@ PatternGeneratorCEGAR::PatternGeneratorCEGAR(options::Options &opts)
       rng(utils::parse_rng_from_options(opts)) {
 }
 
-PatternInformation PatternGeneratorCEGAR::generate(
-    const shared_ptr<AbstractTask> &task) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating pattern using the CEGAR algorithm."
-                     << endl;
-    }
+string PatternGeneratorCEGAR::name() const {
+    return "CEGAR pattern generator";
+}
 
-    utils::Timer timer;
+PatternInformation PatternGeneratorCEGAR::compute_pattern(
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);
-
-    PatternInformation pattern_info = generate_pattern_with_cegar(
+    return generate_pattern_with_cegar(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
@@ -44,14 +41,6 @@ PatternInformation PatternGeneratorCEGAR::generate(
         rng,
         task,
         goals[0]);
-
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        dump_pattern_generation_statistics(
-            "CEGAR",
-            timer.stop(),
-            pattern_info);
-    }
-    return pattern_info;
 }
 
 static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {

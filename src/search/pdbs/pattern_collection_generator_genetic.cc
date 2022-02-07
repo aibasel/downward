@@ -274,19 +274,18 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm() {
     }
 }
 
-PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
+string PatternCollectionGeneratorGenetic::name() const {
+    return "genetic pattern collection generator";
+}
+
+PatternCollectionInformation PatternCollectionGeneratorGenetic::compute_patterns(
     const shared_ptr<AbstractTask> &task_) {
-    utils::Timer timer;
-    utils::g_log << "Generating patterns using the genetic generator..." << endl;
     task = task_;
     genetic_algorithm();
 
     TaskProxy task_proxy(*task);
     assert(best_patterns);
-    PatternCollectionInformation pci(task_proxy, best_patterns);
-    dump_pattern_collection_generation_statistics(
-        "Genetic generator", timer(), pci);
-    return pci;
+    return PatternCollectionInformation(task_proxy, best_patterns);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {

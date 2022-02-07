@@ -16,8 +16,12 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
     options::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts, "Random Patterns"),
+    : PatternCollectionGeneratorMultiple(opts),
       bidirectional(opts.get<bool>("bidirectional")) {
+}
+
+string PatternCollectionGeneratorMultipleRandom::id() const {
+    return "random patterns";
 }
 
 void PatternCollectionGeneratorMultipleRandom::initialize(

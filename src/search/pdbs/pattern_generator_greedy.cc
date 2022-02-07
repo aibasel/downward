@@ -21,9 +21,11 @@ PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
     : PatternGenerator(opts), max_states(opts.get<int>("max_states")) {
 }
 
-PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
-    utils::Timer timer;
-    utils::g_log << "Generating a pattern using the greedy generator..." << endl;
+string PatternGeneratorGreedy::name() const {
+    return "greedy pattern generator";
+}
+
+PatternInformation PatternGeneratorGreedy::compute_pattern(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     Pattern pattern;
     variable_order_finder::VariableOrderFinder order(
@@ -45,10 +47,7 @@ PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTas
         size *= next_var_size;
     }
 
-    PatternInformation pattern_info(task_proxy, move(pattern));
-    dump_pattern_generation_statistics(
-        "Greedy generator", timer(), pattern_info);
-    return pattern_info;
+    return PatternInformation(task_proxy, move(pattern));
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
