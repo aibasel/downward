@@ -21,6 +21,8 @@ enum class LPSolverType;
 
 std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
 
+void set_mip_gap(OsiSolverInterface *lp_solver, double gap);
+
 /*
   Print the CoinError and then exit with ExitCode::SEARCH_CRITICAL_ERROR.
   Note that out-of-memory conditions occurring within CPLEX code cannot

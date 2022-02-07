@@ -162,6 +162,8 @@ public:
     LP_METHOD(void set_variable_lower_bound(int index, double bound))
     LP_METHOD(void set_variable_upper_bound(int index, double bound))
 
+    LP_METHOD(void set_mip_gap(double gap))
+
     LP_METHOD(void solve())
     LP_METHOD(void write_lp(const std::string &filename) const)
     LP_METHOD(void print_failure_analysis() const)

@@ -147,6 +147,24 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
     }
 }
 
+void set_mip_gap(OsiSolverInterface *lp_solver, double gap) {
+#ifdef COIN_HAS_CPX
+    {
+        auto *cpx_solver = dynamic_cast<OsiCpxSolverInterface *>(lp_solver);
+        assert(cpx_solver);
+        CPXsetdblparam(cpx_solver->getEnvironmentPtr(),
+                       CPXPARAM_MIP_Tolerances_MIPGap, gap);
+    }
+#endif
+#ifdef COIN_HAS_SPX
+    {
+        auto *spx_solver = dynamic_cast<OsiSpxSolverInterface *>(lp_solver);
+        assert(spx_solver);
+        // TODO
+    }
+#endif
+}
+
 NO_RETURN
 void handle_coin_error(const CoinError &error) {
     if (error.message().find(COIN_CPLEX_ERROR_OOM) != string::npos) {

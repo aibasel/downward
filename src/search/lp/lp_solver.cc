@@ -382,6 +382,15 @@ void LPSolver::set_variable_upper_bound(int index, double bound) {
     is_solved = false;
 }
 
+void LPSolver::set_mip_gap(double gap) {
+    //try {
+        lp::set_mip_gap(lp_solver.get(), gap);
+    /*
+    } catch (TODO) {
+    }
+    */
+}
+
 void LPSolver::solve() {
     try {
         if (is_initialized) {
