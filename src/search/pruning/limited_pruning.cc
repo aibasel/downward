@@ -29,9 +29,9 @@ void LimitedPruning::prune_operators(
     }
     if (min_required_pruning_ratio > 0. &&
         num_pruning_calls == num_expansions_before_checking_pruning_ratio) {
-        double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
-            static_cast<double>(num_pruned_successors_generated) /
-            static_cast<double>(num_unpruned_successors_generated));
+        double pruning_ratio = (num_successors_before_pruning == 0) ? 1. : 1. - (
+            static_cast<double>(num_successors_after_pruning) /
+            static_cast<double>(num_successors_before_pruning));
         utils::g_log << "Pruning ratio after " << num_expansions_before_checking_pruning_ratio
                      << " calls: " << pruning_ratio << endl;
         if (pruning_ratio < min_required_pruning_ratio) {

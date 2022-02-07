@@ -16,8 +16,8 @@ PruningMethod::PruningMethod()
 void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
     assert(!task);
     task = task_;
-    num_unpruned_successors_generated = 0;
-    num_pruned_successors_generated = 0;
+    num_successors_before_pruning = 0;
+    num_successors_after_pruning = 0;
 }
 
 void PruningMethod::prune_op_ids(
@@ -26,19 +26,19 @@ void PruningMethod::prune_op_ids(
     timer.resume();
     int num_ops_before_pruning = op_ids.size();
     prune_operators(state, op_ids);
-    num_unpruned_successors_generated += num_ops_before_pruning;
-    num_pruned_successors_generated += op_ids.size();
+    num_successors_before_pruning += num_ops_before_pruning;
+    num_successors_after_pruning += op_ids.size();
     timer.stop();
 }
 
 void PruningMethod::print_statistics() const {
     utils::g_log << "total successors before partial-order reduction: "
-                 << num_unpruned_successors_generated << endl
+                 << num_successors_before_pruning << endl
                  << "total successors after partial-order reduction: "
-                 << num_pruned_successors_generated << endl;
-    double pruning_ratio = (num_unpruned_successors_generated == 0) ? 1. : 1. - (
-        static_cast<double>(num_pruned_successors_generated) /
-        static_cast<double>(num_unpruned_successors_generated));
+                 << num_successors_after_pruning << endl;
+    double pruning_ratio = (num_successors_before_pruning == 0) ? 1. : 1. - (
+        static_cast<double>(num_successors_after_pruning) /
+        static_cast<double>(num_successors_before_pruning));
     utils::g_log << "Pruning ratio: " << pruning_ratio << endl;
     utils::g_log << "Time for pruning operators: " << timer << endl;
 }

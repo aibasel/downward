@@ -23,8 +23,8 @@ class PruningMethod {
         const State &state, std::vector<OperatorID> &op_ids) = 0;
 protected:
     std::shared_ptr<AbstractTask> task;
-    long num_unpruned_successors_generated;
-    long num_pruned_successors_generated;
+    long num_successors_before_pruning;
+    long num_successors_after_pruning;
 public:
     PruningMethod();
     virtual ~PruningMethod() = default;
