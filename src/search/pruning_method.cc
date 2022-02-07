@@ -32,9 +32,9 @@ void PruningMethod::prune_op_ids(
 }
 
 void PruningMethod::print_statistics() const {
-    utils::g_log << "total successors before partial-order reduction: "
+    utils::g_log << "total successors before pruning: "
                  << num_successors_before_pruning << endl
-                 << "total successors after partial-order reduction: "
+                 << "total successors after pruning: "
                  << num_successors_after_pruning << endl;
     double pruning_ratio = (num_successors_before_pruning == 0) ? 1. : 1. - (
         static_cast<double>(num_successors_after_pruning) /
