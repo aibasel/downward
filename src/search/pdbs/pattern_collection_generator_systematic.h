@@ -17,10 +17,6 @@ namespace causal_graph {
 class CausalGraph;
 }
 
-namespace options {
-class Options;
-}
-
 namespace pdbs {
 class CanonicalPDBsHeuristic;
 

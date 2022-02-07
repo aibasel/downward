@@ -14,7 +14,8 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(const Options &opts)
-    : patterns(make_shared<PatternCollection>(opts.get_list<Pattern>("patterns"))) {
+    : PatternCollectionGenerator(opts),
+      patterns(make_shared<PatternCollection>(opts.get_list<Pattern>("patterns"))) {
 }
 
 PatternCollectionInformation PatternCollectionGeneratorManual::generate(
@@ -29,6 +30,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "patterns",
         "list of patterns (which are lists of variable numbers of the planning "
         "task).");
+    add_generator_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

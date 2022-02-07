@@ -18,10 +18,10 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorRandom::PatternGeneratorRandom(options::Options &opts)
-    : max_pdb_size(opts.get<int>("max_pdb_size")),
+    : PatternGenerator(opts),
+      max_pdb_size(opts.get<int>("max_pdb_size")),
       max_time(opts.get<double>("max_time")),
       bidirectional(opts.get<bool>("bidirectional")),
-      verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)) {
 }
 
@@ -78,7 +78,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
     add_random_pattern_bidirectional_option_to_parser(parser);
-    utils::add_verbosity_option_to_parser(parser);
+    add_generator_options_to_parser(parser);
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();

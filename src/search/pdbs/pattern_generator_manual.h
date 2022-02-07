@@ -4,10 +4,6 @@
 #include "pattern_generator.h"
 #include "types.h"
 
-namespace options {
-class Options;
-}
-
 namespace pdbs {
 class PatternGeneratorManual : public PatternGenerator {
     Pattern pattern;

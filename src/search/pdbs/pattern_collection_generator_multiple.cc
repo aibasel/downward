@@ -19,14 +19,14 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
     options::Options &opts, const string &name)
-    : name(name),
+    : PatternCollectionGenerator(opts),
+      name(name),
       max_pdb_size(opts.get<int>("max_pdb_size")),
       pattern_generation_max_time(opts.get<double>("pattern_generation_max_time")),
       total_max_time(opts.get<double>("total_max_time")),
       stagnation_limit(opts.get<double>("stagnation_limit")),
       blacklisting_start_time(total_max_time * opts.get<double>("blacklist_trigger_percentage")),
       enable_blacklist_on_stagnation(opts.get<bool>("enable_blacklist_on_stagnation")),
-      verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)),
       random_seed(opts.get<int>("random_seed")),
       remaining_collection_size(opts.get<int>("max_collection_size")),
@@ -343,7 +343,7 @@ void add_multiple_options_to_parser(options::OptionParser &parser) {
         "generation is terminated already the first time stagnation_limit is "
         "hit.",
         "true");
-    utils::add_verbosity_option_to_parser(parser);
+    add_generator_options_to_parser(parser);
     utils::add_rng_options(parser);
 }
 }

@@ -18,10 +18,10 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorCEGAR::PatternGeneratorCEGAR(options::Options &opts)
-    : max_pdb_size(opts.get<int>("max_pdb_size")),
+    : PatternGenerator(opts),
+      max_pdb_size(opts.get<int>("max_pdb_size")),
       max_time(opts.get<double>("max_time")),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
-      verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)) {
 }
 
@@ -75,7 +75,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
     add_cegar_wildcard_option_to_parser(parser);
-    utils::add_verbosity_option_to_parser(parser);
+    add_generator_options_to_parser(parser);
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();

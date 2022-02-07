@@ -8,13 +8,11 @@
 
 namespace options {
 class OptionParser;
-class Options;
 }
 
 namespace utils {
 class CountdownTimer;
 class RandomNumberGenerator;
-enum class Verbosity;
 }
 
 namespace pdbs {
@@ -43,7 +41,6 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     const double stagnation_limit;
     const double blacklisting_start_time;
     const bool enable_blacklist_on_stagnation;
-    const utils::Verbosity verbosity;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     const int random_seed;
 

@@ -9,10 +9,6 @@
 
 class AbstractTask;
 
-namespace options {
-class Options;
-}
-
 namespace utils {
 class RandomNumberGenerator;
 }

@@ -6,10 +6,6 @@
 
 #include <memory>
 
-namespace options {
-class Options;
-}
-
 namespace pdbs {
 class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
     std::shared_ptr<PatternCollection> patterns;

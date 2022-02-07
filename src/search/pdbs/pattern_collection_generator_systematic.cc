@@ -49,7 +49,8 @@ static void compute_union_pattern(
 
 PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
     const Options &opts)
-    : max_pattern_size(opts.get<int>("pattern_max_size")),
+    : PatternCollectionGenerator(opts),
+      max_pattern_size(opts.get<int>("pattern_max_size")),
       only_interesting_patterns(opts.get<bool>("only_interesting_patterns")) {
 }
 
@@ -306,6 +307,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "Only consider the union of two disjoint patterns if the union has "
         "more information than the individual patterns.",
         "true");
+    add_generator_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

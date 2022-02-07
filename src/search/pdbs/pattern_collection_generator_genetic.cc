@@ -27,7 +27,8 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
     const Options &opts)
-    : pdb_max_size(opts.get<int>("pdb_max_size")),
+    : PatternCollectionGenerator(opts),
+      pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
       mutation_probability(opts.get<double>("mutation_probability")),
@@ -373,6 +374,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "false");
 
     utils::add_rng_options(parser);
+    add_generator_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

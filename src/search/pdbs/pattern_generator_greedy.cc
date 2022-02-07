@@ -18,11 +18,7 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
-    : PatternGeneratorGreedy(opts.get<int>("max_states")) {
-}
-
-PatternGeneratorGreedy::PatternGeneratorGreedy(int max_states)
-    : max_states(max_states) {
+    : PatternGenerator(opts), max_states(opts.get<int>("max_states")) {
 }
 
 PatternInformation PatternGeneratorGreedy::generate(const shared_ptr<AbstractTask> &task) {
@@ -61,6 +57,7 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
         "maximal number of abstract states in the pattern database.",
         "1000000",
         Bounds("1", "infinity"));
+    add_generator_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

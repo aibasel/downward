@@ -18,8 +18,9 @@
 using namespace std;
 
 namespace pdbs {
-PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &opts)
-    : max_states(opts.get<int>("max_states")) {
+PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(
+    const Options &opts)
+    : PatternCollectionGenerator(opts), opts(opts) {
 }
 
 PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
@@ -29,7 +30,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
-    PatternGeneratorGreedy large_pattern_generator(max_states);
+    PatternGeneratorGreedy large_pattern_generator(opts);
     Pattern large_pattern = large_pattern_generator.generate(task).get_pattern();
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
     patterns->push_back(move(large_pattern));
@@ -53,6 +54,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "maximum abstraction size for combo strategy",
         "1000000",
         Bounds("1", "infinity"));
+    add_generator_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

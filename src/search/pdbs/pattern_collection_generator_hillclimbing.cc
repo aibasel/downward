@@ -113,7 +113,8 @@ static vector<vector<int>> compute_relevant_neighbours(const TaskProxy &task_pro
 
 
 PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const Options &opts)
-    : pdb_max_size(opts.get<int>("pdb_max_size")),
+    : PatternCollectionGenerator(opts),
+      pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
@@ -528,6 +529,7 @@ void add_hillclimbing_options(OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
     utils::add_rng_options(parser);
+    add_generator_options_to_parser(parser);
 }
 
 void check_hillclimbing_options(

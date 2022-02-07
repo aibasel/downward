@@ -11,10 +11,6 @@
 #include <set>
 #include <vector>
 
-namespace options {
-class Options;
-}
-
 namespace utils {
 class CountdownTimer;
 class RandomNumberGenerator;
