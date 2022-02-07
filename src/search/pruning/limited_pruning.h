@@ -15,11 +15,13 @@ class LimitedPruning : public PruningMethod {
     const int num_expansions_before_checking_pruning_ratio;
     int num_pruning_calls;
     bool is_pruning_disabled;
+
+    virtual void prune_operators(
+        const State &state, std::vector<OperatorID> &op_ids) override;
 public:
     explicit LimitedPruning(const options::Options &opts);
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
-    virtual void prune_operators(
-        const State &state, std::vector<OperatorID> &op_ids) override;
+
 };
 }
 
