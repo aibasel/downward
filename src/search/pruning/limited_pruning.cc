@@ -50,9 +50,9 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "Limited pruning",
         "Limited pruning applies another pruning method and switches it off "
         "after a fixed number of expansions if the pruning ratio is below a "
-        "given value. The pruning ratio is defined as 1 - (A/B), where B and A "
-        "are the total numbers of operators before and after pruning summed "
-        "over all previous expansions.");
+        "given value. The pruning ratio is the sum of all pruned operators "
+        "divided by the sum of all operators before pruning, considering all "
+        "previous expansions.");
     parser.add_option<shared_ptr<PruningMethod>>("pruning");
     parser.add_option<double>(
         "min_required_pruning_ratio",
