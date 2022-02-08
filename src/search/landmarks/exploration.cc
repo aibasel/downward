@@ -142,7 +142,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
       proposition. (*excluded_op_ids* "additionally" contains operators that
       have a landmark as their precondition in this context.)
 
-  TODO: Issue 1045 aims at moving the logic to exclude operators that achieve
+  TODO: issue1045 aims at moving the logic to exclude operators that achieve
    excluded propositions here to consistently do so in all contexts.
 */
 void Exploration::setup_exploration_queue(
