@@ -139,7 +139,7 @@ after the corresponding tracker issues.
 
 - Fix a bug in checking relaxed solvability when excluding landmarks in the
   presence of conditional effects.
-  <http://issues.fast-downward.org/issue1041>
+  <https://issues.fast-downward.org/issue1041>
 
 ## Fast Downward 20.06
 
