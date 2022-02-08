@@ -20,6 +20,13 @@
 using namespace std;
 
 namespace eager_search {
+static shared_ptr<PruningMethod> get_pruning_method_from_options(const Options &opts) {
+    if (opts.contains("pruning")) {
+        return opts.get<shared_ptr<PruningMethod>>("pruning");
+    }
+    return nullptr;
+}
+
 EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
@@ -28,7 +35,7 @@ EagerSearch::EagerSearch(const Options &opts)
       f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
-      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+      pruning_method(get_pruning_method_from_options(opts)) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -99,13 +106,17 @@ void EagerSearch::initialize() {
 
     print_initial_evaluator_values(eval_context);
 
-    pruning_method->initialize(task);
+    if (pruning_method) {
+        pruning_method->initialize(task);
+    }
 }
 
 void EagerSearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
-    pruning_method->print_statistics();
+    if (pruning_method) {
+        pruning_method->print_statistics();
+    }
 }
 
 SearchStatus EagerSearch::step() {
@@ -175,11 +186,13 @@ SearchStatus EagerSearch::step() {
     vector<OperatorID> applicable_ops;
     successor_generator.generate_applicable_ops(s, applicable_ops);
 
-    /*
-      TODO: When preferred operators are in use, a preferred operator will be
-      considered by the preferred operator queues even when it is pruned.
-    */
-    pruning_method->prune_op_ids(s, applicable_ops);
+    if (pruning_method) {
+        /*
+          TODO: When preferred operators are in use, a preferred operator will be
+          considered by the preferred operator queues even when it is pruned.
+        */
+        pruning_method->prune_op_ids(s, applicable_ops);
+    }
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
@@ -309,7 +322,12 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 void add_options_to_parser(OptionParser &parser) {
-    SearchEngine::add_pruning_option(parser);
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "Pruning methods can prune or reorder the set of applicable operators in "
+        "each state and thereby influence the number and order of successor states "
+        "that are considered.",
+        options::OptionParser::NONE);
     SearchEngine::add_options_to_parser(parser);
 }
 }

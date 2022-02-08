@@ -120,20 +120,6 @@ int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
-/* TODO: merge this into add_options_to_parser when all search
-         engines support pruning.
-
-   Method doesn't belong here because it's only useful for certain derived classes.
-   TODO: Figure out where it belongs and move it there. */
-void SearchEngine::add_pruning_option(OptionParser &parser) {
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "Pruning methods can prune or reorder the set of applicable operators in "
-        "each state and thereby influence the number and order of successor states "
-        "that are considered.",
-        "null()");
-}
-
 void SearchEngine::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     parser.add_option<int>(
