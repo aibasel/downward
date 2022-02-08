@@ -315,12 +315,7 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 void add_options_to_parser(OptionParser &parser) {
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "Pruning methods can prune or reorder the set of applicable operators in "
-        "each state and thereby influence the number and order of successor states "
-        "that are considered.",
-        options::OptionParser::NONE);
+    SearchEngine::add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
 }
 }

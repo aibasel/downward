@@ -76,6 +76,7 @@ public:
 
     /* The following three methods should become functions as they
        do not require access to private/protected class members. */
+    static void add_pruning_option(options::OptionParser &parser);
     static void add_options_to_parser(options::OptionParser &parser);
     static void add_succ_order_options(options::OptionParser &parser);
 };
