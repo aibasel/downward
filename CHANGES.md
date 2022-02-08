@@ -133,6 +133,9 @@ after the corresponding tracker issues.
   add_log_options_to_parser and get_log_from_options to obtain their
   local log object.
 
+- Fix a bug in the computation of landmark costs
+  <http://issues.fast-downward.org/issue467>
+
 
 ## Fast Downward 20.06
 

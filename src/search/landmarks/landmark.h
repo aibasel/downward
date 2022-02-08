@@ -33,7 +33,9 @@ public:
 
     /*
       Cost of achieving the landmark (as determined by the landmark factory),
-      can be infinite (currently only if *first_achievers* is empty).
+      is considered infinite if set to *numeric_limits<int>::max()* (currently
+      only set in *LandmarkFactoryRpgSasp::min_cost_for_landmark(..)* if
+      *first_achievers* is empty).
     */
     int cost;
 
