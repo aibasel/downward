@@ -3,10 +3,6 @@
 
 #include "merge_strategy_factory.h"
 
-namespace options {
-class Options;
-}
-
 namespace merge_and_shrink {
 class MergeTreeFactory;
 class MergeSelector;
@@ -26,7 +22,7 @@ protected:
     virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
-    MergeStrategyFactorySCCs(const options::Options &options);
+    explicit MergeStrategyFactorySCCs(const options::Options &options);
     virtual ~MergeStrategyFactorySCCs() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,

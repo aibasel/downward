@@ -48,7 +48,7 @@ PatternInformation PatternGenerator::generate(
 }
 
 void add_generator_options_to_parser(options::OptionParser &parser) {
-    utils::add_verbosity_option_to_parser(parser);
+    utils::add_log_options_to_parser(parser);
 }
 
 static PluginTypePlugin<PatternCollectionGenerator> _type_plugin_collection(

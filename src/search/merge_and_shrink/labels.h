@@ -4,6 +4,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace merge_and_shrink {
 class Label {
     /*
@@ -33,7 +37,7 @@ public:
     void reduce_labels(const std::vector<int> &old_label_nos);
     bool is_current_label(int label_no) const;
     int get_label_cost(int label_no) const;
-    void dump_labels() const;
+    void dump_labels(utils::LogProxy &log) const;
     int get_size() const {
         return labels.size();
     }

@@ -8,6 +8,10 @@
 class EvaluationContext;
 class State;
 
+namespace utils {
+class LogProxy;
+}
+
 class Evaluator {
     const std::string description;
     const bool use_for_reporting_minima;
@@ -76,8 +80,10 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
 
-    void report_value_for_initial_state(const EvaluationResult &result) const;
-    void report_new_minimum_value(const EvaluationResult &result) const;
+    void report_value_for_initial_state(
+        const EvaluationResult &result, utils::LogProxy &log) const;
+    void report_new_minimum_value(
+        const EvaluationResult &result, utils::LogProxy &log) const;
 
     const std::string &get_description() const;
     bool is_used_for_reporting_minima() const;

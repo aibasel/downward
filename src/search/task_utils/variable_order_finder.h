@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace utils {
+class LogProxy;
 class RandomNumberGenerator;
 }
 
@@ -20,7 +21,8 @@ enum VariableOrderType {
     REVERSE_LEVEL
 };
 
-extern void dump_variable_order_type(VariableOrderType variable_order_type);
+extern void dump_variable_order_type(
+    VariableOrderType variable_order_type, utils::LogProxy &log);
 
 /*
   NOTE: VariableOrderFinder keeps a copy of the task proxy passed to the
