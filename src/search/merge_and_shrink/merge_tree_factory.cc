@@ -19,23 +19,23 @@ MergeTreeFactory::MergeTreeFactory(const options::Options &options)
       update_option(options.get<UpdateOption>("update_option")) {
 }
 
-void MergeTreeFactory::dump_options() const {
-    utils::g_log << "Merge tree options: " << endl;
-    utils::g_log << "Type: " << name() << endl;
-    utils::g_log << "Update option: ";
+void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
+    log << "Merge tree options: " << endl;
+    log << "Type: " << name() << endl;
+    log << "Update option: ";
     switch (update_option) {
     case UpdateOption::USE_FIRST:
-        utils::g_log << "use first";
+        log << "use first";
         break;
     case UpdateOption::USE_SECOND:
-        utils::g_log << "use second";
+        log << "use second";
         break;
     case UpdateOption::USE_RANDOM:
-        utils::g_log << "use random";
+        log << "use random";
         break;
     }
-    utils::g_log << endl;
-    dump_tree_specific_options();
+    log << endl;
+    dump_tree_specific_options(log);
 }
 
 unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(

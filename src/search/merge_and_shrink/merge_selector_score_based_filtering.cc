@@ -76,10 +76,11 @@ string MergeSelectorScoreBasedFiltering::name() const {
     return "score based filtering";
 }
 
-void MergeSelectorScoreBasedFiltering::dump_specific_options() const {
+void MergeSelectorScoreBasedFiltering::dump_selector_specific_options(
+    utils::LogProxy &log) const {
     for (const shared_ptr<MergeScoringFunction> &scoring_function
          : merge_scoring_functions) {
-        scoring_function->dump_options();
+        scoring_function->dump_options(log);
     }
 }
 

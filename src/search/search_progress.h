@@ -7,7 +7,7 @@ class EvaluationContext;
 class Evaluator;
 
 namespace utils {
-enum class Verbosity;
+class LogProxy;
 }
 
 /*
@@ -20,13 +20,13 @@ enum class Verbosity;
 
 
 class SearchProgress {
-    const utils::Verbosity verbosity;
+    utils::LogProxy &log;
     std::unordered_map<const Evaluator *, int> min_values;
 
     bool process_evaluator_value(const Evaluator *evaluator, int value);
 
 public:
-    explicit SearchProgress(utils::Verbosity verbosity);
+    explicit SearchProgress(utils::LogProxy &log);
     ~SearchProgress() = default;
 
     /*

@@ -132,8 +132,8 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
 
     if (parser.dry_run())
         return nullptr;
-    else
-        return make_shared<MergeScoringFunctionDFP>();
+
+    return make_shared<MergeScoringFunctionDFP>();
 }
 
 static options::Plugin<MergeScoringFunction> _plugin("dfp", _parse);

@@ -15,7 +15,7 @@ class MergeTreeFactoryLinear : public MergeTreeFactory {
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 protected:
     virtual std::string name() const override;
-    virtual void dump_tree_specific_options() const override;
+    virtual void dump_tree_specific_options(utils::LogProxy &log) const override;
 public:
     explicit MergeTreeFactoryLinear(const options::Options &options);
     virtual ~MergeTreeFactoryLinear() override = default;

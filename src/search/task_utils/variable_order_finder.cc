@@ -107,30 +107,31 @@ int VariableOrderFinder::next() {
     utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
 
-void dump_variable_order_type(VariableOrderType variable_order_type) {
-    utils::g_log << "Variable order type: ";
+void dump_variable_order_type(
+    VariableOrderType variable_order_type, utils::LogProxy &log) {
+    log << "Variable order type: ";
     switch (variable_order_type) {
     case CG_GOAL_LEVEL:
-        utils::g_log << "CG/GOAL, tie breaking on level (main)";
+        log << "CG/GOAL, tie breaking on level (main)";
         break;
     case CG_GOAL_RANDOM:
-        utils::g_log << "CG/GOAL, tie breaking random";
+        log << "CG/GOAL, tie breaking random";
         break;
     case GOAL_CG_LEVEL:
-        utils::g_log << "GOAL/CG, tie breaking on level";
+        log << "GOAL/CG, tie breaking on level";
         break;
     case RANDOM:
-        utils::g_log << "random";
+        log << "random";
         break;
     case LEVEL:
-        utils::g_log << "by level";
+        log << "by level";
         break;
     case REVERSE_LEVEL:
-        utils::g_log << "by reverse level";
+        log << "by reverse level";
         break;
     default:
         ABORT("Unknown variable order type.");
     }
-    utils::g_log << endl;
+    log << endl;
 }
 }

@@ -2,17 +2,23 @@
 
 #include "../options/plugin.h"
 
-#include "../utils/logging.h"
-
 #include <iostream>
 
 using namespace std;
 
 namespace merge_and_shrink {
+MergeStrategyFactory::MergeStrategyFactory(const options::Options &options)
+    : log(utils::get_log_from_options(options)) {
+}
+
 void MergeStrategyFactory::dump_options() const {
-    utils::g_log << "Merge strategy options:" << endl;
-    utils::g_log << "Type: " << name() << endl;
+    log << "Merge strategy options:" << endl;
+    log << "Type: " << name() << endl;
     dump_strategy_specific_options();
+}
+
+void add_merge_strategy_options_to_parser(options::OptionParser &parser) {
+    utils::add_log_options_to_parser(parser);
 }
 
 static options::PluginTypePlugin<MergeStrategyFactory> _type_plugin(

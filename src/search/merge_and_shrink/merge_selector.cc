@@ -42,10 +42,10 @@ vector<pair<int, int>> MergeSelector::compute_merge_candidates(
     return merge_candidates;
 }
 
-void MergeSelector::dump_options() const {
-    utils::g_log << "Merge selector options:" << endl;
-    utils::g_log << "Name: " << name() << endl;
-    dump_specific_options();
+void MergeSelector::dump_options(utils::LogProxy &log) const {
+    log << "Merge selector options:" << endl;
+    log << "Name: " << name() << endl;
+    dump_selector_specific_options(log);
 }
 
 static options::PluginTypePlugin<MergeSelector> _type_plugin(

@@ -77,7 +77,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(
         "infinity",
         Bounds("0.0", "infinity"));
     add_cegar_wildcard_option_to_parser(parser);
-    utils::add_verbosity_option_to_parser(parser);
+    utils::add_log_options_to_parser(parser);
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();

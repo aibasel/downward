@@ -125,6 +125,14 @@ after the corresponding tracker issues.
   override this choice.
   <http://issues.fast-downward.org/issue1031>
 
+- For developers: Add option to use a local (configurable) logger instead of
+  the global one.
+  <http://issues.fast-downward.org/issue964>
+  Classes which want to configure the logger (currently only the
+  verbosity level can be configured) should now use the facilities
+  add_log_options_to_parser and get_log_from_options to obtain their
+  local log object.
+
 
 ## Fast Downward 20.06
 

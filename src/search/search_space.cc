@@ -102,21 +102,21 @@ void SearchNode::mark_as_dead_end() {
     info.status = SearchNodeInfo::DEAD_END;
 }
 
-void SearchNode::dump(const TaskProxy &task_proxy) const {
-    utils::g_log << state.get_id() << ": ";
+void SearchNode::dump(const TaskProxy &task_proxy, utils::LogProxy &log) const {
+    log << state.get_id() << ": ";
     task_properties::dump_fdr(state);
     if (info.creating_operator != OperatorID::no_operator) {
         OperatorsProxy operators = task_proxy.get_operators();
         OperatorProxy op = operators[info.creating_operator.get_index()];
-        utils::g_log << " created by " << op.get_name()
-                     << " from " << info.parent_state_id << endl;
+        log << " created by " << op.get_name()
+            << " from " << info.parent_state_id << endl;
     } else {
-        utils::g_log << " no parent" << endl;
+        log << " no parent" << endl;
     }
 }
 
-SearchSpace::SearchSpace(StateRegistry &state_registry)
-    : state_registry(state_registry) {
+SearchSpace::SearchSpace(StateRegistry &state_registry, utils::LogProxy &log)
+    : state_registry(state_registry), log(log) {
 }
 
 SearchNode SearchSpace::get_node(const State &state) {
@@ -147,19 +147,19 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
            a search node without discarding the const qualifier. */
         State state = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[state];
-        utils::g_log << id << ": ";
+        log << id << ": ";
         task_properties::dump_fdr(state);
         if (node_info.creating_operator != OperatorID::no_operator &&
             node_info.parent_state_id != StateID::no_state) {
             OperatorProxy op = operators[node_info.creating_operator.get_index()];
-            utils::g_log << " created by " << op.get_name()
-                         << " from " << node_info.parent_state_id << endl;
+            log << " created by " << op.get_name()
+                << " from " << node_info.parent_state_id << endl;
         } else {
-            utils::g_log << "has no parent" << endl;
+            log << "has no parent" << endl;
         }
     }
 }
 
 void SearchSpace::print_statistics() const {
-    state_registry.print_statistics();
+    state_registry.print_statistics(log);
 }

@@ -105,8 +105,8 @@ string MergeTreeFactoryLinear::name() const {
     return "linear";
 }
 
-void MergeTreeFactoryLinear::dump_tree_specific_options() const {
-    dump_variable_order_type(variable_order_type);
+void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) const {
+    dump_variable_order_type(variable_order_type, log);
 }
 
 void MergeTreeFactoryLinear::add_options_to_parser(

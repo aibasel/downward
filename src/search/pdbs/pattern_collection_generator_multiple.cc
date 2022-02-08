@@ -343,7 +343,7 @@ void add_multiple_options_to_parser(options::OptionParser &parser) {
         "generation is terminated already the first time stagnation_limit is "
         "hit.",
         "true");
-    utils::add_verbosity_option_to_parser(parser);
+    utils::add_log_options_to_parser(parser);
     utils::add_rng_options(parser);
 }
 }

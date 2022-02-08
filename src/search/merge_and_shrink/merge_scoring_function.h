@@ -6,13 +6,17 @@
 
 class TaskProxy;
 
+namespace utils {
+class LogProxy;
+}
+
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeScoringFunction {
 protected:
     bool initialized;
     virtual std::string name() const = 0;
-    virtual void dump_function_specific_options() const {}
+    virtual void dump_function_specific_options(utils::LogProxy &) const {}
 public:
     MergeScoringFunction();
     virtual ~MergeScoringFunction() = default;
@@ -27,7 +31,7 @@ public:
         initialized = true;
     }
 
-    void dump_options() const;
+    void dump_options(utils::LogProxy &log) const;
 };
 }
 

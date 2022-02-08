@@ -120,39 +120,39 @@ string MergeScoringFunctionTotalOrder::name() const {
     return "total order";
 }
 
-void MergeScoringFunctionTotalOrder::dump_function_specific_options() const {
-    utils::g_log << "Atomic transition system order: ";
+void MergeScoringFunctionTotalOrder::dump_function_specific_options(utils::LogProxy &log) const {
+    log << "Atomic transition system order: ";
     switch (atomic_ts_order) {
     case AtomicTSOrder::REVERSE_LEVEL:
-        utils::g_log << "reverse level";
+        log << "reverse level";
         break;
     case AtomicTSOrder::LEVEL:
-        utils::g_log << "level";
+        log << "level";
         break;
     case AtomicTSOrder::RANDOM:
-        utils::g_log << "random";
+        log << "random";
         break;
     }
-    utils::g_log << endl;
+    log << endl;
 
-    utils::g_log << "Product transition system order: ";
+    log << "Product transition system order: ";
     switch (product_ts_order) {
     case ProductTSOrder::OLD_TO_NEW:
-        utils::g_log << "old to new";
+        log << "old to new";
         break;
     case ProductTSOrder::NEW_TO_OLD:
-        utils::g_log << "new to old";
+        log << "new to old";
         break;
     case ProductTSOrder::RANDOM:
-        utils::g_log << "random";
+        log << "random";
         break;
     }
-    utils::g_log << endl;
+    log << endl;
 
-    utils::g_log << "Consider " << (atomic_before_product ?
-                                    "atomic before product" : "product before atomic")
-                 << " transition systems" << endl;
-    utils::g_log << "Random seed: " << random_seed << endl;
+    log << "Consider " << (atomic_before_product ?
+                           "atomic before product" : "product before atomic")
+        << " transition systems" << endl;
+    log << "Random seed: " << random_seed << endl;
 }
 
 void MergeScoringFunctionTotalOrder::add_options_to_parser(

@@ -75,7 +75,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
     add_cegar_wildcard_option_to_parser(parser);
-    utils::add_verbosity_option_to_parser(parser);
+    utils::add_log_options_to_parser(parser);
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();
