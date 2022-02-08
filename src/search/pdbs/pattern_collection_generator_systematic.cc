@@ -205,7 +205,9 @@ void PatternCollectionGeneratorSystematic::build_patterns(
         enqueue_pattern_if_new(pattern);
 
 
-    utils::g_log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
+    }
 
     /*
       Combine patterns in the queue with SGA patterns until all
@@ -235,7 +237,9 @@ void PatternCollectionGeneratorSystematic::build_patterns(
     }
 
     pattern_set.clear();
-    utils::g_log << "Found " << patterns->size() << " interesting patterns." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Found " << patterns->size() << " interesting patterns." << endl;
+    }
 }
 
 void PatternCollectionGeneratorSystematic::build_patterns_naive(
@@ -259,7 +263,9 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
         next_patterns.clear();
     }
 
-    utils::g_log << "Found " << patterns->size() << " patterns." << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Found " << patterns->size() << " patterns." << endl;
+    }
 }
 string PatternCollectionGeneratorSystematic::name() const {
     return "systematic pattern collection generator";

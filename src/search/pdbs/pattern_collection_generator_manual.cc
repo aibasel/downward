@@ -24,7 +24,9 @@ string PatternCollectionGeneratorManual::name() const {
 
 PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
-    utils::g_log << "Manual pattern collection: " << *patterns << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Manual pattern collection: " << *patterns << endl;
+    }
     TaskProxy task_proxy(*task);
     return PatternCollectionInformation(task_proxy, patterns);
 }
