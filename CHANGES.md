@@ -137,7 +137,8 @@ after the corresponding tracker issues.
   unsolvable tasks. 
   <https://issues.fast-downward.org/issue467>
 
-- Fix a bug in checking relaxed solvability when excluding landmarks
+- Fix a bug in checking relaxed solvability when excluding landmarks in the
+  presence of conditional effects.
   <http://issues.fast-downward.org/issue1041>
 
 ## Fast Downward 20.06

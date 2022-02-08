@@ -8,7 +8,6 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../utils/language.h"
 #include "../utils/logging.h"
 
 #include <iostream>
@@ -23,7 +22,7 @@ LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
-    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    const shared_ptr<AbstractTask> &task, Exploration &) {
     TaskProxy task_proxy(*task);
     utils::g_log << "Generating landmarks using Zhu/Givan label propagation\n";
 
@@ -36,7 +35,7 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
         return;
     }
 
-    extract_landmarks(task_proxy, exploration, last_prop_layer);
+    extract_landmarks(task_proxy, last_prop_layer);
 
     if (!use_orders) {
         discard_all_orderings();
@@ -54,9 +53,7 @@ bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
 }
 
 void LandmarkFactoryZhuGivan::extract_landmarks(
-    const TaskProxy &task_proxy, Exploration &exploration,
-    const PropositionLayer &last_prop_layer) {
-    utils::unused_variable(exploration);
+    const TaskProxy &task_proxy, const PropositionLayer &last_prop_layer) {
     State initial_state = task_proxy.get_initial_state();
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
@@ -82,9 +79,6 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             // Add new landmarks
             if (!lm_graph->contains_simple_landmark(lm)) {
                 Landmark landmark({lm}, false, false);
-                assert(initial_state[lm.var].get_value() == lm.value ||
-                       !relaxed_task_solvable(task_proxy, exploration,
-                                              true, landmark));
                 node = &lm_graph->add_landmark(move(landmark));
             } else {
                 node = &lm_graph->get_simple_landmark(lm);
