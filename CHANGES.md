@@ -128,6 +128,10 @@ after the corresponding tracker issues.
 - For users: new LimitedPruning class replaces previous limitation
   options of individual pruning methods
   <http://issues.fast-downward.org/issue1042>
+  A previous command line option using this feature, such as
+  --search "astar(lmcut(),pruning=atom_centric_stubborn_sets(min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))"
+  is now changed to
+  --search "astar(lmcut(),pruning=limited_pruning(pruning=atom_centric_stubborn_sets,min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))
 
 
 ## Fast Downward 20.06
