@@ -27,8 +27,8 @@ void LimitedPruning::prune_operators(
     if (is_pruning_disabled) {
         return;
     }
-    if (min_required_pruning_ratio > 0. &&
-        num_pruning_calls == num_expansions_before_checking_pruning_ratio) {
+    if (num_pruning_calls == num_expansions_before_checking_pruning_ratio &&
+        min_required_pruning_ratio > 0.) {
         double pruning_ratio = (num_successors_before_pruning == 0) ? 1. : 1. - (
             static_cast<double>(num_successors_after_pruning) /
             static_cast<double>(num_successors_before_pruning));
