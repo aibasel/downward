@@ -611,13 +611,8 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
     }
 }
 
-/*
-  Achievers should be calculated as soon as possible, but at latest before
-  calling *mk_acyclic_graph*. This is because *mk_acyclic_graph* clears the
-  *first_achievers* when finding a cycle of only natural orderings to denote
-  that the task is unsolvable.
-*/
 void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
+    assert(!achievers_calculated);
     utils::g_log << "Calculating achievers." << endl;
 
     OperatorsProxy operators = task_proxy.get_operators();
@@ -672,6 +667,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
             }
         }
     }
+    achievers_calculated = true;
 }
 
 void LandmarkFactoryHM::free_unneeded_memory() {

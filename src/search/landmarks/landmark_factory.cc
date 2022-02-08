@@ -132,13 +132,6 @@ void LandmarkFactory::discard_all_orderings() {
     }
 }
 
-/*
-  *mk_acyclic_graph* should only be called after *first_achievers* of the
-  landmarks are set (usually done using *calc_achievers*). This is, because
-  in the case of a cycle of only natural orderings we clear the
-  *first_achievers* and then destroy the cycle, therefore the information would
-  be lost when overwriting *first_achievers* later.
-*/
 void LandmarkFactory::mk_acyclic_graph() {
     unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->get_num_landmarks());
     int removed_edges = 0;
@@ -171,17 +164,15 @@ void LandmarkFactory::remove_first_weakest_cycle_edge(
             break;
         }
     }
+    /*
+      If the weakest ordering in a cycle is natural (or stronger), this
+      indicates that the problem at hand is unsolvable. We signal this by
+      clearing the first achievers of all landmarks present in that cycle.
+      We assert here that (first) achievers were calculated beforehand to make
+      sure that this information is not overwritten later on.
+    */
+    assert(achievers_calculated);
     if (weakest_edge > EdgeType::REASONABLE) {
-        /*
-          If the weakest ordering is natural (or stronger), this means
-          the entire cycle consists of only natural (or stronger)
-          orderings which indicates that the task is unsolvable. We
-          signal this by clearing the *first_achievers* of all landmarks
-          in the cycle.
-          Note that *calc_achievers* should never be called after
-          *mk_acyclic_graph* because of this, because otherwise this
-          information is lost.
-        */
         for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
              it2 != path.end(); ++it2) {
             it2->first->get_landmark().first_achievers.clear();

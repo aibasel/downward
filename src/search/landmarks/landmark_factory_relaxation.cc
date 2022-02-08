@@ -77,14 +77,9 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     return false;
 }
 
-/*
-  Achievers should be calculated as soon as possible, but at latest before
-  calling *mk_acyclic_graph*. This is because *mk_acyclic_graph* clears the
-  *first_achievers* when finding a cycle of only natural orderings to denote
-  that the task is unsolvable.
-*/
 void LandmarkFactoryRelaxation::calc_achievers(
     const TaskProxy &task_proxy, Exploration &exploration) {
+    assert(!achievers_calculated);
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lm_node : lm_graph->get_nodes()) {
         Landmark &landmark = lm_node->get_landmark();
@@ -109,6 +104,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
             }
         }
     }
+    achievers_calculated = true;
 }
 
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(

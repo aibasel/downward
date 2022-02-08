@@ -39,9 +39,14 @@ public:
     virtual bool computes_reasonable_orders() const = 0;
     virtual bool supports_conditional_effects() const = 0;
 
+    bool achievers_are_calculated() const {
+        return achievers_calculated;
+    }
+
 protected:
     LandmarkFactory() = default;
     std::shared_ptr<LandmarkGraph> lm_graph;
+    bool achievers_calculated = false;
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
