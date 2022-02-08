@@ -74,5 +74,5 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     return make_shared<LimitedPruning>(opts);
 }
 
-static Plugin<PruningMethod> _plugin("limited", _parse);
+static Plugin<PruningMethod> _plugin("limited_pruning", _parse);
 }
