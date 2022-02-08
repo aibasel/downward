@@ -191,7 +191,7 @@ SearchStatus EagerSearch::step() {
           TODO: When preferred operators are in use, a preferred operator will be
           considered by the preferred operator queues even when it is pruned.
         */
-        pruning_method->prune_op_ids(s, applicable_ops);
+        pruning_method->prune_operators(s, applicable_ops);
     }
 
     // This evaluates the expanded state (again) to get preferred ops

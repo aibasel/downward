@@ -22,7 +22,7 @@ void LimitedPruning::initialize(const shared_ptr<AbstractTask> &task) {
     utils::g_log << "pruning method: limited" << endl;
 }
 
-void LimitedPruning::prune_operators(
+void LimitedPruning::prune(
     const State &state, vector<OperatorID> &op_ids) {
     if (is_pruning_disabled) {
         return;

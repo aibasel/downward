@@ -16,7 +16,7 @@ class LimitedPruning : public PruningMethod {
     int num_pruning_calls;
     bool is_pruning_disabled;
 
-    virtual void prune_operators(
+    virtual void prune(
         const State &state, std::vector<OperatorID> &op_ids) override;
 public:
     explicit LimitedPruning(const options::Options &opts);

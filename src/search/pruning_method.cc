@@ -20,12 +20,12 @@ void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
     num_successors_after_pruning = 0;
 }
 
-void PruningMethod::prune_op_ids(
+void PruningMethod::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
     assert(!task_properties::is_goal_state(TaskProxy(*task), state));
     timer.resume();
     int num_ops_before_pruning = op_ids.size();
-    prune_operators(state, op_ids);
+    prune(state, op_ids);
     num_successors_before_pruning += num_ops_before_pruning;
     num_successors_after_pruning += op_ids.size();
     timer.stop();

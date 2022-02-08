@@ -101,7 +101,7 @@ bool StubbornSets::mark_as_stubborn(int op_no) {
     return false;
 }
 
-void StubbornSets::prune_operators(
+void StubbornSets::prune(
     const State &state, vector<OperatorID> &op_ids) {
     // Clear stubborn set from previous call.
     stubborn.assign(num_operators, false);
