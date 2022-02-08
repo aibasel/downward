@@ -35,7 +35,7 @@ after the corresponding tracker issues.
   We unified the classes GlobalState and State into a new class also called
   State. This removed a lot of code duplication and hacks from the code.
   A description of the new class can be found in the wiki:
-  <http://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
+  <https://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
 
 - For developers: introduce class for delete-relaxation based landmark
   factories and move usage of exploration object to subclasses of
@@ -148,7 +148,7 @@ Highlights:
 - The Vagrant distribution of the planner now includes LP support
   using the SoPlex and/or CPLEX solvers out of the box if they are
   made available when the virtual machine is first provisioned. See
-  <http://www.fast-downward.org/QuickStart> for more information.
+  <https://www.fast-downward.org/QuickStart> for more information.
 
 - A long-standing bug in the computation of derived predicates has
   been fixed. Thanks to everyone who provided bug reports for their
@@ -175,12 +175,12 @@ Details:
   We merged the code for the SoCS 2020 paper "An Atom-Centric
   Perspective on Stubborn Sets"
   (<https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf>). See
-  <http://www.fast-downward.org/Doc/PruningMethod>.
+  <https://www.fast-downward.org/Doc/PruningMethod>.
 
 - Remove deprecated merge strategy aliases `merge_linear` and `merge_dfp`.
   The deprecated merge strategy aliases `merge_linear` for linear
   merge strategies and `merge_dfp` for the DFP merge strategy are no
-  longer available. See http://www.fast-downward.org/Doc/MergeStrategy
+  longer available. See https://www.fast-downward.org/Doc/MergeStrategy
   for equivalent command line options to use these merge strategies.
 
 - For developers: use global logging mechanism for all output.
@@ -238,7 +238,7 @@ Details:
   The way we recommend building OSI now links dynamically against the
   solvers and uses zlib. If your existing OSI installation stops
   working, try installing zlib (sudo apt install zlib1g-dev) or
-  re-install OSI (http://www.fast-downward.org/LPBuildInstructions).
+  re-install OSI (https://www.fast-downward.org/LPBuildInstructions).
 
 - merge-and-shrink: remove trivial factors
   <https://issues.fast-downward.org/issue914>
