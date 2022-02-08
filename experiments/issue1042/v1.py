@@ -18,11 +18,11 @@ SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue1042-v1"]
 CONFIGS = [
-    IssueConfig(f'astar-lmcut', ['--search', f'astar(lmcut())']),
-    IssueConfig(f'astar-lmcut-sssimple', ['--search', f'astar(lmcut(),pruning=stubborn_sets_simple)']),
-    IssueConfig(f'astar-lmcut-sssimple-limited', ['--search', f'astar(lmcut(),pruning=limited(pruning=stubborn_sets_simple,min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))']),
-    IssueConfig(f'astar-lmcut-ssatom', ['--search', f'astar(lmcut(),pruning=atom_centric_stubborn_sets)']),
-    IssueConfig(f'astar-lmcut-ssatom-limited', ['--search', f'astar(lmcut(),pruning=limited(pruning=atom_centric_stubborn_sets,min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))']),
+    IssueConfig(f'astar-lmcut', ['--search', f'astar(lmcut())'], driver_options=['--search-time-limit', '5m']),
+    IssueConfig(f'astar-lmcut-sssimple', ['--search', f'astar(lmcut(),pruning=stubborn_sets_simple)'], driver_options=['--search-time-limit', '5m']),
+    IssueConfig(f'astar-lmcut-sssimple-limited', ['--search', f'astar(lmcut(),pruning=limited(pruning=stubborn_sets_simple,min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))'], driver_options=['--search-time-limit', '5m']),
+    IssueConfig(f'astar-lmcut-ssatom', ['--search', f'astar(lmcut(),pruning=atom_centric_stubborn_sets)'], driver_options=['--search-time-limit', '5m']),
+    IssueConfig(f'astar-lmcut-ssatom-limited', ['--search', f'astar(lmcut(),pruning=limited(pruning=atom_centric_stubborn_sets,min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))'], driver_options=['--search-time-limit', '5m']),
 ]
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
