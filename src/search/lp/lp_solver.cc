@@ -383,12 +383,7 @@ void LPSolver::set_variable_upper_bound(int index, double bound) {
 }
 
 void LPSolver::set_mip_gap(double gap) {
-    //try {
-        lp::set_mip_gap(lp_solver.get(), gap);
-    /*
-    } catch (TODO) {
-    }
-    */
+    lp::set_mip_gap(lp_solver.get(), gap);
 }
 
 void LPSolver::solve() {

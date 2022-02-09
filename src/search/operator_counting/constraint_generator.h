@@ -10,8 +10,8 @@ class AbstractTask;
 class State;
 
 namespace lp {
-class LPSolver;
 class LinearProgram;
+class LPSolver;
 }
 
 namespace operator_counting {

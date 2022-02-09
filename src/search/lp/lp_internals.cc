@@ -147,22 +147,12 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
     }
 }
 
-void set_mip_gap(OsiSolverInterface *lp_solver, double gap) {
-#ifdef COIN_HAS_CPX
-    {
-        auto *cpx_solver = dynamic_cast<OsiCpxSolverInterface *>(lp_solver);
-        assert(cpx_solver);
+void set_mip_gap(OsiSolverInterface *lp_solver, double relative_gap) {
+    auto *cpx_solver = dynamic_cast<OsiCpxSolverInterface *>(lp_solver);
+    if (cpx_solver) {
         CPXsetdblparam(cpx_solver->getEnvironmentPtr(),
-                       CPXPARAM_MIP_Tolerances_MIPGap, gap);
+                       CPXPARAM_MIP_Tolerances_MIPGap, relative_gap);
     }
-#endif
-#ifdef COIN_HAS_SPX
-    {
-        auto *spx_solver = dynamic_cast<OsiSpxSolverInterface *>(lp_solver);
-        assert(spx_solver);
-        // TODO
-    }
-#endif
 }
 
 NO_RETURN
