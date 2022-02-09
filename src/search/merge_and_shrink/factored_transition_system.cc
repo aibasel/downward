@@ -43,7 +43,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     vector<unique_ptr<Distances>> &&distances,
     const bool compute_init_distances,
     const bool compute_goal_distances,
-    utils::Verbosity verbosity)
+    utils::LogProxy &log)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
       mas_representations(move(mas_representations)),
@@ -54,7 +54,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     for (size_t index = 0; index < this->transition_systems.size(); ++index) {
         if (compute_init_distances || compute_goal_distances) {
             this->distances[index]->compute_distances(
-                compute_init_distances, compute_goal_distances, verbosity);
+                compute_init_distances, compute_goal_distances, log);
         }
         assert(is_component_valid(index));
     }
@@ -129,7 +129,7 @@ void FactoredTransitionSystem::apply_label_mapping(
 bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
-    utils::Verbosity verbosity) {
+    utils::LogProxy &log) {
     assert(is_component_valid(index));
 
     int new_num_states = state_equivalence_relation.size();
@@ -141,13 +141,13 @@ bool FactoredTransitionSystem::apply_abstraction(
         transition_systems[index]->get_size(), state_equivalence_relation);
 
     transition_systems[index]->apply_abstraction(
-        state_equivalence_relation, abstraction_mapping, verbosity);
+        state_equivalence_relation, abstraction_mapping, log);
     if (compute_init_distances || compute_goal_distances) {
         distances[index]->apply_abstraction(
             state_equivalence_relation,
             compute_init_distances,
             compute_goal_distances,
-            verbosity);
+            log);
     }
     mas_representations[index]->apply_abstraction_to_lookup_table(
         abstraction_mapping);
@@ -161,7 +161,7 @@ bool FactoredTransitionSystem::apply_abstraction(
 int FactoredTransitionSystem::merge(
     int index1,
     int index2,
-    utils::Verbosity verbosity) {
+    utils::LogProxy &log) {
     assert(is_component_valid(index1));
     assert(is_component_valid(index2));
     transition_systems.push_back(
@@ -169,7 +169,7 @@ int FactoredTransitionSystem::merge(
             *labels,
             *transition_systems[index1],
             *transition_systems[index2],
-            verbosity));
+            log));
     distances[index1] = nullptr;
     distances[index2] = nullptr;
     transition_systems[index1] = nullptr;
@@ -186,7 +186,7 @@ int FactoredTransitionSystem::merge(
     // Restore the invariant that distances are computed.
     if (compute_init_distances || compute_goal_distances) {
         distances[new_index]->compute_distances(
-            compute_init_distances, compute_goal_distances, verbosity);
+            compute_init_distances, compute_goal_distances, log);
     }
     --num_active_entries;
     assert(is_component_valid(new_index));
@@ -200,23 +200,23 @@ FactoredTransitionSystem::extract_factor(int index) {
                      move(distances[index]));
 }
 
-void FactoredTransitionSystem::statistics(int index) const {
+void FactoredTransitionSystem::statistics(int index, utils::LogProxy &log) const {
     assert(is_component_valid(index));
     const TransitionSystem &ts = *transition_systems[index];
-    ts.statistics();
+    ts.statistics(log);
     const Distances &dist = *distances[index];
-    dist.statistics();
+    dist.statistics(log);
 }
 
-void FactoredTransitionSystem::dump(int index) const {
+void FactoredTransitionSystem::dump(int index, utils::LogProxy &log) const {
     assert_index_valid(index);
-    transition_systems[index]->dump_labels_and_transitions();
-    mas_representations[index]->dump();
+    transition_systems[index]->dump_labels_and_transitions(log);
+    mas_representations[index]->dump(log);
 }
 
-void FactoredTransitionSystem::dump() const {
+void FactoredTransitionSystem::dump(utils::LogProxy &log) const {
     for (int index : *this) {
-        dump(index);
+        dump(index, log);
     }
 }
 

@@ -124,11 +124,30 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
     }
 }
 
-// heuristic computation
-void Exploration::setup_exploration_queue(const State &state,
-                                          const vector<FactPair> &excluded_props,
-                                          const unordered_set<int> &excluded_op_ids,
-                                          bool use_h_max) {
+/*
+  This function initializes the priority queue and the information associated
+  with propositions and unary operators for the relaxed exploration. Unary
+  operators that are not allowed to be applied due to exclusions are marked by
+  setting their *h_add_cost* to -2 (sigh). Similarly, the *h_add_cost* of
+  excluded unary propositions is set to -2.
+
+  *excluded_op_ids* should contain at least the operators that achieve an
+  excluded proposition unconditionally. There are two contexts where
+  *compute_reachability_with_excludes()* (and hence this function) is used:
+  (a) in *LandmarkFactoryRelaxation::relaxed_task_solvable()* where indeed
+      all operators are excluded if they achieve an excluded proposition
+      unconditionally; and
+  (b) in *LandmarkFactoryRelaxation::is_causal_landmark()* where
+      *excluded_props* is empty and hence no operators achieve an excluded
+      proposition. (*excluded_op_ids* "additionally" contains operators that
+      have a landmark as their precondition in this context.)
+
+  TODO: issue1045 aims at moving the logic to exclude operators that achieve
+   excluded propositions here to consistently do so in all contexts.
+*/
+void Exploration::setup_exploration_queue(
+    const State &state, const vector<FactPair> &excluded_props,
+    const unordered_set<int> &excluded_op_ids, bool use_h_max) {
     prop_queue.clear();
 
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
@@ -155,8 +174,8 @@ void Exploration::setup_exploration_queue(const State &state,
     // Initialize operator data, deal with precondition-free operators/axioms.
     for (ExUnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.precondition.size();
-        if (!excluded_op_ids.empty() &&
-            (op.effect->h_add_cost == -2 || excluded_op_ids.count(op.op_or_axiom_id))) {
+        if (op.effect->h_add_cost == -2
+            || excluded_op_ids.count(op.op_or_axiom_id)) {
             op.h_add_cost = -2; // operator will not be applied during relaxed exploration
             continue;
         }
