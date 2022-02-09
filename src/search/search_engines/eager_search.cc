@@ -28,7 +28,7 @@ EagerSearch::EagerSearch(const Options &opts)
       f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
-      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning", nullptr)) {
+      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -99,17 +99,13 @@ void EagerSearch::initialize() {
 
     print_initial_evaluator_values(eval_context);
 
-    if (pruning_method) {
-        pruning_method->initialize(task);
-    }
+    pruning_method->initialize(task);
 }
 
 void EagerSearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
-    if (pruning_method) {
-        pruning_method->print_statistics();
-    }
+    pruning_method->print_statistics();
 }
 
 SearchStatus EagerSearch::step() {
@@ -179,13 +175,11 @@ SearchStatus EagerSearch::step() {
     vector<OperatorID> applicable_ops;
     successor_generator.generate_applicable_ops(s, applicable_ops);
 
-    if (pruning_method) {
-        /*
-          TODO: When preferred operators are in use, a preferred operator will be
-          considered by the preferred operator queues even when it is pruned.
-        */
-        pruning_method->prune_operators(s, applicable_ops);
-    }
+    /*
+      TODO: When preferred operators are in use, a preferred operator will be
+      considered by the preferred operator queues even when it is pruned.
+    */
+    pruning_method->prune_operators(s, applicable_ops);
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);

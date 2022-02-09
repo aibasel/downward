@@ -312,6 +312,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME NULL_PRUNING_METHOD
+    HELP "Pruning method that does nothing"
+    SOURCES
+        pruning/null_pruning_method
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
     NAME LIMITED_PRUNING
     HELP "Method for limiting another pruning method"
     SOURCES
@@ -365,7 +373,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search
-    DEPENDS ORDERED_SET SUCCESSOR_GENERATOR
+    DEPENDS NULL_PRUNING_METHOD ORDERED_SET SUCCESSOR_GENERATOR
     DEPENDENCY_ONLY
 )
 

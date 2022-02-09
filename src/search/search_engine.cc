@@ -131,7 +131,7 @@ void SearchEngine::add_pruning_option(OptionParser &parser) {
         "Pruning methods can prune or reorder the set of applicable operators in "
         "each state and thereby influence the number and order of successor states "
         "that are considered.",
-        options::OptionParser::NONE);
+        "null()");
 }
 
 void SearchEngine::add_options_to_parser(OptionParser &parser) {
