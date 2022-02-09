@@ -106,6 +106,12 @@ class Exploration {
 public:
     explicit Exploration(const TaskProxy &task_proxy);
 
+    /*
+      Computes the h_max costs (stored in *lvl_var*) for the problem when
+      excluding propositions in *excluded_props* and operators in
+      *excluded_op_ids*. The values are only exact in the absence of conditional
+      effects, otherwise they are an admissible approximation.
+    */
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
                                             std::vector<utils::HashMap<FactPair, int>> &lvl_op,
                                             bool level_out,

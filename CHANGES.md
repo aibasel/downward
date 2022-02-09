@@ -137,6 +137,14 @@ after the corresponding tracker issues.
   unsolvable tasks. 
   <https://issues.fast-downward.org/issue467>
 
+- Remove a failing assertion in the lm_zg landmark factory. The issue was 
+  triggered by an overly optimistic approximation of relaxed reachability in 
+  the presence of conditional effects. While the assertion failed, this did
+  not affect soundness of the other places where the same function is used. 
+  Nevertheless, we changed the approximation to become stricter which can 
+  lead to lm_rhw, lm_zg, and lm_exhaust finding more landmarks and landmark
+  orderings.
+  <https://issues.fast-downward.org/issue1041>
 
 ## Fast Downward 20.06
 
