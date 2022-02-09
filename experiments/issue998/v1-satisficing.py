@@ -26,10 +26,10 @@ REPO = os.environ["DOWNWARD_REPO"]
 if common_setup.is_running_on_cluster():
     SUITE = common_setup.DEFAULT_SATISFICING_SUITE
     ENVIRONMENT = BaselSlurmEnvironment(
-        partition="infai_1",
+        partition="infai_2",
         email="salome.eriksson@unibas.ch",
-        export=["PATH", "DOWNWARD_BENCHMARKS"],
-    )
+        setup='export PATH=/scicore/soft/apps/binutils/2.32-GCCcore-8.3.0/bin:/scicore/soft/apps/CMake/3.15.3-GCCcore-8.3.0/bin:/scicore/soft/apps/cURL/7.66.0-GCCcore-8.3.0/bin:/scicore/soft/apps/bzip2/1.0.8-GCCcore-8.3.0/bin:/scicore/soft/apps/ncurses/6.1-GCCcore-8.3.0/bin:/scicore/soft/apps/GCCcore/8.3.0/bin:/infai/sieverss/repos/bin:/infai/sieverss/local:/export/soft/lua_lmod/centos7/lmod/lmod/libexec:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:$PATH\nexport LD_LIBRARY_PATH=/scicore/soft/apps/binutils/2.32-GCCcore-8.3.0/lib:/scicore/soft/apps/cURL/7.66.0-GCCcore-8.3.0/lib:/scicore/soft/apps/bzip2/1.0.8-GCCcore-8.3.0/lib:/scicore/soft/apps/zlib/1.2.11-GCCcore-8.3.0/lib:/scicore/soft/apps/ncurses/6.1-GCCcore-8.3.0/lib:/scicore/soft/apps/GCCcore/8.3.0/lib64:/scicore/soft/apps/GCCcore/8.3.0/lib')
+
 else:
     SUITE = common_setup.IssueExperiment.DEFAULT_TEST_SUITE
     ENVIRONMENT = LocalEnvironment(processes=2)
