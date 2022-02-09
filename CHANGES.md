@@ -146,6 +146,10 @@ after the corresponding tracker issues.
   orderings.
   <https://issues.fast-downward.org/issue1041>
 
+- Fix a bug where the Zhu/Givan landmark factory lead to a crash on relaxed
+  unsolvable tasks due to returning an empty landmark graph.
+  <https://issues.fast-downward.org/issue998>
+
 ## Fast Downward 20.06
 
 Released on July 26, 2020.
