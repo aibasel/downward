@@ -125,16 +125,16 @@ after the corresponding tracker issues.
   override this choice.
   <http://issues.fast-downward.org/issue1031>
 
-- For users: delete-relation constraints can now be used in the
-  operator-counting framework. Additionally, we fix a bug which
-  induced inadmissible heuristic values when using CPLEX for optimal
-  planning with large action costs and/or long plans (total costs
-  starting from 10'000 might be affected).
-  <http://issues.fast-downward.org/issue983>
-  The constraints defined by Imai and Fukunaga (JAIR 2015) encode
+- Delete-relation constraints can now be used in the operator-counting
+  framework. The constraints defined by Imai and Fukunaga (JAIR 2015) encode
   different relaxations of the delete-relaxation heuristic.
   For details, see our documentation.
   <http://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints>
+  Additionally, we fixed a bug which induced inadmissible
+  heuristic values when using CPLEX for optimal planning with large action
+  costs and/or long plans (only operator-counting heuristics with integer
+  variables and tasks with total costs starting from 10'000 were affected).
+  <http://issues.fast-downward.org/issue983>
 
 
 ## Fast Downward 20.06
