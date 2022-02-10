@@ -241,11 +241,11 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Delete relaxation constraints",
         "Operator-counting constraints based on the delete relaxation. By "
-        "default the constraints encode an easy-to-compute relaxation of h^+. "
+        "default the constraints encode an easy-to-compute relaxation of h^+^. "
         "If both use_time_vars and use_integer_vars are set to true and this "
         "is the only constriant in an operator-counting heursitic with "
         "integer variables for the operator counts, the resulting heuristic "
-        "is the optimal delete-relaxation heuristic h^+. "
+        "is the optimal delete-relaxation heuristic h^+^. "
         "For details, see" + utils::format_journal_reference(
             {"Tatsuya Imai", "Alex Fukunaga"},
             "On a practical, integer-linear programming model for delete-free"
