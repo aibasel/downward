@@ -16,6 +16,7 @@ namespace pdbs {
 PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
     : PatternGenerator(opts), pattern(opts.get_list<int>("pattern")) {
 }
+
 string PatternGeneratorManual::name() const {
     return "manual pattern generator";
 }

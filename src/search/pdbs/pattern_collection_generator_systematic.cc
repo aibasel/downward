@@ -267,6 +267,7 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
         log << "Found " << patterns->size() << " patterns." << endl;
     }
 }
+
 string PatternCollectionGeneratorSystematic::name() const {
     return "systematic pattern collection generator";
 }
