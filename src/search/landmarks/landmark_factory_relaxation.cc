@@ -15,10 +15,11 @@ void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask
     postprocess(task_proxy, exploration);
 }
 
-void LandmarkFactoryRelaxation::postprocess(const TaskProxy &task_proxy, Exploration &exploration) {
+void LandmarkFactoryRelaxation::postprocess(
+    const TaskProxy &task_proxy, Exploration &exploration) {
     lm_graph->set_landmark_ids();
-    mk_acyclic_graph();
     calc_achievers(task_proxy, exploration);
+    mk_acyclic_graph();
 }
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
@@ -76,7 +77,9 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     return false;
 }
 
-void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
+void LandmarkFactoryRelaxation::calc_achievers(
+    const TaskProxy &task_proxy, Exploration &exploration) {
+    assert(!achievers_calculated);
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lm_node : lm_graph->get_nodes()) {
         Landmark &landmark = lm_node->get_landmark();
@@ -101,6 +104,7 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
             }
         }
     }
+    achievers_calculated = true;
 }
 
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(

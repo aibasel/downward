@@ -153,12 +153,17 @@ after the corresponding tracker issues.
   framework. The constraints defined by Imai and Fukunaga (JAIR 2015) encode
   different relaxations of the delete-relaxation heuristic.
   For details, see our documentation.
-  <http://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints>
+  <https://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints>
   Additionally, we fixed a bug which induced inadmissible
   heuristic values when using CPLEX for optimal planning with large action
   costs and/or long plans (only operator-counting heuristics with integer
   variables and tasks with total costs starting from 10'000 were affected).
-  <http://issues.fast-downward.org/issue983>
+  <https://issues.fast-downward.org/issue983>
+
+- The landmark factories can handle cycles of natural orderings without
+  crashing. Since the planning task is unsolvable in these cases, they 
+  signal this by clearing the first achievers of the involved landmarks.
+  <https://issues.fast-downward.org/issue937>
 
 
 ## Fast Downward 20.06

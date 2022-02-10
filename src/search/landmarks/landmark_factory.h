@@ -39,9 +39,14 @@ public:
     virtual bool computes_reasonable_orders() const = 0;
     virtual bool supports_conditional_effects() const = 0;
 
+    bool achievers_are_calculated() const {
+        return achievers_calculated;
+    }
+
 protected:
     LandmarkFactory() = default;
     std::shared_ptr<LandmarkGraph> lm_graph;
+    bool achievers_calculated = false;
 
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
@@ -64,9 +69,9 @@ private:
 
     int loop_acyclic_graph(LandmarkNode &lmn,
                            std::unordered_set<LandmarkNode *> &acyclic_node_set);
-    bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                         std::list<std::pair<LandmarkNode *, EdgeType>> &path,
-                                         std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
+    void remove_first_weakest_cycle_edge(
+        std::list<std::pair<LandmarkNode *, EdgeType>> &path,
+        std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
     void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 

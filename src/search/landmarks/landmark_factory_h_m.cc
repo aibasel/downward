@@ -598,8 +598,8 @@ void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
     if (!use_orders)
         discard_all_orderings();
 
-    mk_acyclic_graph();
     calc_achievers(task_proxy);
+    mk_acyclic_graph();
 }
 
 void LandmarkFactoryHM::discard_conjunctive_landmarks() {
@@ -612,6 +612,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
 }
 
 void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
+    assert(!achievers_calculated);
     utils::g_log << "Calculating achievers." << endl;
 
     OperatorsProxy operators = task_proxy.get_operators();
@@ -666,6 +667,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
             }
         }
     }
+    achievers_calculated = true;
 }
 
 void LandmarkFactoryHM::free_unneeded_memory() {

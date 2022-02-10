@@ -21,6 +21,7 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<Abs
     utils::g_log << "Building a landmark graph with reasonable orders." << endl;
 
     lm_graph = lm_factory->compute_lm_graph(task);
+    achievers_calculated = lm_factory->achievers_are_calculated();
 
     TaskProxy task_proxy(*task);
     utils::g_log << "approx. reasonable orders" << endl;
