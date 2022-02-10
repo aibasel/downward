@@ -236,7 +236,7 @@ unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
         unsolvable = true;
         if (log.is_at_least_verbose()) {
             log << "projection onto pattern " << pdb->get_pattern()
-                         << " is unsolvable" << endl;
+                << " is unsolvable" << endl;
         }
     } else {
         if (log.is_at_least_verbose()) {
@@ -308,7 +308,7 @@ FlawList CEGAR::apply_plan(int collection_index, vector<int> &current_state) con
     const vector<vector<OperatorID>> &plan = pattern_info.get_plan();
     if (log.is_at_least_verbose()) {
         log << "executing plan for pattern "
-                     << pattern_info.get_pattern() << ": ";
+            << pattern_info.get_pattern() << ": ";
     }
     for (const vector<OperatorID> &equivalent_ops : plan) {
         FlawList step_flaws;
@@ -508,8 +508,8 @@ void CEGAR::refine(const FlawList &flaws) {
 
     if (log.is_at_least_verbose()) {
         log << "chosen flaw: pattern "
-                     << pattern_collection[flaw.collection_index]->get_pattern()
-                     << " with a flaw on " << flaw.variable << endl;
+            << pattern_collection[flaw.collection_index]->get_pattern()
+            << " with a flaw on " << flaw.variable << endl;
     }
 
     int collection_index = flaw.collection_index;
@@ -523,7 +523,7 @@ void CEGAR::refine(const FlawList &flaws) {
         assert(pattern_collection[other_index] != nullptr);
         if (log.is_at_least_verbose()) {
             log << "var" << var << " is already in pattern "
-                         << pattern_collection[other_index]->get_pattern() << endl;
+                << pattern_collection[other_index]->get_pattern() << endl;
         }
         if (can_merge_patterns(collection_index, other_index)) {
             if (log.is_at_least_verbose()) {
@@ -536,7 +536,7 @@ void CEGAR::refine(const FlawList &flaws) {
         // Variable is not yet in the collection.
         if (log.is_at_least_verbose()) {
             log << "var" << var
-                         << " is not in the collection yet" << endl;
+                << " is not in the collection yet" << endl;
         }
         if (can_add_variable_to_pattern(collection_index, var)) {
             if (log.is_at_least_verbose()) {
@@ -550,7 +550,7 @@ void CEGAR::refine(const FlawList &flaws) {
     if (!added_var) {
         if (log.is_at_least_verbose()) {
             log << "could not add var/merge pattern containing var "
-                         << "due to size limits, blacklisting var" << endl;
+                << "due to size limits, blacklisting var" << endl;
         }
         blacklisted_variables.insert(var);
     }
@@ -597,7 +597,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         if (concrete_solution_index != -1) {
             if (log.is_at_least_normal()) {
                 log << "task solved during computation of abstraction"
-                             << endl;
+                    << endl;
             }
             break;
         }
@@ -605,7 +605,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         if (flaws.empty()) {
             if (log.is_at_least_normal()) {
                 log << "flaw list empty. No further refinements possible"
-                             << endl;
+                    << endl;
             }
             break;
         }

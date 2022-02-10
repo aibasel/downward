@@ -166,7 +166,7 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
         const auto &collection = pattern_collections[i];
         if (log.is_at_least_debug()) {
             log << "evaluate pattern collection " << (i + 1) << " of "
-                         << pattern_collections.size() << endl;
+                << pattern_collections.size() << endl;
         }
         double fitness = 0;
         bool pattern_valid = true;

@@ -45,7 +45,7 @@ void PatternCollectionGeneratorMultiple::check_blacklist_trigger_timer(
         time_point_of_last_new_pattern = timer.get_elapsed_time();
         if (log.is_at_least_normal()) {
             log << "given percentage of total time limit "
-                         << "exhausted; enabling blacklisting." << endl;
+                << "exhausted; enabling blacklisting." << endl;
         }
     }
 }
@@ -66,8 +66,8 @@ unordered_set<int> PatternCollectionGeneratorMultiple::get_blacklisted_variables
             non_goal_variables.begin(), non_goal_variables.begin() + blacklist_size);
         if (log.is_at_least_debug()) {
             log << "blacklisting " << blacklist_size << " out of "
-                         << non_goal_variables.size()
-                         << " non-goal variables: ";
+                << non_goal_variables.size()
+                << " non-goal variables: ";
             for (int var : blacklisted_variables) {
                 log << var << ", ";
             }
@@ -133,14 +133,14 @@ bool PatternCollectionGeneratorMultiple::check_for_stagnation(
             if (blacklisting) {
                 if (log.is_at_least_normal()) {
                     log << "stagnation limit reached "
-                                 << "despite blacklisting, terminating"
-                                 << endl;
+                        << "despite blacklisting, terminating"
+                        << endl;
                 }
                 return true;
             } else {
                 if (log.is_at_least_normal()) {
                     log << "stagnation limit reached, "
-                                 << "enabling blacklisting" << endl;
+                        << "enabling blacklisting" << endl;
                 }
                 blacklisting = true;
                 time_point_of_last_new_pattern = timer.get_elapsed_time();
@@ -167,9 +167,9 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::compute_pattern
         log << "max time: " << total_max_time << endl;
         log << "stagnation time limit: " << stagnation_limit << endl;
         log << "timer after which blacklisting is enabled: "
-                     << blacklisting_start_time << endl;
+            << blacklisting_start_time << endl;
         log << "enable blacklisting after stagnation: "
-                     << enable_blacklist_on_stagnation << endl;
+            << enable_blacklist_on_stagnation << endl;
         log.dump_options();
     }
 
@@ -240,10 +240,10 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::compute_pattern
         task_proxy, generated_pdbs);
     if (log.is_at_least_normal()) {
         log << name() << " number of iterations: "
-                     << num_iterations << endl;
+            << num_iterations << endl;
         log << name() << " average time per generator: "
-                     << timer.get_elapsed_time() / num_iterations
-                     << endl;
+            << timer.get_elapsed_time() / num_iterations
+            << endl;
     }
     return result;
 }

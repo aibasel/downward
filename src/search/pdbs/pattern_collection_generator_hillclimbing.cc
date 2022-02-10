@@ -256,7 +256,7 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
         }
         if (count > 0 && log.is_at_least_verbose()) {
             log << "pattern: " << candidate_pdbs[i]->get_pattern()
-                         << " - improvement: " << count << endl;
+                << " - improvement: " << count << endl;
         }
     }
 
@@ -308,7 +308,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
     if (log.is_at_least_normal()) {
         log << "Average operator cost: "
-                     << task_properties::get_average_operator_cost(task_proxy) << endl;
+            << task_properties::get_average_operator_cost(task_proxy) << endl;
     }
 
     const vector<vector<int>> relevant_neighbours =
@@ -351,10 +351,10 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             bool dead_end = init_h == numeric_limits<int>::max();
             if (log.is_at_least_verbose()) {
                 log << "current collection size is "
-                             << current_pdbs->get_size() << endl;
+                    << current_pdbs->get_size() << endl;
                 log << "current initial h value: "
-                             << (dead_end ? "infinite" : to_string(init_h))
-                             << endl;
+                    << (dead_end ? "infinite" : to_string(init_h))
+                    << endl;
             }
             if (dead_end) {
                 if (log.is_at_least_normal()) {
@@ -378,7 +378,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             if (improvement < min_improvement) {
                 if (log.is_at_least_normal()) {
                     log << "Improvement below threshold. Stop hill climbing."
-                                 << endl;
+                        << endl;
                 }
                 break;
             }
@@ -390,7 +390,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             const Pattern &best_pattern = best_pdb->get_pattern();
             if (log.is_at_least_normal()) {
                 log << "found a better pattern with improvement " << improvement
-                             << endl;
+                    << endl;
                 if (log.is_at_least_verbose()) {
                     log << "pattern: " << best_pattern << endl;
                 }
@@ -408,8 +408,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
             if (log.is_at_least_verbose()) {
                 log << "Hill climbing time so far: "
-                             << hill_climbing_timer->get_elapsed_time()
-                             << endl;
+                    << hill_climbing_timer->get_elapsed_time()
+                    << endl;
             }
         }
     } catch (HillClimbingTimeout &) {
@@ -424,7 +424,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
         log << "Hill climbing rejected patterns: " << num_rejected << endl;
         log << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
         log << "Hill climbing time: "
-                     << hill_climbing_timer->get_elapsed_time() << endl;
+            << hill_climbing_timer->get_elapsed_time() << endl;
     }
 
     delete hill_climbing_timer;
