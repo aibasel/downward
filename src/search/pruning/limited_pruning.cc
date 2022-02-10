@@ -43,7 +43,7 @@ void LimitedPruning::prune(
     }
 
     ++num_pruning_calls;
-    pruning_method->prune_operators(state, op_ids);
+    pruning_method->prune(state, op_ids);
 }
 
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
