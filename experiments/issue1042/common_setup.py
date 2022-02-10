@@ -255,7 +255,7 @@ class IssueExperiment(FastDownwardExperiment):
             for rev in revisions:
                 revs.add(rev)
                 for config in configs:
-                    confs.add(config)
+                    confs.add(config.nick)
                     self.add_algorithm(
                         get_algo_nick(rev, config.nick),
                         get_repo_base(),
@@ -265,7 +265,7 @@ class IssueExperiment(FastDownwardExperiment):
                         driver_options=config.driver_options)
 
         self._revisions = list(revs)
-        self._configs = list(confs)
+        self._config_nicks = list(confs)
 
     @classmethod
     def _is_portfolio(cls, config_nick):
@@ -324,8 +324,7 @@ class IssueExperiment(FastDownwardExperiment):
         def make_comparison_tables():
             for rev1, rev2 in itertools.combinations(revisions, 2):
                 compared_configs = []
-                for config in self._configs:
-                    config_nick = config.nick
+                for config_nick in self._config_nicks:
                     compared_configs.append(
                         ("%s-%s" % (rev1, config_nick),
                          "%s-%s" % (rev2, config_nick),
@@ -339,37 +338,6 @@ class IssueExperiment(FastDownwardExperiment):
 
         def publish_comparison_tables():
             for rev1, rev2 in itertools.combinations(revisions, 2):
-                outfile = os.path.join(
-                    self.eval_dir,
-                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
-                subprocess.call(["publish", outfile])
-
-        self.add_step(name, make_comparison_tables)
-        self.add_step(
-            f"publish-{name}", publish_comparison_tables)
-
-    def add_comparison_table_step_for_revision_pairs(
-        self, revision_pairs, name="make-comparison-tables-for-revision-pairs", **kwargs):
-        kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
-
-        def make_comparison_tables():
-            for rev1, rev2 in revision_pairs:
-                compared_configs = []
-                for config in self._configs:
-                    config_nick = config.nick
-                    compared_configs.append(
-                        ("%s-%s" % (rev1, config_nick),
-                         "%s-%s" % (rev2, config_nick),
-                         "Diff (%s)" % config_nick))
-                report = ComparativeReport(compared_configs, **kwargs)
-                outfile = os.path.join(
-                    self.eval_dir,
-                    "%s-%s-%s-compare.%s" % (
-                        self.name, rev1, rev2, report.output_format))
-                report(self.eval_dir, outfile)
-
-        def publish_comparison_tables():
-            for rev1, rev2 in revision_pairs:
                 outfile = os.path.join(
                     self.eval_dir,
                     "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
@@ -417,11 +385,11 @@ class IssueExperiment(FastDownwardExperiment):
                 os.path.join(scatter_dir, rev1 + "-" + rev2, name))
 
         def make_scatter_plots():
-            for config in self._configs:
+            for config_nick in self._config_nicks:
                 for rev1, rev2 in itertools.combinations(self._revisions, 2):
                     for attribute in self.get_supported_attributes(
-                            config.nick, attributes):
-                        make_scatter_plot(config.nick, rev1, rev2, attribute)
+                            config_nick, attributes):
+                        make_scatter_plot(config_nick, rev1, rev2, attribute)
             for nick1, nick2, rev1, rev2, attribute in additional:
                 make_scatter_plot(nick1, rev1, rev2, attribute, config_nick2=nick2)
 
