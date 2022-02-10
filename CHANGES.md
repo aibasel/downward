@@ -133,6 +133,11 @@ after the corresponding tracker issues.
   add_log_options_to_parser and get_log_from_options to obtain their
   local log object.
 
+- All pattern (collection) generators use the local logger instead of g_log
+  <https://issues.fast-downward.org/issue1043>
+  All generators now have an option "verbosity" to set the desired level
+  of output.
+
 
 ## Fast Downward 20.06
 
