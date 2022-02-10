@@ -21,6 +21,7 @@ class LimitedPruning : public PruningMethod {
 public:
     explicit LimitedPruning(const options::Options &opts);
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
+    virtual void print_statistics() const override {}
 };
 }
 
