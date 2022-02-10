@@ -563,7 +563,6 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         log << "max collection size: " << max_collection_size << endl;
         log << "max time: " << max_time << endl;
         log << "wildcard plans: " << use_wildcard_plans << endl;
-        log.dump_options();
         log << "goal variables: ";
         for (const FactPair &goal : this->goals) {
             log << goal.var << ", ";

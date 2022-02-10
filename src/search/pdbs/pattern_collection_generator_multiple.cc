@@ -170,7 +170,6 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::compute_pattern
             << blacklisting_start_time << endl;
         log << "enable blacklisting after stagnation: "
             << enable_blacklist_on_stagnation << endl;
-        log.dump_options();
     }
 
     TaskProxy task_proxy(*task);
