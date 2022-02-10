@@ -23,7 +23,9 @@ string PatternGeneratorManual::name() const {
 PatternInformation PatternGeneratorManual::compute_pattern(
     const shared_ptr<AbstractTask> &task) {
     PatternInformation pattern_info(TaskProxy(*task), move(pattern));
-    utils::g_log << "Manual pattern: " << pattern_info.get_pattern() << endl;
+    if (verbosity >= utils::Verbosity::NORMAL) {
+        utils::g_log << "Manual pattern: " << pattern_info.get_pattern() << endl;
+    }
     return pattern_info;
 }
 
