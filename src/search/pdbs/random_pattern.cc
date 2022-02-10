@@ -15,10 +15,10 @@ using namespace std;
 
 namespace pdbs {
 static bool time_limit_reached(
-    const utils::CountdownTimer &timer, utils::Verbosity verbosity) {
+    const utils::CountdownTimer &timer, utils::LogProxy &log) {
     if (timer.is_expired()) {
-        if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << "Random pattern generation time limit reached" << endl;
+        if (log.is_at_least_normal()) {
+            log << "Random pattern generation time limit reached" << endl;
         }
         return true;
     }
@@ -28,7 +28,7 @@ static bool time_limit_reached(
 Pattern generate_random_pattern(
     int max_pdb_size,
     double max_time,
-    utils::Verbosity verbosity,
+    utils::LogProxy &log,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const TaskProxy &task_proxy,
     int goal_variable,
@@ -39,7 +39,7 @@ Pattern generate_random_pattern(
     visited_vars.insert(current_var);
     VariablesProxy variables = task_proxy.get_variables();
     int pdb_size = variables[current_var].get_domain_size();
-    while (!time_limit_reached(timer, verbosity)) {
+    while (!time_limit_reached(timer, log)) {
         rng->shuffle(cg_neighbors[current_var]);
 
         /*

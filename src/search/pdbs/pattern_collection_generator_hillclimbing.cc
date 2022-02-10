@@ -254,8 +254,8 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
             improvement = count;
             best_pdb_index = i;
         }
-        if (count > 0 && verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "pattern: " << candidate_pdbs[i]->get_pattern()
+        if (count > 0 && log.is_at_least_verbose()) {
+            log << "pattern: " << candidate_pdbs[i]->get_pattern()
                          << " - improvement: " << count << endl;
         }
     }
@@ -306,8 +306,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const TaskProxy &task_proxy) {
     hill_climbing_timer = new utils::CountdownTimer(max_time);
 
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Average operator cost: "
+    if (log.is_at_least_normal()) {
+        log << "Average operator cost: "
                      << task_properties::get_average_operator_cost(task_proxy) << endl;
     }
 
@@ -333,8 +333,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
       guaranteed to be "normalized" in the sense that there are no duplicates
       and patterns are sorted.
     */
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Done calculating initial candidate PDBs" << endl;
+    if (log.is_at_least_normal()) {
+        log << "Done calculating initial candidate PDBs" << endl;
     }
 
     int num_iterations = 0;
@@ -349,16 +349,16 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             ++num_iterations;
             int init_h = current_pdbs->get_value(initial_state);
             bool dead_end = init_h == numeric_limits<int>::max();
-            if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << "current collection size is "
+            if (log.is_at_least_verbose()) {
+                log << "current collection size is "
                              << current_pdbs->get_size() << endl;
-                utils::g_log << "current initial h value: "
+                log << "current initial h value: "
                              << (dead_end ? "infinite" : to_string(init_h))
                              << endl;
             }
             if (dead_end) {
-                if (verbosity >= utils::Verbosity::NORMAL) {
-                    utils::g_log << "Initial state is a dead end. Stop hill climbing." << endl;
+                if (log.is_at_least_normal()) {
+                    log << "Initial state is a dead end. Stop hill climbing." << endl;
                 }
                 break;
             }
@@ -376,8 +376,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             int best_pdb_index = improvement_and_index.second;
 
             if (improvement < min_improvement) {
-                if (verbosity >= utils::Verbosity::NORMAL) {
-                    utils::g_log << "Improvement below threshold. Stop hill climbing."
+                if (log.is_at_least_normal()) {
+                    log << "Improvement below threshold. Stop hill climbing."
                                  << endl;
                 }
                 break;
@@ -388,11 +388,11 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             const shared_ptr<PatternDatabase> &best_pdb =
                 candidate_pdbs[best_pdb_index];
             const Pattern &best_pattern = best_pdb->get_pattern();
-            if (verbosity >= utils::Verbosity::NORMAL) {
-                utils::g_log << "found a better pattern with improvement " << improvement
+            if (log.is_at_least_normal()) {
+                log << "found a better pattern with improvement " << improvement
                              << endl;
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "pattern: " << best_pattern << endl;
+                if (log.is_at_least_verbose()) {
+                    log << "pattern: " << best_pattern << endl;
                 }
             }
             current_pdbs->add_pdb(best_pdb);
@@ -406,24 +406,24 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             // Remove the added PDB from candidate_pdbs.
             candidate_pdbs[best_pdb_index] = nullptr;
 
-            if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << "Hill climbing time so far: "
+            if (log.is_at_least_verbose()) {
+                log << "Hill climbing time so far: "
                              << hill_climbing_timer->get_elapsed_time()
                              << endl;
             }
         }
     } catch (HillClimbingTimeout &) {
-        if (verbosity >= utils::Verbosity::NORMAL) {
-            utils::g_log << "Time limit reached. Abort hill climbing." << endl;
+        if (log.is_at_least_normal()) {
+            log << "Time limit reached. Abort hill climbing." << endl;
         }
     }
 
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Hill climbing iterations: " << num_iterations << endl;
-        utils::g_log << "Hill climbing generated patterns: " << generated_patterns.size() << endl;
-        utils::g_log << "Hill climbing rejected patterns: " << num_rejected << endl;
-        utils::g_log << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
-        utils::g_log << "Hill climbing time: "
+    if (log.is_at_least_normal()) {
+        log << "Hill climbing iterations: " << num_iterations << endl;
+        log << "Hill climbing generated patterns: " << generated_patterns.size() << endl;
+        log << "Hill climbing rejected patterns: " << num_rejected << endl;
+        log << "Hill climbing maximum PDB size: " << max_pdb_size << endl;
+        log << "Hill climbing time: "
                      << hill_climbing_timer->get_elapsed_time() << endl;
     }
 
@@ -448,8 +448,8 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::compute_pat
     }
     current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
         task_proxy, initial_pattern_collection);
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Done calculating initial pattern collection: " << timer << endl;
+    if (log.is_at_least_normal()) {
+        log << "Done calculating initial pattern collection: " << timer << endl;
     }
 
     State initial_state = task_proxy.get_initial_state();

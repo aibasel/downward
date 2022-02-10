@@ -37,7 +37,7 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
         max_collection_size,
         max_time,
         use_wildcard_plans,
-        verbosity,
+        log,
         rng,
         task,
         move(goals));

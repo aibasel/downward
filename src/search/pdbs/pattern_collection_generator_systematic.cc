@@ -205,8 +205,8 @@ void PatternCollectionGeneratorSystematic::build_patterns(
         enqueue_pattern_if_new(pattern);
 
 
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
     }
 
     /*
@@ -237,8 +237,8 @@ void PatternCollectionGeneratorSystematic::build_patterns(
     }
 
     pattern_set.clear();
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Found " << patterns->size() << " interesting patterns." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Found " << patterns->size() << " interesting patterns." << endl;
     }
 }
 
@@ -263,8 +263,8 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
         next_patterns.clear();
     }
 
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Found " << patterns->size() << " patterns." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Found " << patterns->size() << " patterns." << endl;
     }
 }
 string PatternCollectionGeneratorSystematic::name() const {

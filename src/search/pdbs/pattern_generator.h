@@ -5,6 +5,8 @@
 #include "pattern_information.h"
 #include "types.h"
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <string>
 
@@ -17,7 +19,6 @@ class Options;
 
 namespace utils {
 class RandomNumberGenerator;
-enum class Verbosity;
 }
 
 namespace pdbs {
@@ -26,7 +27,7 @@ class PatternCollectionGenerator {
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) = 0;
 protected:
-    const utils::Verbosity verbosity;
+    mutable utils::LogProxy log;
 public:
     explicit PatternCollectionGenerator(const options::Options &opts);
     virtual ~PatternCollectionGenerator() = default;
@@ -40,7 +41,7 @@ class PatternGenerator {
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) = 0;
 protected:
-    const utils::Verbosity verbosity;
+    mutable utils::LogProxy log;
 public:
     explicit PatternGenerator(const options::Options &opts);
     virtual ~PatternGenerator() = default;

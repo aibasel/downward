@@ -4,23 +4,21 @@
 
 #include "../plugin.h"
 
-#include "../utils/logging.h"
-
 using namespace std;
 
 namespace pdbs {
 PatternCollectionGenerator::PatternCollectionGenerator(const options::Options &opts)
-    : verbosity(opts.get<utils::Verbosity>("verbosity")) {
+    : log(utils::get_log_from_options(opts)) {
 }
 
 PatternCollectionInformation PatternCollectionGenerator::generate(
     const shared_ptr<AbstractTask> &task) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating patterns using: " << name() << endl;
+    if (log.is_at_least_normal()) {
+        log << "Generating patterns using: " << name() << endl;
     }
     utils::Timer timer;
     PatternCollectionInformation pci = compute_patterns(task);
-    if (verbosity >= utils::Verbosity::NORMAL) {
+    if (log.is_at_least_normal()) {
         dump_pattern_collection_generation_statistics(
             name(), timer(), pci);
     }
@@ -28,17 +26,17 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
 }
 
 PatternGenerator::PatternGenerator(const options::Options &opts)
-    : verbosity(opts.get<utils::Verbosity>("verbosity")) {
+    : log(utils::get_log_from_options(opts)) {
 }
 
 PatternInformation PatternGenerator::generate(
     const shared_ptr<AbstractTask> &task) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating pattern using: " << name() << endl;
+    if (log.is_at_least_normal()) {
+        log << "Generating pattern using: " << name() << endl;
     }
     utils::Timer timer;
     PatternInformation pattern_info = compute_pattern(task);
-    if (verbosity >= utils::Verbosity::NORMAL) {
+    if (log.is_at_least_normal()) {
         dump_pattern_generation_statistics(
             name(),
             timer.stop(),

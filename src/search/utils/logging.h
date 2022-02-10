@@ -65,6 +65,8 @@ public:
     Verbosity get_verbosity() const {
         return verbosity;
     }
+
+    void dump_options() const;
 };
 
 /*
@@ -112,6 +114,10 @@ public:
 
     bool is_at_least_debug() const {
         return log->get_verbosity() >= Verbosity::DEBUG;
+    }
+
+    void dump_options() const {
+        log->dump_options();
     }
 };
 

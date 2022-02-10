@@ -37,7 +37,7 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
-        verbosity,
+        log,
         rng,
         task,
         goals[0]);

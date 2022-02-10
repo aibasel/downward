@@ -38,10 +38,11 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     const FactPair &goal,
     unordered_set<int> &&) {
     // TODO: add support for blacklisting in single RCG?
+    utils::LogProxy silent_log = utils::get_silent_log();
     Pattern pattern = generate_random_pattern(
         max_pdb_size,
         max_time,
-        utils::Verbosity::SILENT,
+        silent_log,
         rng,
         TaskProxy(*task),
         goal.var,

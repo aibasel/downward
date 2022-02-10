@@ -39,7 +39,7 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
     Pattern pattern = generate_random_pattern(
         max_pdb_size,
         max_time,
-        verbosity,
+        log,
         rng,
         task_proxy,
         goals[0].var,

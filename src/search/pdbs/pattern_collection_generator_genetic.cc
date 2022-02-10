@@ -164,8 +164,8 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
     TaskProxy task_proxy(*task);
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         const auto &collection = pattern_collections[i];
-        if (verbosity >= utils::Verbosity::DEBUG) {
-            utils::g_log << "evaluate pattern collection " << (i + 1) << " of "
+        if (log.is_at_least_debug()) {
+            log << "evaluate pattern collection " << (i + 1) << " of "
                          << pattern_collections.size() << endl;
         }
         double fitness = 0;
@@ -177,8 +177,8 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
             Pattern pattern = transform_to_pattern_normal_form(bitvector);
 
             if (is_pattern_too_large(pattern)) {
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "pattern exceeds the memory limit!" << endl;
+                if (log.is_at_least_verbose()) {
+                    log << "pattern exceeds the memory limit!" << endl;
                 }
                 pattern_valid = false;
                 break;
@@ -186,8 +186,8 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
 
             if (disjoint_patterns) {
                 if (mark_used_variables(pattern, variables_used)) {
-                    if (verbosity >= utils::Verbosity::VERBOSE) {
-                        utils::g_log << "patterns are not disjoint anymore!" << endl;
+                    if (log.is_at_least_verbose()) {
+                        log << "patterns are not disjoint anymore!" << endl;
                     }
                     pattern_valid = false;
                     break;
@@ -209,8 +209,8 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
             // Update the best heuristic found so far.
             if (fitness > best_fitness) {
                 best_fitness = fitness;
-                if (verbosity >= utils::Verbosity::NORMAL) {
-                    utils::g_log << "best_fitness = " << best_fitness << endl;
+                if (log.is_at_least_normal()) {
+                    log << "best_fitness = " << best_fitness << endl;
                 }
                 best_patterns = pattern_collection;
             }
@@ -273,8 +273,8 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm() {
     vector<double> initial_fitness_values;
     evaluate(initial_fitness_values);
     for (int i = 0; i < num_episodes; ++i) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "--------- episode no " << (i + 1) << " ---------" << endl;
+        if (log.is_at_least_verbose()) {
+            log << "--------- episode no " << (i + 1) << " ---------" << endl;
         }
         mutate();
         vector<double> fitness_values;
