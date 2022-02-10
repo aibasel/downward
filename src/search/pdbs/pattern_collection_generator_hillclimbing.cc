@@ -253,11 +253,9 @@ pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
             improvement = count;
             best_pdb_index = i;
         }
-        if (count > 0) {
-            if (verbosity >= utils::Verbosity::VERBOSE) {
-                utils::g_log << "pattern: " << candidate_pdbs[i]->get_pattern()
-                             << " - improvement: " << count << endl;
-            }
+        if (count > 0 && verbosity >= utils::Verbosity::VERBOSE) {
+            utils::g_log << "pattern: " << candidate_pdbs[i]->get_pattern()
+                         << " - improvement: " << count << endl;
         }
     }
 
