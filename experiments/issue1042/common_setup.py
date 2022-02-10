@@ -210,22 +210,22 @@ class IssueExperiment(FastDownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(self, revisions=None, configs=None, path=None, **kwargs):
+    def __init__(self, revisions_and_configs=None, path=None, **kwargs):
         """
 
-        You can either specify both *revisions* and *configs* or none
-        of them. If they are omitted, you will need to call
-        exp.add_algorithm() manually.
+        If given, *revisions_and_configs* must be a non-empty list of
+        pairs (tuple of size 2) of revisions and configs, with the
+        meaning to run all configs on all revisions.
 
-        If *revisions* is given, it must be a non-empty list of
-        revision identifiers, which specify which planner versions to
-        use in the experiment. The same versions are used for
-        translator, preprocessor and search. ::
+        The first element of the pair, revisions, must be a non-empty
+        list of revision identifiers, which specify which planner
+        versions to use in the experiment. The same versions are used
+        for translator, preprocessor and search. ::
 
             IssueExperiment(revisions=["issue123", "4b3d581643"], ...)
 
-        If *configs* is given, it must be a non-empty list of
-        IssueConfig objects. ::
+        The second element of the pair, configs, must be a non-empty
+        list of IssueConfig objects. ::
 
             IssueExperiment(..., configs=[
                 IssueConfig("ff", ["--search", "eager_greedy(ff())"]),
@@ -249,22 +249,23 @@ class IssueExperiment(FastDownwardExperiment):
 
         FastDownwardExperiment.__init__(self, path=path, **kwargs)
 
-        if (revisions and not configs) or (not revisions and configs):
-            raise ValueError(
-                "please provide either both or none of revisions and configs")
+        revs = set()
+        confs = set()
+        for revisions, configs in revisions_and_configs:
+            for rev in revisions:
+                revs.add(rev)
+                for config in configs:
+                    confs.add(config)
+                    self.add_algorithm(
+                        get_algo_nick(rev, config.nick),
+                        get_repo_base(),
+                        rev,
+                        config.component_options,
+                        build_options=config.build_options,
+                        driver_options=config.driver_options)
 
-        for rev in revisions:
-            for config in configs:
-                self.add_algorithm(
-                    get_algo_nick(rev, config.nick),
-                    get_repo_base(),
-                    rev,
-                    config.component_options,
-                    build_options=config.build_options,
-                    driver_options=config.driver_options)
-
-        self._revisions = revisions
-        self._configs = configs
+        self._revisions = list(revs)
+        self._configs = list(confs)
 
     @classmethod
     def _is_portfolio(cls, config_nick):
