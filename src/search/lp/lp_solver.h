@@ -65,7 +65,7 @@ public:
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 
-    std::ostream &dump(std::ostream &stream, double infinity, const LinearProgram *program = nullptr);
+    std::ostream &dump(std::ostream &stream, const LinearProgram *program = nullptr);
 };
 
 struct LPVariable {
@@ -86,13 +86,16 @@ class LinearProgram {
 
     named_vector::NamedVector<LPVariable> variables;
     named_vector::NamedVector<LPConstraint> constraints;
+    double infinity;
 
 public:
     // objective_name is the name of the objective function used when writing the lp to a file.
     LinearProgram(LPObjectiveSense sense,
                   named_vector::NamedVector<LPVariable> &&variables,
-                  named_vector::NamedVector<LPConstraint> &&constraints)
-        : sense(sense), variables(std::move(variables)), constraints(std::move(constraints)) {
+                  named_vector::NamedVector<LPConstraint> &&constraints,
+                  double infinity)
+        : sense(sense), variables(std::move(variables)),
+          constraints(std::move(constraints)), infinity(infinity) {
     }
 
     /*
@@ -103,6 +106,7 @@ public:
     named_vector::NamedVector<LPConstraint> &get_constraints();
     const named_vector::NamedVector<LPVariable> &get_variables() const;
     const named_vector::NamedVector<LPConstraint> &get_constraints() const;
+    double get_infinity() const;
     LPObjectiveSense get_sense() const;
     void set_objective_name(std::string name);
     const std::string &get_objective_name() const;
@@ -157,6 +161,8 @@ public:
     LP_METHOD(void set_constraint_upper_bound(int index, double bound))
     LP_METHOD(void set_variable_lower_bound(int index, double bound))
     LP_METHOD(void set_variable_upper_bound(int index, double bound))
+
+    LP_METHOD(void set_mip_gap(double gap))
 
     LP_METHOD(void solve())
     LP_METHOD(void write_lp(const std::string &filename) const)

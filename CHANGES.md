@@ -132,7 +132,6 @@ after the corresponding tracker issues.
   verbosity level can be configured) should now use the facilities
   add_log_options_to_parser and get_log_from_options to obtain their
   local log object.
-
 - Fix a failing assertion in the landmark factory RHW triggered by 
   unsolvable tasks. 
   <https://issues.fast-downward.org/issue467>
@@ -149,6 +148,18 @@ after the corresponding tracker issues.
 - Fix a bug where the Zhu/Givan landmark factory lead to a crash on relaxed
   unsolvable tasks due to returning an empty landmark graph.
   <https://issues.fast-downward.org/issue998>
+
+- Delete-relation constraints can now be used in the operator-counting
+  framework. The constraints defined by Imai and Fukunaga (JAIR 2015) encode
+  different relaxations of the delete-relaxation heuristic.
+  For details, see our documentation.
+  <http://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints>
+  Additionally, we fixed a bug which induced inadmissible
+  heuristic values when using CPLEX for optimal planning with large action
+  costs and/or long plans (only operator-counting heuristics with integer
+  variables and tasks with total costs starting from 10'000 were affected).
+  <http://issues.fast-downward.org/issue983>
+
 
 ## Fast Downward 20.06
 

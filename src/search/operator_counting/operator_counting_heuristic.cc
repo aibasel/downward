@@ -18,17 +18,18 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
           opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),
       lp_solver(opts.get<lp::LPSolverType>("lpsolver")),
       use_integer_operator_counts(opts.get<bool>("use_integer_operator_counts")) {
+    lp_solver.set_mip_gap(0);
     named_vector::NamedVector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_cost = op.get_cost();
         variables.push_back(lp::LPVariable(0, infinity, op_cost, use_integer_operator_counts));
     }
-    named_vector::NamedVector<lp::LPConstraint> constraints;
+    lp::LinearProgram lp(lp::LPObjectiveSense::MINIMIZE, move(variables), {}, infinity);
     for (const auto &generator : constraint_generators) {
-        generator->initialize_constraints(task, constraints, infinity);
+        generator->initialize_constraints(task, lp);
     }
-    lp_solver.load_problem(lp::LinearProgram(lp::LPObjectiveSense::MINIMIZE, move(variables), move(constraints)));
+    lp_solver.load_problem(lp);
 }
 
 OperatorCountingHeuristic::~OperatorCountingHeuristic() {

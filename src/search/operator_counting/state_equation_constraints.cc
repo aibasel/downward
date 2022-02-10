@@ -68,14 +68,13 @@ void StateEquationConstraints::add_constraints(
 }
 
 void StateEquationConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> &task, named_vector::NamedVector<lp::LPConstraint> &constraints,
-    double infinity) {
+    const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     utils::g_log << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
     build_propositions(task_proxy);
-    add_constraints(constraints, infinity);
+    add_constraints(lp.get_constraints(), lp.get_infinity());
 
     // Initialize goal state.
     VariablesProxy variables = task_proxy.get_variables();
