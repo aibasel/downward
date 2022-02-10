@@ -26,6 +26,7 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <string>
 
 using namespace std;
 
@@ -347,23 +348,19 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
         while (true) {
             ++num_iterations;
             int init_h = current_pdbs->get_value(initial_state);
+            bool dead_end = init_h == numeric_limits<int>::max();
             if (verbosity >= utils::Verbosity::VERBOSE) {
                 utils::g_log << "current collection size is "
                              << current_pdbs->get_size() << endl;
-                utils::g_log << "current initial h value: ";
+                utils::g_log << "current initial h value: "
+                             << (dead_end ? "infinite" : to_string(init_h))
+                             << endl;
             }
-            if (current_pdbs->is_dead_end(initial_state)) {
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << "infinite" << endl;
-                }
+            if (dead_end) {
                 if (verbosity >= utils::Verbosity::NORMAL) {
                     utils::g_log << "Initial state is a dead end. Stop hill climbing." << endl;
                 }
                 break;
-            } else {
-                if (verbosity >= utils::Verbosity::VERBOSE) {
-                    utils::g_log << init_h << endl;
-                }
             }
 
             samples.clear();
