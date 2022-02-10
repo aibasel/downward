@@ -243,7 +243,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "Operator-counting constraints based on the delete relaxation. By "
         "default the constraints encode an easy-to-compute relaxation of h^+^. "
         "If both use_time_vars and use_integer_vars are set to true and this "
-        "is the only constriant in an operator-counting heursitic with "
+        "is the only constraint in an operator-counting heuristic with "
         "integer variables for the operator counts, the resulting heuristic "
         "is the optimal delete-relaxation heuristic h^+^. "
         "For details, see" + utils::format_journal_reference(
@@ -271,7 +271,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "restrict auxiliary variables to integer values. These variables "
         "encode whether operators are used, facts are reached, which operator "
         "first achieves which fact, and in which order the operators are used. "
-        "Restricting them to integers generally improves the heursitic value "
+        "Restricting them to integers generally improves the heuristic value "
         "at the cost of increased runtime.",
         "false");
 
