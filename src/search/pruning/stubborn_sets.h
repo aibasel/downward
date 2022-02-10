@@ -2,7 +2,6 @@
 #define PRUNING_STUBBORN_SETS_H
 
 #include "../pruning_method.h"
-
 #include "../task_proxy.h"
 
 namespace stubborn_sets {

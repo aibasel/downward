@@ -16,6 +16,7 @@ LimitedPruning::LimitedPruning(const Options &opts)
       num_pruning_calls(0),
       is_pruning_disabled(false) {
 }
+
 void LimitedPruning::initialize(const shared_ptr<AbstractTask> &task) {
     PruningMethod::initialize(task);
     pruning_method->initialize(task);
