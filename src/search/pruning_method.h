@@ -2,29 +2,35 @@
 #define PRUNING_METHOD_H
 
 #include "operator_id.h"
-#include "task_proxy.h"
+
+#include "../utils/timer.h"
 
 #include <memory>
 #include <vector>
 
 class AbstractTask;
+class State;
+
+namespace limited_pruning {
+class LimitedPruning;
+}
 
 class PruningMethod {
+    utils::Timer timer;
+    friend class limited_pruning::LimitedPruning;
+
+    virtual void prune(
+        const State &state, std::vector<OperatorID> &op_ids) = 0;
 protected:
     std::shared_ptr<AbstractTask> task;
-
+    long num_successors_before_pruning;
+    long num_successors_after_pruning;
 public:
     PruningMethod();
     virtual ~PruningMethod() = default;
-
     virtual void initialize(const std::shared_ptr<AbstractTask> &task);
-
-    /* This method must not be called for goal states. This can be checked
-       with assertions in derived classes. */
-    virtual void prune_operators(const State &state,
-                                 std::vector<OperatorID> &op_ids) = 0;
-
-    virtual void print_statistics() const = 0;
+    void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
+    virtual void print_statistics() const;
 };
 
 #endif
