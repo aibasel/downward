@@ -16,8 +16,12 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
     options::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts, "Random Patterns"),
+    : PatternCollectionGeneratorMultiple(opts),
       bidirectional(opts.get<bool>("bidirectional")) {
+}
+
+string PatternCollectionGeneratorMultipleRandom::id() const {
+    return "random patterns";
 }
 
 void PatternCollectionGeneratorMultipleRandom::initialize(
@@ -34,10 +38,11 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     const FactPair &goal,
     unordered_set<int> &&) {
     // TODO: add support for blacklisting in single RCG?
+    utils::LogProxy silent_log = utils::get_silent_log();
     Pattern pattern = generate_random_pattern(
         max_pdb_size,
         max_time,
-        utils::Verbosity::SILENT,
+        silent_log,
         rng,
         TaskProxy(*task),
         goal.var,

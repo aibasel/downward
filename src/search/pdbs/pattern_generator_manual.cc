@@ -14,13 +14,19 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
-    : pattern(opts.get_list<int>("pattern")) {
+    : PatternGenerator(opts), pattern(opts.get_list<int>("pattern")) {
 }
 
-PatternInformation PatternGeneratorManual::generate(
+string PatternGeneratorManual::name() const {
+    return "manual pattern generator";
+}
+
+PatternInformation PatternGeneratorManual::compute_pattern(
     const shared_ptr<AbstractTask> &task) {
     PatternInformation pattern_info(TaskProxy(*task), move(pattern));
-    utils::g_log << "Manual pattern: " << pattern_info.get_pattern() << endl;
+    if (log.is_at_least_normal()) {
+        log << "Manual pattern: " << pattern_info.get_pattern() << endl;
+    }
     return pattern_info;
 }
 
@@ -29,6 +35,7 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
         "pattern",
         "list of variable numbers of the planning task that should be used as "
         "pattern.");
+    add_generator_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

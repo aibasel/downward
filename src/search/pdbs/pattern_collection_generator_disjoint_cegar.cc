@@ -14,21 +14,20 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar(
     const options::Options &opts)
-    : max_pdb_size(opts.get<int>("max_pdb_size")),
+    : PatternCollectionGenerator(opts),
+      max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
       max_time(opts.get<double>("max_time")),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
-      verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)) {
 }
 
-PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::generate(
-    const shared_ptr<AbstractTask> &task) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating patterns using the Disjoint CEGAR algorithm."
-                     << endl;
-    }
+string PatternCollectionGeneratorDisjointCegar::name() const {
+    return "disjoint CEGAR pattern collection generator";
+}
 
+PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_patterns(
+    const shared_ptr<AbstractTask> &task) {
     // Store the set of goals in random order.
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);
@@ -38,7 +37,7 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::generate(
         max_collection_size,
         max_time,
         use_wildcard_plans,
-        verbosity,
+        log,
         rng,
         task,
         move(goals));
@@ -77,7 +76,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(
         "infinity",
         Bounds("0.0", "infinity"));
     add_cegar_wildcard_option_to_parser(parser);
-    utils::add_log_options_to_parser(parser);
+    add_generator_options_to_parser(parser);
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();

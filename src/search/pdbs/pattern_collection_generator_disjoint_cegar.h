@@ -5,7 +5,6 @@
 
 namespace utils {
 class RandomNumberGenerator;
-enum class Verbosity;
 }
 
 namespace pdbs {
@@ -18,13 +17,13 @@ class PatternCollectionGeneratorDisjointCegar : public PatternCollectionGenerato
     const int max_collection_size;
     const double max_time;
     const bool use_wildcard_plans;
-    const utils::Verbosity verbosity;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
+
+    virtual std::string name() const override;
+    virtual PatternCollectionInformation compute_patterns(
+        const std::shared_ptr<AbstractTask> &task) override;
 public:
     explicit PatternCollectionGeneratorDisjointCegar(const options::Options &opts);
-
-    virtual PatternCollectionInformation generate(
-        const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 

@@ -14,8 +14,12 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     options::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts, "Multiple CEGAR"),
+    : PatternCollectionGeneratorMultiple(opts),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")) {
+}
+
+string PatternCollectionGeneratorMultipleCegar::id() const {
+    return "CEGAR";
 }
 
 PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
@@ -25,11 +29,12 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
     const shared_ptr<AbstractTask> &task,
     const FactPair &goal,
     unordered_set<int> &&blacklisted_variables) {
+    utils::LogProxy silent_log = utils::get_silent_log();
     return generate_pattern_with_cegar(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
-        utils::Verbosity::SILENT,
+        silent_log,
         rng,
         task,
         goal,

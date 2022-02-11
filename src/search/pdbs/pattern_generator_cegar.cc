@@ -18,40 +18,29 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorCEGAR::PatternGeneratorCEGAR(options::Options &opts)
-    : max_pdb_size(opts.get<int>("max_pdb_size")),
+    : PatternGenerator(opts),
+      max_pdb_size(opts.get<int>("max_pdb_size")),
       max_time(opts.get<double>("max_time")),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
-      verbosity(opts.get<utils::Verbosity>("verbosity")),
       rng(utils::parse_rng_from_options(opts)) {
 }
 
-PatternInformation PatternGeneratorCEGAR::generate(
-    const shared_ptr<AbstractTask> &task) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Generating pattern using the CEGAR algorithm."
-                     << endl;
-    }
+string PatternGeneratorCEGAR::name() const {
+    return "CEGAR pattern generator";
+}
 
-    utils::Timer timer;
+PatternInformation PatternGeneratorCEGAR::compute_pattern(
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     vector<FactPair> goals = get_goals_in_random_order(task_proxy, *rng);
-
-    PatternInformation pattern_info = generate_pattern_with_cegar(
+    return generate_pattern_with_cegar(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
-        verbosity,
+        log,
         rng,
         task,
         goals[0]);
-
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        dump_pattern_generation_statistics(
-            "CEGAR",
-            timer.stop(),
-            pattern_info);
-    }
-    return pattern_info;
 }
 
 static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
@@ -75,7 +64,7 @@ static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
         "infinity",
         Bounds("0.0", "infinity"));
     add_cegar_wildcard_option_to_parser(parser);
-    utils::add_log_options_to_parser(parser);
+    add_generator_options_to_parser(parser);
     utils::add_rng_options(parser);
 
     Options opts = parser.parse();

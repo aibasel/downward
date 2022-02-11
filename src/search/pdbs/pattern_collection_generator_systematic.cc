@@ -49,7 +49,8 @@ static void compute_union_pattern(
 
 PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
     const Options &opts)
-    : max_pattern_size(opts.get<int>("pattern_max_size")),
+    : PatternCollectionGenerator(opts),
+      max_pattern_size(opts.get<int>("pattern_max_size")),
       only_interesting_patterns(opts.get<bool>("only_interesting_patterns")) {
 }
 
@@ -204,7 +205,9 @@ void PatternCollectionGeneratorSystematic::build_patterns(
         enqueue_pattern_if_new(pattern);
 
 
-    utils::g_log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
+    }
 
     /*
       Combine patterns in the queue with SGA patterns until all
@@ -234,7 +237,9 @@ void PatternCollectionGeneratorSystematic::build_patterns(
     }
 
     pattern_set.clear();
-    utils::g_log << "Found " << patterns->size() << " interesting patterns." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Found " << patterns->size() << " interesting patterns." << endl;
+    }
 }
 
 void PatternCollectionGeneratorSystematic::build_patterns_naive(
@@ -258,13 +263,17 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
         next_patterns.clear();
     }
 
-    utils::g_log << "Found " << patterns->size() << " patterns." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Found " << patterns->size() << " patterns." << endl;
+    }
 }
 
-PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
+string PatternCollectionGeneratorSystematic::name() const {
+    return "systematic pattern collection generator";
+}
+
+PatternCollectionInformation PatternCollectionGeneratorSystematic::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
-    utils::Timer timer;
-    utils::g_log << "Generating patterns using the systematic generator..." << endl;
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
     pattern_set.clear();
@@ -273,12 +282,7 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
-    PatternCollectionInformation pci(task_proxy, patterns);
-    /* Do not dump the collection since it can be very large for
-       pattern_max_size >= 3. */
-    dump_pattern_collection_generation_statistics(
-        "Systematic generator", timer(), pci);
-    return pci;
+    return PatternCollectionInformation(task_proxy, patterns);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
@@ -306,6 +310,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "Only consider the union of two disjoint patterns if the union has "
         "more information than the individual patterns.",
         "true");
+    add_generator_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run())

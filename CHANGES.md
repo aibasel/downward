@@ -173,6 +173,11 @@ after the corresponding tracker issues.
   is now changed to
   --search "astar(lmcut(),pruning=limited_pruning(pruning=atom_centric_stubborn_sets(),min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))
 
+- All pattern (collection) generators now have an option "verbosity"
+  to set the desired level of output.
+  <https://issues.fast-downward.org/issue1043>
+  Internally, generators now use their own logger rather than g_log.
+
 
 ## Fast Downward 20.06
 
