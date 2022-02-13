@@ -100,7 +100,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "Note",
         "To obtain the configurations called dyn-MIASM described in the paper, "
         "use the following configuration of the merge-and-shrink heuristic "
-        "and adapt the tie-breaking criteria of {{{total_order}}} as desired:\n "
+        "and adapt the tie-breaking criteria of {{{total_order}}} as desired:\n"
         "{{{\nmerge_and_shrink(merge_strategy=merge_stateless(merge_selector="
         "score_based_filtering(scoring_functions=[sf_miasm(shrink_strategy="
         "shrink_bisimulation(greedy=false),max_states=50000,"
