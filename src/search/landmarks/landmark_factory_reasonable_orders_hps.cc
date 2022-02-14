@@ -393,8 +393,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
             "22",
             "215-278",
             "2004"));
-    add_landmark_factory_options_to_parser(parser);
     parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
+    add_landmark_factory_options_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: correct?
