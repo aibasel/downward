@@ -19,7 +19,7 @@ unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
     Options opts;
     opts.set<shared_ptr<AbstractTask>>("transform", task);
     opts.set<bool>("cache_estimates", false);
-    opts.set<int>("verbosity", static_cast<int>(utils::Verbosity::SILENT));
+    opts.set<utils::Verbosity>("verbosity", utils::Verbosity::SILENT);
     return utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(opts);
 }
 

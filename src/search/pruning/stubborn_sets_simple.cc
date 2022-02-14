@@ -3,21 +3,18 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 
 using namespace std;
 
 namespace stubborn_sets_simple {
-StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
-    : StubbornSets(opts) {
-}
-
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     interference_relation.resize(num_operators);
     interference_relation_computed.resize(num_operators, false);
-    cout << "pruning method: stubborn sets simple" << endl;
+    utils::g_log << "pruning method: stubborn sets simple" << endl;
 }
 
 const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {
@@ -103,15 +100,11 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "AAAI Press",
             "2014"));
 
-    stubborn_sets::add_pruning_options(parser);
-
-    Options opts = parser.parse();
-
     if (parser.dry_run()) {
         return nullptr;
     }
 
-    return make_shared<StubbornSetsSimple>(opts);
+    return make_shared<StubbornSetsSimple>();
 }
 
 static Plugin<PruningMethod> _plugin("stubborn_sets_simple", _parse);

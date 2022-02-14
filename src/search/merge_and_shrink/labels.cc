@@ -3,6 +3,7 @@
 #include "types.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -48,13 +49,13 @@ int Labels::get_label_cost(int label_no) const {
     return labels[label_no]->get_cost();
 }
 
-void Labels::dump_labels() const {
-    cout << "active labels:" << endl;
+void Labels::dump_labels(utils::LogProxy &log) const {
+    log << "active labels:" << endl;
     for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
         if (labels[label_no]) {
-            cout << "label " << label_no
-                 << ", cost " << labels[label_no]->get_cost()
-                 << endl;
+            log << "label " << label_no
+                << ", cost " << labels[label_no]->get_cost()
+                << endl;
         }
     }
 }

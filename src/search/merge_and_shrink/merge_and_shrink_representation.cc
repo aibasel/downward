@@ -5,6 +5,8 @@
 
 #include "../task_proxy.h"
 
+#include "../utils/logging.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -69,12 +71,12 @@ bool MergeAndShrinkRepresentationLeaf::is_total() const {
     return true;
 }
 
-void MergeAndShrinkRepresentationLeaf::dump() const {
-    cout << "lookup table (leaf): ";
+void MergeAndShrinkRepresentationLeaf::dump(utils::LogProxy &log) const {
+    log << "lookup table (leaf): ";
     for (const auto &value : lookup_table) {
-        cout << value << ", ";
+        log << value << ", ";
     }
-    cout << endl;
+    log << endl;
 }
 
 
@@ -142,17 +144,17 @@ bool MergeAndShrinkRepresentationMerge::is_total() const {
     return left_child->is_total() && right_child->is_total();
 }
 
-void MergeAndShrinkRepresentationMerge::dump() const {
-    cout << "lookup table (merge): " << endl;
+void MergeAndShrinkRepresentationMerge::dump(utils::LogProxy &log) const {
+    log << "lookup table (merge): " << endl;
     for (const auto &row : lookup_table) {
         for (const auto &value : row) {
-            cout << value << ", ";
+            log << value << ", ";
         }
-        cout << endl;
+        log << endl;
     }
-    cout << "left child:" << endl;
-    left_child->dump();
-    cout << "right child:" << endl;
-    right_child->dump();
+    log << "left child:" << endl;
+    left_child->dump(log);
+    log << "right child:" << endl;
+    right_child->dump(log);
 }
 }

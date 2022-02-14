@@ -17,7 +17,7 @@ class Options;
 
 namespace utils {
 class RandomNumberGenerator;
-enum class Verbosity;
+class LogProxy;
 }
 
 namespace cegar {
@@ -39,7 +39,7 @@ class SubtaskGenerator {
 public:
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
-        utils::Verbosity verbosity) const = 0;
+        utils::LogProxy &log) const = 0;
     virtual ~SubtaskGenerator() = default;
 };
 
@@ -55,7 +55,7 @@ public:
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
-        utils::Verbosity verbosity) const override;
+        utils::LogProxy &log) const override;
 };
 
 
@@ -71,7 +71,7 @@ public:
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
-        utils::Verbosity verbosity) const override;
+        utils::LogProxy &log) const override;
 };
 
 
@@ -96,7 +96,7 @@ public:
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
-        utils::Verbosity verbosity) const override;
+        utils::LogProxy &log) const override;
 };
 }
 

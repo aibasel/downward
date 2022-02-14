@@ -32,7 +32,8 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
-    : order_of_sccs(static_cast<OrderOfSCCs>(options.get_enum("order_of_sccs"))),
+    : MergeStrategyFactory(options),
+      order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
       merge_tree_factory(nullptr),
       merge_selector(nullptr) {
     if (options.contains("merge_tree")) {
@@ -44,9 +45,7 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &optio
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
-    const TaskProxy &task_proxy,
-    const FactoredTransitionSystem &fts,
-    utils::Verbosity verbosity) {
+    const TaskProxy &task_proxy, const FactoredTransitionSystem &fts) {
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
@@ -82,16 +81,12 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
       SCCs have been merged.
     */
     int index = num_vars - 1;
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        cout << "SCCs of the causal graph:" << endl;
-    }
+    log << "SCCs of the causal graph:" << endl;
     vector<vector<int>> non_singleton_cg_sccs;
     vector<int> indices_of_merged_sccs;
     indices_of_merged_sccs.reserve(sccs.size());
     for (const vector<int> &scc : sccs) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            cout << scc << endl;
-        }
+        log << scc << endl;
         int scc_size = scc.size();
         if (scc_size == 1) {
             indices_of_merged_sccs.push_back(scc.front());
@@ -101,13 +96,11 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
             non_singleton_cg_sccs.push_back(scc);
         }
     }
-    if (sccs.size() == 1 && verbosity >= utils::Verbosity::VERBOSE) {
-        cout << "Only one single SCC" << endl;
+    if (sccs.size() == 1) {
+        log << "Only one single SCC" << endl;
     }
     if (static_cast<int>(sccs.size()) == num_vars) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            cout << "Only singleton SCCs" << endl;
-        }
+        log << "Only singleton SCCs" << endl;
         assert(non_singleton_cg_sccs.empty());
     }
 
@@ -141,29 +134,29 @@ bool MergeStrategyFactorySCCs::requires_goal_distances() const {
 }
 
 void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
-    cout << "Merge order of sccs: ";
+    log << "Merge order of sccs: ";
     switch (order_of_sccs) {
     case OrderOfSCCs::TOPOLOGICAL:
-        cout << "topological";
+        log << "topological";
         break;
     case OrderOfSCCs::REVERSE_TOPOLOGICAL:
-        cout << "reverse topological";
+        log << "reverse topological";
         break;
     case OrderOfSCCs::DECREASING:
-        cout << "decreasing";
+        log << "decreasing";
         break;
     case OrderOfSCCs::INCREASING:
-        cout << "increasing";
+        log << "increasing";
         break;
     }
-    cout << endl;
+    log << endl;
 
-    cout << "Merge strategy for merging within sccs: " << endl;
+    log << "Merge strategy for merging within sccs: " << endl;
     if (merge_tree_factory) {
-        merge_tree_factory->dump_options();
+        merge_tree_factory->dump_options(log);
     }
     if (merge_selector) {
-        merge_selector->dump_options();
+        merge_selector->dump_options(log);
     }
 }
 
@@ -196,7 +189,7 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     order_of_sccs.push_back("reverse_topological");
     order_of_sccs.push_back("decreasing");
     order_of_sccs.push_back("increasing");
-    parser.add_enum_option(
+    parser.add_enum_option<OrderOfSCCs>(
         "order_of_sccs",
         order_of_sccs,
         "choose an ordering of the SCCs: topological/reverse_topological or "
@@ -216,6 +209,8 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "the fallback merge strategy to use if a stateless strategy should "
         "be used.",
         options::OptionParser::NONE);
+
+    add_merge_strategy_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.help_mode()) {

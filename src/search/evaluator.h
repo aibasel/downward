@@ -6,7 +6,11 @@
 #include <set>
 
 class EvaluationContext;
-class GlobalState;
+class State;
+
+namespace utils {
+class LogProxy;
+}
 
 class Evaluator {
     const std::string description;
@@ -44,13 +48,13 @@ public:
         std::set<Evaluator *> &evals) = 0;
 
 
-    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
+    virtual void notify_initial_state(const State & /*initial_state*/) {
     }
 
     virtual void notify_state_transition(
-        const GlobalState & /*parent_state*/,
+        const State & /*parent_state*/,
         OperatorID /*op_id*/,
-        const GlobalState & /*state*/) {
+        const State & /*state*/) {
     }
 
     /*
@@ -76,8 +80,10 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
 
-    void report_value_for_initial_state(const EvaluationResult &result) const;
-    void report_new_minimum_value(const EvaluationResult &result) const;
+    void report_value_for_initial_state(
+        const EvaluationResult &result, utils::LogProxy &log) const;
+    void report_new_minimum_value(
+        const EvaluationResult &result, utils::LogProxy &log) const;
 
     const std::string &get_description() const;
     bool is_used_for_reporting_minima() const;
@@ -85,12 +91,12 @@ public:
     bool is_used_for_counting_evaluations() const;
 
     virtual bool does_cache_estimates() const;
-    virtual bool is_estimate_cached(const GlobalState &state) const;
+    virtual bool is_estimate_cached(const State &state) const;
     /*
       Calling get_cached_estimate is only allowed if an estimate for
       the given state is cached, i.e., is_estimate_cached returns true.
     */
-    virtual int get_cached_estimate(const GlobalState &state) const;
+    virtual int get_cached_estimate(const State &state) const;
 };
 
 #endif

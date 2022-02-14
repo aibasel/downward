@@ -10,12 +10,12 @@ class Options;
 namespace merge_and_shrink {
 struct Signature;
 
-class ShrinkBisimulation : public ShrinkStrategy {
-    enum AtLimit {
-        RETURN,
-        USE_UP
-    };
+enum class AtLimit {
+    RETURN,
+    USE_UP
+};
 
+class ShrinkBisimulation : public ShrinkStrategy {
     const bool greedy;
     const AtLimit at_limit;
 
@@ -36,7 +36,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
         std::vector<Signature> &signatures,
         const std::vector<int> &state_to_group) const;
 protected:
-    virtual void dump_strategy_specific_options() const override;
+    virtual void dump_strategy_specific_options(utils::LogProxy &log) const override;
     virtual std::string name() const override;
 public:
     explicit ShrinkBisimulation(const options::Options &opts);
@@ -44,7 +44,8 @@ public:
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,
         const Distances &distances,
-        int target_size) const override;
+        int target_size,
+        utils::LogProxy &log) const override;
 
     virtual bool requires_init_distances() const override {
         return false;

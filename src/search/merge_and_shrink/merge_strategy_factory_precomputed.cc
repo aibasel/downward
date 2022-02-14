@@ -15,13 +15,12 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
     options::Options &options)
-    : merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
+    : MergeStrategyFactory(options),
+      merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
-    const TaskProxy &task_proxy,
-    const FactoredTransitionSystem &fts,
-    utils::Verbosity) {
+    const TaskProxy &task_proxy, const FactoredTransitionSystem &fts) {
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task_proxy);
     return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
@@ -40,7 +39,7 @@ string MergeStrategyFactoryPrecomputed::name() const {
 }
 
 void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
-    merge_tree_factory->dump_options();
+    merge_tree_factory->dump_options(log);
 }
 
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
@@ -52,9 +51,18 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "strategy relies on the factored transition system being synchronized "
         "with this merge tree, i.e. all merges are performed exactly as given "
         "by the merge tree.");
+    parser.document_note(
+        "Note",
+        "An example of a precomputed merge startegy is a linear merge strategy, "
+        "which can be obtained using:\n"
+        "{{{\n"
+        "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
+        "\n}}}");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
-        "The precomputed merge tree");
+        "The precomputed merge tree.");
+
+    add_merge_strategy_options_to_parser(parser);
 
     options::Options opts = parser.parse();
     if (parser.dry_run())

@@ -1,8 +1,10 @@
 #include "util.h"
 
+#include "landmark.h"
 #include "landmark_graph.h"
 
 #include "../task_proxy.h"
+#include "../utils/logging.h"
 
 #include <limits>
 
@@ -28,7 +30,9 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     return result;
 }
 
-bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lvl_var, const LandmarkNode *lmp) {
+bool possibly_reaches_lm(const OperatorProxy &op,
+                         const vector<vector<int>> &lvl_var,
+                         const Landmark &landmark) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in lvl_var) */
 
@@ -47,7 +51,7 @@ bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lv
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         assert(!lvl_var[effect_fact.get_variable().get_id()].empty());
-        for (const FactPair &fact : lmp->facts) {
+        for (const FactPair &fact : landmark.facts) {
             if (effect_fact.get_pair() == fact) {
                 if (_possibly_fires(effect.get_conditions(), lvl_var))
                     return true;
@@ -73,5 +77,72 @@ int get_operator_or_axiom_id(const OperatorProxy &op) {
     } else {
         return op.get_id();
     }
+}
+
+static void dump_node(const TaskProxy &task_proxy, const LandmarkNode &node) {
+    cout << "  lm" << node.get_id() << " [label=\"";
+    bool first = true;
+    const Landmark &landmark = node.get_landmark();
+    for (FactPair fact : landmark.facts) {
+        if (!first) {
+            if (landmark.disjunctive) {
+                cout << " | ";
+            } else if (landmark.conjunctive) {
+                cout << " & ";
+            }
+        }
+        first = false;
+        VariableProxy var = task_proxy.get_variables()[fact.var];
+        cout << var.get_fact(fact.value).get_name();
+    }
+    cout << "\"";
+    if (landmark.is_true_in_state(task_proxy.get_initial_state())) {
+        cout << ", style=bold";
+    }
+    if (landmark.is_true_in_goal) {
+        cout << ", style=filled";
+    }
+    cout << "];\n";
+}
+
+static void dump_edge(int from, int to, EdgeType edge) {
+    cout << "      lm" << from << " -> lm" << to << " [label=";
+    switch (edge) {
+    case EdgeType::NECESSARY:
+        cout << "\"nec\"";
+        break;
+    case EdgeType::GREEDY_NECESSARY:
+        cout << "\"gn\"";
+        break;
+    case EdgeType::NATURAL:
+        cout << "\"n\"";
+        break;
+    case EdgeType::REASONABLE:
+        cout << "\"r\", style=dashed";
+        break;
+    case EdgeType::OBEDIENT_REASONABLE:
+        cout << "\"o_r\", style=dashed";
+        break;
+    }
+    cout << "];\n";
+}
+
+void dump_landmark_graph(
+    const TaskProxy &task_proxy,
+    const LandmarkGraph &graph,
+    utils::LogProxy &log) {
+    log << "Dumping landmark graph: " << endl;
+
+    cout << "digraph G {\n";
+    for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
+        dump_node(task_proxy, *node);
+        for (const auto &child : node->children) {
+            const LandmarkNode *child_node = child.first;
+            const EdgeType &edge = child.second;
+            dump_edge(node->get_id(), child_node->get_id(), edge);
+        }
+    }
+    cout << "}" << endl;
+    log << "Landmark graph end." << endl;
 }
 }

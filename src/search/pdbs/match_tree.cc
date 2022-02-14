@@ -1,5 +1,7 @@
 #include "match_tree.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <iostream>
 #include <utility>
@@ -63,7 +65,7 @@ bool MatchTree::Node::is_leaf_node() const {
 
 MatchTree::MatchTree(const TaskProxy &task_proxy,
                      const Pattern &pattern,
-                     const vector<size_t> &hash_multipliers)
+                     const vector<int> &hash_multipliers)
     : task_proxy(task_proxy),
       pattern(pattern),
       hash_multipliers(hash_multipliers),
@@ -131,7 +133,7 @@ void MatchTree::insert(int op_id, const vector<FactPair> &regression_preconditio
 }
 
 void MatchTree::get_applicable_operator_ids_recursive(
-    Node *node, const size_t state_index, vector<int> &operator_ids) const {
+    Node *node, int state_index, vector<int> &operator_ids) const {
     /*
       Note: different from the code that builds the match tree, we do
       the test if node == 0 *before* calling traverse rather than *at
@@ -162,7 +164,7 @@ void MatchTree::get_applicable_operator_ids_recursive(
 }
 
 void MatchTree::get_applicable_operator_ids(
-    size_t state_index, vector<int> &operator_ids) const {
+    int state_index, vector<int> &operator_ids) const {
     if (root)
         get_applicable_operator_ids_recursive(root, state_index, operator_ids);
 }
@@ -170,39 +172,39 @@ void MatchTree::get_applicable_operator_ids(
 void MatchTree::dump_recursive(Node *node) const {
     if (!node) {
         // Node is the root node.
-        cout << "Empty MatchTree" << endl;
+        utils::g_log << "Empty MatchTree" << endl;
         return;
     }
-    cout << endl;
-    cout << "node->var_id = " << node->var_id << endl;
-    cout << "Number of applicable operators at this node: "
-         << node->applicable_operator_ids.size() << endl;
+    utils::g_log << endl;
+    utils::g_log << "node->var_id = " << node->var_id << endl;
+    utils::g_log << "Number of applicable operators at this node: "
+                 << node->applicable_operator_ids.size() << endl;
     for (int op_id : node->applicable_operator_ids) {
-        cout << "AbstractOperator #" << op_id << endl;
+        utils::g_log << "AbstractOperator #" << op_id << endl;
     }
     if (node->is_leaf_node()) {
-        cout << "leaf node." << endl;
+        utils::g_log << "leaf node." << endl;
         assert(!node->successors);
         assert(!node->star_successor);
     } else {
         for (int val = 0; val < node->var_domain_size; ++val) {
             if (node->successors[val]) {
-                cout << "recursive call for child with value " << val << endl;
+                utils::g_log << "recursive call for child with value " << val << endl;
                 dump_recursive(node->successors[val]);
-                cout << "back from recursive call (for successors[" << val
-                     << "]) to node with var_id = " << node->var_id
-                     << endl;
+                utils::g_log << "back from recursive call (for successors[" << val
+                             << "]) to node with var_id = " << node->var_id
+                             << endl;
             } else {
-                cout << "no child for value " << val << endl;
+                utils::g_log << "no child for value " << val << endl;
             }
         }
         if (node->star_successor) {
-            cout << "recursive call for star_successor" << endl;
+            utils::g_log << "recursive call for star_successor" << endl;
             dump_recursive(node->star_successor);
-            cout << "back from recursive call (for star_successor) "
-                 << "to node with var_id = " << node->var_id << endl;
+            utils::g_log << "back from recursive call (for star_successor) "
+                         << "to node with var_id = " << node->var_id << endl;
         } else {
-            cout << "no star_successor" << endl;
+            utils::g_log << "no star_successor" << endl;
         }
     }
 }

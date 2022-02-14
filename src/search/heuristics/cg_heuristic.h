@@ -14,9 +14,6 @@ class DomainTransitionGraph;
 struct ValueNode;
 }
 
-class GlobalState;
-class State;
-
 namespace cg_heuristic {
 class CGCache;
 
@@ -44,11 +41,11 @@ class CGHeuristic : public Heuristic {
         domain_transition_graph::DomainTransitionGraph *dtg,
         int to);
 protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
+    virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit CGHeuristic(const options::Options &opts);
     ~CGHeuristic();
-    virtual bool dead_ends_are_reliable() const;
+    virtual bool dead_ends_are_reliable() const override;
 };
 }
 

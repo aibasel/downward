@@ -37,7 +37,7 @@ UnaryOperator::UnaryOperator(
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
-    : Heuristic(opts), verbosity(utils::get_verbosity_from_options(opts)) {
+    : Heuristic(opts), log(utils::get_log_from_options(opts)) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 
@@ -71,8 +71,8 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     // Simplify unary operators.
     utils::Timer simplify_timer;
     simplify();
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "time to simplify: " << simplify_timer << endl;
+    if (log.is_at_least_normal()) {
+        utils::g_log << "time to simplify: " << simplify_timer << endl;
     }
 
     // Cross-reference unary operators.
@@ -86,7 +86,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
 
     int num_propositions = propositions.size();
     for (PropID prop_id = 0; prop_id < num_propositions; ++prop_id) {
-        auto precondition_of_vec = move(precondition_of_vectors[prop_id]);
+        const auto &precondition_of_vec = precondition_of_vectors[prop_id];
         propositions[prop_id].precondition_of =
             precondition_of_pool.append(precondition_of_vec);
         propositions[prop_id].num_precondition_occurences = precondition_of_vec.size();
@@ -174,8 +174,8 @@ void RelaxationHeuristic::simplify() {
 
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
+    if (log.is_at_least_normal()) {
+        utils::g_log << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
     }
 
     /*
@@ -298,12 +298,12 @@ void RelaxationHeuristic::simplify() {
             is_dominated),
         unary_operators.end());
 
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
+    if (log.is_at_least_normal()) {
+        utils::g_log << " done! [" << unary_operators.size() << " unary operators]" << endl;
     }
 }
 
 void add_options_to_parser(OptionParser &parser) {
-    utils::add_verbosity_option_to_parser(parser);
+    utils::add_log_options_to_parser(parser);
 }
 }

@@ -3,7 +3,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -104,10 +104,6 @@ void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
-StubbornSetsEC::StubbornSetsEC(const options::Options &opts)
-    : StubbornSets(opts) {
-}
-
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     TaskProxy task_proxy(*task);
@@ -126,7 +122,7 @@ void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
     disabled.resize(num_operators);
     disabled_computed.resize(num_operators, false);
 
-    cout << "pruning method: stubborn sets ec" << endl;
+    utils::g_log << "pruning method: stubborn sets ec" << endl;
 }
 
 void StubbornSetsEC::compute_operator_preconditions(const TaskProxy &task_proxy) {
@@ -345,14 +341,10 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "AAAI Press",
             "2013"));
 
-    stubborn_sets::add_pruning_options(parser);
-
-    Options opts = parser.parse();
-
     if (parser.dry_run()) {
         return nullptr;
     }
-    return make_shared<StubbornSetsEC>(opts);
+    return make_shared<StubbornSetsEC>();
 }
 
 static Plugin<PruningMethod> _plugin("stubborn_sets_ec", _parse);

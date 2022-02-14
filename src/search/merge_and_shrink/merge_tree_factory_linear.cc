@@ -11,6 +11,7 @@
 #include "../options/plugin.h"
 
 #include "../utils/markup.h"
+#include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/system.h"
 
@@ -21,13 +22,14 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
     : MergeTreeFactory(options),
-      variable_order_type(static_cast<variable_order_finder::VariableOrderType>(
-                              options.get_enum("variable_order"))) {
+      variable_order_type(
+          options.get<variable_order_finder::VariableOrderType>("variable_order")),
+      rng(utils::parse_rng_from_options(options)) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const TaskProxy &task_proxy) {
-    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type);
+    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, rng);
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
@@ -70,7 +72,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
      skipping all indices not in indices_subset, because these have been set
      to "used" above.
     */
-    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type);
+    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, rng);
 
     int next_var = vof.next();
     int ts_index = var_to_ts_index[next_var];
@@ -103,8 +105,8 @@ string MergeTreeFactoryLinear::name() const {
     return "linear";
 }
 
-void MergeTreeFactoryLinear::dump_tree_specific_options() const {
-    dump_variable_order_type(variable_order_type);
+void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) const {
+    dump_variable_order_type(variable_order_type, log);
 }
 
 void MergeTreeFactoryLinear::add_options_to_parser(
@@ -117,7 +119,7 @@ void MergeTreeFactoryLinear::add_options_to_parser(
     merge_strategies.push_back("RANDOM");
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
-    parser.add_enum_option(
+    parser.add_enum_option<variable_order_finder::VariableOrderType>(
         "variable_order", merge_strategies,
         "the order in which atomic transition systems are merged",
         "CG_GOAL_LEVEL");

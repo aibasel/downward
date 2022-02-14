@@ -168,7 +168,7 @@ Entry ParetoOpenList<Entry>::remove_min() {
         else
             numerator = 1;
         seen += numerator;
-        if ((*rng)(seen) < numerator)
+        if (rng->random(seen) < numerator)
             selected = it;
     }
     Bucket &bucket = buckets[*selected];

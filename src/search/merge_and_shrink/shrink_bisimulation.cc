@@ -9,6 +9,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -76,26 +77,26 @@ struct Signature {
         return state < other.state;
     }
 
-    void dump() const {
-        cout << "Signature(h_and_goal = " << h_and_goal
-             << ", group = " << group
-             << ", state = " << state
-             << ", succ_sig = [";
+    void dump(utils::LogProxy &log) const {
+        log << "Signature(h_and_goal = " << h_and_goal
+            << ", group = " << group
+            << ", state = " << state
+            << ", succ_sig = [";
         for (size_t i = 0; i < succ_signature.size(); ++i) {
             if (i)
-                cout << ", ";
-            cout << "(" << succ_signature[i].first
-                 << "," << succ_signature[i].second
-                 << ")";
+                log << ", ";
+            log << "(" << succ_signature[i].first
+                << "," << succ_signature[i].second
+                << ")";
         }
-        cout << "])" << endl;
+        log << "])" << endl;
     }
 };
 
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : greedy(opts.get<bool>("greedy")),
-      at_limit(AtLimit(opts.get_enum("at_limit"))) {
+      at_limit(opts.get<AtLimit>("at_limit")) {
 }
 
 int ShrinkBisimulation::initialize_groups(
@@ -239,7 +240,8 @@ void ShrinkBisimulation::compute_signatures(
 StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     const TransitionSystem &ts,
     const Distances &distances,
-    int target_size) const {
+    int target_size,
+    utils::LogProxy &) const {
     assert(distances.are_goal_distances_computed());
     int num_states = ts.get_size();
 
@@ -248,7 +250,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
     signatures.reserve(num_states + 2);
 
     int num_groups = initialize_groups(ts, distances, state_to_group);
-    // cout << "number of initial groups: " << num_groups << endl;
+    // log << "number of initial groups: " << num_groups << endl;
 
     // TODO: We currently violate this; see issue250
     // assert(num_groups <= target_size);
@@ -300,7 +302,7 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
             }
             assert(sig_end > sig_start);
 
-            if (at_limit == RETURN &&
+            if (at_limit == AtLimit::RETURN &&
                 num_groups - num_old_groups + num_new_groups > target_size) {
                 /* Can't split the group (or the set of groups for
                    this h value) -- would exceed bound on abstract
@@ -361,17 +363,17 @@ string ShrinkBisimulation::name() const {
     return "bisimulation";
 }
 
-void ShrinkBisimulation::dump_strategy_specific_options() const {
-    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
-    cout << "At limit: ";
-    if (at_limit == RETURN) {
-        cout << "return";
-    } else if (at_limit == USE_UP) {
-        cout << "use up limit";
+void ShrinkBisimulation::dump_strategy_specific_options(utils::LogProxy &log) const {
+    log << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+    log << "At limit: ";
+    if (at_limit == AtLimit::RETURN) {
+        log << "return";
+    } else if (at_limit == AtLimit::USE_UP) {
+        log << "use up limit";
     } else {
         ABORT("Unknown setting for at_limit.");
     }
-    cout << endl;
+    log << endl;
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
@@ -415,7 +417,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     vector<string> at_limit;
     at_limit.push_back("RETURN");
     at_limit.push_back("USE_UP");
-    parser.add_enum_option(
+    parser.add_enum_option<AtLimit>(
         "at_limit", at_limit,
         "what to do when the size limit is hit", "RETURN");
 

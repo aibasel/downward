@@ -30,8 +30,8 @@ void Heuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
-State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    return task_proxy.convert_ancestor_state(global_state.unpack());
+State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
+    return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
@@ -48,7 +48,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     assert(preferred_operators.empty());
 
-    const GlobalState &state = eval_context.get_state();
+    const State &state = eval_context.get_state();
     bool calculate_preferred = eval_context.get_calculate_preferred();
 
     int heuristic = NO_VALUE;
@@ -80,12 +80,11 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     }
 
 #ifndef NDEBUG
-    TaskProxy global_task_proxy = TaskProxy(*tasks::g_root_task);
-    State unpacked_state = state.unpack();
+    TaskProxy global_task_proxy = state.get_task();
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)
-            assert(task_properties::is_applicable(global_operators[op_id], unpacked_state));
+            assert(task_properties::is_applicable(global_operators[op_id], state));
     }
 #endif
 
@@ -100,11 +99,11 @@ bool Heuristic::does_cache_estimates() const {
     return cache_evaluator_values;
 }
 
-bool Heuristic::is_estimate_cached(const GlobalState &state) const {
+bool Heuristic::is_estimate_cached(const State &state) const {
     return heuristic_cache[state].h != NO_VALUE;
 }
 
-int Heuristic::get_cached_estimate(const GlobalState &state) const {
+int Heuristic::get_cached_estimate(const State &state) const {
     assert(is_estimate_cached(state));
     return heuristic_cache[state].h;
 }

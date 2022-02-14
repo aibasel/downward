@@ -6,6 +6,7 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -23,7 +24,7 @@ MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(
     const FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
-    int chosen_index = (*rng)(merge_candidates.size());
+    int chosen_index = rng->random(merge_candidates.size());
     vector<double> scores;
     scores.reserve(merge_candidates.size());
     for (size_t candidate_index = 0; candidate_index < merge_candidates.size();
@@ -41,8 +42,9 @@ string MergeScoringFunctionSingleRandom::name() const {
     return "single random";
 }
 
-void MergeScoringFunctionSingleRandom::dump_function_specific_options() const {
-    cout << "Random seed: " << random_seed << endl;
+void MergeScoringFunctionSingleRandom::dump_function_specific_options(
+    utils::LogProxy &log) const {
+    log << "Random seed: " << random_seed << endl;
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {

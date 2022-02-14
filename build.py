@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
 import errno
-import glob
 import multiprocessing
 import os
 import subprocess
 import sys
 
-CONFIGS = {}
-script_dir = os.path.dirname(__file__)
-for config_file in sorted(glob.glob(os.path.join(script_dir, "*build_configs.py"))):
-    with open(config_file) as f:
-        config_file_content = f.read()
-        exec(config_file_content, globals(), CONFIGS)
+import build_configs
 
+CONFIGS = {config: params for config, params in build_configs.__dict__.items()
+           if not config.startswith("_")}
 DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 

@@ -12,7 +12,7 @@
 #include <vector>
 
 namespace utils {
-enum class Verbosity;
+class LogProxy;
 }
 
 namespace landmarks {
@@ -88,8 +88,8 @@ struct ExUnaryOperator {
 class Exploration {
     static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
 
-    const utils::Verbosity verbosity;
     TaskProxy task_proxy;
+    utils::LogProxy &log;
 
     std::vector<ExUnaryOperator> unary_operators;
     std::vector<std::vector<ExProposition>> propositions;
@@ -109,8 +109,14 @@ class Exploration {
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
 public:
-    explicit Exploration(utils::Verbosity verbosity, const TaskProxy &task_proxy);
+    Exploration(const TaskProxy &task_proxy, utils::LogProxy &log);
 
+    /*
+      Computes the h_max costs (stored in *lvl_var*) for the problem when
+      excluding propositions in *excluded_props* and operators in
+      *excluded_op_ids*. The values are only exact in the absence of conditional
+      effects, otherwise they are an admissible approximation.
+    */
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
                                             std::vector<utils::HashMap<FactPair, int>> &lvl_op,
                                             bool level_out,

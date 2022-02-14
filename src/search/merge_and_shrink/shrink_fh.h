@@ -23,7 +23,7 @@ namespace merge_and_shrink {
 */
 class ShrinkFH : public ShrinkBucketBased {
 public:
-    enum HighLow {HIGH, LOW};
+    enum class HighLow {HIGH, LOW};
 
 private:
     const HighLow f_start;
@@ -39,7 +39,7 @@ private:
         const Distances &distances) const;
 protected:
     virtual std::string name() const override;
-    virtual void dump_strategy_specific_options() const override;
+    virtual void dump_strategy_specific_options(utils::LogProxy &log) const override;
 
     virtual std::vector<Bucket> partition_into_buckets(
         const TransitionSystem &ts,

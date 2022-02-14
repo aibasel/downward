@@ -2,10 +2,11 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
-#include "global_state.h"
 #include "operator_id.h"
+#include "state_id.h"
 #include "task_id.h"
 
+#include "algorithms/int_packer.h"
 #include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
@@ -29,6 +30,7 @@ class OperatorProxy;
 class OperatorsProxy;
 class PreconditionsProxy;
 class State;
+class StateRegistry;
 class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
@@ -36,6 +38,8 @@ class VariablesProxy;
 namespace causal_graph {
 class CausalGraph;
 }
+
+using PackedStateBin = int_packer::IntPacker::Bin;
 
 /*
   Overview of the task interface.
@@ -52,47 +56,36 @@ class CausalGraph;
 
       TaskProxy task_proxy(*g_root_task());
       for (OperatorProxy op : task->get_operators())
-          cout << op.get_name() << endl;
+          utils::g_log << op.get_name() << endl;
 
   Since proxy classes only store a reference to the AbstractTask and
   some indices, they can be copied cheaply.
 
   In addition to the lightweight proxy classes, the task interface
   consists of the State class, which is used to hold state information
-  for TaskProxy tasks. The State class provides methods similar to the
-  proxy classes, but since State objects own the state data they should
-  be passed by reference.
+  for TaskProxy tasks. The State class contains packed or unpacked state data
+  and shares the ownership with its copies, so it is cheap to copy but
+  expensive to create. If performance is absolutely critical, the values of a
+  state can be unpacked and accessed as a vector<int>.
 
-  For now, only the heuristics work with the TaskProxy classes and
-  hence potentially on a transformed view of the original task. The
-  search algorithms keep working on the original unmodified task using
-  the GlobalState, GlobalOperator etc. classes. We therefore need to do
-  two conversions between the search and the heuristics: converting
-  GlobalStates to State objects for the heuristic computation and
-  converting OperatorProxy objects used by the heuristic to
-  GlobalOperators for reporting preferred operators. These conversions
-  are done by the Heuristic base class. Until all heuristics use the
-  new task interface, heuristics can use
-  Heuristic::convert_global_state() to convert GlobalStates to States.
-  Afterwards, the heuristics are passed a State object directly. To
-  mark operators as preferred, heuristics can use
-  Heuristic::set_preferred() which currently works for both
-  OperatorProxy and GlobalOperator objects.
+  For now, heuristics work with a TaskProxy that can represent a transformed
+  view of the original task. The search algorithms work on the unmodified root
+  task. We therefore need to do two conversions between the search and the
+  heuristics: converting states of the root task to states of the task used in
+  the heuristic computation and converting operators of the task used by the
+  heuristic to operators of the task used by the search for reporting preferred
+  operators.
+  These conversions are done by the Heuristic base class with
+  Heuristic::convert_ancestor_state() and Heuristic::set_preferred().
 
-      int FantasyHeuristic::compute_heuristic(const GlobalState &global_state) {
-          State state = convert_global_state(global_state);
+      int FantasyHeuristic::compute_heuristic(const State &ancestor_state) {
+          State state = convert_ancestor_state(ancestor_state);
           set_preferred(task->get_operators()[42]);
           int sum = 0;
           for (FactProxy fact : state)
               sum += fact.get_value();
           return sum;
       }
-
-  There is one additional conversion: heuristics may need to convert
-  states between different tasks. For this they can use
-  TaskProxy::convert_ancestor_state() which takes a state of the
-  ancestor task and returns the corresponding state of the descendent
-  task.
 
   For helper functions that work on task related objects, please see the
   task_properties.h module.
@@ -558,84 +551,101 @@ public:
 
 
 bool does_fire(const EffectProxy &effect, const State &state);
-bool does_fire(const EffectProxy &effect, const GlobalState &state);
 
 
 class State {
+    /*
+      TODO: We want to try out two things:
+        1. having StateID and num_variables next to each other, so that they
+           can fit into one 8-byte-aligned block.
+        2. removing num_variables altogether, getting it on demand.
+           It is not used in (very) performance-critical code.
+      Perhaps 2) has no positive influence after 1) because we would just have
+      a 4-byte gap at the end of the object. But it would probably be nice to
+      have fewer attributes regardless.
+    */
     const AbstractTask *task;
-    std::vector<int> values;
+    const StateRegistry *registry;
+    StateID id;
+    const PackedStateBin *buffer;
+    /*
+      values is mutable because we think of it as a redundant representation
+      of the state's contents, a kind of cache. One could argue for doing this
+      differently (for example because some methods require unpacked data, so
+      in some sense its presence changes the "logical state" from the program
+      perspective. It is a bit weird to have a const function like unpack that
+      is only called for its side effect on the object. But we decided to use
+      const here to mean "const from the perspective of the state space
+      semantics of the state".
+    */
+    mutable std::shared_ptr<std::vector<int>> values;
+    const int_packer::IntPacker *state_packer;
+    int num_variables;
 public:
     using ItemType = FactProxy;
-    State(const AbstractTask &task, std::vector<int> &&values)
-        : task(&task), values(std::move(values)) {
-        assert(static_cast<int>(size()) == this->task->get_num_variables());
-    }
-    ~State() = default;
-    State(const State &) = default;
 
-    State(State &&other)
-        : task(other.task), values(std::move(other.values)) {
-        other.task = nullptr;
-    }
+    // Construct a registered state with only packed data.
+    State(const AbstractTask &task, const StateRegistry &registry, StateID id,
+          const PackedStateBin *buffer);
+    // Construct a registered state with packed and unpacked data.
+    State(const AbstractTask &task, const StateRegistry &registry, StateID id,
+          const PackedStateBin *buffer, std::vector<int> &&values);
+    // Construct a state with only unpacked data.
+    State(const AbstractTask &task, std::vector<int> &&values);
 
-    State &operator=(State &&other) {
-        if (this != &other) {
-            task = other.task;
-            values = std::move(other.values);
-            other.task = nullptr;
-        }
-        return *this;
-    }
+    bool operator==(const State &other) const;
+    bool operator!=(const State &other) const;
 
-    bool operator==(const State &other) const {
-        assert(task == other.task);
-        return values == other.values;
-    }
+    /* Generate unpacked data if it is not available yet. Calling the function
+       on a state that already has unpacked data has no effect. */
+    void unpack() const;
 
-    bool operator!=(const State &other) const {
-        return !(*this == other);
-    }
+    std::size_t size() const;
+    FactProxy operator[](std::size_t var_id) const;
+    FactProxy operator[](VariableProxy var) const;
 
-    std::size_t size() const {
-        return values.size();
-    }
+    TaskProxy get_task() const;
 
-    FactProxy operator[](std::size_t var_id) const {
-        assert(var_id < size());
-        return FactProxy(*task, var_id, values[var_id]);
-    }
+    /* Return a pointer to the registry in which this state is registered.
+       If the state is not registered, return nullptr. */
+    const StateRegistry *get_registry() const;
+    /* Return the ID of the state within its registry. If the state is not
+       registered, return StateID::no_state. */
+    StateID get_id() const;
 
-    FactProxy operator[](VariableProxy var) const {
-        return (*this)[var.get_id()];
-    }
+    /* Access the unpacked values. Accessing the unpacked values in a state
+       that doesn't have them is an error. Use unpack() to ensure the data
+       exists. */
+    const std::vector<int> &get_unpacked_values() const;
 
-    inline TaskProxy get_task() const;
+    /* Access the packed values. Accessing packed values on states that do
+       not have them (unregistered states) is an error. */
+    const PackedStateBin *get_buffer() const;
 
-    const std::vector<int> &get_values() const {
-        return values;
-    }
-
-    State get_successor(OperatorProxy op) const {
-        if (task->get_num_axioms() > 0) {
-            ABORT("State::get_successor currently does not support axioms.");
-        }
-        assert(!op.is_axiom());
-        //assert(is_applicable(op, state));
-        std::vector<int> new_values = values;
-        for (EffectProxy effect : op.get_effects()) {
-            if (does_fire(effect, *this)) {
-                FactProxy effect_fact = effect.get_fact();
-                new_values[effect_fact.get_variable().get_id()] = effect_fact.get_value();
-            }
-        }
-        return State(*task, std::move(new_values));
-    }
+    /*
+      Create a successor state with the given operator. The operator is assumed
+      to be applicable and the precondition is not checked. This will create an
+      unpacked, unregistered successor. If you need registered successors, use
+      the methods of StateRegistry.
+      Using this method on states without unpacked values is an error. Use
+      unpack() to ensure the data exists.
+    */
+    State get_unregistered_successor(const OperatorProxy &op) const;
 };
 
 
 namespace utils {
 inline void feed(HashState &hash_state, const State &state) {
-    feed(hash_state, state.get_values());
+    /*
+      Hashing a state without unpacked data will result in an error.
+      We don't want to unpack states implicitly, so this rules out the option
+      of unpacking the states here on demand. Mixing hashes from packed and
+      unpacked states would lead to logically equal states with different
+      hashes. Hashing packed (and therefore registered) states also seems like
+      a performance error because it's much cheaper to hash the state IDs
+      instead.
+    */
+    feed(hash_state, state.get_unpacked_values());
 }
 }
 
@@ -675,6 +685,20 @@ public:
         return State(*task, std::move(state_values));
     }
 
+    // This method is meant to be called only by the state registry.
+    State create_state(
+        const StateRegistry &registry, StateID id,
+        const PackedStateBin *buffer) const {
+        return State(*task, registry, id, buffer);
+    }
+
+    // This method is meant to be called only by the state registry.
+    State create_state(
+        const StateRegistry &registry, StateID id,
+        const PackedStateBin *buffer, std::vector<int> &&state_values) const {
+        return State(*task, registry, id, buffer, std::move(state_values));
+    }
+
     State get_initial_state() const {
         return create_state(task->get_initial_state_values());
     }
@@ -687,14 +711,16 @@ public:
       case, the function aborts.
 
       Eventually, this method should perhaps not be part of TaskProxy but live
-      in a class that handles the task transformation and known about both the
+      in a class that handles the task transformation and knows about both the
       original and the transformed task.
     */
     State convert_ancestor_state(const State &ancestor_state) const {
         TaskProxy ancestor_task_proxy = ancestor_state.get_task();
         // Create a copy of the state values for the new state.
-        std::vector<int> state_values = ancestor_state.get_values();
-        task->convert_state_values(state_values, ancestor_task_proxy.task);
+        ancestor_state.unpack();
+        std::vector<int> state_values = ancestor_state.get_unpacked_values();
+        task->convert_ancestor_state_values(
+            state_values, ancestor_task_proxy.task);
         return create_state(std::move(state_values));
     }
 
@@ -717,10 +743,6 @@ inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, fact.var);
 }
 
-inline TaskProxy State::get_task() const {
-    return TaskProxy(*task);
-}
-
 inline bool does_fire(const EffectProxy &effect, const State &state) {
     for (FactProxy condition : effect.get_conditions()) {
         if (state[condition.get_variable()] != condition)
@@ -729,13 +751,106 @@ inline bool does_fire(const EffectProxy &effect, const State &state) {
     return true;
 }
 
-inline bool does_fire(const EffectProxy &effect, const GlobalState &state) {
-    for (FactProxy condition : effect.get_conditions()) {
-        FactPair condition_pair = condition.get_pair();
-        if (state[condition_pair.var] != condition_pair.value)
-            return false;
+inline bool State::operator==(const State &other) const {
+    assert(task == other.task);
+    if (registry != other.registry) {
+        std::cerr << "Comparing registered states with unregistered states "
+                  << "or registered states from different registries is "
+                  << "treated as an error because it is likely not "
+                  << "intentional."
+                  << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    return true;
+    if (registry) {
+        // Both states are registered and from the same registry.
+        return id == other.id;
+    } else {
+        // Both states are unregistered.
+        assert(values);
+        assert(other.values);
+        return *values == *other.values;
+    }
 }
 
+inline bool State::operator!=(const State &other) const {
+    return !(*this == other);
+}
+
+inline void State::unpack() const {
+    if (!values) {
+        int num_variables = size();
+        /*
+          A micro-benchmark in issue348 showed that constructing the vector
+          in the required size and then assigning values was faster than the
+          more obvious reserve/push_back. Although, the benchmark did not
+          profile this specific code.
+
+          We might consider a bulk-unpack method in state_packer that could be
+          more efficient. (One can imagine state packer to have extra data
+          structures that exploit sequentially unpacking each entry, by doing
+          things bin by bin.)
+        */
+        values = std::make_shared<std::vector<int>>(num_variables);
+        for (int var = 0; var < num_variables; ++var) {
+            (*values)[var] = state_packer->get(buffer, var);
+        }
+    }
+}
+
+inline std::size_t State::size() const {
+    return num_variables;
+}
+
+inline FactProxy State::operator[](std::size_t var_id) const {
+    assert(var_id < size());
+    if (values) {
+        return FactProxy(*task, var_id, (*values)[var_id]);
+    } else {
+        assert(buffer);
+        assert(state_packer);
+        return FactProxy(*task, var_id, state_packer->get(buffer, var_id));
+    }
+}
+
+inline FactProxy State::operator[](VariableProxy var) const {
+    return (*this)[var.get_id()];
+}
+
+inline TaskProxy State::get_task() const {
+    return TaskProxy(*task);
+}
+
+inline const StateRegistry *State::get_registry() const {
+    return registry;
+}
+
+inline StateID State::get_id() const {
+    return id;
+}
+
+inline const PackedStateBin *State::get_buffer() const {
+    /*
+      TODO: we should profile what happens if we #ifndef NDEBUG this test here
+      and in other places (e.g. the next method). The 'if' itself is probably
+      not costly, but the 'cerr <<' stuff might prevent inlining.
+    */
+    if (!buffer) {
+        std::cerr << "Accessing the packed values of an unregistered state is "
+                  << "treated as an error."
+                  << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    return buffer;
+}
+
+inline const std::vector<int> &State::get_unpacked_values() const {
+    if (!values) {
+        std::cerr << "Accessing the unpacked values of a state without "
+                  << "unpacking them first is treated as an error. Please "
+                  << "use State::unpack first."
+                  << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    return *values;
+}
 #endif

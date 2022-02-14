@@ -1,6 +1,7 @@
 #ifndef LP_LP_SOLVER_H
 #define LP_LP_SOLVER_H
 
+#include "../algorithms/named_vector.h"
 #include "../utils/language.h"
 #include "../utils/system.h"
 
@@ -41,6 +42,8 @@ enum class LPObjectiveSense {
 
 void add_lp_solver_option_to_parser(options::OptionParser &parser);
 
+class LinearProgram;
+
 class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
@@ -61,16 +64,52 @@ public:
     bool empty() const;
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
+
+    std::ostream &dump(std::ostream &stream, const LinearProgram *program = nullptr);
 };
 
 struct LPVariable {
     double lower_bound;
     double upper_bound;
     double objective_coefficient;
+    bool is_integer;
 
     LPVariable(double lower_bound,
                double upper_bound,
-               double objective_coefficient);
+               double objective_coefficient,
+               bool is_integer = false);
+};
+
+class LinearProgram {
+    LPObjectiveSense sense;
+    std::string objective_name;
+
+    named_vector::NamedVector<LPVariable> variables;
+    named_vector::NamedVector<LPConstraint> constraints;
+    double infinity;
+
+public:
+    // objective_name is the name of the objective function used when writing the lp to a file.
+    LinearProgram(LPObjectiveSense sense,
+                  named_vector::NamedVector<LPVariable> &&variables,
+                  named_vector::NamedVector<LPConstraint> &&constraints,
+                  double infinity)
+        : sense(sense), variables(std::move(variables)),
+          constraints(std::move(constraints)), infinity(infinity) {
+    }
+
+    /*
+      Variables and constraints can be given a custom name for debugging purposes.
+      This has an impact on performance and should not be used in production code.
+     */
+    named_vector::NamedVector<LPVariable> &get_variables();
+    named_vector::NamedVector<LPConstraint> &get_constraints();
+    const named_vector::NamedVector<LPVariable> &get_variables() const;
+    const named_vector::NamedVector<LPConstraint> &get_constraints() const;
+    double get_infinity() const;
+    LPObjectiveSense get_sense() const;
+    void set_objective_name(std::string name);
+    const std::string &get_objective_name() const;
 };
 
 #ifdef __GNUG__
@@ -79,6 +118,7 @@ struct LPVariable {
 #endif
 class LPSolver {
     bool is_initialized;
+    bool is_mip;
     bool is_solved;
     int num_permanent_constraints;
     bool has_temporary_constraints_;
@@ -110,10 +150,7 @@ public:
     */
     ~LPSolver();
 
-    LP_METHOD(void load_problem(
-                  LPObjectiveSense sense,
-                  const std::vector<LPVariable> &variables,
-                  const std::vector<LPConstraint> &constraints))
+    LP_METHOD(void load_problem(const LinearProgram &lp))
     LP_METHOD(void add_temporary_constraints(const std::vector<LPConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity() const)
@@ -125,7 +162,13 @@ public:
     LP_METHOD(void set_variable_lower_bound(int index, double bound))
     LP_METHOD(void set_variable_upper_bound(int index, double bound))
 
+    LP_METHOD(void set_mip_gap(double gap))
+
     LP_METHOD(void solve())
+    LP_METHOD(void write_lp(const std::string &filename) const)
+    LP_METHOD(void print_failure_analysis() const)
+    LP_METHOD(bool is_infeasible() const)
+    LP_METHOD(bool is_unbounded() const)
 
     /*
       Return true if the solving the LP showed that it is bounded feasible and

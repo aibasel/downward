@@ -5,6 +5,7 @@
 
 #include "../lp/lp_solver.h"
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -51,7 +52,7 @@ void StateEquationConstraints::build_propositions(const TaskProxy &task_proxy) {
 }
 
 void StateEquationConstraints::add_constraints(
-    vector<lp::LPConstraint> &constraints, double infinity) {
+    named_vector::NamedVector<lp::LPConstraint> &constraints, double infinity) {
     for (vector<Proposition> &var_propositions : propositions) {
         for (Proposition &prop : var_propositions) {
             lp::LPConstraint constraint(-infinity, infinity);
@@ -67,14 +68,13 @@ void StateEquationConstraints::add_constraints(
 }
 
 void StateEquationConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> &task, vector<lp::LPConstraint> &constraints,
-    double infinity) {
-    cout << "Initializing constraints from state equation." << endl;
+    const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
+    utils::g_log << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
     build_propositions(task_proxy);
-    add_constraints(constraints, infinity);
+    add_constraints(lp.get_constraints(), lp.get_infinity());
 
     // Initialize goal state.
     VariablesProxy variables = task_proxy.get_variables();

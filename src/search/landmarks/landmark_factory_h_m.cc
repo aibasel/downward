@@ -1,5 +1,8 @@
 #include "landmark_factory_h_m.h"
 
+#include "exploration.h"
+#include "landmark.h"
+
 #include "../abstract_task.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -294,9 +297,11 @@ void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m,
 void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &fluent) const {
     VariableProxy var = variables[fluent.var];
     FactProxy fact = var.get_fact(fluent.value);
-    cout << fact.get_name()
-         << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
-         << "->" << fact.get_value() << ")";
+    if (log.is_at_least_normal()) {
+        log << fact.get_name()
+            << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
+            << "->" << fact.get_value() << ")";
+    }
 }
 
 static FluentSet get_operator_precondition(const OperatorProxy &op) {
@@ -347,70 +352,70 @@ void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp 
         cond_eff.clear();
         int pm_fluent;
         size_t j;
-        cout << "PC:" << endl;
+        log << "PC:" << endl;
         for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
             print_fluentset(variables, h_m_table_[pm_fluent].fluents);
-            cout << endl;
+            log << endl;
 
             for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
                 cond_pc.insert(h_m_table_[pm_fluent].fluents[k]);
             }
         }
         // advance to effects section
-        cout << endl;
+        log << endl;
         ++j;
 
-        cout << "EFF:" << endl;
+        log << "EFF:" << endl;
         for (; j < op.cond_noops[i].size(); ++j) {
             int pm_fluent = op.cond_noops[i][j];
 
             print_fluentset(variables, h_m_table_[pm_fluent].fluents);
-            cout << endl;
+            log << endl;
 
             for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
                 cond_eff.insert(h_m_table_[pm_fluent].fluents[k]);
             }
         }
         conds.emplace_back(cond_pc, cond_eff);
-        cout << endl << endl << endl;
+        log << endl << endl << endl;
     }
 
-    cout << "Action " << op.index << endl;
-    cout << "Precondition: ";
+    log << "Action " << op.index << endl;
+    log << "Precondition: ";
     for (const FactPair &pc : pcs) {
         print_proposition(variables, pc);
-        cout << " ";
+        log << " ";
     }
 
-    cout << endl << "Effect: ";
+    log << endl << "Effect: ";
     for (const FactPair &eff : effs) {
         print_proposition(variables, eff);
-        cout << " ";
+        log << " ";
     }
-    cout << endl << "Conditionals: " << endl;
+    log << endl << "Conditionals: " << endl;
     int i = 0;
     for (const auto &cond : conds) {
-        cout << "Cond PC #" << i++ << ":" << endl << "\t";
+        log << "Cond PC #" << i++ << ":" << endl << "\t";
         for (const FactPair &pc : cond.first) {
             print_proposition(variables, pc);
-            cout << " ";
+            log << " ";
         }
-        cout << endl << "Cond Effect #" << i << ":" << endl << "\t";
+        log << endl << "Cond Effect #" << i << ":" << endl << "\t";
         for (const FactPair &eff : cond.second) {
             print_proposition(variables, eff);
-            cout << " ";
+            log << " ";
         }
-        cout << endl << endl;
+        log << endl << endl;
     }
 }
 
 void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) {
-    cout << "( ";
+    log << "( ";
     for (const FactPair &fact : fs) {
         print_proposition(variables, fact);
-        cout << " ";
+        log << " ";
     }
-    cout << ")";
+    log << ")";
 }
 
 // check whether fs2 is a possible noop set for action with fs1 as effect
@@ -549,7 +554,7 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
             }
             ++it;
         }
-        if (verbosity >= utils::Verbosity::DEBUG) {
+        if (log.is_at_least_debug()) {
             print_pm_op(variables, pm_op);
         }
     }
@@ -564,12 +569,14 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 
 LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
     : LandmarkFactory(opts),
-      m_(opts.get<int>("m")) {
+      m_(opts.get<int>("m")),
+      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
+      use_orders(opts.get<bool>("use_orders")) {
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "h^m landmarks m=" << m_ << endl;
+    if (log.is_at_least_normal()) {
+        log << "h^m landmarks m=" << m_ << endl;
     }
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
@@ -585,28 +592,50 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
         set_indices_[msets[i]] = i;
         h_m_table_[i].fluents = msets[i];
     }
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Using " << h_m_table_.size() << " P^m fluents." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Using " << h_m_table_.size() << " P^m fluents." << endl;
     }
 
     build_pm_ops(task_proxy);
 }
 
-void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Calculating achievers." << endl;
+void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
+    if (!conjunctive_landmarks)
+        discard_conjunctive_landmarks();
+    lm_graph->set_landmark_ids();
+
+    if (!use_orders)
+        discard_all_orderings();
+
+    calc_achievers(task_proxy);
+    mk_acyclic_graph();
+}
+
+void LandmarkFactoryHM::discard_conjunctive_landmarks() {
+    if (lm_graph->get_num_conjunctive_landmarks() > 0) {
+        log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
+            << " conjunctive landmarks" << endl;
+        lm_graph->remove_node_if(
+            [](const LandmarkNode &node) {return node.get_landmark().conjunctive;});
+    }
+}
+
+void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
+    assert(!achievers_calculated);
+    if (log.is_at_least_normal()) {
+        log << "Calculating achievers." << endl;
     }
 
     OperatorsProxy operators = task_proxy.get_operators();
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
-    for (auto &lmn : lm_graph->get_nodes()) {
+    for (auto &lm_node : lm_graph->get_nodes()) {
+        Landmark &landmark = lm_node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
-        for (const FactPair &lm_fact : lmn->facts) {
-            const vector<int> &ops =
-                lm_graph->get_operators_including_eff(lm_fact);
+        for (const FactPair &lm_fact : landmark.facts) {
+            const vector<int> &ops = get_operators_including_eff(lm_fact);
             candidates.insert(ops.begin(), ops.end());
         }
 
@@ -614,8 +643,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration 
             FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
             FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
-            for (j = 0; j < lmn->facts.size(); ++j) {
-                const FactPair &lm_fact = lmn->facts[j];
+            for (j = 0; j < landmark.facts.size(); ++j) {
+                const FactPair &lm_fact = landmark.facts[j];
                 // action adds this element of lm as well
                 if (find(post.begin(), post.end(), lm_fact) != post.end())
                     continue;
@@ -643,12 +672,13 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy, Exploration 
                     break;
                 }
             }
-            if (j == lmn->facts.size()) {
+            if (j == landmark.facts.size()) {
                 // not inconsistent with any of the other landmark fluents
-                lmn->possible_achievers.insert(op_id);
+                landmark.possible_achievers.insert(op_id);
             }
         }
     }
+    achievers_calculated = true;
 }
 
 void LandmarkFactoryHM::free_unneeded_memory() {
@@ -747,7 +777,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                 union_with(local_landmarks, h_m_table_[*it].landmarks);
                 insert_into(local_landmarks, *it);
 
-                if (use_orders()) {
+                if (use_orders) {
                     insert_into(local_necessary, *it);
                 }
             }
@@ -763,7 +793,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                     // or add op to first achievers
                     if (!contains(local_landmarks, *it)) {
                         insert_into(h_m_table_[*it].first_achievers, op_index);
-                        if (use_orders()) {
+                        if (use_orders) {
                             intersect_with(h_m_table_[*it].necessary, local_necessary);
                         }
                     }
@@ -773,7 +803,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                 } else {
                     h_m_table_[*it].level = level;
                     h_m_table_[*it].landmarks = local_landmarks;
-                    if (use_orders()) {
+                    if (use_orders) {
                         h_m_table_[*it].necessary = local_necessary;
                     }
                     insert_into(h_m_table_[*it].first_achievers, op_index);
@@ -812,13 +842,13 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
         current_trigger.swap(next_trigger);
         next_trigger.clear();
 
-        if (verbosity >= utils::Verbosity::NORMAL) {
-            cout << "Level " << level << " completed." << endl;
+        if (log.is_at_least_normal()) {
+            log << "Level " << level << " completed." << endl;
         }
         ++level;
     }
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "h^m landmarks computed." << endl;
+    if (log.is_at_least_normal()) {
+        log << "h^m landmarks computed." << endl;
     }
 }
 
@@ -839,7 +869,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
 
     cn_landmarks = local_landmarks;
 
-    if (use_orders()) {
+    if (use_orders) {
         cn_necessary.clear();
         cn_necessary = local_necessary;
     }
@@ -849,7 +879,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
         union_with(cn_landmarks, h_m_table_[pm_fluent].landmarks);
         insert_into(cn_landmarks, pm_fluent);
 
-        if (use_orders()) {
+        if (use_orders) {
             insert_into(cn_necessary, pm_fluent);
         }
     }
@@ -869,7 +899,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
             // or add op to first achievers
             if (!contains(cn_landmarks, pm_fluent)) {
                 insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
-                if (use_orders()) {
+                if (use_orders) {
                     intersect_with(h_m_table_[pm_fluent].necessary, cn_necessary);
                 }
             }
@@ -879,7 +909,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
         } else {
             h_m_table_[pm_fluent].level = level;
             h_m_table_[pm_fluent].landmarks = cn_landmarks;
-            if (use_orders()) {
+            if (use_orders) {
                 h_m_table_[pm_fluent].necessary = cn_necessary;
             }
             insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
@@ -889,29 +919,21 @@ void LandmarkFactoryHM::compute_noop_landmarks(
 }
 
 void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
-    set<FactPair> lm;
-
-    map<int, LandmarkNode *>::iterator it = lm_node_table_.find(set_index);
-
-    if (it == lm_node_table_.end()) {
-        for (const FactPair &fluent : h_m_table_[set_index].fluents) {
-            lm.insert(fluent);
-        }
-        LandmarkNode *node;
-        if (lm.size() > 1) { // conjunctive landmark
-            node = &lm_graph->landmark_add_conjunctive(lm);
-        } else { // simple landmark
-            node = &lm_graph->landmark_add_simple(h_m_table_[set_index].fluents[0]);
-        }
-        node->in_goal = goal;
-        node->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),
-                                     h_m_table_[set_index].first_achievers.end());
-        lm_node_table_[set_index] = node;
+    if (lm_node_table_.find(set_index) == lm_node_table_.end()) {
+        const HMEntry &hm_entry = h_m_table_[set_index];
+        vector<FactPair> facts(hm_entry.fluents);
+        utils::sort_unique(facts);
+        assert(!facts.empty());
+        Landmark landmark(facts, false, (facts.size() > 1), goal);
+        landmark.first_achievers.insert(
+            hm_entry.first_achievers.begin(),
+            hm_entry.first_achievers.end());
+        lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark));
     }
 }
 
 void LandmarkFactoryHM::generate_landmarks(
-    const shared_ptr<AbstractTask> &task, Exploration &) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     initialize(task_proxy);
     compute_h_m_landmarks(task_proxy);
@@ -927,11 +949,11 @@ void LandmarkFactoryHM::generate_landmarks(
         int set_index = set_indices_[goal_subset];
 
         if (h_m_table_[set_index].level == -1) {
-            if (verbosity >= utils::Verbosity::NORMAL) {
-                cout << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
-                cout << "Subset is: ";
+            if (log.is_at_least_normal()) {
+                log << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
+                log << "Subset is: ";
                 print_fluentset(variables, h_m_table_[set_index].fluents);
-                cout << endl;
+                log << endl;
             }
         }
 
@@ -948,7 +970,7 @@ void LandmarkFactoryHM::generate_landmarks(
     for (int lm : all_lms) {
         add_lm_node(lm, false);
     }
-    if (use_orders()) {
+    if (use_orders) {
         // do reduction of graph
         // if f2 is landmark for f1, subtract landmark set of f2 from that of f1
         for (int f1 : all_lms) {
@@ -959,7 +981,7 @@ void LandmarkFactoryHM::generate_landmarks(
             set_minus(h_m_table_[f1].landmarks, everything_to_remove);
             // remove necessaries here, otherwise they will be overwritten
             // since we are writing them as greedy nec. orderings.
-            if (use_orders())
+            if (use_orders)
                 set_minus(h_m_table_[f1].landmarks, h_m_table_[f1].necessary);
         }
 
@@ -970,16 +992,22 @@ void LandmarkFactoryHM::generate_landmarks(
                 assert(lm_node_table_.find(lm) != lm_node_table_.end());
                 assert(lm_node_table_.find(set_index) != lm_node_table_.end());
 
-                edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::natural);
+                edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::NATURAL);
             }
-            if (use_orders()) {
+            if (use_orders) {
                 for (int gn : h_m_table_[set_index].necessary) {
-                    edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::greedy_necessary);
+                    edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
                 }
             }
         }
     }
     free_unneeded_memory();
+
+    postprocess(task_proxy);
+}
+
+bool LandmarkFactoryHM::computes_reasonable_orders() const {
+    return false;
 }
 
 bool LandmarkFactoryHM::supports_conditional_effects() const {
@@ -991,12 +1019,14 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "h^m Landmarks",
         "The landmark generation method introduced by "
         "Keyder, Richter & Helmert (ECAI 2010).");
-    parser.document_note(
-        "Relevant options",
-        "m, reasonable_orders, conjunctive_landmarks, no_orders");
     parser.add_option<int>(
         "m", "subset size (if unsure, use the default of 2)", "2");
-    _add_options_to_parser(parser);
+    parser.add_option<bool>(
+        "conjunctive_landmarks",
+        "keep conjunctive landmarks",
+        "true");
+    add_landmark_factory_options_to_parser(parser);
+    _add_use_orders_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;

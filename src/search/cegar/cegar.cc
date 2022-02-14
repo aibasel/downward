@@ -85,29 +85,28 @@ CEGAR::CEGAR(
     double max_time,
     PickSplit pick,
     utils::RandomNumberGenerator &rng,
-    utils::Verbosity verbosity)
+    utils::LogProxy &log)
     : task_proxy(*task),
       domain_sizes(get_domain_sizes(task_proxy)),
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
       split_selector(task, pick),
-      abstraction(utils::make_unique_ptr<Abstraction>(task, verbosity >= utils::Verbosity::DEBUG)),
+      abstraction(utils::make_unique_ptr<Abstraction>(task, log)),
       abstract_search(task_properties::get_operator_costs(task_proxy)),
       timer(max_time),
-      verbosity(verbosity) {
+      log(log) {
     assert(max_states >= 1);
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Start building abstraction." << endl;
-        cout << "Maximum number of states: " << max_states << endl;
-        cout << "Maximum number of transitions: "
-             << max_non_looping_transitions << endl;
+    if (log.is_at_least_normal()) {
+        log << "Start building abstraction." << endl;
+        log << "Maximum number of states: " << max_states << endl;
+        log << "Maximum number of transitions: "
+                     << max_non_looping_transitions << endl;
     }
 
     refinement_loop(rng);
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        utils::g_log << "Done building abstraction." << endl;
-        cout << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
-
+    if (log.is_at_least_normal()) {
+        log << "Done building abstraction." << endl;
+        log << "Time for building abstraction: " << timer.get_elapsed_time() << endl;
         print_statistics();
     }
 }
@@ -145,16 +144,24 @@ void CEGAR::separate_facts_unreachable_before_goal() {
 
 bool CEGAR::may_keep_refining() const {
     if (abstraction->get_num_states() >= max_states) {
-        cout << "Reached maximum number of states." << endl;
+        if (log.is_at_least_normal()) {
+            log << "Reached maximum number of states." << endl;
+        }
         return false;
     } else if (abstraction->get_transition_system().get_num_non_loops() >= max_non_looping_transitions) {
-        cout << "Reached maximum number of transitions." << endl;
+        if (log.is_at_least_normal()) {
+            log << "Reached maximum number of transitions." << endl;
+        }
         return false;
     } else if (timer.is_expired()) {
-        cout << "Reached time limit." << endl;
+        if (log.is_at_least_normal()) {
+            log << "Reached time limit." << endl;
+        }
         return false;
     } else if (!utils::extra_memory_padding_is_reserved()) {
-        cout << "Reached memory limit." << endl;
+        if (log.is_at_least_normal()) {
+            log << "Reached memory limit." << endl;
+        }
         return false;
     }
     return true;
@@ -172,12 +179,9 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         separate_facts_unreachable_before_goal();
     }
 
-    utils::Timer find_trace_timer;
-    utils::Timer find_flaw_timer;
-    utils::Timer refine_timer;
-    find_trace_timer.stop();
-    find_flaw_timer.stop();
-    refine_timer.stop();
+    utils::Timer find_trace_timer(false);
+    utils::Timer find_flaw_timer(false);
+    utils::Timer refine_timer(false);
 
     while (may_keep_refining()) {
         find_trace_timer.resume();
@@ -187,7 +191,9 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
             abstraction->get_goals());
         find_trace_timer.stop();
         if (!solution) {
-            cout << "Abstract task is unsolvable." << endl;
+            if (log.is_at_least_normal()) {
+                log << "Abstract task is unsolvable." << endl;
+            }
             break;
         }
 
@@ -195,8 +201,8 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         unique_ptr<Flaw> flaw = find_flaw(*solution);
         find_flaw_timer.stop();
         if (!flaw) {
-            if (verbosity >= utils::Verbosity::NORMAL) {
-                cout << "Found concrete solution during refinement." << endl;
+            if (log.is_at_least_normal()) {
+                log << "Found concrete solution during refinement." << endl;
             }
             break;
         }
@@ -212,31 +218,30 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
             state_id, new_state_ids.first, new_state_ids.second);
         refine_timer.stop();
 
-        if (verbosity >= utils::Verbosity::VERBOSE &&
+        if (log.is_at_least_verbose() &&
             abstraction->get_num_states() % 1000 == 0) {
-            utils::g_log << abstraction->get_num_states() << "/" << max_states << " states, "
+            log << abstraction->get_num_states() << "/" << max_states << " states, "
                          << abstraction->get_transition_system().get_num_non_loops() << "/"
                          << max_non_looping_transitions << " transitions" << endl;
         }
     }
-    if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "Time for finding abstract traces: " << find_trace_timer << endl;
-        cout << "Time for finding flaws: " << find_flaw_timer << endl;
-        cout << "Time for splitting states: " << refine_timer << endl;
+    if (log.is_at_least_normal()) {
+        log << "Time for finding abstract traces: " << find_trace_timer << endl;
+        log << "Time for finding flaws: " << find_flaw_timer << endl;
+        log << "Time for splitting states: " << refine_timer << endl;
     }
 }
 
 unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
-    bool debug = verbosity >= utils::Verbosity::DEBUG;
-    if (debug)
-        cout << "Check solution:" << endl;
+    if (log.is_at_least_debug())
+        log << "Check solution:" << endl;
 
     const AbstractState *abstract_state = &abstraction->get_initial_state();
     State concrete_state = task_proxy.get_initial_state();
     assert(abstract_state->includes(concrete_state));
 
-    if (debug)
-        cout << "  Initial abstract state: " << *abstract_state << endl;
+    if (log.is_at_least_debug())
+        log << "  Initial abstract state: " << *abstract_state << endl;
 
     for (const Transition &step : solution) {
         if (!utils::extra_memory_padding_is_reserved())
@@ -244,13 +249,13 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         OperatorProxy op = task_proxy.get_operators()[step.op_id];
         const AbstractState *next_abstract_state = &abstraction->get_state(step.target_id);
         if (task_properties::is_applicable(op, concrete_state)) {
-            if (debug)
-                cout << "  Move to " << *next_abstract_state << " with "
-                     << op.get_name() << endl;
-            State next_concrete_state = concrete_state.get_successor(op);
+            if (log.is_at_least_debug())
+                log << "  Move to " << *next_abstract_state << " with "
+                    << op.get_name() << endl;
+            State next_concrete_state = concrete_state.get_unregistered_successor(op);
             if (!next_abstract_state->includes(next_concrete_state)) {
-                if (debug)
-                    cout << "  Paths deviate." << endl;
+                if (log.is_at_least_debug())
+                    log << "  Paths deviate." << endl;
                 return utils::make_unique_ptr<Flaw>(
                     move(concrete_state),
                     *abstract_state,
@@ -259,8 +264,8 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             abstract_state = next_abstract_state;
             concrete_state = move(next_concrete_state);
         } else {
-            if (debug)
-                cout << "  Operator not applicable: " << op.get_name() << endl;
+            if (log.is_at_least_debug())
+                log << "  Operator not applicable: " << op.get_name() << endl;
             return utils::make_unique_ptr<Flaw>(
                 move(concrete_state),
                 *abstract_state,
@@ -272,8 +277,8 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         // We found a concrete solution.
         return nullptr;
     } else {
-        if (debug)
-            cout << "  Goal test failed." << endl;
+        if (log.is_at_least_debug())
+            log << "  Goal test failed." << endl;
         return utils::make_unique_ptr<Flaw>(
             move(concrete_state),
             *abstract_state,
@@ -284,7 +289,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
 void CEGAR::print_statistics() {
     abstraction->print_statistics();
     int init_id = abstraction->get_initial_state().get_id();
-    cout << "Initial h value: " << abstract_search.get_h_value(init_id) << endl;
-    cout << endl;
+    log << "Initial h value: " << abstract_search.get_h_value(init_id) << endl;
+    log << endl;
 }
 }

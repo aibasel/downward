@@ -3,6 +3,7 @@
 #include "option_parser.h"
 #include "plugin.h"
 
+#include "utils/logging.h"
 #include "utils/system.h"
 
 #include <cassert>
@@ -24,20 +25,22 @@ bool Evaluator::dead_ends_are_reliable() const {
     return true;
 }
 
-void Evaluator::report_value_for_initial_state(const EvaluationResult &result) const {
+void Evaluator::report_value_for_initial_state(
+    const EvaluationResult &result, utils::LogProxy &log) const {
     assert(use_for_reporting_minima);
-    cout << "Initial heuristic value for " << description << ": ";
+    log << "Initial heuristic value for " << description << ": ";
     if (result.is_infinite())
-        cout << "infinity";
+        log << "infinity";
     else
-        cout << result.get_evaluator_value();
-    cout << endl;
+        log << result.get_evaluator_value();
+    log << endl;
 }
 
-void Evaluator::report_new_minimum_value(const EvaluationResult &result) const {
+void Evaluator::report_new_minimum_value(
+    const EvaluationResult &result, utils::LogProxy &log) const {
     assert(use_for_reporting_minima);
-    cout << "New best heuristic value for " << description << ": "
-         << result.get_evaluator_value() << endl;
+    log << "New best heuristic value for " << description << ": "
+        << result.get_evaluator_value() << endl;
 }
 
 const string &Evaluator::get_description() const {
@@ -60,11 +63,11 @@ bool Evaluator::does_cache_estimates() const {
     return false;
 }
 
-bool Evaluator::is_estimate_cached(const GlobalState &) const {
+bool Evaluator::is_estimate_cached(const State &) const {
     return false;
 }
 
-int Evaluator::get_cached_estimate(const GlobalState &) const {
+int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 

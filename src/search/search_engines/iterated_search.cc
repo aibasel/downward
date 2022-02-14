@@ -3,6 +3,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
+
 #include <iostream>
 
 using namespace std;
@@ -29,9 +31,9 @@ shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     OptionParser parser(engine_configs[engine_configs_index], registry, predefinitions, false);
     shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
 
-    cout << "Starting search: ";
-    kptree::print_tree_bracketed(engine_configs[engine_configs_index], cout);
-    cout << endl;
+    ostringstream stream;
+    kptree::print_tree_bracketed(engine_configs[engine_configs_index], stream);
+    log << "Starting search: " << stream.str() << endl;
 
     return engine;
 }
@@ -96,29 +98,29 @@ SearchStatus IteratedSearch::step() {
 
 SearchStatus IteratedSearch::step_return_value() {
     if (iterated_found_solution)
-        cout << "Best solution cost so far: " << best_bound << endl;
+        log << "Best solution cost so far: " << best_bound << endl;
 
     if (last_phase_found_solution) {
         if (continue_on_solve) {
-            cout << "Solution found - keep searching" << endl;
+            log << "Solution found - keep searching" << endl;
             return IN_PROGRESS;
         } else {
-            cout << "Solution found - stop searching" << endl;
+            log << "Solution found - stop searching" << endl;
             return SOLVED;
         }
     } else {
         if (continue_on_fail) {
-            cout << "No solution found - keep searching" << endl;
+            log << "No solution found - keep searching" << endl;
             return IN_PROGRESS;
         } else {
-            cout << "No solution found - stop searching" << endl;
+            log << "No solution found - stop searching" << endl;
             return iterated_found_solution ? SOLVED : FAILED;
         }
     }
 }
 
 void IteratedSearch::print_statistics() const {
-    cout << "Cumulative statistics:" << endl;
+    log << "Cumulative statistics:" << endl;
     statistics.print_detailed_statistics();
 }
 

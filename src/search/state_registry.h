@@ -3,7 +3,6 @@
 
 #include "abstract_task.h"
 #include "axioms.h"
-#include "global_state.h"
 #include "state_id.h"
 
 #include "algorithms/int_hash_set.h"
@@ -17,22 +16,21 @@
 /*
   Overview of classes relevant to storing and working with registered states.
 
-  GlobalState
-    This class is used for registered, packed states.
-    It contains a pointer to the (compressed) variable values and can be copied
-    cheaply. For fast access by the heuristic the state should be unpacked to a
-    State first.
-    A GlobalState is always registered in a StateRegistry and has a valid ID.
-    It can (only) be constructed from a StateRegistry by factory methods for
-    the initial state and successor states. It never owns the actual state data
-    which is borrowed from the StateRegistry that created it.
-
   State
-    This class is used for fast access to state data. It contains and owns all
-    state data, so it is expensive to copy.
-    State objects can be created by unpacking a GlobalState or from given
-    variable values and a task. States are not registered, so they are not
-    guaranteed to be reachable and use no form of duplicate detection.
+    Objects of this class can represent registered or unregistered states.
+    Registered states contain a pointer to the StateRegistry that created them
+    and the ID they have there. Using this data, states can be used to index
+    PerStateInformation objects.
+    In addition, registered states have a pointer to the packed data of a state
+    that is stored in their registry. Values of the state can be accessed
+    through this pointer. For situations where a state's values have to be
+    accessed a lot, the state's data can be unpacked. The unpacked data is
+    stored in a vector<int> to which the state maintains a shared pointer.
+    Unregistered states contain only this unpacked data. Compared to registered
+    states, they are not guaranteed to be reachable and use no form of duplicate
+    detection.
+    Copying states is relatively cheap because the actual data does not have to
+    be copied.
 
   StateID
     StateIDs identify states within a state registry.
@@ -63,7 +61,7 @@
 
   PerStateInformation<T>
     Associates a value of type T with every state in a given StateRegistry.
-    Can be thought of as a very compactly implemented map from GlobalState to T.
+    Can be thought of as a very compactly implemented map from State to T.
     References stay valid as long as the state registry exists. Memory usage is
     essentially the same as a vector<T> whose size is the number of states in
     the registry.
@@ -107,6 +105,12 @@
     The heuristic object uses an attribute of type PerStateBitset to store for each
     state and each landmark whether it was reached in this state.
 */
+namespace int_packer {
+class IntPacker;
+}
+
+using PackedStateBin = int_packer::IntPacker::Bin;
+
 
 class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     struct StateIDSemanticHash {
@@ -161,13 +165,12 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
-    GlobalState *cached_initial_state;
+    std::unique_ptr<State> cached_initial_state;
 
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
 public:
     explicit StateRegistry(const TaskProxy &task_proxy);
-    ~StateRegistry();
 
     const TaskProxy &get_task_proxy() const {
         return task_proxy;
@@ -177,28 +180,28 @@ public:
         return num_variables;
     }
 
-    int get_state_value(const PackedStateBin *buffer, int var) const {
-        return state_packer.get(buffer, var);
+    const int_packer::IntPacker &get_state_packer() const {
+        return state_packer;
     }
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
       to a state in this registry. Do not mix IDs from from different registries.
     */
-    GlobalState lookup_state(StateID id) const;
+    State lookup_state(StateID id) const;
 
     /*
       Returns a reference to the initial state and registers it if this was not
       done before. The result is cached internally so subsequent calls are cheap.
     */
-    const GlobalState &get_initial_state();
+    const State &get_initial_state();
 
     /*
       Returns the state that results from applying op to predecessor and
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    GlobalState get_successor_state(const GlobalState &predecessor, const OperatorProxy &op);
+    State get_successor_state(const State &predecessor, const OperatorProxy &op);
 
     /*
       Returns the number of states registered so far.
@@ -209,7 +212,7 @@ public:
 
     int get_state_size_in_bytes() const;
 
-    void print_statistics() const;
+    void print_statistics(utils::LogProxy &log) const;
 
     class const_iterator : public std::iterator<
                                std::forward_iterator_tag, StateID> {

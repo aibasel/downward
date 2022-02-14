@@ -34,7 +34,7 @@
   SegmentedArrayVector is a similar class that can be used for compactly
   storing many fixed-size arrays. It's essentially a variant of SegmentedVector
   where the size of the stored data is only known at runtime, not at compile
-  time.
+  time. Note that we do not support 0-length arrays (checked with an assertion).
 */
 
 // TODO: Get rid of the code duplication here. How to do it without
@@ -179,7 +179,8 @@ class SegmentedArrayVector {
     SegmentedArrayVector &operator=(const SegmentedArrayVector<Element> &);
 public:
     SegmentedArrayVector(size_t elements_per_array_)
-        : elements_per_array(elements_per_array_),
+        : elements_per_array((assert(elements_per_array_ > 0),
+                              elements_per_array_)),
           arrays_per_segment(
               std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
@@ -189,7 +190,8 @@ public:
 
     SegmentedArrayVector(size_t elements_per_array_, const ElementAllocator &allocator_)
         : element_allocator(allocator_),
-          elements_per_array(elements_per_array_),
+          elements_per_array((assert(elements_per_array_ > 0),
+                              elements_per_array_)),
           arrays_per_segment(
               std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
