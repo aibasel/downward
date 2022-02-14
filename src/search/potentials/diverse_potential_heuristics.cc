@@ -91,7 +91,7 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     if (samples_to_functions.size() == last_num_samples) {
         if (log.is_at_least_verbose()) {
             log << "No sample removed -> Use arbitrary precomputed function."
-                 << endl;
+                << endl;
         }
         function = move(samples_to_functions.begin()->second);
         // The move operation invalidated the entry, remove it.
@@ -100,8 +100,8 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     }
     if (log.is_at_least_verbose()) {
         log << "Removed " << last_num_samples - samples_to_functions.size()
-             << " samples. " << samples_to_functions.size() << " remaining."
-             << endl;
+            << " samples. " << samples_to_functions.size() << " remaining."
+            << endl;
     }
     return function;
 }

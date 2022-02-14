@@ -100,7 +100,7 @@ CEGAR::CEGAR(
         log << "Start building abstraction." << endl;
         log << "Maximum number of states: " << max_states << endl;
         log << "Maximum number of transitions: "
-                     << max_non_looping_transitions << endl;
+            << max_non_looping_transitions << endl;
     }
 
     refinement_loop(rng);
@@ -221,8 +221,8 @@ void CEGAR::refinement_loop(utils::RandomNumberGenerator &rng) {
         if (log.is_at_least_verbose() &&
             abstraction->get_num_states() % 1000 == 0) {
             log << abstraction->get_num_states() << "/" << max_states << " states, "
-                         << abstraction->get_transition_system().get_num_non_loops() << "/"
-                         << max_non_looping_transitions << " transitions" << endl;
+                << abstraction->get_transition_system().get_num_non_loops() << "/"
+                << max_non_looping_transitions << " transitions" << endl;
         }
     }
     if (log.is_at_least_normal()) {

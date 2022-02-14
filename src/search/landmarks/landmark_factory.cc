@@ -69,9 +69,9 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
             log << "Warning! No landmarks found. Task unsolvable?" << endl;
         else {
             log << "Discovered " << lm_graph->get_num_landmarks()
-                         << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
-                         << " are disjunctive and "
-                         << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
+                << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
+                << " are disjunctive and "
+                << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
             log << lm_graph->get_num_edges() << " edges" << endl;
         }
     }
@@ -156,7 +156,7 @@ void LandmarkFactory::mk_acyclic_graph() {
     // assert(acyclic_node_set.size() == number_of_landmarks());
     if (log.is_at_least_normal()) {
         log << "Removed " << removed_edges
-                     << " reasonable or obedient reasonable orders" << endl;
+            << " reasonable or obedient reasonable orders" << endl;
     }
 }
 

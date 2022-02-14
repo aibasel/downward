@@ -80,11 +80,11 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     if (log.is_at_least_normal()) {
         log << "Landmark graph generation time: " << lm_graph_timer << endl;
         log << "Landmark graph contains " << lgraph->get_num_landmarks()
-                     << " landmarks, of which " << lgraph->get_num_disjunctive_landmarks()
-                     << " are disjunctive and " << lgraph->get_num_conjunctive_landmarks()
-                     << " are conjunctive." << endl;
+            << " landmarks, of which " << lgraph->get_num_disjunctive_landmarks()
+            << " are disjunctive and " << lgraph->get_num_conjunctive_landmarks()
+            << " are conjunctive." << endl;
         log << "Landmark graph contains " << lgraph->get_num_edges()
-                     << " orderings." << endl;
+            << " orderings." << endl;
     }
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
