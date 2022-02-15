@@ -713,7 +713,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME OPERATOR_COUNTING
-    HELP "Plugin containing the code for operator counting heuristics"
+    HELP "Plugin containing the code for operator-counting heuristics"
     SOURCES
         operator_counting/constraint_generator
         operator_counting/delete_relaxation_constraints

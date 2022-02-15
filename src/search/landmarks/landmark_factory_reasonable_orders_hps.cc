@@ -379,7 +379,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Adds reasonable orders and obedient reasonable orders "
         "described in the following paper" +
         utils::format_journal_reference(
-            {"Jörg Hoffman", "JuliePorteous", "LauraSebastia"},
+            {"Jörg Hoffmann", "Julie Porteous", "Laura Sebastia"},
             "Ordered Landmarks in Planning",
             "https://jair.org/index.php/jair/article/view/10390/24882",
             "Journal of Artificial Intelligence Research",
