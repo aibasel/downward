@@ -72,7 +72,7 @@ else
         echo "The version number '$VERSION' implies a bugfix release but there is no branch '$BRANCH' yet."
         exit 1
     fi
-    git branch "$BRANCH"
+    git checkout -b "$BRANCH"
 fi
 
 # Update version number.
