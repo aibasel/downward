@@ -88,6 +88,7 @@ Details:
 
 - LP/IP: Support integer variables in linear programs.
   <https://issues.fast-downward.org/issue891>
+  <https://issues.fast-downward.org/issue1048>
   You can now use the LP solver interface to solve mixed integer programs.
   In particular, the operator-counting heuristics now have an option
   `use_integer_operator_counts` that improves the heuristic value by
