@@ -5,8 +5,8 @@ Fast Downward is a domain-independent classical planning system.
 Copyright 2003-2022 Fast Downward contributors (see below).
 
 For further information:
-- Fast Downward website: <http://www.fast-downward.org>
-- Report a bug or file an issue: <http://issues.fast-downward.org>
+- Fast Downward website: <https://www.fast-downward.org>
+- Report a bug or file an issue: <https://issues.fast-downward.org>
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
 - Fast Downward main repository: <https://github.com/aibasel/downward>
 

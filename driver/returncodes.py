@@ -2,7 +2,7 @@ import sys
 
 """
 We document Fast Downward exit codes at
-http://www.fast-downward.org/ExitCodes. Please update this documentation when
+https://www.fast-downward.org/ExitCodes. Please update this documentation when
 making changes below.
 """
 
