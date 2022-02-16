@@ -9,15 +9,84 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
-## Changes since the last release
+## Fast Downward 21.12
 
-- Add debugging methods to LP solver interface.
-  <https://issues.fast-downward.org/issue960>
-  You can now assign names to LP variables and constraints for easier
-  debugging. Since this incurs a slight runtime penalty, we recommend
-  against using this feature when running experiments.
+Released on February 16, 2022.
 
-- Support integer variables in linear programs.
+Highlights:
+
+- Fast Downward now has a logo!
+
+- We added new methods for generating patterns and pattern collections
+  based on counterexample-guided abstraction refinement and a new
+  highly random method for generating individual patterns based on the
+  causal graph. These methods are due to Rovner et al. (ICAPS 2019).
+
+- The operator-counting heuristic now has an option to use integer
+  operator counts rather than real-valued operator counts. This makes
+  the heuristic more accurate at a vastly increased computational cost
+  (not generally recommended, but very useful for targeted
+  experiments). We added a new constraint generator for Imai and
+  Fukunaga's delete relaxation constraints (JAIR 2015). With the right
+  option settings, the operator-counting heuristic with this new
+  constraint generator results in the optimal delete relaxation
+  heuristic h+.
+
+- Pruning methods now have a different interface. The mechanism to
+  disable pruning automatically after a number of expansions that
+  resulted in little pruning is now implemented as its own pruning
+  method that wraps another pruning method. Be careful that the old
+  syntax is still accepted by the planner, but the options that limit
+  pruning are ignored. (This is due to an option parser bug; a fix is
+  in the works.)
+
+- In our ongoing efforts to improve the landmark code, the landmark
+  factories and landmark-count heuristic received a major overhaul. We
+  removed irrelevant options for landmark factories, decoupled the
+  computation of reasonable orders from landmark generation, made many
+  internal code and data structure changes to make the code nicer to
+  work with and fixed several long-standing bugs.
+
+- All pattern generators and pattern collection generators now have
+  controllable verbosity. Similar changes to other components of the
+  planner are planned. This is part of a general effort to make
+  logging more configurable.
+
+- For developers: the internal representation of states has been
+  overhauled, resolving the confusion between the previous classes
+  GlobalState and State.
+
+Details:
+
+- new Fast Downward logo
+  <https://issues.fast-downward.org/issue1024>
+  You can see the logo in the README file on
+  <https://github.com/aibasel/downward>. Check out
+  <https://www.fast-downward.org/ForDevelopers/Blog/LogoDesigns> for
+  alternative suggestions including the ever so popular "truck falling
+  down the hill" logo.
+
+- fast-downward.py main script: the script now automatically finds domain
+  files <taskfile>-domain.<ext> for task files called <taskfile>.<ext>
+  <https://issues.fast-downward.org/issue1033>
+
+- pdbs: Integrate the Rovner et al. pattern generation methods based
+  on CEGAR.
+  <https://issues.fast-downward.org/issue1007>
+
+- pdbs: Integrate the Rovner et al. random pattern generation methods.
+  <https://issues.fast-downward.org/issue1008>
+
+- pdbs: All pattern (collection) generators now have an option
+  `verbosity` to set the desired level of output.
+  <https://issues.fast-downward.org/issue1043>
+  Internally, generators now use their own logger rather than g_log.
+
+- pdbs, for developers: Replace size_t by int for abstract state
+  hashes in PDB-related code.
+  <https://issues.fast-downward.org/issue1018>
+
+- LP/IP: Support integer variables in linear programs.
   <https://issues.fast-downward.org/issue891>
   You can now use the LP solver interface to solve mixed integer programs.
   In particular, the operator-counting heuristics now have an option
@@ -25,159 +94,153 @@ after the corresponding tracker issues.
   forcing operator counts to take integer values. Solving a MIP is NP-hard
   and usually takes much longer than solving the corresponding LP.
 
-- For developers: move functionality used during search away from
-  LandmarkGraph, making it constant after creation.
+- LP/IP: Delete-relation constraints can now be used in the
+  operator-counting framework. The constraints defined by Imai and
+  Fukunaga (JAIR 2015) encode different relaxations of the
+  delete-relaxation heuristic. For details, see
+  <https://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints>
+  <https://issues.fast-downward.org/issue983>
+
+- LP/IP: Fix a bug which induced inadmissible heuristic values when
+  solving MIPs. This only occurred for operator-counting heuristics
+  with integer variables and very large heuristic values (at least
+  10,000).
+  <https://issues.fast-downward.org/issue983>
+
+- LP/IP, for developers: Add debugging methods to LP solver interface.
+  <https://issues.fast-downward.org/issue960>
+  You can now assign names to LP variables and constraints for easier
+  debugging. Since this incurs a slight runtime penalty, we recommend
+  against using this feature when running experiments.
+
+- LP/IP, for developers: Debug builds with LP solvers vs. the
+  `_GLIBCXX_DEBUG` flag
+  <https://issues.fast-downward.org/issue982>
+  Previously, we used the flag `_GLIBCXX_DEBUG` in debug builds for
+  additional checks. This makes the binary incompatible with external
+  libraries such as LP solvers. The flag is now disabled by default.
+  If no LP solvers are present or LP solvers are disabled, it can be
+  enabled by setting the CMake option `USE_GLIBCXX_DEBUG`. The build
+  configurations `debugnolp` and `releasenolp` have been removed, and
+  the build configuration `glibcxx_debug` has been added.
+
+- pruning: New `LimitedPruning` class replaces previous limitation
+  options of individual pruning methods.
+  <http://issues.fast-downward.org/issue1042>
+  For example, the old command line
+  `--search "astar(lmcut(),pruning=atom_centric_stubborn_sets(min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))"`
+  is now expressed as
+  `--search "astar(lmcut(),pruning=limited_pruning(pruning=atom_centric_stubborn_sets(),min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))`
+
+- landmarks: Replace landmark factory option `reasonable_orders` by
+  the new landmark factory `lm_reasonable_orders_hps`.
+  <https://issues.fast-downward.org/issue995>
+  For example, the old command line
+  `--evaluator hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true))`
+  is now expressed as
+  `--evaluator hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()))`
+
+- landmarks: Replace landmark factory option `no_orders` by the new
+  option `use_orders` with the opposite meaning.
+  <https://issues.fast-downward.org/issue995>
+
+- landmarks: Removed landmark factory options that have no effect.
+  <https://issues.fast-downward.org/issue995>
+  Removed options:
+  `lm_exhaust`: `disjunctive_landmarks`, `conjunctive_landmarks`
+  `lm_hm`: `disjunctive_landmarks`, `only_causal_landmarks`
+  `lm_merged`: `disjunctive_landmarks`, `conjunctive_landmarks`,
+    `only_causal_landmarks`
+  `lm_rhw`: `conjunctive_landmarks`, `reasonable_orders`
+  `lm_zg`: `disjunctive_landmarks`, `conjunctive_landmarks`,
+    `only_causal_landmarks`
+
+- landmarks: Fix a bug where `lm_rhw` would compute wrong
+  greedy-necessary orderings in certain cases.
+  <https://issues.fast-downward.org/issue1004>
+
+- landmarks: Fix a bug where the `lm_rhw`, `lm_zg` and `lm_exhaust`
+  landmark factories used an overly optimistic approximation of
+  relaxed reachability for planning tasks with conditional effects.
+  This change can lead to more generated landmarks and landmark
+  orderings in such tasks.
+  <https://issues.fast-downward.org/issue1041>
+
+- landmarks: Fix a bug where the Zhu/Givan landmark factory caused a
+  crash on relaxed unsolvable tasks due to an empty landmark graph.
+  <https://issues.fast-downward.org/issue998>
+
+- landmarks: Fix a bug where cycles of natural orderings resulted in
+  crashes in the landmark factories. This could only happen in
+  unsolvable planning tasks.
+  <https://issues.fast-downward.org/issue937>
+
+- landmarks: Fix a failing assertion in the `lm_rhw` landmark factory
+  triggered by certain unsolvable tasks.
+  <https://issues.fast-downward.org/issue467>
+
+- landmarks, for developers: Clean up the code of `LandmarkGraph`.
+  Some of the public methods were renamed. This class will undergo
+  further changes in the future.
+  <https://issues.fast-downward.org/issue989>
+
+- landmarks, for developers: Separate the functionality of landmarks
+  from the functionality of landmark nodes by introducing a new
+  `Landmark` class.
+  <https://issues.fast-downward.org/issue999>
+
+- landmarks, for developers: Move functionality used during search
+  away from `LandmarkGraph`, making the landmark graph constant after
+  creation.
   <https://issues.fast-downward.org/issue988>
   <https://issues.fast-downward.org/issue1000>
 
-- For developers: new state class
-  <https://issues.fast-downward.org/issue348>
-  We unified the classes GlobalState and State into a new class also called
-  State. This removed a lot of code duplication and hacks from the code.
-  A description of the new class can be found in the wiki:
-  <https://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
-
-- For developers: introduce class for delete-relaxation based landmark
-  factories and move usage of exploration object to subclasses of
-  (abstract) landmark factory class.
+- landmarks, for developers: Introduce new class
+  `LandmarkFactoryRelaxation` for landmark factories based on delete
+  relaxation. Move usage of exploration object to subclasses of the
+  landmark factory base class.
   <https://issues.fast-downward.org/issue990>
 
-- For users: We removed options from LandmarkFactories that were not relevant,
-  renamed the option "no_orders" to "use_orders" and changed the
-  reasonable_orders option to a Factory.
-  <https://issues.fast-downward.org/issue995>
-  Removed options:
-  lm_exhaust: disjunctive_landmarks, conjunctive_landmarks, no_orders,
-    reasonable_orders
-  lm_hm: disjunctive_landmarks, only_causal_landmarks, no_orders,
-    reasonable_orders
-  lm_merged: disjunctive_landmarks, conjunctive_landmarks,
-    only_causal_landmarks, no_orders, reasonable_orders
-  lm_rhw: conjunctive_landmarks, no_orders, reasonable_orders
-  lm_zg: disjunctive_landmarks, conjunctive_landmarks, only_causal_landmarks,
-    no_orders, reasonable_orders
-  Added options:
-  lm_hm/lm_rhw/lm_zg: use_orders (negation of removed option "no_orders")
-  New Factory "lm_reasonable_orders_hps": This factory approximates reasonable
-  orders according to Hoffman, Porteus and Sebastia ("Ordered Landmarks in
-  Planning", JAIR 2004) and is equivalent to the removed option
-  "reasonable_orders", i.e. the command line argument
-  --evaluator hlm=lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()))
-  is equivalent to the removed command line argument
-  --evaluator hlm=lmcount(lm_factory=lm_rhw(reasonable_orders=true))
-
-- For developers: add support for Github actions
-  <https://issues.fast-downward.org/issue940>
-
-- For developers: We cleaned up the code of LandmarkGraph. Some of the public
-  methods were renamed. This class will undergo further changes in the future.
-  <https://issues.fast-downward.org/issue989>
-
-- Debug builds with LP solvers vs. the _GLIBCXX_DEBUG flag
-  <https://issues.fast-downward.org/issue982>
-  Previously, we used the flag _GLIBCXX_DEBUG in debug builds for additional
-  checks. This makes the binary incompatible with external libraries such as
-  LP solvers. The flag is now disabled by default. If no LP solvers are present
-  or LP solvers are disabled, it can be enabled by setting the CMake option
-  USE_GLIBCXX_DEBUG. The build configurations debugnolp and releasenolp have
-  been removed, and the build configuration glibcxx_debug has been added.
-
-- For developers: decide on rules regarding software support and
-  improve Github actions accordingly
-  <https://issues.fast-downward.org/issue1003>
-
-- For developers: add CPLEX support to our GitHub Actions for Windows
-  <https://issues.fast-downward.org/issue1005>
-
-- Fix a bug in the computation of RHW landmarks
-  <https://issues.fast-downward.org/issue1004>
-
-- Only build configurations defined in `build_configs.py` are loaded in the
-  `build.py` script.
-  <https://issues.fast-downward.org/issue1016>
-
-- Replace size_t by int for abstract state hashes in PDB-related code
-  <https://issues.fast-downward.org/issue1018>
-
-- Integrate the pattern generation methods based on CEGAR
-  <https://issues.fast-downward.org/issue1007>
-
-- Integrate the random pattern generation methods
-  <https://issues.fast-downward.org/issue1007>
-
-- For developers: change public interface of generation of random ints and
-  doubles in the RandomNumberGenerator class
-  <https://issues.fast-downward.org/issue1026>
-
-- For developers: we separate the functionality of landmarks from the
-  functionality of landmark nodes by introducing a new Landmark class
-  <https://issues.fast-downward.org/issue999>
-
-- For developers: use RandomNumberGenerator class in VariableOrderFinder
-  <https://issues.fast-downward.org/issue1032>
-
-- For users: the driver now finds domain files <taskfile>-domain.<ext>
-  for task files called <taskfile>.<ext>
-  <https://issues.fast-downward.org/issue1033>
-
-- For users: the build system now prefers compilers cc/c++ found on the path
-  over gcc/g++. As before, environment variables CC/CXX can be used to
-  override this choice.
+- build: The build system now prefers compilers `cc`/`c++` found on
+  the path over `gcc`/`g++`. As before, environment variables
+  `CC`/`CXX` can be used to override this choice.
   <https://issues.fast-downward.org/issue1031>
 
-- For developers: Add option to use a local (configurable) logger instead of
+- build: Only build configurations defined in `build_configs.py` are
+  loaded in the `build.py` script.
+  <https://issues.fast-downward.org/issue1016>
+
+- for developers: Add option to use a local (configurable) logger instead of
   the global one.
   <https://issues.fast-downward.org/issue964>
   Classes which want to configure the logger (currently only the
-  verbosity level can be configured) should now use the facilities
-  add_log_options_to_parser and get_log_from_options to obtain their
+  verbosity level can be configured) should now use the functions
+  `add_log_options_to_parser` and `get_log_from_options` to obtain their
   local log object.
-- Fix a failing assertion in the landmark factory RHW triggered by 
-  unsolvable tasks. 
-  <https://issues.fast-downward.org/issue467>
 
-- Remove a failing assertion in the lm_zg landmark factory. The issue was 
-  triggered by an overly optimistic approximation of relaxed reachability in 
-  the presence of conditional effects. While the assertion failed, this did
-  not affect soundness of the other places where the same function is used. 
-  Nevertheless, we changed the approximation to become stricter which can 
-  lead to lm_rhw, lm_zg, and lm_exhaust finding more landmarks and landmark
-  orderings.
-  <https://issues.fast-downward.org/issue1041>
+- for developers: Unify the `State` and `GlobalState` classes.
+  <https://issues.fast-downward.org/issue348>
+  We unified the classes `GlobalState` and `State` into a new class
+  also called `State`. This removed a lot of code duplication and hacks
+  from the code. A description of the new class can be found in the wiki:
+  <https://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
 
-- Fix a bug where the Zhu/Givan landmark factory lead to a crash on relaxed
-  unsolvable tasks due to returning an empty landmark graph.
-  <https://issues.fast-downward.org/issue998>
+- for developers: Change public interface of generation of random ints and
+  doubles in the `RandomNumberGenerator` class.
+  <https://issues.fast-downward.org/issue1026>
 
-- Delete-relation constraints can now be used in the operator-counting
-  framework. The constraints defined by Imai and Fukunaga (JAIR 2015) encode
-  different relaxations of the delete-relaxation heuristic.
-  For details, see our documentation.
-  <https://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints>
-  Additionally, we fixed a bug which induced inadmissible
-  heuristic values when using CPLEX for optimal planning with large action
-  costs and/or long plans (only operator-counting heuristics with integer
-  variables and tasks with total costs starting from 10'000 were affected).
-  <https://issues.fast-downward.org/issue983>
+- for developers: Use `RandomNumberGenerator` class in `VariableOrderFinder`.
+  <https://issues.fast-downward.org/issue1032>
 
-- The landmark factories can handle cycles of natural orderings without
-  crashing. Since the planning task is unsolvable in these cases, they 
-  signal this by clearing the first achievers of the involved landmarks.
-  <https://issues.fast-downward.org/issue937>
+- infrastructure: Add support for GitHub actions.
+  <https://issues.fast-downward.org/issue940>
 
-- New LimitedPruning class replaces previous limitation options of
-  individual pruning methods
-  <http://issues.fast-downward.org/issue1042>
-  A previous command line option using this feature, such as
-  --search "astar(lmcut(),pruning=atom_centric_stubborn_sets(min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))"
-  is now changed to
-  --search "astar(lmcut(),pruning=limited_pruning(pruning=atom_centric_stubborn_sets(),min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))
+- infrastructure: Add CPLEX support to our GitHub Actions for Windows.
+  <https://issues.fast-downward.org/issue1005>
 
-- All pattern (collection) generators now have an option "verbosity"
-  to set the desired level of output.
-  <https://issues.fast-downward.org/issue1043>
-  Internally, generators now use their own logger rather than g_log.
-
+- infrastructure: Decide on rules regarding software support and
+  improve GitHub actions accordingly.
+  <https://issues.fast-downward.org/issue1003>
 
 ## Fast Downward 20.06
 
