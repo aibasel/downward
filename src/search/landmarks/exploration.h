@@ -19,16 +19,16 @@ struct ExProposition {
     FactPair fact;
     std::vector<ExUnaryOperator *> precondition_of;
 
-    int h_add_cost;
+    bool excluded;
     int h_max_cost;
     ExUnaryOperator *reached_by;
 
     ExProposition()
         : fact(FactPair::no_fact),
-          h_add_cost(-1),
+          excluded(false),
           h_max_cost(-1),
-          reached_by(nullptr)
-    {}
+          reached_by(nullptr) {
+    }
 
     bool operator<(const ExProposition &other) const {
         return fact < other.fact;
@@ -42,11 +42,12 @@ struct ExUnaryOperator {
     int base_cost; // 0 for axioms, 1 for regular operators
 
     int unsatisfied_preconditions;
-    int h_add_cost;
+    bool excluded;
     int h_max_cost;
     ExUnaryOperator(const std::vector<ExProposition *> &pre, ExProposition *eff,
                     int op_or_axiom_id, int base)
-        : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff), base_cost(base) {}
+        : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff),
+          base_cost(base), excluded(false) {}
 
 
     bool operator<(const ExUnaryOperator &other) const {
@@ -66,15 +67,9 @@ struct ExUnaryOperator {
             return true;
         }
     }
-
-    bool is_induced_by_axiom(const TaskProxy &task_proxy) const {
-        return get_operator_or_axiom(task_proxy, op_or_axiom_id).is_axiom();
-    }
 };
 
 class Exploration {
-    static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
-
     TaskProxy task_proxy;
 
     std::vector<ExUnaryOperator> unary_operators;
@@ -82,7 +77,6 @@ class Exploration {
     std::vector<ExProposition *> goal_propositions;
     std::vector<ExProposition *> termination_propositions;
     priority_queues::AdaptiveQueue<ExProposition *> prop_queue;
-    bool did_write_overflow_warning;
 
     void build_unary_operators(const OperatorProxy &op);
     void setup_exploration_queue(
@@ -91,8 +85,6 @@ class Exploration {
     void relaxed_exploration();
     void enqueue_if_necessary(ExProposition *prop, int cost,
                               ExUnaryOperator *op);
-    void increase_cost(int &cost, int amount);
-    void write_overflow_warning();
 public:
     explicit Exploration(const TaskProxy &task_proxy);
 

@@ -31,12 +31,9 @@ namespace landmarks {
      proposition (needed for planning to nearest landmark).
 */
 
-const int Exploration::MAX_COST_VALUE;
-
 // Construction and destruction
 Exploration::Exploration(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy),
-      did_write_overflow_warning(false) {
+    : task_proxy(task_proxy) {
     utils::g_log << "Initializing Exploration..." << endl;
 
     // Build propositions.
@@ -68,26 +65,6 @@ Exploration::Exploration(const TaskProxy &task_proxy)
     for (ExUnaryOperator &op : unary_operators) {
         for (ExProposition *pre : op.precondition)
             pre->precondition_of.push_back(&op);
-    }
-}
-
-void Exploration::increase_cost(int &cost, int amount) {
-    assert(cost >= 0);
-    assert(amount >= 0);
-    cost += amount;
-    if (cost > MAX_COST_VALUE) {
-        write_overflow_warning();
-        cost = MAX_COST_VALUE;
-    }
-}
-
-void Exploration::write_overflow_warning() {
-    if (!did_write_overflow_warning) {
-        // TODO: Should have a planner-wide warning mechanism to handle
-        // things like this.
-        utils::g_log << "WARNING: overflow on landmark exploration h^add! Costs clamped to "
-                     << MAX_COST_VALUE << endl;
-        did_write_overflow_warning = true;
     }
 }
 
@@ -151,14 +128,14 @@ void Exploration::setup_exploration_queue(
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
         for (size_t value = 0; value < propositions[var_id].size(); ++value) {
             ExProposition &prop = propositions[var_id][value];
-            prop.h_add_cost = -1;
+            prop.excluded = false;
             prop.h_max_cost = -1;
         }
     }
 
     for (const FactPair &fact : excluded_props) {
         ExProposition &prop = propositions[fact.var][fact.value];
-        prop.h_add_cost = -2;
+        prop.excluded = true;
     }
 
     // Deal with current state.
@@ -169,13 +146,14 @@ void Exploration::setup_exploration_queue(
 
     // Initialize operator data, deal with precondition-free operators/axioms.
     for (ExUnaryOperator &op : unary_operators) {
+        op.excluded = false; // Reset from previous exploration
         op.unsatisfied_preconditions = op.precondition.size();
-        if (op.effect->h_add_cost == -2
+        if (op.effect->excluded
             || excluded_op_ids.count(op.op_or_axiom_id)) {
-            op.h_add_cost = -2; // operator will not be applied during relaxed exploration
+            // operator will not be applied during relaxed exploration
+            op.excluded = true;
             continue;
         }
-        op.h_add_cost = op.base_cost; // will be increased by precondition costs
         op.h_max_cost = op.base_cost;
 
         if (op.unsatisfied_preconditions == 0) {
@@ -197,10 +175,9 @@ void Exploration::relaxed_exploration() {
         const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
         for (size_t i = 0; i < triggered_operators.size(); ++i) {
             ExUnaryOperator *unary_op = triggered_operators[i];
-            if (unary_op->h_add_cost == -2) // operator is not applied
+            if (unary_op->excluded) // operator is not applied
                 continue;
             --unary_op->unsatisfied_preconditions;
-            increase_cost(unary_op->h_add_cost, prop_cost);
             unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
                                        unary_op->h_max_cost);
             assert(unary_op->unsatisfied_preconditions >= 0);
