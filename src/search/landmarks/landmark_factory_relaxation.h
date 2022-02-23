@@ -10,14 +10,13 @@ class LandmarkFactoryRelaxation : public LandmarkFactory {
 protected:
     LandmarkFactoryRelaxation() = default;
 
-    bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
-                               const Landmark &exclude,
-                               bool compute_lvl_op = false) const;
-    bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
+    bool relaxed_task_solvable(const TaskProxy &task_proxy,
+                               Exploration &exploration,
+                               const Landmark &exclude) const;
+    bool relaxed_task_solvable(const TaskProxy &task_proxy,
+                               Exploration &exploration,
                                std::vector<std::vector<int>> &lvl_var,
-                               std::vector<utils::HashMap<FactPair, int>> &lvl_op,
-                               const Landmark &exclude,
-                               bool compute_lvl_op = false) const;
+                               const Landmark &exclude) const;
 
 private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;

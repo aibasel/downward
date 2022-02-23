@@ -234,11 +234,10 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
     assert(prop->h_max_cost != -1 && prop->h_max_cost <= cost);
 }
 
-void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
-                                                     vector<utils::HashMap<FactPair, int>> &lvl_op,
-                                                     const vector<FactPair> &excluded_props,
-                                                     const unordered_set<int> &excluded_op_ids,
-                                                     bool compute_lvl_ops) {
+void Exploration::compute_reachability_with_excludes(
+    vector<vector<int>> &lvl_var,
+    const vector<FactPair> &excluded_props,
+    const unordered_set<int> &excluded_op_ids) {
     // Perform exploration using h_max-values
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids);
     relaxed_exploration();
@@ -249,32 +248,6 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
             ExProposition &prop = propositions[var_id][value];
             if (prop.h_max_cost >= 0)
                 lvl_var[var_id][value] = prop.h_max_cost;
-        }
-    }
-    if (compute_lvl_ops) {
-        for (ExUnaryOperator &op : unary_operators) {
-            // H_max_cost of operator might be wrongly 0 or 1, if the operator
-            // did not get applied during relaxed exploration. Look through
-            // preconditions and adjust.
-            for (ExProposition *prop : op.precondition) {
-                if (prop->h_max_cost == -1) {
-                    // Operator cannot be applied due to unreached precondition
-                    op.h_max_cost = numeric_limits<int>::max();
-                    break;
-                } else if (op.h_max_cost < prop->h_max_cost + op.base_cost)
-                    op.h_max_cost = prop->h_max_cost + op.base_cost;
-            }
-            if (op.h_max_cost == numeric_limits<int>::max())
-                break;
-            // We subtract 1 to keep semantics for landmark code:
-            // if op can achieve prop at time step i+1,
-            // its index (for prop) is i, where the initial state is time step 0.
-            const FactPair &effect = op.effect->fact;
-            assert(lvl_op[op.op_or_axiom_id].count(effect));
-            int new_lvl = op.h_max_cost - 1;
-            // If we have found a cheaper achieving operator, adjust h_max cost of proposition.
-            if (lvl_op[op.op_or_axiom_id].find(effect)->second > new_lvl)
-                lvl_op[op.op_or_axiom_id].find(effect)->second = new_lvl;
         }
     }
 }

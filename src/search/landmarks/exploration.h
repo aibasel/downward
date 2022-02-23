@@ -111,11 +111,10 @@ public:
       *excluded_op_ids*. The values are only exact in the absence of conditional
       effects, otherwise they are an admissible approximation.
     */
-    void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
-                                            std::vector<utils::HashMap<FactPair, int>> &lvl_op,
-                                            const std::vector<FactPair> &excluded_props,
-                                            const std::unordered_set<int> &excluded_op_ids,
-                                            bool compute_lvl_ops);
+    void compute_reachability_with_excludes(
+        std::vector<std::vector<int>> &lvl_var,
+        const std::vector<FactPair> &excluded_props,
+        const std::unordered_set<int> &excluded_op_ids);
 };
 }
 
