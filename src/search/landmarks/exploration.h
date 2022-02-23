@@ -94,13 +94,12 @@ class Exploration {
     bool did_write_overflow_warning;
 
     void build_unary_operators(const OperatorProxy &op);
-    void setup_exploration_queue(const State &state,
-                                 const std::vector<FactPair> &excluded_props,
-                                 const std::unordered_set<int> &excluded_op_ids,
-                                 bool use_h_max);
-    void relaxed_exploration(bool use_h_max);
-    void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
-                              bool use_h_max);
+    void setup_exploration_queue(
+        const State &state, const std::vector<FactPair> &excluded_props,
+        const std::unordered_set<int> &excluded_op_ids);
+    void relaxed_exploration();
+    void enqueue_if_necessary(ExProposition *prop, int cost, int depth,
+                              ExUnaryOperator *op);
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
 public:

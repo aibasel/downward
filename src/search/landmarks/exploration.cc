@@ -147,7 +147,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 */
 void Exploration::setup_exploration_queue(
     const State &state, const vector<FactPair> &excluded_props,
-    const unordered_set<int> &excluded_op_ids, bool use_h_max) {
+    const unordered_set<int> &excluded_op_ids) {
     prop_queue.clear();
 
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
@@ -168,7 +168,7 @@ void Exploration::setup_exploration_queue(
     // Deal with current state.
     for (FactProxy fact : state) {
         ExProposition *init_prop = &propositions[fact.get_variable().get_id()][fact.get_value()];
-        enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
+        enqueue_if_necessary(init_prop, 0, 0, 0);
     }
 
     // Initialize operator data, deal with precondition-free operators/axioms.
@@ -186,22 +186,18 @@ void Exploration::setup_exploration_queue(
         if (op.unsatisfied_preconditions == 0) {
             op.depth = 0;
             int depth = op.is_induced_by_axiom(task_proxy) ? 0 : 1;
-            enqueue_if_necessary(op.effect, op.base_cost, depth, &op, use_h_max);
+            enqueue_if_necessary(op.effect, op.base_cost, depth, &op);
         }
     }
 }
 
-void Exploration::relaxed_exploration(bool use_h_max) {
+void Exploration::relaxed_exploration() {
     while (!prop_queue.empty()) {
         pair<int, ExProposition *> top_pair = prop_queue.pop();
         int distance = top_pair.first;
         ExProposition *prop = top_pair.second;
 
-        int prop_cost;
-        if (use_h_max)
-            prop_cost = prop->h_max_cost;
-        else
-            prop_cost = prop->h_add_cost;
+        int prop_cost = prop->h_max_cost;
         assert(prop_cost <= distance);
         if (prop_cost < distance)
             continue;
@@ -219,38 +215,23 @@ void Exploration::relaxed_exploration(bool use_h_max) {
             if (unary_op->unsatisfied_preconditions == 0) {
                 int depth = unary_op->is_induced_by_axiom(task_proxy)
                     ? unary_op->depth : unary_op->depth + 1;
-                if (use_h_max)
-                    enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
-                                         depth, unary_op, use_h_max);
-                else
-                    enqueue_if_necessary(unary_op->effect, unary_op->h_add_cost,
-                                         depth, unary_op, use_h_max);
+                enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
+                                     depth, unary_op);
             }
         }
     }
 }
 
 void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
-                                       ExUnaryOperator *op,
-                                       bool use_h_max) {
+                                       ExUnaryOperator *op) {
     assert(cost >= 0);
-    if (use_h_max && (prop->h_max_cost == -1 || prop->h_max_cost > cost)) {
+    if (prop->h_max_cost == -1 || prop->h_max_cost > cost) {
         prop->h_max_cost = cost;
         prop->depth = depth;
         prop->reached_by = op;
         prop_queue.push(cost, prop);
-    } else if (!use_h_max && (prop->h_add_cost == -1 || prop->h_add_cost > cost)) {
-        prop->h_add_cost = cost;
-        prop->depth = depth;
-        prop->reached_by = op;
-        prop_queue.push(cost, prop);
     }
-    if (use_h_max)
-        assert(prop->h_max_cost != -1 &&
-               prop->h_max_cost <= cost);
-    else
-        assert(prop->h_add_cost != -1 &&
-               prop->h_add_cost <= cost);
+    assert(prop->h_max_cost != -1 && prop->h_max_cost <= cost);
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
@@ -259,8 +240,8 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
                                                      const unordered_set<int> &excluded_op_ids,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
-    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids, true);
-    relaxed_exploration(true);
+    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids);
+    relaxed_exploration();
 
     // Copy reachability information into lvl_var and lvl_op
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
