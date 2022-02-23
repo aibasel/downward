@@ -52,8 +52,6 @@ Exploration::Exploration(const TaskProxy &task_proxy)
     for (FactProxy goal_fact : task_proxy.get_goals()) {
         int var_id = goal_fact.get_variable().get_id();
         int value = goal_fact.get_value();
-        propositions[var_id][value].is_goal_condition = true;
-        propositions[var_id][value].is_termination_condition = true;
         goal_propositions.push_back(&propositions[var_id][value]);
         termination_propositions.push_back(&propositions[var_id][value]);
     }
@@ -155,8 +153,6 @@ void Exploration::setup_exploration_queue(
             ExProposition &prop = propositions[var_id][value];
             prop.h_add_cost = -1;
             prop.h_max_cost = -1;
-            prop.depth = -1;
-            prop.marked = false;
         }
     }
 
@@ -168,7 +164,7 @@ void Exploration::setup_exploration_queue(
     // Deal with current state.
     for (FactProxy fact : state) {
         ExProposition *init_prop = &propositions[fact.get_variable().get_id()][fact.get_value()];
-        enqueue_if_necessary(init_prop, 0, 0, 0);
+        enqueue_if_necessary(init_prop, 0, 0);
     }
 
     // Initialize operator data, deal with precondition-free operators/axioms.
@@ -181,12 +177,9 @@ void Exploration::setup_exploration_queue(
         }
         op.h_add_cost = op.base_cost; // will be increased by precondition costs
         op.h_max_cost = op.base_cost;
-        op.depth = -1;
 
         if (op.unsatisfied_preconditions == 0) {
-            op.depth = 0;
-            int depth = op.is_induced_by_axiom(task_proxy) ? 0 : 1;
-            enqueue_if_necessary(op.effect, op.base_cost, depth, &op);
+            enqueue_if_necessary(op.effect, op.base_cost, &op);
         }
     }
 }
@@ -210,24 +203,20 @@ void Exploration::relaxed_exploration() {
             increase_cost(unary_op->h_add_cost, prop_cost);
             unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
                                        unary_op->h_max_cost);
-            unary_op->depth = max(unary_op->depth, prop->depth);
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
-                int depth = unary_op->is_induced_by_axiom(task_proxy)
-                    ? unary_op->depth : unary_op->depth + 1;
                 enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
-                                     depth, unary_op);
+                                     unary_op);
             }
         }
     }
 }
 
-void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
+void Exploration::enqueue_if_necessary(ExProposition *prop, int cost,
                                        ExUnaryOperator *op) {
     assert(cost >= 0);
     if (prop->h_max_cost == -1 || prop->h_max_cost > cost) {
         prop->h_max_cost = cost;
-        prop->depth = depth;
         prop->reached_by = op;
         prop_queue.push(cost, prop);
     }

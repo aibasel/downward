@@ -17,24 +17,16 @@ struct ExUnaryOperator;
 
 struct ExProposition {
     FactPair fact;
-    bool is_goal_condition;
-    bool is_termination_condition;
     std::vector<ExUnaryOperator *> precondition_of;
 
     int h_add_cost;
     int h_max_cost;
-    int depth;
-    bool marked; // used when computing preferred operators
     ExUnaryOperator *reached_by;
 
     ExProposition()
         : fact(FactPair::no_fact),
-          is_goal_condition(false),
-          is_termination_condition(false),
           h_add_cost(-1),
           h_max_cost(-1),
-          depth(-1),
-          marked(false),
           reached_by(nullptr)
     {}
 
@@ -52,7 +44,6 @@ struct ExUnaryOperator {
     int unsatisfied_preconditions;
     int h_add_cost;
     int h_max_cost;
-    int depth;
     ExUnaryOperator(const std::vector<ExProposition *> &pre, ExProposition *eff,
                     int op_or_axiom_id, int base)
         : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff), base_cost(base) {}
@@ -98,7 +89,7 @@ class Exploration {
         const State &state, const std::vector<FactPair> &excluded_props,
         const std::unordered_set<int> &excluded_op_ids);
     void relaxed_exploration();
-    void enqueue_if_necessary(ExProposition *prop, int cost, int depth,
+    void enqueue_if_necessary(ExProposition *prop, int cost,
                               ExUnaryOperator *op);
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
