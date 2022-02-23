@@ -98,7 +98,7 @@ class Exploration {
                                  const std::vector<FactPair> &excluded_props,
                                  const std::unordered_set<int> &excluded_op_ids,
                                  bool use_h_max);
-    void relaxed_exploration(bool use_h_max, bool level_out);
+    void relaxed_exploration(bool use_h_max);
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
     void increase_cost(int &cost, int amount);
@@ -114,7 +114,6 @@ public:
     */
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
                                             std::vector<utils::HashMap<FactPair, int>> &lvl_op,
-                                            bool level_out,
                                             const std::vector<FactPair> &excluded_props,
                                             const std::unordered_set<int> &excluded_op_ids,
                                             bool compute_lvl_ops);

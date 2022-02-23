@@ -11,13 +11,11 @@ protected:
     LandmarkFactoryRelaxation() = default;
 
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
-                               bool level_out,
                                const Landmark &exclude,
                                bool compute_lvl_op = false) const;
     bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
                                std::vector<std::vector<int>> &lvl_var,
                                std::vector<utils::HashMap<FactPair, int>> &lvl_op,
-                               bool level_out,
                                const Landmark &exclude,
                                bool compute_lvl_op = false) const;
 

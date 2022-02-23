@@ -435,7 +435,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
             vector<vector<int>> lvl_var;
             vector<utils::HashMap<FactPair, int>> lvl_op;
             relaxed_task_solvable(task_proxy, exploration, lvl_var,
-                                  lvl_op, true, landmark);
+                                  lvl_op, landmark);
             // Use this information to determine all operators that can possibly achieve landmark
             // for the first time, and collect any precondition propositions that all such
             // operators share (if there are any).

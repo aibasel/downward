@@ -191,8 +191,7 @@ void Exploration::setup_exploration_queue(
     }
 }
 
-void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
-    int unsolved_goals = termination_propositions.size();
+void Exploration::relaxed_exploration(bool use_h_max) {
     while (!prop_queue.empty()) {
         pair<int, ExProposition *> top_pair = prop_queue.pop();
         int distance = top_pair.first;
@@ -206,8 +205,6 @@ void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
         assert(prop_cost <= distance);
         if (prop_cost < distance)
             continue;
-        if (!level_out && prop->is_termination_condition && --unsolved_goals == 0)
-            return;
         const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
         for (size_t i = 0; i < triggered_operators.size(); ++i) {
             ExUnaryOperator *unary_op = triggered_operators[i];
@@ -258,13 +255,12 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
                                                      vector<utils::HashMap<FactPair, int>> &lvl_op,
-                                                     bool level_out,
                                                      const vector<FactPair> &excluded_props,
                                                      const unordered_set<int> &excluded_op_ids,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids, true);
-    relaxed_exploration(true, level_out);
+    relaxed_exploration(true);
 
     // Copy reachability information into lvl_var and lvl_op
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
