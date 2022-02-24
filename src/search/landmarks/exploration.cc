@@ -141,7 +141,7 @@ void Exploration::setup_exploration_queue(
     // Deal with current state.
     for (FactProxy fact : state) {
         ExProposition *init_prop = &propositions[fact.get_variable().get_id()][fact.get_value()];
-        enqueue_if_necessary(init_prop, 0, 0);
+        enqueue_if_necessary(init_prop, 0);
     }
 
     // Initialize operator data, deal with precondition-free operators/axioms.
@@ -157,7 +157,7 @@ void Exploration::setup_exploration_queue(
         op.h_max_cost = op.base_cost;
 
         if (op.unsatisfied_preconditions == 0) {
-            enqueue_if_necessary(op.effect, op.base_cost, &op);
+            enqueue_if_necessary(op.effect, op.base_cost);
         }
     }
 }
@@ -182,22 +182,18 @@ void Exploration::relaxed_exploration() {
                                        unary_op->h_max_cost);
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
-                enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
-                                     unary_op);
+                enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost);
             }
         }
     }
 }
 
-void Exploration::enqueue_if_necessary(ExProposition *prop, int cost,
-                                       ExUnaryOperator *op) {
+void Exploration::enqueue_if_necessary(ExProposition *prop, int cost) {
     assert(cost >= 0);
     if (prop->h_max_cost == -1 || prop->h_max_cost > cost) {
         prop->h_max_cost = cost;
-        prop->reached_by = op;
         prop_queue.push(cost, prop);
     }
-    assert(prop->h_max_cost != -1 && prop->h_max_cost <= cost);
 }
 
 void Exploration::compute_reachability_with_excludes(

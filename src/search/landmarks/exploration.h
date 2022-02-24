@@ -21,13 +21,11 @@ struct ExProposition {
 
     bool excluded;
     int h_max_cost;
-    ExUnaryOperator *reached_by;
 
     ExProposition()
         : fact(FactPair::no_fact),
           excluded(false),
-          h_max_cost(-1),
-          reached_by(nullptr) {
+          h_max_cost(-1) {
     }
 
     bool operator<(const ExProposition &other) const {
@@ -83,8 +81,7 @@ class Exploration {
         const State &state, const std::vector<FactPair> &excluded_props,
         const std::unordered_set<int> &excluded_op_ids);
     void relaxed_exploration();
-    void enqueue_if_necessary(ExProposition *prop, int cost,
-                              ExUnaryOperator *op);
+    void enqueue_if_necessary(ExProposition *prop, int cost);
 public:
     explicit Exploration(const TaskProxy &task_proxy);
 
