@@ -103,8 +103,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
   This function initializes the priority queue and the information associated
   with propositions and unary operators for the relaxed exploration. Unary
   operators that are not allowed to be applied due to exclusions are marked by
-  setting their *h_add_cost* to -2 (sigh). Similarly, the *h_add_cost* of
-  excluded unary propositions is set to -2.
+  setting their *excluded* flag.
 
   *excluded_op_ids* should contain at least the operators that achieve an
   excluded proposition unconditionally. There are two contexts where
@@ -125,28 +124,25 @@ void Exploration::setup_exploration_queue(
     const unordered_set<int> &excluded_op_ids) {
     prop_queue.clear();
 
-    for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
-        for (size_t value = 0; value < propositions[var_id].size(); ++value) {
-            ExProposition &prop = propositions[var_id][value];
-            prop.excluded = false;
+    for (auto &proposition : propositions) {
+        for (auto &prop : proposition) {
             prop.h_max_cost = -1;
         }
     }
 
     for (const FactPair &fact : excluded_props) {
-        ExProposition &prop = propositions[fact.var][fact.value];
-        prop.excluded = true;
+        propositions[fact.var][fact.value].excluded = true;
     }
 
     // Deal with current state.
     for (FactProxy fact : state) {
-        ExProposition *init_prop = &propositions[fact.get_variable().get_id()][fact.get_value()];
+        ExProposition *init_prop =
+            &propositions[fact.get_variable().get_id()][fact.get_value()];
         enqueue_if_necessary(init_prop, 0);
     }
 
     // Initialize operator data, deal with precondition-free operators/axioms.
     for (ExUnaryOperator &op : unary_operators) {
-        op.excluded = false; // Reset from previous exploration
         op.unsatisfied_preconditions = op.precondition.size();
         if (op.effect->excluded
             || excluded_op_ids.count(op.op_or_axiom_id)) {
@@ -154,11 +150,18 @@ void Exploration::setup_exploration_queue(
             op.excluded = true;
             continue;
         }
+        op.excluded = false; // Reset from previous exploration
         op.h_max_cost = op.base_cost;
 
         if (op.unsatisfied_preconditions == 0) {
             enqueue_if_necessary(op.effect, op.base_cost);
         }
+    }
+
+    /* Reset for next exploration since not needed after setup and faster than
+     setting everything to *false* in the beginning of the function. */
+    for (const FactPair &fact : excluded_props) {
+        propositions[fact.var][fact.value].excluded = false;
     }
 }
 
@@ -200,11 +203,11 @@ void Exploration::compute_reachability_with_excludes(
     vector<vector<int>> &lvl_var,
     const vector<FactPair> &excluded_props,
     const unordered_set<int> &excluded_op_ids) {
-    // Perform exploration using h_max-values
+    // Perform exploration using h_max-values.
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids);
     relaxed_exploration();
 
-    // Copy reachability information into lvl_var and lvl_op
+    // Copy reachability information into lvl_var.
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
         for (size_t value = 0; value < propositions[var_id].size(); ++value) {
             ExProposition &prop = propositions[var_id][value];

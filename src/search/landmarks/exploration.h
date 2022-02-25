@@ -37,7 +37,7 @@ struct ExUnaryOperator {
     int op_or_axiom_id;
     std::vector<ExProposition *> precondition;
     ExProposition *effect;
-    int base_cost; // 0 for axioms, 1 for regular operators
+    int base_cost;
 
     int unsatisfied_preconditions;
     bool excluded;
