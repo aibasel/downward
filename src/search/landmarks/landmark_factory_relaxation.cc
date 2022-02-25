@@ -92,7 +92,6 @@ void LandmarkFactoryRelaxation::calc_achievers(
         }
 
         vector<vector<int>> lvl_var;
-        vector<utils::HashMap<FactPair, int>> lvl_op;
         relaxed_task_solvable(task_proxy, exploration, lvl_var, landmark);
 
         for (int op_or_axom_id : landmark.possible_achievers) {
@@ -119,9 +118,9 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     /*
       Test whether the relaxed planning task is solvable without achieving the
       propositions in "exclude" (do not apply operators that would add a
-      proposition from "exclude"). As a side effect, collect in lvl_var and
-      lvl_op the earliest possible point in time when a proposition / operator
-      can be achieved / become applicable in the relaxed task.
+      proposition from "exclude"). As a side effect, collect in lvl_var the
+      earliest possible point in time when a proposition can be achieved in the
+      relaxed task.
     */
 
     OperatorsProxy operators = task_proxy.get_operators();
@@ -168,13 +167,5 @@ bool LandmarkFactoryRelaxation::achieves_non_conditional(
         }
     }
     return false;
-}
-
-void LandmarkFactoryRelaxation::add_operator_and_propositions_to_list(
-    const OperatorProxy &op, vector<utils::HashMap<FactPair, int>> &lvl_op) const {
-    int op_or_axiom_id = get_operator_or_axiom_id(op);
-    for (EffectProxy effect : op.get_effects()) {
-        lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
-    }
 }
 }

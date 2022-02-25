@@ -28,8 +28,6 @@ private:
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
     bool achieves_non_conditional(const OperatorProxy &o,
                                   const Landmark &landmark) const;
-    void add_operator_and_propositions_to_list(
-        const OperatorProxy &op, std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
 
 protected:
     /*
