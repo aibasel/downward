@@ -11,7 +11,10 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-No changes yet.
+- Speed up landmark generation time by 10-20% for `lm_rhw`, `lm_zg`,
+  and `lm_exhaust` due to removing dead code in the landmark 
+  exploration.
+  <https://issues.fast-downward.org/issue1044>
 
 ## Fast Downward 21.12
 

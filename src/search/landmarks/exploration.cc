@@ -124,8 +124,8 @@ void Exploration::setup_exploration_queue(
     const unordered_set<int> &excluded_op_ids) {
     prop_queue.clear();
 
-    for (auto &proposition : propositions) {
-        for (auto &prop : proposition) {
+    for (auto &propositions_for_variable : propositions) {
+        for (auto &prop : propositions_for_variable) {
             prop.h_max_cost = -1;
         }
     }
@@ -158,8 +158,7 @@ void Exploration::setup_exploration_queue(
         }
     }
 
-    /* Reset for next exploration since not needed after setup and faster than
-     setting everything to *false* in the beginning of the function. */
+    // Reset *excluded* to false for the next exploration.
     for (const FactPair &fact : excluded_props) {
         propositions[fact.var][fact.value].excluded = false;
     }
