@@ -39,18 +39,10 @@ Exploration::Exploration(const TaskProxy &task_proxy)
     // Build propositions.
     for (VariableProxy var : task_proxy.get_variables()) {
         int var_id = var.get_id();
-        propositions.push_back(vector<ExProposition>(var.get_domain_size()));
+        propositions.push_back(vector<Proposition>(var.get_domain_size()));
         for (int value = 0; value < var.get_domain_size(); ++value) {
             propositions[var_id][value].fact = FactPair(var_id, value);
         }
-    }
-
-    // Build goal propositions.
-    for (FactProxy goal_fact : task_proxy.get_goals()) {
-        int var_id = goal_fact.get_variable().get_id();
-        int value = goal_fact.get_value();
-        goal_propositions.push_back(&propositions[var_id][value]);
-        termination_propositions.push_back(&propositions[var_id][value]);
     }
 
     // Build unary operators for operators and axioms.
@@ -62,8 +54,8 @@ Exploration::Exploration(const TaskProxy &task_proxy)
         build_unary_operators(op);
 
     // Cross-reference unary operators.
-    for (ExUnaryOperator &op : unary_operators) {
-        for (ExProposition *pre : op.precondition)
+    for (UnaryOperator &op : unary_operators) {
+        for (Proposition *pre : op.precondition)
             pre->precondition_of.push_back(&op);
     }
 }
@@ -71,7 +63,7 @@ Exploration::Exploration(const TaskProxy &task_proxy)
 void Exploration::build_unary_operators(const OperatorProxy &op) {
     // Note: changed from the original to allow sorting of operator conditions
     int base_cost = op.get_cost();
-    vector<ExProposition *> precondition;
+    vector<Proposition *> precondition;
     vector<FactPair> precondition_facts1;
 
     for (FactProxy pre : op.get_preconditions()) {
@@ -91,7 +83,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
                                    [precondition_fact.value]);
 
         FactProxy effect_fact = effect.get_fact();
-        ExProposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
+        Proposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
         int op_or_axiom_id = get_operator_or_axiom_id(op);
         unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id, base_cost);
         precondition.clear();
@@ -136,13 +128,13 @@ void Exploration::setup_exploration_queue(
 
     // Deal with current state.
     for (FactProxy fact : state) {
-        ExProposition *init_prop =
+        Proposition *init_prop =
             &propositions[fact.get_variable().get_id()][fact.get_value()];
         enqueue_if_necessary(init_prop, 0);
     }
 
     // Initialize operator data, deal with precondition-free operators/axioms.
-    for (ExUnaryOperator &op : unary_operators) {
+    for (UnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.precondition.size();
         if (op.effect->excluded
             || excluded_op_ids.count(op.op_or_axiom_id)) {
@@ -166,17 +158,17 @@ void Exploration::setup_exploration_queue(
 
 void Exploration::relaxed_exploration() {
     while (!prop_queue.empty()) {
-        pair<int, ExProposition *> top_pair = prop_queue.pop();
+        pair<int, Proposition *> top_pair = prop_queue.pop();
         int distance = top_pair.first;
-        ExProposition *prop = top_pair.second;
+        Proposition *prop = top_pair.second;
 
         int prop_cost = prop->h_max_cost;
         assert(prop_cost <= distance);
         if (prop_cost < distance)
             continue;
-        const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
+        const vector<UnaryOperator *> &triggered_operators = prop->precondition_of;
         for (size_t i = 0; i < triggered_operators.size(); ++i) {
-            ExUnaryOperator *unary_op = triggered_operators[i];
+            UnaryOperator *unary_op = triggered_operators[i];
             if (unary_op->excluded) // operator is not applied
                 continue;
             --unary_op->unsatisfied_preconditions;
@@ -190,7 +182,7 @@ void Exploration::relaxed_exploration() {
     }
 }
 
-void Exploration::enqueue_if_necessary(ExProposition *prop, int cost) {
+void Exploration::enqueue_if_necessary(Proposition *prop, int cost) {
     assert(cost >= 0);
     if (prop->h_max_cost == -1 || prop->h_max_cost > cost) {
         prop->h_max_cost = cost;
@@ -209,7 +201,7 @@ void Exploration::compute_reachability_with_excludes(
     // Copy reachability information into lvl_var.
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
         for (size_t value = 0; value < propositions[var_id].size(); ++value) {
-            ExProposition &prop = propositions[var_id][value];
+            Proposition &prop = propositions[var_id][value];
             if (prop.h_max_cost >= 0)
                 lvl_var[var_id][value] = prop.h_max_cost;
         }
