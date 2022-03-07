@@ -21,12 +21,12 @@ struct Proposition {
     std::vector<UnaryOperator *> precondition_of;
 
     bool excluded;
-    int h_max_cost;
+    bool reached;
 
     Proposition()
         : fact(FactPair::no_fact),
           excluded(false),
-          h_max_cost(-1) {
+          reached(false) {
     }
 
     bool operator<(const Proposition &other) const {
@@ -39,15 +39,13 @@ struct UnaryOperator {
     // TODO; change to int num_preconditions
     std::vector<Proposition *> precondition;
     Proposition *effect;
-    int base_cost;
 
     int unsatisfied_preconditions;
     bool excluded;
-    int h_max_cost;
     UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
-                    int op_or_axiom_id, int base)
+                    int op_or_axiom_id)
         : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff),
-          base_cost(base), excluded(false) {}
+          excluded(false) {}
 };
 
 class Exploration {
@@ -56,14 +54,16 @@ class Exploration {
     std::vector<UnaryOperator> unary_operators;
     std::vector<std::vector<Proposition>> propositions;
     // TODO: should we keep the raw pointer as type or rather an ID like in hmax?
-    priority_queues::AdaptiveQueue<Proposition *> prop_queue;
+    // TODO: is deque a good data type here?
+    std::deque<Proposition *> prop_queue;
+//    priority_queues::AdaptiveQueue<Proposition *> prop_queue;
 
     void build_unary_operators(const OperatorProxy &op);
     void setup_exploration_queue(
         const State &state, const std::vector<FactPair> &excluded_props,
         const std::unordered_set<int> &excluded_op_ids);
     void relaxed_exploration();
-    void enqueue_if_necessary(Proposition *prop, int cost);
+    void enqueue_if_necessary(Proposition *prop);
 public:
     explicit Exploration(const TaskProxy &task_proxy);
 

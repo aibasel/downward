@@ -14,6 +14,7 @@
 using namespace std;
 
 namespace landmarks {
+// TODO: revise comment
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
    - Added-on functionality for excluding certain operators from the relaxed
@@ -62,7 +63,6 @@ Exploration::Exploration(const TaskProxy &task_proxy)
 
 void Exploration::build_unary_operators(const OperatorProxy &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op.get_cost();
     vector<Proposition *> precondition;
     vector<FactPair> precondition_facts1;
 
@@ -85,7 +85,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
         FactProxy effect_fact = effect.get_fact();
         Proposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
         int op_or_axiom_id = get_operator_or_axiom_id(op);
-        unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id, base_cost);
+        unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id);
         precondition.clear();
         precondition_facts2.clear();
     }
@@ -118,7 +118,7 @@ void Exploration::setup_exploration_queue(
 
     for (auto &propositions_for_variable : propositions) {
         for (auto &prop : propositions_for_variable) {
-            prop.h_max_cost = -1;
+            prop.reached = false;
         }
     }
 
@@ -130,7 +130,7 @@ void Exploration::setup_exploration_queue(
     for (FactProxy fact : state) {
         Proposition *init_prop =
             &propositions[fact.get_variable().get_id()][fact.get_value()];
-        enqueue_if_necessary(init_prop, 0);
+        enqueue_if_necessary(init_prop);
     }
 
     // Initialize operator data, deal with precondition-free operators/axioms.
@@ -143,10 +143,9 @@ void Exploration::setup_exploration_queue(
             continue;
         }
         op.excluded = false; // Reset from previous exploration
-        op.h_max_cost = op.base_cost;
 
         if (op.unsatisfied_preconditions == 0) {
-            enqueue_if_necessary(op.effect, op.base_cost);
+            enqueue_if_necessary(op.effect);
         }
     }
 
@@ -158,35 +157,27 @@ void Exploration::setup_exploration_queue(
 
 void Exploration::relaxed_exploration() {
     while (!prop_queue.empty()) {
-        pair<int, Proposition *> top_pair = prop_queue.pop();
-        int distance = top_pair.first;
-        Proposition *prop = top_pair.second;
+        Proposition *prop = prop_queue.front();
+        prop_queue.pop_front();
 
-        int prop_cost = prop->h_max_cost;
-        assert(prop_cost <= distance);
-        if (prop_cost < distance)
-            continue;
         const vector<UnaryOperator *> &triggered_operators = prop->precondition_of;
         for (size_t i = 0; i < triggered_operators.size(); ++i) {
             UnaryOperator *unary_op = triggered_operators[i];
             if (unary_op->excluded) // operator is not applied
                 continue;
             --unary_op->unsatisfied_preconditions;
-            unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
-                                       unary_op->h_max_cost);
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
-                enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost);
+                enqueue_if_necessary(unary_op->effect);
             }
         }
     }
 }
 
-void Exploration::enqueue_if_necessary(Proposition *prop, int cost) {
-    assert(cost >= 0);
-    if (prop->h_max_cost == -1 || prop->h_max_cost > cost) {
-        prop->h_max_cost = cost;
-        prop_queue.push(cost, prop);
+void Exploration::enqueue_if_necessary(Proposition *prop) {
+    if (!prop->reached) {
+        prop->reached = true;
+        prop_queue.push_back(prop);
     }
 }
 
@@ -202,7 +193,6 @@ vector<vector<bool>> Exploration::compute_relaxed_reachability(
         reached.push_back(vector<bool>(var.get_domain_size(), false));
     }
 
-    // Perform exploration using h_max-values.
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids);
     relaxed_exploration();
 
@@ -210,7 +200,7 @@ vector<vector<bool>> Exploration::compute_relaxed_reachability(
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
         for (size_t value = 0; value < propositions[var_id].size(); ++value) {
             Proposition &prop = propositions[var_id][value];
-            if (prop.h_max_cost >= 0)
+            if (prop.reached)
                 reached[var_id][value] = true;
         }
     }
