@@ -143,10 +143,12 @@ bool LandmarkStatusManager::dead_end_exists() {
         if (!landmark.is_derived) {
             if ((lm_status[id] == lm_not_reached) &&
                 landmark.first_achievers.empty()) {
+                utils::g_log << "Found unreached landmark with empty first achievers." << endl;
                 return true;
             }
             if ((lm_status[id] == lm_needed_again) &&
                 landmark.possible_achievers.empty()) {
+                utils::g_log << "Found needed-again landmark with empty possible achievers." << endl;
                 return true;
             }
         }
