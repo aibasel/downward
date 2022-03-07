@@ -43,7 +43,7 @@ struct UnaryOperator {
     int unsatisfied_preconditions;
     bool excluded;
     UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
-                    int op_or_axiom_id)
+                  int op_or_axiom_id)
         : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff),
           excluded(false) {}
 };

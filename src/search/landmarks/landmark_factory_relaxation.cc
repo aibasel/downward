@@ -109,8 +109,7 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 
 vector<vector<bool>> LandmarkFactoryRelaxation::relaxed_reachability(
     const TaskProxy &task_proxy, Exploration &exploration,
-        const Landmark &exclude) const {
-
+    const Landmark &exclude) const {
     // Extract propositions from "exclude"
     unordered_set<int> excluded_op_ids;
     vector<FactPair> excluded_props;
@@ -119,7 +118,7 @@ vector<vector<bool>> LandmarkFactoryRelaxation::relaxed_reachability(
             excluded_op_ids.insert(op.get_id());
     }
     excluded_props.insert(excluded_props.end(),
-                         exclude.facts.begin(), exclude.facts.end());
+                          exclude.facts.begin(), exclude.facts.end());
 
     return exploration.compute_relaxed_reachability(excluded_props,
                                                     excluded_op_ids);

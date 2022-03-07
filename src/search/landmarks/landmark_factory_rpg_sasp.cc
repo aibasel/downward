@@ -263,7 +263,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     vector<vector<bool>> &reached, const Landmark &landmark) {
     /*
       Compute the shared preconditions of all operators that can potentially
-      achieve landmark bp, given the reachability in relaxed planning graph 
+      achieve landmark bp, given the reachability in relaxed planning graph
     */
     bool init = true;
     for (const FactPair &lm_fact : landmark.facts) {
