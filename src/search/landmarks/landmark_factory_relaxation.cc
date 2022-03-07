@@ -39,41 +39,29 @@ void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
 bool LandmarkFactoryRelaxation::is_causal_landmark(
     const TaskProxy &task_proxy, Exploration &exploration,
     const Landmark &landmark) const {
-    /* Test whether the relaxed planning task is unsolvable without using any operator
-       that has "landmark" as a precondition.
-       Similar to "relaxed_task_solvable" above.
-     */
-
     assert(!landmark.conjunctive);
 
     if (landmark.is_true_in_goal)
         return true;
-    vector<vector<int>> lvl_var;
-    vector<utils::HashMap<FactPair, int>> lvl_op;
-    // Initialize lvl_var to numeric_limits<int>::max()
-    VariablesProxy variables = task_proxy.get_variables();
-    lvl_var.resize(variables.size());
-    for (VariableProxy var : variables) {
-        lvl_var[var.get_id()].resize(var.get_domain_size(),
-                                     numeric_limits<int>::max());
-    }
-    unordered_set<int> exclude_op_ids;
-    vector<FactPair> exclude_props;
+
+    unordered_set<int> excluded_op_ids;
+    vector<FactPair> excluded_props;
     for (OperatorProxy op : task_proxy.get_operators()) {
         if (is_landmark_precondition(op, landmark)) {
-            exclude_op_ids.insert(op.get_id());
+            excluded_op_ids.insert(op.get_id());
         }
     }
-    // Do relaxed exploration
-    exploration.compute_reachability_with_excludes(
-        lvl_var, exclude_props, exclude_op_ids);
 
-    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
-    for (FactProxy goal : task_proxy.get_goals())
-        if (lvl_var[goal.get_variable().get_id()][goal.get_value()] ==
-            numeric_limits<int>::max())
+    // TODO: try to do this over relaxed_task_solvable
+    vector<vector<bool>> reached =
+        exploration.compute_relaxed_reachability(excluded_props,
+                                                 excluded_op_ids);
+
+    for (FactProxy goal : task_proxy.get_goals()) {
+        if (!reached[goal.get_variable().get_id()][goal.get_value()]) {
             return true;
-
+        }
+    }
     return false;
 }
 
@@ -91,13 +79,13 @@ void LandmarkFactoryRelaxation::calc_achievers(
                 landmark.is_derived = true;
         }
 
-        vector<vector<int>> lvl_var;
-        relaxed_task_solvable(task_proxy, exploration, lvl_var, landmark);
+        vector<vector<bool>> reached =
+            relaxed_reachability(task_proxy, exploration, landmark);
 
         for (int op_or_axom_id : landmark.possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
-            if (possibly_reaches_lm(op, lvl_var, landmark)) {
+            if (possibly_reaches_lm(op, reached, landmark)) {
                 landmark.first_achievers.insert(op_or_axom_id);
             }
         }
@@ -108,49 +96,33 @@ void LandmarkFactoryRelaxation::calc_achievers(
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
     const Landmark &exclude) const {
-    vector<vector<int>> lvl_var;
-    return relaxed_task_solvable(task_proxy, exploration, lvl_var, exclude);
+    vector<vector<bool>> reached =
+        relaxed_reachability(task_proxy, exploration, exclude);
+
+    for (FactProxy goal : task_proxy.get_goals()) {
+        if (!reached[goal.get_variable().get_id()][goal.get_value()]) {
+            return false;
+        }
+    }
+    return true;
 }
 
-bool LandmarkFactoryRelaxation::relaxed_task_solvable(
+vector<vector<bool>> LandmarkFactoryRelaxation::relaxed_reachability(
     const TaskProxy &task_proxy, Exploration &exploration,
-    vector<vector<int>> &lvl_var, const Landmark &exclude) const {
-    /*
-      Test whether the relaxed planning task is solvable without achieving the
-      propositions in "exclude" (do not apply operators that would add a
-      proposition from "exclude"). As a side effect, collect in lvl_var the
-      earliest possible point in time when a proposition can be achieved in the
-      relaxed task.
-    */
+        const Landmark &exclude) const {
 
-    OperatorsProxy operators = task_proxy.get_operators();
-    VariablesProxy variables = task_proxy.get_variables();
-    lvl_var.resize(variables.size());
-    for (VariableProxy var : variables) {
-        lvl_var[var.get_id()].resize(var.get_domain_size(),
-                                     numeric_limits<int>::max());
-    }
     // Extract propositions from "exclude"
-    unordered_set<int> exclude_op_ids;
-    vector<FactPair> exclude_props;
-    for (OperatorProxy op : operators) {
+    unordered_set<int> excluded_op_ids;
+    vector<FactPair> excluded_props;
+    for (OperatorProxy op : task_proxy.get_operators()) {
         if (achieves_non_conditional(op, exclude))
-            exclude_op_ids.insert(op.get_id());
+            excluded_op_ids.insert(op.get_id());
     }
-    exclude_props.insert(exclude_props.end(),
+    excluded_props.insert(excluded_props.end(),
                          exclude.facts.begin(), exclude.facts.end());
 
-    // Do relaxed exploration
-    exploration.compute_reachability_with_excludes(
-        lvl_var, exclude_props, exclude_op_ids);
-
-    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
-    for (FactProxy goal : task_proxy.get_goals())
-        if (lvl_var[goal.get_variable().get_id()][goal.get_value()] ==
-            numeric_limits<int>::max())
-            return false;
-
-    return true;
+    return exploration.compute_relaxed_reachability(excluded_props,
+                                                    excluded_op_ids);
 }
 
 bool LandmarkFactoryRelaxation::achieves_non_conditional(

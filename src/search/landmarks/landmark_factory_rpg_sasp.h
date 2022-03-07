@@ -24,7 +24,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void build_dtg_successors(const TaskProxy &task_proxy);
     void add_dtg_successor(int var_id, int pre, int post);
     void find_forward_orders(const VariablesProxy &variables,
-                             const std::vector<std::vector<int>> &lvl_var,
+                             const std::vector<std::vector<bool>> &reached,
                              LandmarkNode *lm_node);
     void add_lm_forward_orders();
 
@@ -35,16 +35,16 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void compute_shared_preconditions(
         const TaskProxy &task_proxy,
         std::unordered_map<int, int> &shared_pre,
-        std::vector<std::vector<int>> &lvl_var, const Landmark &landmark);
+        std::vector<std::vector<bool>> &reached, const Landmark &landmark);
     void compute_disjunctive_preconditions(
         const TaskProxy &task_proxy,
         std::vector<std::set<FactPair>> &disjunctive_pre,
-        std::vector<std::vector<int>> &lvl_var,
+        std::vector<std::vector<bool>> &reached,
         const Landmark &landmark);
 
     int min_cost_for_landmark(const TaskProxy &task_proxy,
                               const Landmark &landmark,
-                              std::vector<std::vector<int>> &lvl_var);
+                              std::vector<std::vector<bool>> &reached);
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
@@ -55,7 +55,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
                                  LandmarkNode &b,
                                  EdgeType t);
     void approximate_lookahead_orders(const TaskProxy &task_proxy,
-                                      const std::vector<std::vector<int>> &lvl_var,
+                                      const std::vector<std::vector<bool>> &reached,
                                       LandmarkNode *lmp);
     bool domain_connectivity(const State &initial_state,
                              const FactPair &landmark,

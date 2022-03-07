@@ -68,13 +68,16 @@ public:
     explicit Exploration(const TaskProxy &task_proxy);
 
     /*
-      Computes the h_max costs (stored in *lvl_var*) for the problem when
-      excluding propositions in *excluded_props* and operators in
-      *excluded_op_ids*. The values are only exact in the absence of conditional
-      effects, otherwise they are an admissible approximation.
+      Computes the reachability of each proposition when excluding
+      operators in *excluded_op_ids* and ensuring that propositions
+      in *excluded_pros* are not achieved.
+      The returned vector of vector denotes for each proposition
+      (grouped by their fact variable) whether it is relaxed reachable.
+      The values are exact in the absence of conditional effects,
+      otherwise they are an admissible approximation.
     */
-    void compute_reachability_with_excludes(
-        std::vector<std::vector<int>> &lvl_var,
+    // TODO: change vector<vector<bool>> to a proper class
+    std::vector<std::vector<bool>> compute_relaxed_reachability(
         const std::vector<FactPair> &excluded_props,
         const std::unordered_set<int> &excluded_op_ids);
 };

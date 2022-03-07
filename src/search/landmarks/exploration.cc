@@ -190,21 +190,30 @@ void Exploration::enqueue_if_necessary(Proposition *prop, int cost) {
     }
 }
 
-void Exploration::compute_reachability_with_excludes(
-    vector<vector<int>> &lvl_var,
+vector<vector<bool>> Exploration::compute_relaxed_reachability(
     const vector<FactPair> &excluded_props,
     const unordered_set<int> &excluded_op_ids) {
+    // set up reachability information
+    vector<vector<bool>> reached;
+    // TODO: it's maybe strange that we initialze reached through the
+    // task proxy but fill it later on through propositions
+    reached.reserve(task_proxy.get_variables().size());
+    for (VariableProxy var : task_proxy.get_variables()) {
+        reached.push_back(vector<bool>(var.get_domain_size(), false));
+    }
+
     // Perform exploration using h_max-values.
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids);
     relaxed_exploration();
 
-    // Copy reachability information into lvl_var.
+    // Copy reachability information into reached.
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
         for (size_t value = 0; value < propositions[var_id].size(); ++value) {
             Proposition &prop = propositions[var_id][value];
             if (prop.h_max_cost >= 0)
-                lvl_var[var_id][value] = prop.h_max_cost;
+                reached[var_id][value] = true;
         }
     }
+    return reached;
 }
 }
