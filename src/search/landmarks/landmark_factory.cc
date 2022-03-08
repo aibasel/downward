@@ -104,7 +104,9 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
 
     if (type == EdgeType::REASONABLE || type == EdgeType::OBEDIENT_REASONABLE) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
-            //log << "edge in opposite direction exists" << endl;
+            if (log.is_at_least_debug()) {
+                log << "edge in opposite direction exists" << endl;
+            }
             if (from.parents.find(&to)->second > type) // Stronger order present, return
                 return;
             // Edge in opposite direction is weaker, delete
@@ -128,7 +130,9 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
         assert(to.parents.find(&from) == to.parents.end());
         from.children.emplace(&to, type);
         to.parents.emplace(&from, type);
-        //log << "added parent with address " << &from << endl;
+        if (log.is_at_least_debug()) {
+            log << "added parent with address " << &from << endl;
+        }
     }
     assert(from.children.find(&to) != from.children.end());
     assert(to.parents.find(&from) != to.parents.end());

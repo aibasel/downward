@@ -227,8 +227,6 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
     State initial_state = task_proxy.get_initial_state();
     for (const FactPair &lm : a) {
         if (initial_state[lm.var].get_value() == lm.value) {
-            //log << endl << "not adding LM that's true in initial state: "
-            //<< g_variable_name[it->first] << " -> " << it->second << endl;
             return;
         }
         if (lm_graph->contains_simple_landmark(lm)) {
