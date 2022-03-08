@@ -178,7 +178,7 @@ void MatchTree::dump_recursive(Node *node, utils::LogProxy &log) const {
     log << endl;
     log << "node->var_id = " << node->var_id << endl;
     log << "Number of applicable operators at this node: "
-                 << node->applicable_operator_ids.size() << endl;
+        << node->applicable_operator_ids.size() << endl;
     for (int op_id : node->applicable_operator_ids) {
         log << "AbstractOperator #" << op_id << endl;
     }

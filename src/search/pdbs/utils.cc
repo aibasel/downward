@@ -124,7 +124,7 @@ void dump_pattern_collection_generation_statistics(
     const PatternCollection &pattern_collection = *pci.get_patterns();
     if (log.is_at_least_normal()) {
         log << identifier << " number of patterns: " << pattern_collection.size()
-                     << endl;
+            << endl;
         log << identifier << " total PDB size: ";
         log << compute_total_pdb_size(
             pci.get_task_proxy(), pattern_collection) << endl;

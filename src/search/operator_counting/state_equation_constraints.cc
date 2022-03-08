@@ -14,7 +14,6 @@ namespace operator_counting {
 StateEquationConstraints::StateEquationConstraints(
     const options::Options &opts)
     : log(utils::get_log_from_options(opts)) {
-
 }
 
 void add_indices_to_constraint(lp::LPConstraint &constraint,

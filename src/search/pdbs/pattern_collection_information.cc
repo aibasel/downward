@@ -69,7 +69,7 @@ void PatternCollectionInformation::create_pdbs_if_missing() {
             pdbs->push_back(pdb);
         }
         if (log.is_at_least_normal()) {
-            log << "Done computing PDBs for pattern collection: " 
+            log << "Done computing PDBs for pattern collection: "
                 << timer << endl;
         }
     }
