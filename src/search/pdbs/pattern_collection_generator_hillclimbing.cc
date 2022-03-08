@@ -654,6 +654,8 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
         make_shared<PatternCollectionGeneratorHillclimbing>(opts);
 
     Options heuristic_opts;
+    heuristic_opts.set<utils::Verbosity>(
+        "verbosity", opts.get<utils::Verbosity>("verbosity"));
     heuristic_opts.set<shared_ptr<AbstractTask>>(
         "transform", opts.get<shared_ptr<AbstractTask>>("transform"));
     heuristic_opts.set<bool>(
