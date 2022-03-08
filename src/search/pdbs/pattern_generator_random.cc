@@ -45,7 +45,7 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
         goals[0].var,
         cg_neighbors);
 
-    return PatternInformation(task_proxy, pattern);
+    return PatternInformation(task_proxy, pattern, log);
 }
 
 static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {

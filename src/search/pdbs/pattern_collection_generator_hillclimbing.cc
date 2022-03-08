@@ -457,7 +457,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::compute_pat
         hill_climbing(task_proxy);
     }
 
-    return current_pdbs->get_pattern_collection_information();
+    return current_pdbs->get_pattern_collection_information(log);
 }
 
 void add_hillclimbing_options(OptionParser &parser) {

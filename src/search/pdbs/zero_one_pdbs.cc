@@ -25,7 +25,7 @@ ZeroOnePDBs::ZeroOnePDBs(
     pattern_databases.reserve(patterns.size());
     for (const Pattern &pattern : patterns) {
         shared_ptr<PatternDatabase> pdb = make_shared<PatternDatabase>(
-            task_proxy, pattern, false, remaining_operator_costs);
+            task_proxy, pattern, remaining_operator_costs);
 
         /* Set cost of relevant operators to 0 for further iterations
            (action cost partitioning). */
@@ -63,9 +63,9 @@ double ZeroOnePDBs::compute_approx_mean_finite_h() const {
     return approx_mean_finite_h;
 }
 
-void ZeroOnePDBs::dump() const {
+void ZeroOnePDBs::dump(utils::LogProxy &log) const {
     for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
-        utils::g_log << pdb->get_pattern() << endl;
+        log << pdb->get_pattern() << endl;
     }
 }
 }

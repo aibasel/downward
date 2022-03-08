@@ -20,7 +20,7 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     PatternCollectionInformation pci = compute_patterns(task);
     if (log.is_at_least_normal()) {
         dump_pattern_collection_generation_statistics(
-            name(), timer(), pci);
+            name(), timer(), pci, log);
     }
     return pci;
 }
@@ -40,7 +40,8 @@ PatternInformation PatternGenerator::generate(
         dump_pattern_generation_statistics(
             name(),
             timer.stop(),
-            pattern_info);
+            pattern_info,
+            log);
     }
     return pattern_info;
 }

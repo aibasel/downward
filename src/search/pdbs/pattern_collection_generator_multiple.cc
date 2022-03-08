@@ -236,7 +236,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::compute_pattern
     }
 
     PatternCollectionInformation result = get_pattern_collection_info(
-        task_proxy, generated_pdbs);
+        task_proxy, generated_pdbs, log);
     if (log.is_at_least_normal()) {
         log << name() << " number of iterations: "
             << num_iterations << endl;

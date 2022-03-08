@@ -8,6 +8,10 @@
 #include <cstddef>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace pdbs {
 /*
   Successor Generator for abstract operators.
@@ -30,7 +34,7 @@ class MatchTree {
                           Node **edge_from_parent);
     void get_applicable_operator_ids_recursive(
         Node *node, int state_index, std::vector<int> &operator_ids) const;
-    void dump_recursive(Node *node) const;
+    void dump_recursive(Node *node, utils::LogProxy &log) const;
 public:
     // Initialize an empty match tree.
     MatchTree(const TaskProxy &task_proxy,
@@ -48,7 +52,7 @@ public:
     */
     void get_applicable_operator_ids(
         int state_index, std::vector<int> &operator_ids) const;
-    void dump() const;
+    void dump(utils::LogProxy &log) const;
 };
 }
 

@@ -295,7 +295,7 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::compute_patterns
 
     TaskProxy task_proxy(*task);
     assert(best_patterns);
-    return PatternCollectionInformation(task_proxy, best_patterns);
+    return PatternCollectionInformation(task_proxy, best_patterns, log);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
