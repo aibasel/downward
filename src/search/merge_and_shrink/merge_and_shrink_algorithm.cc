@@ -488,8 +488,9 @@ void handle_shrink_limit_options_defaults(Options &opts) {
         }
     }
 
+    utils::LogProxy log = utils::get_log_from_options(opts);
     if (max_states_before_merge > max_states) {
-        utils::g_log << "warning: max_states_before_merge exceeds max_states, "
+        log << "warning: max_states_before_merge exceeds max_states, "
                      << "correcting." << endl;
         max_states_before_merge = max_states;
     }
@@ -513,7 +514,7 @@ void handle_shrink_limit_options_defaults(Options &opts) {
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (threshold > max_states) {
-        utils::g_log << "warning: threshold exceeds max_states, correcting" << endl;
+        log << "warning: threshold exceeds max_states, correcting" << endl;
         threshold = max_states;
     }
 
