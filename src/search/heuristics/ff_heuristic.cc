@@ -15,7 +15,9 @@ namespace ff_heuristic {
 FFHeuristic::FFHeuristic(const Options &opts)
     : AdditiveHeuristic(opts),
       relaxed_plan(task_proxy.get_operators().size(), false) {
-    utils::g_log << "Initializing FF heuristic..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing FF heuristic..." << endl;
+    }
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(

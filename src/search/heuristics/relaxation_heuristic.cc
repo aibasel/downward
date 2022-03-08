@@ -72,7 +72,7 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     utils::Timer simplify_timer;
     simplify();
     if (log.is_at_least_normal()) {
-        utils::g_log << "time to simplify: " << simplify_timer << endl;
+        log << "time to simplify: " << simplify_timer << endl;
     }
 
     // Cross-reference unary operators.
@@ -175,7 +175,7 @@ void RelaxationHeuristic::simplify() {
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
     if (log.is_at_least_normal()) {
-        utils::g_log << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
+        log << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
     }
 
     /*
@@ -299,7 +299,7 @@ void RelaxationHeuristic::simplify() {
         unary_operators.end());
 
     if (log.is_at_least_normal()) {
-        utils::g_log << " done! [" << unary_operators.size() << " unary operators]" << endl;
+        log << " done! [" << unary_operators.size() << " unary operators]" << endl;
     }
 }
 }

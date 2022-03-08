@@ -19,7 +19,7 @@ AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     : RelaxationHeuristic(opts),
       did_write_overflow_warning(false) {
     if (log.is_at_least_normal()) {
-        utils::g_log << "Initializing additive heuristic..." << endl;
+        log << "Initializing additive heuristic..." << endl;
     }
 }
 
@@ -27,8 +27,8 @@ void AdditiveHeuristic::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
-        utils::g_log << "WARNING: overflow on h^add! Costs clamped to "
-                     << MAX_COST_VALUE << endl;
+        log << "WARNING: overflow on h^add! Costs clamped to "
+            << MAX_COST_VALUE << endl;
         cerr << "WARNING: overflow on h^add! Costs clamped to "
              << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;

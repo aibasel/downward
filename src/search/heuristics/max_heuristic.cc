@@ -27,7 +27,7 @@ namespace max_heuristic {
 HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
     : RelaxationHeuristic(opts) {
     if (log.is_at_least_normal()) {
-        utils::g_log << "Initializing HSP max heuristic..." << endl;
+        log << "Initializing HSP max heuristic..." << endl;
     }
 }
 
