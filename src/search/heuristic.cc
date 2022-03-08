@@ -17,6 +17,7 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : Evaluator(opts.get_unparsed_config(), true, true, true),
+      log(utils::get_log_from_options(opts)),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
@@ -35,6 +36,7 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
+    utils::add_log_options_to_parser(parser);
     parser.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."

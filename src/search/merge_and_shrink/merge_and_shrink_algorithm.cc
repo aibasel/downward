@@ -432,14 +432,6 @@ void add_merge_and_shrink_algorithm_options_to_parser(OptionParser &parser) {
 
     add_transition_system_size_limit_options_to_parser(parser);
 
-    /*
-      silent: no output during construction, only starting and final statistics
-      normal: basic output during construction, starting and final statistics
-      verbose: full output during construction, starting and final statistics
-      debug: full output with additional debug output
-    */
-    utils::add_log_options_to_parser(parser);
-
     parser.add_option<double>(
         "main_loop_max_time",
         "A limit in seconds on the runtime of the main loop of the algorithm. "

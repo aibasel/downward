@@ -45,6 +45,8 @@ class Heuristic : public Evaluator {
     ordered_set::OrderedSet<OperatorID> preferred_operators;
 
 protected:
+    mutable utils::LogProxy log;
+
     /*
       Cache for saving h values
       Before accessing this cache always make sure that the cache_evaluator_values

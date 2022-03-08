@@ -19,8 +19,7 @@ using namespace std;
 
 namespace cegar {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
-    const options::Options &opts) {
-    utils::LogProxy log = utils::get_log_from_options(opts);
+    const options::Options &opts, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
         log << "Initializing additive Cartesian heuristic..." << endl;
     }
@@ -44,7 +43,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const options::Options &opts)
     : Heuristic(opts),
-      heuristic_functions(generate_heuristic_functions(opts)) {
+      heuristic_functions(generate_heuristic_functions(opts, log)) {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -140,7 +139,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "true");
     Heuristic::add_options_to_parser(parser);
     utils::add_rng_options(parser);
-    utils::add_log_options_to_parser(parser);
 
     Options opts = parser.parse();
 

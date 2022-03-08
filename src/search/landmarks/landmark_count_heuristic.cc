@@ -37,7 +37,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           admissible ||
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
-      log(utils::get_log_from_options(opts)),
       successor_generator(nullptr) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark count heuristic..." << endl;
@@ -375,7 +374,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
-    utils::add_log_options_to_parser(parser);
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

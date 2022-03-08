@@ -6,7 +6,6 @@
 #include "../heuristic.h"
 
 #include "../utils/collections.h"
-#include "../utils/logging.h"
 
 #include <cassert>
 #include <vector>
@@ -66,7 +65,6 @@ class RelaxationHeuristic : public Heuristic {
     // proposition_offsets[var_no]: first PropID related to variable var_no
     std::vector<PropID> proposition_offsets;
 protected:
-    utils::LogProxy log;
     std::vector<UnaryOperator> unary_operators;
     std::vector<Proposition> propositions;
     std::vector<PropID> goal_propositions;
@@ -120,8 +118,6 @@ public:
 
     virtual bool dead_ends_are_reliable() const override;
 };
-
-extern void add_options_to_parser(options::OptionParser &parser);
 }
 
 #endif

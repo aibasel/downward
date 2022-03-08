@@ -37,7 +37,7 @@ UnaryOperator::UnaryOperator(
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
-    : Heuristic(opts), log(utils::get_log_from_options(opts)) {
+    : Heuristic(opts) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 
@@ -301,9 +301,5 @@ void RelaxationHeuristic::simplify() {
     if (log.is_at_least_normal()) {
         utils::g_log << " done! [" << unary_operators.size() << " unary operators]" << endl;
     }
-}
-
-void add_options_to_parser(OptionParser &parser) {
-    utils::add_log_options_to_parser(parser);
 }
 }
