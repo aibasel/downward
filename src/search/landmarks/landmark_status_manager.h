@@ -27,7 +27,8 @@ public:
     void update_lm_status(const State &ancestor_state);
     bool dead_end_exists();
 
-    void set_landmarks_for_initial_state(const State &initial_state);
+    void set_landmarks_for_initial_state(
+        const State &initial_state, utils::LogProxy &log);
     bool update_reached_lms(const State &parent_ancestor_state,
                             OperatorID op_id,
                             const State &ancestor_state);

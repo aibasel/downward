@@ -232,7 +232,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
-    lm_status_manager->set_landmarks_for_initial_state(initial_state);
+    lm_status_manager->set_landmarks_for_initial_state(initial_state, log);
 }
 
 void LandmarkCountHeuristic::notify_state_transition(

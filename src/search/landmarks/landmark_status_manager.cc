@@ -22,7 +22,7 @@ BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {
 }
 
 void LandmarkStatusManager::set_landmarks_for_initial_state(
-    const State &initial_state) {
+    const State &initial_state, utils::LogProxy &log) {
     BitsetView reached = get_reached_landmarks(initial_state);
     // This is necessary since the default is "true for all" (see comment above).
     reached.reset();
@@ -60,8 +60,10 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
             }
         }
     }
-    utils::g_log << inserted << " initial landmarks, "
-                 << num_goal_lms << " goal landmarks" << endl;
+    if (log.is_at_least_normal()) {
+        log << inserted << " initial landmarks, "
+            << num_goal_lms << " goal landmarks" << endl;
+    }
 }
 
 bool LandmarkStatusManager::update_reached_lms(const State &parent_ancestor_state,
