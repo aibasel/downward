@@ -225,12 +225,12 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
-    lm_status_manager->set_landmarks_for_initial_state(initial_state);
+    lm_status_manager->process_initial_state(initial_state);
 }
 
 void LandmarkCountHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
-    lm_status_manager->update_reached_lms(parent_state, op_id, state);
+    lm_status_manager->process_state_transition(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the reached landmark
            set has actually changed and only then mark the h value as dirty. */
