@@ -3,7 +3,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
@@ -103,10 +102,6 @@ void get_conflicting_vars(const vector<FactPair> &facts1,
             ++facts2_it;
         }
     }
-}
-
-StubbornSetsEC::StubbornSetsEC(const options::Options &opts)
-    : StubbornSets(opts) {
 }
 
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
@@ -346,14 +341,10 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "AAAI Press",
             "2013"));
 
-    stubborn_sets::add_pruning_options(parser);
-
-    Options opts = parser.parse();
-
     if (parser.dry_run()) {
         return nullptr;
     }
-    return make_shared<StubbornSetsEC>(opts);
+    return make_shared<StubbornSetsEC>();
 }
 
 static Plugin<PruningMethod> _plugin("stubborn_sets_ec", _parse);

@@ -49,8 +49,8 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "All other candidates get a score of positive infinity.");
     if (parser.dry_run())
         return nullptr;
-    else
-        return make_shared<MergeScoringFunctionGoalRelevance>();
+
+    return make_shared<MergeScoringFunctionGoalRelevance>();
 }
 
 static options::Plugin<MergeScoringFunction> _plugin("goal_relevance", _parse);

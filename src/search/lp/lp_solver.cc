@@ -70,7 +70,11 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgram *program) {
+ostream &LPConstraint::dump(ostream &stream, const LinearProgram *program) {
+    double infinity = numeric_limits<double>::infinity();
+    if (program) {
+        infinity = program->get_infinity();
+    }
     if (lower_bound != -infinity) {
         stream << lower_bound << " <= ";
     }
@@ -108,6 +112,10 @@ named_vector::NamedVector<LPVariable> &LinearProgram::get_variables() {
 
 named_vector::NamedVector<LPConstraint> &LinearProgram::get_constraints() {
     return constraints;
+}
+
+double LinearProgram::get_infinity() const {
+    return infinity;
 }
 
 LPObjectiveSense LinearProgram::get_sense() const {
@@ -372,6 +380,10 @@ void LPSolver::set_variable_upper_bound(int index, double bound) {
         handle_coin_error(error);
     }
     is_solved = false;
+}
+
+void LPSolver::set_mip_gap(double gap) {
+    lp::set_mip_gap(lp_solver.get(), gap);
 }
 
 void LPSolver::solve() {

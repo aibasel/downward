@@ -16,8 +16,7 @@ using namespace std;
 
 namespace operator_counting {
 void LMCutConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> &task, named_vector::NamedVector<lp::LPConstraint> & /*constraints*/,
-    double /*infinity*/) {
+    const shared_ptr<AbstractTask> &task, lp::LinearProgram &) {
     TaskProxy task_proxy(*task);
     landmark_generator =
         utils::make_unique_ptr<lm_cut_heuristic::LandmarkCutLandmarks>(task_proxy);
@@ -53,7 +52,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "LM-cut landmark constraints",
         "Computes a set of landmarks in each state using the LM-cut method. "
         "For each landmark L the constraint sum_{o in L} Count_o >= 1 is added "
-        "to the operator counting LP temporarily. After the heuristic value "
+        "to the operator-counting LP temporarily. After the heuristic value "
         "for the state is computed, all temporary constraints are removed "
         "again. For details, see" + utils::format_conference_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",

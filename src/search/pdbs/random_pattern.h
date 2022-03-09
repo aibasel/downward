@@ -12,8 +12,8 @@ class OptionParser;
 }
 
 namespace utils {
+class LogProxy;
 class RandomNumberGenerator;
-enum class Verbosity;
 }
 
 namespace pdbs {
@@ -27,7 +27,7 @@ namespace pdbs {
 extern Pattern generate_random_pattern(
     int max_pdb_size,
     double max_time,
-    utils::Verbosity verbosity,
+    utils::LogProxy &log,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     const TaskProxy &task_proxy,
     int goal_variable,

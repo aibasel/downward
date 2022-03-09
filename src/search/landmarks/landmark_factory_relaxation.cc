@@ -15,10 +15,11 @@ void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask
     postprocess(task_proxy, exploration);
 }
 
-void LandmarkFactoryRelaxation::postprocess(const TaskProxy &task_proxy, Exploration &exploration) {
+void LandmarkFactoryRelaxation::postprocess(
+    const TaskProxy &task_proxy, Exploration &exploration) {
     lm_graph->set_landmark_ids();
-    mk_acyclic_graph();
     calc_achievers(task_proxy, exploration);
+    mk_acyclic_graph();
 }
 
 void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
@@ -65,7 +66,7 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     }
     // Do relaxed exploration
     exploration.compute_reachability_with_excludes(
-        lvl_var, lvl_op, true, exclude_props, exclude_op_ids, false);
+        lvl_var, exclude_props, exclude_op_ids);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (FactProxy goal : task_proxy.get_goals())
@@ -76,7 +77,9 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     return false;
 }
 
-void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) {
+void LandmarkFactoryRelaxation::calc_achievers(
+    const TaskProxy &task_proxy, Exploration &exploration) {
+    assert(!achievers_calculated);
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lm_node : lm_graph->get_nodes()) {
         Landmark &landmark = lm_node->get_landmark();
@@ -89,9 +92,7 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
         }
 
         vector<vector<int>> lvl_var;
-        vector<utils::HashMap<FactPair, int>> lvl_op;
-        relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op,
-                              true, landmark);
+        relaxed_task_solvable(task_proxy, exploration, lvl_var, landmark);
 
         for (int op_or_axom_id : landmark.possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
@@ -101,38 +102,28 @@ void LandmarkFactoryRelaxation::calc_achievers(const TaskProxy &task_proxy, Expl
             }
         }
     }
-}
-
-bool LandmarkFactoryRelaxation::relaxed_task_solvable(
-    const TaskProxy &task_proxy, Exploration &exploration, bool level_out,
-    const Landmark &exclude, bool compute_lvl_op) const {
-    vector<vector<int>> lvl_var;
-    vector<utils::HashMap<FactPair, int>> lvl_op;
-    return relaxed_task_solvable(task_proxy, exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
+    achievers_calculated = true;
 }
 
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
-    vector<vector<int>> &lvl_var, vector<utils::HashMap<FactPair, int>> &lvl_op,
-    bool level_out, const Landmark &exclude, bool compute_lvl_op) const {
-    /* Test whether the relaxed planning task is solvable without achieving the propositions in
-     "exclude" (do not apply operators that would add a proposition from "exclude").
-     As a side effect, collect in lvl_var and lvl_op the earliest possible point in time
-     when a proposition / operator can be achieved / become applicable in the relaxed task.
-     */
+    const Landmark &exclude) const {
+    vector<vector<int>> lvl_var;
+    return relaxed_task_solvable(task_proxy, exploration, lvl_var, exclude);
+}
+
+bool LandmarkFactoryRelaxation::relaxed_task_solvable(
+    const TaskProxy &task_proxy, Exploration &exploration,
+    vector<vector<int>> &lvl_var, const Landmark &exclude) const {
+    /*
+      Test whether the relaxed planning task is solvable without achieving the
+      propositions in "exclude" (do not apply operators that would add a
+      proposition from "exclude"). As a side effect, collect in lvl_var the
+      earliest possible point in time when a proposition can be achieved in the
+      relaxed task.
+    */
 
     OperatorsProxy operators = task_proxy.get_operators();
-    AxiomsProxy axioms = task_proxy.get_axioms();
-    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
-    if (compute_lvl_op) {
-        lvl_op.resize(operators.size() + axioms.size());
-        for (OperatorProxy op : operators) {
-            add_operator_and_propositions_to_list(op, lvl_op);
-        }
-        for (OperatorProxy axiom : axioms) {
-            add_operator_and_propositions_to_list(axiom, lvl_op);
-        }
-    }
     VariablesProxy variables = task_proxy.get_variables();
     lvl_var.resize(variables.size());
     for (VariableProxy var : variables) {
@@ -151,7 +142,7 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 
     // Do relaxed exploration
     exploration.compute_reachability_with_excludes(
-        lvl_var, lvl_op, level_out, exclude_props, exclude_op_ids, compute_lvl_op);
+        lvl_var, exclude_props, exclude_op_ids);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (FactProxy goal : task_proxy.get_goals())
@@ -176,13 +167,5 @@ bool LandmarkFactoryRelaxation::achieves_non_conditional(
         }
     }
     return false;
-}
-
-void LandmarkFactoryRelaxation::add_operator_and_propositions_to_list(
-    const OperatorProxy &op, vector<utils::HashMap<FactPair, int>> &lvl_op) const {
-    int op_or_axiom_id = get_operator_or_axiom_id(op);
-    for (EffectProxy effect : op.get_effects()) {
-        lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
-    }
 }
 }

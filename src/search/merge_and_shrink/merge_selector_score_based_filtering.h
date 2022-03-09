@@ -21,7 +21,7 @@ class MergeSelectorScoreBasedFiltering : public MergeSelector {
         const std::vector<double> &scores) const;
 protected:
     virtual std::string name() const override;
-    virtual void dump_specific_options() const override;
+    virtual void dump_selector_specific_options(utils::LogProxy &log) const override;
 public:
     explicit MergeSelectorScoreBasedFiltering(const options::Options &options);
     virtual ~MergeSelectorScoreBasedFiltering() override = default;

@@ -13,6 +13,7 @@ class Options;
 }
 
 namespace utils {
+class LogProxy;
 class RandomNumberGenerator;
 }
 
@@ -26,11 +27,11 @@ protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     UpdateOption update_option;
     virtual std::string name() const = 0;
-    virtual void dump_tree_specific_options() const {}
+    virtual void dump_tree_specific_options(utils::LogProxy &) const {}
 public:
     explicit MergeTreeFactory(const options::Options &options);
     virtual ~MergeTreeFactory() = default;
-    void dump_options() const;
+    void dump_options(utils::LogProxy &log) const;
     // Compute a merge tree for the given entire task.
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy) = 0;

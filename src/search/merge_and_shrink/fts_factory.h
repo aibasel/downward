@@ -14,7 +14,7 @@
 class TaskProxy;
 
 namespace utils {
-enum class Verbosity;
+class LogProxy;
 }
 
 namespace merge_and_shrink {
@@ -24,7 +24,7 @@ extern FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
     bool compute_init_distances,
     bool compute_goal_distances,
-    utils::Verbosity verbosity);
+    utils::LogProxy &log);
 }
 
 #endif

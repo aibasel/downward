@@ -91,8 +91,6 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     reduce cycles. If the edge is already present, the stronger edge type wins.
     */
     assert(&from != &to);
-    assert(from.parents.find(&to) == from.parents.end() || type <= EdgeType::REASONABLE);
-    assert(to.children.find(&from) == to.children.end() || type <= EdgeType::REASONABLE);
 
     if (type == EdgeType::REASONABLE || type == EdgeType::OBEDIENT_REASONABLE) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
@@ -148,35 +146,42 @@ void LandmarkFactory::mk_acyclic_graph() {
                  << " reasonable or obedient reasonable orders" << endl;
 }
 
-bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                                      list<pair<LandmarkNode *, EdgeType>> &path,
-                                                      list<pair<LandmarkNode *, EdgeType>>::iterator it) {
-    LandmarkNode *parent_p = 0;
-    LandmarkNode *child_p = 0;
-    for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it; it2
-         != path.end(); ++it2) {
+void LandmarkFactory::remove_first_weakest_cycle_edge(
+    list<pair<LandmarkNode *, EdgeType>> &path,
+    list<pair<LandmarkNode *, EdgeType>>::iterator it) {
+    LandmarkNode *from = path.back().first;
+    LandmarkNode *to = it->first;
+    EdgeType weakest_edge = path.back().second;
+    for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
+         it2 != prev(path.end()); ++it2) {
         EdgeType edge = it2->second;
-        if (edge == EdgeType::REASONABLE || edge == EdgeType::OBEDIENT_REASONABLE) {
-            parent_p = it2->first;
-            if (*it2 == path.back()) {
-                child_p = cur;
-                break;
-            } else {
-                list<pair<LandmarkNode *, EdgeType>>::iterator child_it = it2;
-                ++child_it;
-                child_p = child_it->first;
-            }
-            if (edge == EdgeType::OBEDIENT_REASONABLE)
-                break;
-            // else no break since o_r order could still appear in list
+        if (edge < weakest_edge) {
+            from = it2->first;
+            to = next(it2)->first;
+            weakest_edge = edge;
+        }
+        if (weakest_edge == EdgeType::OBEDIENT_REASONABLE) {
+            break;
         }
     }
-    assert(parent_p != 0 && child_p != 0);
-    assert(parent_p->children.find(child_p) != parent_p->children.end());
-    assert(child_p->parents.find(parent_p) != child_p->parents.end());
-    parent_p->children.erase(child_p);
-    child_p->parents.erase(parent_p);
-    return true;
+    /*
+      If the weakest ordering in a cycle is natural (or stronger), this
+      indicates that the problem at hand is unsolvable. We signal this by
+      clearing the first achievers of all landmarks present in that cycle.
+      We assert here that (first) achievers were calculated beforehand to make
+      sure that this information is not overwritten later on.
+    */
+    assert(achievers_calculated);
+    if (weakest_edge > EdgeType::REASONABLE) {
+        for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
+             it2 != path.end(); ++it2) {
+            it2->first->get_landmark().first_achievers.clear();
+        }
+    }
+    assert(from->children.find(to) != from->children.end());
+    assert(to->parents.find(from) != to->parents.end());
+    from->children.erase(to);
+    to->parents.erase(from);
 }
 
 int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
@@ -197,8 +202,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
             }
             assert(it != path.end());
             // remove edge from graph
-            remove_first_weakest_cycle_edge(cur, path, it);
-            //assert(removed);
+            remove_first_weakest_cycle_edge(path, it);
             ++nr_removed;
 
             path.clear();

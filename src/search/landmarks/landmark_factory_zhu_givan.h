@@ -65,10 +65,7 @@ public:
     // Extract landmarks from last proposition layer and add them to the
     // landmarks graph
     void extract_landmarks(const TaskProxy &task_proxy,
-                           Exploration &exploration, const PropositionLayer &last_prop_layer);
-
-    // test if layer satisfies goal
-    bool satisfies_goal_conditions(const GoalsProxy &goals, const PropositionLayer &layer) const;
+                           const PropositionLayer &last_prop_layer);
 
     // Link operators to its propositions in trigger list.
     void add_operator_to_triggers(const OperatorProxy &op);

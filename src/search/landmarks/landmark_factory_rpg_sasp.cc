@@ -159,13 +159,6 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(
             }
         }
     }
-    /*
-      TODO: The following assertion fails for the unsolvable tasks that are
-      created if the translator detects unsolvability. To reproduce, search
-      with "astar(lmcount(lm_rhw()))" on mystery/prob07.pddl in debug mode.
-      See issue 467
-    */
-    assert(min_cost < numeric_limits<int>::max());
     return min_cost;
 }
 
@@ -440,9 +433,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
             // relaxed plan that propositions are achieved (in lvl_var) and operators
             // applied (in lvl_ops).
             vector<vector<int>> lvl_var;
-            vector<utils::HashMap<FactPair, int>> lvl_op;
-            relaxed_task_solvable(task_proxy, exploration, lvl_var,
-                                  lvl_op, true, landmark);
+            relaxed_task_solvable(task_proxy, exploration, lvl_var, landmark);
             // Use this information to determine all operators that can possibly achieve landmark
             // for the first time, and collect any precondition propositions that all such
             // operators share (if there are any).

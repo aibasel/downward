@@ -99,14 +99,14 @@ bool PotentialOptimizer::potentials_are_bounded() const {
 }
 
 void PotentialOptimizer::construct_lp() {
-    double upper_bound = (potentials_are_bounded() ? max_potential :
-                          lp_solver.get_infinity());
+    double infinity = lp_solver.get_infinity();
+    double upper_bound = (potentials_are_bounded() ? max_potential : infinity);
 
     named_vector::NamedVector<lp::LPVariable> lp_variables;
     lp_variables.reserve(num_lp_vars);
     for (int lp_var_id = 0; lp_var_id < num_lp_vars; ++lp_var_id) {
         // Use dummy coefficient for now. Adapt coefficient later.
-        lp_variables.emplace_back(-lp_solver.get_infinity(), upper_bound, 1.0);
+        lp_variables.emplace_back(-infinity, upper_bound, 1.0);
     }
 
     named_vector::NamedVector<lp::LPConstraint> lp_constraints;
@@ -117,7 +117,7 @@ void PotentialOptimizer::construct_lp() {
         for (FactProxy pre : op.get_preconditions()) {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }
-        lp::LPConstraint constraint(-lp_solver.get_infinity(), op.get_cost());
+        lp::LPConstraint constraint(-infinity, op.get_cost());
         vector<pair<int, int>> coefficients;
         for (EffectProxy effect : op.get_effects()) {
             VariableProxy var = effect.get_fact().get_variable();
@@ -177,13 +177,15 @@ void PotentialOptimizer::construct_lp() {
             // Create constraint: P_{V=v} <= P_{V=u}
             // Note that we could eliminate variables P_{V=u} if V is
             // undefined in the goal.
-            lp::LPConstraint constraint(-lp_solver.get_infinity(), 0);
+            lp::LPConstraint constraint(-infinity, 0);
             constraint.insert(val_lp, 1);
             constraint.insert(undef_val_lp, -1);
             lp_constraints.push_back(constraint);
         }
     }
-    lp_solver.load_problem(lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables), move(lp_constraints)));
+    lp::LinearProgram lp(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
+                         move(lp_constraints), infinity);
+    lp_solver.load_problem(lp);
 }
 
 void PotentialOptimizer::solve_and_extract() {

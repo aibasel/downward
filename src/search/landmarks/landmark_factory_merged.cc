@@ -46,8 +46,10 @@ void LandmarkFactoryMerged::generate_landmarks(
 
     vector<shared_ptr<LandmarkGraph>> lm_graphs;
     lm_graphs.reserve(lm_factories.size());
+    achievers_calculated = true;
     for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
         lm_graphs.push_back(lm_factory->compute_lm_graph(task));
+        achievers_calculated &= lm_factory->achievers_are_calculated();
     }
 
     utils::g_log << "Adding simple landmarks" << endl;

@@ -16,8 +16,12 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
     options::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts, "Random Patterns"),
+    : PatternCollectionGeneratorMultiple(opts),
       bidirectional(opts.get<bool>("bidirectional")) {
+}
+
+string PatternCollectionGeneratorMultipleRandom::id() const {
+    return "random patterns";
 }
 
 void PatternCollectionGeneratorMultipleRandom::initialize(
@@ -34,10 +38,11 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     const FactPair &goal,
     unordered_set<int> &&) {
     // TODO: add support for blacklisting in single RCG?
+    utils::LogProxy silent_log = utils::get_silent_log();
     Pattern pattern = generate_random_pattern(
         max_pdb_size,
         max_time,
-        utils::Verbosity::SILENT,
+        silent_log,
         rng,
         TaskProxy(*task),
         goal.var,
@@ -53,9 +58,10 @@ static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &pars
         "This pattern collection generator implements the 'multiple "
         "randomized causal graph' (mRCG) algorithm described in experiments of "
         "the paper" + get_rovner_et_al_reference() +
-        "To compute a pattern in each iteration, it uses the 'single random "
-        "pattern' algorithm, called 'single randomized causal graph' (sRCG) "
-        "in the paper; see PatternCollectionGenerator#Random_Pattern.");
+        "It is an instantiation of the 'multiple algorithm framework'. "
+        "To compute a pattern in each iteration, it uses the random "
+        "pattern algorithm, called 'single randomized causal graph' (sRCG) "
+        "in the paper. See below for descriptions of the algorithms.");
     add_random_pattern_implementation_notes_to_parser(parser);
     add_multiple_algorithm_implementation_notes_to_parser(parser);
     add_multiple_options_to_parser(parser);

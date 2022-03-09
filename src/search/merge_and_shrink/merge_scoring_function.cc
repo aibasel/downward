@@ -13,10 +13,10 @@ MergeScoringFunction::MergeScoringFunction()
     : initialized(false) {
 }
 
-void MergeScoringFunction::dump_options() const {
-    utils::g_log << "Merge scoring function:" << endl;
-    utils::g_log << "Name: " << name() << endl;
-    dump_function_specific_options();
+void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
+    log << "Merge scoring function:" << endl;
+    log << "Name: " << name() << endl;
+    dump_function_specific_options(log);
 }
 
 static options::PluginTypePlugin<MergeScoringFunction> _type_plugin(

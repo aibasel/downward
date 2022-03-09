@@ -3,12 +3,9 @@
 
 #include "merge_strategy_factory.h"
 
-namespace options {
-class Options;
-}
-
 namespace merge_and_shrink {
 class MergeSelector;
+
 class MergeStrategyFactoryStateless : public MergeStrategyFactory {
     std::shared_ptr<MergeSelector> merge_selector;
 protected:

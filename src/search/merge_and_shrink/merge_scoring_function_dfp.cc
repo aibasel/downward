@@ -122,7 +122,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "Note",
         "To obtain the configurations called DFP-B-50K described in the paper, "
         "use the following configuration of the merge-and-shrink heuristic "
-        "and adapt the tie-breaking criteria of {{{total_order}}} as desired:\n "
+        "and adapt the tie-breaking criteria of {{{total_order}}} as desired:\n"
         "{{{\nmerge_and_shrink(merge_strategy=merge_stateless(merge_selector="
         "score_based_filtering(scoring_functions=[goal_relevance,dfp,total_order("
         "atomic_ts_order=reverse_level,product_ts_order=new_to_old,"
@@ -132,8 +132,8 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
 
     if (parser.dry_run())
         return nullptr;
-    else
-        return make_shared<MergeScoringFunctionDFP>();
+
+    return make_shared<MergeScoringFunctionDFP>();
 }
 
 static options::Plugin<MergeScoringFunction> _plugin("dfp", _parse);

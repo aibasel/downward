@@ -31,7 +31,12 @@ public:
     bool is_true_in_goal;
     bool is_derived;
 
-    // Cost of achieving the landmark (as determined by the landmark factory)
+    /*
+      Cost of achieving the landmark (as determined by the landmark factory),
+      is considered infinite if set to *numeric_limits<int>::max()* (currently
+      only set in *LandmarkFactoryRpgSasp::min_cost_for_landmark(..)* if
+      *first_achievers* is empty).
+    */
     int cost;
 
     std::set<int> first_achievers;
