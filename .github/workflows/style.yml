@@ -1,7 +1,11 @@
 ---
 name: Code style tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, issue*, release-*]
+  pull_request:
+    branches: [main, issue*, release-*]
 
 jobs:
   style:

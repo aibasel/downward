@@ -12,9 +12,13 @@ after the corresponding tracker issues.
 ## Changes since the last release
 
 - Speed up landmark generation time by 10-20% for `lm_rhw`, `lm_zg`,
-  and `lm_exhaust` due to removing unnecessary code in the landmark 
+  and `lm_exhaust` due to removing unnecessary code in the landmark
   exploration.
   <https://issues.fast-downward.org/issue1044>
+
+- infrastructure: Run GitHub Actions only for the following branches:
+  `main`, `issue*`, `release-*`.
+  <https://issues.fast-downward.org/issue1027>
 
 ## Fast Downward 21.12
 
