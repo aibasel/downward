@@ -257,8 +257,10 @@ void HMHeuristic::generate_all_partial_tuples_aux(
 
 
 void HMHeuristic::dump_table() const {
-    for (auto &hm_ent : hm_table) {
-        log << "h(" << hm_ent.first << ") = " << hm_ent.second << endl;
+    if (log.is_at_least_debug()) {
+        for (auto &hm_ent : hm_table) {
+            log << "h(" << hm_ent.first << ") = " << hm_ent.second << endl;
+        }
     }
 }
 

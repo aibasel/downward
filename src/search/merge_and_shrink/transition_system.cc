@@ -481,68 +481,74 @@ string TransitionSystem::get_description() const {
 }
 
 void TransitionSystem::dump_dot_graph(utils::LogProxy &log) const {
-    assert(are_transitions_sorted_unique());
-    log << "digraph transition_system";
-    for (size_t i = 0; i < incorporated_variables.size(); ++i)
-        log << "_" << incorporated_variables[i];
-    log << " {" << endl;
-    log << "    node [shape = none] start;" << endl;
-    for (int i = 0; i < num_states; ++i) {
-        bool is_init = (i == init_state);
-        bool is_goal = goal_states[i];
-        log << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
-            << "] node" << i << ";" << endl;
-        if (is_init)
-            log << "    start -> node" << i << ";" << endl;
-    }
-    for (GroupAndTransitions gat : *this) {
-        const LabelGroup &label_group = gat.label_group;
-        const vector<Transition> &transitions = gat.transitions;
-        for (const Transition &transition : transitions) {
-            int src = transition.src;
-            int target = transition.target;
-            log << "    node" << src << " -> node" << target << " [label = ";
-            for (LabelConstIter label_it = label_group.begin();
-                 label_it != label_group.end(); ++label_it) {
-                if (label_it != label_group.begin())
-                    log << "_";
-                log << "x" << *label_it;
-            }
-            log << "];" << endl;
+    if (log.is_at_least_debug()) {
+        assert(are_transitions_sorted_unique());
+        log << "digraph transition_system";
+        for (size_t i = 0; i < incorporated_variables.size(); ++i)
+            log << "_" << incorporated_variables[i];
+        log << " {" << endl;
+        log << "    node [shape = none] start;" << endl;
+        for (int i = 0; i < num_states; ++i) {
+            bool is_init = (i == init_state);
+            bool is_goal = goal_states[i];
+            log << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
+                << "] node" << i << ";" << endl;
+            if (is_init)
+                log << "    start -> node" << i << ";" << endl;
         }
+        for (GroupAndTransitions gat : *this) {
+            const LabelGroup &label_group = gat.label_group;
+            const vector<Transition> &transitions = gat.transitions;
+            for (const Transition &transition : transitions) {
+                int src = transition.src;
+                int target = transition.target;
+                log << "    node" << src << " -> node" << target << " [label = ";
+                for (LabelConstIter label_it = label_group.begin();
+                     label_it != label_group.end(); ++label_it) {
+                    if (label_it != label_group.begin())
+                        log << "_";
+                    log << "x" << *label_it;
+                }
+                log << "];" << endl;
+            }
+        }
+        log << "}" << endl;
     }
-    log << "}" << endl;
 }
 
 void TransitionSystem::dump_labels_and_transitions(utils::LogProxy &log) const {
-    log << tag() << "transitions" << endl;
-    for (GroupAndTransitions gat : *this) {
-        const LabelGroup &label_group = gat.label_group;
-//        log << "group ID: " << ts_it.get_id() << endl;
-        log << "labels: ";
-        for (LabelConstIter label_it = label_group.begin();
-             label_it != label_group.end(); ++label_it) {
-            if (label_it != label_group.begin())
-                log << ",";
-            log << *label_it;
+    if (log.is_at_least_debug()) {
+        log << tag() << "transitions" << endl;
+        for (GroupAndTransitions gat : *this) {
+            const LabelGroup &label_group = gat.label_group;
+    //        log << "group ID: " << ts_it.get_id() << endl;
+            log << "labels: ";
+            for (LabelConstIter label_it = label_group.begin();
+                 label_it != label_group.end(); ++label_it) {
+                if (label_it != label_group.begin())
+                    log << ",";
+                log << *label_it;
+            }
+            log << endl;
+            log << "transitions: ";
+            const vector<Transition> &transitions = gat.transitions;
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                int src = transitions[i].src;
+                int target = transitions[i].target;
+                if (i != 0)
+                    log << ",";
+                log << src << " -> " << target;
+            }
+            log << endl;
+            log << "cost: " << label_group.get_cost() << endl;
         }
-        log << endl;
-        log << "transitions: ";
-        const vector<Transition> &transitions = gat.transitions;
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            int src = transitions[i].src;
-            int target = transitions[i].target;
-            if (i != 0)
-                log << ",";
-            log << src << " -> " << target;
-        }
-        log << endl;
-        log << "cost: " << label_group.get_cost() << endl;
     }
 }
 
 void TransitionSystem::statistics(utils::LogProxy &log) const {
-    log << tag() << get_size() << " states, "
-        << compute_total_transitions() << " arcs " << endl;
+    if (log.is_at_least_verbose()) {
+        log << tag() << get_size() << " states, "
+            << compute_total_transitions() << " arcs " << endl;
+    }
 }
 }

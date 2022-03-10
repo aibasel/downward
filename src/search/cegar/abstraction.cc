@@ -137,8 +137,10 @@ pair<int, int> Abstraction::refine(
 }
 
 void Abstraction::print_statistics() const {
-    log << "States: " << get_num_states() << endl;
-    log << "Goal states: " << goals.size() << endl;
-    transition_system->print_statistics(log);
+    if (log.is_at_least_normal()) {
+        log << "States: " << get_num_states() << endl;
+        log << "Goal states: " << goals.size() << endl;
+        transition_system->print_statistics(log);
+    }
 }
 }

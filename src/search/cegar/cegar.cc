@@ -287,9 +287,11 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
 }
 
 void CEGAR::print_statistics() {
-    abstraction->print_statistics();
-    int init_id = abstraction->get_initial_state().get_id();
-    log << "Initial h value: " << abstract_search.get_h_value(init_id) << endl;
-    log << endl;
+    if (log.is_at_least_normal()) {
+        abstraction->print_statistics();
+        int init_id = abstraction->get_initial_state().get_id();
+        log << "Initial h value: " << abstract_search.get_h_value(init_id) << endl;
+        log << endl;
+    }
 }
 }

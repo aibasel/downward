@@ -78,18 +78,20 @@ struct Signature {
     }
 
     void dump(utils::LogProxy &log) const {
-        log << "Signature(h_and_goal = " << h_and_goal
-            << ", group = " << group
-            << ", state = " << state
-            << ", succ_sig = [";
-        for (size_t i = 0; i < succ_signature.size(); ++i) {
-            if (i)
-                log << ", ";
-            log << "(" << succ_signature[i].first
-                << "," << succ_signature[i].second
-                << ")";
+        if (log.is_at_least_debug()) {
+            log << "Signature(h_and_goal = " << h_and_goal
+                << ", group = " << group
+                << ", state = " << state
+                << ", succ_sig = [";
+            for (size_t i = 0; i < succ_signature.size(); ++i) {
+                if (i)
+                    log << ", ";
+                log << "(" << succ_signature[i].first
+                    << "," << succ_signature[i].second
+                    << ")";
+            }
+            log << "])" << endl;
         }
-        log << "])" << endl;
     }
 };
 
@@ -364,16 +366,18 @@ string ShrinkBisimulation::name() const {
 }
 
 void ShrinkBisimulation::dump_strategy_specific_options(utils::LogProxy &log) const {
-    log << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
-    log << "At limit: ";
-    if (at_limit == AtLimit::RETURN) {
-        log << "return";
-    } else if (at_limit == AtLimit::USE_UP) {
-        log << "use up limit";
-    } else {
-        ABORT("Unknown setting for at_limit.");
+    if (log.is_at_least_normal()) {
+        log << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+        log << "At limit: ";
+        if (at_limit == AtLimit::RETURN) {
+            log << "return";
+        } else if (at_limit == AtLimit::USE_UP) {
+            log << "use up limit";
+        } else {
+            ABORT("Unknown setting for at_limit.");
+        }
+        log << endl;
     }
-    log << endl;
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {

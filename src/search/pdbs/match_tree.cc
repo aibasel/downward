@@ -170,46 +170,50 @@ void MatchTree::get_applicable_operator_ids(
 }
 
 void MatchTree::dump_recursive(Node *node, utils::LogProxy &log) const {
-    if (!node) {
-        // Node is the root node.
-        log << "Empty MatchTree" << endl;
-        return;
-    }
-    log << endl;
-    log << "node->var_id = " << node->var_id << endl;
-    log << "Number of applicable operators at this node: "
-        << node->applicable_operator_ids.size() << endl;
-    for (int op_id : node->applicable_operator_ids) {
-        log << "AbstractOperator #" << op_id << endl;
-    }
-    if (node->is_leaf_node()) {
-        log << "leaf node." << endl;
-        assert(!node->successors);
-        assert(!node->star_successor);
-    } else {
-        for (int val = 0; val < node->var_domain_size; ++val) {
-            if (node->successors[val]) {
-                log << "recursive call for child with value " << val << endl;
-                dump_recursive(node->successors[val], log);
-                log << "back from recursive call (for successors[" << val
-                    << "]) to node with var_id = " << node->var_id
-                    << endl;
-            } else {
-                log << "no child for value " << val << endl;
-            }
+    if (log.is_at_least_debug()) {
+        if (!node) {
+            // Node is the root node.
+            log << "Empty MatchTree" << endl;
+            return;
         }
-        if (node->star_successor) {
-            log << "recursive call for star_successor" << endl;
-            dump_recursive(node->star_successor, log);
-            log << "back from recursive call (for star_successor) "
-                << "to node with var_id = " << node->var_id << endl;
+        log << endl;
+        log << "node->var_id = " << node->var_id << endl;
+        log << "Number of applicable operators at this node: "
+            << node->applicable_operator_ids.size() << endl;
+        for (int op_id : node->applicable_operator_ids) {
+            log << "AbstractOperator #" << op_id << endl;
+        }
+        if (node->is_leaf_node()) {
+            log << "leaf node." << endl;
+            assert(!node->successors);
+            assert(!node->star_successor);
         } else {
-            log << "no star_successor" << endl;
+            for (int val = 0; val < node->var_domain_size; ++val) {
+                if (node->successors[val]) {
+                    log << "recursive call for child with value " << val << endl;
+                    dump_recursive(node->successors[val], log);
+                    log << "back from recursive call (for successors[" << val
+                        << "]) to node with var_id = " << node->var_id
+                        << endl;
+                } else {
+                    log << "no child for value " << val << endl;
+                }
+            }
+            if (node->star_successor) {
+                log << "recursive call for star_successor" << endl;
+                dump_recursive(node->star_successor, log);
+                log << "back from recursive call (for star_successor) "
+                    << "to node with var_id = " << node->var_id << endl;
+            } else {
+                log << "no star_successor" << endl;
+            }
         }
     }
 }
 
 void MatchTree::dump(utils::LogProxy &log) const {
-    dump_recursive(root, log);
+    if (log.is_at_least_debug()) {
+        dump_recursive(root, log);
+    }
 }
 }

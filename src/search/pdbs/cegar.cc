@@ -197,17 +197,19 @@ CEGAR::CEGAR(
 }
 
 void CEGAR::print_collection() const {
-    log << "[";
-    for (size_t i = 0; i < pattern_collection.size(); ++i) {
-        const unique_ptr<PatternInfo> &pattern_info = pattern_collection[i];
-        if (pattern_info) {
-            log << pattern_info->get_pattern();
-            if (i != pattern_collection.size() - 1) {
-                log << ", ";
+    if (log.is_at_least_verbose()) {
+        log << "[";
+        for (size_t i = 0; i < pattern_collection.size(); ++i) {
+            const unique_ptr<PatternInfo> &pattern_info = pattern_collection[i];
+            if (pattern_info) {
+                log << pattern_info->get_pattern();
+                if (i != pattern_collection.size() - 1) {
+                    log << ", ";
+                }
             }
         }
+        log << "]" << endl;
     }
-    log << "]" << endl;
 }
 
 bool CEGAR::time_limit_reached(

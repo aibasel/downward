@@ -64,8 +64,10 @@ double ZeroOnePDBs::compute_approx_mean_finite_h() const {
 }
 
 void ZeroOnePDBs::dump(utils::LogProxy &log) const {
-    for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
-        log << pdb->get_pattern() << endl;
+    if (log.is_at_least_debug()) {
+        for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
+            log << pdb->get_pattern() << endl;
+        }
     }
 }
 }

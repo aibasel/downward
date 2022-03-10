@@ -340,37 +340,41 @@ void Distances::apply_abstraction(
 }
 
 void Distances::dump(utils::LogProxy &log) const {
-    if (are_init_distances_computed()) {
-        log << "Init distances: ";
-        for (size_t i = 0; i < init_distances.size(); ++i) {
-            log << i << ": " << init_distances[i];
-            if (i != init_distances.size() - 1) {
-                log << ", ";
+    if (log.is_at_least_debug()) {
+        if (are_init_distances_computed()) {
+            log << "Init distances: ";
+            for (size_t i = 0; i < init_distances.size(); ++i) {
+                log << i << ": " << init_distances[i];
+                if (i != init_distances.size() - 1) {
+                    log << ", ";
+                }
             }
+            log << endl;
         }
-        log << endl;
-    }
-    if (are_goal_distances_computed()) {
-        log << "Goal distances: ";
-        for (size_t i = 0; i < goal_distances.size(); ++i) {
-            log << i << ": " << goal_distances[i] << ", ";
-            if (i != goal_distances.size() - 1) {
-                log << ", ";
+        if (are_goal_distances_computed()) {
+            log << "Goal distances: ";
+            for (size_t i = 0; i < goal_distances.size(); ++i) {
+                log << i << ": " << goal_distances[i] << ", ";
+                if (i != goal_distances.size() - 1) {
+                    log << ", ";
+                }
             }
+            log << endl;
         }
-        log << endl;
     }
 }
 
 void Distances::statistics(utils::LogProxy &log) const {
-    log << transition_system.tag();
-    if (!are_goal_distances_computed()) {
-        log << "goal distances not computed";
-    } else if (transition_system.is_solvable(*this)) {
-        log << "init h=" << get_goal_distance(transition_system.get_init_state());
-    } else {
-        log << "transition system is unsolvable";
+    if (log.is_at_least_verbose()) {
+        log << transition_system.tag();
+        if (!are_goal_distances_computed()) {
+            log << "goal distances not computed";
+        } else if (transition_system.is_solvable(*this)) {
+            log << "init h=" << get_goal_distance(transition_system.get_init_state());
+        } else {
+            log << "transition system is unsolvable";
+        }
+        log << endl;
     }
-    log << endl;
 }
 }

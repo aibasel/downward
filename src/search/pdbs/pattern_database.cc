@@ -58,16 +58,18 @@ AbstractOperator::~AbstractOperator() {
 void AbstractOperator::dump(const Pattern &pattern,
                             const VariablesProxy &variables,
                             utils::LogProxy &log) const {
-    log << "AbstractOperator:" << endl;
-    log << "Regression preconditions:" << endl;
-    for (size_t i = 0; i < regression_preconditions.size(); ++i) {
-        int var_id = regression_preconditions[i].var;
-        int val = regression_preconditions[i].value;
-        log << "Variable: " << var_id << " (True name: "
-            << variables[pattern[var_id]].get_name()
-            << ", Index: " << i << ") Value: " << val << endl;
+    if (log.is_at_least_debug()) {
+        log << "AbstractOperator:" << endl;
+        log << "Regression preconditions:" << endl;
+        for (size_t i = 0; i < regression_preconditions.size(); ++i) {
+            int var_id = regression_preconditions[i].var;
+            int val = regression_preconditions[i].value;
+            log << "Variable: " << var_id << " (True name: "
+                << variables[pattern[var_id]].get_name()
+                << ", Index: " << i << ") Value: " << val << endl;
+        }
+        log << "Hash effect:" << hash_effect << endl;
     }
-    log << "Hash effect:" << hash_effect << endl;
 }
 
 PatternDatabase::PatternDatabase(

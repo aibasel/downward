@@ -79,70 +79,79 @@ int get_operator_or_axiom_id(const OperatorProxy &op) {
     }
 }
 
-static void dump_node(const TaskProxy &task_proxy, const LandmarkNode &node) {
-    cout << "  lm" << node.get_id() << " [label=\"";
-    bool first = true;
-    const Landmark &landmark = node.get_landmark();
-    for (FactPair fact : landmark.facts) {
-        if (!first) {
-            if (landmark.disjunctive) {
-                cout << " | ";
-            } else if (landmark.conjunctive) {
-                cout << " & ";
+static void dump_node(
+    const TaskProxy &task_proxy,
+    const LandmarkNode &node,
+    utils::LogProxy &log) {
+    if (log.is_at_least_debug()) {
+        cout << "  lm" << node.get_id() << " [label=\"";
+        bool first = true;
+        const Landmark &landmark = node.get_landmark();
+        for (FactPair fact : landmark.facts) {
+            if (!first) {
+                if (landmark.disjunctive) {
+                    cout << " | ";
+                } else if (landmark.conjunctive) {
+                    cout << " & ";
+                }
             }
+            first = false;
+            VariableProxy var = task_proxy.get_variables()[fact.var];
+            cout << var.get_fact(fact.value).get_name();
         }
-        first = false;
-        VariableProxy var = task_proxy.get_variables()[fact.var];
-        cout << var.get_fact(fact.value).get_name();
+        cout << "\"";
+        if (landmark.is_true_in_state(task_proxy.get_initial_state())) {
+            cout << ", style=bold";
+        }
+        if (landmark.is_true_in_goal) {
+            cout << ", style=filled";
+        }
+        cout << "];\n";
     }
-    cout << "\"";
-    if (landmark.is_true_in_state(task_proxy.get_initial_state())) {
-        cout << ", style=bold";
-    }
-    if (landmark.is_true_in_goal) {
-        cout << ", style=filled";
-    }
-    cout << "];\n";
 }
 
-static void dump_edge(int from, int to, EdgeType edge) {
-    cout << "      lm" << from << " -> lm" << to << " [label=";
-    switch (edge) {
-    case EdgeType::NECESSARY:
-        cout << "\"nec\"";
-        break;
-    case EdgeType::GREEDY_NECESSARY:
-        cout << "\"gn\"";
-        break;
-    case EdgeType::NATURAL:
-        cout << "\"n\"";
-        break;
-    case EdgeType::REASONABLE:
-        cout << "\"r\", style=dashed";
-        break;
-    case EdgeType::OBEDIENT_REASONABLE:
-        cout << "\"o_r\", style=dashed";
-        break;
+static void dump_edge(int from, int to, EdgeType edge, utils::LogProxy &log) {
+    if (log.is_at_least_debug()) {
+        cout << "      lm" << from << " -> lm" << to << " [label=";
+        switch (edge) {
+        case EdgeType::NECESSARY:
+            cout << "\"nec\"";
+            break;
+        case EdgeType::GREEDY_NECESSARY:
+            cout << "\"gn\"";
+            break;
+        case EdgeType::NATURAL:
+            cout << "\"n\"";
+            break;
+        case EdgeType::REASONABLE:
+            cout << "\"r\", style=dashed";
+            break;
+        case EdgeType::OBEDIENT_REASONABLE:
+            cout << "\"o_r\", style=dashed";
+            break;
+        }
+        cout << "];\n";
     }
-    cout << "];\n";
 }
 
 void dump_landmark_graph(
     const TaskProxy &task_proxy,
     const LandmarkGraph &graph,
     utils::LogProxy &log) {
-    log << "Dumping landmark graph: " << endl;
+    if (log.is_at_least_debug()) {
+        log << "Dumping landmark graph: " << endl;
 
-    cout << "digraph G {\n";
-    for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
-        dump_node(task_proxy, *node);
-        for (const auto &child : node->children) {
-            const LandmarkNode *child_node = child.first;
-            const EdgeType &edge = child.second;
-            dump_edge(node->get_id(), child_node->get_id(), edge);
+        cout << "digraph G {\n";
+        for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
+            dump_node(task_proxy, *node, log);
+            for (const auto &child : node->children) {
+                const LandmarkNode *child_node = child.first;
+                const EdgeType &edge = child.second;
+                dump_edge(node->get_id(), child_node->get_id(), edge, log);
+            }
         }
+        cout << "}" << endl;
+        log << "Landmark graph end." << endl;
     }
-    cout << "}" << endl;
-    log << "Landmark graph end." << endl;
 }
 }

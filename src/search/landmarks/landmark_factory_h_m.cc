@@ -295,9 +295,9 @@ void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m,
 }
 
 void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &fluent) const {
-    VariableProxy var = variables[fluent.var];
-    FactProxy fact = var.get_fact(fluent.value);
     if (log.is_at_least_normal()) {
+        VariableProxy var = variables[fluent.var];
+        FactProxy fact = var.get_fact(fluent.value);
         log << fact.get_name()
             << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
             << "->" << fact.get_value() << ")";
@@ -334,88 +334,92 @@ static FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &o
 
 
 void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp &op) {
-    set<FactPair> pcs, effs, cond_pc, cond_eff;
-    vector<pair<set<FactPair>, set<FactPair>>> conds;
+    if (log.is_at_least_normal()) {
+        set<FactPair> pcs, effs, cond_pc, cond_eff;
+        vector<pair<set<FactPair>, set<FactPair>>> conds;
 
-    for (int pc : op.pc) {
-        for (const FactPair &fluent : h_m_table_[pc].fluents) {
-            pcs.insert(fluent);
-        }
-    }
-    for (int eff : op.eff) {
-        for (const FactPair &fluent : h_m_table_[eff].fluents) {
-            effs.insert(fluent);
-        }
-    }
-    for (size_t i = 0; i < op.cond_noops.size(); ++i) {
-        cond_pc.clear();
-        cond_eff.clear();
-        int pm_fluent;
-        size_t j;
-        log << "PC:" << endl;
-        for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
-            print_fluentset(variables, h_m_table_[pm_fluent].fluents);
-            log << endl;
-
-            for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
-                cond_pc.insert(h_m_table_[pm_fluent].fluents[k]);
+        for (int pc : op.pc) {
+            for (const FactPair &fluent : h_m_table_[pc].fluents) {
+                pcs.insert(fluent);
             }
         }
-        // advance to effects section
-        log << endl;
-        ++j;
-
-        log << "EFF:" << endl;
-        for (; j < op.cond_noops[i].size(); ++j) {
-            int pm_fluent = op.cond_noops[i][j];
-
-            print_fluentset(variables, h_m_table_[pm_fluent].fluents);
-            log << endl;
-
-            for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
-                cond_eff.insert(h_m_table_[pm_fluent].fluents[k]);
+        for (int eff : op.eff) {
+            for (const FactPair &fluent : h_m_table_[eff].fluents) {
+                effs.insert(fluent);
             }
         }
-        conds.emplace_back(cond_pc, cond_eff);
-        log << endl << endl << endl;
-    }
+        for (size_t i = 0; i < op.cond_noops.size(); ++i) {
+            cond_pc.clear();
+            cond_eff.clear();
+            int pm_fluent;
+            size_t j;
+            log << "PC:" << endl;
+            for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
+                print_fluentset(variables, h_m_table_[pm_fluent].fluents);
+                log << endl;
 
-    log << "Action " << op.index << endl;
-    log << "Precondition: ";
-    for (const FactPair &pc : pcs) {
-        print_proposition(variables, pc);
-        log << " ";
-    }
+                for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
+                    cond_pc.insert(h_m_table_[pm_fluent].fluents[k]);
+                }
+            }
+            // advance to effects section
+            log << endl;
+            ++j;
 
-    log << endl << "Effect: ";
-    for (const FactPair &eff : effs) {
-        print_proposition(variables, eff);
-        log << " ";
-    }
-    log << endl << "Conditionals: " << endl;
-    int i = 0;
-    for (const auto &cond : conds) {
-        log << "Cond PC #" << i++ << ":" << endl << "\t";
-        for (const FactPair &pc : cond.first) {
+            log << "EFF:" << endl;
+            for (; j < op.cond_noops[i].size(); ++j) {
+                int pm_fluent = op.cond_noops[i][j];
+
+                print_fluentset(variables, h_m_table_[pm_fluent].fluents);
+                log << endl;
+
+                for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
+                    cond_eff.insert(h_m_table_[pm_fluent].fluents[k]);
+                }
+            }
+            conds.emplace_back(cond_pc, cond_eff);
+            log << endl << endl << endl;
+        }
+
+        log << "Action " << op.index << endl;
+        log << "Precondition: ";
+        for (const FactPair &pc : pcs) {
             print_proposition(variables, pc);
             log << " ";
         }
-        log << endl << "Cond Effect #" << i << ":" << endl << "\t";
-        for (const FactPair &eff : cond.second) {
+
+        log << endl << "Effect: ";
+        for (const FactPair &eff : effs) {
             print_proposition(variables, eff);
             log << " ";
         }
-        log << endl << endl;
+        log << endl << "Conditionals: " << endl;
+        int i = 0;
+        for (const auto &cond : conds) {
+            log << "Cond PC #" << i++ << ":" << endl << "\t";
+            for (const FactPair &pc : cond.first) {
+                print_proposition(variables, pc);
+                log << " ";
+            }
+            log << endl << "Cond Effect #" << i << ":" << endl << "\t";
+            for (const FactPair &eff : cond.second) {
+                print_proposition(variables, eff);
+                log << " ";
+            }
+            log << endl << endl;
+        }
     }
 }
 
 void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) {
-    log << "( ";
-    for (const FactPair &fact : fs) {
-        print_proposition(variables, fact);
-        log << " ";
+    if (log.is_at_least_normal()) {
+        log << "( ";
+        for (const FactPair &fact : fs) {
+            print_proposition(variables, fact);
+            log << " ";
+        }
+        log << ")";
     }
-    log << ")";
 }
 
 // check whether fs2 is a possible noop set for action with fs1 as effect
@@ -554,9 +558,7 @@ void LandmarkFactoryHM::build_pm_ops(const TaskProxy &task_proxy) {
             }
             ++it;
         }
-        if (log.is_at_least_debug()) {
-            print_pm_op(variables, pm_op);
-        }
+        print_pm_op(variables, pm_op);
     }
 }
 
