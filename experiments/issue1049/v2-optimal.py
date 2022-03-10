@@ -19,7 +19,7 @@ def make_comparison_table():
             (f"{ISSUE}-v1-lm-exhaust", f"{ISSUE}-v2-lm-exhaust"),
             (f"{ISSUE}-v1-lm-hm2", f"{ISSUE}-v2-lm-hm2"),
             (f"{ISSUE}-v1-seq-opt-bjolp-opt", f"{ISSUE}-v2-seq-opt-bjolp-opt"),
-        ], attributes=ATTRIBUTES,
+        ], attributes=ATTRIBUTES, filter=remove_unfinished_tasks
     )
     outfile = os.path.join(
         exp.eval_dir, "%s-compare.%s" % (exp.name, report.output_format)
@@ -61,21 +61,27 @@ exp = common_setup.IssueExperiment(
     environment=ENVIRONMENT,
 )
 
+def remove_unfinished_tasks(run):
+    if "expansions" in run:
+        run["dead-end_empty_possible_achievers_finished"] = run["dead-end_empty_possible_achievers"]
+    return True
+
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_parser(exp.EXITCODE_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 exp.add_parser(exp.SINGLE_SEARCH_PARSER)
 exp.add_parser("landmark_parser.py")
-exp.add_parser("dead-end_parser.py")
+exp.add_parser("dead-end_parser-v2.py")
 
 ATTRIBUTES = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + [
     Attribute("landmarks", min_wins=False),
     Attribute("disjunctive_landmarks", min_wins=False),
     Attribute("conjunctive_landmarks", min_wins=False),
     Attribute("orderings", min_wins=False),
-    Attribute("dead-end_empty_first_achievers"),
-    Attribute("dead-end_empty_possible_achievers"),
+    Attribute("dead-end_empty_first_achievers", min_wins=False),
+    Attribute("dead-end_empty_possible_achievers", min_wins=False),
+    Attribute("dead-end_empty_possible_achievers_finished", min_wins=False),
 ]
 
 exp.add_step("build", exp.build)
