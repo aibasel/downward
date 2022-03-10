@@ -172,7 +172,6 @@ void LandmarkStatusManager::compute_unachievable_landmark_ids() {
 
 bool LandmarkStatusManager::dead_end_exists() const {
     if (task_is_unsolvable) {
-        utils::g_log << "Found unreached landmark in initial state with empty first achievers." << endl;
         return true;
     }
     for (int id : unachievable_landmark_ids) {
@@ -182,7 +181,6 @@ bool LandmarkStatusManager::dead_end_exists() const {
           are captured by *task_is_unsolvable*.
         */
         if (lm_status[id] == lm_needed_again) {
-            utils::g_log << "Found needed-again landmark with empty possible achievers." << endl;
             return true;
         }
     }
