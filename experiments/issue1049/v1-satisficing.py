@@ -33,7 +33,7 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 if common_setup.is_running_on_cluster():
     SUITE = common_setup.DEFAULT_SATISFICING_SUITE
     ENVIRONMENT = BaselSlurmEnvironment(
-        partition="infai_1",
+        partition="infai_2",
         email="remo.christen@unibas.ch",
         export=["PATH", "DOWNWARD_BENCHMARKS"],
     )
