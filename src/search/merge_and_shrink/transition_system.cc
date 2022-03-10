@@ -521,7 +521,7 @@ void TransitionSystem::dump_labels_and_transitions(utils::LogProxy &log) const {
         log << tag() << "transitions" << endl;
         for (GroupAndTransitions gat : *this) {
             const LabelGroup &label_group = gat.label_group;
-    //        log << "group ID: " << ts_it.get_id() << endl;
+            //        log << "group ID: " << ts_it.get_id() << endl;
             log << "labels: ";
             for (LabelConstIter label_it = label_group.begin();
                  label_it != label_group.end(); ++label_it) {
