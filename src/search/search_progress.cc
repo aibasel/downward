@@ -10,10 +10,6 @@
 
 using namespace std;
 
-SearchProgress::SearchProgress(utils::LogProxy &log)
-    : log(log) {
-}
-
 bool SearchProgress::process_evaluator_value(const Evaluator *evaluator, int value) {
     /*
       Handle one evaluator value:

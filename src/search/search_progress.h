@@ -20,13 +20,12 @@ class LogProxy;
 
 
 class SearchProgress {
-    utils::LogProxy &log;
     std::unordered_map<const Evaluator *, int> min_values;
 
     bool process_evaluator_value(const Evaluator *evaluator, int value);
 
 public:
-    explicit SearchProgress(utils::LogProxy &log);
+    SearchProgress() = default;
     ~SearchProgress() = default;
 
     /*
