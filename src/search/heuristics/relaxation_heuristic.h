@@ -13,10 +13,6 @@
 class FactProxy;
 class OperatorProxy;
 
-namespace options {
-class OptionParser;
-}
-
 namespace relaxation_heuristic {
 struct Proposition;
 struct UnaryOperator;

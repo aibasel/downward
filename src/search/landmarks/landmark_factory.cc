@@ -65,9 +65,11 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 
     if (log.is_at_least_normal()) {
         log << "Landmarks generation time: " << lm_generation_timer << endl;
-        if (lm_graph->get_num_landmarks() == 0)
-            log << "Warning! No landmarks found. Task unsolvable?" << endl;
-        else {
+        if (lm_graph->get_num_landmarks() == 0) {
+            if (log.is_warning()) {
+                log << "Warning! No landmarks found. Task unsolvable?" << endl;
+            }
+        } else {
             log << "Discovered " << lm_graph->get_num_landmarks()
                 << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
                 << " are disjunctive and "
@@ -289,13 +291,15 @@ void add_landmark_factory_options_to_parser(options::OptionParser &parser) {
     utils::add_log_options_to_parser(parser);
 }
 
-void _add_use_orders_option_to_parser(OptionParser &parser) {
+void add_use_orders_option_to_parser(
+    OptionParser &parser) {
     parser.add_option<bool>("use_orders",
                             "use orders between landmarks",
                             "true");
 }
 
-void _add_only_causal_landmarks_option_to_parser(OptionParser &parser) {
+void add_only_causal_landmarks_option_to_parser(
+    OptionParser &parser) {
     parser.add_option<bool>("only_causal_landmarks",
                             "keep only causal landmarks",
                             "false");

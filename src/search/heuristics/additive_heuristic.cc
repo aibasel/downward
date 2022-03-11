@@ -27,10 +27,10 @@ void AdditiveHeuristic::write_overflow_warning() {
     if (!did_write_overflow_warning) {
         // TODO: Should have a planner-wide warning mechanism to handle
         // things like this.
-        log << "WARNING: overflow on h^add! Costs clamped to "
-            << MAX_COST_VALUE << endl;
-        cerr << "WARNING: overflow on h^add! Costs clamped to "
-             << MAX_COST_VALUE << endl;
+        if (log.is_warning()) {
+            log << "WARNING: overflow on h^add! Costs clamped to "
+                << MAX_COST_VALUE << endl;
+        }
         did_write_overflow_warning = true;
     }
 }

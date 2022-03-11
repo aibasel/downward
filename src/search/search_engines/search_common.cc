@@ -83,8 +83,9 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
 static shared_ptr<Evaluator> create_wastar_eval(const Options &options,
                                                 const shared_ptr<GEval> &g_eval, int w,
                                                 const shared_ptr<Evaluator> &h_eval) {
-    if (w == 0)
+    if (w == 0) {
         return g_eval;
+    }
     shared_ptr<Evaluator> w_h_eval = nullptr;
     if (w == 1) {
         w_h_eval = h_eval;

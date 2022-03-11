@@ -25,7 +25,6 @@ protected:
 public:
     explicit Evaluator(
         const options::Options &opts,
-        const std::string &description = "<none>",
         bool use_for_reporting_minima = false,
         bool use_for_boosting = false,
         bool use_for_counting_evaluations = false);

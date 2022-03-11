@@ -410,7 +410,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
     if (log.is_at_least_normal()) {
-        log << "Generating landmarks using the RPG/SAS+ approach\n";
+        log << "Generating landmarks using the RPG/SAS+ approach" << endl;
     }
     build_dtg_successors(task_proxy);
     build_disjunction_classes(task_proxy);
@@ -646,8 +646,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
                             "keep disjunctive landmarks",
                             "true");
     add_landmark_factory_options_to_parser(parser);
-    _add_use_orders_option_to_parser(parser);
-    _add_only_causal_landmarks_option_to_parser(parser);
+    add_use_orders_option_to_parser(parser);
+    add_only_causal_landmarks_option_to_parser(parser);
 
     Options opts = parser.parse();
 

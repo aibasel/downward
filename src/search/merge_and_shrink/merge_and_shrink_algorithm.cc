@@ -104,39 +104,49 @@ void MergeAndShrinkAlgorithm::dump_options() const {
 void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
     string dashes(79, '=');
     if (!label_reduction) {
-        log << dashes << endl
-            << "WARNING! You did not enable label reduction.\nThis may "
-            "drastically reduce the performance of merge-and-shrink!"
-            << endl << dashes << endl;
+        if (log.is_warning()) {
+            log << dashes << endl
+                << "WARNING! You did not enable label reduction.\nThis may "
+                "drastically reduce the performance of merge-and-shrink!"
+                << endl << dashes << endl;
+        }
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
-        log << dashes << endl
-            << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
-            "iteration, both before shrinking and merging. This double computation effort\n"
-            "does not pay off for most configurations!"
-            << endl << dashes << endl;
+        if (log.is_warning()) {
+            log << dashes << endl
+                << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
+                "iteration, both before shrinking and merging. This double computation effort\n"
+                "does not pay off for most configurations!"
+                << endl << dashes << endl;
+        }
     } else {
         if (label_reduction->reduce_before_shrinking() &&
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
-            log << dashes << endl
-                << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
-                "best if used with label reduction before merging, not before shrinking!"
-                << endl << dashes << endl;
+            if (log.is_warning()) {
+                log << dashes << endl
+                    << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
+                    "best if used with label reduction before merging, not before shrinking!"
+                    << endl << dashes << endl;
+            }
         }
         if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
-            log << dashes << endl
-                << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
-                "reduction before shrinking, not before merging!"
-                << endl << dashes << endl;
+            if (log.is_warning()) {
+                log << dashes << endl
+                    << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
+                    "reduction before shrinking, not before merging!"
+                    << endl << dashes << endl;
+            }
         }
     }
 
     if (!prune_unreachable_states || !prune_irrelevant_states) {
-        log << dashes << endl
-            << "WARNING! Pruning is (partially) turned off!\nThis may "
-            "drastically reduce the performance of merge-and-shrink!"
-            << endl << dashes << endl;
+        if (log.is_warning()) {
+            log << dashes << endl
+                << "WARNING! Pruning is (partially) turned off!\nThis may "
+                "drastically reduce the performance of merge-and-shrink!"
+                << endl << dashes << endl;
+        }
     }
 }
 
@@ -490,8 +500,10 @@ void handle_shrink_limit_options_defaults(Options &opts) {
 
     utils::LogProxy log = utils::get_log_from_options(opts);
     if (max_states_before_merge > max_states) {
-        log << "warning: max_states_before_merge exceeds max_states, "
-            << "correcting." << endl;
+        if (log.is_warning()) {
+            log << "warning: max_states_before_merge exceeds max_states, "
+                << "correcting." << endl;
+        }
         max_states_before_merge = max_states;
     }
 
@@ -514,7 +526,9 @@ void handle_shrink_limit_options_defaults(Options &opts) {
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (threshold > max_states) {
-        log << "warning: threshold exceeds max_states, correcting" << endl;
+        if (log.is_warning()) {
+            log << "warning: threshold exceeds max_states, correcting" << endl;
+        }
         threshold = max_states;
     }
 

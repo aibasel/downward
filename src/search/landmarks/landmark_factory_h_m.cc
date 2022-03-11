@@ -333,7 +333,7 @@ static FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &o
 }
 
 
-void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp &op) {
+void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp &op) const {
     if (log.is_at_least_normal()) {
         set<FactPair> pcs, effs, cond_pc, cond_eff;
         vector<pair<set<FactPair>, set<FactPair>>> conds;
@@ -411,7 +411,7 @@ void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp 
     }
 }
 
-void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) {
+void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) const {
     if (log.is_at_least_normal()) {
         log << "( ";
         for (const FactPair &fact : fs) {
@@ -615,8 +615,10 @@ void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
 
 void LandmarkFactoryHM::discard_conjunctive_landmarks() {
     if (lm_graph->get_num_conjunctive_landmarks() > 0) {
-        log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
-            << " conjunctive landmarks" << endl;
+        if (log.is_at_least_normal()) {
+            log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
+                << " conjunctive landmarks" << endl;
+        }
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.get_landmark().conjunctive;});
     }
@@ -1028,7 +1030,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "keep conjunctive landmarks",
         "true");
     add_landmark_factory_options_to_parser(parser);
-    _add_use_orders_option_to_parser(parser);
+    add_use_orders_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;

@@ -79,8 +79,8 @@ private:
 };
 
 extern void add_landmark_factory_options_to_parser(options::OptionParser &parser);
-extern void _add_use_orders_option_to_parser(options::OptionParser &parser);
-extern void _add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
+extern void add_use_orders_option_to_parser(options::OptionParser &parser);
+extern void add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
 }
 
 #endif

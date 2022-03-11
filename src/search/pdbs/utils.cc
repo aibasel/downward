@@ -125,8 +125,8 @@ void dump_pattern_collection_generation_statistics(
     if (log.is_at_least_normal()) {
         log << identifier << " number of patterns: " << pattern_collection.size()
             << endl;
-        log << identifier << " total PDB size: ";
-        log << compute_total_pdb_size(
+        log << identifier << " total PDB size: "
+            << compute_total_pdb_size(
             pci.get_task_proxy(), pattern_collection) << endl;
         log << identifier << " computation time: " << runtime << endl;
     }

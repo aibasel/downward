@@ -16,7 +16,7 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : Evaluator(opts, opts.get_unparsed_config(), true, true, true),
+    : Evaluator(opts, true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),

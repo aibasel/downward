@@ -1,6 +1,5 @@
 #include "relaxation_heuristic.h"
 
-#include "../option_parser.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
