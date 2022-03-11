@@ -11,6 +11,10 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
+- Improve landmark dead-end detection so that relevant static information
+  is only computed once, instead of at every state evaluation.
+  <https://issues.fast-downward.org/issue1049>
+
 - Speed up landmark generation time by 10-20% for `lm_rhw`, `lm_zg`,
   and `lm_exhaust` due to removing unnecessary code in the landmark 
   exploration.
