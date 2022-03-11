@@ -31,6 +31,8 @@ void AdditiveHeuristic::write_overflow_warning() {
             log << "WARNING: overflow on h^add! Costs clamped to "
                 << MAX_COST_VALUE << endl;
         }
+        cerr << "WARNING: overflow on h^add! Costs clamped to "
+             << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;
     }
 }
