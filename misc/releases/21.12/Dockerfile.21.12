@@ -55,7 +55,7 @@ RUN wget http://www.coin-or.org/download/source/Osi/$OSI_VERSION.tgz && \
 
 # Install Fast Downward.
 WORKDIR /workspace/downward/
-RUN git clone --depth 1 --branch TAG https://github.com/aibasel/downward.git . && \
+RUN git clone --depth 1 --branch release-21.12.0 https://github.com/aibasel/downward.git . && \
     ./build.py release debug && \
     strip --strip-all builds/release/bin/downward
 

@@ -50,7 +50,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(
         "This pattern collection generator uses the CEGAR algorithm to "
         "compute a pattern for the planning task. See below "
         "for a description of the algorithm and some implementation notes. "
-        "The original algorithm (called single CEGAr) is described in the "
+        "The original algorithm (called single CEGAR) is described in the "
         "paper " + get_rovner_et_al_reference());
     add_cegar_implementation_notes_to_parser(parser);
     // TODO: these options could be move to the base class; see issue1022.

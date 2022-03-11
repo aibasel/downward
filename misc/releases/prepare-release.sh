@@ -72,7 +72,7 @@ else
         echo "The version number '$VERSION' implies a bugfix release but there is no branch '$BRANCH' yet."
         exit 1
     fi
-    git branch "$BRANCH"
+    git checkout -b "$BRANCH"
 fi
 
 # Update version number.
@@ -118,5 +118,5 @@ cat << EOF
 ===============================================================================
 Successfully prepared tag $TAG.
 Please continue with the steps on
-http://www.fast-downward.org/ForDevelopers/ReleaseWorkflow
+https://www.fast-downward.org/ForDevelopers/ReleaseWorkflow
 EOF

@@ -42,7 +42,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
             if (!lm_graph->contains_simple_landmark(lm)) {
                 Landmark landmark({lm}, false, false);
                 if (initial_state[lm.var].get_value() == lm.value ||
-                    !relaxed_task_solvable(task_proxy, exploration, true, landmark)) {
+                    !relaxed_task_solvable(task_proxy, exploration, landmark)) {
                     lm_graph->add_landmark(move(landmark));
                 }
             }

@@ -99,7 +99,7 @@ def try_run(cmd, cwd):
     except OSError as exc:
         if exc.errno == errno.ENOENT:
             print("Could not find '%s' on your PATH. For installation instructions, "
-                  "see http://www.fast-downward.org/ObtainingAndRunningFastDownward." %
+                  "see https://www.fast-downward.org/ObtainingAndRunningFastDownward." %
                   cmd[0])
             sys.exit(1)
         else:

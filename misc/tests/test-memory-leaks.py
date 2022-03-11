@@ -53,7 +53,7 @@ SUPPRESSION_FILES = [
 ]
 if COMPILER == "GNU" and COMPILER_VERSION.split(".")[0] == "5":
     print("Using leak suppression file for GCC 5 "
-          "(see http://issues.fast-downward.org/issue703).")
+          "(see https://issues.fast-downward.org/issue703).")
     SUPPRESSION_FILES.append(VALGRIND_GCC5_SUPPRESSION_FILE)
 
 

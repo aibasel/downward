@@ -19,7 +19,7 @@
 #else
 #define LP_METHOD(X) NO_RETURN X { \
         ABORT("LP method called but the planner was compiled without LP support.\n" \
-              "See http://www.fast-downward.org/LPBuildInstructions\n" \
+              "See https://www.fast-downward.org/LPBuildInstructions\n" \
               "to install an LP solver and use it in the planner."); \
 }
 #endif

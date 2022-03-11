@@ -54,7 +54,15 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "given value. The pruning ratio is the sum of all pruned operators "
         "divided by the sum of all operators before pruning, considering all "
         "previous expansions.");
-    parser.add_option<shared_ptr<PruningMethod>>("pruning");
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "the underlying pruning method to be applied");
+    parser.document_note(
+        "Example",
+        "To use atom centric stubborn sets and limit them, use\n"
+        "{{{\npruning=limited_pruning(pruning=atom_centric_stubborn_sets(),"
+        "min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000)\n}}}\n"
+        "in an eager search such as astar.");
     parser.add_option<double>(
         "min_required_pruning_ratio",
         "disable pruning if the pruning ratio is lower than this value after"
