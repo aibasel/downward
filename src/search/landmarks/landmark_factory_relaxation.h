@@ -8,7 +8,7 @@ class Exploration;
 
 class LandmarkFactoryRelaxation : public LandmarkFactory {
 protected:
-    LandmarkFactoryRelaxation() = default;
+    explicit LandmarkFactoryRelaxation(const options::Options &opts);
 
     bool relaxed_task_solvable(const TaskProxy &task_proxy,
                                Exploration &exploration,

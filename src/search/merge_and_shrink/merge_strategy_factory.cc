@@ -12,9 +12,11 @@ MergeStrategyFactory::MergeStrategyFactory(const options::Options &options)
 }
 
 void MergeStrategyFactory::dump_options() const {
-    log << "Merge strategy options:" << endl;
-    log << "Type: " << name() << endl;
-    dump_strategy_specific_options();
+    if (log.is_at_least_normal()) {
+        log << "Merge strategy options:" << endl;
+        log << "Type: " << name() << endl;
+        dump_strategy_specific_options();
+    }
 }
 
 void add_merge_strategy_options_to_parser(options::OptionParser &parser) {

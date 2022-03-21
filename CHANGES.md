@@ -24,6 +24,13 @@ after the corresponding tracker issues.
   `main`, `issue*`, `release-*`.
   <https://issues.fast-downward.org/issue1027>
 
+- all evaluators and heuristics now have their own configurable logger
+  and no longer use g_log.
+  <https://issues.fast-downward.org/issue921>
+  This entails that all evaluators and heuristics now have a verbosity
+  option which allows choosing between silent, normal, verbose and
+  debug for all instances of evaluators created on the command line.
+
 ## Fast Downward 21.12
 
 Released on February 16, 2022.

@@ -11,6 +11,10 @@
 #include <unordered_set>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace landmarks {
 struct ExProposition;
 struct ExUnaryOperator;
@@ -83,7 +87,7 @@ class Exploration {
     void relaxed_exploration();
     void enqueue_if_necessary(ExProposition *prop, int cost);
 public:
-    explicit Exploration(const TaskProxy &task_proxy);
+    Exploration(const TaskProxy &task_proxy, utils::LogProxy &log);
 
     /*
       Computes the h_max costs (stored in *lvl_var*) for the problem when

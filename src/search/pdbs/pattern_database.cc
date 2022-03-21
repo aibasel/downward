@@ -56,23 +56,25 @@ AbstractOperator::~AbstractOperator() {
 }
 
 void AbstractOperator::dump(const Pattern &pattern,
-                            const VariablesProxy &variables) const {
-    utils::g_log << "AbstractOperator:" << endl;
-    utils::g_log << "Regression preconditions:" << endl;
-    for (size_t i = 0; i < regression_preconditions.size(); ++i) {
-        int var_id = regression_preconditions[i].var;
-        int val = regression_preconditions[i].value;
-        utils::g_log << "Variable: " << var_id << " (True name: "
-                     << variables[pattern[var_id]].get_name()
-                     << ", Index: " << i << ") Value: " << val << endl;
+                            const VariablesProxy &variables,
+                            utils::LogProxy &log) const {
+    if (log.is_at_least_debug()) {
+        log << "AbstractOperator:" << endl;
+        log << "Regression preconditions:" << endl;
+        for (size_t i = 0; i < regression_preconditions.size(); ++i) {
+            int var_id = regression_preconditions[i].var;
+            int val = regression_preconditions[i].value;
+            log << "Variable: " << var_id << " (True name: "
+                << variables[pattern[var_id]].get_name()
+                << ", Index: " << i << ") Value: " << val << endl;
+        }
+        log << "Hash effect:" << hash_effect << endl;
     }
-    utils::g_log << "Hash effect:" << hash_effect << endl;
 }
 
 PatternDatabase::PatternDatabase(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
-    bool dump,
     const vector<int> &operator_costs,
     bool compute_plan,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
@@ -100,8 +102,6 @@ PatternDatabase::PatternDatabase(
         }
     }
     create_pdb(task_proxy, operator_costs, compute_plan, rng, compute_wildcard_plan);
-    if (dump)
-        utils::g_log << "PDB construction time: " << timer << endl;
 }
 
 void PatternDatabase::multiply_out(

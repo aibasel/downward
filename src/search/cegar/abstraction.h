@@ -10,6 +10,10 @@
 #include <memory>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace cegar {
 class AbstractState;
 class RefinementHierarchy;
@@ -37,12 +41,12 @@ class Abstraction {
        current states. */
     std::unique_ptr<RefinementHierarchy> refinement_hierarchy;
 
-    const bool debug;
+    utils::LogProxy &log;
 
     void initialize_trivial_abstraction(const std::vector<int> &domain_sizes);
 
 public:
-    Abstraction(const std::shared_ptr<AbstractTask> &task, bool debug);
+    Abstraction(const std::shared_ptr<AbstractTask> &task, utils::LogProxy &log);
     ~Abstraction();
 
     Abstraction(const Abstraction &) = delete;

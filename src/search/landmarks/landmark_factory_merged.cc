@@ -17,7 +17,8 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
-    : lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
+    : LandmarkFactory(opts),
+      lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landmark) const {
@@ -42,7 +43,9 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landm
 
 void LandmarkFactoryMerged::generate_landmarks(
     const shared_ptr<AbstractTask> &task) {
-    utils::g_log << "Merging " << lm_factories.size() << " landmark graphs" << endl;
+    if (log.is_at_least_normal()) {
+        log << "Merging " << lm_factories.size() << " landmark graphs" << endl;
+    }
 
     vector<shared_ptr<LandmarkGraph>> lm_graphs;
     lm_graphs.reserve(lm_factories.size());
@@ -52,7 +55,9 @@ void LandmarkFactoryMerged::generate_landmarks(
         achievers_calculated &= lm_factory->achievers_are_calculated();
     }
 
-    utils::g_log << "Adding simple landmarks" << endl;
+    if (log.is_at_least_normal()) {
+        log << "Adding simple landmarks" << endl;
+    }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         // TODO: loop over landmarks instead
@@ -70,7 +75,9 @@ void LandmarkFactoryMerged::generate_landmarks(
         }
     }
 
-    utils::g_log << "Adding disjunctive landmarks" << endl;
+    if (log.is_at_least_normal()) {
+        log << "Adding disjunctive landmarks" << endl;
+    }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         for (auto &lm_node : nodes) {
@@ -94,7 +101,9 @@ void LandmarkFactoryMerged::generate_landmarks(
         }
     }
 
-    utils::g_log << "Adding orderings" << endl;
+    if (log.is_at_least_normal()) {
+        log << "Adding orderings" << endl;
+    }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         for (auto &from_orig : nodes) {
@@ -107,11 +116,15 @@ void LandmarkFactoryMerged::generate_landmarks(
                     if (to_node) {
                         edge_add(*from, *to_node, e_type);
                     } else {
-                        utils::g_log << "Discarded to ordering" << endl;
+                        if (log.is_at_least_normal()) {
+                            log << "Discarded to ordering" << endl;
+                        }
                     }
                 }
             } else {
-                utils::g_log << "Discarded from ordering" << endl;
+                if (log.is_at_least_normal()) {
+                    log << "Discarded from ordering" << endl;
+                }
             }
         }
     }
@@ -154,6 +167,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Note",
         "Does not currently support conjunctive landmarks");
     parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
+    add_landmark_factory_options_to_parser(parser);
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");

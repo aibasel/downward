@@ -8,9 +8,13 @@
 using namespace std;
 
 namespace landmarks {
+LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(const options::Options &opts)
+    : LandmarkFactory(opts) {
+}
+
 void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
-    Exploration exploration(task_proxy);
+    Exploration exploration(task_proxy, log);
     generate_relaxed_landmarks(task, exploration);
     postprocess(task_proxy, exploration);
 }
@@ -32,8 +36,10 @@ void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
             return !is_causal_landmark(task_proxy, exploration, node.get_landmark());
         });
     int num_causal_landmarks = lm_graph->get_num_landmarks();
-    utils::g_log << "Discarded " << num_all_landmarks - num_causal_landmarks
-                 << " non-causal landmarks" << endl;
+    if (log.is_at_least_normal()) {
+        log << "Discarded " << num_all_landmarks - num_causal_landmarks
+            << " non-causal landmarks" << endl;
+    }
 }
 
 bool LandmarkFactoryRelaxation::is_causal_landmark(

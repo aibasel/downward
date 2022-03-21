@@ -3,6 +3,8 @@
 
 #include "potential_optimizer.h"
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -25,6 +27,7 @@ class DiversePotentialHeuristics {
     const int max_num_heuristics;
     const int num_samples;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
+    utils::LogProxy log;
     std::vector<std::unique_ptr<PotentialFunction>> diverse_functions;
 
     /* Filter dead end samples and duplicates. Store potential heuristics

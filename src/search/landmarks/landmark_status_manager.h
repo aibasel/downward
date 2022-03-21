@@ -22,7 +22,8 @@ class LandmarkStatusManager {
     bool landmark_is_leaf(const LandmarkNode &node, const BitsetView &reached) const;
     bool landmark_needed_again(int id, const State &state);
 
-    void set_reached_landmarks_for_initial_state(const State &initial_state);
+    void set_reached_landmarks_for_initial_state(
+        const State &initial_state, utils::LogProxy &log);
 
     bool is_initial_state_dead_end() const;
     void compute_unachievable_landmark_ids();
@@ -34,7 +35,8 @@ public:
     void update_lm_status(const State &ancestor_state);
     bool dead_end_exists() const;
 
-    void process_initial_state(const State &initial_state);
+    void process_initial_state(
+        const State &initial_state, utils::LogProxy &log);
     bool process_state_transition(
         const State &parent_ancestor_state, OperatorID op_id,
         const State &ancestor_state);

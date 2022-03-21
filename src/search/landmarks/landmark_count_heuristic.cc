@@ -38,7 +38,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
-    utils::g_log << "Initializing landmark count heuristic..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing landmark count heuristic..." << endl;
+    }
 
     /*
       Actually, we should like to test if this is the root task or a
@@ -54,7 +56,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 
     utils::Timer lm_graph_timer;
-    utils::g_log << "Generating landmark graph..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Generating landmark graph..." << endl;
+    }
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
 
     if (admissible) {
@@ -72,13 +76,15 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 
     lgraph = lm_graph_factory->compute_lm_graph(task);
-    utils::g_log << "Landmark graph generation time: " << lm_graph_timer << endl;
-    utils::g_log << "Landmark graph contains " << lgraph->get_num_landmarks()
-                 << " landmarks, of which " << lgraph->get_num_disjunctive_landmarks()
-                 << " are disjunctive and " << lgraph->get_num_conjunctive_landmarks()
-                 << " are conjunctive." << endl;
-    utils::g_log << "Landmark graph contains " << lgraph->get_num_edges()
-                 << " orderings." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Landmark graph generation time: " << lm_graph_timer << endl;
+        log << "Landmark graph contains " << lgraph->get_num_landmarks()
+            << " landmarks, of which " << lgraph->get_num_disjunctive_landmarks()
+            << " are disjunctive and " << lgraph->get_num_conjunctive_landmarks()
+            << " are conjunctive." << endl;
+        log << "Landmark graph contains " << lgraph->get_num_edges()
+            << " orderings." << endl;
+    }
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (admissible) {
@@ -225,7 +231,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
-    lm_status_manager->process_initial_state(initial_state);
+    lm_status_manager->process_initial_state(initial_state, log);
 }
 
 void LandmarkCountHeuristic::notify_state_transition(

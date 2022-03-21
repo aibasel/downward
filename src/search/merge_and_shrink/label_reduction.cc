@@ -266,39 +266,41 @@ bool LabelReduction::reduce(
 }
 
 void LabelReduction::dump_options(utils::LogProxy &log) const {
-    log << "Label reduction options:" << endl;
-    log << "Before merging: "
-        << (lr_before_merging ? "enabled" : "disabled") << endl;
-    log << "Before shrinking: "
-        << (lr_before_shrinking ? "enabled" : "disabled") << endl;
-    log << "Method: ";
-    switch (lr_method) {
-    case LabelReductionMethod::TWO_TRANSITION_SYSTEMS:
-        log << "two transition systems (which will be merged next)";
-        break;
-    case LabelReductionMethod::ALL_TRANSITION_SYSTEMS:
-        log << "all transition systems";
-        break;
-    case LabelReductionMethod::ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT:
-        log << "all transition systems with fixpoint computation";
-        break;
-    }
-    log << endl;
-    if (lr_method == LabelReductionMethod::ALL_TRANSITION_SYSTEMS ||
-        lr_method == LabelReductionMethod::ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
-        log << "System order: ";
-        switch (lr_system_order) {
-        case LabelReductionSystemOrder::REGULAR:
-            log << "regular";
+    if (log.is_at_least_normal()) {
+        log << "Label reduction options:" << endl;
+        log << "Before merging: "
+            << (lr_before_merging ? "enabled" : "disabled") << endl;
+        log << "Before shrinking: "
+            << (lr_before_shrinking ? "enabled" : "disabled") << endl;
+        log << "Method: ";
+        switch (lr_method) {
+        case LabelReductionMethod::TWO_TRANSITION_SYSTEMS:
+            log << "two transition systems (which will be merged next)";
             break;
-        case LabelReductionSystemOrder::REVERSE:
-            log << "reversed";
+        case LabelReductionMethod::ALL_TRANSITION_SYSTEMS:
+            log << "all transition systems";
             break;
-        case LabelReductionSystemOrder::RANDOM:
-            log << "random";
+        case LabelReductionMethod::ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT:
+            log << "all transition systems with fixpoint computation";
             break;
         }
         log << endl;
+        if (lr_method == LabelReductionMethod::ALL_TRANSITION_SYSTEMS ||
+            lr_method == LabelReductionMethod::ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
+            log << "System order: ";
+            switch (lr_system_order) {
+            case LabelReductionSystemOrder::REGULAR:
+                log << "regular";
+                break;
+            case LabelReductionSystemOrder::REVERSE:
+                log << "reversed";
+                break;
+            case LabelReductionSystemOrder::RANDOM:
+                log << "random";
+                break;
+            }
+            log << endl;
+        }
     }
 }
 

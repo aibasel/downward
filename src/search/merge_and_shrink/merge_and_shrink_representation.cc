@@ -72,11 +72,13 @@ bool MergeAndShrinkRepresentationLeaf::is_total() const {
 }
 
 void MergeAndShrinkRepresentationLeaf::dump(utils::LogProxy &log) const {
-    log << "lookup table (leaf): ";
-    for (const auto &value : lookup_table) {
-        log << value << ", ";
+    if (log.is_at_least_debug()) {
+        log << "lookup table (leaf): ";
+        for (const auto &value : lookup_table) {
+            log << value << ", ";
+        }
+        log << endl;
     }
-    log << endl;
 }
 
 
@@ -145,16 +147,18 @@ bool MergeAndShrinkRepresentationMerge::is_total() const {
 }
 
 void MergeAndShrinkRepresentationMerge::dump(utils::LogProxy &log) const {
-    log << "lookup table (merge): " << endl;
-    for (const auto &row : lookup_table) {
-        for (const auto &value : row) {
-            log << value << ", ";
+    if (log.is_at_least_debug()) {
+        log << "lookup table (merge): " << endl;
+        for (const auto &row : lookup_table) {
+            for (const auto &value : row) {
+                log << value << ", ";
+            }
+            log << endl;
         }
-        log << endl;
+        log << "left child:" << endl;
+        left_child->dump(log);
+        log << "right child:" << endl;
+        right_child->dump(log);
     }
-    log << "left child:" << endl;
-    left_child->dump(log);
-    log << "right child:" << endl;
-    right_child->dump(log);
 }
 }

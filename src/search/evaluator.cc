@@ -3,7 +3,6 @@
 #include "option_parser.h"
 #include "plugin.h"
 
-#include "utils/logging.h"
 #include "utils/system.h"
 
 #include <cassert>
@@ -11,14 +10,15 @@
 using namespace std;
 
 
-Evaluator::Evaluator(const string &description,
+Evaluator::Evaluator(const options::Options &opts,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-    : description(description),
+    : description(opts.get_unparsed_config()),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
-      use_for_counting_evaluations(use_for_counting_evaluations) {
+      use_for_counting_evaluations(use_for_counting_evaluations),
+      log(utils::get_log_from_options(opts)) {
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
@@ -26,21 +26,25 @@ bool Evaluator::dead_ends_are_reliable() const {
 }
 
 void Evaluator::report_value_for_initial_state(
-    const EvaluationResult &result, utils::LogProxy &log) const {
-    assert(use_for_reporting_minima);
-    log << "Initial heuristic value for " << description << ": ";
-    if (result.is_infinite())
-        log << "infinity";
-    else
-        log << result.get_evaluator_value();
-    log << endl;
+    const EvaluationResult &result) const {
+    if (log.is_at_least_normal()) {
+        assert(use_for_reporting_minima);
+        log << "Initial heuristic value for " << description << ": ";
+        if (result.is_infinite())
+            log << "infinity";
+        else
+            log << result.get_evaluator_value();
+        log << endl;
+    }
 }
 
 void Evaluator::report_new_minimum_value(
-    const EvaluationResult &result, utils::LogProxy &log) const {
-    assert(use_for_reporting_minima);
-    log << "New best heuristic value for " << description << ": "
-        << result.get_evaluator_value() << endl;
+    const EvaluationResult &result) const {
+    if (log.is_at_least_normal()) {
+        assert(use_for_reporting_minima);
+        log << "New best heuristic value for " << description << ": "
+            << result.get_evaluator_value() << endl;
+    }
 }
 
 const string &Evaluator::get_description() const {
@@ -69,6 +73,10 @@ bool Evaluator::is_estimate_cached(const State &) const {
 
 int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
+}
+
+void add_evaluator_options_to_parser(options::OptionParser &parser) {
+    utils::add_log_options_to_parser(parser);
 }
 
 static PluginTypePlugin<Evaluator> _type_plugin(

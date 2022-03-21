@@ -19,7 +19,8 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
-    : disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+    : LandmarkFactoryRelaxation(opts),
+      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       use_orders(opts.get<bool>("use_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }
@@ -226,8 +227,6 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
     State initial_state = task_proxy.get_initial_state();
     for (const FactPair &lm : a) {
         if (initial_state[lm.var].get_value() == lm.value) {
-            //utils::g_log << endl << "not adding LM that's true in initial state: "
-            //<< g_variable_name[it->first] << " -> " << it->second << endl;
             return;
         }
         if (lm_graph->contains_simple_landmark(lm)) {
@@ -410,7 +409,9 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
 void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
-    utils::g_log << "Generating landmarks using the RPG/SAS+ approach\n";
+    if (log.is_at_least_normal()) {
+        log << "Generating landmarks using the RPG/SAS+ approach" << endl;
+    }
     build_dtg_successors(task_proxy);
     build_disjunction_classes(task_proxy);
 
@@ -616,8 +617,10 @@ void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() {
       allow removing disjunctive landmarks after landmark generation.
     */
     if (lm_graph->get_num_disjunctive_landmarks() > 0) {
-        utils::g_log << "Discarding " << lm_graph->get_num_disjunctive_landmarks()
-                     << " disjunctive landmarks" << endl;
+        if (log.is_at_least_normal()) {
+            log << "Discarding " << lm_graph->get_num_disjunctive_landmarks()
+                << " disjunctive landmarks" << endl;
+        }
         lm_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.get_landmark().disjunctive;});
     }
@@ -640,8 +643,9 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
     parser.add_option<bool>("disjunctive_landmarks",
                             "keep disjunctive landmarks",
                             "true");
-    _add_use_orders_option_to_parser(parser);
-    _add_only_causal_landmarks_option_to_parser(parser);
+    add_landmark_factory_options_to_parser(parser);
+    add_use_orders_option_to_parser(parser);
+    add_only_causal_landmarks_option_to_parser(parser);
 
     Options opts = parser.parse();
 

@@ -50,7 +50,6 @@ SearchEngine::SearchEngine(const Options &opts)
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
-      search_progress(log),
       statistics(log),
       cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
@@ -173,11 +172,11 @@ void SearchEngine::add_succ_order_options(OptionParser &parser) {
 }
 
 void print_initial_evaluator_values(
-    const EvaluationContext &eval_context, utils::LogProxy &log) {
+    const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_evaluator_result(
-        [&log] (const Evaluator *eval, const EvaluationResult &result) {
+        [] (const Evaluator *eval, const EvaluationResult &result) {
             if (eval->is_used_for_reporting_minima()) {
-                eval->report_value_for_initial_state(result, log);
+                eval->report_value_for_initial_state(result);
             }
         }
         );

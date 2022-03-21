@@ -197,17 +197,19 @@ CEGAR::CEGAR(
 }
 
 void CEGAR::print_collection() const {
-    log << "[";
-    for (size_t i = 0; i < pattern_collection.size(); ++i) {
-        const unique_ptr<PatternInfo> &pattern_info = pattern_collection[i];
-        if (pattern_info) {
-            log << pattern_info->get_pattern();
-            if (i != pattern_collection.size() - 1) {
-                log << ", ";
+    if (log.is_at_least_verbose()) {
+        log << "[";
+        for (size_t i = 0; i < pattern_collection.size(); ++i) {
+            const unique_ptr<PatternInfo> &pattern_info = pattern_collection[i];
+            if (pattern_info) {
+                log << pattern_info->get_pattern();
+                if (i != pattern_collection.size() - 1) {
+                    log << ", ";
+                }
             }
         }
+        log << "]" << endl;
     }
-    log << "]" << endl;
 }
 
 bool CEGAR::time_limit_reached(
@@ -222,11 +224,10 @@ bool CEGAR::time_limit_reached(
 }
 
 unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
-    bool dump = false;
     vector<int> op_cost;
     bool compute_plan = true;
     shared_ptr<PatternDatabase> pdb =
-        make_shared<PatternDatabase>(task_proxy, pattern, dump, op_cost, compute_plan, rng, use_wildcard_plans);
+        make_shared<PatternDatabase>(task_proxy, pattern, op_cost, compute_plan, rng, use_wildcard_plans);
     vector<vector<OperatorID>> plan = pdb->extract_wildcard_plan();
 
     bool unsolvable = false;
@@ -641,7 +642,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     }
 
     PatternCollectionInformation pattern_collection_information(
-        task_proxy, patterns);
+        task_proxy, patterns, log);
     pattern_collection_information.set_pdbs(pdbs);
 
     if (log.is_at_least_normal()) {
@@ -649,7 +650,8 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         dump_pattern_collection_generation_statistics(
             "CEGAR",
             timer.get_elapsed_time(),
-            pattern_collection_information);
+            pattern_collection_information,
+            log);
     }
 
     return pattern_collection_information;
@@ -708,7 +710,7 @@ PatternInformation generate_pattern_with_cegar(
     Pattern &pattern = new_patterns->front();
     shared_ptr<PDBCollection> new_pdbs = collection_info.get_pdbs();
     shared_ptr<PatternDatabase> &pdb = new_pdbs->front();
-    PatternInformation result(TaskProxy(*task), move(pattern));
+    PatternInformation result(TaskProxy(*task), move(pattern), log);
     result.set_pdb(pdb);
     return result;
 }

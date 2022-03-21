@@ -80,16 +80,29 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 0, we omit the h-evaluator altogether:
   we use g instead of g + 0 * h.
 */
-static shared_ptr<Evaluator> create_wastar_eval(const shared_ptr<GEval> &g_eval, int w,
+static shared_ptr<Evaluator> create_wastar_eval(const Options &options,
+                                                const shared_ptr<GEval> &g_eval, int w,
                                                 const shared_ptr<Evaluator> &h_eval) {
-    if (w == 0)
+    if (w == 0) {
         return g_eval;
+    }
     shared_ptr<Evaluator> w_h_eval = nullptr;
-    if (w == 1)
+    if (w == 1) {
         w_h_eval = h_eval;
-    else
-        w_h_eval = make_shared<WeightedEval>(h_eval, w);
-    return make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g_eval, w_h_eval}));
+    } else {
+        Options weighted_evaluator_options;
+        weighted_evaluator_options.set<utils::Verbosity>(
+            "verbosity", options.get<utils::Verbosity>("verbosity"));
+        weighted_evaluator_options.set<shared_ptr<Evaluator>>("eval", h_eval);
+        weighted_evaluator_options.set<int>("weight", w);
+        w_h_eval = make_shared<WeightedEval>(weighted_evaluator_options);
+    }
+    Options sum_evaluator_options;
+    sum_evaluator_options.set<utils::Verbosity>(
+        "verbosity", options.get<utils::Verbosity>("verbosity"));
+    sum_evaluator_options.set<vector<shared_ptr<Evaluator>>>(
+        "evals", vector<shared_ptr<Evaluator>>({g_eval, w_h_eval}));
+    return make_shared<SumEval>(sum_evaluator_options);
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
@@ -98,11 +111,14 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get_list<shared_ptr<Evaluator>>("evals");
     int w = options.get<int>("w");
 
-    shared_ptr<GEval> g_eval = make_shared<GEval>();
+    Options g_evaluator_options;
+    g_evaluator_options.set<utils::Verbosity>(
+        "verbosity", options.get<utils::Verbosity>("verbosity"));
+    shared_ptr<GEval> g_eval = make_shared<GEval>(g_evaluator_options);
     vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)
-        f_evals.push_back(create_wastar_eval(g_eval, w, eval));
+        f_evals.push_back(create_wastar_eval(options, g_eval, w, eval));
 
     return create_alternation_open_list_factory_aux(
         f_evals,
@@ -112,9 +128,17 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
-    shared_ptr<GEval> g = make_shared<GEval>();
+    Options g_evaluator_options;
+    g_evaluator_options.set<utils::Verbosity>(
+        "verbosity", opts.get<utils::Verbosity>("verbosity"));
+    shared_ptr<GEval> g = make_shared<GEval>(g_evaluator_options);
     shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
-    shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h}));
+    Options f_evaluator_options;
+    f_evaluator_options.set<utils::Verbosity>(
+        "verbosity", opts.get<utils::Verbosity>("verbosity"));
+    f_evaluator_options.set<vector<shared_ptr<Evaluator>>>(
+        "evals", vector<shared_ptr<Evaluator>>({g, h}));
+    shared_ptr<Evaluator> f = make_shared<SumEval>(f_evaluator_options);
     vector<shared_ptr<Evaluator>> evals = {f, h};
 
     Options options;

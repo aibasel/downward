@@ -113,6 +113,11 @@ public:
     bool is_at_least_debug() const {
         return log->get_verbosity() >= Verbosity::DEBUG;
     }
+
+    // TODO: implement an option for logging warnings.
+    bool is_warning() const {
+        return true;
+    }
 };
 
 /*

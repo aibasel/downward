@@ -32,9 +32,11 @@ namespace landmarks {
 */
 
 // Construction and destruction
-Exploration::Exploration(const TaskProxy &task_proxy)
+Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
     : task_proxy(task_proxy) {
-    utils::g_log << "Initializing Exploration..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing Exploration..." << endl;
+    }
 
     // Build propositions.
     for (VariableProxy var : task_proxy.get_variables()) {

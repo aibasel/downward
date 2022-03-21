@@ -97,7 +97,7 @@ void EagerSearch::initialize() {
         open_list->insert(eval_context, initial_state.get_id());
     }
 
-    print_initial_evaluator_values(eval_context, log);
+    print_initial_evaluator_values(eval_context);
 
     pruning_method->initialize(task);
 }

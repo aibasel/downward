@@ -28,7 +28,7 @@ PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
         log << "Manual pattern collection: " << *patterns << endl;
     }
     TaskProxy task_proxy(*task);
-    return PatternCollectionInformation(task_proxy, patterns);
+    return PatternCollectionInformation(task_proxy, patterns, log);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {

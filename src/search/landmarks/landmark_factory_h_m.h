@@ -90,8 +90,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void initialize(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
-    void print_fluentset(const VariablesProxy &variables, const FluentSet &fs);
-    void print_pm_op(const VariablesProxy &variables, const PMOp &op);
+    void print_fluentset(const VariablesProxy &variables, const FluentSet &fs) const;
+    void print_pm_op(const VariablesProxy &variables, const PMOp &op) const;
 
     const int m_;
     const bool conjunctive_landmarks;

@@ -24,8 +24,7 @@ using utils::ExitCode;
 
 namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
-    : Heuristic(opts),
-      log(utils::get_log_from_options(opts)) {
+    : Heuristic(opts) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);

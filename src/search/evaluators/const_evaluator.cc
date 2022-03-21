@@ -7,7 +7,7 @@ using namespace std;
 
 namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(const Options &opts)
-    : value(opts.get<int>("value")) {
+    : Evaluator(opts), value(opts.get<int>("value")) {
 }
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
@@ -25,6 +25,7 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         "the constant value",
         "1",
         Bounds("0", "infinity"));
+    add_evaluator_options_to_parser(parser);
     Options opts = parser.parse();
 
     if (parser.dry_run())

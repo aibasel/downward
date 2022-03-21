@@ -134,29 +134,31 @@ bool MergeStrategyFactorySCCs::requires_goal_distances() const {
 }
 
 void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
-    log << "Merge order of sccs: ";
-    switch (order_of_sccs) {
-    case OrderOfSCCs::TOPOLOGICAL:
-        log << "topological";
-        break;
-    case OrderOfSCCs::REVERSE_TOPOLOGICAL:
-        log << "reverse topological";
-        break;
-    case OrderOfSCCs::DECREASING:
-        log << "decreasing";
-        break;
-    case OrderOfSCCs::INCREASING:
-        log << "increasing";
-        break;
-    }
-    log << endl;
+    if (log.is_at_least_normal()) {
+        log << "Merge order of sccs: ";
+        switch (order_of_sccs) {
+        case OrderOfSCCs::TOPOLOGICAL:
+            log << "topological";
+            break;
+        case OrderOfSCCs::REVERSE_TOPOLOGICAL:
+            log << "reverse topological";
+            break;
+        case OrderOfSCCs::DECREASING:
+            log << "decreasing";
+            break;
+        case OrderOfSCCs::INCREASING:
+            log << "increasing";
+            break;
+        }
+        log << endl;
 
-    log << "Merge strategy for merging within sccs: " << endl;
-    if (merge_tree_factory) {
-        merge_tree_factory->dump_options(log);
-    }
-    if (merge_selector) {
-        merge_selector->dump_options(log);
+        log << "Merge strategy for merging within sccs: " << endl;
+        if (merge_tree_factory) {
+            merge_tree_factory->dump_options(log);
+        }
+        if (merge_selector) {
+            merge_selector->dump_options(log);
+        }
     }
 }
 
