@@ -106,16 +106,16 @@ void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
     if (!label_reduction) {
         if (log.is_warning()) {
             log << dashes << endl
-                << "WARNING! You did not enable label reduction.\nThis may "
-                "drastically reduce the performance of merge-and-shrink!"
+                << "WARNING! You did not enable label reduction. " << endl
+                << "This may drastically reduce the performance of merge-and-shrink!"
                 << endl << dashes << endl;
         }
     } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
         if (log.is_warning()) {
             log << dashes << endl
-                << "WARNING! You set label reduction to be applied twice in each merge-and-shrink\n"
-                "iteration, both before shrinking and merging. This double computation effort\n"
-                "does not pay off for most configurations!"
+                << "WARNING! You set label reduction to be applied twice in each merge-and-shrink" << endl
+                << "iteration, both before shrinking and merging. This double computation effort" << endl
+                << "does not pay off for most configurations!"
                 << endl << dashes << endl;
         }
     } else {
@@ -124,8 +124,8 @@ void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
              || shrink_strategy->get_name() == "random")) {
             if (log.is_warning()) {
                 log << dashes << endl
-                    << "WARNING! Bucket-based shrink strategies such as f-preserving random perform\n"
-                    "best if used with label reduction before merging, not before shrinking!"
+                    << "WARNING! Bucket-based shrink strategies such as f-preserving random perform" << endl
+                    << "best if used with label reduction before merging, not before shrinking!"
                     << endl << dashes << endl;
             }
         }
@@ -133,8 +133,8 @@ void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
             shrink_strategy->get_name() == "bisimulation") {
             if (log.is_warning()) {
                 log << dashes << endl
-                    << "WARNING! Shrinking based on bisimulation performs best if used with label\n"
-                    "reduction before shrinking, not before merging!"
+                    << "WARNING! Shrinking based on bisimulation performs best if used with label" << endl
+                    << "reduction before shrinking, not before merging!"
                     << endl << dashes << endl;
             }
         }
@@ -143,8 +143,8 @@ void MergeAndShrinkAlgorithm::warn_on_unusual_options() const {
     if (!prune_unreachable_states || !prune_irrelevant_states) {
         if (log.is_warning()) {
             log << dashes << endl
-                << "WARNING! Pruning is (partially) turned off!\nThis may "
-                "drastically reduce the performance of merge-and-shrink!"
+                << "WARNING! Pruning is (partially) turned off!" << endl
+                << "This may drastically reduce the performance of merge-and-shrink!"
                 << endl << dashes << endl;
         }
     }

@@ -79,6 +79,11 @@ int get_operator_or_axiom_id(const OperatorProxy &op) {
     }
 }
 
+/*
+  The below functions use cout on purpose for dumping a landmark graph.
+  TODO: ideally, this should be written to a file or through a logger
+  at least, but without the time and memory stamps.
+*/
 static void dump_node(
     const TaskProxy &task_proxy,
     const LandmarkNode &node,
