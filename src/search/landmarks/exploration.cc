@@ -38,8 +38,26 @@ Exploration::Exploration(const TaskProxy &task_proxy)
         propositions.push_back(vector<Proposition>(var.get_domain_size()));
         for (int value = 0; value < var.get_domain_size(); ++value) {
             propositions[var_id][value].fact = FactPair(var_id, value);
-        }
+        }        
     }
+    
+    /*
+      Reserve vector for unary operators. This is needed because we
+      cross-reference to the memory address of elements of the vector while
+      building it; meaning a resize would invalidate all references.
+
+      TODO: fix this by either not working with raw pointers or by doing
+      the cross-referencing different (might be difficult because we don't
+      have the required information anymore after building the unary operators).
+    */
+    int num_unary_ops = 0;
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        num_unary_ops += op.get_effects().size();
+    }
+    for (OperatorProxy ax : task_proxy.get_axioms()) {
+        num_unary_ops += ax.get_effects().size();
+    }
+    unary_operators.reserve(num_unary_ops);
 
     // Build unary operators for operators and axioms.
     OperatorsProxy operators = task_proxy.get_operators();
