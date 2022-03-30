@@ -14,22 +14,17 @@
 using namespace std;
 
 namespace landmarks {
-// TODO: revise comment
-/* Integration Note: this class is the same as (rich man's) FF heuristic
-   (taken from hector branch) except for the following:
-   - Added-on functionality for excluding certain operators from the relaxed
-     exploration (these operators are never applied, as necessary for landmark
-     computation)
-   - Exploration can be done either using h_max or h_add criterion (h_max is needed
-     during landmark generation, h_add later for heuristic computations)
-   - Unary operators are not simplified, because this may conflict with excluded
-     operators. (For an example, consider that unary operator o1 is thrown out
-     during simplify() because it is dominated by unary operator o2, but then o2
-     is excluded during an exploration ==> the shared effect of o1 and o2 is wrongly
-     never reached in the exploration.)
-   - Added-on functionality to check for a set of propositions which one is reached
-     first by the relaxed exploration, and extract preferred operators for this cheapest
-     proposition (needed for planning to nearest landmark).
+/*
+  Integration Note: this class is the same as (rich man's) FF heuristic
+  (taken from hector branch) except for the following:
+  - Added-on functionality for excluding certain operators from the relaxed
+    exploration. (These operators are never applied, as necessary for landmark
+    computation.)
+  - Unary operators are not simplified, because this may conflict with excluded
+    operators. (For an example, consider that unary operator o1 is thrown out
+    during simplify() because it is dominated by unary operator o2, but then o2
+    is excluded during an exploration ==> the shared effect of o1 and o2 is
+    wrongly never reached in the exploration.)
 */
 
 // Construction and destruction
