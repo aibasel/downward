@@ -21,8 +21,7 @@ protected:
       Compute for each fact whether it is relaxed reachable without
       achieving the excluded landmark.
     */
-    std::vector<std::vector<bool>> relaxed_reachability(const TaskProxy &task_proxy,
-                                                        Exploration &exploration,
+    std::vector<std::vector<bool>> relaxed_reachability(Exploration &exploration,
                                                         const Landmark &exclude) const;
 
 private:
@@ -33,8 +32,6 @@ private:
     void postprocess(const TaskProxy &task_proxy, Exploration &exploration);
 
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
-    bool achieves_non_conditional(const OperatorProxy &o,
-                                  const Landmark &landmark) const;
 
 protected:
     /*

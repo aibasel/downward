@@ -38,9 +38,9 @@ Exploration::Exploration(const TaskProxy &task_proxy)
         propositions.push_back(vector<Proposition>(var.get_domain_size()));
         for (int value = 0; value < var.get_domain_size(); ++value) {
             propositions[var_id][value].fact = FactPair(var_id, value);
-        }        
+        }
     }
-    
+
     /*
       Reserve vector for unary operators. This is needed because we
       cross-reference to the memory address of elements of the vector while
@@ -109,34 +109,17 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
   with propositions and unary operators for the relaxed exploration. Unary
   operators that are not allowed to be applied due to exclusions are marked by
   setting their *excluded* flag.
-
-  *excluded_op_ids* should contain at least the operators that achieve an
-  excluded proposition unconditionally. There are two contexts where
-  *compute_reachability_with_excludes()* (and hence this function) is used:
-  (a) in *LandmarkFactoryRelaxation::relaxed_task_solvable()* where indeed
-      all operators are excluded if they achieve an excluded proposition
-      unconditionally; and
-  (b) in *LandmarkFactoryRelaxation::is_causal_landmark()* where
-      *excluded_props* is empty and hence no operators achieve an excluded
-      proposition. (*excluded_op_ids* "additionally" contains operators that
-      have a landmark as their precondition in this context.)
-
-  TODO: issue1045 aims at moving the logic to exclude operators that achieve
-   excluded propositions here to consistently do so in all contexts.
 */
 void Exploration::setup_exploration_queue(
     const State &state, const vector<FactPair> &excluded_props,
     const unordered_set<int> &excluded_op_ids) {
     prop_queue.clear();
 
+    // Reset reachability information.
     for (auto &propositions_for_variable : propositions) {
         for (auto &prop : propositions_for_variable) {
             prop.reached = false;
         }
-    }
-
-    for (const FactPair &fact : excluded_props) {
-        propositions[fact.var][fact.value].excluded = true;
     }
 
     // Deal with current state.
@@ -149,23 +132,48 @@ void Exploration::setup_exploration_queue(
     // Initialize operator data, deal with precondition-free operators/axioms.
     for (UnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.num_preconditions;
-        if (op.effect->excluded
+
+        if (achieves_excluded_prop(op, excluded_props)
             || excluded_op_ids.count(op.op_or_axiom_id)) {
-            // operator will not be applied during relaxed exploration
+            // Operator will not be applied during relaxed exploration.
             op.excluded = true;
             continue;
         }
-        op.excluded = false; // Reset from previous exploration
+        op.excluded = false; // Reset from previous exploration.
 
         if (op.unsatisfied_preconditions == 0) {
             enqueue_if_necessary(op.effect);
         }
     }
+}
 
-    // Reset *excluded* to false for the next exploration.
+/*
+  We say a unary operator achieves an excluded fact f when it is guaranteed
+  that the corresponding original operator will achieve f in all states
+  where it is applicable. This is the case if
+  (a) the effect of the unary operator is f,
+  (b) the corresponding original operator achieves f *unconditionally*.
+*/
+bool Exploration::achieves_excluded_prop(const UnaryOperator &op,
+                                         const vector<FactPair> &excluded_props) {
     for (const FactPair &fact : excluded_props) {
-        propositions[fact.var][fact.value].excluded = false;
+        // case (a)
+        if (op.effect->fact == fact) {
+            return true;
+        }
+
+        // case (b)
+        EffectsProxy effects = (op.op_or_axiom_id < 0)
+                ? task_proxy.get_axioms()[-op.op_or_axiom_id].get_effects()
+                : task_proxy.get_operators()[op.op_or_axiom_id].get_effects();
+        for (EffectProxy effect : effects) {
+            if (effect.get_fact().get_pair() == fact
+                    && effect.get_conditions().empty()) {
+                return true;
+            }
+        }
     }
+    return false;
 }
 
 void Exploration::relaxed_exploration() {

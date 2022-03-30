@@ -19,13 +19,10 @@ struct Proposition {
     FactPair fact;
     // TODO: should we try to get rid of raw pointers?
     std::vector<UnaryOperator *> precondition_of;
-
-    bool excluded;
     bool reached;
 
     Proposition()
         : fact(FactPair::no_fact),
-          excluded(false),
           reached(false) {
     }
 
@@ -61,6 +58,8 @@ class Exploration {
 //    priority_queues::AdaptiveQueue<Proposition *> prop_queue;
 
     void build_unary_operators(const OperatorProxy &op);
+    bool achieves_excluded_prop(const UnaryOperator &op,
+                                const std::vector<FactPair> &excluded_props);
     void setup_exploration_queue(
         const State &state, const std::vector<FactPair> &excluded_props,
         const std::unordered_set<int> &excluded_op_ids);

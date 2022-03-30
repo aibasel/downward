@@ -80,7 +80,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
         }
 
         vector<vector<bool>> reached =
-            relaxed_reachability(task_proxy, exploration, landmark);
+            relaxed_reachability(exploration, landmark);
 
         for (int op_or_axom_id : landmark.possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
@@ -97,7 +97,7 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
     const Landmark &exclude) const {
     vector<vector<bool>> reached =
-        relaxed_reachability(task_proxy, exploration, exclude);
+        relaxed_reachability(exploration, exclude);
 
     for (FactProxy goal : task_proxy.get_goals()) {
         if (!reached[goal.get_variable().get_id()][goal.get_value()]) {
@@ -108,35 +108,15 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 }
 
 vector<vector<bool>> LandmarkFactoryRelaxation::relaxed_reachability(
-    const TaskProxy &task_proxy, Exploration &exploration,
+    Exploration &exploration,
     const Landmark &exclude) const {
     // Extract propositions from "exclude"
     unordered_set<int> excluded_op_ids;
     vector<FactPair> excluded_props;
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        if (achieves_non_conditional(op, exclude))
-            excluded_op_ids.insert(op.get_id());
-    }
     excluded_props.insert(excluded_props.end(),
                           exclude.facts.begin(), exclude.facts.end());
 
     return exploration.compute_relaxed_reachability(excluded_props,
                                                     excluded_op_ids);
-}
-
-bool LandmarkFactoryRelaxation::achieves_non_conditional(
-    const OperatorProxy &o, const Landmark &landmark) const {
-    /* Test whether the landmark is achieved by the operator unconditionally.
-    A disjunctive landmark is achieved if one of its disjuncts is achieved. */
-    for (EffectProxy effect: o.get_effects()) {
-        for (const FactPair &lm_fact : landmark.facts) {
-            FactProxy effect_fact = effect.get_fact();
-            if (effect_fact.get_pair() == lm_fact) {
-                if (effect.get_conditions().empty())
-                    return true;
-            }
-        }
-    }
-    return false;
 }
 }
