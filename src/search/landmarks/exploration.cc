@@ -53,12 +53,6 @@ Exploration::Exploration(const TaskProxy &task_proxy)
     AxiomsProxy axioms = task_proxy.get_axioms();
     for (OperatorProxy op : axioms)
         build_unary_operators(op);
-
-    // Cross-reference unary operators.
-    for (UnaryOperator &op : unary_operators) {
-        for (Proposition *pre : op.precondition)
-            pre->precondition_of.push_back(&op);
-    }
 }
 
 void Exploration::build_unary_operators(const OperatorProxy &op) {
@@ -86,6 +80,12 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
         Proposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
         int op_or_axiom_id = get_operator_or_axiom_id(op);
         unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id);
+
+        // Cross-reference unary operators.
+        for (Proposition *pre : precondition) {
+            pre->precondition_of.push_back(&unary_operators.back());
+        }
+
         precondition.clear();
         precondition_facts2.clear();
     }
@@ -135,7 +135,7 @@ void Exploration::setup_exploration_queue(
 
     // Initialize operator data, deal with precondition-free operators/axioms.
     for (UnaryOperator &op : unary_operators) {
-        op.unsatisfied_preconditions = op.precondition.size();
+        op.unsatisfied_preconditions = op.num_preconditions;
         if (op.effect->excluded
             || excluded_op_ids.count(op.op_or_axiom_id)) {
             // operator will not be applied during relaxed exploration

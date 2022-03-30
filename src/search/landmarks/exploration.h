@@ -36,15 +36,17 @@ struct Proposition {
 
 struct UnaryOperator {
     int op_or_axiom_id;
-    // TODO; change to int num_preconditions
-    std::vector<Proposition *> precondition;
+    const int num_preconditions;
     Proposition *effect;
 
     int unsatisfied_preconditions;
     bool excluded;
-    UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
-                  int op_or_axiom_id)
-        : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff),
+    UnaryOperator(const std::vector<Proposition *> &preconditions,
+                  Proposition *eff, int op_or_axiom_id)
+        : op_or_axiom_id(op_or_axiom_id),
+          num_preconditions(static_cast<int>(preconditions.size())),
+          effect(eff),
+          unsatisfied_preconditions(num_preconditions),
           excluded(false) {}
 };
 
