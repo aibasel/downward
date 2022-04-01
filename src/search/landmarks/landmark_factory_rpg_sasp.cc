@@ -539,10 +539,11 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
 bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
                                                  const FactPair &landmark,
                                                  const unordered_set<int> &exclude) {
-    /* Tests whether in the domain transition graph of the LM variable, there is
-     a path from the initial state value to the LM value, without passing through
-     any value in "exclude". If not, that means that one of the values in "exclude"
-     is crucial for achieving the landmark (i.e. is on every path to the LM).
+    /* 
+      Tests whether in the domain transition graph of the LM variable, there is
+      a path from the initial state value to the LM value, without passing through
+      any value in "exclude". If not, that means that one of the values in "exclude"
+      is crucial for achieving the landmark (i.e. is on every path to the LM).
     */
     int var = landmark.var;
     assert(landmark.value != initial_state[var].get_value()); // no initial state landmarks

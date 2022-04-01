@@ -42,13 +42,9 @@ Exploration::Exploration(const TaskProxy &task_proxy)
     }
 
     /*
-      Reserve vector for unary operators. This is needed because we
+      Reserve vector size unary operators. This is needed because we
       cross-reference to the memory address of elements of the vector while
       building it; meaning a resize would invalidate all references.
-
-      TODO: fix this by either not working with raw pointers or by doing
-      the cross-referencing different (might be difficult because we don't
-      have the required information anymore after building the unary operators).
     */
     int num_unary_ops = 0;
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -122,14 +118,14 @@ void Exploration::setup_exploration_queue(
         }
     }
 
-    // Deal with current state.
+    // Set facts that are true in the current state as reached.
     for (FactProxy fact : state) {
         Proposition *init_prop =
             &propositions[fact.get_variable().get_id()][fact.get_value()];
         enqueue_if_necessary(init_prop);
     }
 
-    // Initialize operator data, deal with precondition-free operators/axioms.
+    // Initialize operator data, queue effects of precondition-free operators.
     for (UnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.num_preconditions;
 
@@ -184,7 +180,7 @@ void Exploration::relaxed_exploration() {
         const vector<UnaryOperator *> &triggered_operators = prop->precondition_of;
         for (size_t i = 0; i < triggered_operators.size(); ++i) {
             UnaryOperator *unary_op = triggered_operators[i];
-            if (unary_op->excluded) // operator is not applied
+            if (unary_op->excluded)
                 continue;
             --unary_op->unsatisfied_preconditions;
             assert(unary_op->unsatisfied_preconditions >= 0);
@@ -205,24 +201,19 @@ void Exploration::enqueue_if_necessary(Proposition *prop) {
 vector<vector<bool>> Exploration::compute_relaxed_reachability(
     const vector<FactPair> &excluded_props,
     const unordered_set<int> &excluded_op_ids) {
-    // set up reachability information
-    vector<vector<bool>> reached;
-    // TODO: it's maybe strange that we initialze reached through the
-    // task proxy but fill it later on through propositions
-    reached.reserve(task_proxy.get_variables().size());
-    for (VariableProxy var : task_proxy.get_variables()) {
-        reached.push_back(vector<bool>(var.get_domain_size(), false));
-    }
-
-    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids);
+    setup_exploration_queue(task_proxy.get_initial_state(),
+                            excluded_props, excluded_op_ids);
     relaxed_exploration();
 
-    // Copy reachability information into reached.
+    // Bundle reachability information into the return data structure.
+    vector<vector<bool>> reached;
+    reached.resize(propositions.size());
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
+        reached[var_id].resize(propositions[var_id].size(), false);
         for (size_t value = 0; value < propositions[var_id].size(); ++value) {
-            Proposition &prop = propositions[var_id][value];
-            if (prop.reached)
+            if (propositions[var_id][value].reached) {
                 reached[var_id][value] = true;
+            }
         }
     }
     return reached;

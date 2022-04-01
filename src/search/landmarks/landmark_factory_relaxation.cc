@@ -52,7 +52,6 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
         }
     }
 
-    // TODO: try to do this over relaxed_task_solvable
     vector<vector<bool>> reached =
         exploration.compute_relaxed_reachability(excluded_props,
                                                  excluded_op_ids);
@@ -96,8 +95,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
     const Landmark &exclude) const {
-    vector<vector<bool>> reached =
-        relaxed_reachability(exploration, exclude);
+    vector<vector<bool>> reached = relaxed_reachability(exploration, exclude);
 
     for (FactProxy goal : task_proxy.get_goals()) {
         if (!reached[goal.get_variable().get_id()][goal.get_value()]) {

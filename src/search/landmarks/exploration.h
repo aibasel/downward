@@ -17,7 +17,6 @@ struct UnaryOperator;
 
 struct Proposition {
     FactPair fact;
-    // TODO: should we try to get rid of raw pointers?
     std::vector<UnaryOperator *> precondition_of;
     bool reached;
 
@@ -52,10 +51,7 @@ class Exploration {
 
     std::vector<UnaryOperator> unary_operators;
     std::vector<std::vector<Proposition>> propositions;
-    // TODO: should we keep the raw pointer as type or rather an ID like in hmax?
-    // TODO: is deque a good data type here?
     std::deque<Proposition *> prop_queue;
-//    priority_queues::AdaptiveQueue<Proposition *> prop_queue;
 
     void build_unary_operators(const OperatorProxy &op);
     bool achieves_excluded_prop(const UnaryOperator &op,
@@ -77,7 +73,6 @@ public:
       The values are exact in the absence of conditional effects,
       otherwise they are an admissible approximation.
     */
-    // TODO: change vector<vector<bool>> to a proper class
     std::vector<std::vector<bool>> compute_relaxed_reachability(
         const std::vector<FactPair> &excluded_props,
         const std::unordered_set<int> &excluded_op_ids);
