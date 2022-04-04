@@ -11,6 +11,11 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
+- infrastructure: Upgrade GitHub Actions to Windows Server 
+  2019 (Visual Studio Enterprise 2019) and Windows Server 2022 (Visual Studio 
+  Enterprise 2022). Remove Windows Server 2016, because GitHub Actions no longer
+  support it.
+  <https://issues.fast-downward.org/issue1054>
 - Improve landmark dead-end detection so that relevant static information
   is only computed once, instead of at every state evaluation.
   <https://issues.fast-downward.org/issue1049>
