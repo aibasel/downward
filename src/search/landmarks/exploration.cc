@@ -160,7 +160,7 @@ bool Exploration::achieves_excluded_prop(const UnaryOperator &op,
 
         // case (b)
         EffectsProxy effects = (op.op_or_axiom_id < 0)
-            ? task_proxy.get_axioms()[-op.op_or_axiom_id].get_effects()
+            ? task_proxy.get_axioms()[-op.op_or_axiom_id-1].get_effects()
             : task_proxy.get_operators()[op.op_or_axiom_id].get_effects();
         for (EffectProxy effect : effects) {
             if (effect.get_fact().get_pair() == fact
