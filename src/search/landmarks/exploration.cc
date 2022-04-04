@@ -15,16 +15,12 @@ using namespace std;
 
 namespace landmarks {
 /*
-  Integration Note: this class is the same as (rich man's) FF heuristic
-  (taken from hector branch) except for the following:
-  - Added-on functionality for excluding certain operators from the relaxed
-    exploration. (These operators are never applied, as necessary for landmark
-    computation.)
-  - Unary operators are not simplified, because this may conflict with excluded
-    operators. (For an example, consider that unary operator o1 is thrown out
-    during simplify() because it is dominated by unary operator o2, but then o2
-    is excluded during an exploration ==> the shared effect of o1 and o2 is
-    wrongly never reached in the exploration.)
+  Implementation note: Compared to RelaxationHeuristic, we *cannot simplify*
+  unary operators, because this may conflict with excluded operators.
+  For an example, consider that unary operator o1 is thrown out during
+  simplify() because it is dominated by unary operator o2, but then o2
+  is excluded during an exploration ==> the shared effect of o1 and o2 is
+  wrongly never reached in the exploration.
 */
 
 // Construction and destruction
@@ -47,21 +43,21 @@ Exploration::Exploration(const TaskProxy &task_proxy)
       building it; meaning a resize would invalidate all references.
     */
     int num_unary_ops = 0;
-    for (OperatorProxy op : task_proxy.get_operators()) {
+    OperatorsProxy operators = task_proxy.get_operators();
+    AxiomsProxy axioms = task_proxy.get_axioms();
+    for (OperatorProxy op : operators) {
         num_unary_ops += op.get_effects().size();
     }
-    for (OperatorProxy ax : task_proxy.get_axioms()) {
-        num_unary_ops += ax.get_effects().size();
+    for (OperatorProxy axiom : axioms) {
+        num_unary_ops += axiom.get_effects().size();
     }
     unary_operators.reserve(num_unary_ops);
 
     // Build unary operators for operators and axioms.
-    OperatorsProxy operators = task_proxy.get_operators();
     for (OperatorProxy op : operators)
         build_unary_operators(op);
-    AxiomsProxy axioms = task_proxy.get_axioms();
-    for (OperatorProxy op : axioms)
-        build_unary_operators(op);
+    for (OperatorProxy axiom : axioms)
+        build_unary_operators(axiom);
 }
 
 void Exploration::build_unary_operators(const OperatorProxy &op) {
@@ -178,8 +174,7 @@ void Exploration::relaxed_exploration() {
         prop_queue.pop_front();
 
         const vector<UnaryOperator *> &triggered_operators = prop->precondition_of;
-        for (size_t i = 0; i < triggered_operators.size(); ++i) {
-            UnaryOperator *unary_op = triggered_operators[i];
+        for (UnaryOperator *unary_op : triggered_operators) {
             if (unary_op->excluded)
                 continue;
             --unary_op->unsatisfied_preconditions;

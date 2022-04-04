@@ -263,7 +263,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     vector<vector<bool>> &reached, const Landmark &landmark) {
     /*
       Compute the shared preconditions of all operators that can potentially
-      achieve landmark bp, given the reachability in relaxed planning graph
+      achieve landmark bp, given the reachability in the relaxed planning graph.
     */
     bool init = true;
     for (const FactPair &lm_fact : landmark.facts) {
@@ -359,10 +359,10 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     vector<vector<bool>> &reached, const Landmark &landmark) {
     /*
       Compute disjunctive preconditions from all operators than can potentially
-      achieve landmark bp, given the reachability in relaxed planning graph.
-      A disj. precondition is a set of facts which contains one precondition fact
-      from each of the operators, which we additionally restrict so that each fact
-      in the set stems from the same PDDL predicate.
+      achieve landmark bp, given the reachability in the relaxed planning graph.
+      A disj. precondition is a set of facts which contains one precondition
+      fact from each of the operators, which we additionally restrict so that
+      each fact in the set stems from the same PDDL predicate.
     */
 
     vector<int> op_or_axiom_ids;
@@ -433,16 +433,16 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
 
         if (!landmark.is_true_in_state(initial_state)) {
             /*
-              Backchain from landmark lm_node and compute greedy necessary
+              Backchain from *landmark* and compute greedy necessary
               predecessors.
               Firstly, collect which propositions can be reached without
               achieving the landmark.
             */
             vector<vector<bool>> reached =
-                relaxed_reachability(exploration, landmark);
+                compute_relaxed_reachability(exploration, landmark);
             /*
               Use this information to determine all operators that can
-              possibly achieve landmark for the first time, and collect
+              possibly achieve *landmark* for the first time, and collect
               any precondition propositions that all such operators share
               (if there are any).
             */
@@ -451,28 +451,29 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
                                          reached, landmark);
             /*
               All such shared preconditions are landmarks, and greedy
-              necessary predecessors of landmark.
+              necessary predecessors of *landmark*.
             */
             for (const auto &pre : shared_pre) {
                 found_simple_lm_and_order(
                     FactPair(pre.first, pre.second), *lm_node,
                     EdgeType::GREEDY_NECESSARY);
             }
-            // Extract additional orders from relaxed planning graph and DTG.
+            // Extract additional orders from the relaxed planning graph and DTG.
             approximate_lookahead_orders(task_proxy, reached, lm_node);
             /*
               Use the information about possibly achieving operators of
-              landmark to set its min cost.
+              *landmark* to set its min cost.
             */
             landmark.cost =
                 min_cost_for_landmark(task_proxy, landmark, reached);
 
-            // Process achieving operators again to find disj. LMs
+            // Process achieving operators again to find disjunctive LMs
             vector<set<FactPair>> disjunctive_pre;
             compute_disjunctive_preconditions(
                 task_proxy, disjunctive_pre, reached, landmark);
             for (const auto &preconditions : disjunctive_pre)
-                if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
+                // We don't want disjunctive LMs to get too big.
+                if (preconditions.size() < 5) {
                     found_disj_lm_and_order(
                         task_proxy, preconditions, *lm_node,
                         EdgeType::GREEDY_NECESSARY);
@@ -506,31 +507,39 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     VariablesProxy variables = task_proxy.get_variables();
     find_forward_orders(variables, reached, lmp);
 
-    // Use domain transition graphs to find further orders. Only possible
-    // if lmp is a simple landmark.
+    /*
+      Use domain transition graphs to find further orders. Only possible
+      if lmp is a simple landmark.
+    */
     const Landmark &landmark = lmp->get_landmark();
     if (landmark.disjunctive)
         return;
     const FactPair &lm_fact = landmark.facts[0];
 
-    // Collect in "unreached" all values of the LM variable that cannot be
-    // reached before the LM value (in the relaxed plan graph)
+    /*
+      Collect in *unreached* all values of the LM variable that cannot be
+      reached before the LM value (in the relaxed plan graph).
+    */
     int domain_size = variables[lm_fact.var].get_domain_size();
     unordered_set<int> unreached(domain_size);
     for (int value = 0; value < domain_size; ++value)
         if (!reached[lm_fact.var][value] && lm_fact.value != value)
             unreached.insert(value);
-    // The set "exclude" will contain all those values of the LM variable that
-    // cannot be reached before the LM value (as in "unreached") PLUS
-    // one value that CAN be reached
+    /*
+      The set *exclude* will contain all those values of the LM variable that
+      cannot be reached before the LM value (as in *unreached*) PLUS
+      one value that CAN be reached.
+    */
     State initial_state = task_proxy.get_initial_state();
     for (int value = 0; value < domain_size; ++value)
         if (unreached.find(value) == unreached.end() && lm_fact.value != value) {
             unordered_set<int> exclude(domain_size);
             exclude = unreached;
             exclude.insert(value);
-            // If that value is crucial for achieving the LM from the
-            // initial state, we have found a new landmark.
+            /*
+              If that value is crucial for achieving the LM from the
+              initial state, we have found a new landmark.
+            */
             if (!domain_connectivity(initial_state, lm_fact, exclude))
                 found_simple_lm_and_order(FactPair(lm_fact.var, value), *lmp, EdgeType::NATURAL);
         }

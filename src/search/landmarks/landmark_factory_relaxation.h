@@ -21,8 +21,8 @@ protected:
       Compute for each fact whether it is relaxed reachable without
       achieving the excluded landmark.
     */
-    std::vector<std::vector<bool>> relaxed_reachability(Exploration &exploration,
-                                                        const Landmark &exclude) const;
+    std::vector<std::vector<bool>> compute_relaxed_reachability(
+        Exploration &exploration, const Landmark &exclude) const;
 
 private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
