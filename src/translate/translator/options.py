@@ -2,7 +2,7 @@ import argparse
 import sys
 
 
-def parse_args():
+def parse_args(args):
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
         "domain", help="path to domain pddl file")
@@ -57,7 +57,7 @@ def parse_args():
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
-    return argparser.parse_args()
+    return argparser.parse_args(args)
 
 
 def copy_args_to_module(args):
@@ -66,9 +66,7 @@ def copy_args_to_module(args):
         module_dict[key] = value
 
 
-def setup():
-    args = parse_args()
+def setup(args):
+    args = parse_args(args)
     copy_args_to_module(args)
 
-
-setup()

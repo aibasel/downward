@@ -1,6 +1,6 @@
 #include "system.h"
 
-#if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
+#if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX || OPERATING_SYSTEM == JAVASCRIPT
 /*
   NOTE:
   Methods with the suffix "_reentrant" are meant to be used in event
@@ -39,6 +39,10 @@
 #include <mach/mach.h>
 #endif
 
+#if OPERATING_SYSTEM == JAVASCRIPT
+#include <emscripten/bind.h>
+#endif
+
 using namespace std;
 
 namespace utils {
@@ -59,6 +63,17 @@ void write_reentrant(int filedescr, const char *message, int len) {
         len -= written;
     }
 }
+
+#if OPERATING_SYSTEM == JAVASCRIPT
+using namespace emscripten;
+std::string getExceptionMessage(intptr_t exceptionPtr) {
+    return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what());
+}
+
+EMSCRIPTEN_BINDINGS(fooBinding) {
+    emscripten::function("getExceptionMessage", &utils::getExceptionMessage);
+};
+#endif
 
 void write_reentrant_str(int filedescr, const char *message) {
     write_reentrant(filedescr, message, strlen(message));
@@ -97,8 +112,8 @@ void print_peak_memory_reentrant() {
     write_reentrant_str(STDOUT_FILENO, "Peak memory: ");
     write_reentrant_int(STDOUT_FILENO, get_peak_memory_in_kb());
     write_reentrant_str(STDOUT_FILENO, " KB\n");
-#else
-
+#endif
+#if OPERATING_SYSTEM == LINUX
     int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
     if (proc_file_descr == -1) {
         write_reentrant_str(
@@ -149,7 +164,7 @@ void print_peak_memory_reentrant() {
 
 #if OPERATING_SYSTEM == LINUX
 void exit_handler(int, void *) {
-#elif OPERATING_SYSTEM == OSX
+#elif OPERATING_SYSTEM == OSX || OPERATING_SYSTEM == JAVASCRIPT
 void exit_handler() {
 #endif
     print_peak_memory_reentrant();
@@ -197,7 +212,7 @@ int get_peak_memory_in_kb() {
                   &t_info_count) == KERN_SUCCESS) {
         memory_in_kb = t_info.virtual_size / 1024;
     }
-#else
+#elif OPERATING_SYSTEM == LINUX
     ifstream procfile;
     procfile.open("/proc/self/status");
     string word;
@@ -214,8 +229,10 @@ int get_peak_memory_in_kb() {
         memory_in_kb = -1;
 #endif
 
+#if OPERATING_SYSTEM != JAVASCRIPT
     if (memory_in_kb == -1)
         cerr << "warning: could not determine peak memory" << endl;
+#endif
     return memory_in_kb;
 }
 

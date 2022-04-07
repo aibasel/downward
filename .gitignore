@@ -7,3 +7,9 @@ __pycache__/
 /experiments/issue*/data/
 /misc/.tox/
 /misc/autodoc/downward-xmlrpc.secret
+*.cc.o
+/src/bin
+/src/CMakeFiles
+/src/Makefile
+/src/search/Makefile
+/src/search/CMakeFiles

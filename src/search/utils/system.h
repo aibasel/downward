@@ -4,8 +4,12 @@
 #define LINUX 0
 #define OSX 1
 #define WINDOWS 2
+#define JAVASCRIPT 3
 
-#if defined(_WIN32)
+#if defined(__EMSCRIPTEN__)
+#define OPERATING_SYSTEM JAVASCRIPT
+#include "system_unix.h"
+#elif defined(_WIN32)
 #define OPERATING_SYSTEM WINDOWS
 #include "system_windows.h"
 #elif defined(__APPLE__)

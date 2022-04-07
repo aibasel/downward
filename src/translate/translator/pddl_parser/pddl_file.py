@@ -1,4 +1,4 @@
-import options
+from .. import options
 
 from . import lisp_parser
 from . import parsing_functions
