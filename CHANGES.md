@@ -37,7 +37,8 @@ after the corresponding tracker issues.
   option which allows choosing between silent, normal, verbose and
   debug for all instances of evaluators created on the command line.
 
-- Print overall planner resource limits and overall planner runtime.
+- Print overall planner resource limits and overall planner
+  runtime on Linux and macOS systems.
   <https://issues.fast-downward.org/issue1056>
 
 ## Fast Downward 21.12
