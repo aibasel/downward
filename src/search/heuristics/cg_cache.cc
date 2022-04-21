@@ -17,9 +17,11 @@ using namespace std;
 namespace cg_heuristic {
 const int CGCache::NOT_COMPUTED;
 
-CGCache::CGCache(const TaskProxy &task_proxy, int max_cache_size)
+CGCache::CGCache(const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log)
     : task_proxy(task_proxy) {
-    utils::g_log << "Initializing heuristic cache... " << flush;
+    if (log.is_at_least_normal()) {
+        log << "Initializing heuristic cache... " << flush;
+    }
 
     int var_count = task_proxy.get_variables().size();
     const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
@@ -64,7 +66,9 @@ CGCache::CGCache(const TaskProxy &task_proxy, int max_cache_size)
         }
     }
 
-    utils::g_log << "done!" << endl;
+    if (log.is_at_least_normal()) {
+        log << "done!" << endl;
+    }
 }
 
 CGCache::~CGCache() {

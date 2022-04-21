@@ -3,6 +3,7 @@
 #ifdef USE_LP
 #include "lp_solver.h"
 
+#include "../utils/language.h"
 #include "../utils/system.h"
 
 #ifdef __GNUG__
@@ -148,11 +149,16 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
 }
 
 void set_mip_gap(OsiSolverInterface *lp_solver, double relative_gap) {
+#ifdef COIN_HAS_CPX
     auto *cpx_solver = dynamic_cast<OsiCpxSolverInterface *>(lp_solver);
     if (cpx_solver) {
         CPXsetdblparam(cpx_solver->getEnvironmentPtr(),
                        CPXPARAM_MIP_Tolerances_MIPGap, relative_gap);
     }
+#else
+    utils::unused_variable(lp_solver);
+    utils::unused_variable(relative_gap);
+#endif
 }
 
 NO_RETURN

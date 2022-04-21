@@ -18,13 +18,16 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
-    : only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
+    : LandmarkFactoryRelaxation(opts),
+      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &exploration) {
     TaskProxy task_proxy(*task);
-    utils::g_log << "Generating landmarks by testing all facts with RPG method" << endl;
+    if (log.is_at_least_normal()) {
+        log << "Generating landmarks by testing all facts with RPG method" << endl;
+    }
 
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
@@ -39,7 +42,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
             if (!lm_graph->contains_simple_landmark(lm)) {
                 Landmark landmark({lm}, false, false);
                 if (initial_state[lm.var].get_value() == lm.value ||
-                    !relaxed_task_solvable(task_proxy, exploration, true, landmark)) {
+                    !relaxed_task_solvable(task_proxy, exploration, landmark)) {
                     lm_graph->add_landmark(move(landmark));
                 }
             }
@@ -64,8 +67,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Exhaustive Landmarks",
         "Exhaustively checks for each fact if it is a landmark."
         "This check is done using relaxed planning.");
-
-    _add_only_causal_landmarks_option_to_parser(parser);
+    add_landmark_factory_options_to_parser(parser);
+    add_only_causal_landmarks_option_to_parser(parser);
 
     Options opts = parser.parse();
 

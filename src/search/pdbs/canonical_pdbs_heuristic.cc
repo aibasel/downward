@@ -18,11 +18,13 @@ using namespace std;
 
 namespace pdbs {
 CanonicalPDBs get_canonical_pdbs_from_options(
-    const shared_ptr<AbstractTask> &task, const Options &opts) {
+    const shared_ptr<AbstractTask> &task, const Options &opts, utils::LogProxy &log) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
     utils::Timer timer;
-    utils::g_log << "Initializing canonical PDB heuristic..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing canonical PDB heuristic..." << endl;
+    }
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
     shared_ptr<PatternCollection> patterns =
@@ -53,18 +55,18 @@ CanonicalPDBs get_canonical_pdbs_from_options(
             *pdbs,
             *pattern_cliques,
             num_variables,
-            max_time_dominance_pruning);
+            max_time_dominance_pruning,
+            log);
     }
 
-    // Do not dump pattern collections for size reasons.
     dump_pattern_collection_generation_statistics(
-        "Canonical PDB heuristic", timer(), pattern_collection_info);
+        "Canonical PDB heuristic", timer(), pattern_collection_info, log);
     return CanonicalPDBs(pdbs, pattern_cliques);
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
     : Heuristic(opts),
-      canonical_pdbs(get_canonical_pdbs_from_options(task, opts)) {
+      canonical_pdbs(get_canonical_pdbs_from_options(task, opts, log)) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {

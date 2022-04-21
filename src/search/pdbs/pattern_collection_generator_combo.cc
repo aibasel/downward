@@ -44,7 +44,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
         }
     }
 
-    PatternCollectionInformation pci(task_proxy, patterns);
+    PatternCollectionInformation pci(task_proxy, patterns, log);
     return pci;
 }
 

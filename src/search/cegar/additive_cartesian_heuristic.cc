@@ -19,8 +19,10 @@ using namespace std;
 
 namespace cegar {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
-    const options::Options &opts) {
-    utils::g_log << "Initializing additive Cartesian heuristic..." << endl;
+    const options::Options &opts, utils::LogProxy &log) {
+    if (log.is_at_least_normal()) {
+        log << "Initializing additive Cartesian heuristic..." << endl;
+    }
     vector<shared_ptr<SubtaskGenerator>> subtask_generators =
         opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks");
     shared_ptr<utils::RandomNumberGenerator> rng =
@@ -33,7 +35,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
         opts.get<bool>("use_general_costs"),
         opts.get<PickSplit>("pick"),
         *rng,
-        opts.get<bool>("debug"));
+        log);
     return cost_saturation.generate_heuristic_functions(
         opts.get<shared_ptr<AbstractTask>>("transform"));
 }
@@ -41,7 +43,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const options::Options &opts)
     : Heuristic(opts),
-      heuristic_functions(generate_heuristic_functions(opts)) {
+      heuristic_functions(generate_heuristic_functions(opts, log)) {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -135,12 +137,9 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "use_general_costs",
         "allow negative costs in cost partitioning",
         "true");
-    parser.add_option<bool>(
-        "debug",
-        "print debugging output",
-        "false");
     Heuristic::add_options_to_parser(parser);
     utils::add_rng_options(parser);
+
     Options opts = parser.parse();
 
     if (parser.dry_run())

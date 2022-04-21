@@ -60,8 +60,9 @@ bool IncrementalCanonicalPDBs::is_dead_end(const State &state) const {
 }
 
 PatternCollectionInformation
-IncrementalCanonicalPDBs::get_pattern_collection_information() const {
-    PatternCollectionInformation result(task_proxy, patterns);
+IncrementalCanonicalPDBs::get_pattern_collection_information(
+    utils::LogProxy &log) const {
+    PatternCollectionInformation result(task_proxy, patterns, log);
     result.set_pdbs(pattern_databases);
     result.set_pattern_cliques(pattern_cliques);
     return result;

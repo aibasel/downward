@@ -3,6 +3,8 @@
 
 #include "landmark_graph.h"
 
+#include "../utils/logging.h"
+
 #include <list>
 #include <map>
 #include <memory>
@@ -44,7 +46,8 @@ public:
     }
 
 protected:
-    LandmarkFactory() = default;
+    explicit LandmarkFactory(const options::Options &opts);
+    mutable utils::LogProxy log;
     std::shared_ptr<LandmarkGraph> lm_graph;
     bool achievers_calculated = false;
 
@@ -75,8 +78,9 @@ private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 
-extern void _add_use_orders_option_to_parser(options::OptionParser &parser);
-extern void _add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
+extern void add_landmark_factory_options_to_parser(options::OptionParser &parser);
+extern void add_use_orders_option_to_parser(options::OptionParser &parser);
+extern void add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
 }
 
 #endif

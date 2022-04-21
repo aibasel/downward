@@ -20,13 +20,16 @@ using GEval = g_evaluator::GEvaluator;
 using PrefEval = pref_evaluator::PrefEvaluator;
 
 static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
-    bool use_preferred, PreferredUsage preferred_usage) {
+    const Options &opts, bool use_preferred, PreferredUsage preferred_usage) {
     /*
       TODO: this g-evaluator should probably be set up to always
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>();
+    Options g_evaluator_options;
+    g_evaluator_options.set<utils::Verbosity>(
+        "verbosity", opts.get<utils::Verbosity>("verbosity"));
+    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>(g_evaluator_options);
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -51,7 +54,10 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<shared_ptr<Evaluator>> evals = {g_evaluator, make_shared<PrefEval>()};
+        Options pref_evaluator_options;
+        pref_evaluator_options.set<utils::Verbosity>(
+            "verbosity", opts.get<utils::Verbosity>("verbosity"));
+        vector<shared_ptr<Evaluator>> evals = {g_evaluator, make_shared<PrefEval>(pref_evaluator_options)};
         Options options;
         options.set("evals", evals);
         options.set("pref_only", false);
@@ -85,7 +91,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
         preferred_operator_evaluators.end();
 
     open_list = create_ehc_open_list_factory(
-        use_preferred, preferred_usage)->create_edge_open_list();
+        opts, use_preferred, preferred_usage)->create_edge_open_list();
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
@@ -110,7 +116,7 @@ void EnforcedHillClimbingSearch::initialize() {
 
     bool dead_end = current_eval_context.is_evaluator_value_infinite(evaluator.get());
     statistics.inc_evaluated_states();
-    print_initial_evaluator_values(current_eval_context, log);
+    print_initial_evaluator_values(current_eval_context);
 
     if (dead_end) {
         log << "Initial state is a dead end, no solution" << endl;

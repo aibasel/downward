@@ -202,7 +202,7 @@ SearchStatus LazySearch::step() {
             statistics.inc_dead_ends();
         }
         if (current_predecessor_id == StateID::no_state) {
-            print_initial_evaluator_values(current_eval_context, log);
+            print_initial_evaluator_values(current_eval_context);
         }
     }
     return fetch_next_state();

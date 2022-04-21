@@ -18,13 +18,16 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
-    : use_orders(opts.get<bool>("use_orders")) {
+    : LandmarkFactoryRelaxation(opts),
+      use_orders(opts.get<bool>("use_orders")) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     const shared_ptr<AbstractTask> &task, Exploration &) {
     TaskProxy task_proxy(*task);
-    utils::g_log << "Generating landmarks using Zhu/Givan label propagation\n";
+    if (log.is_at_least_normal()) {
+        log << "Generating landmarks using Zhu/Givan label propagation" << endl;
+    }
 
     compute_triggers(task_proxy);
 
@@ -47,7 +50,9 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
      */
     for (FactProxy goal : task_proxy.get_goals()) {
         if (!last_prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
-            utils::g_log << "Problem not solvable, even if relaxed.\n";
+            if (log.is_at_least_normal()) {
+                log << "Problem not solvable, even if relaxed." << endl;
+            }
             Landmark landmark({goal.get_pair()}, false, false, true);
             lm_graph->add_landmark(move(landmark));
             return;
@@ -309,7 +314,8 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
-    _add_use_orders_option_to_parser(parser);
+    add_landmark_factory_options_to_parser(parser);
+    add_use_orders_option_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: Make sure that conditional effects are indeed supported.

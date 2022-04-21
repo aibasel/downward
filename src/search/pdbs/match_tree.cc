@@ -169,47 +169,51 @@ void MatchTree::get_applicable_operator_ids(
         get_applicable_operator_ids_recursive(root, state_index, operator_ids);
 }
 
-void MatchTree::dump_recursive(Node *node) const {
-    if (!node) {
-        // Node is the root node.
-        utils::g_log << "Empty MatchTree" << endl;
-        return;
-    }
-    utils::g_log << endl;
-    utils::g_log << "node->var_id = " << node->var_id << endl;
-    utils::g_log << "Number of applicable operators at this node: "
-                 << node->applicable_operator_ids.size() << endl;
-    for (int op_id : node->applicable_operator_ids) {
-        utils::g_log << "AbstractOperator #" << op_id << endl;
-    }
-    if (node->is_leaf_node()) {
-        utils::g_log << "leaf node." << endl;
-        assert(!node->successors);
-        assert(!node->star_successor);
-    } else {
-        for (int val = 0; val < node->var_domain_size; ++val) {
-            if (node->successors[val]) {
-                utils::g_log << "recursive call for child with value " << val << endl;
-                dump_recursive(node->successors[val]);
-                utils::g_log << "back from recursive call (for successors[" << val
-                             << "]) to node with var_id = " << node->var_id
-                             << endl;
-            } else {
-                utils::g_log << "no child for value " << val << endl;
-            }
+void MatchTree::dump_recursive(Node *node, utils::LogProxy &log) const {
+    if (log.is_at_least_debug()) {
+        if (!node) {
+            // Node is the root node.
+            log << "Empty MatchTree" << endl;
+            return;
         }
-        if (node->star_successor) {
-            utils::g_log << "recursive call for star_successor" << endl;
-            dump_recursive(node->star_successor);
-            utils::g_log << "back from recursive call (for star_successor) "
-                         << "to node with var_id = " << node->var_id << endl;
+        log << endl;
+        log << "node->var_id = " << node->var_id << endl;
+        log << "Number of applicable operators at this node: "
+            << node->applicable_operator_ids.size() << endl;
+        for (int op_id : node->applicable_operator_ids) {
+            log << "AbstractOperator #" << op_id << endl;
+        }
+        if (node->is_leaf_node()) {
+            log << "leaf node." << endl;
+            assert(!node->successors);
+            assert(!node->star_successor);
         } else {
-            utils::g_log << "no star_successor" << endl;
+            for (int val = 0; val < node->var_domain_size; ++val) {
+                if (node->successors[val]) {
+                    log << "recursive call for child with value " << val << endl;
+                    dump_recursive(node->successors[val], log);
+                    log << "back from recursive call (for successors[" << val
+                        << "]) to node with var_id = " << node->var_id
+                        << endl;
+                } else {
+                    log << "no child for value " << val << endl;
+                }
+            }
+            if (node->star_successor) {
+                log << "recursive call for star_successor" << endl;
+                dump_recursive(node->star_successor, log);
+                log << "back from recursive call (for star_successor) "
+                    << "to node with var_id = " << node->var_id << endl;
+            } else {
+                log << "no star_successor" << endl;
+            }
         }
     }
 }
 
-void MatchTree::dump() const {
-    dump_recursive(root);
+void MatchTree::dump(utils::LogProxy &log) const {
+    if (log.is_at_least_debug()) {
+        dump_recursive(root, log);
+    }
 }
 }

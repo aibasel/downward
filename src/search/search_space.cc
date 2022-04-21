@@ -103,15 +103,17 @@ void SearchNode::mark_as_dead_end() {
 }
 
 void SearchNode::dump(const TaskProxy &task_proxy, utils::LogProxy &log) const {
-    log << state.get_id() << ": ";
-    task_properties::dump_fdr(state);
-    if (info.creating_operator != OperatorID::no_operator) {
-        OperatorsProxy operators = task_proxy.get_operators();
-        OperatorProxy op = operators[info.creating_operator.get_index()];
-        log << " created by " << op.get_name()
-            << " from " << info.parent_state_id << endl;
-    } else {
-        log << " no parent" << endl;
+    if (log.is_at_least_debug()) {
+        log << state.get_id() << ": ";
+        task_properties::dump_fdr(state);
+        if (info.creating_operator != OperatorID::no_operator) {
+            OperatorsProxy operators = task_proxy.get_operators();
+            OperatorProxy op = operators[info.creating_operator.get_index()];
+            log << " created by " << op.get_name()
+                << " from " << info.parent_state_id << endl;
+        } else {
+            log << " no parent" << endl;
+        }
     }
 }
 

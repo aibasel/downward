@@ -83,7 +83,7 @@ public:
   Print evaluator values of all evaluators evaluated in the evaluation context.
 */
 extern void print_initial_evaluator_values(
-    const EvaluationContext &eval_context, utils::LogProxy &log);
+    const EvaluationContext &eval_context);
 
 extern void collect_preferred_operators(
     EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,

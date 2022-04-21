@@ -19,12 +19,12 @@
 using namespace std;
 
 namespace cegar {
-Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, bool debug)
+Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, utils::LogProxy &log)
     : transition_system(utils::make_unique_ptr<TransitionSystem>(TaskProxy(*task).get_operators())),
       concrete_initial_state(TaskProxy(*task).get_initial_state()),
       goal_facts(task_properties::get_fact_pairs(TaskProxy(*task).get_goals())),
       refinement_hierarchy(utils::make_unique_ptr<RefinementHierarchy>(task)),
-      debug(debug) {
+      log(log) {
     initialize_trivial_abstraction(get_domain_sizes(TaskProxy(*task)));
 }
 
@@ -73,8 +73,8 @@ void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes
 
 pair<int, int> Abstraction::refine(
     const AbstractState &state, int var, const vector<int> &wanted) {
-    if (debug)
-        utils::g_log << "Refine " << state << " for " << var << "=" << wanted << endl;
+    if (log.is_at_least_debug())
+        log << "Refine " << state << " for " << var << "=" << wanted << endl;
 
     int v_id = state.get_id();
     // Reuse state ID from obsolete parent to obtain consecutive IDs.
@@ -107,9 +107,9 @@ pair<int, int> Abstraction::refine(
             assert(v2->includes(concrete_initial_state));
             init_id = v2_id;
         }
-        if (debug) {
-            utils::g_log << "New init state #" << init_id << ": " << get_state(init_id)
-                         << endl;
+        if (log.is_at_least_debug()) {
+            log << "New init state #" << init_id << ": " << get_state(init_id)
+                << endl;
         }
     }
     if (goals.count(v_id)) {
@@ -120,8 +120,8 @@ pair<int, int> Abstraction::refine(
         if (v2->includes(goal_facts)) {
             goals.insert(v2_id);
         }
-        if (debug) {
-            utils::g_log << "Goal states: " << goals.size() << endl;
+        if (log.is_at_least_debug()) {
+            log << "Goal states: " << goals.size() << endl;
         }
     }
 
@@ -137,8 +137,10 @@ pair<int, int> Abstraction::refine(
 }
 
 void Abstraction::print_statistics() const {
-    utils::g_log << "States: " << get_num_states() << endl;
-    utils::g_log << "Goal states: " << goals.size() << endl;
-    transition_system->print_statistics();
+    if (log.is_at_least_normal()) {
+        log << "States: " << get_num_states() << endl;
+        log << "Goal states: " << goals.size() << endl;
+        transition_system->print_statistics(log);
+    }
 }
 }

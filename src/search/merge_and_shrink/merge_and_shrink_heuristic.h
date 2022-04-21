@@ -3,8 +3,6 @@
 
 #include "../heuristic.h"
 
-#include "../utils/logging.h"
-
 #include <memory>
 
 namespace merge_and_shrink {
@@ -12,8 +10,6 @@ class FactoredTransitionSystem;
 class MergeAndShrinkRepresentation;
 
 class MergeAndShrinkHeuristic : public Heuristic {
-    utils::LogProxy log;
-
     // The final merge-and-shrink representations, storing goal distances.
     std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;
 

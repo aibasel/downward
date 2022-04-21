@@ -201,22 +201,28 @@ FactoredTransitionSystem::extract_factor(int index) {
 }
 
 void FactoredTransitionSystem::statistics(int index, utils::LogProxy &log) const {
-    assert(is_component_valid(index));
-    const TransitionSystem &ts = *transition_systems[index];
-    ts.statistics(log);
-    const Distances &dist = *distances[index];
-    dist.statistics(log);
+    if (log.is_at_least_verbose()) {
+        assert(is_component_valid(index));
+        const TransitionSystem &ts = *transition_systems[index];
+        ts.statistics(log);
+        const Distances &dist = *distances[index];
+        dist.statistics(log);
+    }
 }
 
 void FactoredTransitionSystem::dump(int index, utils::LogProxy &log) const {
-    assert_index_valid(index);
-    transition_systems[index]->dump_labels_and_transitions(log);
-    mas_representations[index]->dump(log);
+    if (log.is_at_least_debug()) {
+        assert_index_valid(index);
+        transition_systems[index]->dump_labels_and_transitions(log);
+        mas_representations[index]->dump(log);
+    }
 }
 
 void FactoredTransitionSystem::dump(utils::LogProxy &log) const {
-    for (int index : *this) {
-        dump(index, log);
+    if (log.is_at_least_debug()) {
+        for (int index : *this) {
+            dump(index, log);
+        }
     }
 }
 

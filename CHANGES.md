@@ -9,6 +9,33 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Changes since the last release
+
+- infrastructure: Upgrade GitHub Actions to Windows Server 
+  2019 (Visual Studio Enterprise 2019) and Windows Server 2022 (Visual Studio 
+  Enterprise 2022). Remove Windows Server 2016, because GitHub Actions no longer
+  support it.
+  <https://issues.fast-downward.org/issue1054>
+- Improve landmark dead-end detection so that relevant static information
+  is only computed once, instead of at every state evaluation.
+  <https://issues.fast-downward.org/issue1049>
+
+- Speed up landmark generation time by 10-20% for `lm_rhw`, `lm_zg`,
+  and `lm_exhaust` due to removing unnecessary code in the landmark
+  exploration.
+  <https://issues.fast-downward.org/issue1044>
+
+- infrastructure: Run GitHub Actions only for the following branches:
+  `main`, `issue*`, `release-*`.
+  <https://issues.fast-downward.org/issue1027>
+
+- all evaluators and heuristics now have their own configurable logger
+  and no longer use g_log.
+  <https://issues.fast-downward.org/issue921>
+  This entails that all evaluators and heuristics now have a verbosity
+  option which allows choosing between silent, normal, verbose and
+  debug for all instances of evaluators created on the command line.
+
 ## Fast Downward 21.12
 
 Released on February 16, 2022.
@@ -52,9 +79,9 @@ Highlights:
   planner are planned. This is part of a general effort to make
   logging more configurable.
 
-- For developers: the internal representation of states has been
+- For developers: The internal representation of states has been
   overhauled, resolving the confusion between the previous classes
-  GlobalState and State.
+  `GlobalState` and `State`.
 
 Details:
 
@@ -66,8 +93,8 @@ Details:
   alternative suggestions including the ever so popular "truck falling
   down the hill" logo.
 
-- fast-downward.py main script: the script now automatically finds domain
-  files <taskfile>-domain.<ext> for task files called <taskfile>.<ext>
+- fast-downward.py main script: The script now automatically finds domain
+  files `<taskfile>-domain.<ext>` for task files called `<taskfile>.<ext>`
   <https://issues.fast-downward.org/issue1033>
 
 - pdbs: Integrate the Rovner et al. pattern generation methods based
@@ -88,6 +115,7 @@ Details:
 
 - LP/IP: Support integer variables in linear programs.
   <https://issues.fast-downward.org/issue891>
+  <https://issues.fast-downward.org/issue1048>
   You can now use the LP solver interface to solve mixed integer programs.
   In particular, the operator-counting heuristics now have an option
   `use_integer_operator_counts` that improves the heuristic value by
@@ -114,7 +142,7 @@ Details:
   against using this feature when running experiments.
 
 - LP/IP, for developers: Debug builds with LP solvers vs. the
-  `_GLIBCXX_DEBUG` flag
+  `_GLIBCXX_DEBUG` flag.
   <https://issues.fast-downward.org/issue982>
   Previously, we used the flag `_GLIBCXX_DEBUG` in debug builds for
   additional checks. This makes the binary incompatible with external
@@ -126,7 +154,7 @@ Details:
 
 - pruning: New `LimitedPruning` class replaces previous limitation
   options of individual pruning methods.
-  <http://issues.fast-downward.org/issue1042>
+  <https://issues.fast-downward.org/issue1042>
   For example, the old command line
   `--search "astar(lmcut(),pruning=atom_centric_stubborn_sets(min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000))"`
   is now expressed as
@@ -223,7 +251,7 @@ Details:
   We unified the classes `GlobalState` and `State` into a new class
   also called `State`. This removed a lot of code duplication and hacks
   from the code. A description of the new class can be found in the wiki:
-  <https://www.fast-downward.org/ForDevelopers/Blog/A%20Deeper%20Look%20at%20States>
+  <https://www.fast-downward.org/ForDevelopers/Blog/ADeeperLookAtStates>
 
 - for developers: Change public interface of generation of random ints and
   doubles in the `RandomNumberGenerator` class.

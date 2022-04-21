@@ -14,9 +14,11 @@ MergeScoringFunction::MergeScoringFunction()
 }
 
 void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
-    log << "Merge scoring function:" << endl;
-    log << "Name: " << name() << endl;
-    dump_function_specific_options(log);
+    if (log.is_at_least_normal()) {
+        log << "Merge scoring function:" << endl;
+        log << "Name: " << name() << endl;
+        dump_function_specific_options(log);
+    }
 }
 
 static options::PluginTypePlugin<MergeScoringFunction> _type_plugin(

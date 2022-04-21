@@ -11,6 +11,11 @@
 using namespace std;
 
 namespace operator_counting {
+StateEquationConstraints::StateEquationConstraints(
+    const options::Options &opts)
+    : log(utils::get_log_from_options(opts)) {
+}
+
 void add_indices_to_constraint(lp::LPConstraint &constraint,
                                const set<int> &indices,
                                double coefficient) {
@@ -69,7 +74,9 @@ void StateEquationConstraints::add_constraints(
 
 void StateEquationConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
-    utils::g_log << "Initializing constraints from state equation." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing constraints from state equation." << endl;
+    }
     TaskProxy task_proxy(*task);
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
@@ -148,9 +155,13 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "AAAI Press",
             "2014"));
 
+    utils::add_log_options_to_parser(parser);
+
     if (parser.dry_run())
         return nullptr;
-    return make_shared<StateEquationConstraints>();
+
+    options::Options opts = parser.parse();
+    return make_shared<StateEquationConstraints>(opts);
 }
 
 static Plugin<ConstraintGenerator> _plugin("state_equation_constraints", _parse);

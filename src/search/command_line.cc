@@ -171,5 +171,5 @@ string usage(const string &progname) {
            "    This planner call is part of a portfolio which already created\n"
            "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
            "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
-           "See http://www.fast-downward.org/ for details.";
+           "See https://www.fast-downward.org for details.";
 }

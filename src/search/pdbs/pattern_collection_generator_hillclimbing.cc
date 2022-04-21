@@ -457,7 +457,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::compute_pat
         hill_climbing(task_proxy);
     }
 
-    return current_pdbs->get_pattern_collection_information();
+    return current_pdbs->get_pattern_collection_information(log);
 }
 
 void add_hillclimbing_options(OptionParser &parser) {
@@ -654,6 +654,8 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
         make_shared<PatternCollectionGeneratorHillclimbing>(opts);
 
     Options heuristic_opts;
+    heuristic_opts.set<utils::Verbosity>(
+        "verbosity", opts.get<utils::Verbosity>("verbosity"));
     heuristic_opts.set<shared_ptr<AbstractTask>>(
         "transform", opts.get<shared_ptr<AbstractTask>>("transform"));
     heuristic_opts.set<bool>(

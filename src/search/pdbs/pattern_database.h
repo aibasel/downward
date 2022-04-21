@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace utils {
+class LogProxy;
 class RandomNumberGenerator;
 }
 
@@ -76,7 +77,8 @@ public:
     */
     int get_cost() const {return cost;}
     void dump(const Pattern &pattern,
-              const VariablesProxy &variables) const;
+              const VariablesProxy &variables,
+              utils::LogProxy &log) const;
 };
 
 // Implements a single pattern database
@@ -164,7 +166,6 @@ public:
       sorted, contains no duplicates and is small enough so that the
       number of abstract states is below numeric_limits<int>::max()
       Parameters:
-       dump:           If set to true, prints the construction time.
        operator_costs: Can specify individual operator costs for each
        operator. This is useful for action cost partitioning. If left
        empty, default operator costs are used.
@@ -177,7 +178,6 @@ public:
     PatternDatabase(
         const TaskProxy &task_proxy,
         const Pattern &pattern,
-        bool dump = false,
         const std::vector<int> &operator_costs = std::vector<int>(),
         bool compute_plan = false,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr,

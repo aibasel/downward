@@ -413,7 +413,9 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const Options &opts)
     : Heuristic(opts),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
-    utils::g_log << "Initializing context-enhanced additive heuristic..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing context-enhanced additive heuristic..." << endl;
+    }
 
     DTGFactory factory(task_proxy, true, [](int, int) {return false;});
     transition_graphs = factory.build_dtgs();

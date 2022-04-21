@@ -18,10 +18,8 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     }
     utils::Timer timer;
     PatternCollectionInformation pci = compute_patterns(task);
-    if (log.is_at_least_normal()) {
-        dump_pattern_collection_generation_statistics(
-            name(), timer(), pci);
-    }
+    dump_pattern_collection_generation_statistics(
+        name(), timer(), pci, log);
     return pci;
 }
 
@@ -36,12 +34,11 @@ PatternInformation PatternGenerator::generate(
     }
     utils::Timer timer;
     PatternInformation pattern_info = compute_pattern(task);
-    if (log.is_at_least_normal()) {
-        dump_pattern_generation_statistics(
-            name(),
-            timer.stop(),
-            pattern_info);
-    }
+    dump_pattern_generation_statistics(
+        name(),
+        timer.stop(),
+        pattern_info,
+        log);
     return pattern_info;
 }
 

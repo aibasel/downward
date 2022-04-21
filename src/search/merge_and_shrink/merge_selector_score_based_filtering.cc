@@ -78,9 +78,11 @@ string MergeSelectorScoreBasedFiltering::name() const {
 
 void MergeSelectorScoreBasedFiltering::dump_selector_specific_options(
     utils::LogProxy &log) const {
-    for (const shared_ptr<MergeScoringFunction> &scoring_function
-         : merge_scoring_functions) {
-        scoring_function->dump_options(log);
+    if (log.is_at_least_normal()) {
+        for (const shared_ptr<MergeScoringFunction> &scoring_function
+             : merge_scoring_functions) {
+            scoring_function->dump_options(log);
+        }
     }
 }
 
