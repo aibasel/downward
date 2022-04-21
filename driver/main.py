@@ -7,6 +7,7 @@ from . import arguments
 from . import cleanup
 from . import limits
 from . import run_components
+from . import util
 from . import __version__
 
 
@@ -50,6 +51,13 @@ def main():
         if not continue_execution:
             print("Driver aborting after {}".format(component))
             break
+
+    try:
+        logging.info(f"Planner time: {util.get_elapsed_time():.2}s")
+    except NotImplementedError:
+        # Measuring the runtime of child processes is not supported on Windows.
+        pass
+
     # Exit with the exit code of the last component that ran successfully.
     # This means for example that if no plan was found, validate is not run,
     # and therefore the return code is that of the search.
