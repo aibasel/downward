@@ -5,6 +5,7 @@ import sys
 from . import aliases
 from . import arguments
 from . import cleanup
+from . import limits
 from . import run_components
 from . import __version__
 
@@ -27,6 +28,9 @@ def main():
     if args.cleanup:
         cleanup.cleanup_temporary_files(args)
         sys.exit()
+
+    limits.print_limits("planner", args.overall_time_limit, args.overall_memory_limit)
+    print()
 
     exitcode = None
     for component in args.components:

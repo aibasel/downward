@@ -1,11 +1,12 @@
-from . import returncodes
-from . import util
-
+import logging
 try:
     import resource
 except ImportError:
     resource = None
 import sys
+
+from . import returncodes
+from . import util
 
 
 """
@@ -83,3 +84,13 @@ def get_time_limit(component_limit, overall_limit):
             if limit is None or remaining_time < limit:
                 limit = remaining_time
     return limit
+
+
+def print_limits(nick, time_limit, memory_limit):
+    if time_limit is not None:
+        time_limit = str(time_limit) + "s"
+    logging.info("{} time limit: {}".format(nick, time_limit))
+    if memory_limit is not None:
+        memory_limit = int(convert_to_mb(memory_limit))
+        memory_limit = str(memory_limit) + " MB"
+    logging.info("{} memory limit: {}".format(nick, memory_limit))

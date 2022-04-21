@@ -14,13 +14,7 @@ def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
     if stdin is not None:
         stdin = shlex.quote(stdin)
     logging.info("{} stdin: {}".format(nick, stdin))
-    if time_limit is not None:
-        time_limit = str(time_limit) + "s"
-    logging.info("{} time limit: {}".format(nick, time_limit))
-    if memory_limit is not None:
-        memory_limit = int(limits.convert_to_mb(memory_limit))
-        memory_limit = str(memory_limit) + " MB"
-    logging.info("{} memory limit: {}".format(nick, memory_limit))
+    limits.print_limits(nick, time_limit, memory_limit)
 
     escaped_cmd = [shlex.quote(x) for x in cmd]
     if stdin is not None:
