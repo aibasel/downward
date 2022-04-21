@@ -59,7 +59,7 @@ def translate_task(task_file):
             r"\[(.+s CPU, .+s wall-clock)\]",
             r"(\d+) KB",
             r"Planner time: (.+s)",
-        ]:
+            ]:
         output = re.sub(pattern, "XXX", output)
     return output
 
