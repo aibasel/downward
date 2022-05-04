@@ -104,7 +104,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 */
 void Exploration::setup_exploration_queue(
     const State &state, const vector<FactPair> &excluded_props,
-    const unordered_set<int> &excluded_op_ids) {
+    const vector<int> &excluded_op_ids) {
     prop_queue.clear();
 
     // Reset reachability information.
@@ -114,6 +114,10 @@ void Exploration::setup_exploration_queue(
         }
     }
 
+    for (const FactPair &fact : excluded_props) {
+        propositions[fact.var][fact.value].excluded = true;
+    }
+
     // Set facts that are true in the current state as reached.
     for (FactProxy fact : state) {
         Proposition *init_prop =
@@ -121,12 +125,43 @@ void Exploration::setup_exploration_queue(
         enqueue_if_necessary(init_prop);
     }
 
+    /*
+      Unary operators derived from operators that are excluded or achieve
+      an excluded proposition *unconditionally* must be marked as excluded.
+
+      Note that we in general cannot exclude all unary operators derived from
+      operators that achieve an excluded propositon *conditionally*:
+      Given an operator with uncoditional effect e1 and conditional effect e2
+      with condition c yields unary operators uo1: {} -> e1 and uo2: c -> e2.
+      Excluding both would not allow us to achieve e1 when excluding
+      proposition e2. We instead only mark uo2 as excluded (see below when
+      looping over all unary operators). Note however that this can lead to
+      an overapproximation, e.g. if the effect e1 also has condition c.
+    */
+    unordered_set<int> op_ids_to_mark(excluded_op_ids.begin(),
+                                      excluded_op_ids.end());
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        for (EffectProxy effect : op.get_effects()) {
+            if (effect.get_conditions().size() == 0
+                && propositions[effect.get_fact().get_variable().get_id()]
+                               [effect.get_fact().get_value()].excluded) {
+                op_ids_to_mark.insert(op.get_id());
+                break;
+            }
+        }
+    }
+
     // Initialize operator data, queue effects of precondition-free operators.
     for (UnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.num_preconditions;
 
-        if (achieves_excluded_prop(op, excluded_props)
-            || excluded_op_ids.count(op.op_or_axiom_id)) {
+        /*
+          Aside from UnaryOperators derived from operators with an id in
+          op_ids_to_mark we also exclude UnaryOperators that have an excluded
+          proposition as effect (see comment when building *op_ids_to_mark*).
+        */
+        if (op.effect->excluded
+            || op_ids_to_mark.count(op.op_or_axiom_id)) {
             // Operator will not be applied during relaxed exploration.
             op.excluded = true;
             continue;
@@ -137,35 +172,11 @@ void Exploration::setup_exploration_queue(
             enqueue_if_necessary(op.effect);
         }
     }
-}
 
-/*
-  We say a unary operator achieves an excluded fact f when it is guaranteed
-  that the corresponding original operator will achieve f in all states
-  where it is applicable. This is the case if
-  (a) the effect of the unary operator is f,
-  (b) the corresponding original operator achieves f *unconditionally*.
-*/
-bool Exploration::achieves_excluded_prop(const UnaryOperator &op,
-                                         const vector<FactPair> &excluded_props) {
+    // Reset *excluded* to false for the next exploration.
     for (const FactPair &fact : excluded_props) {
-        // case (a)
-        if (op.effect->fact == fact) {
-            return true;
-        }
-
-        // case (b)
-        EffectsProxy effects = (op.op_or_axiom_id < 0)
-            ? task_proxy.get_axioms()[-op.op_or_axiom_id - 1].get_effects()
-            : task_proxy.get_operators()[op.op_or_axiom_id].get_effects();
-        for (EffectProxy effect : effects) {
-            if (effect.get_fact().get_pair() == fact
-                && effect.get_conditions().empty()) {
-                return true;
-            }
-        }
+        propositions[fact.var][fact.value].excluded = false;
     }
-    return false;
 }
 
 void Exploration::relaxed_exploration() {
@@ -195,7 +206,7 @@ void Exploration::enqueue_if_necessary(Proposition *prop) {
 
 vector<vector<bool>> Exploration::compute_relaxed_reachability(
     const vector<FactPair> &excluded_props,
-    const unordered_set<int> &excluded_op_ids) {
+    const vector<int> &excluded_op_ids) {
     setup_exploration_queue(task_proxy.get_initial_state(),
                             excluded_props, excluded_op_ids);
     relaxed_exploration();

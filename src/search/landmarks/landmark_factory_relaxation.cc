@@ -44,11 +44,11 @@ bool LandmarkFactoryRelaxation::is_causal_landmark(
     if (landmark.is_true_in_goal)
         return true;
 
-    unordered_set<int> excluded_op_ids;
+    vector<int> excluded_op_ids;
     vector<FactPair> excluded_props;
     for (OperatorProxy op : task_proxy.get_operators()) {
         if (is_landmark_precondition(op, landmark)) {
-            excluded_op_ids.insert(op.get_id());
+            excluded_op_ids.push_back(op.get_id());
         }
     }
 
@@ -109,10 +109,8 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 vector<vector<bool>> LandmarkFactoryRelaxation::compute_relaxed_reachability(
     Exploration &exploration, const Landmark &exclude) const {
     // Extract propositions from "exclude"
-    unordered_set<int> excluded_op_ids;
-    vector<FactPair> excluded_props;
-    excluded_props.insert(excluded_props.end(),
-                          exclude.facts.begin(), exclude.facts.end());
+    vector<int> excluded_op_ids;
+    vector<FactPair> excluded_props(exclude.facts.begin(), exclude.facts.end());
 
     return exploration.compute_relaxed_reachability(excluded_props,
                                                     excluded_op_ids);

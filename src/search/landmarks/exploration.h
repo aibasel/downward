@@ -19,10 +19,12 @@ struct Proposition {
     FactPair fact;
     std::vector<UnaryOperator *> precondition_of;
     bool reached;
+    bool excluded;
 
     Proposition()
         : fact(FactPair::no_fact),
-          reached(false) {
+          reached(false), 
+          excluded(false) {
     }
 
     bool operator<(const Proposition &other) const {
@@ -54,11 +56,9 @@ class Exploration {
     std::deque<Proposition *> prop_queue;
 
     void build_unary_operators(const OperatorProxy &op);
-    bool achieves_excluded_prop(const UnaryOperator &op,
-                                const std::vector<FactPair> &excluded_props);
     void setup_exploration_queue(
         const State &state, const std::vector<FactPair> &excluded_props,
-        const std::unordered_set<int> &excluded_op_ids);
+        const std::vector<int> &excluded_op_ids);
     void relaxed_exploration();
     void enqueue_if_necessary(Proposition *prop);
 public:
@@ -70,12 +70,12 @@ public:
       in *excluded_pros* are not achieved.
       The returned vector of vector denotes for each proposition
       (grouped by their fact variable) whether it is relaxed reachable.
-      The values are exact in the absence of conditional effects,
-      otherwise they are an admissible approximation.
+      The values are exact in the absence of conditional effects, otherwise
+      they are an admissible approximation (see implementation for details).
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
         const std::vector<FactPair> &excluded_props,
-        const std::unordered_set<int> &excluded_op_ids);
+        const std::vector<int> &excluded_op_ids);
 };
 }
 
