@@ -133,5 +133,3 @@ if __name__ == "__main__":
         print("%d goals:" % len(goals))
         for literal in goals:
             literal.dump()
-
-
