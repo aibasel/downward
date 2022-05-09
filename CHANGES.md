@@ -11,8 +11,8 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- Translator checks now whether predicates unused by actions differ between
-  the initial state and the goal. Previously, those predicates where ignored.
+- translator: Fix a bug where the translator would not check goal
+  conditions on predicates that are not modified by actions.
   <https://issues.fast-downward.org/issue1055>
 
 - infrastructure: Upgrade GitHub Actions to Windows Server
