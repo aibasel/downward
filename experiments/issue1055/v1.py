@@ -57,9 +57,15 @@ class TranslatorDiffReport(PlanningReport):
     def get_text(self):
         lines = []
         for runs in self.problem_runs.values():
-            hashes = set([r.get("translator_output_sas_hash") for r in runs])
-            if len(hashes) > 1 or None in hashes:
-                lines.append(";".join([self.get_cell(r) for r in runs]))
+            lhashes = [r.get("translator_output_sas_hash") for r in runs]
+            hashes = set(lhashes)
+            reason = ""
+            if None in hashes:
+                reason = f"{len([h for h in lhashes if h is None])} failed + "
+            if len(hashes) > 1:
+                reason += f"{len([h for h in lhashes if h is not None])} differ"
+            if len(reason):
+                lines.append(reason + ";" + ";".join([self.get_cell(r) for r in runs]))
         return "\n".join(lines)
 
 
