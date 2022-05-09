@@ -11,6 +11,10 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
+- translator: Fix a bug where the translator would not check goal
+  conditions on predicates that are not modified by actions.
+  <https://issues.fast-downward.org/issue1055>
+
 - infrastructure: Upgrade GitHub Actions to Windows Server
   2019 (Visual Studio Enterprise 2019) and Windows Server 2022 (Visual Studio
   Enterprise 2022). Remove Windows Server 2016, because GitHub Actions no longer
