@@ -144,7 +144,7 @@ void Exploration::setup_exploration_queue(
         for (EffectProxy effect : op.get_effects()) {
             if (effect.get_conditions().size() == 0
                 && propositions[effect.get_fact().get_variable().get_id()]
-                               [effect.get_fact().get_value()].excluded) {
+                [effect.get_fact().get_value()].excluded) {
                 op_ids_to_mark.insert(op.get_id());
                 break;
             }

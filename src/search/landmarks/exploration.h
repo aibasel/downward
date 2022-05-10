@@ -23,7 +23,7 @@ struct Proposition {
 
     Proposition()
         : fact(FactPair::no_fact),
-          reached(false), 
+          reached(false),
           excluded(false) {
     }
 
