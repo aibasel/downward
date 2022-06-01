@@ -14,21 +14,13 @@
 using namespace std;
 
 namespace landmarks {
-/* Integration Note: this class is the same as (rich man's) FF heuristic
-   (taken from hector branch) except for the following:
-   - Added-on functionality for excluding certain operators from the relaxed
-     exploration (these operators are never applied, as necessary for landmark
-     computation)
-   - Exploration can be done either using h_max or h_add criterion (h_max is needed
-     during landmark generation, h_add later for heuristic computations)
-   - Unary operators are not simplified, because this may conflict with excluded
-     operators. (For an example, consider that unary operator o1 is thrown out
-     during simplify() because it is dominated by unary operator o2, but then o2
-     is excluded during an exploration ==> the shared effect of o1 and o2 is wrongly
-     never reached in the exploration.)
-   - Added-on functionality to check for a set of propositions which one is reached
-     first by the relaxed exploration, and extract preferred operators for this cheapest
-     proposition (needed for planning to nearest landmark).
+/*
+  Implementation note: Compared to RelaxationHeuristic, we *cannot simplify*
+  unary operators, because this may conflict with excluded operators.
+  For an example, consider that unary operator o1 is thrown out during
+  simplify() because it is dominated by unary operator o2, but then o2
+  is excluded during an exploration ==> the shared effect of o1 and o2 is
+  wrongly never reached in the exploration.
 */
 
 // Construction and destruction
@@ -41,39 +33,38 @@ Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
     // Build propositions.
     for (VariableProxy var : task_proxy.get_variables()) {
         int var_id = var.get_id();
-        propositions.push_back(vector<ExProposition>(var.get_domain_size()));
+        propositions.push_back(vector<Proposition>(var.get_domain_size()));
         for (int value = 0; value < var.get_domain_size(); ++value) {
             propositions[var_id][value].fact = FactPair(var_id, value);
         }
     }
 
-    // Build goal propositions.
-    for (FactProxy goal_fact : task_proxy.get_goals()) {
-        int var_id = goal_fact.get_variable().get_id();
-        int value = goal_fact.get_value();
-        goal_propositions.push_back(&propositions[var_id][value]);
-        termination_propositions.push_back(&propositions[var_id][value]);
+    /*
+      Reserve vector size unary operators. This is needed because we
+      cross-reference to the memory address of elements of the vector while
+      building it; meaning a resize would invalidate all references.
+    */
+    int num_unary_ops = 0;
+    OperatorsProxy operators = task_proxy.get_operators();
+    AxiomsProxy axioms = task_proxy.get_axioms();
+    for (OperatorProxy op : operators) {
+        num_unary_ops += op.get_effects().size();
     }
+    for (OperatorProxy axiom : axioms) {
+        num_unary_ops += axiom.get_effects().size();
+    }
+    unary_operators.reserve(num_unary_ops);
 
     // Build unary operators for operators and axioms.
-    OperatorsProxy operators = task_proxy.get_operators();
     for (OperatorProxy op : operators)
         build_unary_operators(op);
-    AxiomsProxy axioms = task_proxy.get_axioms();
-    for (OperatorProxy op : axioms)
-        build_unary_operators(op);
-
-    // Cross-reference unary operators.
-    for (ExUnaryOperator &op : unary_operators) {
-        for (ExProposition *pre : op.precondition)
-            pre->precondition_of.push_back(&op);
-    }
+    for (OperatorProxy axiom : axioms)
+        build_unary_operators(axiom);
 }
 
 void Exploration::build_unary_operators(const OperatorProxy &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op.get_cost();
-    vector<ExProposition *> precondition;
+    vector<Proposition *> precondition;
     vector<FactPair> precondition_facts1;
 
     for (FactProxy pre : op.get_preconditions()) {
@@ -93,9 +84,15 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
                                    [precondition_fact.value]);
 
         FactProxy effect_fact = effect.get_fact();
-        ExProposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
+        Proposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
         int op_or_axiom_id = get_operator_or_axiom_id(op);
-        unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id, base_cost);
+        unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id);
+
+        // Cross-reference unary operators.
+        for (Proposition *pre : precondition) {
+            pre->precondition_of.push_back(&unary_operators.back());
+        }
+
         precondition.clear();
         precondition_facts2.clear();
     }
@@ -106,29 +103,16 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
   with propositions and unary operators for the relaxed exploration. Unary
   operators that are not allowed to be applied due to exclusions are marked by
   setting their *excluded* flag.
-
-  *excluded_op_ids* should contain at least the operators that achieve an
-  excluded proposition unconditionally. There are two contexts where
-  *compute_reachability_with_excludes()* (and hence this function) is used:
-  (a) in *LandmarkFactoryRelaxation::relaxed_task_solvable()* where indeed
-      all operators are excluded if they achieve an excluded proposition
-      unconditionally; and
-  (b) in *LandmarkFactoryRelaxation::is_causal_landmark()* where
-      *excluded_props* is empty and hence no operators achieve an excluded
-      proposition. (*excluded_op_ids* "additionally" contains operators that
-      have a landmark as their precondition in this context.)
-
-  TODO: issue1045 aims at moving the logic to exclude operators that achieve
-   excluded propositions here to consistently do so in all contexts.
 */
 void Exploration::setup_exploration_queue(
     const State &state, const vector<FactPair> &excluded_props,
-    const unordered_set<int> &excluded_op_ids) {
+    const vector<int> &excluded_op_ids) {
     prop_queue.clear();
 
+    // Reset reachability information.
     for (auto &propositions_for_variable : propositions) {
         for (auto &prop : propositions_for_variable) {
-            prop.h_max_cost = -1;
+            prop.reached = false;
         }
     }
 
@@ -136,27 +120,58 @@ void Exploration::setup_exploration_queue(
         propositions[fact.var][fact.value].excluded = true;
     }
 
-    // Deal with current state.
+    // Set facts that are true in the current state as reached.
     for (FactProxy fact : state) {
-        ExProposition *init_prop =
+        Proposition *init_prop =
             &propositions[fact.get_variable().get_id()][fact.get_value()];
-        enqueue_if_necessary(init_prop, 0);
+        enqueue_if_necessary(init_prop);
     }
 
-    // Initialize operator data, deal with precondition-free operators/axioms.
-    for (ExUnaryOperator &op : unary_operators) {
-        op.unsatisfied_preconditions = op.precondition.size();
+    /*
+      Unary operators derived from operators that are excluded or achieve
+      an excluded proposition *unconditionally* must be marked as excluded.
+
+      Note that we in general cannot exclude all unary operators derived from
+      operators that achieve an excluded propositon *conditionally*:
+      Given an operator with uncoditional effect e1 and conditional effect e2
+      with condition c yields unary operators uo1: {} -> e1 and uo2: c -> e2.
+      Excluding both would not allow us to achieve e1 when excluding
+      proposition e2. We instead only mark uo2 as excluded (see below when
+      looping over all unary operators). Note however that this can lead to
+      an overapproximation, e.g. if the effect e1 also has condition c.
+    */
+    unordered_set<int> op_ids_to_mark(excluded_op_ids.begin(),
+                                      excluded_op_ids.end());
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        for (EffectProxy effect : op.get_effects()) {
+            if (effect.get_conditions().empty()
+                && propositions[effect.get_fact().get_variable().get_id()]
+                [effect.get_fact().get_value()].excluded) {
+                op_ids_to_mark.insert(op.get_id());
+                break;
+            }
+        }
+    }
+
+    // Initialize operator data, queue effects of precondition-free operators.
+    for (UnaryOperator &op : unary_operators) {
+        op.unsatisfied_preconditions = op.num_preconditions;
+
+        /*
+          Aside from UnaryOperators derived from operators with an id in
+          op_ids_to_mark we also exclude UnaryOperators that have an excluded
+          proposition as effect (see comment when building *op_ids_to_mark*).
+        */
         if (op.effect->excluded
-            || excluded_op_ids.count(op.op_or_axiom_id)) {
-            // operator will not be applied during relaxed exploration
+            || op_ids_to_mark.count(op.op_or_axiom_id)) {
+            // Operator will not be applied during relaxed exploration.
             op.excluded = true;
             continue;
         }
-        op.excluded = false; // Reset from previous exploration
-        op.h_max_cost = op.base_cost;
+        op.excluded = false; // Reset from previous exploration.
 
         if (op.unsatisfied_preconditions == 0) {
-            enqueue_if_necessary(op.effect, op.base_cost);
+            enqueue_if_necessary(op.effect);
         }
     }
 
@@ -168,53 +183,47 @@ void Exploration::setup_exploration_queue(
 
 void Exploration::relaxed_exploration() {
     while (!prop_queue.empty()) {
-        pair<int, ExProposition *> top_pair = prop_queue.pop();
-        int distance = top_pair.first;
-        ExProposition *prop = top_pair.second;
+        Proposition *prop = prop_queue.front();
+        prop_queue.pop_front();
 
-        int prop_cost = prop->h_max_cost;
-        assert(prop_cost <= distance);
-        if (prop_cost < distance)
-            continue;
-        const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
-        for (size_t i = 0; i < triggered_operators.size(); ++i) {
-            ExUnaryOperator *unary_op = triggered_operators[i];
-            if (unary_op->excluded) // operator is not applied
+        const vector<UnaryOperator *> &triggered_operators = prop->precondition_of;
+        for (UnaryOperator *unary_op : triggered_operators) {
+            if (unary_op->excluded)
                 continue;
             --unary_op->unsatisfied_preconditions;
-            unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
-                                       unary_op->h_max_cost);
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
-                enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost);
+                enqueue_if_necessary(unary_op->effect);
             }
         }
     }
 }
 
-void Exploration::enqueue_if_necessary(ExProposition *prop, int cost) {
-    assert(cost >= 0);
-    if (prop->h_max_cost == -1 || prop->h_max_cost > cost) {
-        prop->h_max_cost = cost;
-        prop_queue.push(cost, prop);
+void Exploration::enqueue_if_necessary(Proposition *prop) {
+    if (!prop->reached) {
+        prop->reached = true;
+        prop_queue.push_back(prop);
     }
 }
 
-void Exploration::compute_reachability_with_excludes(
-    vector<vector<int>> &lvl_var,
+vector<vector<bool>> Exploration::compute_relaxed_reachability(
     const vector<FactPair> &excluded_props,
-    const unordered_set<int> &excluded_op_ids) {
-    // Perform exploration using h_max-values.
-    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids);
+    const vector<int> &excluded_op_ids) {
+    setup_exploration_queue(task_proxy.get_initial_state(),
+                            excluded_props, excluded_op_ids);
     relaxed_exploration();
 
-    // Copy reachability information into lvl_var.
+    // Bundle reachability information into the return data structure.
+    vector<vector<bool>> reached;
+    reached.resize(propositions.size());
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
+        reached[var_id].resize(propositions[var_id].size(), false);
         for (size_t value = 0; value < propositions[var_id].size(); ++value) {
-            ExProposition &prop = propositions[var_id][value];
-            if (prop.h_max_cost >= 0)
-                lvl_var[var_id][value] = prop.h_max_cost;
+            if (propositions[var_id][value].reached) {
+                reached[var_id][value] = true;
+            }
         }
     }
+    return reached;
 }
 }

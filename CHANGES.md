@@ -45,6 +45,12 @@ after the corresponding tracker issues.
   runtime on Linux and macOS systems.
   <https://issues.fast-downward.org/issue1056>
 
+- Speed up landmark generation time by 5-15% for `lm_rhw`, `lm_zg`, 
+  and `lm_exhaust` due to computing reachability in the landmark
+  exploration as boolean instead of (unused) integer cost/level 
+  information.
+  <https://issues.fast-downward.org/issue1045>
+
 ## Fast Downward 21.12
 
 Released on February 16, 2022.

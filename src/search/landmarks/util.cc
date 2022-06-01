@@ -11,9 +11,9 @@
 using namespace std;
 
 namespace landmarks {
-bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vector<int>> &lvl_var) {
+bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vector<bool>> &reached) {
     for (FactProxy cond : conditions)
-        if (lvl_var[cond.get_variable().get_id()][cond.get_value()] == numeric_limits<int>::max())
+        if (!reached[cond.get_variable().get_id()][cond.get_value()])
             return false;
     return true;
 }
@@ -31,29 +31,28 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
 }
 
 bool possibly_reaches_lm(const OperatorProxy &op,
-                         const vector<vector<int>> &lvl_var,
+                         const vector<vector<bool>> &reached,
                          const Landmark &landmark) {
     /* Check whether operator o can possibly make landmark lmp true in a
-       relaxed task (as given by the reachability information in lvl_var) */
+       relaxed task (as given by the reachability information in reached) */
 
-    assert(!lvl_var.empty());
+    assert(!reached.empty());
 
     // Test whether all preconditions of o can be reached
     // Otherwise, operator is not applicable
     PreconditionsProxy preconditions = op.get_preconditions();
     for (FactProxy pre : preconditions)
-        if (lvl_var[pre.get_variable().get_id()][pre.get_value()] ==
-            numeric_limits<int>::max())
+        if (!reached[pre.get_variable().get_id()][pre.get_value()])
             return false;
 
     // Go through all effects of o and check whether one can reach a
     // proposition in lmp
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
-        assert(!lvl_var[effect_fact.get_variable().get_id()].empty());
+        assert(!reached[effect_fact.get_variable().get_id()].empty());
         for (const FactPair &fact : landmark.facts) {
             if (effect_fact.get_pair() == fact) {
-                if (_possibly_fires(effect.get_conditions(), lvl_var))
+                if (_possibly_fires(effect.get_conditions(), reached))
                     return true;
                 break;
             }
