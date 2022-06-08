@@ -34,8 +34,8 @@ class LandmarkCountHeuristic : public Heuristic {
        *lm_cost_assignment* above, this is just another indicator to change this
        in the future.
     */
-    std::vector<int> landmark_costs_first_achievers;
-    std::vector<int> landmark_costs_possible_achievers;
+    std::vector<int> min_first_achiever_costs;
+    std::vector<int> min_possible_achiever_costs;
 
     int get_heuristic_value(const State &ancestor_state);
 

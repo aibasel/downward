@@ -109,27 +109,26 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 }
 
+int get_min_cost_of_achievers(const set<int> &achievers,
+                              const OperatorsProxy &op_proxy) {
+    int min_cost = numeric_limits<int>::max();
+    for (int op_id : achievers) {
+        min_cost = min(op_proxy[op_id].get_cost(), min_cost);
+    }
+    return min_cost;
+}
+
 void LandmarkCountHeuristic::compute_landmark_costs() {
-    landmark_costs_first_achievers.reserve(lgraph->get_num_landmarks());
-    landmark_costs_possible_achievers.reserve(lgraph->get_num_landmarks());
+    min_first_achiever_costs.reserve(lgraph->get_num_landmarks());
+    min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
 
-    const OperatorsProxy &operators_proxy = task_proxy.get_operators();
+    const OperatorsProxy &op_proxy = task_proxy.get_operators();
     for (auto &node : lgraph->get_nodes()) {
-        int node_id = node->get_id();
-        int min_first_achiever_cost = numeric_limits<int>::max();
-        int min_possible_achiever_cost = numeric_limits<int>::max();
-
-        for (int op_id : node->get_landmark().first_achievers) {
-            min_first_achiever_cost = min(operators_proxy[op_id].get_cost(),
-                                          min_first_achiever_cost);
-        }
-        landmark_costs_first_achievers[node_id] = min_first_achiever_cost;
-
-        for (int op_id : node->get_landmark().possible_achievers) {
-            min_possible_achiever_cost = min(operators_proxy[op_id].get_cost(),
-                                             min_possible_achiever_cost);
-        }
-        landmark_costs_possible_achievers[node_id] = min_possible_achiever_cost;
+        int id = node->get_id();
+        min_first_achiever_costs[id] = get_min_cost_of_achievers(
+            node->get_landmark().first_achievers, op_proxy);
+        min_possible_achiever_costs[id] = get_min_cost_of_achievers(
+            node->get_landmark().possible_achievers, op_proxy);
     }
 }
 
@@ -154,16 +153,14 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     } else {
         int h = 0;
         for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
-            landmark_status status =
-                lm_status_manager->get_landmark_status(id);
-            int cost = 0;
+            landmark_status status = lm_status_manager->get_landmark_status(id);
             if (status == lm_not_reached) {
-                cost = landmark_costs_first_achievers[id];
+                assert(min_first_achiever_costs[id] < numeric_limits<int>::max());
+                h += min_first_achiever_costs[id];
             } else if (status == lm_needed_again) {
-                cost = landmark_costs_possible_achievers[id];
+                assert(min_possible_achiever_costs[id] < numeric_limits<int>::max());
+                h += min_possible_achiever_costs[id];
             }
-            assert(cost < numeric_limits<int>::max());
-            h += cost;
         }
         return h;
     }
