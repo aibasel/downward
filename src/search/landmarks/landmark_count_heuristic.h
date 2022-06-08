@@ -28,6 +28,15 @@ class LandmarkCountHeuristic : public Heuristic {
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
+    /*
+      TODO: The following vectors are only used in the non-admissible case. This
+       is bad design, but given this is already the case for
+       *lm_cost_assignment* above, this is just another indicator to change this
+       in the future.
+    */
+    std::vector<int> landmark_costs_first_achievers;
+    std::vector<int> landmark_costs_possible_achievers;
+
     int get_heuristic_value(const State &ancestor_state);
 
     bool check_node_orders_disobeyed(
@@ -42,6 +51,8 @@ class LandmarkCountHeuristic : public Heuristic {
         const State &state, const LandmarkNodeSet &reached);
 
     LandmarkNodeSet convert_to_landmark_set(const BitsetView &landmark_bitset);
+
+    void compute_landmark_costs();
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:

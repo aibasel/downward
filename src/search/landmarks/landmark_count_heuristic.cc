@@ -99,12 +99,37 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         }
     } else {
         lm_cost_assignment = nullptr;
+        compute_landmark_costs();
     }
 
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main task in cases
            where it's compatible. See issue564. */
         successor_generator = utils::make_unique_ptr<successor_generator::SuccessorGenerator>(task_proxy);
+    }
+}
+
+void LandmarkCountHeuristic::compute_landmark_costs() {
+    landmark_costs_first_achievers.reserve(lgraph->get_num_landmarks());
+    landmark_costs_possible_achievers.reserve(lgraph->get_num_landmarks());
+
+    const OperatorsProxy &operators_proxy = task_proxy.get_operators();
+    for (auto &node : lgraph->get_nodes()) {
+        int node_id = node->get_id();
+        int min_first_achiever_cost = numeric_limits<int>::max();
+        int min_possible_achiever_cost = numeric_limits<int>::max();
+
+        for (int op_id : node->get_landmark().first_achievers) {
+            min_first_achiever_cost = min(operators_proxy[op_id].get_cost(),
+                                          min_first_achiever_cost);
+        }
+        landmark_costs_first_achievers[node_id] = min_first_achiever_cost;
+
+        for (int op_id : node->get_landmark().possible_achievers) {
+            min_possible_achiever_cost = min(operators_proxy[op_id].get_cost(),
+                                             min_possible_achiever_cost);
+        }
+        landmark_costs_possible_achievers[node_id] = min_possible_achiever_cost;
     }
 }
 
@@ -131,11 +156,14 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
         for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
             landmark_status status =
                 lm_status_manager->get_landmark_status(id);
-            if (status == lm_not_reached || status == lm_needed_again) {
-                int cost = lgraph->get_node(id)->get_landmark().cost;
-                assert(cost < numeric_limits<int>::max());
-                h += cost;
+            int cost = 0;
+            if (status == lm_not_reached) {
+                cost = landmark_costs_first_achievers[id];
+            } else if (status == lm_needed_again) {
+                cost = landmark_costs_possible_achievers[id];
             }
+            assert(cost < numeric_limits<int>::max());
+            h += cost;
         }
         return h;
     }
