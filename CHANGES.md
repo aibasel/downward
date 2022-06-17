@@ -9,6 +9,10 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Changes since the last release
+
+- none yet
+
 ## Fast Downward 22.06
 
 Released on June 16, 2022.
