@@ -4,6 +4,7 @@
 #include "landmark_cost_assignment.h"
 #include "landmark_factory.h"
 #include "landmark_status_manager.h"
+#include "util.h"
 
 #include "../option_parser.h"
 #include "../per_state_bitset.h"
@@ -110,10 +111,11 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
 }
 
 int get_min_cost_of_achievers(const set<int> &achievers,
-                              const OperatorsProxy &op_proxy) {
+                              const TaskProxy &task_proxy) {
     int min_cost = numeric_limits<int>::max();
-    for (int op_id : achievers) {
-        min_cost = min(op_proxy[op_id].get_cost(), min_cost);
+    for (int operator_or_axiom_id : achievers) {
+        min_cost = min(min_cost, get_operator_or_axiom(
+                           task_proxy, operator_or_axiom_id).get_cost());
     }
     return min_cost;
 }
@@ -122,13 +124,12 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
     min_first_achiever_costs.reserve(lgraph->get_num_landmarks());
     min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
 
-    const OperatorsProxy &op_proxy = task_proxy.get_operators();
     for (auto &node : lgraph->get_nodes()) {
         int id = node->get_id();
         min_first_achiever_costs[id] = get_min_cost_of_achievers(
-            node->get_landmark().first_achievers, op_proxy);
+            node->get_landmark().first_achievers, task_proxy);
         min_possible_achiever_costs[id] = get_min_cost_of_achievers(
-            node->get_landmark().possible_achievers, op_proxy);
+            node->get_landmark().possible_achievers, task_proxy);
     }
 }
 
