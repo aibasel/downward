@@ -11,7 +11,9 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- none yet
+- driver: skip __pycache__ directory when collection portfolio aliases
+  <https://issues.fast-downward.org/issue1055>
+  
 
 ## Fast Downward 22.06
 
