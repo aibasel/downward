@@ -132,7 +132,8 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
             node->get_landmark().possible_achievers, task_proxy);
     }
     for (int i = 0; i < (int)lgraph->get_num_landmarks(); ++i) {
-        assert(lgraph->get_node(i) != -1);
+        assert(min_first_achiever_costs[i] != -1);
+        assert(min_possible_achiever_costs[i] != -1);
     }
 }
 
