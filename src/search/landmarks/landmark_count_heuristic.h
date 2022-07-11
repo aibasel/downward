@@ -52,6 +52,8 @@ class LandmarkCountHeuristic : public Heuristic {
 
     LandmarkNodeSet convert_to_landmark_set(const BitsetView &landmark_bitset);
 
+    int get_min_cost_of_achievers(const std::set<int> &achievers,
+                                  const TaskProxy &task_proxy);
     void compute_landmark_costs();
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;

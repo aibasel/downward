@@ -110,8 +110,8 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 }
 
-int get_min_cost_of_achievers(const set<int> &achievers,
-                              const TaskProxy &task_proxy) {
+int LandmarkCountHeuristic::get_min_cost_of_achievers(const set<int> &achievers,
+                                                      const TaskProxy &task_proxy) {
     int min_cost = numeric_limits<int>::max();
     for (int operator_or_axiom_id : achievers) {
         min_cost = min(min_cost, get_operator_or_axiom(
@@ -131,6 +131,7 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
         min_possible_achiever_costs[id] = get_min_cost_of_achievers(
             node->get_landmark().possible_achievers, task_proxy);
     }
+
 }
 
 int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
