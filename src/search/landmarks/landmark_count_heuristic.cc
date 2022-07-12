@@ -150,23 +150,26 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     // must return 0 for a goal state.
 
     lm_status_manager->update_lm_status(ancestor_state);
-    if (lm_status_manager->dead_end_exists()) {
-        return DEAD_END;
-    }
 
     if (admissible) {
         double h_val = lm_cost_assignment->cost_sharing_h_value(
             *lm_status_manager);
-        return static_cast<int>(ceil(h_val - epsilon));
+        if (h_val == numeric_limits<double>::max()) {
+            return DEAD_END;
+        } else {
+            return static_cast<int>(ceil(h_val - epsilon));
+        }
     } else {
         int h = 0;
         for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
             landmark_status status = lm_status_manager->get_landmark_status(id);
             if (status == lm_not_reached) {
-                assert(min_first_achiever_costs[id] < numeric_limits<int>::max());
+                if (min_first_achiever_costs[id] == numeric_limits<int>::max())
+                    return DEAD_END;
                 h += min_first_achiever_costs[id];
             } else if (status == lm_needed_again) {
-                assert(min_possible_achiever_costs[id] < numeric_limits<int>::max());
+                if (min_possible_achiever_costs[id] == numeric_limits<int>::max())
+                    return DEAD_END;
                 h += min_possible_achiever_costs[id];
             }
         }
