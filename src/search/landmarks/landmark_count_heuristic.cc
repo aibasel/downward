@@ -132,10 +132,10 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
     min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
     for (auto &node : lgraph->get_nodes()) {
         int min_first_achiever_cost = get_min_cost_of_achievers(
-                node->get_landmark().first_achievers, task_proxy);
+            node->get_landmark().first_achievers, task_proxy);
         min_first_achiever_costs.push_back(min_first_achiever_cost);
         int min_possible_achiever_cost = get_min_cost_of_achievers(
-                node->get_landmark().possible_achievers, task_proxy);
+            node->get_landmark().possible_achievers, task_proxy);
         min_possible_achiever_costs.push_back(min_possible_achiever_cost);
     }
 }
