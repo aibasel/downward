@@ -122,19 +122,21 @@ int LandmarkCountHeuristic::get_min_cost_of_achievers(const set<int> &achievers,
 }
 
 void LandmarkCountHeuristic::compute_landmark_costs() {
-    min_first_achiever_costs.resize(lgraph->get_num_landmarks(), -1);
-    min_possible_achiever_costs.resize(lgraph->get_num_landmarks(), -1);
-
+    /*
+       This function runs under the assumption that landmark node IDs go
+       from 0 to the number of landmarks - 1, therefore the entry in
+       *min_first_achiever_costs* and *min_possible_achiever_costs*
+       at index i corresponds to the entry for the landmark node with ID i.
+    */
+    min_first_achiever_costs.reserve(lgraph->get_num_landmarks());
+    min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
     for (auto &node : lgraph->get_nodes()) {
-        int id = node->get_id();
-        min_first_achiever_costs[id] = get_min_cost_of_achievers(
-            node->get_landmark().first_achievers, task_proxy);
-        min_possible_achiever_costs[id] = get_min_cost_of_achievers(
-            node->get_landmark().possible_achievers, task_proxy);
-    }
-    for (int i = 0; i < (int)lgraph->get_num_landmarks(); ++i) {
-        assert(min_first_achiever_costs[i] != -1);
-        assert(min_possible_achiever_costs[i] != -1);
+        int min_first_achiever_cost = get_min_cost_of_achievers(
+                node->get_landmark().first_achievers, task_proxy);
+        min_first_achiever_costs.push_back(min_first_achiever_cost);
+        int min_possible_achiever_cost = get_min_cost_of_achievers(
+                node->get_landmark().possible_achievers, task_proxy);
+        min_possible_achiever_costs.push_back(min_possible_achiever_cost);
     }
 }
 
