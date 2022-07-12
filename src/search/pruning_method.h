@@ -3,8 +3,6 @@
 
 #include "operator_id.h"
 
-#include "../utils/timer.h"
-
 #include <memory>
 #include <vector>
 
@@ -16,7 +14,6 @@ class LimitedPruning;
 }
 
 class PruningMethod {
-    utils::Timer timer;
     friend class limited_pruning::LimitedPruning;
 
     virtual void prune(

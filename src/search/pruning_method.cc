@@ -23,12 +23,10 @@ void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
 void PruningMethod::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
     assert(!task_properties::is_goal_state(TaskProxy(*task), state));
-    timer.resume();
     int num_ops_before_pruning = op_ids.size();
     prune(state, op_ids);
     num_successors_before_pruning += num_ops_before_pruning;
     num_successors_after_pruning += op_ids.size();
-    timer.stop();
 }
 
 void PruningMethod::print_statistics() const {
@@ -40,7 +38,6 @@ void PruningMethod::print_statistics() const {
         static_cast<double>(num_successors_after_pruning) /
         static_cast<double>(num_successors_before_pruning));
     utils::g_log << "Pruning ratio: " << pruning_ratio << endl;
-    utils::g_log << "Time for pruning operators: " << timer << endl;
 }
 
 static PluginTypePlugin<PruningMethod> _type_plugin(
