@@ -77,6 +77,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 
     lgraph = lm_graph_factory->compute_lm_graph(task);
+    assert(lm_graph_factory->achievers_are_calculated());
     if (log.is_at_least_normal()) {
         log << "Landmark graph generation time: " << lm_graph_timer << endl;
         log << "Landmark graph contains " << lgraph->get_num_landmarks()
