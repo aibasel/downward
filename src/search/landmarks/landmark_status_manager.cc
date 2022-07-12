@@ -13,10 +13,8 @@ namespace landmarks {
 */
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : lm_graph(graph),
-      task_is_unsolvable(false),
       reached_lms(vector<bool>(graph.get_num_landmarks(), true)),
       lm_status(graph.get_num_landmarks(), lm_not_reached) {
-    compute_unachievable_landmark_ids();
 }
 
 BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {
@@ -27,7 +25,6 @@ void LandmarkStatusManager::process_initial_state(
     const State &initial_state, utils::LogProxy &log) {
     set_reached_landmarks_for_initial_state(initial_state, log);
     update_lm_status(initial_state);
-    task_is_unsolvable = is_initial_state_dead_end();
 }
 
 void LandmarkStatusManager::set_reached_landmarks_for_initial_state(
@@ -153,38 +150,6 @@ bool LandmarkStatusManager::is_initial_state_dead_end() const {
                 landmark.first_achievers.empty()) {
                 return true;
             }
-        }
-    }
-    return false;
-}
-
-void LandmarkStatusManager::compute_unachievable_landmark_ids() {
-    for (auto &node : lm_graph.get_nodes()) {
-        int id = node->get_id();
-        const Landmark &landmark = node->get_landmark();
-        /*
-          TODO: We skip derived landmarks because they can have
-          "hidden achievers". In the future, deal with this in a more
-          principled way.
-        */
-        if (!landmark.is_derived && landmark.possible_achievers.empty()) {
-            unachievable_landmark_ids.push_back(id);
-        }
-    }
-}
-
-bool LandmarkStatusManager::dead_end_exists() const {
-    if (task_is_unsolvable) {
-        return true;
-    }
-    for (int id : unachievable_landmark_ids) {
-        /*
-          For efficiency, we only check needed-again landmarks,
-          not unreached landmarks. We assume that unreached landmarks
-          are captured by *task_is_unsolvable*.
-        */
-        if (lm_status[id] == lm_needed_again) {
-            return true;
         }
     }
     return false;

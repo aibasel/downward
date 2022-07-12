@@ -13,8 +13,6 @@ enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
 
 class LandmarkStatusManager {
     LandmarkGraph &lm_graph;
-    bool task_is_unsolvable;
-    std::vector<int> unachievable_landmark_ids;
 
     PerStateBitset reached_lms;
     std::vector<landmark_status> lm_status;
@@ -26,14 +24,12 @@ class LandmarkStatusManager {
         const State &initial_state, utils::LogProxy &log);
 
     bool is_initial_state_dead_end() const;
-    void compute_unachievable_landmark_ids();
 public:
     explicit LandmarkStatusManager(LandmarkGraph &graph);
 
     BitsetView get_reached_landmarks(const State &state);
 
     void update_lm_status(const State &ancestor_state);
-    bool dead_end_exists() const;
 
     void process_initial_state(
         const State &initial_state, utils::LogProxy &log);
