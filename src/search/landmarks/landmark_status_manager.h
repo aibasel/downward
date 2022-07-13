@@ -22,8 +22,6 @@ class LandmarkStatusManager {
 
     void set_reached_landmarks_for_initial_state(
         const State &initial_state, utils::LogProxy &log);
-
-    bool is_initial_state_dead_end() const;
 public:
     explicit LandmarkStatusManager(LandmarkGraph &graph);
 
