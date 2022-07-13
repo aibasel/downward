@@ -183,7 +183,7 @@ void prune_dominated_cliques(
                     ++num_remaining_patterns;
                 }
             }
-            remaining_pattern_cliques.push_back(move(clique));
+            remaining_pattern_cliques.push_back(std::move(clique));
         }
     }
 
@@ -196,8 +196,8 @@ void prune_dominated_cliques(
         if (is_remaining_pattern[old_pattern_id]) {
             PatternID new_pattern_id = remaining_patterns.size();
             old_to_new_pattern_id[old_pattern_id] = new_pattern_id;
-            remaining_patterns.push_back(move(patterns[old_pattern_id]));
-            remaining_pdbs.push_back(move(pdbs[old_pattern_id]));
+            remaining_patterns.push_back(std::move(patterns[old_pattern_id]));
+            remaining_pdbs.push_back(std::move(pdbs[old_pattern_id]));
         }
     }
     for (PatternClique &clique : remaining_pattern_cliques) {

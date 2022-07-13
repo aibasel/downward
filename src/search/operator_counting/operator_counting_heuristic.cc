@@ -25,7 +25,7 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
         int op_cost = op.get_cost();
         variables.push_back(lp::LPVariable(0, infinity, op_cost, use_integer_operator_counts));
     }
-    lp::LinearProgram lp(lp::LPObjectiveSense::MINIMIZE, move(variables), {}, infinity);
+    lp::LinearProgram lp(lp::LPObjectiveSense::MINIMIZE, std::move(variables), {}, infinity);
     for (const auto &generator : constraint_generators) {
         generator->initialize_constraints(task, lp);
     }

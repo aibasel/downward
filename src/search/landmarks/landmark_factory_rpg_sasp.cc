@@ -202,7 +202,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
         lm_graph->remove_node(disj_lm);
 
         // Add simple landmark node
-        LandmarkNode &simple_lm = lm_graph->add_landmark(move(landmark));
+        LandmarkNode &simple_lm = lm_graph->add_landmark(std::move(landmark));
         open_landmarks.push_back(&simple_lm);
         edge_add(simple_lm, b, t);
 
@@ -212,7 +212,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
             edge_add(*pred, simple_lm, EdgeType::NATURAL);
         }
     } else {
-        LandmarkNode &simple_lm = lm_graph->add_landmark(move(landmark));
+        LandmarkNode &simple_lm = lm_graph->add_landmark(std::move(landmark));
         open_landmarks.push_back(&simple_lm);
         edge_add(simple_lm, b, t);
     }
@@ -252,7 +252,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
     }
     // This LM and no part of it exist, add the LM to the landmarks graph.
     Landmark landmark(vector<FactPair>(a.begin(), a.end()), true, false);
-    new_lm_node = &lm_graph->add_landmark(move(landmark));
+    new_lm_node = &lm_graph->add_landmark(std::move(landmark));
     open_landmarks.push_back(new_lm_node);
     edge_add(*new_lm_node, b, t);
 }
@@ -421,7 +421,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
 
     for (FactProxy goal : task_proxy.get_goals()) {
         Landmark landmark({goal.get_pair()}, false, false, true);
-        LandmarkNode &lm_node = lm_graph->add_landmark(move(landmark));
+        LandmarkNode &lm_node = lm_graph->add_landmark(std::move(landmark));
         open_landmarks.push_back(&lm_node);
     }
 

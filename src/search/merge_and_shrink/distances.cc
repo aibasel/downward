@@ -334,8 +334,8 @@ void Distances::apply_abstraction(
         compute_distances(
             compute_init_distances, compute_goal_distances, log);
     } else {
-        init_distances = move(new_init_distances);
-        goal_distances = move(new_goal_distances);
+        init_distances = std::move(new_init_distances);
+        goal_distances = std::move(new_goal_distances);
     }
 }
 

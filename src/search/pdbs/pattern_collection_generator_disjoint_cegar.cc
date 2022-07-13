@@ -40,7 +40,7 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
         log,
         rng,
         task,
-        move(goals));
+        std::move(goals));
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(

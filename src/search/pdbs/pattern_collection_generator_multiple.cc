@@ -86,7 +86,7 @@ void PatternCollectionGeneratorMultiple::handle_generated_pattern(
     if (log.is_at_least_debug()) {
         log << "generated pattern " << pattern << endl;
     }
-    if (generated_patterns.insert(move(pattern)).second) {
+    if (generated_patterns.insert(std::move(pattern)).second) {
         /*
           compute_pattern generated a new pattern. Create/retrieve corresponding
           PDB, update collection size and reset time_point_of_last_new_pattern.
@@ -94,7 +94,7 @@ void PatternCollectionGeneratorMultiple::handle_generated_pattern(
         time_point_of_last_new_pattern = timer.get_elapsed_time();
         shared_ptr<PatternDatabase> pdb = pattern_info.get_pdb();
         remaining_collection_size -= pdb->get_size();
-        generated_pdbs->push_back(move(pdb));
+        generated_pdbs->push_back(std::move(pdb));
     }
 }
 
@@ -216,9 +216,9 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::compute_pattern
             pattern_computation_rng,
             task,
             goals[goal_index],
-            move(blacklisted_variables));
+            std::move(blacklisted_variables));
         handle_generated_pattern(
-            move(pattern_info),
+            std::move(pattern_info),
             generated_patterns,
             generated_pdbs,
             timer);

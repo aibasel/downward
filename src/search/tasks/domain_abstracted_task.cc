@@ -34,11 +34,11 @@ DomainAbstractedTask::DomainAbstractedTask(
     vector<vector<string>> &&fact_names,
     vector<vector<int>> &&value_map)
     : DelegatingTask(parent),
-      domain_size(move(domain_size)),
-      initial_state_values(move(initial_state_values)),
-      goals(move(goals)),
-      fact_names(move(fact_names)),
-      value_map(move(value_map)) {
+      domain_size(std::move(domain_size)),
+      initial_state_values(std::move(initial_state_values)),
+      goals(std::move(goals)),
+      fact_names(std::move(fact_names)),
+      value_map(std::move(value_map)) {
     if (parent->get_num_axioms() > 0) {
         ABORT("DomainAbstractedTask doesn't support axioms.");
     }

@@ -70,7 +70,7 @@ void LandmarkFactoryMerged::generate_landmarks(
                 continue;
             } else if (!lm_graph->contains_landmark(landmark.facts[0])) {
                 Landmark copy(landmark);
-                lm_graph->add_landmark(move(copy));
+                lm_graph->add_landmark(std::move(copy));
             }
         }
     }
@@ -95,7 +95,7 @@ void LandmarkFactoryMerged::generate_landmarks(
                            [&](const FactPair &lm_fact) {return lm_graph->contains_landmark(lm_fact);});
                 if (!exists) {
                     Landmark copy(landmark);
-                    lm_graph->add_landmark(move(copy));
+                    lm_graph->add_landmark(std::move(copy));
                 }
             }
         }

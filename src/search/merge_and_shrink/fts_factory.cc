@@ -39,13 +39,13 @@ class FTSFactory {
         int init_state;
         TransitionSystemData(TransitionSystemData &&other)
             : num_variables(other.num_variables),
-              incorporated_variables(move(other.incorporated_variables)),
-              label_equivalence_relation(move(other.label_equivalence_relation)),
-              label_groups(move(other.label_groups)),
-              transitions_by_group_id(move(other.transitions_by_group_id)),
-              relevant_labels(move(other.relevant_labels)),
+              incorporated_variables(std::move(other.incorporated_variables)),
+              label_equivalence_relation(std::move(other.label_equivalence_relation)),
+              label_groups(std::move(other.label_groups)),
+              transitions_by_group_id(std::move(other.transitions_by_group_id)),
+              relevant_labels(std::move(other.relevant_labels)),
               num_states(other.num_states),
-              goal_states(move(other.goal_states)),
+              goal_states(std::move(other.goal_states)),
               init_state(other.init_state) {
         }
         TransitionSystemData() = default;
@@ -317,7 +317,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
         }
 
         if (!found_locally_equivalent_label_group) {
-            existing_transitions_by_group_id.push_back(move(transitions));
+            existing_transitions_by_group_id.push_back(std::move(transitions));
             label_groups.push_back({label_no});
         }
     }
@@ -342,8 +342,8 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable) {
         transitions.reserve(num_states);
         for (int state = 0; state < num_states; ++state)
             transitions.emplace_back(state, state);
-        ts_data.label_groups.push_back(move(irrelevant_labels));
-        ts_data.transitions_by_group_id.push_back(move(transitions));
+        ts_data.label_groups.push_back(std::move(irrelevant_labels));
+        ts_data.transitions_by_group_id.push_back(std::move(transitions));
     }
 }
 
@@ -382,11 +382,11 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
                 labels, ts_data.label_groups);
         result.push_back(utils::make_unique_ptr<TransitionSystem>(
                              ts_data.num_variables,
-                             move(ts_data.incorporated_variables),
-                             move(ts_data.label_equivalence_relation),
-                             move(ts_data.transitions_by_group_id),
+                             std::move(ts_data.incorporated_variables),
+                             std::move(ts_data.label_equivalence_relation),
+                             std::move(ts_data.transitions_by_group_id),
                              ts_data.num_states,
-                             move(ts_data.goal_states),
+                             std::move(ts_data.goal_states),
                              ts_data.init_state
                              ));
     }
@@ -447,10 +447,10 @@ FactoredTransitionSystem FTSFactory::create(
         create_distances(transition_systems);
 
     return FactoredTransitionSystem(
-        move(labels),
-        move(transition_systems),
-        move(mas_representations),
-        move(distances),
+        std::move(labels),
+        std::move(transition_systems),
+        std::move(mas_representations),
+        std::move(distances),
         compute_init_distances,
         compute_goal_distances,
         log);

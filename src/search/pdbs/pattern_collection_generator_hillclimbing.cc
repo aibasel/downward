@@ -107,7 +107,7 @@ static vector<vector<int>> compute_relevant_neighbours(const TaskProxy &task_pro
             goal_variable_successors.begin(), goal_variable_successors.end(),
             back_inserter(relevant_neighbours));
 
-        connected_vars_by_variable.push_back(move(relevant_neighbours));
+        connected_vars_by_variable.push_back(std::move(relevant_neighbours));
     }
     return connected_vars_by_variable;
 }

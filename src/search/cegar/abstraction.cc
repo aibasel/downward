@@ -53,7 +53,7 @@ const TransitionSystem &Abstraction::get_transition_system() const {
 
 unique_ptr<RefinementHierarchy> Abstraction::extract_refinement_hierarchy() {
     assert(refinement_hierarchy);
-    return move(refinement_hierarchy);
+    return std::move(refinement_hierarchy);
 }
 
 void Abstraction::mark_all_states_as_goals() {
@@ -68,7 +68,7 @@ void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes
         AbstractState::get_trivial_abstract_state(domain_sizes);
     init_id = init_state->get_id();
     goals.insert(init_state->get_id());
-    states.push_back(move(init_state));
+    states.push_back(std::move(init_state));
 }
 
 pair<int, int> Abstraction::refine(
@@ -89,9 +89,9 @@ pair<int, int> Abstraction::refine(
         state.split_domain(var, wanted);
 
     unique_ptr<AbstractState> v1 = utils::make_unique_ptr<AbstractState>(
-        v1_id, node_ids.first, move(cartesian_sets.first));
+        v1_id, node_ids.first, std::move(cartesian_sets.first));
     unique_ptr<AbstractState> v2 = utils::make_unique_ptr<AbstractState>(
-        v2_id, node_ids.second, move(cartesian_sets.second));
+        v2_id, node_ids.second, std::move(cartesian_sets.second));
     assert(state.includes(*v1));
     assert(state.includes(*v2));
 
@@ -127,9 +127,9 @@ pair<int, int> Abstraction::refine(
 
     transition_system->rewire(states, v_id, *v1, *v2, var);
 
-    states[v1_id] = move(v1);
+    states[v1_id] = std::move(v1);
     assert(static_cast<int>(states.size()) == v2_id);
-    states.push_back(move(v2));
+    states.push_back(std::move(v2));
 
     return {
                v1_id, v2_id

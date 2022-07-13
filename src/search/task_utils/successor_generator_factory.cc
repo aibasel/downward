@@ -84,7 +84,7 @@ class OperatorInfo {
 public:
     OperatorInfo(OperatorID op, vector<FactPair> precondition)
         : op(op),
-          precondition(move(precondition)) {
+          precondition(std::move(precondition)) {
     }
 
     bool operator<(const OperatorInfo &other) const {
@@ -176,14 +176,14 @@ GeneratorPtr SuccessorGeneratorFactory::construct_fork(
     vector<GeneratorPtr> nodes) const {
     int size = nodes.size();
     if (size == 1) {
-        return move(nodes.at(0));
+        return std::move(nodes.at(0));
     } else if (size == 2) {
         return utils::make_unique_ptr<GeneratorForkBinary>(
-            move(nodes.at(0)), move(nodes.at(1)));
+            std::move(nodes.at(0)), std::move(nodes.at(1)));
     } else {
         /* This general case includes the case size == 0, which can
            (only) happen for the root for tasks with no operators. */
-        return utils::make_unique_ptr<GeneratorForkMulti>(move(nodes));
+        return utils::make_unique_ptr<GeneratorForkMulti>(std::move(nodes));
     }
 }
 
@@ -200,7 +200,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_leaf(
     if (operators.size() == 1) {
         return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
     } else {
-        return utils::make_unique_ptr<GeneratorLeafVector>(move(operators));
+        return utils::make_unique_ptr<GeneratorLeafVector>(std::move(operators));
     }
 }
 
@@ -214,9 +214,9 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
 
     if (num_children == 1) {
         int value = values_and_generators[0].first;
-        GeneratorPtr generator = move(values_and_generators[0].second);
+        GeneratorPtr generator = std::move(values_and_generators[0].second);
         return utils::make_unique_ptr<GeneratorSwitchSingle>(
-            switch_var_id, value, move(generator));
+            switch_var_id, value, std::move(generator));
     }
 
     int vector_bytes = utils::estimate_vector_bytes<GeneratorPtr>(var_domain);
@@ -224,15 +224,15 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
     if (hash_bytes < vector_bytes) {
         unordered_map<int, GeneratorPtr> generator_by_value;
         for (auto &item : values_and_generators)
-            generator_by_value[item.first] = move(item.second);
+            generator_by_value[item.first] = std::move(item.second);
         return utils::make_unique_ptr<GeneratorSwitchHash>(
-            switch_var_id, move(generator_by_value));
+            switch_var_id, std::move(generator_by_value));
     } else {
         vector<GeneratorPtr> generator_by_value(var_domain);
         for (auto &item : values_and_generators)
-            generator_by_value[item.first] = move(item.second);
+            generator_by_value[item.first] = std::move(item.second);
         return utils::make_unique_ptr<GeneratorSwitchVector>(
-            switch_var_id, move(generator_by_value));
+            switch_var_id, std::move(generator_by_value));
     }
 }
 
@@ -264,10 +264,10 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
             }
 
             nodes.push_back(construct_switch(
-                                var, move(values_and_generators)));
+                                var, std::move(values_and_generators)));
         }
     }
-    return construct_fork(move(nodes));
+    return construct_fork(std::move(nodes));
 }
 
 static vector<FactPair> build_sorted_precondition(const OperatorProxy &op) {

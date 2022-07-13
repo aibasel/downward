@@ -48,7 +48,7 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
         goal.var,
         cg_neighbors);
 
-    PatternInformation result(TaskProxy(*task), move(pattern), log);
+    PatternInformation result(TaskProxy(*task), std::move(pattern), log);
     return result;
 }
 

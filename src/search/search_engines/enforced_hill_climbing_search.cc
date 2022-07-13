@@ -240,7 +240,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
                 d_pair.first += 1;
                 d_pair.second += statistics.get_expanded() - last_num_expanded;
 
-                current_eval_context = move(eval_context);
+                current_eval_context = std::move(eval_context);
                 open_list->clear();
                 current_phase_start_g = node.get_g();
                 return IN_PROGRESS;

@@ -82,7 +82,8 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
             state_packer.set(buffer, i, new_values[i]);
         }
         StateID id = insert_id_or_pop_state();
-        return task_proxy.create_state(*this, id, buffer, move(new_values));
+        return task_proxy.create_state(*this, id, buffer,
+                                       std::move(new_values));
     } else {
         for (EffectProxy effect : op.get_effects()) {
             if (does_fire(effect, predecessor)) {

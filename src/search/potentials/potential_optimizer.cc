@@ -183,8 +183,8 @@ void PotentialOptimizer::construct_lp() {
             lp_constraints.push_back(constraint);
         }
     }
-    lp::LinearProgram lp(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
-                         move(lp_constraints), infinity);
+    lp::LinearProgram lp(lp::LPObjectiveSense::MAXIMIZE, std::move(lp_variables),
+                         std::move(lp_constraints), infinity);
     lp_solver.load_problem(lp);
 }
 

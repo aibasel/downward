@@ -23,7 +23,7 @@ string PatternGeneratorManual::name() const {
 
 PatternInformation PatternGeneratorManual::compute_pattern(
     const shared_ptr<AbstractTask> &task) {
-    PatternInformation pattern_info(TaskProxy(*task), move(pattern), log);
+    PatternInformation pattern_info(TaskProxy(*task), std::move(pattern), log);
     if (log.is_at_least_normal()) {
         log << "Manual pattern: " << pattern_info.get_pattern() << endl;
     }

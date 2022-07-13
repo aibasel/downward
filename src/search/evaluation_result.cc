@@ -33,7 +33,7 @@ void EvaluationResult::set_evaluator_value(int value) {
 
 void EvaluationResult::set_preferred_operators(
     vector<OperatorID> &&preferred_ops) {
-    preferred_operators = move(preferred_ops);
+    preferred_operators = std::move(preferred_ops);
 }
 
 void EvaluationResult::set_count_evaluation(bool count_eval) {

@@ -168,7 +168,7 @@ lp::LinearProgram LandmarkEfficientOptimalSharedCostAssignment::build_initial_lp
 
     /* Coefficients of constraints will be updated and recreated in each state.
        We ignore them for the initial LP. */
-    return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
+    return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, std::move(lp_variables),
                              {}, lp_solver.get_infinity());
 }
 

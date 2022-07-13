@@ -40,8 +40,9 @@ void MergeAndShrinkHeuristic::extract_factor(
       representation, which serves as the heuristic.
     */
     auto final_entry = fts.extract_factor(index);
-    unique_ptr<MergeAndShrinkRepresentation> mas_representation = move(final_entry.first);
-    unique_ptr<Distances> distances = move(final_entry.second);
+    unique_ptr<MergeAndShrinkRepresentation> mas_representation =
+        std::move(final_entry.first);
+    unique_ptr<Distances> distances = std::move(final_entry.second);
     if (!distances->are_goal_distances_computed()) {
         const bool compute_init = false;
         const bool compute_goal = true;
@@ -49,7 +50,7 @@ void MergeAndShrinkHeuristic::extract_factor(
     }
     assert(distances->are_goal_distances_computed());
     mas_representation->set_distances(*distances);
-    mas_representations.push_back(move(mas_representation));
+    mas_representations.push_back(std::move(mas_representation));
 }
 
 bool MergeAndShrinkHeuristic::extract_unsolvable_factor(FactoredTransitionSystem &fts) {

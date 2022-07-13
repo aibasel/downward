@@ -47,7 +47,7 @@ PatternInformation PatternGeneratorGreedy::compute_pattern(const shared_ptr<Abst
         size *= next_var_size;
     }
 
-    return PatternInformation(task_proxy, move(pattern), log);
+    return PatternInformation(task_proxy, std::move(pattern), log);
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {

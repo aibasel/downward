@@ -10,7 +10,7 @@ namespace potentials {
 PotentialHeuristic::PotentialHeuristic(
     const Options &opts, unique_ptr<PotentialFunction> function)
     : Heuristic(opts),
-      function(move(function)) {
+      function(std::move(function)) {
 }
 
 PotentialHeuristic::~PotentialHeuristic() {

@@ -7,7 +7,7 @@ ModifiedGoalsTask::ModifiedGoalsTask(
     const shared_ptr<AbstractTask> &parent,
     vector<FactPair> &&goals)
     : DelegatingTask(parent),
-      goals(move(goals)) {
+      goals(std::move(goals)) {
 }
 
 int ModifiedGoalsTask::get_num_goals() const {

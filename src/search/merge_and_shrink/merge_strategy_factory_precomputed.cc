@@ -23,7 +23,8 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strateg
     const TaskProxy &task_proxy, const FactoredTransitionSystem &fts) {
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task_proxy);
-    return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
+    return utils::make_unique_ptr<MergeStrategyPrecomputed>(
+        fts, std::move(merge_tree));
 }
 
 bool MergeStrategyFactoryPrecomputed::requires_init_distances() const {

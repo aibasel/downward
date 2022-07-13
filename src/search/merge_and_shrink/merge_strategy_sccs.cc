@@ -24,8 +24,8 @@ MergeStrategySCCs::MergeStrategySCCs(
       task_proxy(task_proxy),
       merge_tree_factory(merge_tree_factory),
       merge_selector(merge_selector),
-      non_singleton_cg_sccs(move(non_singleton_cg_sccs)),
-      indices_of_merged_sccs(move(indices_of_merged_sccs)),
+      non_singleton_cg_sccs(std::move(non_singleton_cg_sccs)),
+      indices_of_merged_sccs(std::move(indices_of_merged_sccs)),
       current_merge_tree(nullptr) {
 }
 
@@ -39,11 +39,11 @@ pair<int, int> MergeStrategySCCs::get_next() {
         // Get the next indices we need to merge
         if (non_singleton_cg_sccs.empty()) {
             assert(indices_of_merged_sccs.size() > 1);
-            current_ts_indices = move(indices_of_merged_sccs);
+            current_ts_indices = std::move(indices_of_merged_sccs);
         } else {
             vector<int> &current_scc = non_singleton_cg_sccs.front();
             assert(current_scc.size() > 1);
-            current_ts_indices = move(current_scc);
+            current_ts_indices = std::move(current_scc);
             non_singleton_cg_sccs.erase(non_singleton_cg_sccs.begin());
         }
 

@@ -59,7 +59,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
     auto it = key_to_bucket_index.find(key);
     if (it == key_to_bucket_index.end()) {
         key_to_bucket_index[key] = keys_and_buckets.size();
-        keys_and_buckets.push_back(make_pair(move(key), Bucket({entry})));
+        keys_and_buckets.push_back(make_pair(std::move(key), Bucket({entry})));
     } else {
         size_t bucket_index = it->second;
         assert(utils::in_bounds(bucket_index, keys_and_buckets));

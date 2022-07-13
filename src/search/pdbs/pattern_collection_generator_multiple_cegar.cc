@@ -38,7 +38,7 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
         rng,
         task,
         goal,
-        move(blacklisted_variables));
+        std::move(blacklisted_variables));
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {

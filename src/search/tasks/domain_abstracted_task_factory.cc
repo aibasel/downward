@@ -70,8 +70,8 @@ DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
     }
 
     task = make_shared<DomainAbstractedTask>(
-        parent, move(domain_size), move(initial_state_values), move(goals),
-        move(fact_names), move(value_map));
+        parent, std::move(domain_size), std::move(initial_state_values),
+        std::move(goals), std::move(fact_names), std::move(value_map));
 }
 
 void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
@@ -120,7 +120,7 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
     for (int before = 0; before < domain_size[var]; ++before) {
         if (groups_union.count(before) == 0) {
             value_map[var][before] = next_free_pos;
-            fact_names[var][next_free_pos] = move(fact_names[var][before]);
+            fact_names[var][next_free_pos] = std::move(fact_names[var][before]);
             ++next_free_pos;
         }
     }
@@ -134,7 +134,7 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
             value_map[var][before] = next_free_pos;
         }
         assert(utils::in_bounds(next_free_pos, fact_names[var]));
-        fact_names[var][next_free_pos] = move(combined_fact_names[group_id]);
+        fact_names[var][next_free_pos] = std::move(combined_fact_names[group_id]);
         ++next_free_pos;
     }
     int new_domain_size = num_single_values + static_cast<int>(groups.size());

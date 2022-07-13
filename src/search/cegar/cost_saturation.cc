@@ -176,7 +176,7 @@ shared_ptr<AbstractTask> CostSaturation::get_remaining_costs_task(
     shared_ptr<AbstractTask> &parent) const {
     vector<int> costs = remaining_costs;
     return make_shared<extra_tasks::ModifiedOperatorCostsTask>(
-        parent, move(costs));
+        parent, std::move(costs));
 }
 
 bool CostSaturation::state_is_dead_end(const State &state) const {
@@ -229,7 +229,7 @@ void CostSaturation::build_abstractions(
 
         heuristic_functions.emplace_back(
             abstraction->extract_refinement_hierarchy(),
-            move(goal_distances));
+            std::move(goal_distances));
 
         reduce_remaining_costs(saturated_costs);
 

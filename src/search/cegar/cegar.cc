@@ -42,9 +42,9 @@ struct Flaw {
         State &&concrete_state,
         const AbstractState &current_abstract_state,
         CartesianSet &&desired_cartesian_set)
-        : concrete_state(move(concrete_state)),
+        : concrete_state(std::move(concrete_state)),
           current_abstract_state(current_abstract_state),
-          desired_cartesian_set(move(desired_cartesian_set)) {
+          desired_cartesian_set(std::move(desired_cartesian_set)) {
         assert(current_abstract_state.includes(this->concrete_state));
     }
 
@@ -70,7 +70,7 @@ struct Flaw {
                     }
                 }
                 assert(!wanted.empty());
-                splits.emplace_back(var_id, move(wanted));
+                splits.emplace_back(var_id, std::move(wanted));
             }
         }
         assert(!splits.empty());
@@ -116,7 +116,7 @@ CEGAR::~CEGAR() {
 
 unique_ptr<Abstraction> CEGAR::extract_abstraction() {
     assert(abstraction);
-    return move(abstraction);
+    return std::move(abstraction);
 }
 
 void CEGAR::separate_facts_unreachable_before_goal() {
@@ -257,17 +257,17 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
                 if (log.is_at_least_debug())
                     log << "  Paths deviate." << endl;
                 return utils::make_unique_ptr<Flaw>(
-                    move(concrete_state),
+                    std::move(concrete_state),
                     *abstract_state,
                     next_abstract_state->regress(op));
             }
             abstract_state = next_abstract_state;
-            concrete_state = move(next_concrete_state);
+            concrete_state = std::move(next_concrete_state);
         } else {
             if (log.is_at_least_debug())
                 log << "  Operator not applicable: " << op.get_name() << endl;
             return utils::make_unique_ptr<Flaw>(
-                move(concrete_state),
+                std::move(concrete_state),
                 *abstract_state,
                 get_cartesian_set(domain_sizes, op.get_preconditions()));
         }
@@ -280,7 +280,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         if (log.is_at_least_debug())
             log << "  Goal test failed." << endl;
         return utils::make_unique_ptr<Flaw>(
-            move(concrete_state),
+            std::move(concrete_state),
             *abstract_state,
             get_cartesian_set(domain_sizes, task_proxy.get_goals()));
     }

@@ -87,11 +87,11 @@ TransitionSystem::TransitionSystem(
     vector<bool> &&goal_states,
     int init_state)
     : num_variables(num_variables),
-      incorporated_variables(move(incorporated_variables)),
-      label_equivalence_relation(move(label_equivalence_relation)),
-      transitions_by_group_id(move(transitions_by_group_id)),
+      incorporated_variables(std::move(incorporated_variables)),
+      label_equivalence_relation(std::move(label_equivalence_relation)),
+      transitions_by_group_id(std::move(transitions_by_group_id)),
       num_states(num_states),
-      goal_states(move(goal_states)),
+      goal_states(std::move(goal_states)),
       init_state(init_state) {
     assert(are_transitions_sorted_unique());
     assert(in_sync_with_label_equivalence_relation());
@@ -206,8 +206,8 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
                 dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
             } else {
                 sort(new_transitions.begin(), new_transitions.end());
-                label_groups.push_back(move(new_labels));
-                transitions_by_group_id.push_back(move(new_transitions));
+                label_groups.push_back(std::move(new_labels));
+                transitions_by_group_id.push_back(std::move(new_transitions));
             }
         }
     }
@@ -220,7 +220,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
       All dead labels should form one single label group.
     */
     if (!dead_labels.empty()) {
-        label_groups.push_back(move(dead_labels));
+        label_groups.push_back(std::move(dead_labels));
         // Dead labels have empty transitions
         transitions_by_group_id.emplace_back();
     }
@@ -232,11 +232,11 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
 
     return utils::make_unique_ptr<TransitionSystem>(
         num_variables,
-        move(incorporated_variables),
-        move(label_equivalence_relation),
-        move(transitions_by_group_id),
+        std::move(incorporated_variables),
+        std::move(label_equivalence_relation),
+        std::move(transitions_by_group_id),
         num_states,
-        move(goal_states),
+        std::move(goal_states),
         init_state
         );
 }
@@ -292,7 +292,7 @@ void TransitionSystem::apply_abstraction(
             }
         }
     }
-    goal_states = move(new_goal_states);
+    goal_states = std::move(new_goal_states);
 
     // Update all transitions.
     for (vector<Transition> &transitions : transitions_by_group_id) {
@@ -316,7 +316,7 @@ void TransitionSystem::apply_abstraction(
                     new_transitions.push_back(Transition(src, target));
             }
             normalize_given_transitions(new_transitions);
-            transitions = move(new_transitions);
+            transitions = std::move(new_transitions);
         }
     }
 
@@ -414,7 +414,7 @@ void TransitionSystem::apply_label_reduction(
             vector<Transition> &transitions = new_transitions[i];
             assert(label_equivalence_relation->get_group_id(label_mapping[i].first)
                    == static_cast<int>(transitions_by_group_id.size()));
-            transitions_by_group_id.push_back(move(transitions));
+            transitions_by_group_id.push_back(std::move(transitions));
         }
 
         // Go over all affected group IDs and remove their transitions if the

@@ -22,7 +22,7 @@ static vector<vector<FactPair>> get_preconditions_by_operator(
     for (OperatorProxy op : ops) {
         vector<FactPair> preconditions = task_properties::get_fact_pairs(op.get_preconditions());
         sort(preconditions.begin(), preconditions.end());
-        preconditions_by_operator.push_back(move(preconditions));
+        preconditions_by_operator.push_back(std::move(preconditions));
     }
     return preconditions_by_operator;
 }
@@ -277,9 +277,9 @@ void TransitionSystem::rewire(
     const AbstractStates &states, int v_id,
     const AbstractState &v1, const AbstractState &v2, int var) {
     // Retrieve old transitions and make space for new transitions.
-    Transitions old_incoming = move(incoming[v_id]);
-    Transitions old_outgoing = move(outgoing[v_id]);
-    Loops old_loops = move(loops[v_id]);
+    Transitions old_incoming = std::move(incoming[v_id]);
+    Transitions old_outgoing = std::move(outgoing[v_id]);
+    Loops old_loops = std::move(loops[v_id]);
     enlarge_vectors_by_one();
     int v1_id = v1.get_id();
     int v2_id = v2.get_id();

@@ -210,7 +210,7 @@ void RelaxationHeuristic::simplify() {
         Key key(get_preconditions_vector(op_no), op.effect);
         Value value(op.base_cost, op_no);
         auto inserted = unary_operator_index.insert(
-            make_pair(move(key), value));
+            make_pair(std::move(key), value));
         if (!inserted.second) {
             // We already had an element with this key; check its cost.
             Map::iterator iter = inserted.first;

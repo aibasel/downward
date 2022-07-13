@@ -71,8 +71,8 @@ namespace successor_generator {
 GeneratorForkBinary::GeneratorForkBinary(
     unique_ptr<GeneratorBase> generator1,
     unique_ptr<GeneratorBase> generator2)
-    : generator1(move(generator1)),
-      generator2(move(generator2)) {
+    : generator1(std::move(generator1)),
+      generator2(std::move(generator2)) {
     /* There is no reason to use a fork if only one of the generators exists.
        Use the existing generator directly if one of them exists or a nullptr
        otherwise. */
@@ -87,7 +87,7 @@ void GeneratorForkBinary::generate_applicable_ops(
 }
 
 GeneratorForkMulti::GeneratorForkMulti(vector<unique_ptr<GeneratorBase>> children)
-    : children(move(children)) {
+    : children(std::move(children)) {
     /* Note that we permit 0-ary forks as a way to define empty
        successor generators (for tasks with no operators). It is
        the responsibility of the factory code to make sure they
@@ -104,7 +104,7 @@ void GeneratorForkMulti::generate_applicable_ops(
 GeneratorSwitchVector::GeneratorSwitchVector(
     int switch_var_id, vector<unique_ptr<GeneratorBase>> &&generator_for_value)
     : switch_var_id(switch_var_id),
-      generator_for_value(move(generator_for_value)) {
+      generator_for_value(std::move(generator_for_value)) {
 }
 
 void GeneratorSwitchVector::generate_applicable_ops(
@@ -120,7 +120,7 @@ GeneratorSwitchHash::GeneratorSwitchHash(
     int switch_var_id,
     unordered_map<int, unique_ptr<GeneratorBase>> &&generator_for_value)
     : switch_var_id(switch_var_id),
-      generator_for_value(move(generator_for_value)) {
+      generator_for_value(std::move(generator_for_value)) {
 }
 
 void GeneratorSwitchHash::generate_applicable_ops(
@@ -137,7 +137,7 @@ GeneratorSwitchSingle::GeneratorSwitchSingle(
     int switch_var_id, int value, unique_ptr<GeneratorBase> generator_for_value)
     : switch_var_id(switch_var_id),
       value(value),
-      generator_for_value(move(generator_for_value)) {
+      generator_for_value(std::move(generator_for_value)) {
 }
 
 void GeneratorSwitchSingle::generate_applicable_ops(
@@ -148,7 +148,7 @@ void GeneratorSwitchSingle::generate_applicable_ops(
 }
 
 GeneratorLeafVector::GeneratorLeafVector(vector<OperatorID> &&applicable_operators)
-    : applicable_operators(move(applicable_operators)) {
+    : applicable_operators(std::move(applicable_operators)) {
 }
 
 void GeneratorLeafVector::generate_applicable_ops(

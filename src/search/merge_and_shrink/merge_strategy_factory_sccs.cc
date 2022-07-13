@@ -113,8 +113,8 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         task_proxy,
         merge_tree_factory,
         merge_selector,
-        move(non_singleton_cg_sccs),
-        move(indices_of_merged_sccs));
+        std::move(non_singleton_cg_sccs),
+        std::move(indices_of_merged_sccs));
 }
 
 bool MergeStrategyFactorySCCs::requires_init_distances() const {

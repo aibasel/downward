@@ -106,10 +106,10 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
                       return !contains_landmark(lm_fact);
                   }));
     unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(move(landmark));
+        utils::make_unique_ptr<LandmarkNode>(std::move(landmark));
     LandmarkNode *new_node_p = new_node.get();
     const Landmark &lm = new_node->get_landmark();
-    nodes.push_back(move(new_node));
+    nodes.push_back(std::move(new_node));
     if (lm.disjunctive) {
         for (const FactPair &lm_fact : lm.facts) {
             disjunctive_landmarks_to_nodes.emplace(lm_fact, new_node_p);

@@ -11,7 +11,7 @@ PotentialMaxHeuristic::PotentialMaxHeuristic(
     const Options &opts,
     vector<unique_ptr<PotentialFunction>> &&functions)
     : Heuristic(opts),
-      functions(move(functions)) {
+      functions(std::move(functions)) {
 }
 
 int PotentialMaxHeuristic::compute_heuristic(const State &ancestor_state) {

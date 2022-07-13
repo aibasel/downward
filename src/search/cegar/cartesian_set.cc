@@ -10,7 +10,7 @@ CartesianSet::CartesianSet(const vector<int> &domain_sizes) {
     for (int domain_size : domain_sizes) {
         Bitset domain(domain_size);
         domain.set();
-        domain_subsets.push_back(move(domain));
+        domain_subsets.push_back(std::move(domain));
     }
 }
 

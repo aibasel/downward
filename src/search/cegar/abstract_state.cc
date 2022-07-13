@@ -16,7 +16,7 @@ AbstractState::AbstractState(
     int state_id, NodeID node_id, CartesianSet &&cartesian_set)
     : state_id(state_id),
       node_id(node_id),
-      cartesian_set(move(cartesian_set)) {
+      cartesian_set(std::move(cartesian_set)) {
 }
 
 int AbstractState::count(int var) const {

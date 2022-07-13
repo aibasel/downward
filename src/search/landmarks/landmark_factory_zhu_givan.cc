@@ -54,7 +54,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 log << "Problem not solvable, even if relaxed." << endl;
             }
             Landmark landmark({goal.get_pair()}, false, false, true);
-            lm_graph->add_landmark(move(landmark));
+            lm_graph->add_landmark(std::move(landmark));
             return;
         }
     }
@@ -69,7 +69,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             lm_node->get_landmark().is_true_in_goal = true;
         } else {
             Landmark landmark({goal_lm}, false, false, true);
-            lm_node = &lm_graph->add_landmark(move(landmark));
+            lm_node = &lm_graph->add_landmark(std::move(landmark));
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -84,7 +84,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             // Add new landmarks
             if (!lm_graph->contains_simple_landmark(lm)) {
                 Landmark landmark({lm}, false, false);
-                node = &lm_graph->add_landmark(move(landmark));
+                node = &lm_graph->add_landmark(std::move(landmark));
             } else {
                 node = &lm_graph->get_simple_landmark(lm);
             }

@@ -932,7 +932,7 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         landmark.first_achievers.insert(
             hm_entry.first_achievers.begin(),
             hm_entry.first_achievers.end());
-        lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark));
+        lm_node_table_[set_index] = &lm_graph->add_landmark(std::move(landmark));
     }
 }
 

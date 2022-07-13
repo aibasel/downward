@@ -326,7 +326,7 @@ void PatternDatabase::create_pdb(
                 }
                 if (compute_wildcard_plan) {
                     rng->shuffle(cheapest_operators);
-                    wildcard_plan.push_back(move(cheapest_operators));
+                    wildcard_plan.push_back(std::move(cheapest_operators));
                 } else {
                     OperatorID random_op_id = *rng->choose(cheapest_operators);
                     wildcard_plan.emplace_back();

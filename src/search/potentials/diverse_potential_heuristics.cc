@@ -93,7 +93,7 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
             log << "No sample removed -> Use arbitrary precomputed function."
                 << endl;
         }
-        function = move(samples_to_functions.begin()->second);
+        function = std::move(samples_to_functions.begin()->second);
         // The move operation invalidated the entry, remove it.
         samples_to_functions.erase(samples_to_functions.begin());
         remove_covered_samples(*function, samples_to_functions);
@@ -143,7 +143,7 @@ DiversePotentialHeuristics::find_functions() {
         log << "Initialization of potential heuristics: " << init_timer << endl;
     }
 
-    return move(diverse_functions);
+    return std::move(diverse_functions);
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
