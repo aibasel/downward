@@ -53,7 +53,6 @@ protected:
     }
 
     virtual void compute_stubborn_set(const State &state) = 0;
-    virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
     explicit StubbornSets(const options::Options &opts);
 

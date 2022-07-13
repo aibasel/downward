@@ -48,9 +48,9 @@ class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
     FactPair select_fact(const std::vector<FactPair> &facts, const State &state) const;
     void enqueue_nes(int op, const State &state);
     void enqueue_interferers(int op);
+    void handle_stubborn_operator(const State &state, int op);
 protected:
     virtual void compute_stubborn_set(const State &state) override;
-    virtual void handle_stubborn_operator(const State &state, int op) override;
 public:
     explicit StubbornSetsAtomCentric(const options::Options &opts);
 

@@ -32,6 +32,7 @@ protected:
     bool mark_as_stubborn(int op_no);
     virtual void compute_stubborn_set(const State &state) override;
     virtual void initialize_stubborn_set(const State &state) = 0;
+    virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 };
 }
 
