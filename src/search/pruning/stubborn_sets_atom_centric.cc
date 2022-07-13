@@ -195,7 +195,7 @@ void StubbornSetsAtomCentric::enqueue_interferers(int op) {
     }
 }
 
-void StubbornSetsAtomCentric::initialize_stubborn_set(const State &state) {
+void StubbornSetsAtomCentric::compute_stubborn_set(const State &state) {
     assert(producer_queue.empty());
     assert(consumer_queue.empty());
     // Reset data structures from previous call.

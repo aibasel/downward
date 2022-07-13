@@ -49,7 +49,7 @@ class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
     void enqueue_nes(int op, const State &state);
     void enqueue_interferers(int op);
 protected:
-    virtual void initialize_stubborn_set(const State &state) override;
+    virtual void compute_stubborn_set(const State &state) override;
     virtual void handle_stubborn_operator(const State &state, int op) override;
 public:
     explicit StubbornSetsAtomCentric(const options::Options &opts);

@@ -1,10 +1,10 @@
 #ifndef PRUNING_STUBBORN_SETS_EC_H
 #define PRUNING_STUBBORN_SETS_EC_H
 
-#include "stubborn_sets.h"
+#include "stubborn_sets_action_centric.h"
 
 namespace stubborn_sets_ec {
-class StubbornSetsEC : public stubborn_sets::StubbornSets {
+class StubbornSetsEC : public stubborn_sets::StubbornSetsActionCentric {
 private:
     std::vector<std::vector<std::vector<bool>>> reachability_map;
     std::vector<std::vector<int>> op_preconditions_on_var;

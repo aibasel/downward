@@ -11,26 +11,6 @@
 using namespace std;
 
 namespace stubborn_sets {
-// Relies on both fact sets being sorted by variable.
-bool contain_conflicting_fact(const vector<FactPair> &facts1,
-                              const vector<FactPair> &facts2) {
-    auto facts1_it = facts1.begin();
-    auto facts2_it = facts2.begin();
-    while (facts1_it != facts1.end() && facts2_it != facts2.end()) {
-        if (facts1_it->var < facts2_it->var) {
-            ++facts1_it;
-        } else if (facts1_it->var > facts2_it->var) {
-            ++facts2_it;
-        } else {
-            if (facts1_it->value != facts2_it->value)
-                return true;
-            ++facts1_it;
-            ++facts2_it;
-        }
-    }
-    return false;
-}
-
 StubbornSets::StubbornSets(const Options &opts)
     : PruningMethod(opts),
       num_operators(-1) {
@@ -48,18 +28,6 @@ void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
 
     compute_sorted_operators(task_proxy);
     compute_achievers(task_proxy);
-}
-
-// Relies on op_preconds and op_effects being sorted by variable.
-bool StubbornSets::can_disable(int op1_no, int op2_no) const {
-    return contain_conflicting_fact(sorted_op_effects[op1_no],
-                                    sorted_op_preconditions[op2_no]);
-}
-
-// Relies on op_effect being sorted by variable.
-bool StubbornSets::can_conflict(int op1_no, int op2_no) const {
-    return contain_conflicting_fact(sorted_op_effects[op1_no],
-                                    sorted_op_effects[op2_no]);
 }
 
 void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
@@ -94,28 +62,11 @@ void StubbornSets::compute_achievers(const TaskProxy &task_proxy) {
     }
 }
 
-bool StubbornSets::mark_as_stubborn(int op_no) {
-    if (!stubborn[op_no]) {
-        stubborn[op_no] = true;
-        stubborn_queue.push_back(op_no);
-        return true;
-    }
-    return false;
-}
-
 void StubbornSets::prune(const State &state, vector<OperatorID> &op_ids) {
     // Clear stubborn set from previous call.
     stubborn.assign(num_operators, false);
-    assert(stubborn_queue.empty());
 
-    initialize_stubborn_set(state);
-    /* Iteratively insert operators to stubborn according to the
-       definition of strong stubborn sets until a fixpoint is reached. */
-    while (!stubborn_queue.empty()) {
-        int op_no = stubborn_queue.back();
-        stubborn_queue.pop_back();
-        handle_stubborn_operator(state, op_no);
-    }
+    compute_stubborn_set(state);
 
     // Now check which applicable operators are in the stubborn set.
     vector<OperatorID> remaining_op_ids;
