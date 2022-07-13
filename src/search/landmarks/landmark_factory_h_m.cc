@@ -295,7 +295,7 @@ void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, int m,
 }
 
 void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &fluent) const {
-    if (log.is_at_least_normal()) {
+    if (log.is_at_least_verbose()) {
         VariableProxy var = variables[fluent.var];
         FactProxy fact = var.get_fact(fluent.value);
         log << fact.get_name()
@@ -334,7 +334,7 @@ static FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &o
 
 
 void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp &op) const {
-    if (log.is_at_least_normal()) {
+    if (log.is_at_least_verbose()) {
         set<FactPair> pcs, effs, cond_pc, cond_eff;
         vector<pair<set<FactPair>, set<FactPair>>> conds;
 
@@ -412,7 +412,7 @@ void LandmarkFactoryHM::print_pm_op(const VariablesProxy &variables, const PMOp 
 }
 
 void LandmarkFactoryHM::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) const {
-    if (log.is_at_least_normal()) {
+    if (log.is_at_least_verbose()) {
         log << "( ";
         for (const FactPair &fact : fs) {
             print_proposition(variables, fact);
@@ -846,7 +846,7 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
         current_trigger.swap(next_trigger);
         next_trigger.clear();
 
-        if (log.is_at_least_normal()) {
+        if (log.is_at_least_verbose()) {
             log << "Level " << level << " completed." << endl;
         }
         ++level;
@@ -953,7 +953,7 @@ void LandmarkFactoryHM::generate_landmarks(
         int set_index = set_indices_[goal_subset];
 
         if (h_m_table_[set_index].level == -1) {
-            if (log.is_at_least_normal()) {
+            if (log.is_at_least_verbose()) {
                 log << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
                 log << "Subset is: ";
                 print_fluentset(variables, h_m_table_[set_index].fluents);
