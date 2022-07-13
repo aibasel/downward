@@ -132,29 +132,6 @@ void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
     }
 }
 
-bool LandmarkStatusManager::is_initial_state_dead_end() const {
-    /*
-      Note: Landmark statuses must be set for the initial state
-      prior to calling this function.
-    */
-    for (auto &lm_node : lm_graph.get_nodes()) {
-        const Landmark &landmark = lm_node->get_landmark();
-        int id = lm_node->get_id();
-        /*
-          TODO: We skip derived landmarks because they can have
-          "hidden achievers". In the future, deal with this in a more
-          principled way.
-        */
-        if (!landmark.is_derived) {
-            if ((lm_status[id] == lm_not_reached) &&
-                landmark.first_achievers.empty()) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const State &state) {
     LandmarkNode *node = lm_graph.get_node(id);
