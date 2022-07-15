@@ -11,25 +11,76 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- Improve landmark dead-end detection so that relevant static information
-  is only computed once, instead of at every state evaluation.
+- driver: skip __pycache__ directory when collection portfolio aliases
+  <https://issues.fast-downward.org/issue1055>
+
+- search and pruning module, for users: Fix performance regression
+  introduced in issue1042 due to always measuring time spent in
+  pruning methods. This is now only done in verbose verbosity level.
+  To this end, the verbosity parameter was added to the pruning module.
+  <https://issues.fast-downward.org/issue1058>
+
+
+## Fast Downward 22.06
+
+Released on June 16, 2022.
+
+Highlights:
+
+- We fixed a bug in the translator component that could lead to
+  incorrect behavior in tasks where predicates are mentioned in the
+  goal that are not modified by any actions.
+
+- Various speed improvements to landmark factories. This is part of a
+  larger ongoing clean-up of the landmark code.
+
+- More informative output, and more control over the output. The
+  driver now prints the total runtime of all components. For many
+  planner components, including all heuristics, the verbosity level
+  can now be configured individually.
+
+Details:
+
+- translator: Fix a bug where the translator would not check goal
+  conditions on predicates that are not modified by actions.
+  <https://issues.fast-downward.org/issue1055>
+
+- driver: Print overall planner resource limits and overall planner
+  runtime on Linux and macOS systems.
+  <https://issues.fast-downward.org/issue1056>
+
+- logging: verbosity option for all evaluators
+  <https://issues.fast-downward.org/issue921>
+  All evaluators and heuristics now have their own configurable logger
+  and no longer use g_log. These loggers have a verbosity option,
+  which allows choosing between silent, normal, verbose and debug for
+  all instances of evaluators created on the command line.
+
+- landmarks: Speed up landmark generation time by 10-20% for `lm_rhw`,
+  `lm_zg`, and `lm_exhaust` by avoiding unnecessary computations in
+  the landmark exploration.
+  <https://issues.fast-downward.org/issue1044>
+
+- landmarks: Speed up landmark generation time by 5-15% for `lm_rhw`,
+  `lm_zg`, and `lm_exhaust` by computing reachability in the landmark
+  exploration as boolean information instead of (unused) integer
+  cost/level information.
+  <https://issues.fast-downward.org/issue1045>
+
+- landmarks: Improve landmark dead-end detection so that relevant
+  static information is only computed once, instead of at every state
+  evaluation.
   <https://issues.fast-downward.org/issue1049>
 
-- Speed up landmark generation time by 10-20% for `lm_rhw`, `lm_zg`,
-  and `lm_exhaust` due to removing unnecessary code in the landmark
-  exploration.
-  <https://issues.fast-downward.org/issue1044>
+- infrastructure: Upgrade GitHub Actions to Windows Server 2019
+  (Visual Studio Enterprise 2019) and Windows Server 2022 (Visual
+  Studio Enterprise 2022). Remove Windows Server 2016, because GitHub
+  Actions no longer support it.
+  <https://issues.fast-downward.org/issue1054>
 
 - infrastructure: Run GitHub Actions only for the following branches:
   `main`, `issue*`, `release-*`.
   <https://issues.fast-downward.org/issue1027>
-
-- all evaluators and heuristics now have their own configurable logger
-  and no longer use g_log.
-  <https://issues.fast-downward.org/issue921>
-  This entails that all evaluators and heuristics now have a verbosity
-  option which allows choosing between silent, normal, verbose and
-  debug for all instances of evaluators created on the command line.
 
 ## Fast Downward 21.12
 

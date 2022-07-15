@@ -102,7 +102,7 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
             ## and conditions like (not (occupied ?x)) do occur in
             ## preconditions.
             ## However, here we avoid introducing new derived predicates
-            ## by treat the negative precondition as a disjunctive
+            ## by treating the negative precondition as a disjunctive
             ## precondition and expanding it by "multiplying out" the
             ## possibilities.  This can lead to an exponential blow-up so
             ## it would be nice to choose the behaviour as an option.
@@ -358,7 +358,6 @@ def prune_stupid_effect_conditions(var, val, conditions, effects_on_var):
     for condition in conditions:
         # Apply rule 1.
         while dual_fact in condition:
-            # print "*** Removing dual condition"
             simplified = True
             condition.remove(dual_fact)
         # Apply rule 2.
@@ -522,17 +521,14 @@ def unsolvable_sas_task(msg):
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
-        (relaxed_reachable, atoms, actions, axioms,
+        (relaxed_reachable, atoms, actions, goal_list, axioms,
          reachable_action_params) = instantiate.explore(task)
 
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
+    elif goal_list is None:
+        return unsolvable_sas_task("Trivially false goal")
 
-    # HACK! Goals should be treated differently.
-    if isinstance(task.goal, pddl.Conjunction):
-        goal_list = task.goal.parts
-    else:
-        goal_list = [task.goal]
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
 

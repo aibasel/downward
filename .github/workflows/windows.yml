@@ -19,7 +19,7 @@ env:
 
   CPLEX_URL: "${{ secrets.CPLEX129_WINDOWS_URL }}"
   OSI_URL: "https://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz"
-  ZLIB_URL: "https://www.zlib.net/zlib1211.zip"
+  ZLIB_URL: "https://www.zlib.net/zlib1212.zip"
 
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         platform:
-          - {os: "windows-2016", vc: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
+          - {os: "windows-2022", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
           - {os: "windows-2019", vc: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
         python-version: [3.6]
     steps:
@@ -57,7 +57,7 @@ jobs:
           cd zlib
 
           echo "Set up zlib include directory"
-          move ../zlib-1.2.11 include
+          move ../zlib-1.2.12 include
 
           echo "Compile zlib library"
           cd include

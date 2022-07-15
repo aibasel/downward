@@ -16,89 +16,70 @@ class LogProxy;
 }
 
 namespace landmarks {
-struct ExProposition;
-struct ExUnaryOperator;
+struct Proposition;
+struct UnaryOperator;
 
-struct ExProposition {
+struct Proposition {
     FactPair fact;
-    std::vector<ExUnaryOperator *> precondition_of;
-
+    std::vector<UnaryOperator *> precondition_of;
+    bool reached;
     bool excluded;
-    int h_max_cost;
 
-    ExProposition()
+    Proposition()
         : fact(FactPair::no_fact),
-          excluded(false),
-          h_max_cost(-1) {
+          reached(false),
+          excluded(false) {
     }
 
-    bool operator<(const ExProposition &other) const {
+    bool operator<(const Proposition &other) const {
         return fact < other.fact;
     }
 };
 
-struct ExUnaryOperator {
+struct UnaryOperator {
     int op_or_axiom_id;
-    std::vector<ExProposition *> precondition;
-    ExProposition *effect;
-    int base_cost;
+    const int num_preconditions;
+    Proposition *effect;
 
     int unsatisfied_preconditions;
     bool excluded;
-    int h_max_cost;
-    ExUnaryOperator(const std::vector<ExProposition *> &pre, ExProposition *eff,
-                    int op_or_axiom_id, int base)
-        : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff),
-          base_cost(base), excluded(false) {}
-
-
-    bool operator<(const ExUnaryOperator &other) const {
-        if (*(other.effect) < *effect)
-            return false;
-        else if (*effect < *(other.effect))
-            return true;
-
-        else {
-            for (size_t i = 0; i < precondition.size(); ++i) {
-                if (i == other.precondition.size() ||
-                    *(other.precondition[i]) < *(precondition[i]))
-                    return false;
-                else if (*(precondition[i]) < *(other.precondition[i]))
-                    return true;
-            }
-            return true;
-        }
-    }
+    UnaryOperator(const std::vector<Proposition *> &preconditions,
+                  Proposition *eff, int op_or_axiom_id)
+        : op_or_axiom_id(op_or_axiom_id),
+          num_preconditions(static_cast<int>(preconditions.size())),
+          effect(eff),
+          unsatisfied_preconditions(num_preconditions),
+          excluded(false) {}
 };
 
 class Exploration {
     TaskProxy task_proxy;
 
-    std::vector<ExUnaryOperator> unary_operators;
-    std::vector<std::vector<ExProposition>> propositions;
-    std::vector<ExProposition *> goal_propositions;
-    std::vector<ExProposition *> termination_propositions;
-    priority_queues::AdaptiveQueue<ExProposition *> prop_queue;
+    std::vector<UnaryOperator> unary_operators;
+    std::vector<std::vector<Proposition>> propositions;
+    std::deque<Proposition *> prop_queue;
 
     void build_unary_operators(const OperatorProxy &op);
     void setup_exploration_queue(
         const State &state, const std::vector<FactPair> &excluded_props,
-        const std::unordered_set<int> &excluded_op_ids);
+        const std::vector<int> &excluded_op_ids);
     void relaxed_exploration();
-    void enqueue_if_necessary(ExProposition *prop, int cost);
+    void enqueue_if_necessary(Proposition *prop);
 public:
     Exploration(const TaskProxy &task_proxy, utils::LogProxy &log);
 
     /*
-      Computes the h_max costs (stored in *lvl_var*) for the problem when
-      excluding propositions in *excluded_props* and operators in
-      *excluded_op_ids*. The values are only exact in the absence of conditional
-      effects, otherwise they are an admissible approximation.
+      Computes the reachability of each proposition when excluding
+      operators in *excluded_op_ids* and ensuring that propositions
+      in *excluded_pros* are not achieved.
+      The returned vector of vector denotes for each proposition
+      (grouped by their fact variable) whether it is relaxed reachable.
+      The values are exact in the absence of conditional effects, otherwise
+      they are an admissible approximation (see implementation for details).
     */
-    void compute_reachability_with_excludes(
-        std::vector<std::vector<int>> &lvl_var,
+    std::vector<std::vector<bool>> compute_relaxed_reachability(
         const std::vector<FactPair> &excluded_props,
-        const std::unordered_set<int> &excluded_op_ids);
+        const std::vector<int> &excluded_op_ids);
 };
 }
 
