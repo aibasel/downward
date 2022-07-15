@@ -5,7 +5,7 @@ using namespace std;
 namespace stubborn_sets {
 // Relies on both fact sets being sorted by variable.
 static bool contain_conflicting_fact(const vector<FactPair> &facts1,
-                              const vector<FactPair> &facts2) {
+                                     const vector<FactPair> &facts2) {
     auto facts1_it = facts1.begin();
     auto facts2_it = facts2.begin();
     while (facts1_it != facts1.end() && facts2_it != facts2.end()) {
