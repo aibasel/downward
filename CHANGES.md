@@ -13,7 +13,13 @@ after the corresponding tracker issues.
 
 - driver: skip __pycache__ directory when collection portfolio aliases
   <https://issues.fast-downward.org/issue1055>
-  
+
+- search and pruning module, for users: Fix performance regression
+  introduced in issue1042 due to always measuring time spent in
+  pruning methods. This is now only done in verbose verbosity level.
+  To this end, the verbosity parameter was added to the pruning module.
+  <https://issues.fast-downward.org/issue1058>
+
 
 ## Fast Downward 22.06
 

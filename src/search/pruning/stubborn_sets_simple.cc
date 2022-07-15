@@ -10,11 +10,15 @@
 using namespace std;
 
 namespace stubborn_sets_simple {
+StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
+    : StubbornSets(opts) {
+}
+
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     interference_relation.resize(num_operators);
     interference_relation_computed.resize(num_operators, false);
-    utils::g_log << "pruning method: stubborn sets simple" << endl;
+    log << "pruning method: stubborn sets simple" << endl;
 }
 
 const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {
@@ -99,12 +103,14 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "323-331",
             "AAAI Press",
             "2014"));
+    add_pruning_options_to_parser(parser);
 
+    Options opts = parser.parse();
     if (parser.dry_run()) {
         return nullptr;
     }
 
-    return make_shared<StubbornSetsSimple>();
+    return make_shared<StubbornSetsSimple>(opts);
 }
 
 static Plugin<PruningMethod> _plugin("stubborn_sets_simple", _parse);
