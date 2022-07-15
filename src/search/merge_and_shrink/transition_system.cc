@@ -123,11 +123,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         back_inserter(incorporated_variables));
     vector<int> global_label_to_local_label(global_labels.get_max_num_labels(), -1);
     vector<LocalLabelInfo> local_label_infos;
-    int max_num_local_labels_product =
-        min(static_cast<int>(ts1.local_label_infos.size()) *
-            static_cast<int>(ts2.local_label_infos.size()),
-            global_labels.get_num_active_labels());
-    local_label_infos.reserve(max_num_local_labels_product);
+    local_label_infos.reserve(global_labels.get_max_num_labels());
 
     int ts1_size = ts1.get_size();
     int ts2_size = ts2.get_size();
@@ -229,8 +225,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         local_label_infos.emplace_back(move(dead_labels), vector<Transition>(), cost);
     }
 
-    assert(static_cast<int>(local_label_infos.size()) <= max_num_local_labels_product);
-
     return utils::make_unique_ptr<TransitionSystem>(
         num_variables,
         move(incorporated_variables),
@@ -241,33 +235,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         move(goal_states),
         init_state
         );
-}
-
-void TransitionSystem::make_local_labels_contiguous() {
-    int num_local_labels = local_label_infos.size();
-    int new_num_local_labels = 0;
-    for (int local_label = 0; local_label < num_local_labels; ++local_label) {
-        if (!local_label_infos[local_label].empty()) {
-            ++new_num_local_labels;
-        }
-    }
-
-    if (new_num_local_labels < num_local_labels) {
-        vector<LocalLabelInfo> new_local_label_infos;
-        new_local_label_infos.reserve(new_num_local_labels);
-        int new_local_label = 0;
-        for (int local_label = 0; local_label < num_local_labels; ++local_label) {
-            if (!local_label_infos[local_label].empty()) {
-                for (int label : local_label_infos[local_label].get_label_group()) {
-                    assert(global_label_to_local_label[label] == local_label);
-                    global_label_to_local_label[label] = new_local_label;
-                }
-                new_local_label_infos.push_back(move(local_label_infos[local_label]));
-                ++new_local_label;
-            }
-        }
-        new_local_label_infos.swap(local_label_infos);
-    }
 }
 
 void TransitionSystem::compute_locally_equivalent_labels() {
@@ -301,7 +268,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
         }
     }
 
-    make_local_labels_contiguous();
+    assert(is_valid());
 }
 
 void TransitionSystem::apply_abstraction(
