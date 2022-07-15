@@ -341,6 +341,7 @@ fast_downward_plugin(
     SOURCES
         pruning/stubborn_sets_action_centric
     DEPENDS STUBBORN_SETS
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(

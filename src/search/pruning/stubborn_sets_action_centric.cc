@@ -4,7 +4,7 @@ using namespace std;
 
 namespace stubborn_sets {
 // Relies on both fact sets being sorted by variable.
-bool contain_conflicting_fact(const vector<FactPair> &facts1,
+static bool contain_conflicting_fact(const vector<FactPair> &facts1,
                               const vector<FactPair> &facts2) {
     auto facts1_it = facts1.begin();
     auto facts2_it = facts2.begin();
@@ -48,7 +48,7 @@ bool StubbornSetsActionCentric::can_conflict(int op1_no, int op2_no) const {
                                     sorted_op_effects[op2_no]);
 }
 
-bool StubbornSetsActionCentric::mark_as_stubborn(int op_no) {
+bool StubbornSetsActionCentric::enqueue_stubborn_operator(int op_no) {
     if (!stubborn[op_no]) {
         stubborn[op_no] = true;
         stubborn_queue.push_back(op_no);

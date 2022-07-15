@@ -25,7 +25,7 @@ private:
     const std::vector<int> &get_disabled(int op1_no);
     void add_conflicting_and_disabling(int op_no, const State &state);
     void compute_active_operators(const State &state);
-    void mark_as_stubborn_and_remember_written_vars(int op_no, const State &state);
+    void enqueue_stubborn_operator_and_remember_written_vars(int op_no, const State &state);
     void add_nes_for_fact(const FactPair &fact, const State &state);
     void apply_s5(int op_no, const State &state);
 protected:

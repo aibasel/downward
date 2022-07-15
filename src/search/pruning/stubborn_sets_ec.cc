@@ -23,7 +23,7 @@ static inline bool is_v_applicable(int var,
     return precondition_on_var == -1 || precondition_on_var == state[var].get_value();
 }
 
-vector<StubbornDTG> build_dtgs(TaskProxy task_proxy) {
+static vector<StubbornDTG> build_dtgs(TaskProxy task_proxy) {
     /*
       NOTE: Code lifted and adapted from M&S atomic abstraction code.
       We need a more general mechanism for creating data structures of
@@ -70,10 +70,10 @@ vector<StubbornDTG> build_dtgs(TaskProxy task_proxy) {
     return dtgs;
 }
 
-void recurse_forwards(const StubbornDTG &dtg,
-                      int start_value,
-                      int current_value,
-                      vector<bool> &reachable) {
+static void recurse_forwards(const StubbornDTG &dtg,
+                             int start_value,
+                             int current_value,
+                             vector<bool> &reachable) {
     if (!reachable[current_value]) {
         reachable[current_value] = true;
         for (int successor_value : dtg[current_value])
@@ -82,9 +82,9 @@ void recurse_forwards(const StubbornDTG &dtg,
 }
 
 // Relies on both fact sets being sorted by variable.
-void get_conflicting_vars(const vector<FactPair> &facts1,
-                          const vector<FactPair> &facts2,
-                          vector<int> &conflicting_vars) {
+static void get_conflicting_vars(const vector<FactPair> &facts1,
+                                 const vector<FactPair> &facts2,
+                                 vector<int> &conflicting_vars) {
     conflicting_vars.clear();
     auto facts1_it = facts1.begin();
     auto facts2_it = facts2.begin();
@@ -218,9 +218,9 @@ bool StubbornSetsEC::is_applicable(int op_no, const State &state) const {
 }
 
 // TODO: find a better name.
-void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
+void StubbornSetsEC::enqueue_stubborn_operator_and_remember_written_vars(
     int op_no, const State &state) {
-    if (mark_as_stubborn(op_no)) {
+    if (enqueue_stubborn_operator(op_no)) {
         if (is_applicable(op_no, state)) {
             for (const FactPair &effect : sorted_op_effects[op_no])
                 written_vars[effect.var] = true;
@@ -233,7 +233,7 @@ void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
 void StubbornSetsEC::add_nes_for_fact(const FactPair &fact, const State &state) {
     for (int achiever : achievers[fact.var][fact.value]) {
         if (active_ops[achiever]) {
-            mark_as_stubborn_and_remember_written_vars(achiever, state);
+            enqueue_stubborn_operator_and_remember_written_vars(achiever, state);
         }
     }
 
@@ -244,7 +244,7 @@ void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
                                                    const State &state) {
     for (int conflict : get_conflicting_and_disabling(op_no)) {
         if (active_ops[conflict]) {
-            mark_as_stubborn_and_remember_written_vars(conflict, state);
+            enqueue_stubborn_operator_and_remember_written_vars(conflict, state);
         }
     }
 }
@@ -306,7 +306,7 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
                                             disabled_op_no,
                                             state,
                                             op_preconditions_on_var)) {
-                            mark_as_stubborn_and_remember_written_vars(
+                            enqueue_stubborn_operator_and_remember_written_vars(
                                 disabled_op_no, state);
                             v_applicable_op_found = true;
                             break;

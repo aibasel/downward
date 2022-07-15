@@ -12,6 +12,9 @@ class StubbornSetsActionCentric : public stubborn_sets::StubbornSets {
       of the operators in the queue).
     */
     std::vector<int> stubborn_queue;
+    virtual void initialize_stubborn_set(const State &state) = 0;
+    virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
+    virtual void compute_stubborn_set(const State &state) override;
 protected:
     bool can_disable(int op1_no, int op2_no) const;
     bool can_conflict(int op1_no, int op2_no) const;
@@ -28,11 +31,7 @@ protected:
     }
 
     // Return true iff the operator was enqueued.
-    // TODO: rename to enqueue_stubborn_operator?
-    bool mark_as_stubborn(int op_no);
-    virtual void compute_stubborn_set(const State &state) override;
-    virtual void initialize_stubborn_set(const State &state) = 0;
-    virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
+    bool enqueue_stubborn_operator(int op_no);
 };
 }
 
