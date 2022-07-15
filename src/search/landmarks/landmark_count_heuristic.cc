@@ -38,6 +38,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           admissible ||
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
+      derived_landmark_cost(opts.get<int>("derived_lm_cost")),
       successor_generator(nullptr) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark count heuristic..." << endl;
@@ -137,8 +138,8 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
            by setting minimum achiever costs to 0.
         */
         if (node->get_landmark().is_derived) {
-            min_first_achiever_costs.push_back(0);
-            min_possible_achiever_costs.push_back(0);
+            min_first_achiever_costs.push_back(derived_landmark_cost);
+            min_possible_achiever_costs.push_back(derived_landmark_cost);
         } else {
             int min_first_achiever_cost = get_min_cost_of_achievers(
                 node->get_landmark().first_achievers, task_proxy);
@@ -420,8 +421,21 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
+    parser.add_option<int>("derived_lm_cost",
+                           "the cost to use for derived landmarks",
+                           "1", Bounds("0", "1"));
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
+
+    parser.document_note("Note on performance for satisficing planning",
+                         "The cost of a landmark is based on the cost of the "
+                         "operators that achieve it. For satisficing search "
+                         "this can be counterproductive since it is often "
+                         "better to focus on distance from goal "
+                         "(i.e. length of the plan) rather than cost."
+                         "In experiments we achieved the best performance using"
+                         "options 'transform=adapt_costs(one)' and "
+                         "'derived_lm_cost=1'.");
     Options opts = parser.parse();
 
     if (parser.dry_run())
