@@ -66,8 +66,9 @@ void add_pruning_options_to_parser(options::OptionParser &parser) {
         "Note on verbosity parameter",
         "Setting verbosity to verbose or higher enables time measurements "
         "in each call to prune_operators for a given state. This induces a "
-        "significant overhead, up to 30% in configurations like blind search. "
-        "We recommend using at most normal verbosity for running experiments.");
+        "significant overhead, up to 30% in configurations like blind search "
+        "with the NullPruning method. We recommend using at most normal verbosity "
+        "for running experiments.");
 }
 
 static PluginTypePlugin<PruningMethod> _type_plugin(
