@@ -34,8 +34,6 @@ protected:
 public:
     explicit StubbornSetsEC(const options::Options &opts);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
-
-
 };
 }
 #endif
