@@ -123,7 +123,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         back_inserter(incorporated_variables));
     vector<int> global_label_to_local_label(global_labels.get_max_num_labels(), -1);
     vector<LocalLabelInfo> local_label_infos;
-    local_label_infos.reserve(global_labels.get_max_num_labels());
 
     int ts1_size = ts1.get_size();
     int ts2_size = ts2.get_size();
